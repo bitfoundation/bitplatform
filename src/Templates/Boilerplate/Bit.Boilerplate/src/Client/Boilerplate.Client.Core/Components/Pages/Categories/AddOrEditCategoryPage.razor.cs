@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Categories;
+﻿using Boilerplate.Shared.Controllers.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
@@ -8,13 +8,13 @@ public partial class AddOrEditCategoryPage
 {
     [AutoInject] ICategoryController categoryController = default!;
 
-    [Parameter] public int? Id { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     private bool isLoading;
     private bool isSaving;
     private string? saveMessage;
     private bool isColorPickerOpen;
-    private BitSeverity saveMessageSeverity;
+    private BitColor saveMessageColor;
     private CategoryDto category = new();
 
     protected override async Task OnInitAsync()
@@ -56,7 +56,7 @@ public partial class AddOrEditCategoryPage
 
         try
         {
-            if (category.Id == 0)
+            if (category.Id == default)
             {
                 await categoryController.Create(category, CurrentCancellationToken);
             }
@@ -65,18 +65,18 @@ public partial class AddOrEditCategoryPage
                 await categoryController.Update(category, CurrentCancellationToken);
             }
 
-            NavigationManager.NavigateTo("categories");
+            NavigationManager.NavigateTo(Urls.CategoriesPage);
         }
         catch (ResourceValidationException e)
         {
-            saveMessageSeverity = BitSeverity.Error;
+            saveMessageColor = BitColor.Error;
 
             saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
         }
         catch (KnownException e)
         {
             saveMessage = e.Message;
-            saveMessageSeverity = BitSeverity.Error;
+            saveMessageColor = BitColor.Error;
         }
         finally
         {

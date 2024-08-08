@@ -1,0 +1,28 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes" 
+     @ontouchmove="OnTouchMove" @ontouchend="OnDraggingEnd" @ontouchleave="OnDraggingEnd"
+     @onpointermove="OnPointerMove" @onpointerup="OnDraggingEnd" @onpointerleave="OnDraggingEnd" 
+     id="@_Id"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div class="bit-spl-pnl bit-spl-fpn" @ref="_firstPanelRef">
+        @FirstPanel
+    </div>
+    <div class="bit-spl-gtr" @ref="_splitterGutterRef" @onpointerdown="OnPointerDown" @onpointerdown:preventDefault @ontouchstart="OnTouchStart" @ontouchstart:preventDefault>
+        @if (GutterIcon is not null)
+        {
+            <i class="bit-icon bit-icon--@GutterIcon" />
+        }
+        else
+        {
+            <div class="bit-spl-gti"></div>
+        }
+    </div>
+    <div class="bit-spl-pnl bit-spl-spn" @ref="_secondPanelRef">
+        @SecondPanel
+    </div>
+</div>

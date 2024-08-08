@@ -125,13 +125,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the required mode of the dropdown.",
-        },
-        new()
-        {
             Name = "IsReselectable",
             Type = "bool",
             DefaultValue = "false",
@@ -220,7 +213,7 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "OnChange",
+            Name = "OnValuesChange",
             Type = "EventCallback<TItem[]>",
             Description = "The callback that called when selected items change.",
         },
@@ -697,13 +690,7 @@ public partial class BitDropdownDemo
                    Name = "ValueSetter",
                    Type = "Action<TItem, TItem>?",
                    Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
-               },
-               new()
-               {
-                   Name = "IsSelectedSetter",
-                   Type = "Action<bool, TValue>",
-                   Description = "The setter function for updating IsSelected property of custom item in Dynamic ComboBox mode upon new item addition.",
-               },
+               }
             },
         },
         new()
@@ -969,15 +956,27 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "InputElement",
+            Name = "ComboInputElement",
             Type = "ElementReference",
-            Description = "The ElementReference to the input element in combo-box mode.",
+            Description = "The ElementReference to the combo input element.",
         },
         new()
         {
-            Name = "FocusAsync",
+            Name = "FocusComboInputAsync",
             Type = "ValueTask",
-            Description = "Gives focus to the input element in combo-box mode.",
+            Description = "Gives focus to the combo input element.",
+        },
+        new()
+        {
+            Name = "SearchInputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the search input element.",
+        },
+        new()
+        {
+            Name = "FocusSearchInputAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the search input element.",
         }
     ];
 }

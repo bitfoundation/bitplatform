@@ -27,10 +27,6 @@
     @include SectionCardText;
 }
 
-.code-box {
-    @include CodeBox;
-}
-
 .high-light-text {
     @include HighLightText;
 }
@@ -52,5 +48,5 @@
 }
 
 ::deep a {
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 }

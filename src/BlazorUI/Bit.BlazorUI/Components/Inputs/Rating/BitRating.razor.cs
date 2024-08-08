@@ -2,11 +2,8 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitRating
+public partial class BitRating : BitInputBase<double>
 {
-    private bool isReadOnly;
-
-
     /// <summary>
     /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard.
     /// </summary>
@@ -36,30 +33,9 @@ public partial class BitRating
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
     /// <summary>
-    /// A flag to mark rating control as readOnly.
-    /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Maximum rating. Must be >= Min (0 if AllowZeroStars is true, 1 otherwise).
     /// </summary>
     [Parameter] public int Max { get; set; } = 5;
-
-    /// <summary>
-    /// Callback that is called when the rating has changed.
-    /// </summary>
-    [Parameter] public EventCallback<double> OnChange { get; set; }
 
     /// <summary>
     /// Custom icon name for selected rating elements, If unset, default will be the FavoriteStarFill icon.
@@ -69,7 +45,8 @@ public partial class BitRating
     /// <summary>
     /// Size of rating elements.
     /// </summary>
-    [Parameter] public BitRatingSize Size { get; set; } = BitRatingSize.Medium;
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
@@ -82,11 +59,12 @@ public partial class BitRating
     [Parameter] public string UnselectedIconName { get; set; } = "FavoriteStar";
 
 
+
     protected override async Task OnInitializedAsync()
     {
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value;
+            Value = DefaultValue.Value;
         }
 
         await base.OnInitializedAsync();
@@ -98,13 +76,13 @@ public partial class BitRating
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsReadOnly ? $"{RootElementClass}-rdl" : string.Empty);
+        ClassBuilder.Register(() => ReadOnly ? "bit-rtg-rdl" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
-            BitRatingSize.Small => $"{RootElementClass}-sm",
-            BitRatingSize.Medium => $"{RootElementClass}-md",
-            BitRatingSize.Large => $"{RootElementClass}-lg",
+            BitSize.Small => "bit-rtg-sm",
+            BitSize.Medium => "bit-rtg-md",
+            BitSize.Large => "bit-rtg-lg",
             _ => string.Empty
         });
     }
@@ -120,6 +98,22 @@ public partial class BitRating
 
         base.OnParametersSet();
     }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        if (double.TryParse(value, out var parsedValue))
+        {
+            result = parsedValue;
+            parsingErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+        return false;
+    }
+
+
 
     private double GetPercentage(int index)
     {
@@ -142,28 +136,10 @@ public partial class BitRating
 
     private async Task HandleOnClick(int index)
     {
-        if (index > Max ||
-            index < (AllowZeroStars ? 0 : 1) ||
-            IsReadOnly is true ||
-            IsEnabled is false ||
-            (ValueHasBeenSet && ValueChanged.HasDelegate is false)) return;
+        if (IsEnabled is false || ReadOnly) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 
         CurrentValue = index;
-
-        await OnChange.InvokeAsync(CurrentValue);
-    }
-
-    protected override bool TryParseValueFromString(string? value, out double result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        if (double.TryParse(value, out var parsedValue))
-        {
-            result = parsedValue;
-            validationErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        validationErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-        return false;
     }
 }

@@ -7,6 +7,7 @@ public partial class MainLayout : IDisposable
     [AutoInject] private NavigationManager navigationManager = default!;
 
     private bool isDocsRoute;
+    private bool isLcncDocRoute;
     private bool isTemplateDocRoute;
     private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
@@ -15,23 +16,34 @@ public partial class MainLayout : IDisposable
     private List<BitNavItem> navItems = [];
 
 
+
+    private readonly List<BitNavItem> lcncNavItems =
+    [
+        new BitNavItem { Text = "Overview", Url = "/lowcode-nocode/overview" },
+        new BitNavItem { Text = "Benefits", Url = "/lowcode-nocode/benefits" },
+        new BitNavItem { Text = "Specs", Url = "/lowcode-nocode/specs" },
+        new BitNavItem { Text = "Customizations", Url = "/lowcode-nocode/customizations" },
+        new BitNavItem { Text = "Comparison", Url = "/lowcode-nocode/comparison" },
+        new BitNavItem { Text = "Stats", Url = "/lowcode-nocode/stats" },
+    ];
+
     private readonly List<BitNavItem> templatesNavItems =
     [
-        new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = new string[] { "/admin-panel/overview", "/todo-template/overview" } },
+        new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = ["/admin-panel/overview", "/todo-template/overview"] },
         new BitNavItem { Text = "Samples", Url = "/templates/samples" },
-        new BitNavItem { Text = "Development prerequisites", Url = "/templates/development-prerequisites", AdditionalUrls = new string[] { "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites" } },
-        new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = new string[] { "/admin-panel/create-project", "/todo-template/create-project" } },
-        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = new string[] { "/admin-panel/project-structure", "/todo-template/project-structure" } },
-        new BitNavItem { Text = "Database", Url = "/templates/database", AdditionalUrls = new string[] { "/admin-panel/database", "/todo-template/database" } },
-        new BitNavItem { Text = "Run", Url = "/templates/run", AdditionalUrls = new string[] { "/admin-panel/run", "/todo-template/run" } },
-        new BitNavItem { Text = "App models", Url = "/templates/app-models", AdditionalUrls = new string[] { "/admin-panel/hosting-models", "/todo-template/hosting-models" } },
-        new BitNavItem { Text = "Deployment type", Url = "/templates/deployment-type", AdditionalUrls = new string[] { "/admin-panel/deployment-type", "/todo-template/deployment-type" } },
-        new BitNavItem { Text = "Cache mechanism", Url = "/templates/cache-mechanism", AdditionalUrls = new string[] { "/admin-panel/cache-mechanism", "/todo-template/cache-mechanism" } },
-        new BitNavItem { Text = "DevOps", Url = "/templates/devops", AdditionalUrls = new string[] { "/admin-panel/devops", "/todo-template/devops" } },
-        new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration", AdditionalUrls = new string[] { "/admin-panel/platform-integration", "/todo-template/platform-integration" } },
-        new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = new string[] { "/admin-panel/settings", "/todo-template/settings" } },
-        new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = new string[] { "/admin-panel/exception-handling", "/todo-template/exception-handling" } },
-        new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = new string[] { "/admin-panel/multilingualism", "/todo-template/multilingualism" } },
+        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = ["/templates/development-prerequisites", "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites"] },
+        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = ["/admin-panel/project-structure", "/todo-template/project-structure"] },
+        new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = ["/admin-panel/create-project", "/todo-template/create-project"] },
+        new BitNavItem { Text = "Database", Url = "/templates/database", AdditionalUrls = ["/admin-panel/database", "/todo-template/database"] },
+        new BitNavItem { Text = "Run", Url = "/templates/run", AdditionalUrls = ["/admin-panel/run", "/todo-template/run"] },
+        new BitNavItem { Text = "App models", Url = "/templates/app-models", AdditionalUrls = ["/admin-panel/hosting-models", "/todo-template/hosting-models"] },
+        new BitNavItem { Text = "Deployment type", Url = "/templates/deployment-type", AdditionalUrls = ["/admin-panel/deployment-type", "/todo-template/deployment-type"] },
+        new BitNavItem { Text = "Cache mechanism", Url = "/templates/cache-mechanism", AdditionalUrls = ["/admin-panel/cache-mechanism", "/todo-template/cache-mechanism"] },
+        new BitNavItem { Text = "DevOps", Url = "/templates/devops", AdditionalUrls = ["/admin-panel/devops", "/todo-template/devops"] },
+        new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration", AdditionalUrls = ["/admin-panel/platform-integration", "/todo-template/platform-integration"] },
+        new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = ["/admin-panel/settings", "/todo-template/settings"] },
+        new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = ["/admin-panel/exception-handling", "/todo-template/exception-handling"] },
+        new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = ["/admin-panel/multilingualism", "/todo-template/multilingualism"] },
     ];
 
     private readonly List<BitNavItem> bswupNavItems =
@@ -98,12 +110,14 @@ public partial class MainLayout : IDisposable
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
         isButilDocRoute = currentUrl.Contains("butil");
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
+        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
 
         navItems = isTemplateDocRoute ? templatesNavItems
                  : isBswupDocRoute ? bswupNavItems
                  : isBesqlDocRoute ? besqlNavItems
                  : isButilDocRoute ? butilNavItems
+                 //: isLcncDocRoute ? lcncNavItems
                  : [];
     }
 

@@ -1,0 +1,106 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-mdl {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    font-weight: 400;
+    z-index: $zindex-modal;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+}
+
+.bit-mdl-nta {
+    touch-action: none;
+
+    * {
+        touch-action: none;
+    }
+}
+
+.bit-mdl-abs {
+    z-index: unset;
+    position: absolute;
+}
+
+.bit-mdl-doc {
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    outline: none;
+    position: absolute;
+    pointer-events: auto;
+    background-color: transparent;
+    transition: opacity 300ms ease 0s;
+}
+
+.bit-mdl-ovl {
+    inset: 0;
+    z-index: 0;
+    position: absolute;
+    background-color: $clr-bg-overlay;
+}
+
+.bit-mdl-scn {
+    flex-grow: 1;
+    display: flex;
+    overflow-y: auto;
+    max-height: 100vh;
+    flex-direction: column;
+}
+
+.bit-mdl-ctn {
+    max-width: 100%;
+    position: absolute;
+    box-sizing: border-box;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+}
+
+.bit-mdl-ctr {
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-mdl-tl {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-mdl-tc {
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.bit-mdl-tr {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-mdl-cl {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bit-mdl-cr {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-mdl-bl {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.bit-mdl-bc {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bit-mdl-br {
+    align-items: flex-end;
+    justify-content: flex-end;
+}

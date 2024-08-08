@@ -48,6 +48,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/CodeBox.razor.css",
+        "inputFile": "Pages/CodeBox.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/ContactUsPage.razor.css",
         "inputFile": "Pages/ContactUsPage.razor.scss",
         "minify": { "enabled": false },
@@ -90,20 +96,20 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.css",
-        "inputFile": "Pages/Templates/Templates03DevelopmentPrerequisitesPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates03GettingStartedPage.razor.css",
+        "inputFile": "Pages/Templates/Templates03GettingStartedPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates04CreateProjectPage.razor.css",
-        "inputFile": "Pages/Templates/Templates04CreateProjectPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.css",
+        "inputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.css",
-        "inputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates05CreateProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates05CreateProjectPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -326,6 +332,12 @@
     {
         "outputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.css",
         "inputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Lcnc/LcncPage.razor.css",
+        "inputFile": "Pages/Lcnc/LcncPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     }

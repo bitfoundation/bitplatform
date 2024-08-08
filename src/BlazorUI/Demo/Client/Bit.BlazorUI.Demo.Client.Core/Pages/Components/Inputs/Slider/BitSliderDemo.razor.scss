@@ -1,0 +1,111 @@
+﻿.flex-container {
+    gap: 2rem;
+    display: flex;
+    overflow: auto;
+    min-height: 23rem;
+
+    &.column {
+        min-height: unset;
+        flex-direction: column;
+    }
+}
+
+.custom-wrapper {
+    gap: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    width: max-content;
+    flex-direction: column;
+    padding-block-start: 1.25rem;
+    padding-inline-start: 1.25rem;
+}
+
+::deep {
+    .custom-input {
+        &::-webkit-slider-thumb {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            margin-top: -0.75rem;
+            border-color: whitesmoke;
+            background-color: whitesmoke;
+            box-shadow: 0 0 0.5rem 0 lightgray;
+        }
+
+        &:hover::-webkit-slider-thumb {
+            border-color: whitesmoke;
+            background-color: whitesmoke;
+        }
+
+        &::-moz-range-thumb {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            margin-top: -0.75rem;
+            border-color: whitesmoke;
+            background-color: whitesmoke;
+            box-shadow: 0 0 0.5rem 0 lightgray;
+        }
+
+        &:hover::-moz-range-thumb {
+            border-color: whitesmoke;
+            background-color: whitesmoke;
+        }
+
+        &::-webkit-slider-runnable-track {
+            height: 0.125rem;
+            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+        }
+
+        &:hover::-webkit-slider-runnable-track {
+            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+        }
+
+        &::-moz-range-track {
+            height: 0.125rem;
+            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+        }
+
+        &:hover::-moz-range-track {
+            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
+        }
+    }
+
+    .custom-slider-box {
+        background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
+
+        &:hover {
+            background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
+        }
+
+        &:hover::before {
+            background-color: darkgreen;
+        }
+
+        &::before {
+            background-color: green;
+        }
+
+        .custom-range-input {
+            &::-webkit-slider-thumb {
+                background-color: white;
+                border: 0.25rem solid green;
+            }
+
+            &:hover::-webkit-slider-thumb {
+                background-color: white;
+                border: 0.25rem solid darkgreen;
+            }
+
+            &::-moz-range-thumb {
+                background-color: white;
+                border: 0.25rem solid green;
+            }
+
+            &:hover::-moz-range-thumb {
+                background-color: white;
+                border: 0.25rem solid darkgreen;
+            }
+        }
+    }
+}

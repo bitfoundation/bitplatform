@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
@@ -7,8 +7,10 @@ public partial class ChangeEmailSection
 {
     private bool isWaiting;
     private string? message;
+    private BitColor messageColor;
     private bool showConfirmation;
     private bool isEmailUnavailable = true;
+    private ElementReference messageRef = default!;
     private readonly ChangeEmailRequestDto changeModel = new();
     private readonly SendEmailTokenRequestDto sendModel = new();
 
@@ -62,10 +64,16 @@ public partial class ChangeEmailSection
             showConfirmation = true;
             isEmailUnavailable = false;
             changeModel.Email = sendModel.Email;
+
+            messageColor = BitColor.Success;
+            message = Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)];
+            await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
+            messageColor = BitColor.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {
@@ -84,11 +92,13 @@ public partial class ChangeEmailSection
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo("profile");
+            NavigationManager.NavigateTo(Urls.ProfilePage);
         }
         catch (KnownException e)
         {
             message = e.Message;
+            messageColor = BitColor.Error;
+            await messageRef.ScrollIntoView();
         }
         finally
         {

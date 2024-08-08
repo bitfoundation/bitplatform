@@ -210,9 +210,6 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 
-# VS Code
-.vscode
-
 # .NET Meteor
 .meteor
 
@@ -227,9 +224,8 @@ profile.arm.json
 /**/*.css
 custom.aprof
 
-/src/Boilerplate.Server/Attachments/**/*.*
+/src/**/App_Data/*
 
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
 
-/src/Boilerplate.Server/*.db*
 .env

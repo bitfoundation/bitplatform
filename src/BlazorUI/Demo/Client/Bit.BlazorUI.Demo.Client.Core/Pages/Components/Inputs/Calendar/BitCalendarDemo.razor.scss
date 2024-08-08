@@ -1,8 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
-
-
-.example-content {
+﻿.example-content {
     display: flex;
     overflow-x: auto;
     max-width: fit-content;
@@ -45,7 +41,9 @@
 
     .custom-class {
         margin: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        background: #8a2be270;
+        border-radius: 1rem;
+        box-shadow: blueviolet 0 0 1rem;
     }
 
     .custom-root {
@@ -97,13 +95,5 @@
         background-color: #e9981e;
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
-    }
-
-    .custom-increase-btn {
-        background-color: #48900f;
-    }
-
-    .custom-decrease-btn {
-        background-color: #c70505;
     }
 }

@@ -1,0 +1,328 @@
+﻿@page "/components/badge"
+
+<PageOutlet Url="components/badge"
+            Title="Badge"
+            Description="Badge component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Badge"
+               ComponentDescription="Badge component is a small visual element used to highlight or indicate specific information within a user interface."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitBadge Content="63">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>The badge offers three variants: Fill (default), Outline, and Text.</div>
+            <br />
+            <div class="example-content">
+                <BitBadge Content="84" Variant="BitVariant.Fill">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Content="84" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Content="84" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <BitBadge Content="84" Variant="BitVariant.Fill" IsEnabled="false">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Content="84" Variant="BitVariant.Outline" IsEnabled="false">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Content="84" Variant="BitVariant.Text" IsEnabled="false">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Overlap" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>The badge distance from its base content can be changed using the Overlap parameter.</div>
+            <br /><br />
+            <BitBadge Content="63" Overlap>
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Dot" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>Badge size can be reduced and hide any of its content.</div>
+            <br /><br />
+            <BitBadge Dot>
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Max" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>When content is integer type, you can define a max value to display.</div>
+            <br /><br />
+            <BitBadge Max="63" Content="100">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customization" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>Here are some examples of customizing the badge content.</div>
+            <br /><br />
+            <div>String content</div><br />
+            <BitBadge Content="@("Text")">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+            <br /><br /><br /><br />
+            <div>Icon</div><br />
+            <BitBadge IconName="@BitIconName.Ringer">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Hidden" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div>You can easily hide the badge using its Hidden parameter.</div>
+            <br />
+            <BitToggle @bind-Value="hidden" Label="Hide the badge" />
+            <br /><br />
+            <BitBadge Hidden="hidden" Content="63">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Position" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div>You can customize the badge position to enhance the user experience.</div>
+            <br />
+            <div class="example-content" style="margin-left:1rem">
+                <BitBadge Content="63" Position="badgePosition">
+                    <BitButton Variant="BitVariant.Outline">Position</BitButton>
+                </BitBadge>
+
+                <BitDropdown Items="badgePositionList" @bind-Value="badgePosition" Style="width: 8rem;" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+            <br /><br />
+            <div>Primary</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Primary">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Primary" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Secondary</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Secondary">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Secondary" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Tertiary</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Tertiary">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Tertiary" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Info</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Info">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Info" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Success</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Success">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Success" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Warning</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Warning">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Warning" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>SevereWarning</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.SevereWarning">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.SevereWarning" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Error</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Color="BitColor.Error">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Color="BitColor.Error" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example10RazorCode" Id="example10">
+        <ExamplePreview>
+            <div>Varying sizes for badges tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+            <br /><br />
+            <div>Small</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Fill">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Small" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Medium</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Fill">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Medium" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+            <br /><br />
+            <div>Large</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Fill">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Outline">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Size="BitSize.Large" Variant="BitVariant.Text">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div>
+                Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.
+            </div>
+            <br /><br />
+            <div>Component's Style & Class:</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" Style="color: dodgerblue;">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+                <BitBadge Content="84" Class="custom-class" Variant="BitVariant.Outline">
+                    <div>Anchor</div>
+                </BitBadge>
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <div class="example-content">
+                <BitBadge Content="84" IconName="@BitIconName.Info"
+                          Styles="@(new() { Root = "color: tomato;",
+                                            Badge = "border-radius: unset;",
+                                            Icon = "color: tomato;" })">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+
+                <BitBadge Content="84" IconName="@BitIconName.Info"
+                          Variant="BitVariant.Outline"
+                          Classes="@(new() { Root = "custom-root",
+                                             BadgeWrapper = "custom-wrapper",
+                                             Badge = "custom-badge",
+                                             Icon = "custom-icon" })">
+                    <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+                </BitBadge>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <ExamplePreview>
+            <div>Managing clicking on the badge event (OnClick).</div>
+            <br /><br />
+            <BitBadge Content="counter" OnClick="() => counter++">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Tertiary" />
+            </BitBadge>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+</ComponentDemo>

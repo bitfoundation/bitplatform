@@ -28,14 +28,24 @@
             <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
         }
 
+        @if (_textInputComponents.Contains(ComponentName))
+        {
+            <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+        }
+
         @if (_inputComponents.Contains(ComponentName))
         {
             <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+
+            <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
         }
 
-        <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+        @if (_extraComponents.Contains(ComponentName) is false)
+        {
+            <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-        <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+            <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+        }
 
         <ComponentClassesTable Classes="ComponentSubClasses" />
 

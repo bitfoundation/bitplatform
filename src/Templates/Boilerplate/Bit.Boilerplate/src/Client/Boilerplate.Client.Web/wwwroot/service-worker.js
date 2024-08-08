@@ -1,4 +1,4 @@
-// bit version: 8.9.0-pre-01
+// bit version: 8.10.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -15,7 +15,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js"
+        url: "_framework/blazor.web.js?v=8.0.303"
     }
 ];
 
@@ -29,7 +29,8 @@ self.serverHandledUrls = [
     /\/healthz/,
     /\/swagger/,
     /\/signin-/,
-    /\/.well-known/
+    /\/.well-known/,
+    /\/sitemap.xml/,
 ];
 
 self.defaultUrl = "/";

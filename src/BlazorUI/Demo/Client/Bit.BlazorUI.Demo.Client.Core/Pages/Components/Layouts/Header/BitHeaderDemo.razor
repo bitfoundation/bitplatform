@@ -1,0 +1,38 @@
+﻿@page "/components/header"
+
+<PageOutlet Url="components/header"
+            Title="Header"
+            Description="header component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Header"
+               ComponentDescription="The BitHeader component is used to display a title (and possibly other components) in a colored bar at the top of a site or application. For the background color it uses the current primary background color."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="container">
+                <BitHeader>I'm a Header</BitHeader>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Usage" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div class="container">
+                <BitHeader Style="gap: 1rem;">
+                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" Title="Open Navigation"/>
+                    <BitTypography Variant="BitTypographyVariant.Caption">My Awesome App</BitTypography>
+                    <BitSpacer />
+                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" Title="Sign in" />
+                    <BitMenuButton TItem="BitMenuButtonOption"
+                                   ChevronDownIcon="@BitIconName.More"
+                                   Variant="BitVariant.Text"
+                                   title="See more"
+                                   Styles="@(new() { OperatorButton = "padding: 0.5rem; color: dodgerblue" })">
+                        <BitMenuButtonOption Text="Settings" IconName="@BitIconName.Settings" />
+                        <BitMenuButtonOption Text="About" IconName="@BitIconName.Info" />
+                        <BitMenuButtonOption Text="Feedback" IconName="@BitIconName.Feedback" />
+                    </BitMenuButton>
+                </BitHeader>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

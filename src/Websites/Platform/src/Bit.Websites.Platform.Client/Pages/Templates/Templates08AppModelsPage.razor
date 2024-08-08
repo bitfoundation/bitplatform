@@ -29,7 +29,7 @@
             <ol>
                 <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>BlazorServer</b>.</li>
                 <br />
-                <div class="code-box">public static IComponentRenderMode Current => BlazorServer</div>
+                <CodeBox>public static IComponentRenderMode Current => BlazorServer</CodeBox>
                 <li>Set the "Server" project as the startup project.</li>
                 <li>Run the application.</li>
                 <li>When the browser opens, remove "swagger/index.html" from the URL address bar to view the app UI instead of the swagger UI.</li>
@@ -43,12 +43,12 @@
             Blazor WebAssembly (WASM) apps run client-side in the browser on a WebAssembly-based .NET runtime. The Blazor app, its dependencies,
             and the .NET runtime are downloaded to the browser. The app is executed directly on the browser UI thread. UI updates and event handling occur within the same process.
             <br />
-            To use to Blazor WebAssembly:
+            To use the Blazor WebAssembly:
             <br />
             <ol>
                 <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>BlazorWebAssembly</b>.</li>
                 <br />
-                <div class="code-box">public static IComponentRenderMode Current => BlazorWebAssembly</div>
+                <CodeBox>public static IComponentRenderMode Current => BlazorWebAssembly</CodeBox>
                 <li>Set the "Server" project as the startup project.</li>
                 <li>Select <i>Boilerplate.Server-BlazorWebAssembly</i> launchSettings profile instead of <i>Boilerplate.Server-Swagger</i></li>
                 <div class="image-container">
@@ -66,12 +66,12 @@
             Blazor seamlessly combines Blazor Server and WebAssembly.
             This approach enhances user interaction initially through Blazor Server, while simultaneously downloading Blazor WebAssembly for subsequent visits, reducing server load.
             <br />
-            To use to Blazor Auto:
+            To use the Blazor Auto:
             <br />
             <ol>
                 <li>Open the file Core/Services/AppRenderMode.cs and change the <b>Current</b> field to <b>Auto</b>.</li>
                 <br />
-                <div class="code-box">public static IComponentRenderMode Current => Auto</div>
+                <CodeBox>public static IComponentRenderMode Current => Auto</CodeBox>
                 <li>Set the "Server" project as the startup project.</li>
                 <li>Select <i>Boilerplate.Server-Swagger</i> launchSettings profile instead of <i>Boilerplate.Server-BlazorWebAssembly</i>.</li>
                 <li>Run the application.</li>
@@ -80,10 +80,7 @@
         </div>
         <div class="section-card-txt">
             Note: The provided code employs Blazor Server during development for an optimal debugging experience, while opting for Auto in production due to its superior user experience in most scenarios.
-            <div class="code-box">
-                public static IComponentRenderMode Current =>
-                BuildConfigurationModeDetector.Current.IsDebug() ? BlazorServer : Auto;
-            </div>
+            <CodeBox>public static IComponentRenderMode Current => <br />BuildConfigurationModeDetector.Current.IsDebug() ? BlazorServer : Auto;</CodeBox>
         </div>
     </section>
 

@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -39,53 +39,55 @@
 
             @if (IsMultiline && Type == BitTextFieldType.Text)
             {
-                <textarea id="@_inputId"
-                          @attributes="InputHtmlAttributes"
-                          @ref="@_inputRef"
+                <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
                           @onclick="@HandleOnClick"
                           @onkeyup="@HandleOnKeyUp"
                           @onfocus="@HandleOnFocus"
-                          @oninput="@HandleOnChange"
-                          @onchange="@HandleOnChange"
                           @onkeydown="@HandleOnKeyDown"
                           @onfocusin="@HandleOnFocusIn"
                           @onfocusout="@HandleOnFocusOut"
-                          value="@CurrentValue"
-                          style="@Styles?.Input"
-                          class="bit-txt-inp @Classes?.Input"
-                          disabled=@(IsEnabled is false)
+                          @onchange="@HandleOnStringValueChangeAsync"
+                          @oninput="@HandleOnStringValueInputAsync"
                           rows="@Rows"
-                          readonly=@IsReadOnly
-                          required=@IsRequired
+                          name="@Name"
+                          id="@_inputId"
+                          readonly="@ReadOnly"
+                          required="@Required"
+                          style="@Styles?.Input"
+                          autofocus="@AutoFocus"
                           maxlength="@MaxLength"
                           placeholder="@Placeholder"
+                          value="@CurrentValueAsString"
+                          disabled=@(IsEnabled is false)
+                          class="bit-txt-inp @Classes?.Input"
                           aria-label="@AriaLabel"
                           aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                           aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
             }
             else
             {
-                <input id="@_inputId"
-                       @attributes="InputHtmlAttributes"
-                       @ref="@_inputRef"
+                <input @ref="@InputElement" @attributes="InputHtmlAttributes"
                        @onclick="@HandleOnClick"
                        @onfocus="@HandleOnFocus"
                        @onkeyup="@HandleOnKeyUp"
-                       @oninput="@HandleOnChange"
-                       @onchange="@HandleOnChange"
                        @onkeydown="@HandleOnKeyDown"
                        @onfocusin="@HandleOnFocusIn"
                        @onfocusout="@HandleOnFocusOut"
-                       style="@Styles?.Input"
-                       class="bit-txt-inp @Classes?.Input"
-                       disabled=@(IsEnabled is false)
-                       readonly=@IsReadOnly
-                       required=@IsRequired
+                       @onchange="@HandleOnStringValueChangeAsync"
+                       @oninput="@HandleOnStringValueInputAsync"
+                       name="@Name"
+                       id="@_inputId"
                        type="@_inputType"
-                       value="@CurrentValue"
+                       readonly="@ReadOnly"
+                       required="@Required"
+                       style="@Styles?.Input"
+                       autofocus="@AutoFocus"
                        maxlength="@MaxLength"
                        placeholder="@Placeholder"
                        autocomplete="@AutoComplete"
+                       value="@CurrentValueAsString"
+                       disabled=@(IsEnabled is false)
+                       class="bit-txt-inp @Classes?.Input"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
                        aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />

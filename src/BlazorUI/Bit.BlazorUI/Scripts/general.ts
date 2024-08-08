@@ -1,4 +1,6 @@
-﻿interface DotNetObject {
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '8.10.0';
+
+interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
     invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
     dispose(): void;

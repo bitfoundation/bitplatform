@@ -1,0 +1,192 @@
+﻿.grid1 {
+    .grid1-container {
+        overflow: auto;
+    }
+
+    ::deep {
+        table {
+            width: 100%;
+            border-spacing: 0;
+        }
+
+        tr {
+            height: 30px;
+        }
+    }
+}
+
+.grid2 {
+    border: 1px solid;
+    border-color: var(--bit-clr-brd-pri);
+
+    .grid2-container {
+        overflow: auto;
+    }
+
+    .flag {
+        vertical-align: middle;
+    }
+
+    ::deep {
+        table {
+            width: 100%;
+            border-spacing: 0;
+        }
+
+        tr {
+            height: 42px;
+        }
+
+        th {
+            padding: .5rem;
+            font-weight: bold;
+            display: table-cell;
+            vertical-align: inherit;
+            border-bottom: 1px solid;
+            background-color: var(--bit-clr-bg-sec);
+            border-bottom-color: var(--bit-clr-brd-sec);
+        }
+
+        .col-options-button {
+            cursor: pointer;
+            background-image: none;
+
+            &:before {
+                top: 2px;
+                color: #7A7A7C;
+                content: "\E721";
+                position: relative;
+                font-style: normal;
+                font-weight: normal;
+                display: inline-block;
+                font-family: 'Fabric MDL2';
+            }
+        }
+
+        .col-width-draghandle {
+            width: 3px;
+            cursor: col-resize;
+
+            &:active {
+                background: unset;
+            }
+
+            :after {
+                left: 3px;
+                border-left: unset;
+            }
+
+            &:hover {
+                background: unset;
+            }
+        }
+
+        .column--large {
+            width: 220px;
+        }
+
+        th:not(:last-child) {
+            border-right: 1px solid;
+            border-right-color: var(--bit-clr-brd-sec);
+        }
+
+        th:not(.col-sort-asc):not(.col-sort-desc) .sort-indicator:before {
+            top: -2px;
+            color: #7A7A7C;
+            content: "\21C5";
+            position: relative;
+            font-style: normal;
+            font-weight: normal;
+            display: inline-block;
+            font-family: 'Fabric MDL2';
+        }
+
+        tr:nth-child(even) {
+            background: var(--bit-clr-bg-sec);
+        }
+
+        tr:nth-child(odd) {
+            background: var(--bit-clr-bg-pri);
+        }
+
+        tr:last-child > td {
+            border-bottom: none;
+        }
+
+        td {
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0.25rem 0.5rem;
+            text-overflow: ellipsis;
+            border-bottom: 1px solid var(--bit-clr-brd-sec);
+        }
+
+        td:not(:last-child) {
+            border-right: 1px solid var(--bit-clr-brd-sec);
+        }
+
+        .sort-indicator {
+            margin-left: auto;
+        }
+
+        .col-width-draghandle:after {
+            border-left: unset;
+        }
+
+        .col-header-content {
+            padding-right: 0px;
+        }
+
+        .bitdatagrid-paginator {
+            margin-top: 0;
+            padding: 0.5rem;
+            border-top: 1px solid;
+        }
+
+        .bitdatagrid-paginator .pagination-text {
+            padding-top: 3px;
+        }
+
+        .bitdatagrid-paginator nav button {
+            border-radius: 0.25rem;
+        }
+
+        .bitdatagrid-paginator nav button:before {
+            vertical-align: middle;
+        }
+    }
+}
+
+.grid3 {
+    height: 15rem;
+    overflow-y: auto;
+
+    ::deep {
+        table {
+            width: 100%;
+        }
+
+        tr {
+            height: 35px;
+        }
+
+        thead {
+            top: 0;
+            z-index: 1;
+            position: sticky;
+            background-color: var(--bit-clr-bg-sec);
+        }
+
+        tbody td {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.search-panel {
+    max-width: 15rem;
+    margin-top: 2rem;
+}

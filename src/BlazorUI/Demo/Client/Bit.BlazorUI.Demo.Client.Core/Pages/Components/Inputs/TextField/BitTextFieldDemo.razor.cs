@@ -71,20 +71,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "IsReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If true, the text field is readonly.",
-        },
-        new()
-        {
-            Name = "IsRequired",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the associated input is required or not, add an asterisk \"*\" to its label.",
-        },
-        new()
-        {
             Name = "IsUnderlined",
             Type = "bool",
             DefaultValue = "false",
@@ -161,12 +147,6 @@ public partial class BitTextFieldDemo
             Name = "OnKeyUp",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for When a keyboard key is released.",
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<string?>",
-            Description = "Callback for when the input value changes. This is called on both input and change events.",
         },
         new()
         {
@@ -437,9 +417,14 @@ public partial class BitTextFieldDemo
     private string? oneWayValue;
     private string? twoWayValue;
     private string? onChangeValue;
+    private string? immediateValue;
+    private string? debounceValue;
+    private string? throttleValue;
 
     private string? trimmedValue;
     private string? notTrimmedValue;
+
+    private string? classesValue;
 
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
@@ -468,9 +453,9 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Basic"" />
 <BitTextField Label=""Placeholder"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Disabled"" IsEnabled=""false"" />
-<BitTextField Label=""ReadOnly"" IsReadOnly=""true"" />
+<BitTextField Label=""ReadOnly"" ReadOnly DefaultValue=""This is ReadOnly"" />
 <BitTextField Label=""Description"" Description=""This is Description"" />
-<BitTextField Label=""IsRequired"" IsRequired=""true"" />
+<BitTextField Label=""Required"" Required />
 <BitTextField Label=""MaxLength: 5"" MaxLength=""5"" />
 <BitTextField Label=""Auto focused"" AutoFocus=""true"" />";
 
@@ -478,12 +463,12 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Basic"" IsUnderlined=""true"" />
 <BitTextField Label=""Placeholder"" IsUnderlined=""true"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" IsUnderlined=""true"" IsRequired=""true"" />";
+<BitTextField Label=""Required"" IsUnderlined=""true"" Required />";
 
     private readonly string example3RazorCode = @"
 <BitTextField Label=""Basic"" Placeholder=""Enter a text..."" HasBorder=""false"" />
 <BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" HasBorder=""false"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" IsRequired=""true"" />";
+<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" Required />";
 
     private readonly string example4RazorCode = @"
 <BitTextField Label=""Resizable"" IsMultiline=""true"" />
@@ -531,17 +516,31 @@ public partial class BitTextFieldDemo
 
     private readonly string example9RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+<div>Value: [@oneWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
-<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" IsMultiline=""true"" />
-<BitOtpInput Length=""4"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
+<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<div>Value: [@twoWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" Immediate />
 
-<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
-<BitLabel>Value: @onChangeValue</BitLabel>";
+<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" Immediate />
+<BitLabel>Value: [@onChangeValue]</BitLabel>
+
+<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
+<div>Value: [@immediateValue]</div>
+
+<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
+<div>Value: [@debounceValue]</div>
+
+<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
+<div>Value: [@throttleValue]</div>";
     private readonly string example9CsharpCode = @"
 private string oneWayValue;
 private string twoWayValue;
-private string onChangeValue;";
+private string onChangeValue;
+private string? immediateValue;
+private string? debounceValue;
+private string? throttleValue;";
 
     private readonly string example10RazorCode = @"
 <BitTextField Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""trimmedValue"" />
@@ -556,57 +555,118 @@ private string notTrimmedValue;";
     private readonly string example11RazorCode = @"
 <style>
     .custom-class {
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid brown;
+    }
+
+    .custom-class *, .custom-class *::after {
+        border: none;
+    }
+
+    .custom-class::after {
+        content: '';
+        width: 0;
+        left: 50%;
+        bottom: 0;
+        height: 2px;
+        position: absolute;
+        background-color: red;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-class:focus::after {
+        left: 0;
+        width: 100%;
+    }
+
+
+    .custom-root {
+        height: 3rem;
+        display: flex;
+        align-items: end;
+        position: relative;
+        margin-inline: 1rem;
+    }
+
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-input {
-        color: darkgreen;
-        font-weight: 900;
+        padding: 0;
         font-size: 1rem;
-        padding: 1rem;
-        height: 3rem;
+        font-weight: 900;
     }
 
     .custom-field {
-        margin-top: 0.5rem;
-        border-radius: 1rem;
-        background-color: tomato;
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
+    }
+
+    .custom-field::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
     }
 
     .custom-focus .custom-field::after {
-        border-radius: 1rem;
-        border-width: 0.25rem;
-        border-color: rebeccapurple;
+        left: 0;
+        width: 100%;
     }
 
     .custom-focus .custom-label {
-        color: chartreuse;
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 </style>
 
-<BitTextField Style=""background-color: lightskyblue; border-radius: 1rem; padding: 0.5rem;"" />
+
+<BitTextField Style=""box-shadow: aqua 0 0 1rem; margin-inline: 1rem;"" />
 
 <BitTextField Class=""custom-class"" />
 
 
+<BitTextField Label=""Styles""
+              Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                Focused = ""--focused-background: #b2b2b25a;"",
+                                FieldGroup = ""background: var(--focused-background);"",
+                                Label = ""text-shadow: aqua 0 0 1rem; font-weight: 900; font-size: 1.25rem;"",
+                                Input = ""padding: 0.5rem;"" })"" />
 
-<BitTextField Label=""Custom label style""
-              IconName=""@BitIconName.Microphone""
-              Styles=""@(new() { Root = ""background-color: pink;"",
-                                Icon = ""color: darkorange;"",
-                                Label = ""color: blue; font-weight: 900; font-size: 1.25rem;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod;"" })"" />
-
-<BitTextField Label=""Custom label class""
-              DefaultValue=""Custom input class""
-              Classes=""@(new() { FieldGroup = ""custom-field"",
+<BitTextField @bind-Value=""classesValue""
+              Label=""Classes""
+              Classes=""@(new() { Root = ""custom-root"",
+                                 FieldGroup = ""custom-field"",
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
-                                 Label = ""custom-label"" })"" />";
+                                 Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
+    private readonly string example11CsharpCode = @"
+private string? classesValue;
+";
 
     private readonly string example12RazorCode = @"
-<style>
+< style>
     .validation-message {
         color: red;
     }
@@ -615,7 +675,7 @@ private string notTrimmedValue;";
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
 
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""validationTextFieldModel.Text"" />
+    <BitTextField Label=""Required"" Required @bind-Value=""validationTextFieldModel.Text"" />
     <ValidationMessage For=""() => validationTextFieldModel.Text"" />
 
     <BitTextField Label=""Numeric"" @bind-Value=""validationTextFieldModel.NumericText"" />

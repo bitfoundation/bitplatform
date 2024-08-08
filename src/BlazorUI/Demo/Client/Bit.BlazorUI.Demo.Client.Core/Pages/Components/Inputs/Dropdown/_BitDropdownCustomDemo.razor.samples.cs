@@ -14,14 +14,14 @@ public partial class _BitDropdownCustomDemo
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
 
-<BitDropdown Label=""IsRequired""
+<BitDropdown Label=""Required"" Required
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""Select an item""
-             IsRequired=""true"" />
+             Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Disabled""
              Items=""GetBasicCustoms()""
+             DefaultValue=""@(""f-ora"")""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
              IsEnabled=""false"" />";
@@ -69,44 +69,56 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     private readonly string example2RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem;
-        border-radius: 4px;
-        background-color: midnightblue;
+        margin-inline: 1rem;
+        box-shadow: dodgerblue 0 0 0.5rem;
+        text-shadow: dodgerblue 0 0 0.5rem;
     }
 
+
     .custom-fruit {
-        border-top: 1px solid gray;
-        background-color: darkslateblue;
+        background-color: #a5104457;
     }
 
     .custom-veg {
-        font-size: 18px;
-        text-decoration: overline underline line-through;
+        background-color: #1c73324d;
     }
 
-    .custom-label {
-        color: darkred;
-        font-size: 12px;
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
     }
 
-    .custom-text {
-        color: darkblue;
-        font-size: 16px;
+    .custom-container, .custom-container:after {
+        border-radius: 1rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-scroll-container div:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
-<BitDropdown Label=""Styled Dropdown""
-             Items=""GetBasicCustoms()""
+
+<BitDropdown Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"" />
+             Style=""margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;"" />
 
-<BitDropdown Label=""Classed Dropdown""
-             Items=""GetBasicCustoms()""
+<BitDropdown Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
              Class=""custom-class"" />
-
 
 
 <BitDropdown Items=""GetStyleClassCustoms()""
@@ -114,18 +126,24 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an item"" />
 
 
-
 <BitDropdown Label=""Styles""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"" />
+             Styles=""@(new() { Label = ""text-shadow: dodgerblue 0 0 0.5rem;"",
+                               Container = ""box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;"",
+                               ItemHeader = ""color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;"",
+                               ItemButton = ""color: lightskyblue"",
+                               Callout = ""border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;"" })"" />
 
 <BitDropdown Label=""Classes""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"" />";
+             Classes=""@(new() { Callout = ""custom-callout"",
+                                Container = ""custom-container"",
+                                ItemButton = ""custom-item-button"",
+                                ScrollContainer = ""custom-scroll-container"" })"" />";
     private readonly string example2CsharpCode = @"
 public class BitDropdownCustom
 {
@@ -158,13 +176,13 @@ private List<BitDropdownCustom> GetBasicCustoms() => new()
 
 private List<BitDropdownCustom> GetStyleClassCustoms() => new()
 {
-    new() { Type = BitDropdownItemType.Header, Text = ""Fruits"", CssStyle = ""background-color:darkred"" },
+    new() { Type = BitDropdownItemType.Header, Text = ""Fruits"", CssStyle = ""text-align: center;"" },
     new() { Text = ""Apple"", Value = ""f-app"", CssClass = ""custom-fruit"" },
     new() { Text = ""Banana"", Value = ""f-ban"", CssClass = ""custom-fruit"" },
     new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true, CssClass = ""custom-fruit"" },
     new() { Text = ""Grape"", Value = ""f-gra"", CssClass = ""custom-fruit"" },
-    new() { Type = BitDropdownItemType.Divider, CssStyle = ""padding:5px; background:darkgreen"" },
-    new() { Type = BitDropdownItemType.Header, Text = ""Vegetables"", CssStyle = ""background-color:darkblue"" },
+    new() { Type = BitDropdownItemType.Divider, CssStyle = ""padding: 0 0.25rem;"" },
+    new() { Type = BitDropdownItemType.Header, Text = ""Vegetables"", CssStyle = ""text-align: center;"" },
     new() { Text = ""Broccoli"", Value = ""v-bro"", CssClass = ""custom-veg"" },
     new() { Text = ""Carrot"", Value = ""v-car"", CssClass = ""custom-veg"" },
     new() { Text = ""Lettuce"", Value = ""v-let"", CssClass = ""custom-veg"" }
@@ -208,7 +226,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an item""
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
-             OnChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
+             OnValuesChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
 <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
 
 <BitDropdown Label=""Multi select""
@@ -217,7 +235,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select items""
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
-             OnChange=""(BitDropdownCustom[] items) => changedItems = items"" />
+             OnValuesChange=""(BitDropdownCustom[] items) => changedItems = items"" />
 <BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
 
 

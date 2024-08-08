@@ -86,7 +86,7 @@ a {
     background-color: $bit-color-background-secondary;
 
     &:hover {
-        background-color: $bit-color-action-hover-background-secondary;
+        background-color: $bit-color-background-secondary-hover;
     }
 }
 
@@ -106,10 +106,10 @@ a {
     }
 
     .address, .tel {
-        color: $bit-color-primary-main;
+        color: $bit-color-primary;
 
         &:hover {
-            color: $bit-color-action-hover-primary;
+            color: $bit-color-primary-hover;
         }
     }
 

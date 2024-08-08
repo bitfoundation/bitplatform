@@ -3,7 +3,7 @@
 .bit-rtg {
     font-weight: 400;
     font-size: spacing(1.75);
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-rtg-btn {
@@ -13,13 +13,13 @@
         }
 
         .bit-rtg-iem, .bit-rtg-ifl {
-            color: $color-foreground-disabled;
+            color: $clr-fg-dis;
         }
     }
 
     &.bit-inv {
         .bit-rtg-iem, .bit-rtg-ifl {
-            color: $color-state-error;
+            color: $clr-err;
         }
     }
 }
@@ -28,8 +28,11 @@
     margin: 0;
     border: none;
     cursor: pointer;
+    height: spacing(2);
     position: relative;
     outline: transparent;
+    font-size: spacing(2);
+    line-height: spacing(2);
     box-sizing: content-box;
     background-color: transparent;
     padding: spacing(1) spacing(0.25);
@@ -47,14 +50,6 @@
         height: spacing(1);
         font-size: spacing(1);
         line-height: spacing(1);
-    }
-}
-
-.bit-rtg-md {
-    .bit-rtg-btn {
-        height: spacing(2);
-        font-size: spacing(2);
-        line-height: spacing(2);
     }
 }
 
@@ -89,11 +84,11 @@
     font-style: normal;
     font-weight: normal;
     display: inline-block;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-primary-main;
+            color: $clr-pri;
         }
     }
 }
@@ -109,11 +104,11 @@
     font-weight: normal;
     display: inline-block;
     vertical-align: middle;
-    color: $color-foreground-primary;
+    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
-            color: $color-primary-main;
+            color: $clr-pri;
         }
     }
 }

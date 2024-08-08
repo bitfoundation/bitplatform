@@ -1,0 +1,14 @@
+﻿.item {
+    color: black;
+    height: 2.75rem;
+    margin: 0.5rem 0;
+    background-color: #777;
+    padding: 0.5rem 1.25rem;
+}
+
+::deep {
+    .pane {
+        padding: 0 0.25rem;
+        border: 1px solid #999;
+    }
+}

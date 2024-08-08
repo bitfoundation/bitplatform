@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
 using System.Net.Http;
-using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Logging;
+using Boilerplate.Client.Windows.Services;
+using Boilerplate.Client.Windows.Configuration;
 
 namespace Boilerplate.Client.Windows;
 
@@ -16,19 +17,18 @@ public static partial class Program
         var configuration = configurationBuilder.Build();
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
-        Uri.TryCreate(configuration.GetApiServerAddress(), UriKind.Absolute, out var apiServerAddress);
         services.TryAddSingleton(sp =>
         {
             var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
             HttpClient httpClient = new(handler)
             {
-                BaseAddress = apiServerAddress
+                BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
             return httpClient;
         });
 
         services.AddWpfBlazorWebView();
-        if (BuildConfiguration.IsDebug())
+        if (AppEnvironment.IsDev())
         {
             services.AddBlazorWebViewDeveloperTools();
         }
@@ -36,14 +36,14 @@ public static partial class Program
         services.TryAddTransient<IStorageService, WindowsStorageService>();
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
-        services.AddSingleton<ILocalHttpServer>(sp => new WindowsLocalHttpServer(services));
+        services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
 
         services.AddLogging(loggingBuilder =>
         {
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            if (BuildConfiguration.IsDebug())
+            if (AppEnvironment.IsDev())
             {
                 loggingBuilder.AddDebug();
             }
@@ -69,6 +69,10 @@ public static partial class Program
             });
             //#endif
         });
+
+        services.AddOptions<WindowsUpdateSettings>()
+            .Bind(configuration.GetRequiredSection(nameof(WindowsUpdateSettings)))
+            .ValidateOnStart();
 
         services.AddClientCoreProjectServices();
     }

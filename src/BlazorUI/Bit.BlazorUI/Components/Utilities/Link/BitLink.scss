@@ -1,0 +1,51 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-lnk {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: inherit;
+    text-decoration: none;
+    color: $clr-pri;
+    background-color: transparent;
+    font-family: $tg-font-family;
+
+    &:hover,
+    &:active,
+    &:focus {
+        color: $clr-pri-hover;
+    }
+
+    &:hover,
+    &:active {
+        text-decoration: underline;
+    }
+
+    &.bit-dis {
+        cursor: default;
+        color: $clr-fg-dis;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color: $clr-fg-dis;
+        }
+
+        &:hover,
+        &:active {
+            text-decoration: none;
+        }
+    }
+}
+
+.bit-lnk-und {
+    text-decoration: underline;
+
+    &:hover,
+    &:active,
+    &:focus {
+        text-decoration: underline;
+    }
+}

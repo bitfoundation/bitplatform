@@ -1,8 +1,9 @@
-﻿@page "/not-found"
-
+﻿@attribute [Route(Urls.NotFoundPage)]
 @inherits AppComponentBase
 
 <div class="main">
     <h1 class="title">404</h1>
-    <div class="description">@Localizer[nameof(AppStrings.NotFoundText)]</div>
+    <div class="description">
+        @Localizer[nameof(AppStrings.NotFoundText)]
+    </div>
 </div>

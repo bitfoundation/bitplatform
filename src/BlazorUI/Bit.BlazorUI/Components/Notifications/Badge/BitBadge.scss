@@ -1,0 +1,249 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-bdg {
+    position: relative;
+    display: inline-block;
+
+    &.bit-dis {
+        --bit-bdg-poievents: none;
+        --bit-bdg-cnt-clr-txt: #{$clr-fg-dis};
+        --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr-bg-dis);
+        --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr-brd-dis);
+    }
+}
+
+.bit-bdg-wrp {
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: absolute;
+    align-items: var(--bit-bgd-alitems);
+    justify-content: var(--bit-bgd-juscontent);
+}
+
+.bit-bdg-ctn {
+    cursor: default;
+    font-weight: 600;
+    position: absolute;
+    align-items: center;
+    display: inline-flex;
+    box-sizing: border-box;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    top: var(--bit-bdg-top);
+    left: var(--bit-bdg-left);
+    right: var(--bit-bdg-right);
+    bottom: var(--bit-bdg-bottom);
+    pointer-events: var(--bit-bdg-poievents);
+    width: var(--bit-bdg-width);
+    color: var(--bit-bdg-cnt-clr-txt);
+    border-color: var(--bit-bdg-cnt-clr-brd);
+    background-color: var(--bit-bdg-cnt-clr-bg);
+    height: var(--bit-bdg-height);
+    padding: var(--bit-bdg-padding);
+    font-size: var(--bit-bdg-fontsize);
+    border-radius: var(--bit-bdg-boradius);
+}
+
+
+.bit-bdg-tlf {
+    --bit-bgd-alitems: flex-start;
+    --bit-bgd-juscontent: flex-start;
+    --bit-bdg-top: auto;
+    --bit-bdg-right: calc(100% - #{spacing(0.5)});
+    --bit-bdg-bottom: calc(100% - #{spacing(0.5)});
+    --bit-bdg-left: auto;
+
+    &.bit-bdg-orp {
+        --bit-bdg-top: auto;
+        --bit-bdg-right: calc(100% - #{spacing(1.5)});
+        --bit-bdg-bottom: calc(100% - #{spacing(1.5)});
+        --bit-bdg-left: auto;
+    }
+}
+
+.bit-bdg-tcr {
+    --bit-bgd-alitems: flex-start;
+    --bit-bgd-juscontent: center;
+    --bit-bdg-bottom: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-bottom: calc(100% - #{spacing(1.5)});
+    }
+}
+
+.bit-bdg-trg {
+    --bit-bgd-alitems: flex-start;
+    --bit-bgd-juscontent: flex-end;
+    --bit-bdg-top: auto;
+    --bit-bdg-right: auto;
+    --bit-bdg-bottom: calc(100% - #{spacing(0.5)});
+    --bit-bdg-left: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-top: auto;
+        --bit-bdg-right: auto;
+        --bit-bdg-bottom: calc(100% - #{spacing(1.5)});
+        --bit-bdg-left: calc(100% - #{spacing(1.5)});
+    }
+}
+
+.bit-bdg-clf {
+    --bit-bgd-alitems: center;
+    --bit-bdg-right: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-right: calc(100% - #{spacing(1.5)});
+    }
+}
+
+.bit-bdg-ctr {
+    --bit-bgd-alitems: center;
+    --bit-bgd-juscontent: center
+}
+
+.bit-bdg-crg {
+    --bit-bgd-alitems: center;
+    --bit-bgd-juscontent: flex-end;
+    --bit-bdg-left: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-left: calc(100% - #{spacing(1.5)});
+    }
+}
+
+.bit-bdg-blf {
+    --bit-bgd-alitems: flex-end;
+    --bit-bgd-juscontent: flex-start;
+    --bit-bdg-top: calc(100% - #{spacing(0.5)});
+    --bit-bdg-right: calc(100% - #{spacing(0.5)});
+    --bit-bdg-bottom: auto;
+    --bit-bdg-left: auto;
+
+    &.bit-bdg-orp {
+        --bit-bdg-top: calc(100% - #{spacing(1.5)});
+        --bit-bdg-right: calc(100% - #{spacing(1.5)});
+        --bit-bdg-bottom: auto;
+        --bit-bdg-left: auto;
+    }
+}
+
+.bit-bdg-bcr {
+    --bit-bgd-alitems: flex-end;
+    --bit-bgd-juscontent: center;
+    --bit-bdg-top: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-top: calc(100% - #{spacing(1.5)});
+    }
+}
+
+.bit-bdg-brg {
+    --bit-bgd-alitems: flex-end;
+    --bit-bgd-juscontent: flex-end;
+    --bit-bdg-top: calc(100% - #{spacing(0.5)});
+    --bit-bdg-right: auto;
+    --bit-bdg-bottom: auto;
+    --bit-bdg-left: calc(100% - #{spacing(0.5)});
+
+    &.bit-bdg-orp {
+        --bit-bdg-top: calc(100% - #{spacing(1.5)});
+        --bit-bdg-right: auto;
+        --bit-bdg-bottom: auto;
+        --bit-bdg-left: calc(100% - #{spacing(1.5)});
+    }
+}
+
+
+.bit-bdg-fil {
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt);
+    --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
+    --bit-bdg-clr-bg-dis: #{$clr-bg-dis};
+    --bit-bdg-clr-brd-dis: #{$clr-brd-dis};
+}
+
+.bit-bdg-otl {
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-bg: transparent;
+    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr);
+    --bit-bdg-clr-brd-dis: #{$clr-brd-dis};
+}
+
+.bit-bdg-txt {
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr);
+    --bit-bdg-cnt-clr-bg: transparent;
+    --bit-bdg-cnt-clr-brd: transparent;
+    --bit-bdg-clr-brd-dis: transparent;
+}
+
+
+.bit-bdg-pri {
+    --bit-bdg-clr: #{$clr-pri};
+    --bit-bdg-clr-txt: #{$clr-pri-text};
+}
+
+.bit-bdg-sec {
+    --bit-bdg-clr: #{$clr-sec};
+    --bit-bdg-clr-txt: #{$clr-sec-text};
+}
+
+.bit-bdg-ter {
+    --bit-bdg-clr: #{$clr-ter};
+    --bit-bdg-clr-txt: #{$clr-ter-text};
+}
+
+.bit-bdg-inf {
+    --bit-bdg-clr: #{$clr-inf};
+    --bit-bdg-clr-txt: #{$clr-inf-text};
+}
+
+.bit-bdg-suc {
+    --bit-bdg-clr: #{$clr-suc};
+    --bit-bdg-clr-txt: #{$clr-suc-text};
+}
+
+.bit-bdg-wrn {
+    --bit-bdg-clr: #{$clr-wrn};
+    --bit-bdg-clr-txt: #{$clr-wrn-text};
+}
+
+.bit-bdg-swr {
+    --bit-bdg-clr: #{$clr-swr};
+    --bit-bdg-clr-txt: #{$clr-swr-text};
+}
+
+.bit-bdg-err {
+    --bit-bdg-clr: #{$clr-err};
+    --bit-bdg-clr-txt: #{$clr-err-text};
+}
+
+
+.bit-bdg-sm {
+    --bit-bdg-height: #{spacing(2)};
+    --bit-bdg-padding: 0 #{spacing(0.5)};
+    --bit-bdg-fontsize: #{spacing(1.25)};
+    --bit-bdg-boradius: #{spacing(1)};
+}
+
+.bit-bdg-md {
+    --bit-bdg-height: #{spacing(2.5)};
+    --bit-bdg-padding: 0 #{spacing(0.75)};
+    --bit-bdg-fontsize: #{spacing(1.5)};
+    --bit-bdg-boradius: #{spacing(1.25)};
+}
+
+.bit-bdg-lg {
+    --bit-bdg-height: #{spacing(3)};
+    --bit-bdg-padding: 0 #{spacing(1)};
+    --bit-bdg-fontsize: #{spacing(1.75)};
+    --bit-bdg-boradius: #{spacing(1.5)};
+}
+
+.bit-bdg-dot {
+    --bit-bdg-padding: 0;
+    --bit-bdg-boradius: 50%;
+    --bit-bdg-width: #{spacing(1.125)};
+    --bit-bdg-height: #{spacing(1.125)};
+}

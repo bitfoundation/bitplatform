@@ -12,6 +12,8 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="example1CsharpCode" Id="example1">
         <ExamplePreview>
+            <div>Basic Calendar configuration showcasing default usage, disabled state, week numbers, highlighted months, and time picker.</div>
+            <br /><br />
             <div class="example-content">
                 <div>Basic Calendar:</div>
                 <BitCalendar />
@@ -33,6 +35,8 @@
 
     <ComponentExampleBox Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
+            <div>Demonstrates setting minimum and maximum selectable dates in the calendar.</div>
+            <br /><br />
             <div class="example-content">
                 <div>Min: Now.AddDays(-5)</div>
                 <div>Max: Now.AddDays(+5)</div>
@@ -51,10 +55,12 @@
 
     <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
+            <div>Showcases custom styling and class usage for the calendar component.</div>
+            <br /><br />
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-content">
-                <BitCalendar Style="padding: 1rem; background: purple;" />
+                <BitCalendar Style="margin: 1rem; border-radius: 1rem; background: #a5104457;" />
 
                 <BitCalendar Class="custom-class" />
             </div>
@@ -62,15 +68,18 @@
             <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="example-content">
-                <BitCalendar Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
-                                               Divider = "border-color: green;",
-                                               DayPickerMonth = "color: red;",
-                                               TodayDayButton = "background-color: red;",
-                                               SelectedDayButton = "background-color: purple;",
-                                               YearPickerToggleButton = "color: blue;" })" />
-
                 <BitCalendar ShowTimePicker="true"
-                             Classes="@(new() { Root = "custom-root",
+                             Styles="@(new() { Root = "margin: 1rem; border: 1px solid mediumseagreen; background: #1c73324d;",
+                                               Divider = "border-color: mediumseagreen;",
+                                               DayPickerMonth = "color: darkgreen;",
+                                               TodayDayButton = "background-color: green;",
+                                               SelectedDayButton = "background-color: limegreen;",
+                                               TimePickerIncreaseHourButton = "background-color: limegreen;",
+                                               TimePickerIncreaseMinuteButton = "background-color: limegreen;",
+                                               TimePickerDecreaseHourButton = "background-color: limegreen;",
+                                               TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
+
+                <BitCalendar Classes="@(new() { Root = "custom-root",
                                                 DayPickerWrapper = "custom-day-picker",
                                                 DayButton = "custom-day",
                                                 TodayDayButton = "custom-today-day",
@@ -79,17 +88,15 @@
                                                 DayPickerMonth = "custom-day-month",
                                                 DayPickerHeader = "custom-day-header",
                                                 WeekNumbersHeader = "custom-week-header",
-                                                YearMonthPickerWrapper = "custom-year-picker",
-                                                TimePickerIncreaseHourButton = "custom-increase-btn",
-                                                TimePickerIncreaseMinuteButton = "custom-increase-btn",
-                                                TimePickerDecreaseHourButton = "custom-decrease-btn",
-                                                TimePickerDecreaseMinuteButton = "custom-decrease-btn" })" />
+                                                YearMonthPickerWrapper = "custom-year-picker" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
+            <div>Illustrates binding the selected date value to a variable.</div>
+            <br />
             <div class="example-content">
                 <BitCalendar @bind-Value="@selectedDate" />
                 <div>Selected date: @selectedDate.ToString()</div>
@@ -122,6 +129,8 @@
 
     <ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
+            <div>Use custom templates for day cells, month cells, and year cells.</div>
+            <br /><br />
             <div class="example-content">
                 <div>DayCellTemplate:</div>
                 <br />
@@ -164,6 +173,8 @@
 
     <ComponentExampleBox Title="MonthPicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
+            <div>Demonstrates controlling the visibility and position of the month picker.</div>
+            <br /><br />
             <div class="example-content">
                 <div>IsMonthPickerVisible:</div>
                 <br />
@@ -180,6 +191,8 @@
 
     <ComponentExampleBox Title="TimePicker" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
+            <div>Demonstrates the time picker functionality integrated within the calendar component.</div>
+            <br />
             <div class="example-content">
                 <BitCalendar @bind-Value="@selectedDateTime" ShowTimePicker="true" />
                 <br />
@@ -190,6 +203,8 @@
 
     <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
+            <div>Demonstrates validation for BitCalendar within a form, including required fields and custom validation messages.</div>
+            <br />
             <div>
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
@@ -198,7 +213,7 @@
                     <ValidationMessage For="@(() => validationModel.Date)" />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    <BitButton ButtonType="BitButtonType.Reset" ButtonStyle="BitButtonStyle.Standard"
+                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
                                OnClick="() => { validationModel = new(); SuccessMessage=string.Empty; }">
                         Reset
                     </BitButton>
@@ -208,7 +223,7 @@
 
                 @if (string.IsNullOrEmpty(SuccessMessage) is false)
                 {
-                    <BitMessage Severity="BitSeverity.Success">@SuccessMessage</BitMessage>
+                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
                 }
             </div>
         </ExamplePreview>
@@ -216,6 +231,8 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
+            <div>Use BitCalendar in a right-to-left (RTL) layout.</div>
+            <br />
             <div class="example-content">
                 <BitCalendar Dir="BitDir.Rtl" />
             </div>
@@ -224,6 +241,8 @@
 
     <ComponentExampleBox Title="Hour/minute step" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
+            <div>Customizes the step increments for hours and minutes in the time picker.</div>
+            <br /><br />
             <div class="example-content">
                 <div>HourStep = 2:</div>
                 <br />

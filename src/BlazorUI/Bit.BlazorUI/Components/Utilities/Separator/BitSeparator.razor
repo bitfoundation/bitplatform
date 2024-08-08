@@ -1,0 +1,16 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+     @if (ChildContent is not null)
+     {
+        <div class="bit-spr-cnt" role="separator" aria-orientation="@(Vertical ? "vertical" : "horizontal")">
+            @ChildContent
+        </div>
+     }
+</div>

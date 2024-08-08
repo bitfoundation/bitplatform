@@ -1,0 +1,120 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     class="@ClassBuilder.Value"
+     style="@StyleBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (Label.HasValue())
+    {
+        <label style="@Styles?.Label" class="bit-sld-lbl @Classes?.Label" @ref="_labelRef">@Label</label>
+    }
+
+    @if (IsRanged)
+    {
+        @if (ShowValue && IsVertical)
+        {
+            <label @ref="_valueLabelRef"
+                   style="@Styles?.UpperValueLabel"
+                   class="bit-sld-vlb @Classes?.UpperValueLabel"
+                   for="@_sliderBoxId">
+                @GetDisplayValue(UpperValue)
+            </label>
+        }
+
+        <div @ref="_containerRef"
+             class="bit-sld-cnt @Classes?.Container"
+             style="@(IsVertical ? _styleContainer : null) @Styles?.Container">
+
+            @if (ShowValue && IsVertical is false)
+            {
+                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(LowerValue)</label>
+            }
+
+            <div @attributes="@SliderBoxHtmlAttributes"
+                 id="@_sliderBoxId"
+                 style="@_styleProgress @Styles?.SliderBox"
+                 class="bit-sld-box @Classes?.SliderBox">
+
+                <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
+                       id="@_minInputId"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       role="slider"
+                       style="@Styles?.LowerValueInput"
+                       class="@Classes?.LowerValueInput"
+                       tabindex="@GetTabIndex"
+                       disabled=@(IsEnabled is false)
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(_firstInputValue)"
+                       aria-valuenow="@_firstInputValue" />
+                <input @bind-value="@_secondInputValue" @oninput="@(args => HandleOnRangeInput(args, false))"
+                       id="@_maxInputId"
+                       type="range"
+                       min="@Min"
+                       max="@Max"
+                       step="@Step"
+                       role="slider"
+                       style="@Styles?.UpperValueInput"
+                       class="@Classes?.UpperValueInput"
+                       tabindex="@GetTabIndex"
+                       disabled=@(IsEnabled is false)
+                       data-is-focusable="@(IsEnabled is false)"
+                       aria-disabled="@(IsEnabled is false)"
+                       aria-label="@Label"
+                       aria-valuemin="@Min"
+                       aria-valuemax="@Max"
+                       aria-valuetext="@GetAriaValueText(_secondInputValue)"
+                       aria-valuenow="@_secondInputValue" />
+
+                @if (IsOriginFromZero)
+                {
+                    <span style="left:calc(50% - @(IsVertical ? "27" : "1")px);@Styles?.OriginFromZero" class="bit-sld-ztk @Classes?.OriginFromZero"></span>
+                }
+            </div>
+            @if (ShowValue && IsVertical is false)
+            {
+                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetDisplayValue(UpperValue)</label>
+            }
+        </div>
+
+        @if (ShowValue && IsVertical)
+        {
+            <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(LowerValue)</label>
+        }
+    }
+    else
+    {
+        <div @ref="_containerRef" style="@Styles?.Container" class="bit-sld-cnt @Classes?.Container">
+            <input @bind-value="@Value" @oninput="@HandleOnInput"
+                   type="range"
+                   min="@Min"
+                   max="@Max"
+                   step="@Step"
+                   style="@_styleProgress @Styles?.ValueInput"
+                   class="@Classes?.ValueInput"
+                   disabled=@(IsEnabled is false) />
+
+            @if (IsOriginFromZero)
+            {
+                <span class="bit-sld-ztk @Classes?.OriginFromZero" style="@(IsVertical ? "top" : "left"):calc(50% @(IsVertical ? "+" : "-") 27px);@Styles?.OriginFromZero"></span>
+            }
+
+            @if (ShowValue && IsVertical is false)
+            {
+                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
+            }
+        </div>
+        @if (ShowValue && IsVertical)
+        {
+            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
+        }
+    }
+</div>

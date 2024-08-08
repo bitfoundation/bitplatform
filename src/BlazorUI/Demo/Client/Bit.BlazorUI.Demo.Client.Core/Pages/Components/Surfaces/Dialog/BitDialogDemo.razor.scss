@@ -1,0 +1,50 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+.dialog-title {
+    display: flex;
+    font-weight: 600;
+    align-items: center;
+    font-size: rem2(24px);
+    justify-content: space-between;
+    border-top: rem2(4px) solid #0054C6;
+    padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
+}
+
+.dialog-body {
+    overflow-y: hidden;
+    max-width: rem2(448px);
+    padding: 0 rem2(24px) rem2(24px);
+}
+
+.dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 rem2(14px) rem2(14px);
+}
+
+.btn-container {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.position-btn {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+.relative-container {
+    width: 100%;
+    overflow: auto;
+    margin-top: 1rem;
+    height: rem2(400px);
+    position: relative;
+    border: rem2(2px) lightgreen solid;
+}

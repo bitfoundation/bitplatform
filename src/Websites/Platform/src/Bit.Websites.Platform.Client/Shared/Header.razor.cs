@@ -5,6 +5,7 @@ namespace Bit.Websites.Platform.Client.Shared;
 public partial class Header : IDisposable
 {
     private bool isDocsRoute;
+    private bool isLcncDocRoute;
     private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
     private bool isButilDocRoute;
@@ -39,9 +40,10 @@ public partial class Header : IDisposable
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
         isButilDocRoute = currentUrl.Contains("butil");
+        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
 
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute;
+        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
     }
 
     private void ToggleMenu()
@@ -51,23 +53,13 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        if (currentUrl.Contains("templates"))
-        {
-            return "Products & Services";
-        }
-        else return currentUrl switch
+        return currentUrl switch
         {
             Urls.HomePage => "Home",
-            Urls.BlazorUI => "Products & Services",
-            Urls.CloudHostingSolutions => "Products & Services",
-            Urls.Support => "Products & Services",
-            Urls.Academy => "Products & Services",
             Urls.Pricing => "Pricing",
             Urls.AboutUs => "About us",
             Urls.ContactUs => "Contact us",
-            Urls.Blogs => "Blogs",
-            Urls.Videos => "Videos",
-            _ => "Products & Services",
+            _ => "Products",
         };
     }
 

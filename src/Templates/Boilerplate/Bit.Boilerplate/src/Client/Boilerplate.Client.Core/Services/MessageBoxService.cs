@@ -1,12 +1,44 @@
 ﻿namespace Boilerplate.Client.Core.Services;
+
 public partial class MessageBoxService
 {
-    [AutoInject] private IPubSubService pubSubService = default!;
+    private bool isRunning = false;
+    private readonly ConcurrentQueue<MessageBoxData> queue = new();
 
-    public async Task Show(string message, string title = "")
+
+    [AutoInject] private readonly IPubSubService pubSubService = default!;
+
+
+    public Task<bool> Show(string message, string title = "")
     {
-        TaskCompletionSource<object?> tcs = new();
-        pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, (message, title, tcs));
-        await tcs.Task;
+        TaskCompletionSource<bool> tcs = new();
+
+        queue.Enqueue(new(message, title, tcs));
+
+        if (isRunning is false)
+        {
+            isRunning = true;
+            _ = ProcessQueue();
+        }
+
+        return tcs.Task;
+    }
+
+    private async Task ProcessQueue()
+    {
+        if (queue.IsEmpty)
+        {
+            isRunning = false;
+            return;
+        }
+
+        if (queue.TryDequeue(out var data))
+        {
+            pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, data);
+
+            await data.TaskCompletionSource.Task;
+        }
+
+        _ = ProcessQueue();
     }
 }

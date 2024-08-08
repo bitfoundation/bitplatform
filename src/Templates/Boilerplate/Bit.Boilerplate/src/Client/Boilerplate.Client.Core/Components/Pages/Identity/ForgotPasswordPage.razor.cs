@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -32,7 +32,7 @@ public partial class ForgotPasswordPage
             {
                 queryParams.Add("phoneNumber", model.PhoneNumber);
             }
-            var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters("reset-password", queryParams);
+            var resetPasswordUrl = NavigationManager.GetUriWithQueryParameters(Urls.ResetPasswordPage, queryParams);
             NavigationManager.NavigateTo(resetPasswordUrl);
         }
         catch (KnownException e)

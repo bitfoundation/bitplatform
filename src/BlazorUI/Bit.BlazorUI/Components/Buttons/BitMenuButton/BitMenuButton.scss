@@ -2,163 +2,25 @@
 
 .bit-mnb {
     display: flex;
+    overflow: hidden;
     width: fit-content;
     position: relative;
     outline: transparent;
-    min-height: spacing(4);
     box-sizing: border-box;
-    font-size: spacing(1.75);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
+    --bit-mnb-cal-opa: 0;
+    --bit-mnb-cal-tra: translateY(#{spacing(-1.25)});
 
-    &.bit-dis,
-    .bit-mnb-opb.bit-dis {
+    &.bit-dis {
         cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-        color: $color-foreground-disabled;
-
-        .bit-mnb-spb {
-            background-color: $color-foreground-disabled;
-        }
+        --bit-mnb-clr-spb: #{$clr-fg-dis};
     }
-}
-
-.bit-mnb-pri {
-    color: $color-primary-text;
-    border-color: $color-primary-main;
-    background-color: $color-primary-main;
-
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: $color-primary-main;
-        background-color: $color-primary-main;
-
-        @media (hover: hover) {
-            &:hover {
-                border-color: $color-action-hover-primary;
-                background-color: $color-action-hover-primary;
-            }
-        }
-
-        &:active {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
-    }
-
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            border-color: $color-action-active-primary;
-            background-color: $color-action-active-primary;
-        }
-    }
-
-    .bit-mnb-spb {
-        background-color: $color-primary-text;
-    }
-
-    &.bit-dis,
-    &.bit-dis .bit-mnb-opb {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
-    }
-}
-
-.bit-mnb-std {
-    color: $color-secondary-text;
-    border-color: $color-border-primary;
-    background-color: $color-secondary-main;
-
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: $color-border-primary;
-        background-color: $color-secondary-main;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $color-action-hover-secondary;
-            }
-        }
-
-        &:active {
-            background-color: $color-action-active-secondary;
-        }
-    }
-
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            background-color: $color-action-active-secondary;
-        }
-    }
-
-    .bit-mnb-spb {
-        background-color: $color-secondary-text;
-    }
-
-    &.bit-dis,
-    &.bit-dis .bit-mnb-opb {
-        border-color: $color-border-disabled;
-    }
-}
-
-.bit-mnb-txt {
-    border-color: transparent;
-    color: $color-secondary-text;
-    background-color: $color-secondary-main;
-
-    .bit-mnb-opb,
-    .bit-mnb-chb {
-        border-color: transparent;
-        background-color: $color-secondary-main;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $color-action-hover-secondary;
-            }
-        }
-
-        &:active {
-            background-color: $color-action-active-secondary;
-        }
-    }
-
-    &.bit-mnb-omn {
-        .bit-mnb-chb {
-            background-color: $color-action-active-secondary;
-        }
-    }
-
-    .bit-mnb-spb {
-        background-color: $color-secondary-text;
-    }
-}
-
-.bit-mnb-cds {
-    border: none;
-    border-color: unset;
-    background-color: unset;
-
-    .bit-mnb-chb {
-        border-width: $shape-border-width;
-        border-style: $shape-border-style;
-        border-radius: $shape-border-radius;
-        border-left: none;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-
-    .bit-mnb-spb {
-        display: none;
-    }
-}
-
-.bit-mnb-spb {
-    margin: auto 0;
-    height: spacing(2);
-    width: spacing(0.125);
 }
 
 .bit-mnb-opb,
@@ -173,45 +35,61 @@
     box-sizing: border-box;
     justify-content: center;
     background-color: inherit;
+    padding: var(--bit-mnb-padding);
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-mnb-clr-txt);
+            background-color: var(--bit-mnb-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-mnb-clr-txt);
+        background-color: var(--bit-mnb-clr-active);
+    }
 }
 
 .bit-mnb-opb {
     flex-grow: 1;
-    padding: spacing(0.5) spacing(2);
+    color: var(--bit-mnb-clr-opb-txt);
+    background-color: var(--bit-mnb-clr-opb-bg);
 }
 
 .bit-mnb-chb {
     width: spacing(4);
     font-size: spacing(1.5);
+    color: var(--bit-mnb-clr-chb-txt);
+    background-color: var(--bit-mnb-clr-chb-bg);
 }
 
-.bit-mnb-cal {
-    opacity: 0;
-    display: none;
-    position: fixed;
-    overflow: hidden auto;
-    min-width: max-content;
-    box-sizing: border-box;
-    z-index: $zindex-callout;
-    box-shadow: $box-shadow-callout;
-    transition: opacity 100ms, transform 300ms;
-    background-color: $color-background-primary;
-    transform: translate3d(0, spacing(-1.25), 0);
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
-
-    ul {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        list-style-type: none;
-    }
+.bit-mnb-spb {
+    margin: auto 0;
+    height: spacing(2);
+    width: spacing(0.125);
+    background-color: var(--bit-mnb-clr-spb);
 }
 
 .bit-mnb-omn {
-    .bit-mnb-cal {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-    }
+    --bit-mnb-cal-opa: 1;
+    --bit-mnb-cal-tra: translateY(0);
+    --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
+    --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
+    --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt);
+    --bit-mnb-clr-chb-bg: var(--bit-mnb-clr-active);
+}
+
+.bit-mnb-nsp {
+    --bit-mnb-clr-opb-txt-nsp: var(--bit-mnb-clr-txt);
+    --bit-mnb-clr-opb-bg-nsp: var(--bit-mnb-clr-active);
+}
+
+.bit-mnb-btx {
+    flex-grow: 1;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+    text-overflow: ellipsis;
 }
 
 .bit-mnb-ovl {
@@ -225,12 +103,26 @@
     background-color: transparent;
 }
 
-.bit-mnb-btx {
-    flex-grow: 1;
-    white-space: nowrap;
-    display: inline-block;
-    vertical-align: middle;
-    text-overflow: ellipsis;
+.bit-mnb-cal {
+    display: none;
+    position: fixed;
+    overflow: hidden auto;
+    min-width: max-content;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    background-color: $clr-bg-pri;
+    opacity: var(--bit-mnb-cal-opa);
+    box-shadow: $box-shadow-callout;
+    transform: var(--bit-mnb-cal-tra);
+    transition: opacity 100ms, transform 300ms;
+    border-radius: 0 0 spacing(0.25) spacing(0.25);
+}
+
+.bit-mnb-cul {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    list-style-type: none;
 }
 
 .bit-mnb-itm {
@@ -240,34 +132,153 @@
     gap: spacing(1);
     cursor: pointer;
     text-align: start;
+    color: $clr-fg-pri;
     font-size: inherit;
     padding: spacing(1);
     align-items: center;
     line-height: inherit;
     background-color: transparent;
-    color: $color-foreground-primary;
 
-    .bit-icon {
-        color: $color-primary-main;
-    }
-
-    &.bit-dis {
+    &[disabled] {
         cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-        color: $color-foreground-disabled;
-
-        .bit-icon {
-            color: $color-foreground-disabled;
-        }
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: $color-action-hover-secondary;
+            color: var(--bit-mnb-clr-txt);
+            background-color: var(--bit-mnb-clr-hover);
         }
     }
 
     &:active {
-        background-color: $color-action-active-secondary;
+        color: var(--bit-mnb-clr-txt);
+        background-color: var(--bit-mnb-clr-active);
     }
+}
+
+.bit-mnb-iic {
+    color: inherit;
+}
+
+.bit-mnb-fil {
+    color: var(--bit-mnb-clr-txt);
+    border-color: var(--bit-mnb-clr);
+    background-color: var(--bit-mnb-clr);
+    --bit-mnb-clr-spb: var(--bit-mnb-clr-txt);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-mnb-clr-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-mnb-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+.bit-mnb-otl {
+    color: var(--bit-mnb-clr);
+    border-color: var(--bit-mnb-clr);
+    background-color: transparent;
+    --bit-mnb-clr-spb: var(--bit-mnb-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-mnb-clr-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-mnb-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+    }
+}
+
+.bit-mnb-txt {
+    color: var(--bit-mnb-clr);
+    border-color: transparent;
+    background-color: transparent;
+    --bit-mnb-clr-spb: var(--bit-mnb-clr);
+}
+
+.bit-mnb-pri {
+    --bit-mnb-clr: #{$clr-pri};
+    --bit-mnb-clr-txt: #{$clr-pri-text};
+    --bit-mnb-clr-hover: #{$clr-pri-hover};
+    --bit-mnb-clr-active: #{$clr-pri-active};
+}
+
+.bit-mnb-sec {
+    --bit-mnb-clr: #{$clr-sec};
+    --bit-mnb-clr-txt: #{$clr-sec-text};
+    --bit-mnb-clr-hover: #{$clr-sec-hover};
+    --bit-mnb-clr-active: #{$clr-sec-active};
+}
+
+.bit-mnb-ter {
+    --bit-mnb-clr: #{$clr-ter};
+    --bit-mnb-clr-txt: #{$clr-ter-text};
+    --bit-mnb-clr-hover: #{$clr-ter-hover};
+    --bit-mnb-clr-active: #{$clr-ter-active};
+}
+
+.bit-mnb-inf {
+    --bit-mnb-clr: #{$clr-inf};
+    --bit-mnb-clr-txt: #{$clr-inf-text};
+    --bit-mnb-clr-hover: #{$clr-inf-hover};
+    --bit-mnb-clr-active: #{$clr-inf-active};
+}
+
+.bit-mnb-suc {
+    --bit-mnb-clr: #{$clr-suc};
+    --bit-mnb-clr-txt: #{$clr-suc-text};
+    --bit-mnb-clr-hover: #{$clr-suc-hover};
+    --bit-mnb-clr-active: #{$clr-suc-active};
+}
+
+.bit-mnb-wrn {
+    --bit-mnb-clr: #{$clr-wrn};
+    --bit-mnb-clr-txt: #{$clr-wrn-text};
+    --bit-mnb-clr-hover: #{$clr-wrn-hover};
+    --bit-mnb-clr-active: #{$clr-wrn-active};
+}
+
+.bit-mnb-swr {
+    --bit-mnb-clr: #{$clr-swr};
+    --bit-mnb-clr-txt: #{$clr-swr-text};
+    --bit-mnb-clr-hover: #{$clr-swr-hover};
+    --bit-mnb-clr-active: #{$clr-swr-active};
+}
+
+.bit-mnb-err {
+    --bit-mnb-clr: #{$clr-err};
+    --bit-mnb-clr-txt: #{$clr-err-text};
+    --bit-mnb-clr-hover: #{$clr-err-hover};
+    --bit-mnb-clr-active: #{$clr-err-active};
+}
+
+.bit-mnb-sm {
+    font-size: spacing(1.5);
+    --bit-mnb-padding: #{spacing(0.5)} #{spacing(1.0)};
+}
+
+.bit-mnb-md {
+    font-size: spacing(1.75);
+    --bit-mnb-padding: #{spacing(0.75)} #{spacing(1.5)};
+}
+
+.bit-mnb-lg {
+    font-size: spacing(2.0);
+    --bit-mnb-padding: #{spacing(1.0)} #{spacing(2.0)};
 }

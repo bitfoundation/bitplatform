@@ -1,0 +1,156 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    <div style="@Styles?.CoinContainer" class="bit-prs-cin @Classes?.CoinContainer" role="presentation">
+        @{
+            var presentationIcon = GetPresentationIcon();
+        }
+
+        @if (Size is BitPersonaSize.Size8)
+        {
+            if (Presence is BitPersonaPresence.None)
+            {
+                <i style="@Styles?.PresentationIcon" class="bit-prs-pic bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
+            }
+            else
+            {
+                <div style="@Styles?.Presentation" title="@PresenceTitle" class="bit-prs-pre @GetPresentationClass() @Classes?.Presentation"></div>
+            }
+        }
+        else
+        {
+
+            <div style="@GetImageContainerStyle()" class="@GetImageContainerClass()" @onclick="HandleImageClick">
+                @if (Unknown)
+                {
+                    <i style="@Styles?.UnknownIcon" class="bit-icon bit-icon--Help @Classes?.UnknownIcon" role="presentation" />
+                }
+                else if (ImageUrl.HasValue() || CoinTemplate is not null)
+                {
+                    if (OnImageClick.HasDelegate)
+                    {
+                        <div style="@GetImageOverlayStyle()" class="bit-prs-imo @Classes?.ImageOverlay">
+                            @if (ImageOverlayTemplate is not null)
+                            {
+                                @ImageOverlayTemplate
+                            }
+                            else
+                            {
+                                <span style="@Styles?.ImageOverlayText" class="@Classes?.ImageOverlayText">@ImageOverlayText</span>
+                            }
+                        </div>
+                    }
+
+                    if ((ShowInitialsUntilImageLoads && _isLoaded is false) || _hasError)
+                    {
+                        <span style="@Styles?.Initials" class="@Classes?.Initials">
+                            @GetInitials()
+                        </span>
+                    }
+
+                    if (CoinTemplate is not null)
+                    {
+                        @CoinTemplate
+                    }
+                    else if (ImageUrl.HasValue())
+                    {
+                        if (_hasError is false)
+                        {
+                            string dimension = GetPersonaImageDimension();
+
+                            <img src="@ImageUrl"
+                                 style="display:@(_isLoaded ? "unset": "none");@Styles?.Image"
+                                 class="bit-prs-img @Classes?.Image"
+                                 alt="@ImageAlt"
+                                 width="@dimension"
+                                 height="@dimension"
+                                 @onerror="HandleOnError"
+                                 @onload="HandleOnLoad" />
+                        }
+                    }
+                }
+                else
+                {
+                    @GetInitials()
+                }
+            </div>
+
+            @if (OnActionClick.HasDelegate)
+            {
+                @if (ActionTemplate is not null)
+                {
+                    @ActionTemplate
+                }
+                else
+                {
+                    <button @onclick="HandleActionClick" type="button" style="@Styles?.ActionButton" class="bit-prs-abt @Classes?.ActionButton" title="@ActionButtonTitle">
+                        <i style="@Styles?.ActionButtonIcon" class="bit-prs-aic bit-icon bit-icon--@ActionIconName @Classes?.ActionButtonIcon" />
+                    </button>
+                }
+            }
+            else if (Presence is not BitPersonaPresence.None)
+            {
+                <div title="@PresenceTitle" style="@GetPresentationStyle()" class="bit-prs-pre @GetPresentationClass() @Classes?.Presence">
+                    @if (presentationIcon.HasValue())
+                    {
+                        <i style="@Styles?.PresentationIcon" class="bit-icon bit-icon--@presentationIcon @Classes?.PresentationIcon" role="presentation" />
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    @if (HidePersonaDetails is false || Size is BitPersonaSize.Size8)
+    {
+        <div style="@Styles?.DetailsContainer" class="bit-prs-det @Classes?.DetailsContainer">
+            <div style="@Styles?.PrimaryTextContainer" class="bit-prs-ptx @Classes?.PrimaryTextContainer" title="@PrimaryText">
+                @if (PrimaryTextTemplate is not null)
+                {
+                    @PrimaryTextTemplate
+                }
+                else
+                {
+                    @PrimaryText
+                }
+            </div>
+            <div style="@Styles?.SecondaryTextContainer" class="bit-prs-stx @Classes?.SecondaryTextContainer" title="@SecondaryText">
+                @if (SecondaryTextTemplate is not null)
+                {
+                    @SecondaryTextTemplate
+                }
+                else
+                {
+                    @SecondaryText
+                }
+            </div>
+            <div style="@Styles?.TertiaryTextContainer" class="bit-prs-ttx @Classes?.TertiaryTextContainer" title="@TertiaryText">
+                @if (TertiaryTextTemplate is not null)
+                {
+                    @TertiaryTextTemplate
+                }
+                else
+                {
+                    @TertiaryText
+                }
+            </div>
+            <div style="@Styles?.OptionalTextContainer" class="bit-prs-otx @Classes?.OptionalTextContainer" title="@OptionalText">
+                @if (OptionalTextTemplate is not null)
+                {
+                    @OptionalTextTemplate
+                }
+                else
+                {
+                    @OptionalText
+                }
+            </div>
+        </div>
+    }
+
+</div>
+

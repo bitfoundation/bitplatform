@@ -4,7 +4,6 @@ using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 //#endif
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -29,16 +28,12 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
-        services.TryAddTransient<HtmlRenderer>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.TryAddTransient<MessageBoxService>();
+        services.TryAddSessioned<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
-
-        services.TryAddTransient(sp => AppJsonContext.Default.Options);
-        services.AddTypedHttpClients();
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
@@ -46,7 +41,12 @@ public static class IServiceCollectionExtensions
         //#if (offlineDb == true)
         services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
         {
-            var dirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Boilerplate");
+            var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
+            var dirPath = isRunningInsideDocker ? "/container_volume"
+                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
+                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+
+            dirPath = Path.Combine(dirPath, "App_Data");
 
             Directory.CreateDirectory(dirPath);
 
@@ -56,10 +56,12 @@ public static class IServiceCollectionExtensions
                 // .UseModel(OfflineDbContextModel.Instance)
                 .UseSqlite($"Data Source={dbPath}");
 
-            options.EnableSensitiveDataLogging(BuildConfiguration.IsDebug())
-                    .EnableDetailedErrors(BuildConfiguration.IsDebug());
+            options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
+                    .EnableDetailedErrors(AppEnvironment.IsDev());
         });
         //#endif
+
+        services.AddTypedHttpClients();
 
         services.AddSharedProjectServices();
         return services;
@@ -73,7 +75,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
+        if (AppPlatform.IsBlazorHybridOrBrowser)
         {
             return services.AddSingleton<TService, TImplementation>();
         }
@@ -90,7 +92,7 @@ public static class IServiceCollectionExtensions
         where TImplementation : class, TService
         where TService : class
     {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
+        if (AppPlatform.IsBlazorHybridOrBrowser)
         {
             services.TryAddSingleton<TService, TImplementation>();
         }
@@ -108,7 +110,7 @@ public static class IServiceCollectionExtensions
     public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
+        if (AppPlatform.IsBlazorHybridOrBrowser)
         {
             services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
         }
@@ -126,13 +128,13 @@ public static class IServiceCollectionExtensions
     public static void TryAddSessioned<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
         where TService : class
     {
-        if (AppRenderMode.IsBlazorHybrid || OperatingSystem.IsBrowser())
+        if (AppPlatform.IsBlazorHybridOrBrowser)
         {
-            services.TryAddSingleton(typeof(TService), typeof(TService));
+            services.TryAddSingleton<TService, TService>();
         }
         else
         {
-            services.TryAddScoped(typeof(TService), typeof(TService));
+            services.TryAddScoped<TService, TService>();
         }
     }
 }

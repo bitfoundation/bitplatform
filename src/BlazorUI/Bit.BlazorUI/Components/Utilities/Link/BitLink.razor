@@ -1,0 +1,44 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@if (Href.HasValue())
+{
+    if (Href!.StartsWith('#'))
+    {
+        <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="ScrollIntoView" @onclick:preventDefault
+           id="@_Id"
+           aria-label="@AriaLabel"
+           style="@StyleBuilder.Value"
+           class="@ClassBuilder.Value"
+           dir="@Dir?.ToString().ToLower()">
+            @ChildContent
+        </a>
+    }
+    else
+    {
+        <a @ref="RootElement" @attributes="HtmlAttributes"
+           id="@_Id"
+           aria-label="@AriaLabel"
+           style="@StyleBuilder.Value"
+           class="@ClassBuilder.Value"
+           dir="@Dir?.ToString().ToLower()"
+           href="@(IsEnabled ? Href : null)"
+           target="@(IsEnabled && Target.HasValue() ? Target : null)">
+            @ChildContent
+        </a>
+    }
+}
+else
+{
+    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
+            id="@_Id"
+            aria-label="@AriaLabel"
+            style="@StyleBuilder.Value"
+            class="@ClassBuilder.Value"
+            dir="@Dir?.ToString().ToLower()"
+            type="button"
+            disabled="@(IsEnabled is false)"
+            aria-disabled="@(IsEnabled is false)">
+        @ChildContent
+    </button>
+}

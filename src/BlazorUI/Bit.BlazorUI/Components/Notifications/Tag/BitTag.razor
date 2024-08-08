@@ -1,0 +1,40 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+     id="@_Id"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @if (IconName is not null)
+        {
+            <i style="@Styles?.Icon" class="bit-tag-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+        }
+
+        @if (Text is not null)
+        {
+            <span style="@Styles?.Text" class="bit-tag-tex @Classes?.Text">@Text</span>
+        }
+    }
+
+    @if (OnDismiss.HasDelegate)
+    {
+        <button @onclick="HandleOnDismissClick"
+                style="@Styles?.DismissButton"
+                class="bit-tag-cls @Classes?.DismissButton"
+                type="button"
+                title="Dismiss"
+                aria-label="Dismiss"
+                aria-hidden="Dismiss"
+                aria-describedby="Dismiss">
+            <i style="@Styles?.DismissIcon" class="bit-icon bit-icon--Cancel @Classes?.DismissIcon" />
+        </button>
+    }
+</div>

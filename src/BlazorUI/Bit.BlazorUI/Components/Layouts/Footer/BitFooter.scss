@@ -1,0 +1,31 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-ftr {
+    display: flex;
+    flex-shrink: 0;
+    z-index: $zindex-base;
+    color: $clr-fg-pri;
+    line-height: $tg-line-height;
+    font-weight: $tg-font-weight;
+    font-family: $tg-font-family;
+    background-color: $clr-bg-pri;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-ftr-gut {
+    width: 100%;
+    display: flex;
+    position: relative;
+    align-items: center;
+    margin: 0.5rem 1.5rem;
+}
+
+.bit-ftr-fix {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+}

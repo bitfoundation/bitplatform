@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -49,7 +49,7 @@ public partial class SignUpPage
             {
                 queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
             }
-            var confirmUrl = NavigationManager.GetUriWithQueryParameters("confirm", queryParams);
+            var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
             NavigationManager.NavigateTo(confirmUrl);
         }
         catch (KnownException e)
@@ -79,6 +79,11 @@ public partial class SignUpPage
         await SocialSignUp("GitHub");
     }
 
+    private async Task TwitterSignUp()
+    {
+        await SocialSignUp("Twitter");
+    }
+
     private async Task SocialSignUp(string provider)
     {
         if (isWaiting) return;
@@ -88,9 +93,9 @@ public partial class SignUpPage
 
         try
         {
-            var port = await localHttpServer.Start();
+            var port = localHttpServer.Start(CurrentCancellationToken);
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port, cancellationToken: CurrentCancellationToken);
 
             await externalNavigationService.NavigateToAsync(redirectUrl);
         }

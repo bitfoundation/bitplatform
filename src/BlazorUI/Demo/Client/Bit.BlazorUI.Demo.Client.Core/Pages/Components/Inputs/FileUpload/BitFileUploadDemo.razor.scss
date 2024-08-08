@@ -1,0 +1,139 @@
+﻿.browse-file {
+    gap: 50px;
+    width: 420px;
+    height: 200px;
+    padding: 24px;
+    display: flex;
+    cursor: pointer;
+    border-radius: 2px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid #D2D2D7;
+}
+
+.browse-file-header {
+    display: flex;
+    font-size: 16px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    i {
+        color: #0072CE;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    strong {
+        color: #0072CE;
+    }
+}
+
+.browse-file-footer {
+    display: flex;
+    color: #78787D;
+    font-size: 12px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.file-list {
+    width: 420px;
+    padding: 24px;
+    height: 200px;
+    display: flex;
+    border-radius: 2px;
+    flex-direction: column;
+    border: 1px solid #D2D2D7;
+    justify-content: space-between;
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.file-info-name {
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.file-info-title {
+    display: flex;
+    color: #5A5A5F;
+    line-height: 22px;
+    justify-content: space-between;
+}
+
+.file-info-subtitle {
+    color: #909096;
+}
+
+.file-info-ico {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    border-radius: 2px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #F3F3F8;
+    background-color: #F3F3F8;
+
+    i {
+        font-size: 24px;
+    }
+}
+
+.file-info-data {
+    width: 275px;
+}
+
+.file-info-btns {
+    gap: 8px;
+    display: flex;
+    justify-content: space-between;
+
+    i {
+        display: block;
+        cursor: pointer;
+    }
+
+    .upload-ico {
+        color: #0072CE;
+    }
+
+    .remove-ico {
+        color: #F9423A;
+    }
+}
+
+.file-info-progressbar-container {
+    width: 100%;
+    height: 2px;
+    overflow: hidden;
+    margin-top: 24px;
+    background-color: #D9D9D9;
+}
+
+.file-info-progressbar {
+    height: 2px;
+    background-color: #0072CE;
+    transition: width 0.15s linear 0s;
+}
+
+.file-info-s-msg {
+    color: #5EB227;
+    margin-top: 12px;
+}
+
+.file-info-e-msg {
+    color: #F9423A;
+    margin-top: 12px;
+}
+
+.file-list-footer {
+    color: #78787D;
+    font-size: 12px;
+}

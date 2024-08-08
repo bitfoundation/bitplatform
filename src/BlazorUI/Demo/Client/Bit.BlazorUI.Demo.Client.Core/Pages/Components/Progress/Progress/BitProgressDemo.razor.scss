@@ -1,0 +1,24 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.2rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        background-color: darkred;
+    }
+
+    .custom-track {
+        background-color: #ff6a00;
+    }
+
+    .custom-bar {
+        background-color: #ff2700;
+    }
+
+    .custom-circle-track {
+        stroke: #ff6a00;
+    }
+
+    .custom-circle-bar {
+        stroke: #ff2700;
+    }
+}

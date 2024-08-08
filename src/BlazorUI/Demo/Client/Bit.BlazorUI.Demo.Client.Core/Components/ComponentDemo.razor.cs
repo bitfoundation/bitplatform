@@ -6,15 +6,15 @@ public partial class ComponentDemo
     [Parameter] public string? ComponentDescription { get; set; }
     [Parameter] public string? Notes { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = new();
-    [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = new();
-    [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = new();
-    [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = new();
+    [Parameter] public List<ComponentParameter> ComponentParameters { get; set; } = [];
+    [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = [];
+    [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = [];
+    [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = [];
 
 
 
-    private readonly List<ComponentParameter> _componentBaseParameters = new()
-    {
+    private readonly List<ComponentParameter> _componentBaseParameters =
+    [
         new()
         {
             Name = "AriaLabel",
@@ -75,10 +75,10 @@ public partial class ComponentDemo
             LinkType = LinkType.Link,
             Href = "#component-visibility",
         },
-    };
+    ];
 
-    private readonly List<ComponentParameter> _componentBasePublicMembers = new()
-    {
+    private readonly List<ComponentParameter> _componentBasePublicMembers =
+    [
         new()
         {
             Name = "UniqueId",
@@ -92,17 +92,17 @@ public partial class ComponentDemo
             Type = "ElementReference",
             Description = "The ElementReference of the root element.",
         },
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> _componentBaseSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> _componentBaseSubEnums =
+    [
         new()
         {
             Id = "component-visibility",
             Name = "BitVisibility",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Visible",
@@ -121,15 +121,15 @@ public partial class ComponentDemo
                     Value="2",
                     Description="The component is hidden (display:none).",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "component-dir",
             Name = "BitDir",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Ltr",
@@ -148,18 +148,19 @@ public partial class ComponentDemo
                     Value="2",
                     Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 
-    private readonly List<string> _inputComponents = new() {
+    private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
         "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
-    };
-    private readonly List<ComponentParameter> _inputBaseParameters = new()
-    {
+    ];
+
+    private readonly List<ComponentParameter> _inputBaseParameters =
+    [
         new()
         {
             Name = "DisplayName",
@@ -176,11 +177,95 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "Name",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the name of the element. Allows access by name from the associated form.",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<TValue?>",
+            DefaultValue = "",
+            Description = "Callback for when the input value changes.",
+        },
+        new()
+        {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input read-only.",
+        },
+        new()
+        {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the input required.",
+        },
+        new()
+        {
             Name = "Value",
             Type = "TValue?",
             DefaultValue = "null",
             Description = "Gets or sets the value of the input. This should be used with two-way binding.",
         },
-    };
+    ];
 
+    private readonly List<ComponentParameter> _inputBasePublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference of the input element.",
+        },
+        new()
+        {
+            Name = "FocusAsync()",
+            Type = "() => ValueTask",
+            Description = "Gives focus to the input element.",
+        },
+        new()
+        {
+            Name = "FocusAsync(bool preventScroll)",
+            Type = "(bool preventScroll) => ValueTask",
+            Description = "Gives focus to the input element.",
+        },
+    ];
+
+
+
+    private readonly List<string> _textInputComponents = [
+        "NumberField", "TextField"
+    ];
+
+    private readonly List<ComponentParameter> _textInputBaseParameters =
+    [
+        new()
+        {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The debounce time in milliseconds.",
+        },
+        new()
+        {
+            Name = "Immediate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Change the content of the input field when the user write text (based on 'oninput' HTML event).",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The throttle time in milliseconds.",
+        },
+    ];
+
+
+
+    private readonly List<string> _extraComponents = ["DataGrid", "Chart"];
 }

@@ -1,0 +1,593 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<DateTimeOffset?>
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId" for="@_inputId">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label style="@Styles?.Label" class="bit-dtp-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+            @Label
+        </label>
+    }
+
+    <div style="@Styles?.InputWrapper" class="bit-dtp-wrp @Classes?.InputWrapper" id="@_datePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+        <div style="@Styles?.InputContainer" class="bit-dtp-icn @Classes?.InputContainer">
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
+                   @onfocus="@HandleOnFocus"
+                   @oninput="@HandleOnChange"
+                   @onfocusin="@HandleOnFocusIn"
+                   @onfocusout="@HandleOnFocusOut"
+                   type="text"
+                   name="@Name"
+                   id="@_inputId"
+                   role="combobox"
+                   tabindex="@TabIndex"
+                   aria-haspopup="dialog"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   value="@CurrentValueAsString"
+                   disabled=@(IsEnabled is false)
+                   readonly=@(AllowTextInput is false)
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-controls="@(IsOpen ? _calloutId : null)"
+                   aria-labelledby="@((LabelTemplate is not null || Label.HasValue()) ? _labelId : null)"
+                   style="@Styles?.Input"
+                   class="bit-dtp-inp@(AllowTextInput ? " bit-dtp-ein" : null) @Classes?.Input" />
+
+            @if (IsEnabled && ShowClearButton && CurrentValue.HasValue)
+            {
+                <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
+                        style="@Styles?.ClearButton"
+                        class="bit-dtp-clr @Classes?.ClearButton"
+                        type="button"
+                        aria-hidden="true"
+                        aria-label="Clear date"
+                        disabled="@(CurrentValue.HasValue is false)">
+                    <i style="@Styles?.ClearButtonIcon" class="bit-icon bit-icon--Cancel @Classes?.ClearButtonIcon" aria-hidden="true" />
+                </button>
+            }
+
+            @if (IconTemplate is not null)
+            {
+                @IconTemplate
+            }
+            else
+            {
+                <i style="@Styles?.Icon" class="bit-dtp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+            }
+        </div>
+    </div>
+
+    <div @onclick="CloseCallout"
+         style="display:@(IsOpen ? "block;" : "none;") @Styles?.Overlay"
+         class="bit-dtp-ovl @Classes?.Overlay"></div>
+
+    <div style="@Styles?.Callout" class="bit-dtp-cal @Classes?.Callout" id="@_calloutId">
+        <div style="@Styles?.CalloutContainer" class="bit-dtp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+            <div style="@Styles?.Group" class="bit-dtp-grp @Classes?.Group" role="group" aria-label="">
+                <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">
+                    @(string.Format(SelectedDateAriaAtomic, CurrentValueAsString))
+                </div>
+
+                @{
+                    var todayYear = _culture.Calendar.GetYear(DateTime.Now);
+                    var todayMonth = _culture.Calendar.GetMonth(DateTime.Now);
+                    var todayDay = _culture.Calendar.GetDayOfMonth(DateTime.Now);
+                    var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
+                }
+
+                @if (ShowDayPicker())
+                {
+                    <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
+                        <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
+                            @if (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false))
+                            {
+                                var title = string.Format(MonthPickerToggleTitle, _monthTitle);
+                                <button @onclick="@ToggleMonthPickerOverlay"
+                                        tabindex="0"
+                                        type="button"
+                                        title="@title"
+                                        aria-live="polite"
+                                        aria-atomic="true"
+                                        aria-label="@title"
+                                        style="@Styles?.DayPickerMonth"
+                                        class="bit-dtp-ptb @Classes?.DayPickerMonth">
+                                    @_monthTitle
+                                </button>
+                            }
+                            else
+                            {
+                                <div style="@Styles?.DayPickerMonth"
+                                     class="bit-dtp-pkt @Classes?.DayPickerMonth"
+                                     aria-live="polite"
+                                     aria-atomic="true"
+                                     tabindex="-1">
+                                    @_monthTitle
+                                </div>
+                            }
+                            @{
+                                var prevDisabled = CanChangeMonth(false) is false;
+                                var nextDisabled = CanChangeMonth(true) is false;
+                            }
+                            <div style="@Styles?.DayPickerNavWrapper" class="bit-dtp-nbc @Classes?.DayPickerNavWrapper">
+                                <button @onclick="() => HandleMonthChange(false)"
+                                        type="button"
+                                        style="@Styles?.PrevMonthNavButton"
+                                        class="bit-dtp-nbt @Classes?.PrevMonthNavButton"
+                                        title="@GoToPrevMonthTitle"
+                                        disabled="@prevDisabled"
+                                        aria-disabled="@prevDisabled">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.PrevMonthNavIcon"
+                                       class="bit-icon bit-icon--Up @Classes?.PrevMonthNavIcon" />
+                                </button>
+                                @if (ShowGoToToday && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
+                                {
+                                    <button @onclick="HandleGoToToday"
+                                            type="button"
+                                            style="@Styles?.GoToTodayButton"
+                                            class="bit-dtp-gtb @Classes?.GoToTodayButton"
+                                            title="@GoToTodayTitle"
+                                            disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.GoToTodayIcon"
+                                           class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                    </button>
+                                }
+                                <button @onclick="() => HandleMonthChange(true)"
+                                        type="button"
+                                        style="@Styles?.NextMonthNavButton"
+                                        class="bit-dtp-nbt @Classes?.NextMonthNavButton"
+                                        title="@GoToNextMonthTitle"
+                                        disabled="@nextDisabled"
+                                        aria-disabled="@nextDisabled">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.NextMonthNavIcon"
+                                       class="bit-icon bit-icon--Down @Classes?.NextMonthNavIcon" />
+                                </button>
+                                @if (ShowCloseButton)
+                                {
+                                    <button @onclick="CloseCallout"
+                                            type="button"
+                                            style="@Styles?.CloseButton"
+                                            class="bit-dtp-nbt @Classes?.CloseButton"
+                                            title="@CloseDatePickerTitle"
+                                            aria-label="@CloseDatePickerTitle">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.CloseButtonIcon"
+                                           class="bit-icon bit-icon--Cancel @Classes?.CloseButtonIcon" />
+                                    </button>
+                                }
+                                @if (_showMonthPickerAsOverlayInternal && _showTimePickerAsOverlayInternal && ShowTimePicker)
+                                {
+                                    <button @onclick="@ToggleTimePickerOverlay"
+                                            tabindex="0"
+                                            type="button"
+                                            aria-live="polite"
+                                            aria-atomic="true"
+                                            title="@ShowTimePickerTitle"
+                                            aria-label="@ShowTimePickerTitle"
+                                            style="@Styles?.ShowTimePickerButton"
+                                            class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.ShowTimePickerIcon"
+                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div style="@Styles?.DaysHeaderRow" class="bit-dtp-dgh @Classes?.DaysHeaderRow">
+                            @if (ShowWeekNumbers)
+                            {
+                                <div style="@Styles?.WeekNumbersHeader" class="bit-dtp-wlb @Classes?.WeekNumbersHeader"></div>
+                            }
+
+                            @for (var index = 0; index < 7; index++)
+                            {
+                                var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                                <div scope="col"
+                                     title="@dayOfWeekName"
+                                     style="@Styles?.WeekNumbersHeader"
+                                     class="bit-dtp-wlb @Classes?.WeekNumbersHeader">
+                                    @dayOfWeekName[0]
+                                </div>
+                            }
+                        </div>
+
+                        @for (var week = 0; week < 6; week++)
+                        {
+                            //to ignore the last empty week out of month || to ignore the first whole week out of month
+                            if (_daysOfCurrentMonth[week, 0] == 0 || (week == 0 && _daysOfCurrentMonth[week, 6] > 20)) continue;
+
+                            <div style="@Styles?.DaysRow" class="bit-dtp-dgr @Classes?.DaysRow">
+                                @if (ShowWeekNumbers)
+                                {
+                                    var weekNumber = GetWeekNumber(week);
+                                    var title = string.Format(WeekNumberTitle, weekNumber);
+                                    <div style="@Styles?.WeekNumber"
+                                         scope="row"
+                                         title="@title"
+                                         aria-label="@title"
+                                         class="bit-dtp-wnm @Classes?.WeekNumber">
+                                        @weekNumber
+                                    </div>
+                                }
+
+                                @for (var day = 0; day < 7; day++)
+                                {
+                                    var w = week;
+                                    var d = day;
+                                    var disabled = IsWeekDayOutOfMinAndMaxDate(d, w);
+                                    var (style, klass) = GetDayButtonCss(d, w, todayYear, todayMonth, todayDay);
+                                    <button @onclick="() => SelectDate(d, w)"
+                                            type="button"
+                                            role="gridcell"
+                                            aria-readonly="true"
+                                            disabled="@disabled"
+                                            aria-disabled="@disabled"
+                                            style="@style @Styles?.DayButton"
+                                            class="bit-dtp-dbt@(klass) @Classes?.DayButton"
+                                            tabindex="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? 0 : -1)"
+                                            aria-selected="@(week == _selectedDateWeek && day == _selectedDateDayOfWeek ? "true" : "false")">
+                                        @if (DayCellTemplate is not null)
+                                        {
+                                            @DayCellTemplate(GetDateTimeOfDayCell(d, w))
+                                        }
+                                        else
+                                        {
+                                            @_daysOfCurrentMonth[w, d]
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (ShowMonthPicker())
+                {
+                    @if (_showMonthPickerAsOverlayInternal is false)
+                    {
+                        <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
+                    }
+
+                    <div style="@Styles?.YearMonthPickerWrapper" class="bit-dtp-mwp @Classes?.YearMonthPickerWrapper">
+                        @if (_showMonthPicker)
+                        {
+                            var prevDisabled = CanChangeYear(false) is false;
+                            var nextDisabled = CanChangeYear(true) is false;
+                            var toggleTitle = string.Format(YearPickerToggleTitle, _currentYear);
+                            var prevTitle = string.Format(GoToPrevYearTitle, _currentYear - 1);
+                            var nextTitle = string.Format(GoToNextYearTitle, _currentYear + 1);
+                            <div style="@Styles?.MonthPickerHeader" class="bit-dtp-pkh @Classes?.MonthPickerHeader">
+                                <button @onclick="ToggleBetweenMonthAndYearPicker"
+                                        tabindex="0"
+                                        type="button"
+                                        aria-atomic="true"
+                                        aria-live="polite"
+                                        title="@toggleTitle"
+                                        aria-label="@toggleTitle"
+                                        style="@Styles?.YearPickerToggleButton"
+                                        class="bit-dtp-ptb @Classes?.YearPickerToggleButton">
+                                    @_currentYear
+                                </button>
+                                <div style="@Styles?.MonthPickerNavWrapper" class="bit-dtp-nbc @Classes?.MonthPickerNavWrapper">
+                                    <button @onclick="() => HandleYearChange(false)"
+                                            type="button"
+                                            title="@prevTitle"
+                                            aria-label="@prevTitle"
+                                            disabled="@prevDisabled"
+                                            aria-disabled="@prevDisabled"
+                                            style="@Styles?.PrevYearNavButton"
+                                            class="bit-dtp-nbt @Classes?.PrevYearNavButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.PrevYearNavIcon"
+                                           class="bit-icon bit-icon--Up @Classes?.PrevYearNavIcon" />
+                                    </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleGoToToday"
+                                                type="button"
+                                                title="@GoToTodayTitle"
+                                                aria-label="@GoToTodayTitle"
+                                                style="@Styles?.GoToTodayButton"
+                                                class="bit-dtp-gtb @Classes?.GoToTodayButton"
+                                                disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth)">
+                                            <i aria-hidden="true"
+                                               style="@Styles?.GoToTodayIcon"
+                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                        </button>
+                                    }
+                                    <button @onclick="() => HandleYearChange(true)"
+                                            type="button"
+                                            title="@nextTitle"
+                                            aria-label="@nextTitle"
+                                            disabled="@nextDisabled"
+                                            aria-disabled="@nextDisabled"
+                                            style="@Styles?.NextYearNavButton"
+                                            class="bit-dtp-nbt @Classes?.NextYearNavButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.NextYearNavIcon"
+                                           class="bit-icon bit-icon--Down @Classes?.NextYearNavIcon" />
+                                    </button>
+                                    @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
+                                    {
+                                        <button @onclick="@ToggleTimePickerOverlay"
+                                                tabindex="0"
+                                                type="button"
+                                                aria-live="polite"
+                                                aria-atomic="true"
+                                                title="@ShowTimePickerTitle"
+                                                aria-label="@ShowTimePickerTitle"
+                                                style="@Styles?.ShowTimePickerButton"
+                                                class="bit-dtp-nbt @Classes?.ShowTimePickerButton">
+                                            <i aria-hidden="true"
+                                               style="@Styles?.ShowTimePickerIcon"
+                                               class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.ShowTimePickerIcon" />
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_currentYear">
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div style="@Styles?.MonthsRow" class="bit-dtp-pkr @Classes?.MonthsRow" role="row">
+                                        @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
+                                        {
+                                            var month = (rowIndex * 4) + cellIndex;
+                                            var monthName = _culture.DateTimeFormat.GetMonthName(month);
+                                            var disabled = IsMonthOutOfMinAndMaxDate(month);
+                                            var selected = month == _currentMonth;
+                                            <button @onclick="() => SelectMonth(month)"
+                                                    type="button"
+                                                    role="gridcell"
+                                                    title="@monthName"
+                                                    aria-readonly="true"
+                                                    aria-label="@monthName"
+                                                    disabled="@disabled"
+                                                    aria-disabled="@disabled"
+                                                    tabindex="@(selected ? 0 : -1)"
+                                                    aria-selected="@(selected ? "true" : "false")"
+                                                    style="@Styles?.MonthButton"
+                                                    class="bit-dtp-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
+                                                @if (MonthCellTemplate is not null)
+                                                {
+                                                    @MonthCellTemplate(GetDateTimeOfMonthCell(month))
+                                                }
+                                                else
+                                                {
+                                                    @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                }
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            var prevDisabled = CanChangeYearRange(false) is false;
+                            var nextDisabled = CanChangeYearRange(true) is false;
+                            var toggleTitle = string.Format(YearRangePickerToggleTitle, _yearPickerStartYear, _yearPickerEndYear);
+                            var prevTitle = string.Format(GoToPrevYearRangeTitle, _yearPickerStartYear - 12, _yearPickerStartYear - 1);
+                            var nextTitle = string.Format(GoToNextYearRangeTitle, _yearPickerStartYear + 12, _yearPickerEndYear + 12);
+                            <div style="@Styles?.YearPickerHeader" class="bit-dtp-pkh @Classes?.YearPickerHeader">
+                                <button @onclick="ToggleBetweenMonthAndYearPicker"
+                                        type="button"
+                                        aria-atomic="true"
+                                        aria-live="polite"
+                                        title="@toggleTitle"
+                                        aria-label="@toggleTitle"
+                                        style="@Styles?.MonthPickerToggleButton"
+                                        class="bit-dtp-ptb @Classes?.MonthPickerToggleButton">
+                                    @_yearPickerStartYear - @_yearPickerEndYear
+                                </button>
+                                <div style="@Styles?.YearPickerNavWrapper" class="bit-dtp-nbc @Classes?.YearPickerNavWrapper">
+                                    <button @onclick="() => HandleYearRangeChange(false)"
+                                            type="button"
+                                            title="@prevTitle"
+                                            aria-label="@prevTitle"
+                                            disabled="@prevDisabled"
+                                            aria-disabled="@prevDisabled"
+                                            style="@Styles?.PrevYearRangeNavButton"
+                                            class="bit-dtp-nbt @Classes?.PrevYearRangeNavButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.PrevYearRangeNavIcon"
+                                           class="bit-icon bit-icon--Up @Classes?.PrevYearRangeNavIcon" />
+                                    </button>
+                                    @if (ShowGoToToday)
+                                    {
+                                        <button @onclick="HandleGoToToday"
+                                                type="button"
+                                                title="@GoToTodayTitle"
+                                                aria-label="@GoToTodayTitle"
+                                                style="@Styles?.GoToTodayButton"
+                                                class="bit-dtp-gtb @Classes?.GoToTodayButton"
+                                                disabled="@IsGoToTodayButtonDisabled(todayYear, todayMonth, true)">
+                                            <i aria-hidden="true"
+                                               style="@Styles?.GoToTodayIcon"
+                                               class="bit-dtp-gti bit-icon bit-icon--GotoToday @Classes?.GoToTodayIcon" />
+                                        </button>
+                                    }
+                                    <button @onclick="() => HandleYearRangeChange(true)"
+                                            type="button"
+                                            title="@nextTitle"
+                                            aria-label="@nextTitle"
+                                            disabled="@nextDisabled"
+                                            aria-disabled="@nextDisabled"
+                                            style="@Styles?.NextYearRangeNavButton"
+                                            class="bit-dtp-nbt @Classes?.NextYearRangeNavButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.NextYearRangeNavIcon"
+                                           class="bit-icon bit-icon--Down @Classes?.NextYearRangeNavIcon" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="@Styles?.YearsContainer" class="bit-dtp-pkc @Classes?.YearsContainer" role="grid" aria-label="@_yearPickerStartYear - @_yearPickerEndYear">
+                                @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                                {
+                                    <div style="@Styles?.YearsRow" class="bit-dtp-pkr @Classes?.YearsRow" role="row">
+                                        @for (var cellIndex = 0; cellIndex <= 3; cellIndex++)
+                                        {
+                                            var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
+                                            var disabled = IsYearOutOfMinAndMaxDate(year);
+                                            var selected = year == _currentYear;
+                                            <button @onclick="() => SelectYear(year)"
+                                                    type="button"
+                                                    role="gridcell"
+                                                    disabled="@disabled"
+                                                    tabindex="@(selected ? 0 : -1)"
+                                                    aria-readonly="true"
+                                                    aria-disabled="@disabled"
+                                                    aria-selected="@(selected ? "true" : "false")"
+                                                    style="@Styles?.YearButton"
+                                                    class="bit-dtp-pkb @Classes?.YearButton">
+                                                @if (YearCellTemplate is not null)
+                                                {
+                                                    @YearCellTemplate(year)
+                                                }
+                                                else
+                                                {
+                                                    @year
+                                                }
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (showTimePicker)
+                {
+                    @if (_showTimePickerAsOverlayInternal is false || _showMonthPickerAsOverlayInternal is false)
+                    {
+                        <div style="@Styles?.Divider" class="bit-dtp-dvd @Classes?.Divider"></div>
+                    }
+
+                    <div style="@Styles?.TimePickerWrapper" class="bit-dtp-twp @Classes?.TimePickerWrapper">
+                        <div style="@Styles?.TimePickerHeader" class="bit-dtp-pkh bit-dtp-tph @Classes?.TimePickerHeader">
+                            <div style="@Styles?.TimePickerNavWrapper" class="bit-dtp-nbc @Classes?.TimePickerNavWrapper">
+                                @if (ShowGoToNow)
+                                {
+                                    <button @onclick="HandleGoToNow"
+                                            type="button"
+                                            title="@GoToNowTitle"
+                                            aria-label="@GoToNowTitle"
+                                            style="@Styles?.GoToNowButton"
+                                            class="bit-dtp-gtn @Classes?.GoToNowButton">
+                                        <i aria-hidden="true"
+                                           style="@Styles?.GoToNowIcon"
+                                           class="bit-dtp-gti bit-icon bit-icon--Clock @Classes?.GoToNowIcon" />
+                                    </button>
+                                }
+                                @if (_isTimePickerOverlayOnTop)
+                                {
+                                    <button @onclick="ToggleTimePickerOverlay"
+                                            type="button"
+                                            style="@Styles?.HideTimePickerButton"
+                                            class="bit-dtp-nbt @Classes?.HideTimePickerButton"
+                                            title="@HideTimePickerTitle">
+                                        <i style="@Styles?.HideTimePickerIcon" class="bit-icon bit-icon--CalendarMirrored @Classes?.HideTimePickerIcon" aria-hidden="true" />
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div style="@Styles?.TimeInputContainer" class="bit-dtp-tic @Classes?.TimeInputContainer">
+                            <div style="@Styles?.HourInputContainer" class="bit-dtp-tpr @Classes?.HourInputContainer">
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(true, true)"
+                                        type="button"
+                                        style="@Styles?.TimePickerIncreaseHourButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerIncreaseHourButton">
+                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
+                                </button>
+                                <input @ref="_inputTimeHourRef"
+                                       @bind="@_hourView"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeHourFocus"
+                                       min="0"
+                                       max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
+                                       type="number"
+                                       inputmode="numeric"
+                                       style="@Styles?.TimePickerHourInput"
+                                       class="bit-dtp-tin @Classes?.TimePickerHourInput"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(false, true)"
+                                        type="button"
+                                        style="@Styles?.TimePickerDecreaseHourButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerDecreaseHourButton">
+                                    <i style="@Styles?.TimePickerDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseHourIcon" aria-hidden="true" />
+                                </button>
+                            </div>
+                            <div style="@Styles?.TimePickerHourMinuteSeparator" class="bit-dtp-tpr bit-dtp-tdv @Classes?.TimePickerHourMinuteSeparator">:</div>
+                            <div style="@Styles?.MinuteInputContainer" class="bit-dtp-tpr @Classes?.MinuteInputContainer">
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(true, false)"
+                                        type="button"
+                                        style="@Styles?.TimePickerIncreaseMinuteButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerIncreaseMinuteButton">
+                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
+                                </button>
+                                <input @ref="_inputTimeMinuteRef"
+                                       @bind="@_minuteView"
+                                       @bind:event="oninput"
+                                       @onfocus="HandleOnTimeMinuteFocus"
+                                       min="0"
+                                       max="59"
+                                       type="number"
+                                       inputmode="numeric"
+                                       style="@Styles?.TimePickerMinuteInput"
+                                       class="bit-dtp-tin @Classes?.TimePickerMinuteInput"
+                                       autocomplete="@BitAutoCompleteValue.NewPassword" />
+                                <button @onpointerup="HandleOnPointerUpOrOut"
+                                        @onpointerout="HandleOnPointerUpOrOut"
+                                        @onpointerdown="() => HandleOnPointerDown(false, false)"
+                                        type="button"
+                                        style="@Styles?.TimePickerDecreaseMinuteButton"
+                                        class="bit-dtp-tbt @Classes?.TimePickerDecreaseMinuteButton">
+                                    <i style="@Styles?.TimePickerDecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseMinuteIcon" aria-hidden="true" />
+                                </button>
+                            </div>
+
+                            @if (TimeFormat == BitTimeFormat.TwelveHours)
+                            {
+                                <div style="@Styles?.TimePickerAmPmContainer" class="bit-dtp-tpr bit-dtp-am-pm @Classes?.TimePickerAmPmContainer">
+                                    <button @onclick="HandleOnAmClick"
+                                            type="button"
+                                            style="@Styles?.TimePickerAmButton"
+                                            class="bit-dtp-tbt bit-dtp-bam @(IsAm() is true ? "bit-dtp-bns" : string.Empty) @Classes?.TimePickerAmButton">
+                                        @_culture.DateTimeFormat.AMDesignator
+                                    </button>
+
+                                    <button @onclick="HandleOnPmClick"
+                                            type="button"
+                                            style="@Styles?.TimePickerPmButton"
+                                            class="bit-dtp-tbt bit-dtp-bpm @(IsAm() is false ? "bit-dtp-bns" : string.Empty) @Classes?.TimePickerPmButton">
+                                        @_culture.DateTimeFormat.PMDesignator
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

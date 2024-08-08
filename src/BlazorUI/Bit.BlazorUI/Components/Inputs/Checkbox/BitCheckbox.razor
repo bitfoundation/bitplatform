@@ -19,9 +19,9 @@
         {
             <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
                 <i aria-hidden="true"
-                   aria-label="@CheckmarkIconAriaLabel"
+                   aria-label="@CheckIconAriaLabel"
                    style="@Styles?.Icon"
-                   class="bit-icon bit-icon--@CheckmarkIconName @Classes?.Icon" />
+                   class="bit-chb-ico bit-icon bit-icon--@CheckIconName @Classes?.Icon" />
             </div>
 
             @if (LabelTemplate is not null)
@@ -37,8 +37,9 @@
         }
     </label>
 
-    <input @ref="_checkboxElement" @attributes="InputHtmlAttributes" @onclick="@HandleCheckboxClick"
-           hidden 
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           @onclick="@HandleOnCheckboxClick"
+           hidden
            name="@Name"
            id="@_inputId"
            type="checkbox"

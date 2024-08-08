@@ -1,0 +1,48 @@
+﻿@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-title {
+    @include SectionCardTitle;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
+.high-light-text {
+    @include HighLightText;
+}
+
+.bold-txt {
+    font-weight: bold;
+}
+
+.row-section-container{
+    display:flex;
+}
+
+.image {
+    @include Image;
+    width: rem2(300px);
+}
+
+::deep a {
+    color: $bit-color-primary;
+}

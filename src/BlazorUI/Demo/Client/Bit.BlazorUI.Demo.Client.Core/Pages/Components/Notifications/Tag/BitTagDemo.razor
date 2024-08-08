@@ -1,0 +1,143 @@
+﻿@page "/components/tag"
+
+<PageOutlet Url="components/tag"
+            Title="Tag"
+            Description="Tag component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Tag"
+               ComponentDescription="Tag component provides a visual representation of an attribute, person, or asset."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitTag Text="Basic tag" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>The tag offers three variants: Fill (default), Outline, and Text.</div>
+            <br />
+            <BitTag Text="Fill" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Outline" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Text" Variant="BitVariant.Text" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitTag Text="Calendar icon" IconName="@BitIconName.Calendar" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Dismiss" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            @if (isDismissed is false)
+            {
+                <BitTag IconName="@BitIconName.AlarmClock" Text="Dismiss me" OnDismiss="() => isDismissed = true" />
+            }
+            <br />
+            <br />
+            <BitButton IsEnabled="isDismissed" Variant="BitVariant.Outline" OnClick="() => isDismissed = false">
+                Dismissed, click to reset
+            </BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+            <br />
+            <BitTag Text="Primary" IconName="@BitIconName.Calendar" Color="BitColor.Primary" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Primary" IconName="@BitIconName.Calendar" Color="BitColor.Primary" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Primary" IconName="@BitIconName.Calendar" Color="BitColor.Primary" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Secondary" IconName="@BitIconName.Calendar" Color="BitColor.Secondary" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Secondary" IconName="@BitIconName.Calendar" Color="BitColor.Secondary" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Secondary" IconName="@BitIconName.Calendar" Color="BitColor.Secondary" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Tertiary" IconName="@BitIconName.Calendar" Color="BitColor.Tertiary" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Tertiary" IconName="@BitIconName.Calendar" Color="BitColor.Tertiary" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Tertiary" IconName="@BitIconName.Calendar" Color="BitColor.Tertiary" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Info" IconName="@BitIconName.Calendar" Color="BitColor.Info" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Info" IconName="@BitIconName.Calendar" Color="BitColor.Info" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Info" IconName="@BitIconName.Calendar" Color="BitColor.Info" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Success" IconName="@BitIconName.Calendar" Color="BitColor.Success" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Success" IconName="@BitIconName.Calendar" Color="BitColor.Success" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Success" IconName="@BitIconName.Calendar" Color="BitColor.Success" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Warning" IconName="@BitIconName.Calendar" Color="BitColor.Warning" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Warning" IconName="@BitIconName.Calendar" Color="BitColor.Warning" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Warning" IconName="@BitIconName.Calendar" Color="BitColor.Warning" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Color="BitColor.SevereWarning" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Color="BitColor.SevereWarning" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="SevereWarning" IconName="@BitIconName.Calendar" Color="BitColor.SevereWarning" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Error" IconName="@BitIconName.Calendar" Color="BitColor.Error" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Error" IconName="@BitIconName.Calendar" Color="BitColor.Error" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Error" IconName="@BitIconName.Calendar" Color="BitColor.Error" Variant="BitVariant.Text" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>Offering a range of specialized color variants, providing visual cues for specific actions or states within your application.</div>
+            <br />
+            <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Small" IconName="@BitIconName.Calendar" Size="BitSize.Small" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Medium" IconName="@BitIconName.Calendar" Size="BitSize.Medium" Variant="BitVariant.Text" />
+            <br /><br />
+            <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Fill" />&nbsp;
+            <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Outline" />&nbsp;
+            <BitTag Text="Large" IconName="@BitIconName.Calendar" Size="BitSize.Large" Variant="BitVariant.Text" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Template" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <BitTag>
+                <BitStack Horizontal Gap="0.5rem" Style="padding-inline: 0.5rem;">
+                    <BitLabel>Custom content</BitLabel>
+                    <BitRollerLoading CustomSize="32" Color="BitColor.Tertiary" />
+                </BitStack>
+            </BitTag>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+            <br />
+            <div>Component's Style & Class:</div>
+            <br />
+            <div>
+                <BitTag Text="Styled Tag"
+                        IconName="@BitIconName.People"
+                        Style="border-radius: 1rem; font-weight:bold" />&nbsp;
+                <BitTag Text="Classed Tag"
+                        IconName="@BitIconName.People"
+                        Class="custom-class" Variant="BitVariant.Outline" />
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <BitTag Text="Styles"
+                        IconName="@BitIconName.People"
+                        Styles="@(new() { Root = "border-color: darkblue; border-width: 0.25rem;",
+                                          Text = "color: darkblue; font-weight: 600;" })" />
+                &nbsp;
+                <BitTag Text="Classes"
+                        IconName="@BitIconName.People"
+                        Classes="@(new() { Root = "custom-root",
+                                           Icon = "custom-icon" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

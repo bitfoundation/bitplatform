@@ -1,0 +1,30 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+.container {
+    border: 1px solid gray;
+}
+
+.footer-content {
+    flex-grow: 1;
+    text-align: center;
+    font-size: rem2(12px);
+}
+
+.footer-social-lnk-grp {
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+.social-lnk {
+    width: rem2(32px);
+    height: rem2(32px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    svg path {
+        fill: dodgerblue;
+    }
+}

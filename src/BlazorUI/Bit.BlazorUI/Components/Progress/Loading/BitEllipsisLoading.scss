@@ -1,0 +1,66 @@
+.bit-ldn-elp {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-elp div {
+    position: absolute;
+    border-radius: 50%;
+    top: var(--bit-ldn-elp-33);
+    width: var(--bit-ldn-elp-13);
+    height: var(--bit-ldn-elp-13);
+    background: var(--bit-ldn-color);
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.bit-ldn-elp div:nth-child(1) {
+    left: var(--bit-ldn-elp-8);
+    animation: bit-ldn-elp-anm1 0.6s infinite;
+}
+
+.bit-ldn-elp div:nth-child(2) {
+    left: var(--bit-ldn-elp-8);
+    animation: bit-ldn-elp-anm2 0.6s infinite;
+}
+
+.bit-ldn-elp div:nth-child(3) {
+    left: var(--bit-ldn-elp-32);
+    animation: bit-ldn-elp-anm2 0.6s infinite;
+}
+
+.bit-ldn-elp div:nth-child(4) {
+    left: var(--bit-ldn-elp-56);
+    animation: bit-ldn-elp-anm3 0.6s infinite;
+}
+
+@keyframes bit-ldn-elp-anm1 {
+    0% {
+        transform: scale(0);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bit-ldn-elp-anm2 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(var(--bit-ldn-elp-24), 0);
+    }
+}
+
+@keyframes bit-ldn-elp-anm3 {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(0);
+    }
+}

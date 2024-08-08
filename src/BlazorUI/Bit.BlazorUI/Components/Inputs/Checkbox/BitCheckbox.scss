@@ -1,76 +1,58 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-chb {
+    cursor: pointer;
     width: fit-content;
-    font-family: $typography-font-family;
+    font-family: $tg-font-family;
+    --bit-chb-ico-opa: 0;
+    --bit-chb-ico-clr: #{$clr-fg-sec};
+    --bit-chb-box-clr-brd: #{$clr-brd-pri};
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-box {
-                .bit-icon {
-                    opacity: 1;
-                    color: $color-action-hover-foreground-secondary;
-                }
-            }
+            --bit-chb-ico-opa: 1;
+            --bit-chb-box-clr-bg: transparent;
+            --bit-chb-box-clr-brd: #{$clr-brd-pri};
         }
     }
 
     &.bit-inv {
-        .bit-chb-box {
-            border-color: $color-state-error;
-        }
+        --bit-chb-box-clr-brd: #{$clr-err};
 
         &.bit-chb-ckd {
-            .bit-chb-box {
-                background-color: $color-state-error;
-            }
+            --bit-chb-box-clr-bg: #{$clr-err};
+            --bit-chb-box-clr-brd: #{$clr-err};
+            --bit-chb-ico-clr: #{$clr-err-text};
         }
 
         &.bit-chb-ind {
-            .bit-chb-box {
-                .bit-icon {
-                    background-color: $color-state-error;
-                }
-            }
+            --bit-chb-ico-clr-bg: #{$clr-err};
         }
     }
 
     &.bit-dis {
+        cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-
-        .bit-chb-lbl {
-            cursor: default;
-        }
-
-        .bit-chb-txt {
-            color: $color-foreground-disabled;
-        }
-
-        .bit-chb-box {
-            border-color: $color-border-disabled;
-
-            .bit-icon {
-                opacity: 1;
-                color: $color-background-disabled;
-                background-color: $color-background-disabled;
-            }
-        }
+        --bit-chb-box-clr-brd: #{$clr-brd-dis};
+        --bit-chb-ico-clr: #{$clr-fg-dis};
+        --bit-chb-ico-clr-bg: #{$clr-bg-dis};
 
         &.bit-chb-ckd {
-            .bit-chb-box {
-                background-color: transparent;
-                border-color: $color-border-disabled;
+            --bit-chb-box-clr-bg: #{$clr-bg-dis};
+            --bit-chb-box-clr-brd: #{$clr-bg-dis};
+            --bit-chb-ico-clr: #{$clr-fg-dis};
+        }
 
-                .bit-icon {
-                    color: $color-foreground-disabled;
-                }
-            }
+        &.bit-chb-ind {
+            --bit-chb-ico-clr-bg: #{$clr-bg-dis};
         }
     }
 }
 
 .bit-chb-box {
     display: flex;
+    cursor: inherit;
     overflow: hidden;
     position: relative;
     align-items: center;
@@ -80,23 +62,30 @@
     min-width: spacing(2.5);
     justify-content: center;
     transition-duration: 200ms;
-    border-style: $shape-border-style;
-    border-width: $shape-border-width;
-    border-color: $color-border-primary;
-    border-radius: $shape-border-radius;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-radius: $shp-border-radius;
     transition-property: background, border, border-color;
     transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+    border-color: var(--bit-chb-box-clr-brd);
+    background-color: var(--bit-chb-box-clr-bg);
 
-    .bit-icon {
-        opacity: 0;
-        width: 100%;
-        height: 100%;
+    .bit-chb-ico {
         display: flex;
-        transition: 0.1s;
-        align-items: center;
-        justify-content: center;
-        font-size: spacing(1.375);
     }
+}
+
+.bit-chb-ico {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    transition: 0.1s;
+    align-items: center;
+    justify-content: center;
+    font-size: spacing(1.375);
+    color: var(--bit-chb-ico-clr);
+    opacity: var(--bit-chb-ico-opa);
+    background-color: var(--bit-chb-ico-clr-bg);
 }
 
 .bit-chb-txt {
@@ -108,84 +97,62 @@
     height: 100%;
     display: flex;
     gap: spacing(1);
-    cursor: pointer;
+    cursor: inherit;
     font-weight: 400;
     user-select: none;
     position: relative;
     align-items: center;
     font-size: spacing(1.75);
+    justify-content: var(--bit-chb-lbl-justify-content);
+    flex-direction: var(--bit-chb-lbl-flex-direction);
 }
 
-.bit-chb-end {
-    .bit-chb-lbl {
-        justify-content: flex-end;
-        flex-direction: row-reverse;
-    }
-
-    .bit-chb-box {
-        margin: 0 0 0 spacing(0.5);
-    }
-
-    .bit-chb-txt {
-        margin: 0 spacing(0.5) 0 0;
-    }
-}
 
 .bit-chb-ckd {
-    .bit-chb-box {
-        border-color: $color-primary-main;
-        background-color: $color-primary-main;
-
-        .bit-icon {
-            opacity: 1;
-            color: $color-primary-text;
-        }
-    }
+    --bit-chb-box-clr-bg: #{$clr-pri};
+    --bit-chb-box-clr-brd: #{$clr-pri};
+    --bit-chb-ico-opa: 1;
+    --bit-chb-ico-clr: #{$clr-pri-text};
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-box {
-                border-color: $color-action-hover-primary;
-                background-color: $color-action-hover-primary;
-
-                .bit-icon {
-                    opacity: 1;
-                    color: $color-action-hover-secondary;
-                }
-            }
+            --bit-chb-box-clr-bg: #{$clr-pri-hover};
+            --bit-chb-box-clr-brd: #{$clr-pri-hover};
+            --bit-chb-ico-opa: 1;
+            --bit-chb-ico-clr: #{$clr-pri-text};
         }
     }
 }
 
 .bit-chb-ind {
-    .bit-chb-box {
-        border-color: $color-primary-main;
-        background-color: $color-background-primary;
-
-        .bit-icon {
-            opacity: 1;
-            width: spacing(1.25);
-            height: spacing(1.25);
-            display: inline-block;
-            border-radius: spacing(0.375);
-            background-color: $color-primary-main;
-
-            &:before {
-                content: '';
-            }
-        }
-    }
+    --bit-chb-box-clr-bg: transparent;
+    --bit-chb-box-clr-brd: #{$clr-pri};
+    --bit-chb-ico-opa: 1;
+    --bit-chb-ico-clr: #{$clr-pri-text};
+    --bit-chb-ico-clr-bg: #{$clr-pri};
 
     @media (hover: hover) {
         &:hover {
-            .bit-chb-box {
-                border-color: $color-action-hover-primary;
-                background-color: $color-background-primary;
-
-                .bit-icon {
-                    background-color: $color-action-hover-primary;
-                }
-            }
+            --bit-chb-box-clr-bg: transparent;
+            --bit-chb-box-clr-brd: #{$clr-pri-hover};
+            --bit-chb-ico-opa: 1;
+            --bit-chb-ico-clr: #{$clr-pri-text};
+            --bit-chb-ico-clr-bg: #{$clr-pri-hover};
         }
     }
+
+    .bit-chb-ico {
+        width: spacing(1.25);
+        height: spacing(1.25);
+        border-radius: $shp-border-radius;
+
+        &:before {
+            content: '';
+        }
+    }
+}
+
+.bit-chb-rvs {
+    --bit-chb-lbl-justify-content: flex-end;
+    --bit-chb-lbl-flex-direction: row-reverse;
 }

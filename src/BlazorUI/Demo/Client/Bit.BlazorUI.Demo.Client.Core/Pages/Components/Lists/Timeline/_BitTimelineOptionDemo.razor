@@ -1,0 +1,540 @@
+﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <ExamplePreview>
+        <BitTimeline TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Horizontal" RazorCode="@example2RazorCode" Id="example2">
+    <ExamplePreview>
+        <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
+        <br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal>
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled" RazorCode="@example3RazorCode" Id="example3">
+    <ExamplePreview>
+        <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
+        <br /><br /><br />
+        <div>Disabled component</div><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal IsEnabled="false">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Disabled item</div><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal>
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Variant" RazorCode="@example4RazorCode" Id="example4">
+    <ExamplePreview>
+        <div>The Timeline has three variants: Fill (default), Outline, and Text.</div>
+        <br /><br /><br />
+        <div>Fill</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Fill" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Outline</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Text</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Icon" RazorCode="@example5RazorCode" Id="example5">
+    <ExamplePreview>
+        <div>Each item in the Timeline can have an icon.</div>
+        <br /><br /><br />
+        <div>Fill</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Fill" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Standard</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Text</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Reversed" RazorCode="@example6RazorCode" Id="example6">
+    <ExamplePreview>
+        <div>Each item in the Timeline can be reversed and be on the opposite side.</div>
+        <br /><br /><br />
+        <div>Vertical</div><br />
+        <div class="example-content">
+            <BitTimeline TItem="BitTimelineOption" Reversed>
+                <BitTimelineOption PrimaryText="Option 1" />
+                <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+                <BitTimelineOption PrimaryText="Option 3" />
+            </BitTimeline>
+            <BitTimeline TItem="BitTimelineOption">
+                <BitTimelineOption PrimaryText="Option 1" />
+                <BitTimelineOption PrimaryText="Option 2" Reversed />
+                <BitTimelineOption PrimaryText="Option 3" />
+            </BitTimeline>
+        </div>
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal Reversed>
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal>
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" Reversed />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example7RazorCode" Id="example7">
+    <ExamplePreview>
+        <div>Here are some examples of customizing the Timeline content.</div>
+        <br /><br /><br />
+        <div>Vertical</div><br />
+        <BitTimeline TItem="BitTimelineOption">
+            <BitTimelineOption>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Annie Lindqvist"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online"
+                                ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitRingLoading CustomSize="30" Color="BitColor.Tertiary" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Software Engineer</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+            <BitTimelineOption Reversed>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Saleh Khafan"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitSpinnerLoading CustomSize="30" Color="BitColor.Tertiary" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Co-Founder & CTO</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+            <BitTimelineOption>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Ted Randall"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online"
+                                ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitRollerLoading CustomSize="30" Color="BitColor.Tertiary" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Project Manager</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal>
+            <BitTimelineOption>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Annie Lindqvist"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online"
+                                ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitRingLoading CustomSize="30" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Software Engineer</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+            <BitTimelineOption Reversed>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Saleh Khafan"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitSpinnerLoading CustomSize="30" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Co-Founder & CTO</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+            <BitTimelineOption>
+                <PrimaryContent>
+                    <BitPersona PrimaryText="Ted Randall"
+                                Size="@BitPersonaSize.Size32"
+                                Presence="@BitPersonaPresence.Online"
+                                ImageUrl="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png" />
+                </PrimaryContent>
+                <DotTemplate>
+                    <div class="dot-template">
+                        <BitRollerLoading CustomSize="30" />
+                    </div>
+                </DotTemplate>
+                <SecondaryContent>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <BitIcon IconName="Accept" Style="color: limegreen;" />
+                        <BitLabel>Project Manager</BitLabel>
+                    </div>
+                </SecondaryContent>
+            </BitTimelineOption>
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example8RazorCode" Id="example8">
+    <ExamplePreview>
+        <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
+        <br /><br /><br />
+        <div>Primary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Primary" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Secondary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Tertiary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Info</div><br />
+        <BitTimeline Horizontal Color="BitColor.Info" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Success</div><br />
+        <BitTimeline Horizontal Color="BitColor.Success" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Warning</div><br />
+        <BitTimeline Horizontal Color="BitColor.Warning" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>SevereWarning</div><br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Error</div><br />
+        <BitTimeline Horizontal Color="BitColor.Error" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" Id="example9">
+    <ExamplePreview>
+        <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
+        <br /><br /><br />
+        <div>Small</div><br />
+        <BitTimeline Horizontal Size="BitSize.Small" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Medium</div><br />
+        <BitTimeline Horizontal Size="BitSize.Medium" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Large</div><br />
+        <BitTimeline Horizontal Size="BitSize.Large" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Outline" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Text" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+            <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+            <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
+    <ExamplePreview>
+        <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+        <br /><br /><br />
+        <div>Component's style & class:</div><br />
+        <BitTimeline Style="background-color: tomato; box-shadow: red 0 0 1rem;" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br />
+        <BitTimeline Horizontal Class="custom-class" TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Option 1" />
+            <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+            <BitTimelineOption PrimaryText="Option 3" />
+        </BitTimeline>
+        <br /><br /><br /><br />
+        <div>Item's style & class:</div><br />
+        <BitTimeline TItem="BitTimelineOption">
+            <BitTimelineOption PrimaryText="Styled" IconName="@BitIconName.Brush" Style="color: darkred;" />
+            <BitTimelineOption PrimaryText="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
+        </BitTimeline>
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div><br />
+        <div class="example-content">
+            <BitTimeline TItem="BitTimelineOption"
+                         Styles="@(new() { Icon = "color: red;",
+                                           PrimaryText = "color: aqua; font-size: 1.5rem;",
+                                           Dot = "background-color: dodgerblue;" })">
+                <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+                <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+                <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+            </BitTimeline>
+
+            <BitTimeline TItem="BitTimelineOption"
+                         Variant="BitVariant.Outline"
+                         Classes="@(new() { Icon = "custom-icon",
+                                            Divider = "custom-divider",
+                                            PrimaryText = "custom-text" })">
+                <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
+                <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
+                <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
+            </BitTimeline>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
+    <ExamplePreview>
+        <div>Vertical</div><br />
+        <BitTimeline TItem="BitTimelineOption" Dir="BitDir.Rtl">
+            <BitTimelineOption PrimaryText="گزینه ۱" />
+            <BitTimelineOption PrimaryText="گزینه ۲" SecondaryText="گزینه ۲ ثانویه" />
+            <BitTimelineOption PrimaryText="گزینه ۳" />
+        </BitTimeline>
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline TItem="BitTimelineOption" Horizontal Dir="BitDir.Rtl">
+            <BitTimelineOption PrimaryText="گزینه ۱" />
+            <BitTimelineOption PrimaryText="گزینه ۲" SecondaryText="گزینه ۲ ثانویه" />
+            <BitTimelineOption PrimaryText="گزینه ۳" />
+        </BitTimeline>
+    </ExamplePreview>
+</ComponentExampleBox>

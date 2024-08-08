@@ -1,4 +1,4 @@
-// bit version: 8.9.0
+// bit version: 8.10.0
 
 self.assetsInclude = [];
 self.assetsExclude = [
@@ -19,7 +19,7 @@ self.externalAssets = [
         "url": "app.css"
     },
     {
-        "url": "_framework\/blazor.web.js"
+        "url": "_framework\/blazor.web.js?v=8.0.303"
     },
     {
         "url": "Bit.Bswup.NewDemo.styles.css"

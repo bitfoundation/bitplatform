@@ -1,7 +1,4 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
-
 
 .example-box {
     display: flex;
@@ -11,18 +8,39 @@
 
 ::deep {
     .custom-class {
-        padding: 1rem;
-        background: darkblue;
-        border-radius: 0.5rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid brown;
     }
 
-    .custom-input {
-        color: darkcyan;
-        font-size: 18px;
+    .custom-class * {
+        border: none;
     }
 
-    .custom-wrapper {
-        background-color: darkorchid;
+    .custom-root {
+        width: 7rem;
+    }
+
+    .custom-container {
+        border: none;
+    }
+
+    .custom-dec-button {
+        color: firebrick;
+        border-radius: 50%;
+        background-color: lightpink;
+    }
+
+    .custom-inc-button {
+        color: darkgreen;
+        border-radius: 50%;
+        background-color: palegreen;
+    }
+
+    .custom-icon {
+        font-size: 1rem;
+        font-weight: bold;
     }
 
     .validation-message {

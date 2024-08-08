@@ -1,0 +1,79 @@
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.container {
+    height: 300px;
+    padding: 1rem;
+    overflow: auto;
+    border: 1px solid $bit-color-border-disabled;
+}
+
+.text-container {
+    gap: 1rem;
+    display: flex;
+}
+
+.header {
+    padding: 0.5rem;
+    border: 1px solid gray;
+}
+
+.main {
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    border: 1px solid gray;
+}
+
+.nav-menu {
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    border: 1px solid gray;
+}
+
+.footer {
+    padding: 0.5rem;
+    border: 1px solid gray;
+}
+
+::deep {
+    .header2 {
+        color: black;
+        display: flex;
+        padding: 1rem;
+        border: 1px solid red;
+        justify-content: center;
+        background-color: lightgreen;
+    }
+
+    .main2 {
+        border: 1px solid green;
+    }
+
+    .nav-menu2 {
+        color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: lightblue;
+        border: 1px solid lightgreen;
+    }
+
+    .main-content2 {
+        color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid darkgreen;
+        background-color: lightgoldenrodyellow;
+    }
+
+    .footer2 {
+        color: black;
+        display: flex;
+        padding: 1rem;
+        border: 1px solid blue;
+        justify-content: center;
+        background-color: lightpink;
+    }
+}

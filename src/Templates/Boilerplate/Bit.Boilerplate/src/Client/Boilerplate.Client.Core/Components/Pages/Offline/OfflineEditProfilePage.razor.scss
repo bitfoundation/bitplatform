@@ -36,15 +36,6 @@
     }
 }
 
-.loading-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    position: absolute;
-    align-items: center;
-    justify-content: center;
-}
-
 .form-message-bar {
     position: absolute;
     inset-block-start: 0;
@@ -80,7 +71,7 @@
 .form-input-error {
     font-size: rem2(12px);
     line-height: rem2(16px);
-    color: $bit-color-state-error;
+    color: $bit-color-error;
 }
 
 .form-choice-container {

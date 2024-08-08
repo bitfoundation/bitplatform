@@ -1,6 +1,5 @@
 @import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep .accordion {
     border: none;
@@ -109,7 +108,7 @@
         padding-right: 2.25rem;
     }
 
-    .code-box {
+    ::deep .code-box-content {
         background-color: $bit-color-background-primary;
     }
 }
@@ -123,7 +122,7 @@
     align-items: center;
     margin: rem2(25px) 0;
     border-radius: rem2(4px);
-    background-color: $bit-color-background-primary;
+    background-color: #060e2d;
 
     @include lt-md {
         padding: 1.5rem;
@@ -217,7 +216,7 @@
     flex-flow: row nowrap;
     line-height: rem2(32px);
     transition: all 0.2s linear;
-    color: $bit-color-primary-main;
+    color: $bit-color-primary;
 
     .template-link-arrow {
         width: rem2(16px);
@@ -232,8 +231,4 @@
     &:hover {
         transform: translateX(5px);
     }
-}
-
-.code-box {
-    @include CodeBox;
 }

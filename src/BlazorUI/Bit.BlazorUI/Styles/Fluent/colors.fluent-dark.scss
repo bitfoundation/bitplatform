@@ -1,100 +1,121 @@
 ﻿:root[bit-theme="dark"],
 :root[bit-theme="fluent-dark"] {
     color-scheme: dark;
-    //main--primary
-    --bit-clr-primary-main: #2EA3FF;
-    --bit-clr-primary-dark: #0078D4;
-    --bit-clr-primary-light: #5C8CBC;
-    --bit-clr-primary-text: #111;
-    //main--secondary
-    --bit-clr-secondary-main: #0D1117;
-    --bit-clr-secondary-dark: #000;
-    --bit-clr-secondary-light: #333;
-    --bit-clr-secondary-text: #E8E8E8;
-    //foreground
-    --bit-clr-fg-primary: #E8E8E8;
-    --bit-clr-fg-secondary: #B9B9B9;
-    --bit-clr-fg-disabled: #5C5C5C;
+    //primary
+    --bit-clr-pri: #569FFF;
+    --bit-clr-pri-hover: #4D8FE5;
+    --bit-clr-pri-active: #457FCC;
+    --bit-clr-pri-dark: #367FE0;
+    --bit-clr-pri-dark-hover: #3379D5;
+    --bit-clr-pri-dark-active: #3172CA;
+    --bit-clr-pri-light: #89BCFF;
+    --bit-clr-pri-light-hover: #78B2FF;
+    --bit-clr-pri-light-active: #67A9FF;
+    --bit-clr-pri-text: #212121;
+    //secondary
+    --bit-clr-sec: #FF9E67;
+    --bit-clr-sec-hover: #E58E5D;
+    --bit-clr-sec-active: #CC7E52;
+    --bit-clr-sec-dark: #EB7F42;
+    --bit-clr-sec-dark-hover: #DF793F;
+    --bit-clr-sec-dark-active: #D3723B;
+    --bit-clr-sec-light: #FFBB95;
+    --bit-clr-sec-light-hover: #FFB185;
+    --bit-clr-sec-light-active: #FFA876;
+    --bit-clr-sec-text: #212121;
+    //tertiary
+    --bit-clr-ter: #E6E6E6;
+    --bit-clr-ter-hover: #CFCFCF;
+    --bit-clr-ter-active: #B8B8B8;
+    --bit-clr-ter-dark: #A3A3A3;
+    --bit-clr-ter-dark-hover: #9B9B9B;
+    --bit-clr-ter-dark-active: #939393;
+    --bit-clr-ter-light: #F3F3F3;
+    --bit-clr-ter-light-hover: #EBEBEB;
+    --bit-clr-ter-light-active: #E9E9E9;
+    --bit-clr-ter-text: #212121;
+    //info
+    --bit-clr-inf: #ABACAE;
+    --bit-clr-inf-hover: #9A9B9D;
+    --bit-clr-inf-active: #898A8B;
+    --bit-clr-inf-dark: #7B7F87;
+    --bit-clr-inf-dark-hover: #757980;
+    --bit-clr-inf-dark-active: #6F7279;
+    --bit-clr-inf-light: #CDCDCE;
+    --bit-clr-inf-light-hover: #BCBDBE;
+    --bit-clr-inf-light-active: #B3B4B6;
+    --bit-clr-inf-text: #212121;
+    //success
+    --bit-clr-suc: #7FB58A;
+    --bit-clr-suc-hover: #72A37C;
+    --bit-clr-suc-active: #66916E;
+    --bit-clr-suc-dark: #50995F;
+    --bit-clr-suc-dark-hover: #4C915A;
+    --bit-clr-suc-dark-active: #488A55;
+    --bit-clr-suc-light: #A5CBAD;
+    --bit-clr-suc-light-hover: #99C4A1;
+    --bit-clr-suc-light-active: #8CBC96;
+    --bit-clr-suc-text: #212121;
+    //warning
+    --bit-clr-wrn: #FFD07A;
+    --bit-clr-wrn-hover: #E5BB6E;
+    --bit-clr-wrn-active: #CCA662;
+    --bit-clr-wrn-dark: #D6A242;
+    --bit-clr-wrn-dark-hover: #CB9A3F;
+    --bit-clr-wrn-dark-active: #C1923B;
+    --bit-clr-wrn-light: #FFDEA2;
+    --bit-clr-wrn-light-hover: #FFD995;
+    --bit-clr-wrn-light-active: #FFD587;
+    --bit-clr-wrn-text: #212121;
+    //severe-warning
+    --bit-clr-swr: #E8A874;
+    --bit-clr-swr-hover: #D19768;
+    --bit-clr-swr-active: #BA865D;
+    --bit-clr-swr-dark: #D17E3B;
+    --bit-clr-swr-dark-hover: #C77838;
+    --bit-clr-swr-dark-active: #BC7135;
+    --bit-clr-swr-light: #EFC29E;
+    --bit-clr-swr-light-hover: #EDB990;
+    --bit-clr-swr-light-active: #EAB182;
+    --bit-clr-swr-text: #212121;
+    //error
+    --bit-clr-err: #DC7C7C;
+    --bit-clr-err-hover: #C67070;
+    --bit-clr-err-active: #B06363;
+    --bit-clr-err-dark: #CC5454;
+    --bit-clr-err-dark-hover: #C25050;
+    --bit-clr-err-dark-active: #B84C4C;
+    --bit-clr-err-light: #E7A3A3;
+    --bit-clr-err-light-hover: #E39696;
+    --bit-clr-err-light-active: #E08989;
+    --bit-clr-err-text: #212121;
+    //foregrounds
+    --bit-clr-fg-pri: #E8E8E8;
+    --bit-clr-fg-pri-hover: #DDD;
+    --bit-clr-fg-pri-active: #CCC;
+    --bit-clr-fg-sec: #B9B9B9;
+    --bit-clr-fg-sec-hover: #AAA;
+    --bit-clr-fg-sec-active: #999;
+    --bit-clr-fg-dis: #444;
     //backgrounds
-    --bit-clr-bg-primary: #0D1117;
-    --bit-clr-bg-secondary: #161B22;
-    --bit-clr-bg-disabled: #21262D;
+    --bit-clr-bg-pri: #010409;
+    --bit-clr-bg-pri-hover: #101419;
+    --bit-clr-bg-pri-active: #14191F;
+    --bit-clr-bg-sec: #161B22;
+    --bit-clr-bg-sec-hover: #1C222B;
+    --bit-clr-bg-sec-active: #202731;
+    --bit-clr-bg-dis: #222;
     --bit-clr-bg-overlay: rgba(255, 255, 255, 0.2);
     //borders
-    --bit-clr-brd-primary: #AAA;
-    --bit-clr-brd-secondary: #333;
-    --bit-clr-brd-disabled: #21262D;
-    //actions
-    --bit-clr-act-hover-pri: #1799FF;
-    --bit-clr-act-active-pri: #008FFF;
-    --bit-clr-act-hover-pri-dark: #003C69;
-    --bit-clr-act-active-pri-dark: #00365E;
-    --bit-clr-act-hover-pri-light: #88C1EF;
-    --bit-clr-act-active-pri-light: #6EB5EE;
-    --bit-clr-act-hover-sec: #222;
-    --bit-clr-act-active-sec: #292929;
-    --bit-clr-act-hover-sec-dark: #101010;
-    --bit-clr-act-active-sec-dark: #1A1A1A;
-    --bit-clr-act-hover-sec-light: #3C3C3C;
-    --bit-clr-act-active-sec-light: #434343;
-    //actions-foreground
-    --bit-clr-act-hover-fg-pri: #DDD;
-    --bit-clr-act-active-fg-pri: #CCC;
-    --bit-clr-act-hover-fg-sec: #AAA;
-    --bit-clr-act-active-fg-sec: #999;
-    //actions-backgrounds
-    --bit-clr-act-hover-bg-pri: #1A2639;
-    --bit-clr-act-active-bg-pri: #121B29;
-    --bit-clr-act-hover-bg-sec: #222;
-    --bit-clr-act-active-bg-sec: #333;
-    //actions-borders
-    --bit-clr-act-hover-brd-pri: #BBB;
-    --bit-clr-act-active-brd-pri: #CCC;
-    --bit-clr-act-hover-brd-sec: #777;
-    --bit-clr-act-active-brd-sec: #888;
-    //states
-    --bit-clr-sta-info: #B9B9B9;
-    --bit-clr-sta-info-bg: #292929;
-    --bit-clr-sta-info-bg-sec: #494949;
-    --bit-clr-sta-info-brd: #666666;
-    --bit-clr-sta-success: #009900;
-    --bit-clr-sta-success-bg: #002200;
-    --bit-clr-sta-success-bg-sec: #014101;
-    --bit-clr-sta-success-brd: #005b00;
-    --bit-clr-sta-warning: #FFBB00;
-    --bit-clr-sta-warning-bg: #443300;
-    --bit-clr-sta-warning-bg-sec: #634a01;
-    --bit-clr-sta-warning-brd: #9A7400;
-    --bit-clr-sta-severe-warning: #CC3300;
-    --bit-clr-sta-severe-warning-bg: #442200;
-    --bit-clr-sta-severe-warning-bg-sec: #6a3500;
-    --bit-clr-sta-severe-warning-brd: #803F00;
-    --bit-clr-sta-error: #C70000;
-    --bit-clr-sta-error-bg: #330000;
-    --bit-clr-sta-error-bg-sec: #580101;
-    --bit-clr-sta-error-brd: #87000C;
-    --bit-clr-sta-req: #A4262C;
-    //actions-states
-    --bit-clr-act-hover-sta-info: #9B9B9B;
-    --bit-clr-act-active-sta-info: #808080;
-    --bit-clr-act-hover-sta-info-bg: #393939;
-    --bit-clr-act-active-sta-info-bg: #494949;
-    --bit-clr-act-hover-sta-success: #008800;
-    --bit-clr-act-active-sta-success: #007700;
-    --bit-clr-act-hover-sta-success-bg: #003300;
-    --bit-clr-act-active-sta-success-bg: #004400;
-    --bit-clr-act-hover-sta-warning: #EEAA00;
-    --bit-clr-act-active-sta-warning: #CC9900;
-    --bit-clr-act-hover-sta-warning-bg: #554400;
-    --bit-clr-act-active-sta-warning-bg: #665500;
-    --bit-clr-act-hover-sta-severe-warning: #BB2200;
-    --bit-clr-act-active-sta-severe-warning: #AA1100;
-    --bit-clr-act-hover-sta-severe-warning-bg: #553300;
-    --bit-clr-act-active-sta-severe-warning-bg: #664400;
-    --bit-clr-act-hover-sta-error: #A70000;
-    --bit-clr-act-active-sta-error: #870000;
-    --bit-clr-act-hover-sta-error-bg: #440000;
-    --bit-clr-act-active-sta-error-bg: #550000;
+    --bit-clr-brd-pri: #AAA;
+    --bit-clr-brd-pri-hover: #BBB;
+    --bit-clr-brd-pri-active: #CCC;
+    --bit-clr-brd-sec: #333;
+    --bit-clr-brd-sec-hover: #777;
+    --bit-clr-brd-sec-active: #888;
+    --bit-clr-brd-dis: #21262D;
+    //req
+    --bit-clr-req: #A4262C;
     // shadows-callout
     --bit-shd-cal: 0px 0px 3px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
     // shadows

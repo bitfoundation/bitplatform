@@ -1,0 +1,93 @@
+﻿@page "/components/layout"
+
+<PageOutlet Url="components/layout"
+            Title="layout"
+            Description="layout component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Layout"
+               ComponentDescription="Layout can be used to create a base UI structure for an application."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="container">
+                <BitLayout>
+                    <Header>
+                        <div class="header">Header</div>
+                    </Header>
+                    <Main>
+                        <div class="main">Main</div>
+                    </Main>
+                    <Footer>
+                        <div class="footer">Footer</div>
+                    </Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="NavMenu" RazorCode="@example2RazorCode" CsharpCode="example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <BitToggle Label="Hide NavMenu" @bind-Value="hideNavMenu" />
+            <br />
+            <div class="container">
+                <BitLayout HideNavMenu="hideNavMenu">
+                    <Header>
+                        <div class="header">Header</div>
+                    </Header>
+                    <NavMenu>
+                        <div class="nav-menu">NavMenu</div>
+                    </NavMenu>
+                    <Main>
+                        <div class="main">Main</div>
+                    </Main>
+                    <Footer>
+                        <div class="footer">Footer</div>
+                    </Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Classes & Styles" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div class="container">
+                <BitLayout Classes="@(new() { Header="header2",
+                                              Main="main2",
+                                              NavMenu="nav-menu2",
+                                              MainContent="main-content2",
+                                              Footer="footer2" })"
+                           Styles="@(new() { Main="height:300px" })">
+                    <Header>Header</Header>
+                    <NavMenu>NavMenu</NavMenu>
+                    <Main>Main</Main>
+                    <Footer>Footer</Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="text-container">
+                <BitNumberField Label="Header height" @bind-Value="headerHeight" />
+                <BitNumberField Label="Footer height" @bind-Value="footerHeight" />
+            </div>
+            <br />
+            <div class="container">
+                <BitLayout HeaderHeight="headerHeight" FooterHeight="footerHeight"
+                           Style="color:black"
+                           Styles="@(new() { Header="background:lightcoral",
+                                              Main="background:lightgreen",
+                                              NavMenu="padding:1rem",
+                                              MainContent="padding:1rem",
+                                              Footer="background:lightblue" })">
+                    <Header>Header</Header>
+                    <NavMenu>NavMenu</NavMenu>
+                    <Main>Main</Main>
+                    <Footer>Footer</Footer>
+                </BitLayout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

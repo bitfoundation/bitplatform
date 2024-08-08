@@ -51,11 +51,11 @@
                     bit Butil helps C# developers to access the browser APIs that are only accessible through JavaScript in C#.
                 </BitTypography>
                 <div>
-                    <pre class="code-box">@@inject Bit.Butil.Crypto crypto
+                    <CodeBox HideCopyButton>@@inject Bit.Butil.Crypto crypto
 
 @@code {
     var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
-}</pre>
+}</CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.Butil">
                     Learn more <span class="template-link-arrow"></span>
@@ -109,7 +109,7 @@
                     bit Besql facilitates the use of Entity Framework and sqlite in web browsers with Blazor WebAssembly.
                 </BitTypography>
                 <div>
-                    <pre class="code-box">services.AddBesqlDbContextFactory();</pre>
+                    <CodeBox HideCopyButton>services.AddBesqlDbContextFactory();</CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.Besql">
                     Learn more <span class="template-link-arrow"></span>
@@ -135,13 +135,12 @@
                     saving you time and making development enjoyable.
                 </BitTypography>
                 <div>
-                    <pre class="code-box">
-&lt;BitDropdown @@bind-Values="comboValues"
-                Label="Multi select combo box"
-                Placeholder="Select options"
-                Items="comboBoxItems"
-                Combo Chips Dynamic
-                OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></pre>
+                    <CodeBox HideCopyButton>&lt;BitDropdown @@bind-Values="comboValues"
+             Label="Multi select combo box"
+             Placeholder="Select options"
+             Items="comboBoxItems"
+             Combo Chips Dynamic
+             OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.BlazorUI" target="_blank">
                     Learn more <span class="template-link-arrow"></span>

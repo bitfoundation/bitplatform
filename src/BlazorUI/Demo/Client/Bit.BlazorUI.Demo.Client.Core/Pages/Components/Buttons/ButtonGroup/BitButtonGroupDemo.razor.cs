@@ -2,39 +2,23 @@
 
 public partial class BitButtonGroupDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of ButtonGroup, Possible values: Primary | Standard.",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the BitButtonGroup, that are BitButtonGroupOption components.",
         },
         new()
         {
             Name = "Color",
-            Type = "BitColor",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the button group.",
             LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the ButtonGroup.",
-        },
-        new()
-        {
-            Name = "ItemTemplate",
-            Type = "RenderFragment<TItem>?",
-            DefaultValue = "null",
-            Description = "The content inside the item can be customized.",
-        },
-        new()
-        {
-            Name = "Vertical",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Defines whether to render ButtonGroup children vertically."
+            Href = "#color-enum",
         },
         new()
         {
@@ -50,7 +34,7 @@ public partial class BitButtonGroupDemo
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
-            Description = "The content inside the item can be customized."
+            Description = "The content inside the item can be customized.",
         },
         new()
         {
@@ -77,22 +61,38 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
+            Type = "BitSize",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
-        }
-    };
+            LinkType = LinkType.Link,
+            Href = "#button-size-enum",
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the button group.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Defines whether to render ButtonGroup children vertically."
+        },
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
         new()
         {
             Id = "button-group-items",
             Title = "BitButtonGroupItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -149,14 +149,14 @@ public partial class BitButtonGroupDemo
                    DefaultValue = "null",
                    Description = "Text to render in the item.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "button-group-options",
             Title = "BitButtonGroupOption",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Class",
@@ -213,14 +213,14 @@ public partial class BitButtonGroupDemo
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
                }
-            }
+            ]
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitButtonGroupNameSelectors",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Class",
@@ -293,14 +293,14 @@ public partial class BitButtonGroupDemo
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
-            }
+            ]
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -313,85 +313,103 @@ public partial class BitButtonGroupDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
-    };
+    ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
         new()
         {
-            Id = "button-style-enum",
-            Name = "BitButtonStyle",
-            Description = "",
-            Items = new()
-            {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button with white text on a blue background.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button with black text on a white background.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
-            Id = "button-color-enum",
+            Id = "color-enum",
             Name = "BitColor",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled Button.",
+                    Name= "Primary",
+                    Description="Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled Button.",
+                    Name= "Secondary",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled Button.",
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled Button.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled Button.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="Severe Warning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -410,15 +428,15 @@ public partial class BitButtonGroupDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -437,7 +455,7 @@ public partial class BitButtonGroupDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         }
-    };
+    ];
 }

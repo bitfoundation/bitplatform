@@ -66,24 +66,27 @@
         border: rem2(1px) solid $bit-color-border-secondary;
 
         &.show-code {
+            font-weight: normal;
             min-width: rem2(125px);
             padding: rem2(4px) rem2(12px);
 
             i {
                 font-size: 1.125rem;
-                margin-right: rem2(8px);
-                color: $bit-color-primary-main;
             }
 
             @include lt-lg {
-                width: rem2(42px);
                 min-width: unset;
+                width: rem2(42px);
                 padding: rem2(4px) rem2(20px);
 
                 .show-code-lbl {
                     display: none;
                 }
             }
+        }
+
+        &.code-shown {
+            background-color: $bit-color-background-secondary;
         }
 
         &.copy-link {
@@ -102,7 +105,6 @@
                 width: rem2(128px);
                 white-space: nowrap;
                 pointer-events: none;
-                background-color: $bit-color-secondary-dark;
             }
         }
     }
@@ -116,19 +118,18 @@
         width: rem2(34px);
         height: rem2(34px);
         position: absolute;
-        border-radius: rem2(17px);
         align-items: center;
         justify-content: center;
+        border-radius: rem2(17px);
         transition: width 0.2s ease-in-out;
         background-color: $bit-color-background-secondary;
-        border: rem2(1px) solid $bit-color-border-secondary;    
+        border: rem2(1px) solid $bit-color-border-secondary;
 
         &.copied {
             overflow: hidden;
             width: rem2(128px);
             white-space: nowrap;
             pointer-events: none;
-            background-color: $bit-color-secondary-dark;
         }
     }
 }

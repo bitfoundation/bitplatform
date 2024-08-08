@@ -1,4 +1,4 @@
-@page "/about"
+@attribute [Route(Urls.AboutPage)]
 @inherits AppComponentBase
 
 <div class="page-container">
@@ -21,6 +21,14 @@
             <BitStack Horizontal Gap=".5rem">
                 <BitLabel>App Version:</BitLabel>
                 <BitLabel>@appVersion</BitLabel>
+            </BitStack>
+            <BitStack Horizontal Gap=".5rem">
+                <BitLabel>OS:</BitLabel>
+                <BitLabel>@os</BitLabel>
+            </BitStack>
+            <BitStack Horizontal Gap=".5rem">
+                <BitLabel>Environment:</BitLabel>
+                <BitLabel>@AppEnvironment.Current</BitLabel>
             </BitStack>
             <BitStack Horizontal Gap=".5rem">
                 <BitLabel>Process Id:</BitLabel>

@@ -26,7 +26,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.Home)],
                 IconName = BitIconName.Home,
-                Url = "/",
+                Url = Urls.HomePage,
             },
             //#if (sample == "Admin")
             new()
@@ -38,15 +38,15 @@ public partial class NavMenu
                 [
                     new() {
                         Text = Localizer[nameof(AppStrings.Dashboard)],
-                        Url = "/dashboard",
+                        Url = Urls.DashboardPage,
                     },
                     new() {
                         Text = Localizer[nameof(AppStrings.Products)],
-                        Url = "/products",
+                        Url = Urls.ProductsPage,
                     },
                     new() {
                         Text = Localizer[nameof(AppStrings.Categories)],
-                        Url = "/categories",
+                        Url = Urls.CategoriesPage,
                     },
                 ]
             },
@@ -55,32 +55,32 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.TodoTitle)],
                 IconName = BitIconName.ToDoLogoOutline,
-                Url = "/todo",
+                Url = Urls.TodoPage,
             },
             //#endif
             new()
             {
                 Text = Localizer[nameof(AppStrings.ProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/profile",
+                Url = Urls.ProfilePage,
             },
             //#if (offlineDb == true)
             new()
             {
                 Text = Localizer[nameof(AppStrings.OfflineEditProfileTitle)],
                 IconName = BitIconName.EditContact,
-                Url = "/offline-edit-profile",
+                Url = Urls.OfflineEditProfilePage,
             },
             //#endif
             new()
             {
                 Text = Localizer[nameof(AppStrings.TermsTitle)],
                 IconName = BitIconName.EntityExtraction,
-                Url = "/terms",
+                Url = Urls.TermsPage,
             }
         ];
 
-        if (AppRenderMode.IsBlazorHybrid)
+        if (AppPlatform.IsBlazorHybrid)
         {
             // Presently, the About page is absent from the Client/Core project, rendering it inaccessible on the web platform.
             // In order to exhibit a sample page that grants direct access to native functionalities without dependence on dependency injection (DI) or publish-subscribe patterns,
@@ -90,7 +90,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.AboutTitle)],
                 IconName = BitIconName.HelpMirrored,
-                Url = "/about",
+                Url = Urls.AboutPage,
             });
         }
 
@@ -105,9 +105,9 @@ public partial class NavMenu
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
-        var apiUri = Configuration.GetApiServerAddress();
+        var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrl = $"{apiUri}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
     private async Task DoSignOut()
@@ -120,7 +120,7 @@ public partial class NavMenu
     private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo("profile");
+        navManager.NavigateTo(Urls.ProfilePage);
     }
 
     private async Task HandleNavItemClick(BitNavItem item)

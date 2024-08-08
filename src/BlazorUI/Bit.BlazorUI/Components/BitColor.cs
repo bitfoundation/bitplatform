@@ -1,29 +1,47 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Defines the general colors available in the bit BlazorUI.
+/// </summary>
 public enum BitColor
 {
     /// <summary>
-    /// Info styled component.
+    /// Primary general color.
+    /// </summary>
+    Primary,
+
+    /// <summary>
+    /// Secondary general color.
+    /// </summary>
+    Secondary,
+
+    /// <summary>
+    /// Tertiary general color.
+    /// </summary>
+    Tertiary,
+
+    /// <summary>
+    /// Info general color.
     /// </summary>
     Info,
 
     /// <summary>
-    /// Success styled component.
+    /// Success general color.
     /// </summary>
     Success,
 
     /// <summary>
-    /// Warning styled component.
+    /// Warning general color.
     /// </summary>
     Warning,
 
     /// <summary>
-    /// Severe Warning styled component.
+    /// SevereWarning general color.
     /// </summary>
     SevereWarning,
 
     /// <summary>
-    /// Error styled component.
+    /// Error general color.
     /// </summary>
     Error
 }

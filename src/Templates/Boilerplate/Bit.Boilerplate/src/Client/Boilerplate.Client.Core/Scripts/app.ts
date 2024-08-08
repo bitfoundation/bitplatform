@@ -3,6 +3,10 @@
         cssClasses?.forEach(c => document.body.classList.add(c));
         Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
     }
+
+    public static getPlatform(): string {
+        return (navigator as any).userAgentData?.platform || navigator?.platform;
+    }
 }
 
 declare class BitTheme { static init(options: any): void; };

@@ -4,25 +4,22 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitSpinButton
+public partial class BitSpinButton : BitInputBase<double>
 {
-    private const int INITIAL_STEP_DELAY = 400;
-    private const int STEP_DELAY = 75;
-
-    private BitLabelPosition labelPosition = BitLabelPosition.Top;
-
     private double _min;
     private double _max;
     private int _precision;
     private string? _intermediateValue;
     private string _inputId = default!;
-
-    private ElementReference _inputRef;
     private ElementReference _incrementBtnRef;
     private ElementReference _decrementBtnRef;
     private CancellationTokenSource _cancellationTokenSource = new();
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers.
@@ -112,18 +109,8 @@ public partial class BitSpinButton
     /// <summary>
     /// The position of the label in regards to the spin button.
     /// </summary>
-    [Parameter]
-    public BitLabelPosition LabelPosition
-    {
-        get => labelPosition;
-        set
-        {
-            if (labelPosition == value) return;
-
-            labelPosition = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition LabelPosition { get; set; } = BitLabelPosition.Top;
 
     /// <summary>
     /// Custom Label content for spin button.
@@ -149,11 +136,6 @@ public partial class BitSpinButton
     /// Callback for when the control loses focus.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
-
-    /// <summary>
-    /// Callback for when the spin button value change.
-    /// </summary>
-    [Parameter] public EventCallback<double> OnChange { get; set; }
 
     /// <summary>
     /// Callback for when the decrement button or down arrow key is pressed.
@@ -207,18 +189,6 @@ public partial class BitSpinButton
 
 
 
-    /// <summary>
-    /// The ElementReference to the input element of the BitSpinButton.
-    /// </summary>
-    public ElementReference? InputElement => ShowInput ? _inputRef : null;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitSpinButton.
-    /// </summary>
-    public ValueTask FocusAsync() => ShowInput ? _inputRef.FocusAsync() : ValueTask.CompletedTask;
-
-
-
     protected override string RootElementClass => "bit-spb";
 
     protected override void RegisterCssClasses()
@@ -239,16 +209,16 @@ public partial class BitSpinButton
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitSpinButton-{UniqueId}-input";
 
         if (ValueHasBeenSet is false && DefaultValue.HasValue)
         {
-            CurrentValue = DefaultValue.Value;
+            Value = DefaultValue.Value;
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -276,6 +246,30 @@ public partial class BitSpinButton
         await base.OnParametersSetAsync();
     }
 
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        if (double.TryParse(value, out var parsedValue))
+        {
+            result = Normalize(parsedValue);
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
+        return false;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _cancellationTokenSource.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
 
 
     private async Task ApplyValueChange(bool isIncrement)
@@ -297,8 +291,6 @@ public partial class BitSpinButton
         if (isValid is false) return;
 
         SetValue(result);
-
-        await OnChange.InvokeAsync(CurrentValue);
 
         StateHasChanged();
     }
@@ -326,7 +318,7 @@ public partial class BitSpinButton
         {
             await InvokeAsync(async () =>
             {
-                await Task.Delay(INITIAL_STEP_DELAY);
+                await Task.Delay(400);
                 await ContinuousChangeValue(isIncrement, cts);
             });
         }, cts.Token);
@@ -340,7 +332,7 @@ public partial class BitSpinButton
 
         StateHasChanged();
 
-        await Task.Delay(STEP_DELAY);
+        await Task.Delay(75);
         await ContinuousChangeValue(isIncrement, cts);
     }
 
@@ -422,7 +414,6 @@ public partial class BitSpinButton
                     if (isNumber)
                     {
                         SetValue(numericValue);
-                        await OnChange.InvokeAsync(CurrentValue);
                     }
                     else
                     {
@@ -452,7 +443,7 @@ public partial class BitSpinButton
 
         await OnFocus.InvokeAsync(e);
 
-        await _js.SelectText(_inputRef);
+        await _js.SelectText(InputElement);
     }
 
     private void SetValue(double value)
@@ -486,7 +477,6 @@ public partial class BitSpinButton
         if (isNumber)
         {
             SetValue(numericValue);
-            await OnChange.InvokeAsync(CurrentValue);
         }
         else
         {
@@ -500,7 +490,6 @@ public partial class BitSpinButton
     private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : Suffix.HasValue() ? CurrentValueAsString + Suffix : null;
     private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
     private string GetLabelId => Label.HasValue() ? $"SpinButton-{UniqueId}-Label" : string.Empty;
-
 
     private static int CalculatePrecision(double value)
     {
@@ -539,30 +528,5 @@ public partial class BitSpinButton
         }
 
         return value;
-    }
-
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out double result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        if (double.TryParse(value, out var parsedValue))
-        {
-            result = Normalize(parsedValue);
-            validationErrorMessage = null;
-            return true;
-        }
-
-        result = default;
-        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
-        return false;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _cancellationTokenSource.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

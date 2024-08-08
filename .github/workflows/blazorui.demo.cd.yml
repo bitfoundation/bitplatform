@@ -1,7 +1,7 @@
 name: Blazor UI Demo CD
 
 env:
-  API_SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
+  SERVER_ADDRESS: 'https://blazorui.bitplatform.dev/api/'
   APP_SERVICE_NAME: 'bit-components'
 
 on:
@@ -33,7 +33,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - uses: actions/setup-node@v4
       with:
@@ -82,7 +82,7 @@ jobs:
           package: .
 
       - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@master
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
         env:
           CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -110,7 +110,7 @@ jobs:
       with:
         files: 'src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
   
     - name: Generate CSS/JS files
@@ -132,7 +132,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
+          dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows-x86.exe -r win-x86 --framework net8.0.7-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -170,7 +170,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -206,7 +206,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '15.3'
+        xcode-version: '15.4'
 
     - uses: actions/setup-node@v4
       with:
@@ -217,7 +217,7 @@ jobs:
       with:
         files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
       env:
-        ApiServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install maui
       run: cd src && dotnet workload install maui

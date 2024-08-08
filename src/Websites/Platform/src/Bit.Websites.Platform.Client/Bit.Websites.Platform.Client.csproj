@@ -8,15 +8,13 @@
         <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
         <WasmEnableSIMD>false</WasmEnableSIMD>
         <ResolveStaticWebAssetsInputsDependsOn>
-            InstallNodejsDependencies;
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
-        <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,20 +24,20 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.9.0" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.9.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.9.0" />
+        <PackageReference Include="Bit.Butil" Version="8.10.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.10.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.10.0" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.9.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.9.0">
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.10.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.9.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.7" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -70,14 +68,34 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Target Name="InstallNodejsDependencies" AfterTargets="CoreCompile" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <ItemGroup>
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+        <GlobalScssFiles Include="Styles\**\*.scss" />
+        <TypeScriptFiles Include="**\*.ts" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+        <CallTarget Targets="BuildGlobalScssFiles" />
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css  --style compressed --load-path=. --update" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot\scripts\app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">        
+        <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

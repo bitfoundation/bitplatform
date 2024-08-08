@@ -3,18 +3,18 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitChoiceGroup<TItem, TValue> where TItem : class
+public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class
 {
-    private bool isRequired;
-
+    private List<TItem> _items = [];
     private string _labelId = default!;
-    private List<TItem> _items = new();
     private IEnumerable<TItem>? _oldItems;
+
+
 
     /// <summary>
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
-    [Parameter] public string AriaLabelledBy { get; set; } = string.Empty;
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
@@ -32,9 +32,14 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
+    /// Renders the items in the ChoiceGroup horizontally.
+    /// </summary>
+    [Parameter] public bool Horizontal { get; set; }
+
+    /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize the label for the Item Label content.
@@ -52,22 +57,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// If true, selecting an option is mandatory in the ChoiceGroup.
-    /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            if (isRequired == value) return;
-
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// The label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -78,16 +67,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The render flow of the items in the ChoiceGroup, Horizontal or Vertical.
-    /// </summary>
-    [Parameter] public BitLayoutFlow? LayoutFlow { get; set; }
-
-    /// <summary>
-    /// Name of the ChoiceGroup, this unique name is used to group each item into the same logical component.
-    /// </summary>
-    [Parameter] public string Name { get; set; } = Guid.NewGuid().ToString();
-
-    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitChoiceGroupNameSelectors<TItem, TValue>? NameSelectors { get; set; }
@@ -96,11 +75,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     /// Callback for when the option clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
-
-    /// <summary>
-    /// Callback for when the option has been changed.
-    /// </summary>
-    [Parameter] public EventCallback<BitChangeEventArgs<TValue>> OnChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -118,10 +92,7 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         _items.Add((option as TItem)!);
 
-        if (CurrentValue is null && DefaultValue is not null && ValueHasBeenSet is false && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
-        {
-            CurrentValue = DefaultValue;
-        }
+        InitDefaultValue();
 
         StateHasChanged();
     }
@@ -129,33 +100,17 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     internal void UnregisterOption(BitChoiceGroupOption<TValue> option)
     {
         _items.Remove((option as TItem)!);
+
         StateHasChanged();
     }
 
 
 
-    protected override string RootElementClass => "bit-chg";
-
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
-    }
-
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
-    }
-
     protected override async Task OnInitializedAsync()
     {
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
 
-        if (ValueHasBeenSet is false && DefaultValue is not null && Items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
-        {
-            CurrentValue = DefaultValue;
-        }
+        InitDefaultValue();
 
         await base.OnInitializedAsync();
     }
@@ -171,14 +126,37 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
         if (ValueHasBeenSet is false && DefaultValue is not null && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
         {
-            CurrentValue = DefaultValue;
+            Value = DefaultValue;
         }
+    }
+
+    protected override string RootElementClass => "bit-chg";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
+
+    private void InitDefaultValue()
+    {
+        if (ValueHasBeenSet is false && DefaultValue is not null &&
+            _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+        {
+            Value = DefaultValue;
+        }
+    }
 
     private string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
 
@@ -209,25 +187,47 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        var oldValue = CurrentValue;
         CurrentValue = GetValue(item);
-
-        await OnChange.InvokeAsync(new(oldValue, CurrentValue));
     }
 
     private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
 
-    private string? GetLayoutFlowClass() => LayoutFlow switch
+    private string GetItemContainerCssStyles(TItem item)
     {
-        BitLayoutFlow.Horizontal => "horizontal",
-        BitLayoutFlow.Vertical => "vertical",
-        _ => null
-    };
+        StringBuilder cssStyle = new();
+
+        if (string.IsNullOrEmpty(GetStyle(item)) is false)
+        {
+            cssStyle.Append(GetStyle(item));
+        }
+
+        if (string.IsNullOrEmpty(Styles?.ItemContainer) is false)
+        {
+            cssStyle.Append(' ').Append(Styles?.ItemContainer);
+        }
+
+        if (GetIsCheckedItem(item))
+        {
+            cssStyle.Append(' ').Append(Styles?.ItemChecked);
+        }
+
+        return cssStyle.ToString();
+    }
 
     private string GetItemContainerCssClasses(TItem item)
     {
         StringBuilder cssClass = new(RootElementClass);
         cssClass.Append("-icn");
+
+        if (string.IsNullOrEmpty(GetClass(item)) is false)
+        {
+            cssClass.Append(' ').Append(GetClass(item));
+        }
+
+        if (string.IsNullOrEmpty(Classes?.ItemContainer) is false)
+        {
+            cssClass.Append(' ').Append(Classes?.ItemContainer);
+        }
 
         if (ItemTemplate is not null) return cssClass.ToString();
 
@@ -236,6 +236,8 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
             cssClass.Append(' ')
                     .Append(RootElementClass)
                     .Append("-ich");
+
+            cssClass.Append(' ').Append(Classes?.ItemChecked);
         }
 
         if (ItemLabelTemplate is not null) return cssClass.ToString();
@@ -264,8 +266,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
                 ? "bit-chg-ilwi"
                 : "bit-chg-ilw";
     }
-
-
 
     private string? GetAriaLabel(TItem item)
     {
@@ -421,26 +421,26 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
     }
 
-    private BitSize GetImageSize(TItem item)
+    private BitImageSize GetImageSize(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.ImageSize ?? new BitSize(0, 0);
+            return choiceGroupItem.ImageSize ?? new BitImageSize(0, 0);
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.ImageSize ?? new BitSize(0, 0);
+            return choiceGroupOption.ImageSize ?? new BitImageSize(0, 0);
         }
 
-        if (NameSelectors is null) return new BitSize(0, 0);
+        if (NameSelectors is null) return new BitImageSize(0, 0);
 
         if (NameSelectors.ImageSize.Selector is not null)
         {
-            return NameSelectors.ImageSize.Selector!(item) ?? new BitSize(0, 0);
+            return NameSelectors.ImageSize.Selector!(item) ?? new BitImageSize(0, 0);
         }
 
-        return item.GetValueFromProperty<BitSize?>(NameSelectors.ImageSize.Name) ?? new BitSize(0, 0);
+        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name) ?? new BitImageSize(0, 0);
     }
 
     private string? GetPrefix(TItem item)
@@ -574,7 +574,6 @@ public partial class BitChoiceGroup<TItem, TValue> where TItem : class
 
         return item.GetValueFromProperty<TValue?>(NameSelectors.Value.Name);
     }
-
 
     private void SetIndex(TItem item, int value)
     {

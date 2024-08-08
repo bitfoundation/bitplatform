@@ -8,7 +8,7 @@ else if (ErrorContent is null)
 {
     <div class="main">
         <div class="header">
-            <BitIconButton OnClick="Recover" IconName="@BitIconName.ChromeClose" />
+            <BitButton OnClick="Recover" IconName="@BitIconName.ChromeClose" Variant="BitVariant.Text" />
         </div>
         <div>
             <img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
@@ -19,8 +19,8 @@ else if (ErrorContent is null)
             <div class="exception">@CurrentException?.ToString()</div>
         }
         <div class="buttons">
-            <BitButton OnClick="Refresh" ButtonStyle="BitButtonStyle.Primary">Refresh</BitButton>
-            <BitButton OnClick="GoHome" ButtonStyle="BitButtonStyle.Standard">Home</BitButton>
+            <BitButton OnClick="Refresh">Refresh</BitButton>
+            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
         </div>
     </div>
 }

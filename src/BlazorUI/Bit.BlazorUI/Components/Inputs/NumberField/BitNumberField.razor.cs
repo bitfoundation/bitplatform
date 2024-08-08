@@ -4,74 +4,42 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitNumberField<TValue>
+public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
-    private const int INITIAL_STEP_DELAY = 400;
-    private const int STEP_DELAY = 75;
-
-    private TValue? step;
-    private TValue? min;
-    private TValue? max;
-    private bool required;
-    private bool leftLabel;
-
-    private double _internalStep = 1;
-    private double? _internalMin;
-    private double? _internalMax;
-    private int _precision;
+    private bool _hasFocus;
+    private TValue _min = default!;
+    private TValue _max = default!;
+    private TValue _step = default!;
     private readonly string _labelId;
     private readonly string _inputId;
-    private ElementReference _inputRef;
+    private readonly Type _typeOfValue;
+    private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
     private ElementReference _buttonDecrement;
-    private readonly Type _typeOfValue;
-    private readonly bool _isNullableType;
-    private bool _hasFocus;
-    private readonly bool _isDecimals;
-    private readonly double _minGenericValue;
-    private readonly double _maxGenericValue;
-    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationTokenSource _continuousChangeValueCts = new();
 
-    private string? _intermediateValue
-    {
-        get => CurrentValueAsString;
-        set
-        {
-            if (IsEnabled is false) return;
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
-            var cleanValue = GetCleanValue(value);
-            if (_isNullableType && cleanValue.HasNoValue())
-            {
-                SetValue(null);
-            }
-            else
-            {
-                var isNumber = double.TryParse(cleanValue, out var numericValue);
-
-                if (isNumber is false) return;
-                if (numericValue == GetDoubleValueOrDefault(CurrentValue)) return;
-                SetValue(numericValue);
-            }
-
-            _ = OnChange.InvokeAsync(CurrentValue);
-        }
-    }
 
     public BitNumberField()
     {
+        BindConverter.TryConvertTo("1", CultureInfo.InvariantCulture, out _step!);
+        BindConverter.TryConvertTo("0", CultureInfo.InvariantCulture, out _zeroValue!);
+
         _typeOfValue = typeof(TValue);
-        _isNullableType = Nullable.GetUnderlyingType(_typeOfValue) is not null;
         _typeOfValue = Nullable.GetUnderlyingType(_typeOfValue) ?? _typeOfValue;
 
-        _isDecimals = _typeOfValue == typeof(float) || _typeOfValue == typeof(double) || _typeOfValue == typeof(decimal);
-        _minGenericValue = GetMinValue();
-        _maxGenericValue = GetMaxValue();
+        _min = GetTypeMinValue();
+        _max = GetTypeMaxValue();
+
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
     }
 
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers.
@@ -104,11 +72,6 @@ public partial class BitNumberField<TValue>
     [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Initial value of the number field.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     [Parameter] public string? DecrementAriaLabel { get; set; }
@@ -119,14 +82,19 @@ public partial class BitNumberField<TValue>
     [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
-    /// Icon name for an icon to display alongside the number field's label.
+    /// Initial value of the number field.
     /// </summary>
-    [Parameter] public string? IconName { get; set; }
+    [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Icon name for an icon to display alongside the number field's label.
+    /// </summary>
+    [Parameter] public string? IconName { get; set; }
 
     /// <summary>
     /// Accessible label text for the increment button (for screen reader users).
@@ -139,6 +107,12 @@ public partial class BitNumberField<TValue>
     [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
 
     /// <summary>
+    /// The position of the label in regards to the number field.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool InlineLabel { get; set; }
+
+    /// <summary>
     /// Descriptive label for the number field, Label displayed above the number field and read by screen readers.
     /// </summary>
     [Parameter] public string Label { get; set; } = string.Empty;
@@ -149,73 +123,23 @@ public partial class BitNumberField<TValue>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The position of the label in regards to the number field.
+    /// Min value of the number field.
     /// </summary>
     [Parameter]
-    public bool LeftLabel
-    {
-        get => leftLabel;
-        set
-        {
-            if (leftLabel == value) return;
-
-            leftLabel = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [CallOnSet(nameof(OnSetMin))]
+    public string? Min { get; set; }
 
     /// <summary>
-    /// Min value of the number field. If not provided, the number field has minimum value.
+    /// Max value of the number field.
     /// </summary>
     [Parameter]
-    public TValue? Min
-    {
-        get => min;
-        set
-        {
-            _internalMin = GetDoubleValueOrDefault(value);
-            min = value;
-        }
-    }
-
-    /// <summary>
-    /// Max value of the number field. If not provided, the number field has max value.
-    /// </summary>
-    [Parameter]
-    public TValue? Max
-    {
-        get => max;
-        set
-        {
-            _internalMax = GetDoubleValueOrDefault(value);
-            max = value;
-        }
-    }
+    [CallOnSet(nameof(OnSetMax))]
+    public string? Max { get; set; }
 
     /// <summary>
     /// The format of the number in the number field.
     /// </summary>
-    [Parameter] public string NumberFormat { get; set; } = "{0}";
-
-    /// <summary>
-    /// Callback for when the number field value change.
-    /// </summary>
-    [Parameter] public EventCallback<TValue> OnChange { get; set; }
-
-    /// <summary>
-    /// Callback for when focus moves into the input
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
-
-    /// <summary>
-    /// Callback for when focus moves out of the input
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
-
-    /// <summary>
-    /// Callback for when focus moves into the input
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    [Parameter] public string? NumberFormat { get; set; }
 
     /// <summary>
     /// Callback for when the control loses focus.
@@ -228,53 +152,34 @@ public partial class BitNumberField<TValue>
     [Parameter] public EventCallback<TValue> OnDecrement { get; set; }
 
     /// <summary>
+    /// Callback for when focus moves into the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves into the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves out of the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
     /// Callback for when the increment button or up arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnIncrement { get; set; }
 
     /// <summary>
-    /// How many decimal places the value should be rounded to.
+    /// The message format used for invalid values entered in the input.
     /// </summary>
-    [Parameter] public int? Precision { get; set; }
+    [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field is not valid.";
 
     /// <summary>
     /// Input placeholder text.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
-
-    /// <summary>
-    /// Difference between two adjacent values of the number field.
-    /// </summary>
-    [Parameter]
-    public TValue? Step
-    {
-        get => step;
-        set
-        {
-            _internalStep = GetDoubleValueOrDefault(value) ?? 1;
-            step = value;
-        }
-    }
-
-    /// <summary>
-    /// Custom CSS styles for different parts of the BitNumberField.
-    /// </summary>
-    [Parameter] public BitNumberFieldClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// Whether to show the increment and decrement buttons.
-    /// </summary>
-    [Parameter] public bool ShowButtons { get; set; }
-
-    /// <summary>
-    /// A more descriptive title for the control, visible on its tooltip.
-    /// </summary>
-    [Parameter] public string? Title { get; set; }
-
-    /// <summary>
-    /// The message format used for invalid values entered in the input.
-    /// </summary>
-    [Parameter] public string ValidationMessage { get; set; } = "The {0} field is not valid.";
 
     /// <summary>
     /// Prefix displayed before the numeric field contents. This is not included in the value.
@@ -288,6 +193,23 @@ public partial class BitNumberField<TValue>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
+    /// Whether to show the increment and decrement buttons.
+    /// </summary>
+    [Parameter] public bool ShowButtons { get; set; }
+
+    /// <summary>
+    /// Difference between two adjacent values of the number field.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetStep))]
+    public string? Step { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitNumberField.
+    /// </summary>
+    [Parameter] public BitNumberFieldClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Suffix displayed after the numeric field contents. This is not included in the value. 
     /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
     /// </summary>
@@ -299,32 +221,9 @@ public partial class BitNumberField<TValue>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
-    /// Whether the associated input is required or not, add an asterisk "*" to its label.
+    /// A more descriptive title for the control, visible on its tooltip.
     /// </summary>
-    [Parameter]
-    public bool Required
-    {
-        get => required;
-        set
-        {
-            if (required == value) return;
-
-            required = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-
-
-    /// <summary>
-    /// The ElementReference to the input element of the BitNumberField.
-    /// </summary>
-    public ElementReference InputElement => _inputRef;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitNumberField.
-    /// </summary>
-    public ValueTask FocusAsync() => _inputRef.FocusAsync();
+    [Parameter] public string? Title { get; set; }
 
 
 
@@ -334,13 +233,13 @@ public partial class BitNumberField<TValue>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-nfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => $"{RootElementClass}-{(LeftLabel ? "llf" : "ltp")}");
+        ClassBuilder.Register(() => $"bit-nfl-{(InlineLabel ? "ilb" : "tlb")}");
 
-        ClassBuilder.Register(() => IsEnabled && Required ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? $"{RootElementClass}-rnl" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -350,132 +249,67 @@ public partial class BitNumberField<TValue>
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if ((ValueHasBeenSet is false || CurrentValue is null) && DefaultValue is not null)
+        if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            SetValue(GetDoubleValueOrDefault(DefaultValue).GetValueOrDefault());
+            Value = DefaultValue;
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
-        if (_internalMin.HasValue is false)
+        if (NumberFormat is not null)
         {
-            _internalMin = _minGenericValue;
+            value = CleanValue(value);
         }
 
-        if (_internalMax.HasValue is false)
+        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
-            _internalMax = _maxGenericValue;
-        }
+            result = CheckMinAndMax(result);
 
-        if (_internalMin > _internalMax)
-        {
-            _internalMin = _minGenericValue;
-            _internalMax = _maxGenericValue;
-        }
-
-        _precision = Precision is not null ? Precision.Value : CalculatePrecision(Step);
-
-        await base.OnParametersSetAsync();
-    }
-
-
-
-    private async Task ApplyValueChange(bool isIncrement)
-    {
-        bool isValid;
-        double result;
-
-        if (isIncrement)
-        {
-            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value + _internalStep;
-            isValid = result <= _internalMax && result >= _internalMin;
+            parsingErrorMessage = null;
+            return true;
         }
         else
         {
-            result = GetDoubleValueOrDefault(CurrentValue, 0d)!.Value - _internalStep;
-            isValid = result <= _internalMax && result >= _internalMin;
-        }
-
-        if (isValid is false) return;
-
-        SetValue(result);
-
-        await OnChange.InvokeAsync(CurrentValue);
-
-        StateHasChanged();
-    }
-
-    private async Task HandleOnPointerDown(bool isIncrement)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        //Change focus from input to number field
-        if (isIncrement)
-        {
-            await _buttonIncrement.FocusAsync();
-        }
-        else
-        {
-            await _buttonDecrement.FocusAsync();
-        }
-
-        await ChangeValue(isIncrement);
-        ResetCts();
-
-        var cts = _cancellationTokenSource;
-        await Task.Run(async () =>
-        {
-            await InvokeAsync(async () =>
-            {
-                await Task.Delay(INITIAL_STEP_DELAY);
-                await ContinuousChangeValue(isIncrement, cts);
-            });
-        }, cts.Token);
-    }
-
-    private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
-    {
-        if (cts.IsCancellationRequested) return;
-
-        await ChangeValue(isIncrement);
-
-        StateHasChanged();
-
-        await Task.Delay(STEP_DELAY);
-        await ContinuousChangeValue(isIncrement, cts);
-    }
-
-    private async Task ChangeValue(bool isIncrement)
-    {
-        await ApplyValueChange(isIncrement);
-        if (isIncrement && OnIncrement.HasDelegate)
-        {
-            await OnIncrement.InvokeAsync(CurrentValue);
-        }
-
-        if (isIncrement is false && OnDecrement.HasDelegate)
-        {
-            await OnDecrement.InvokeAsync(CurrentValue);
+            parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+            return false;
         }
     }
 
-    private void HandleOnPointerUpOrOut()
+    protected override string? FormatValueAsString(TValue? value)
     {
-        ResetCts();
+        if (value is null) return null;
+        if (NumberFormat is null) return value.ToString();
+
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat)
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat)
+             : "0";
     }
 
-    private void ResetCts()
+    protected override void Dispose(bool disposing)
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        _cancellationTokenSource = new();
+        if (disposing)
+        {
+            _continuousChangeValueCts.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
+
+
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
@@ -485,8 +319,7 @@ public partial class BitNumberField<TValue>
         switch (e.Key)
         {
             case "ArrowUp":
-                await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(true);
+                ChangeValue(+1);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -495,8 +328,7 @@ public partial class BitNumberField<TValue>
                 break;
 
             case "ArrowDown":
-                await CheckIntermediateValueAndSetValue();
-                await ApplyValueChange(false);
+                ChangeValue(-1);
 
                 if (OnDecrement.HasDelegate)
                 {
@@ -521,7 +353,8 @@ public partial class BitNumberField<TValue>
 
         _hasFocus = true;
         ClassBuilder.Reset();
-        await _js.SelectText(_inputRef);
+        StyleBuilder.Reset();
+        await _js.SelectText(InputElement);
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -531,6 +364,7 @@ public partial class BitNumberField<TValue>
 
         _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
 
@@ -540,322 +374,217 @@ public partial class BitNumberField<TValue>
 
         _hasFocus = true;
         ClassBuilder.Reset();
-        await _js.SelectText(_inputRef);
+        StyleBuilder.Reset();
+        await _js.SelectText(InputElement);
         await OnFocus.InvokeAsync(e);
     }
 
-    private int CalculatePrecision(TValue? value)
+    private async Task HandleOnPointerDown(bool isIncrement)
     {
-        if (value is null) return 0;
-
-        var pattern = _isDecimals ? @"[1-9]([0]+$)|\.([0-9]*)" : @"(^-\d+$)|\d+";
-        var regex = new Regex(pattern);
-        if (regex.IsMatch($"{value}") is false) return 0;
-
-        var matches = regex.Matches($"{value}");
-        if (matches.Count == 0) return 0;
-
-        var groups = matches[0].Groups;
-        if (groups[1] != null && groups[1].Length != 0)
-        {
-            return -groups[1].Length;
-        }
-
-        if (groups[2] != null && groups[2].Length != 0)
-        {
-            return groups[2].Length;
-        }
-
-        return 0;
-    }
-
-    private void SetValue(double? value)
-    {
-        if (value is null)
-        {
-            CurrentValue = default;
-            return;
-        }
-
-        value = Normalize(value.Value);
-
-        if (value > _internalMax)
-        {
-            CurrentValue = GetGenericValue(_internalMax.Value);
-        }
-        else if (value < _internalMin)
-        {
-            CurrentValue = GetGenericValue(_internalMin.Value);
-        }
-        else
-        {
-            CurrentValue = GetGenericValue(value);
-        }
-    }
-
-    private static string? GetCleanValue(string? value)
-    {
-        if (value.HasNoValue()) return value;
-
-        if (char.IsDigit(value![0]))
-        {
-            Regex pattern = new Regex(@"-?\d+(?:\.\d+)?");
-            var match = pattern.Match(value);
-            if (match.Success)
-            {
-                return match.Value;
-            }
-        }
-
-        return value;
-    }
-
-    private async Task CheckIntermediateValueAndSetValue()
-    {
+        if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        if (_intermediateValue == CurrentValueAsString) return;
 
-        var isNumber = double.TryParse(_intermediateValue, out var numericValue);
-        if (isNumber is false) return;
-
-        SetValue(numericValue);
-        await OnChange.InvokeAsync(CurrentValue);
-    }
-
-    private double GetMaxValue()
-    {
-        if (_typeOfValue == typeof(byte))
+        //Change focus from input to number field
+        if (isIncrement)
         {
-            return byte.MaxValue;
-        }
-        else if (_typeOfValue == typeof(sbyte))
-        {
-            return sbyte.MaxValue;
-        }
-        else if (_typeOfValue == typeof(short))
-        {
-            return short.MaxValue;
-        }
-        else if (_typeOfValue == typeof(ushort))
-        {
-            return ushort.MaxValue;
-        }
-        else if (_typeOfValue == typeof(int))
-        {
-            return int.MaxValue;
-        }
-        else if (_typeOfValue == typeof(uint))
-        {
-            return uint.MaxValue;
-        }
-        else if (_typeOfValue == typeof(long))
-        {
-            return long.MaxValue;
-        }
-        else if (_typeOfValue == typeof(ulong))
-        {
-            return ulong.MaxValue;
-        }
-        else if (_typeOfValue == typeof(double))
-        {
-            return double.MaxValue;
-        }
-        else if (_typeOfValue == typeof(float))
-        {
-            return float.MaxValue;
-        }
-        else if (_typeOfValue == typeof(decimal))
-        {
-            return (double)decimal.MaxValue;
+            await _buttonIncrement.FocusAsync();
         }
         else
         {
-            return double.MaxValue;
+            await _buttonDecrement.FocusAsync();
+        }
+
+        await ChangeValueAndInvokeEvents(isIncrement);
+        ResetCts();
+
+        var cts = _continuousChangeValueCts;
+        await Task.Run(async () =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await Task.Delay(400);
+                await ContinuousChangeValue(isIncrement, cts);
+            });
+        }, cts.Token);
+    }
+
+    private async Task HandleOnPointerUpOrOut()
+    {
+        ResetCts();
+    }
+
+
+
+    private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
+    {
+        if (cts.IsCancellationRequested) return;
+
+        await ChangeValueAndInvokeEvents(isIncrement);
+
+        StateHasChanged();
+
+        await Task.Delay(75);
+        await ContinuousChangeValue(isIncrement, cts);
+    }
+
+    private async Task ChangeValueAndInvokeEvents(bool isIncrement)
+    {
+        ChangeValue(isIncrement ? +1 : -1);
+
+        if (isIncrement && OnIncrement.HasDelegate)
+        {
+            await OnIncrement.InvokeAsync(CurrentValue);
+        }
+
+        if (isIncrement is false && OnDecrement.HasDelegate)
+        {
+            await OnDecrement.InvokeAsync(CurrentValue);
         }
     }
 
-    private double GetMinValue()
+    private void ChangeValue(int factor)
     {
-        if (_typeOfValue == typeof(byte))
+        TValue result;
+
+        if (_typeOfValue == typeof(ushort))
         {
-            return byte.MinValue;
-        }
-        else if (_typeOfValue == typeof(sbyte))
-        {
-            return sbyte.MinValue;
-        }
-        else if (_typeOfValue == typeof(short))
-        {
-            return short.MinValue;
-        }
-        else if (_typeOfValue == typeof(ushort))
-        {
-            return ushort.MinValue;
-        }
-        else if (_typeOfValue == typeof(int))
-        {
-            return int.MinValue;
+            var r = factor > 0
+                        ? (Convert.ToInt16(CurrentValue) + Convert.ToInt16(_step))
+                        : (Convert.ToInt16(CurrentValue) - Convert.ToInt16(_step));
+            result = (TValue)(object)Convert.ToUInt16(r < 0 ? 0 : r);
         }
         else if (_typeOfValue == typeof(uint))
         {
-            return uint.MinValue;
-        }
-        else if (_typeOfValue == typeof(long))
-        {
-            return long.MinValue;
+            var r = factor > 0
+                        ? (Convert.ToInt32(CurrentValue) + Convert.ToInt32(_step))
+                        : (Convert.ToInt32(CurrentValue) - Convert.ToInt32(_step));
+            result = (TValue)(object)Convert.ToUInt32(r < 0 ? 0 : r);
         }
         else if (_typeOfValue == typeof(ulong))
         {
-            return ulong.MinValue;
-        }
-        else if (_typeOfValue == typeof(double))
-        {
-            return double.MinValue;
-        }
-        else if (_typeOfValue == typeof(float))
-        {
-            return float.MinValue;
-        }
-        else if (_typeOfValue == typeof(decimal))
-        {
-            return (double)decimal.MinValue;
+            var r = factor > 0
+                        ? (Convert.ToInt64(CurrentValue) + Convert.ToInt64(_step))
+                        : (Convert.ToInt64(CurrentValue) - Convert.ToInt64(_step));
+            result = (TValue)(object)Convert.ToUInt64(r < 0 ? 0 : r);
         }
         else
         {
-            return double.MinValue;
+            result = _typeOfValue == typeof(byte) ? (TValue)(object)(Convert.ToByte(CurrentValue) + (Convert.ToByte(factor) * Convert.ToByte(_step)))
+                   : _typeOfValue == typeof(sbyte) ? (TValue)(object)(Convert.ToSByte(CurrentValue) + (Convert.ToSByte(factor) * Convert.ToSByte(_step)))
+                   : _typeOfValue == typeof(short) ? (TValue)(object)(Convert.ToInt16(CurrentValue) + (Convert.ToInt16(factor) * Convert.ToInt16(_step)))
+                   : _typeOfValue == typeof(int) ? (TValue)(object)(Convert.ToInt32(CurrentValue) + (Convert.ToInt32(factor) * Convert.ToInt32(_step)))
+                   : _typeOfValue == typeof(long) ? (TValue)(object)(Convert.ToInt64(CurrentValue) + (Convert.ToInt64(factor) * Convert.ToInt64(_step)))
+                   : _typeOfValue == typeof(float) ? (TValue)(object)(Convert.ToSingle(CurrentValue) + (Convert.ToSingle(factor) * Convert.ToSingle(_step)))
+                   : _typeOfValue == typeof(decimal) ? (TValue)(object)(Convert.ToDecimal(CurrentValue) + (Convert.ToDecimal(factor) * Convert.ToDecimal(_step)))
+                   : _typeOfValue == typeof(double) ? (TValue)(object)(Convert.ToDouble(CurrentValue) + (Convert.ToDouble(factor) * Convert.ToDouble(_step)))
+                   : _zeroValue;
+        }
+
+        result = CheckMinAndMax(result);
+
+        CurrentValue = result;
+
+        StateHasChanged();
+    }
+
+    private void ResetCts()
+    {
+        _continuousChangeValueCts.Cancel();
+        _continuousChangeValueCts.Dispose();
+        _continuousChangeValueCts = new();
+    }
+
+    private TValue GetTypeMaxValue()
+    {
+        return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MaxValue
+             : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MaxValue
+             : _typeOfValue == typeof(short) ? (TValue)(object)short.MaxValue
+             : _typeOfValue == typeof(ushort) ? (TValue)(object)ushort.MaxValue
+             : _typeOfValue == typeof(int) ? (TValue)(object)int.MaxValue
+             : _typeOfValue == typeof(uint) ? (TValue)(object)uint.MaxValue
+             : _typeOfValue == typeof(long) ? (TValue)(object)long.MaxValue
+             : _typeOfValue == typeof(ulong) ? (TValue)(object)ulong.MaxValue
+             : _typeOfValue == typeof(float) ? (TValue)(object)float.MaxValue
+             : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MaxValue
+             : _typeOfValue == typeof(double) ? (TValue)(object)double.MaxValue
+             : _zeroValue;
+    }
+
+    private TValue GetTypeMinValue()
+    {
+        return _typeOfValue == typeof(byte) ? (TValue)(object)byte.MinValue
+             : _typeOfValue == typeof(sbyte) ? (TValue)(object)sbyte.MinValue
+             : _typeOfValue == typeof(short) ? (TValue)(object)short.MinValue
+             : _typeOfValue == typeof(ushort) ? (TValue)(object)ushort.MinValue
+             : _typeOfValue == typeof(int) ? (TValue)(object)int.MinValue
+             : _typeOfValue == typeof(uint) ? (TValue)(object)uint.MinValue
+             : _typeOfValue == typeof(long) ? (TValue)(object)long.MinValue
+             : _typeOfValue == typeof(ulong) ? (TValue)(object)ulong.MinValue
+             : _typeOfValue == typeof(float) ? (TValue)(object)float.MinValue
+             : _typeOfValue == typeof(decimal) ? (TValue)(object)decimal.MinValue
+             : _typeOfValue == typeof(double) ? (TValue)(object)double.MinValue
+             : _zeroValue;
+    }
+
+    private TValue CheckMinAndMax(TValue result)
+    {
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(result) < Convert.ToByte(_min) ? _min : Convert.ToByte(result) > Convert.ToByte(_max) ? _max : result
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(result) < Convert.ToSByte(_min) ? _min : Convert.ToSByte(result) > Convert.ToSByte(_max) ? _max : result
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(result) < Convert.ToInt16(_min) ? _min : Convert.ToInt16(result) > Convert.ToInt16(_max) ? _max : result
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(result) < Convert.ToUInt16(_min) ? _min : Convert.ToUInt16(result) > Convert.ToUInt16(_max) ? _max : result
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(result) < Convert.ToInt32(_min) ? _min : Convert.ToInt32(result) > Convert.ToInt32(_max) ? _max : result
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(result) < Convert.ToUInt32(_min) ? _min : Convert.ToUInt32(result) > Convert.ToUInt32(_max) ? _max : result
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(result) < Convert.ToInt64(_min) ? _min : Convert.ToInt64(result) > Convert.ToInt64(_max) ? _max : result
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(result) < Convert.ToUInt64(_min) ? _min : Convert.ToUInt64(result) > Convert.ToUInt64(_max) ? _max : result
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(result) < Convert.ToSingle(_min) ? _min : Convert.ToSingle(result) > Convert.ToSingle(_max) ? _max : result
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(result) < Convert.ToDecimal(_min) ? _min : Convert.ToDecimal(result) > Convert.ToDecimal(_max) ? _max : result
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(result) < Convert.ToDouble(_min) ? _min : Convert.ToDouble(result) > Convert.ToDouble(_max) ? _max : result
+             : _zeroValue;
+    }
+
+    private static string? CleanValue(string? value)
+    {
+        if (value.HasNoValue()) return null;
+
+        var pattern = new Regex(@"-?\d*(?:\.\d*)?");
+        var matchCollection = pattern.Matches(value!);
+
+        return matchCollection is null ? value : string.Join("", matchCollection.Select(m => m.Value));
+    }
+
+    private void OnSetMin()
+    {
+        if (BindConverter.TryConvertTo(Min, CultureInfo.InvariantCulture, out TValue? result))
+        {
+            _min = result ?? GetTypeMinValue();
+        }
+        else
+        {
+            _min = GetTypeMinValue();
         }
     }
 
-    private double Normalize(double value) => Math.Round(value, _precision);
-    private double NormalizeDecimal(decimal value) => Convert.ToDouble(Math.Round(value, _precision));
-    private TValue? GetAriaValueNow => AriaValueNow is not null ? AriaValueNow : CurrentValue;
-    private string? GetAriaValueText => AriaValueText.HasValue() ? AriaValueText : CurrentValueAsString;
-    private string? GetIconRole => IconAriaLabel.HasValue() ? "img" : null;
-    private TValue? GetGenericValue(double? value) => value.HasValue ? (TValue)Convert.ChangeType(value, _typeOfValue, CultureInfo.InvariantCulture) : default;
-    private double? GetDoubleValueOrDefault(TValue? value, double? defaultValue = null) => value is null ? defaultValue : (double?)Convert.ChangeType(value, typeof(double), CultureInfo.InvariantCulture);
-
-    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    private void OnSetMax()
     {
-        if (_typeOfValue == typeof(byte))
+        if (BindConverter.TryConvertTo(Max, CultureInfo.InvariantCulture, out TValue? result))
         {
-            if (byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
+            _max = result ?? GetTypeMaxValue();
         }
-        else if (_typeOfValue == typeof(sbyte))
+        else
         {
-            if (sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
+            _max = GetTypeMaxValue();
         }
-        else if (_typeOfValue == typeof(short))
-        {
-            if (short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(ushort))
-        {
-            if (ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(int))
-        {
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(uint))
-        {
-            if (uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(long))
-        {
-            if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(ulong))
-        {
-            if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(double))
-        {
-            if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(float))
-        {
-            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(Normalize(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-        else if (_typeOfValue == typeof(decimal))
-        {
-            if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                result = GetGenericValue(NormalizeDecimal(parsedValue));
-                validationErrorMessage = null;
-                return true;
-            }
-        }
-
-        result = default;
-        validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ValidationMessage, DisplayName ?? FieldIdentifier.FieldName);
-        return false;
     }
 
-    protected override string? FormatValueAsString(TValue? value)
+    private void OnSetStep()
     {
-        if (value is null) return null;
-
-        var normalValue = Normalize(GetDoubleValueOrDefault(value)!.Value);
-        return string.Format(NumberFormat, normalValue);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
+        if (BindConverter.TryConvertTo(Step, CultureInfo.InvariantCulture, out TValue? result))
         {
-            _cancellationTokenSource.Dispose();
+            _step = result ?? ((TValue)(object)1);
         }
-
-        base.Dispose(disposing);
+        else
+        {
+            _step = (TValue)(object)1;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Todo;
+﻿using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
 
 namespace Boilerplate.Client.Core.Components.Pages.Todo;
@@ -17,7 +17,7 @@ public partial class TodoPage
     private string? underEditTodoItemTitle;
     private string newTodoTitle = string.Empty;
     private ConfirmMessageBox confirmMessageBox = default!;
-    private IList<TodoItemDto> allTodoItems = default!;
+    private IList<TodoItemDto> allTodoItems = [];
     private IList<TodoItemDto> viewTodoItems = default!;
     private List<BitDropdownItem<string>> sortItems = [];
     private BitSearchBox searchBox = default!;

@@ -12,7 +12,7 @@ namespace Bit.Websites.Careers.Server.Startup;
 
 public class Middlewares
 {
-    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void Use(WebApplication app, IWebHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
@@ -28,18 +28,26 @@ public class Middlewares
 
         Configure_404_Page(app);
 
-        app.UseStaticFiles(new StaticFileOptions
+        if (env.IsDevelopment() is false)
         {
-            OnPrepareResponse = ctx =>
+            app.Use(async (context, next) =>
             {
-                // https://bitplatform.dev/templates/cache-mechanism
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
-                    MaxAge = TimeSpan.FromDays(7),
-                    Public = true
-                };
-            }
-        });
+                    context.Response.OnStarting(async () =>
+                    {
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            MaxAge = TimeSpan.FromDays(7),
+                            Public = true
+                        };
+                    });
+                }
+                await next.Invoke();
+            });
+        }
+        app.UseStaticFiles();
 
         app.UseResponseCaching();
         app.UseAntiforgery();

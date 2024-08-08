@@ -1,0 +1,32 @@
+﻿@page "/components/spacer"
+
+<PageOutlet Url="components/spacer"
+            Title="Spacer"
+            Description="spacer component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Spacer"
+               ComponentDescription="The purpose of the BitSpacer is to generate space between other components. You can either create a space with a set width (in number of pixels) or create a space with a flexible width."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div style="display: flex; width: 100%;">
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" />
+                <BitSpacer />
+                <BitTypography Variant="BitTypographyVariant.H6">Title</BitTypography>
+                <BitSpacer />
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+    <ComponentExampleBox Title="Width" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div style="display: flex; width: 100%;">
+                <BitSpinner />
+                <BitSpacer Width="64" />
+                <BitSpinner />
+                <BitSpacer Width="64" />
+                <BitSpinner />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

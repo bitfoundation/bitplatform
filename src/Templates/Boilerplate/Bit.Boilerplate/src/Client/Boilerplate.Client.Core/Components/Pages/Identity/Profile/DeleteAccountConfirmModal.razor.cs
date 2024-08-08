@@ -1,4 +1,4 @@
-﻿using Boilerplate.Client.Core.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
@@ -21,7 +21,7 @@ public partial class DeleteAccountConfirmModal
     {
         await userController.Delete(CurrentCancellationToken);
 
-        await AuthenticationManager.SignOut();
+        await AuthenticationManager.SignOut(CurrentCancellationToken);
 
         await CloseModal();
     }

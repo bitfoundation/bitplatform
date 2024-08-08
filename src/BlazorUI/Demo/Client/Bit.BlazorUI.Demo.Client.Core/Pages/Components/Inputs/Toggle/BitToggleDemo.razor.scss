@@ -1,35 +1,38 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 .example-box {
-    max-width: rem2(300px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 ::deep {
-    .custom-class {
-        padding: 0.5rem;
-        width: max-content;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-text {
-        color: lightskyblue;
-        text-shadow: 0 0 0.5rem red;
+    .custom-thumb {
+        background: #fff;
+        width: rem2(30px);
+        height: rem2(30px);
     }
 
     .custom-button {
-        border-radius: 1rem;
-        background-color: darkslategray;
+        padding: 0;
+        border: none;
+        background: #ccc;
+        width: rem2(52px);
+        height: rem2(22px);
+        border-radius: rem2(11px);
     }
 
     .custom-check {
-        .custom-text {
-            color: rebeccapurple;
+        .custom-thumb {
+            background: #ff6868;
         }
 
         .custom-button {
-            border-radius: 1rem;
-            background-color: red;
+            background: #ffcece;
+        }
+
+        .custom-button:hover .custom-thumb {
+            background: #ff6868;
         }
     }
 

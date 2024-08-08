@@ -1,13 +1,8 @@
-﻿.buttons-container {
+﻿.example-content {
     gap: 0.5rem;
     display: flex;
-    flex-flow: row wrap;
+    flex-wrap: wrap;
     align-items: flex-start;
-}
-
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
 }
 
 .custom-loading {
@@ -23,8 +18,15 @@
 
 ::deep {
     .custom-class {
-        color: blueviolet;
         border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+    }
+
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
     }
 
     .custom-content {
@@ -33,25 +35,26 @@
         align-items: center;
     }
 
-    .validation-message {
-        color: red;
-    }
-
     .custom-root {
+        color: aqua;
         min-width: 7.2rem;
+        font-weight: bold;
+        border-radius: 1rem;
+        border-color: aqua;
         box-shadow: aqua 0 0 0.5rem;
     }
 
-    .custom-container {
-        text-shadow: aqua 0 0 0.5rem;
+    .custom-root:hover {
+        color: black;
+        background-color: aqua;
     }
 
-    .custom-label {
-        color: goldenrod;
+    .custom-container {
+        text-shadow: tomato 0 0 0.5rem;
     }
 
     .custom-spinner {
-        border-color: aqua;
+        border-color: red;
         border-top-color: goldenrod;
     }
 }

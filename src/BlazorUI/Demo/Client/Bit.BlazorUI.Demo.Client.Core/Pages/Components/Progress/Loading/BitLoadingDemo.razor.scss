@@ -1,0 +1,17 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+.container {
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.wrapper {
+    display: flex;
+    height: rem2(176px);
+    align-items: center;
+    min-width: rem2(176px);
+    flex-direction: column;
+}

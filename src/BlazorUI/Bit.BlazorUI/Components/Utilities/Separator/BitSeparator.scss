@@ -1,0 +1,75 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-spr {
+    position: relative;
+}
+
+.bit-spr-cnt {
+    position: relative;
+    display: inline-block;
+    color: $clr-fg-pri;
+    background: $clr-bg-pri;
+}
+
+.bit-spr-hrz {
+    display: block;
+    padding: spacing(0.5) 0;
+
+    &::before {
+        content: "";
+        display: block;
+        inset: 50% 0 0;
+        position: absolute;
+        height: $shp-border-width;
+        background-color: $clr-brd-sec;
+    }
+
+    .bit-spr-cnt {
+        padding: 0 spacing(1.5);
+    }
+
+    &.bit-spr-ctr {
+        text-align: center;
+    }
+
+    &.bit-spr-srt {
+        text-align: start;
+    }
+
+    &.bit-spr-end {
+        text-align: end;
+    }
+}
+
+.bit-spr-vrt {
+    z-index: 1;
+    height: inherit;
+    display: table-cell;
+    padding: 0 spacing(0.5);
+
+    &::after {
+        content: "";
+        z-index: -1;
+        display: block;
+        inset: 0 0 0 50%;
+        position: absolute;
+        width: $shp-border-width;
+        background-color: $clr-brd-sec;
+    }
+
+    .bit-spr-cnt {
+        padding: spacing(1.5) 0;
+    }
+
+    &.bit-spr-ctr {
+        vertical-align: middle;
+    }
+
+    &.bit-spr-srt {
+        vertical-align: top;
+    }
+
+    &.bit-spr-end {
+        vertical-align: bottom;
+    }
+}

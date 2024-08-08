@@ -3,27 +3,27 @@
 .bit-btn {
     cursor: pointer;
     gap: spacing(0.5);
-    align-items: center;
+    text-align: start;
+    flex-direction: row;
     display: inline-flex;
     text-decoration: none;
-    min-width: spacing(8);
-    min-height: spacing(4);
     box-sizing: border-box;
+    align-items: flex-start;
     justify-content: center;
-    font-size: spacing(1.75);
-    padding: spacing(0.5) spacing(2);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
-    --bit-btn-lbl-size: #{spacing(1.5)};
-    --bit-btn-spn-size: #{spacing(2.5)};
+    color: var(--bit-btn-clr-txt);
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    padding: var(--bit-btn-padding);
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
+    --bit-btn-clr-bg-dis: #{$clr-bg-dis};
+    --bit-btn-clr-brd-dis: #{$clr-brd-dis};
 
     &.bit-dis {
         cursor: default;
+        color: $clr-fg-dis;
         pointer-events: none;
-        color: $color-foreground-disabled;
     }
 
     @keyframes bit-btn-spinner-animation {
@@ -37,88 +37,37 @@
     }
 }
 
-.bit-btn-pri {
-    color: var(--bit-btn-pri-clr);
-    background-color: var(--bit-btn-bg-clr);
-    border-color: var(--bit-btn-pri-brd-clr);
-    --bit-btn-bg-clr: #{$color-primary-main};
-    --bit-btn-pri-clr: #{$color-primary-text};
-    --bit-btn-pri-brd-clr: #{$color-primary-main};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-primary};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-primary};
-    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-btn-pri-hover-bg-clr);
-            background-color: var(--bit-btn-pri-hover-bg-clr);
-        }
-    }
-
-    &:active {
-        border-color: var(--bit-btn-pri-active-bg-clr);
-        background-color: var(--bit-btn-pri-active-bg-clr);
-    }
-
-    &.bit-dis {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
-    }
+.bit-btn-tcn {
+    display: flex;
+    gap: spacing(0.625);
+    flex-direction: column;
 }
 
-.bit-btn-std {
-    color: var(--bit-btn-sec-clr);
-    background-color: $color-secondary-main;
-    border-color: var(--bit-btn-sec-brd-clr);
-    --bit-btn-sec-clr: #{$color-secondary-text};
-    --bit-btn-sec-brd-clr: #{$color-secondary-text};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
-    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-btn-sec-hover-bg-clr);
-        }
-    }
-
-    &:active {
-        background-color: var(--bit-btn-sec-active-bg-clr);
-    }
-
-    &.bit-dis {
-        border-color: $color-border-disabled;
-    }
+.bit-btn-prt {
+    font-size: var(--bit-btn-prt-fontsize);
 }
 
-.bit-btn-txt {
-    border-color: transparent;
-    color: var(--bit-btn-sec-clr);
-    background-color: transparent;
-    --bit-btn-sec-clr: #{$color-secondary-text};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-secondary};
-    --bit-btn-ldg-brd-top-clr: #{$color-primary-dark};
+.bit-btn-sct {
+    font-size: var(--bit-btn-sct-fontsize);
+}
 
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-btn-sec-hover-bg-clr);
-        }
-    }
+.bit-btn-icn {
+    font-size: var(--bit-btn-icn-fontsize);
+    margin-top: var(--bit-btn-icn-margintop);
+}
 
-    &:active {
-        background-color: var(--bit-btn-sec-active-bg-clr);
-    }
+.bit-btn-rvi {
+    flex-direction: row-reverse;
 }
 
 .bit-btn-spn {
     border-radius: 50%;
+    border-width: spacing(0.2125);
     width: var(--bit-btn-spn-size);
     height: var(--bit-btn-spn-size);
-    border-width: spacing(0.2125);
-    border-style: $shape-border-style;
-    border-color: $color-border-secondary;
-    border-top-color: var(--bit-btn-ldg-brd-top-clr);
+    border-color: $clr-brd-sec;
+    border-style: $shp-border-style;
+    border-top-color: var(--bit-btn-clr-spn);
     animation: bit-btn-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
@@ -134,91 +83,171 @@
 .bit-btn-lbl {
     color: inherit;
     text-align: center;
-    font-size: var(--bit-btn-lbl-size);
+    font-size: var(--bit-btn-lbl-fontsize);
+}
+
+
+.bit-btn-fil {
+    border-color: var(--bit-btn-clr);
+    background-color: var(--bit-btn-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-btn-clr-hover);
+            background-color: var(--bit-btn-clr-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-btn-clr-active);
+        background-color: var(--bit-btn-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: var(--bit-btn-clr-brd-dis);
+        background-color: var(--bit-btn-clr-bg-dis);
+    }
+}
+
+.bit-btn-otl {
+    color: var(--bit-btn-clr);
+    background-color: transparent;
+    border-color: var(--bit-btn-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-btn-clr-txt);
+            background-color: var(--bit-btn-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-btn-clr-txt);
+        background-color: var(--bit-btn-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: var(--bit-btn-clr-brd-dis);
+    }
+}
+
+.bit-btn-txt {
+    color: var(--bit-btn-clr);
+    border-color: transparent;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-btn-clr-txt);
+            background-color: var(--bit-btn-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-btn-clr-txt);
+        background-color: var(--bit-btn-clr-active);
+    }
+}
+
+
+.bit-btn-pri {
+    --bit-btn-clr-txt: #{$clr-pri-text};
+    --bit-btn-clr: #{$clr-pri};
+    --bit-btn-clr-hover: #{$clr-pri-hover};
+    --bit-btn-clr-active: #{$clr-pri-active};
+    --bit-btn-clr-spn: #{$clr-pri-dark};
+}
+
+.bit-btn-sec {
+    --bit-btn-clr-txt: #{$clr-sec-text};
+    --bit-btn-clr: #{$clr-sec};
+    --bit-btn-clr-hover: #{$clr-sec-hover};
+    --bit-btn-clr-active: #{$clr-sec-active};
+    --bit-btn-clr-spn: #{$clr-sec-dark};
+}
+
+.bit-btn-ter {
+    --bit-btn-clr-txt: #{$clr-ter-text};
+    --bit-btn-clr: #{$clr-ter};
+    --bit-btn-clr-hover: #{$clr-ter-hover};
+    --bit-btn-clr-active: #{$clr-ter-active};
+    --bit-btn-clr-spn: #{$clr-ter-dark};
 }
 
 .bit-btn-inf {
-    --bit-btn-bg-clr: #{$color-state-info-bg};
-    --bit-btn-ldg-brd-top-clr: #{$color-state-info};
-    --bit-btn-pri-clr: #{$color-foreground-primary};
-    --bit-btn-pri-brd-clr: #{$color-state-info-bg};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-state-info-bg};
-    --bit-btn-sec-clr: #{$color-state-info};
-    --bit-btn-sec-brd-clr: #{$color-state-info};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-state-info-bg};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-state-info-bg};
+    --bit-btn-clr-txt: #{$clr-inf-text};
+    --bit-btn-clr: #{$clr-inf};
+    --bit-btn-clr-hover: #{$clr-inf-hover};
+    --bit-btn-clr-active: #{$clr-inf-active};
+    --bit-btn-clr-spn: #{$clr-inf-dark};
 }
 
 .bit-btn-suc {
-    --bit-btn-bg-clr: #{$color-state-success-bg};
-    --bit-btn-ldg-brd-top-clr: #{$color-state-success};
-    --bit-btn-pri-clr: #{$color-foreground-primary};
-    --bit-btn-pri-brd-clr: #{$color-state-success-bg};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-state-success-bg};
-    --bit-btn-sec-clr: #{$color-state-success};
-    --bit-btn-sec-brd-clr: #{$color-state-success};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-state-success-bg};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-state-success-bg};
+    --bit-btn-clr-txt: #{$clr-suc-text};
+    --bit-btn-clr: #{$clr-suc};
+    --bit-btn-clr-hover: #{$clr-suc-hover};
+    --bit-btn-clr-active: #{$clr-suc-active};
+    --bit-btn-clr-spn: #{$clr-suc-dark};
 }
 
 .bit-btn-wrn {
-    --bit-btn-bg-clr: #{$color-state-warning-bg};
-    --bit-btn-ldg-brd-top-clr: #{$color-state-warning};
-    --bit-btn-pri-clr: #{$color-foreground-primary};
-    --bit-btn-pri-brd-clr: #{$color-state-warning-bg};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-state-warning-bg};
-    --bit-btn-sec-clr: #{$color-state-warning};
-    --bit-btn-sec-brd-clr: #{$color-state-warning};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-state-warning-bg};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-state-warning-bg};
+    --bit-btn-clr-txt: #{$clr-wrn-text};
+    --bit-btn-clr: #{$clr-wrn};
+    --bit-btn-clr-hover: #{$clr-wrn-hover};
+    --bit-btn-clr-active: #{$clr-wrn-active};
+    --bit-btn-clr-spn: #{$clr-wrn-dark};
 }
 
 .bit-btn-swr {
-    --bit-btn-bg-clr: #{$color-state-severe-warning-bg};
-    --bit-btn-ldg-brd-top-clr: #{$color-state-severe-warning};
-    --bit-btn-pri-clr: #{$color-foreground-primary};
-    --bit-btn-pri-brd-clr: #{$color-state-severe-warning-bg};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
-    --bit-btn-sec-clr: #{$color-state-severe-warning};
-    --bit-btn-sec-brd-clr: #{$color-state-severe-warning};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-state-severe-warning-bg};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-state-severe-warning-bg};
+    --bit-btn-clr-txt: #{$clr-swr-text};
+    --bit-btn-clr: #{$clr-swr};
+    --bit-btn-clr-hover: #{$clr-swr-hover};
+    --bit-btn-clr-active: #{$clr-swr-active};
+    --bit-btn-clr-spn: #{$clr-swr-dark};
 }
 
 .bit-btn-err {
-    --bit-btn-bg-clr: #{$color-state-error-bg};
-    --bit-btn-ldg-brd-top-clr: #{$color-state-error};
-    --bit-btn-pri-clr: #{$color-foreground-primary};
-    --bit-btn-pri-brd-clr: #{$color-state-error-bg};
-    --bit-btn-pri-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-btn-pri-active-bg-clr: #{$color-action-active-state-error-bg};
-    --bit-btn-sec-clr: #{$color-state-error};
-    --bit-btn-sec-brd-clr: #{$color-state-error};
-    --bit-btn-sec-hover-bg-clr: #{$color-action-hover-state-error-bg};
-    --bit-btn-sec-active-bg-clr: #{$color-action-active-state-error-bg};
+    --bit-btn-clr-txt: #{$clr-err-text};
+    --bit-btn-clr: #{$clr-err};
+    --bit-btn-clr-hover: #{$clr-err-hover};
+    --bit-btn-clr-active: #{$clr-err-active};
+    --bit-btn-clr-spn: #{$clr-err-dark};
 }
 
+
 .bit-btn-sm {
-    min-width: spacing(6);
-    min-height: spacing(3);
-    font-size: spacing(1.5);
-    padding: spacing(0.3) spacing(1.5);
-    --bit-btn-lbl-size: #{spacing(1.75)};
     --bit-btn-spn-size: #{spacing(1.75)};
+    --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-prt-fontsize: #{spacing(1.50)};
+    --bit-btn-sct-fontsize: #{spacing(1.25)};
+    --bit-btn-icn-fontsize: #{spacing(1.50)};
+    --bit-btn-icn-margintop: #{spacing(0.2)};
+    --bit-btn-pad-ntx: #{spacing(0.5)};
+    --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
+}
+
+.bit-btn-md {
+    --bit-btn-spn-size: #{spacing(2.5)};
+    --bit-btn-lbl-fontsize: #{spacing(1.50)};
+    --bit-btn-prt-fontsize: #{spacing(1.75)};
+    --bit-btn-sct-fontsize: #{spacing(1.50)};
+    --bit-btn-icn-fontsize: #{spacing(2.00)};
+    --bit-btn-icn-margintop: #{spacing(0.25)};
+    --bit-btn-pad-ntx: #{spacing(0.75)};
+    --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
 }
 
 .bit-btn-lg {
-    min-width: spacing(10);
-    min-height: spacing(5);
-    font-size: spacing(2);
-    padding: spacing(0.7) spacing(2.5);
-    --bit-btn-lbl-size: #{spacing(1.75)};
     --bit-btn-spn-size: #{spacing(3.25)};
+    --bit-btn-lbl-fontsize: #{spacing(1.75)};
+    --bit-btn-prt-fontsize: #{spacing(2.50)};
+    --bit-btn-sct-fontsize: #{spacing(2.00)};
+    --bit-btn-icn-fontsize: #{spacing(2.50)};
+    --bit-btn-icn-margintop: #{spacing(0.5)};
+    --bit-btn-pad-ntx: #{spacing(1.0)};
+    --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
 }
+
 
 .bit-btn-top {
     flex-direction: column-reverse;
@@ -228,10 +257,8 @@
     flex-direction: column;
 }
 
-.bit-btn-srt {
-    flex-direction: row;
-}
 
-.bit-btn-end {
-    flex-direction: row-reverse;
+.bit-btn-ntx {
+    padding: var(--bit-btn-pad-ntx);
+    --bit-btn-icn-margintop: 0;
 }

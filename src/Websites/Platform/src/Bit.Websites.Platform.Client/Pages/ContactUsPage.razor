@@ -45,16 +45,17 @@
                                   Placeholder="Enter your message" />
                     <ValidationMessage For="() => contactUsModel.Message" />
 
-                    <div style="display:flex;justify-content:center">
-                        <div style="flex-grow:1">
-                            <BitButton IsLoading="isSending"
-                                       ButtonType="BitButtonType.Submit">Send</BitButton>
-                        </div>
+                    <BitStack Horizontal Gap="1rem" HorizontalAlign="BitStackAlignment.Center">
+                        <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">
+                            Send
+                        </BitButton>
 
-                        <BitIconButton IconName="@BitIconName.Reset" Title="Reset form"
-                                       ButtonType="BitButtonType.Button"
-                                       OnClick="() => contactUsModel = new()">Reset</BitIconButton>
-                    </div>
+                        <BitButton Title="Reset"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Reset"
+                                   ButtonType="BitButtonType.Button"
+                                   OnClick="() => contactUsModel = new()" />
+                    </BitStack>
                 </EditForm>
             </div>
         </div>

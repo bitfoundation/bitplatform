@@ -1,40 +1,33 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Text;
 using System.Linq.Expressions;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDropdown<TItem, TValue> where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    private bool IsOpenHasBeenSet;
-    private bool ValuesHasBeenSet;
-
-    private bool isOpen;
-    private bool isRequired;
-    private bool chips;
-    private ICollection<TValue?>? values = Array.Empty<TValue?>();
-
-    private List<TItem> _selectedItems = [];
-    private List<TItem> _lastShowItems = [];
-
-    private string _dropdownId = string.Empty;
-    private string _calloutId = string.Empty;
-    private string _scrollContainerId = string.Empty;
-    private string _headerId = string.Empty;
-    private string _footerId = string.Empty;
-
-    private string _labelId = string.Empty;
-    private string _dropdownTextContainerId = string.Empty;
-
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
     private bool _inputSearchHasFocus;
+    private List<TItem> _selectedItems = [];
+    private List<TItem> _lastShowItems = [];
+    private Virtualize<TItem>? _virtualizeElement;
+    private string _scrollContainerId = string.Empty;
+    private string _dropdownTextContainerId = string.Empty;
+    private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
+
+    private string _labelId = string.Empty;
+    private string _headerId = string.Empty;
+    private string _footerId = string.Empty;
+    private string _calloutId = string.Empty;
+    private string _dropdownId = string.Empty;
+
     private ElementReference _searchInputRef;
     private ElementReference _comboBoxInputRef;
     private ElementReference _comboBoxInputResponsiveRef;
-    private Virtualize<TItem>? _virtualizeElement;
-    private DotNetObjectReference<BitDropdown<TItem, TValue>> _dotnetObj = default!;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -98,38 +91,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
-    [Parameter]
-    public bool IsOpen
-    {
-        get => isOpen;
-        set
-        {
-            if (isOpen == value) return;
-
-            isOpen = value;
-
-            _ = IsOpenChanged.InvokeAsync(value);
-
-            _ = ClearSearchBox();
-        }
-    }
-    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
-
-    /// <summary>
-    /// Enables the required mode of the dropdown.
-    /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            if (isRequired == value) return;
-
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, TwoWayBound]
+    [CallOnSet(nameof(ClearSearchBox))]
+    public bool IsOpen { get; set; }
 
     /// <summary>
     /// Enables calling the select events when the same item is selected in single select mode.
@@ -139,8 +103,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// Enables the responsive mode of the component for small screens.
     /// </summary>
-    [Parameter]
-    public bool IsResponsive { get; set; }
+    [Parameter] public bool IsResponsive { get; set; }
 
     /// <summary>
     /// The list of items to display in the callout.
@@ -185,7 +148,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
-    [Parameter] public EventCallback<TItem[]> OnChange { get; set; }
+    [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
 
     /// <summary>
     /// The click callback for the dropdown.
@@ -260,24 +223,10 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
-    [Parameter]
-    public ICollection<TValue?>? Values
-    {
-        get => values;
-        set
-        {
-            if (values == value) return;
-            if (value is not null && values!.All(value.Contains) && values!.Count == value.Count) return;
+    [Parameter, TwoWayBound]
+    [CallOnSet(nameof(OnSetValues))]
+    public ICollection<TValue?>? Values { get; set; }
 
-            values = value;
-            _ = ValuesChanged.InvokeAsync(value);
-
-            UpdateSelectedItemsFromValues();
-
-            EditContext?.NotifyFieldChanged(FieldIdentifier);
-        }
-    }
-    [Parameter] public EventCallback<ICollection<TValue?>?> ValuesChanged { get; set; }
     [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }
 
     /// <summary>
@@ -298,18 +247,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     /// <summary>
     /// Shows the selected items like chips in the BitDropdown.
     /// </summary>
-    [Parameter]
-    public bool Chips
-    {
-        get => chips;
-        set
-        {
-            if (chips == value) return;
-
-            chips = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool Chips { get; set; }
 
     /// <summary>
     /// The callback that is called when a new item is on added Dynamic ComboBox mode.
@@ -376,24 +315,42 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     public TItem? SelectedItem => IsMultiSelect ? default : _selectedItems.FirstOrDefault();
 
     /// <summary>
-    /// The ElementReference to the input element in combo-box mode.
+    /// The ElementReference to the combo input element.
     /// </summary>
-    public ElementReference? InputElement => Combo ? _comboBoxInputRef : null;
+    public ElementReference? ComboInputElement => Combo
+                                                    ? _isResponsiveMode
+                                                        ? _comboBoxInputResponsiveRef
+                                                        : _comboBoxInputRef
+                                                    : null;
 
     /// <summary>
-    /// Gives focus to the input element in combo-box mode.
+    /// Gives focus to the combo input element.
     /// </summary>
-    public ValueTask FocusAsync() => Combo ? _comboBoxInputRef.FocusAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusComboInputAsync() => Combo
+                                                ? (_isResponsiveMode
+                                                    ? _comboBoxInputResponsiveRef
+                                                    : _comboBoxInputRef).FocusAsync()
+                                                : ValueTask.CompletedTask;
+
+    /// <summary>
+    /// The ElementReference to the search input element.
+    /// </summary>
+    public ElementReference? SearchInputElement => _searchInputRef;
+
+    /// <summary>
+    /// Gives focus to the search input element.
+    /// </summary>
+    public ValueTask FocusSearchInputAsync() => _searchInputRef.FocusAsync();
 
 
 
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = false;
+        if (await AssignIsOpen(false) is false) return;
+
         StateHasChanged();
     }
 
@@ -465,7 +422,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
                 tempValue.Remove(GetValue(item));
             }
 
-            Values = tempValue;
+            await AssignValues(tempValue);
 
             if (addDynamic && Combo && Dynamic && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))) is false)
             {
@@ -505,7 +462,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
             await OnSelectItem.InvokeAsync(item);
         }
 
-        await OnChange.InvokeAsync([.. _selectedItems]);
+        await OnValuesChange.InvokeAsync([.. _selectedItems]);
     }
 
     internal string GetItemWrapperCssClasses(TItem item)
@@ -562,16 +519,18 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     }
 
 
+
     protected override string RootElementClass => "bit-drp";
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
-        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? $"{RootElementClass}-hvl" : string.Empty);
+        ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
-        ClassBuilder.Register(() => Chips ? $"{RootElementClass}-sch" : string.Empty);
+        ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -579,7 +538,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         ClassBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
@@ -601,33 +560,38 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        if (IsMultiSelect is false && EqualityComparer<TValue>.Default.Equals(CurrentValue, default) && EqualityComparer<TValue>.Default.Equals(DefaultValue, default) is false)
+        if (IsMultiSelect)
         {
-            CurrentValue = DefaultValue;
+            if (ValuesHasBeenSet is false && DefaultValues is not null)
+            {
+                await AssignValues(DefaultValues);
+            }
         }
-
-        if (IsMultiSelect && (Values is null || Values.Any() is false) && DefaultValues is not null && DefaultValues.Any())
+        else
         {
-            Values = DefaultValues;
+            if (ValueHasBeenSet is false && DefaultValue is not null)
+            {
+                Value = DefaultValue;
+            }
         }
 
         UpdateSelectedItemsFromValues();
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
-    protected override bool TryParseValueFromString(string? value, out TValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
-    protected override void RegisterFieldIdentifier()
+    protected override void CreateFieldIdentifier()
     {
         if (IsMultiSelect)
         {
-            RegisterFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
+            CreateFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
         }
         else
         {
-            base.RegisterFieldIdentifier();
+            base.CreateFieldIdentifier();
         }
     }
 
@@ -688,11 +652,11 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
         if (IsOpen is false) return;
 
-        IsOpen = false;
+        if (await AssignIsOpen(false) is false) return;
+
         await ToggleCallout();
 
         StateHasChanged();
@@ -701,9 +665,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
+        if (await AssignIsOpen(true) is false) return;
+
         await ToggleCallout();
 
         await OnClick.InvokeAsync(e);
@@ -819,7 +783,8 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
         {
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
-            Values = Array.Empty<TValue?>();
+            await AssignValues(Array.Empty<TValue?>());
+            await OnValuesChange.InvokeAsync();
         }
         else
         {
@@ -830,7 +795,6 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
         UpdateSelectedItemsFromValues();
 
-        await OnChange.InvokeAsync();
     }
 
     private async Task HandleOnAddItemComboClick()
@@ -1207,7 +1171,7 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
 
     private Task HandleOnClickUnselectItem(TItem? item) => UnselectItem(item);
 
-    private async Task HandleOnChange(ChangeEventArgs e)
+    private async Task HandleOnComboInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
@@ -1222,9 +1186,9 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     {
         if (IsOpen) return;
         if (IsEnabled is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
-        IsOpen = true;
+        if (await AssignIsOpen(true) is false) return;
+
         await ToggleCallout();
     }
 
@@ -1339,5 +1303,12 @@ public partial class BitDropdown<TItem, TValue> where TItem : class, new()
     private string? GetText()
     {
         return IsMultiSelect ? string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText)) : GetText(_selectedItems.FirstOrDefault());
+    }
+
+    private void OnSetValues()
+    {
+        UpdateSelectedItemsFromValues();
+
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
     }
 }

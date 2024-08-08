@@ -1,0 +1,42 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
+.image-container {
+    @include ImageContainer;
+}
+
+.image {
+    @include Image;
+}
+
+::deep a {
+    color: $bit-color-primary;
+}
+
+.image-container {
+    img {
+        width: 80%;
+    }
+}

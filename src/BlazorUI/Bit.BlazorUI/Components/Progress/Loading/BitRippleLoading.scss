@@ -1,0 +1,52 @@
+.bit-ldn-rpl {
+    position: relative;
+    display: inline-block;
+    width: var(--bit-ldn-size);
+    height: var(--bit-ldn-size);
+}
+
+.bit-ldn-rpl div {
+    opacity: 1;
+    position: absolute;
+    border-radius: 50%;
+    border: var(--bit-ldn-rpl-4) solid var(--bit-ldn-color);
+    animation: bit-ldn-rpl-anm 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.bit-ldn-rpl div:nth-child(2) {
+    animation-delay: -0.5s;
+}
+
+@keyframes bit-ldn-rpl-anm {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0;
+        top: var(--bit-ldn-rpl-36);
+        left: var(--bit-ldn-rpl-36);
+    }
+
+    4.9% {
+        width: 0;
+        height: 0;
+        opacity: 0;
+        top: var(--bit-ldn-rpl-36);
+        left: var(--bit-ldn-rpl-36);
+    }
+
+    5% {
+        width: 0;
+        height: 0;
+        opacity: 1;
+        top: var(--bit-ldn-rpl-36);
+        left: var(--bit-ldn-rpl-36);
+    }
+
+    100% {
+        top: 0px;
+        left: 0px;
+        opacity: 0;
+        width: var(--bit-ldn-rpl-72);
+        height: var(--bit-ldn-rpl-72);
+    }
+}

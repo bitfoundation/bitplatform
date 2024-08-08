@@ -15,6 +15,8 @@ public static partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+        AppEnvironment.Set(builder.HostEnvironment.Environment);
+
 #if BlazorWebAssemblyStandalone
         builder.RootComponents.Add<Routes>("#app-container");
         builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -30,7 +32,7 @@ public static partial class Program
 
         var host = builder.Build();
 
-        if (AppRenderMode.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled)
         {
             var uri = new Uri(host.Services.GetRequiredService<NavigationManager>().Uri);
 

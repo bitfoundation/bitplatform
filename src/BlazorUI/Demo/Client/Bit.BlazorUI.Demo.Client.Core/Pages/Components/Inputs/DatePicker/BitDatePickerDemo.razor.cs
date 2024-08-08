@@ -258,12 +258,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<DateTimeOffset?>",
-            Description = "The callback for when the value changes in the DatePicker."
-        },
-        new()
-        {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",
@@ -701,10 +695,10 @@ public partial class BitDatePickerDemo
                 },
                 new()
                 {
-                    Name = "TimePickerHourInput",
+                    Name = "TimePickerHourMinuteSeparator",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time-picker's hour input of the BitDatePicker."
+                    Description = "Custom CSS classes/styles for the time-picker's hour/minute separator of the BitDatePicker."
                 },
                 new()
                 {
@@ -1151,7 +1145,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     <ValidationMessage For=""@(() => validationModel.Date)"" />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-    <BitButton ButtonType=""BitButtonType.Reset"" ButtonStyle=""BitButtonStyle.Standard""
+    <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
                OnClick=""() => { validationModel = new(); SuccessMessage=string.Empty; }"">
         Reset
     </BitButton>

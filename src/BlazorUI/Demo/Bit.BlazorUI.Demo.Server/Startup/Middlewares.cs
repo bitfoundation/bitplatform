@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Demo.Server.Startup;
 
 public class Middlewares
 {
-    public static void Use(WebApplication app, IHostEnvironment env, IConfiguration configuration)
+    public static void Use(WebApplication app, IWebHostEnvironment env, IConfiguration configuration)
     {
         app.UseForwardedHeaders();
 
@@ -27,18 +27,26 @@ public class Middlewares
 
         Configure_401_403_404_Pages(app);
 
-        app.UseStaticFiles(new StaticFileOptions
+        if (env.IsDevelopment() is false)
         {
-            OnPrepareResponse = ctx =>
+            app.Use(async (context, next) =>
             {
-                // https://bitplatform.dev/templates/cache-mechanism
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
-                    MaxAge = TimeSpan.FromDays(7),
-                    Public = true
-                };
-            }
-        });
+                    context.Response.OnStarting(async () =>
+                    {
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            MaxAge = TimeSpan.FromDays(7),
+                            Public = true
+                        };
+                    });
+                }
+                await next.Invoke();
+            });
+        }
+        app.UseStaticFiles();
 
         app.UseCors(options => options.WithOrigins("https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
             .AllowAnyHeader().AllowAnyMethod());
@@ -67,8 +75,8 @@ public class Middlewares
 
             app.MapHealthChecksUI(options =>
             {
-                options.UseRelativeApiPath = 
-                    options.UseRelativeResourcesPath = 
+                options.UseRelativeApiPath =
+                    options.UseRelativeResourcesPath =
                         options.UseRelativeWebhookPath = false;
             });
         }

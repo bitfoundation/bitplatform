@@ -14,11 +14,10 @@ public partial class _BitDropdownItemDemo
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
 
-<BitDropdown Label=""IsRequired""
+<BitDropdown Label=""Required"" Required
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""Select an item""
-             IsRequired=""true"" />
+             Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Disabled""
              Items=""GetBasicItems()""
@@ -43,44 +42,56 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     private readonly string example2RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem;
-        border-radius: 4px;
-        background-color: midnightblue;
+        margin-inline: 1rem;
+        box-shadow: dodgerblue 0 0 0.5rem;
+        text-shadow: dodgerblue 0 0 0.5rem;
     }
 
+
     .custom-fruit {
-        border-top: 1px solid gray;
-        background-color: darkslateblue;
+        background-color: #a5104457;
     }
 
     .custom-veg {
-        font-size: 18px;
-        text-decoration: overline underline line-through;
+        background-color: #1c73324d;
     }
 
-    .custom-label {
-        color: darkred;
-        font-size: 12px;
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
     }
 
-    .custom-text {
-        color: darkblue;
-        font-size: 16px;
+    .custom-container, .custom-container:after {
+        border-radius: 1rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-scroll-container div:last-child .custom-item-button {
+        border-bottom: none;
     }
 </style>
 
-<BitDropdown Label=""Styled Dropdown""
-             Items=""GetBasicItems()""
+
+<BitDropdown Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             Style=""padding: 1rem;border-radius: 4px;background-color: darkred;"" />
+             Style=""margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;"" />
 
-<BitDropdown Label=""Classed Dropdown""
-             Items=""GetBasicItems()""
+<BitDropdown Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              Class=""custom-class"" />
-
 
 
 <BitDropdown Items=""GetStyleClassItems()""
@@ -88,18 +99,24 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select an item"" />
 
 
-
 <BitDropdown Label=""Styles""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             Styles=""@(new() { Label = ""font-size:18px;color:darkblue"", ItemText = ""color:darkred"" })"" />
+             Styles=""@(new() { Label = ""text-shadow: dodgerblue 0 0 0.5rem;"",
+                               Container = ""box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;"",
+                               ItemHeader = ""color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;"",
+                               ItemButton = ""color: lightskyblue"",
+                               Callout = ""border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;"" })"" />
 
 <BitDropdown Label=""Classes""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             Classes=""@(new() { Label = ""custom-label"", ItemText = ""custom-text"" })"" />";
+             Classes=""@(new() { Callout = ""custom-callout"",
+                                Container = ""custom-container"",
+                                ItemButton = ""custom-item-button"",
+                                ScrollContainer = ""custom-scroll-container"" })"" />";
     private readonly string example2CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -117,13 +134,13 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
 private List<BitDropdownItem<string>> GetStyleClassItems() => new()
 {
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""background-color:darkred"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"", Style = ""text-align: center;"" },
     new() { Text = ""Apple"", Value = ""f-app"", Class = ""custom-fruit"" },
     new() { Text = ""Banana"", Value = ""f-ban"", Class = ""custom-fruit"" },
     new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false, Class = ""custom-fruit"" },
     new() { Text = ""Grape"", Value = ""f-gra"", Class = ""custom-fruit"" },
-    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding:5px; background:darkgreen"" },
-    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""background-color:darkblue"" },
+    new() { ItemType = BitDropdownItemType.Divider, Style = ""padding: 0 0.25rem;"" },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"", Style = ""text-align: center;"" },
     new() { Text = ""Broccoli"", Value = ""v-bro"", Class = ""custom-veg"" },
     new() { Text = ""Carrot"", Value = ""v-car"", Class = ""custom-veg"" },
     new() { Text = ""Lettuce"", Value = ""v-let"", Class = ""custom-veg"" }
@@ -149,7 +166,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
+             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
 <BitLabel>Changed Value: @changedItem?.Value</BitLabel>
             
 <BitDropdown Label=""Multi select""
@@ -157,7 +174,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Items=""GetBasicItems()""
              Placeholder=""Select items""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
+             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
 <BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
 
 
@@ -407,14 +424,14 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
-             Label=""Single select combo box""
+             Label=""Single select combo box & chips""
              Placeholder=""Select an option""
              Items=""comboBoxItems"" />
 <strong>Value: @comboBoxValueSample2</strong>
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
-             Label=""Single select combo box""
+             Label=""Single select combo box & dynamic""
              Placeholder=""Select an option""
              Items=""comboBoxItems""
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
@@ -423,7 +440,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
-             Label=""Single select combo box""
+             Label=""Single select combo box, chips & dynamic""
              Placeholder=""Select an option""
              Items=""comboBoxItems""
              IsResponsive=""true""
@@ -433,7 +450,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
 <BitDropdown @bind-Values=""comboBoxValues""
              Combo Chips Dynamic
-             Label=""Multi select combo box""
+             Label=""Multi select combo box, chips & dynamic""
              Placeholder=""Select options""
              Items=""comboBoxItems""
              IsMultiSelect=""true""

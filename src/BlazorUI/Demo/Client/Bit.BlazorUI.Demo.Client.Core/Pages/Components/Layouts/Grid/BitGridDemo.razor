@@ -1,0 +1,147 @@
+﻿@page "/components/grid"
+
+<PageOutlet Url="components/grid"
+            Title="Grid"
+            Description="grid component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="Grid"
+                   ComponentDescription="The BitGrid component is a flexible and customizable grid layout, offering responsive columns and alignment flexibility for structured content presentation."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <BitGrid Columns="4">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">
+                            Grid Item@(item)
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Columns" RazorCode="@example2RazorCode" Id="example2">
+            <ExamplePreview>
+                <BitGrid Columns="4">
+                    <BitGridItem Class="grid-item" ColumnSpan="4">
+                        Column span 4
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2">
+                        Column span 2
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2">
+                        Column span 2
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Column span 1
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Column span 1
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Column span 1
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item">
+                        Column span 1
+                    </BitGridItem>
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Alignment" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <ExamplePreview>
+                <BitChoiceGroup Label="Horizontal Align" Horizontal
+                                @bind-Value="horizontalAlign"
+                                TItem="BitChoiceGroupOption<BitGridAlignment>" TValue="BitGridAlignment">
+                    <BitChoiceGroupOption Text="Start" Value="BitGridAlignment.Start" />
+                    <BitChoiceGroupOption Text="Center" Value="BitGridAlignment.Center" />
+                    <BitChoiceGroupOption Text="End" Value="BitGridAlignment.End" />
+                    <BitChoiceGroupOption Text="SpaceBetween" Value="BitGridAlignment.SpaceBetween" />
+                    <BitChoiceGroupOption Text="SpaceAround" Value="BitGridAlignment.SpaceAround" />
+                    <BitChoiceGroupOption Text="SpaceEvenly" Value="BitGridAlignment.SpaceEvenly" />
+                    <BitChoiceGroupOption Text="Baseline" Value="BitGridAlignment.Baseline" />
+                    <BitChoiceGroupOption Text="Stretch" Value="BitGridAlignment.Stretch" />
+                </BitChoiceGroup>
+                <br />
+                <br />
+                <BitGrid Columns="4" HorizontalAlign="horizontalAlign">
+                    @for (int i = 0; i < 13; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">
+                            Grid Item@(item)
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Spacings" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <ExamplePreview>
+                <BitSlider Label="Vertical spacing between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@verticalSpacing" />
+                <br />
+                <BitSlider Label="Horizontal spacing between items" Max="5" ValueFormat="0.0 rem" Step="0.1" @bind-Value="@horizontalSpacing" />
+                <br />
+                <br />
+                <BitGrid Columns="4"
+                         HorizontalAlign="BitGridAlignment.Center"
+                         VerticalSpacing="@($"{verticalSpacing}rem")"
+                         HorizontalSpacing="@($"{horizontalSpacing}rem")">
+                    @for (int i = 0; i < 16; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">
+                            Grid Item@(item)
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="Breakpoints" RazorCode="@example5RazorCode" Id="example5">
+            <ExamplePreview>
+                <div>Grid item breakpoints:</div>
+                <br />
+                <BitGrid Columns="4">
+                    <BitGridItem Class="grid-item" ColumnSpan="4" Md="1">
+                        Md = 1
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="3" Md="2">
+                        Xs = 3, Md = 2
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Lg="2">
+                        Lg = 2
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2" Xs="1" Lg="1">
+                        Xs = 1, Lg = 1
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" ColumnSpan="2" Xs="3">
+                        Xs = 3
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="2" Md="3">
+                        Xs = 2, Md = 3
+                    </BitGridItem>
+                    <BitGridItem Class="grid-item" Xs="2">
+                        Xs = 2
+                    </BitGridItem>
+                </BitGrid>
+                <br /><br /><br />
+                <div>Grid parent breakpoints:</div>
+                <br />
+                <BitGrid Columns="5" ColumnsMd="4" ColumnsSm="3" ColumnsXs="2">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item">
+                            Grid Item@(item)
+                        </BitGridItem>
+                    }
+                </BitGrid>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>

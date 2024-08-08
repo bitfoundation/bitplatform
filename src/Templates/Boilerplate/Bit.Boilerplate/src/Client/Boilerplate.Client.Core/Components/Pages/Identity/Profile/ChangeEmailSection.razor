@@ -1,14 +1,12 @@
 @inherits AppComponentBase
 
-<div>
-    @if (string.IsNullOrEmpty(message) is false)
-    {
-        <BitMessage Class="form-message-bar"
-                    Severity="BitSeverity.Error"
-                    OnDismiss="() => message = null">
-            @message
-        </BitMessage>
-    }
+<div style="width:100%">
+    <div @ref="messageRef" class="form-message-bar">
+        @if (string.IsNullOrEmpty(message) is false)
+        {
+            <BitMessage Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
+        }
+    </div>
 
     <BitTypography Variant="BitTypographyVariant.H2">
         @Localizer[nameof(AppStrings.ChangeEmailTitle)]
@@ -19,7 +17,7 @@
     @if (Loading)
     {
         <div class="loading-container">
-            <BitSpinner Size="BitSpinnerSize.Large" Label="Loading..." LabelPosition="BitLabelPosition.Top"></BitSpinner>
+            <BitRingLoading />
         </div>
     }
     else
@@ -31,7 +29,7 @@
 
                 <div class="form-input-container">
                     <BitLabel>@Localizer[nameof(AppStrings.CurrentEmail)]</BitLabel>
-                    <BitTag Appearance="BitAppearance.Standard" Text="@Email" Style="width:100%;max-width:unset" />
+                    <BitTag Variant="BitVariant.Outline" Text="@Email" Style="width:100%;max-width:unset" />
                 </div>
 
                 <div class="form-input-container">
@@ -49,7 +47,7 @@
                 <div>
                     @Localizer[nameof(AppStrings.ConfirmMessageInProfile)]
                     <BitButton ButtonType="BitButtonType.Button"
-                               ButtonStyle="BitButtonStyle.Text"
+                               Variant="BitVariant.Text"
                                OnClick="() => showConfirmation = true">
                         @Localizer[nameof(AppStrings.Confirm)]
                     </BitButton>
@@ -89,7 +87,7 @@
                 </BitButton>
                 <br />
                 <BitButton ButtonType="BitButtonType.Button"
-                           ButtonStyle="BitButtonStyle.Text"
+                           Variant="BitVariant.Text"
                            IconName="@BitIconName.Back"
                            OnClick="GoBack">
                     @Localizer[nameof(AppStrings.GoBack)]
@@ -108,7 +106,7 @@
                 <br />
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"
-                           ButtonStyle="BitButtonStyle.Standard"
+                           Variant="BitVariant.Outline"
                            OnClick="WrapHandled(SendToken)">
                     @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]
                 </BitButton>

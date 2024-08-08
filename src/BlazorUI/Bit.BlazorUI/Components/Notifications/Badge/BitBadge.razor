@@ -1,0 +1,31 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<span @ref="RootElement" @attributes="HtmlAttributes"
+      id="@_Id"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      dir="@Dir?.ToString().ToLower()">
+
+    @ChildContent
+
+    @if (Hidden is false)
+    {
+        <span style="@Styles?.BadgeWrapper" class="bit-bdg-wrp @Classes?.BadgeWrapper">
+            <span style="@Styles?.Badge" class="bit-bdg-ctn @Classes?.Badge" @onclick="HandleOnClick">
+                @if (Dot is false)
+                {
+                    if (IconName.HasValue())
+                    {
+                        <i style="@Styles?.Icon" class="bit-icon bit-icon--@IconName @Classes?.Icon" />
+                    }
+
+                    if (_content.HasValue())
+                    {
+                        @_content
+                    }
+                }
+            </span>
+        </span>
+    }
+</span>

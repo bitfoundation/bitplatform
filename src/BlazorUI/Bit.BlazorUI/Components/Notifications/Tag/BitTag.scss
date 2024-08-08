@@ -1,0 +1,121 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-tag {
+    gap: spacing(1);
+    overflow: hidden;
+    align-items: center;
+    display: inline-flex;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+    border-radius: $shp-border-radius;
+    font-size: var(--bit-tag-fontsize);
+    padding: var(--bit-tag-padding);
+
+    &.bit-dis {
+        cursor: default;
+        user-select: none;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+}
+
+.bit-tag-cls {
+    padding: 0;
+    border: none;
+    display: flex;
+    color: inherit;
+    cursor: pointer;
+    box-sizing: border-box;
+    background-color: transparent;
+}
+
+
+.bit-tag-fil {
+    color: var(--bit-tag-clr-txt);
+    border-color: var(--bit-tag-clr);
+    background-color: var(--bit-tag-clr);
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+.bit-tag-otl {
+    color: var(--bit-tag-clr);
+    border-color: var(--bit-tag-clr);
+    background-color: transparent;
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+        background-color: transparent;
+    }
+}
+
+.bit-tag-txt {
+    color: var(--bit-tag-clr);
+    border-color: transparent;
+    background-color: transparent;
+
+    &.bit-dis {
+        border-color: transparent;
+        background-color: transparent;
+    }
+}
+
+.bit-tag-pri {
+    --bit-tag-clr: #{$clr-pri};
+    --bit-tag-clr-txt: #{$clr-pri-text};
+}
+
+.bit-tag-sec {
+    --bit-tag-clr: #{$clr-sec};
+    --bit-tag-clr-txt: #{$clr-sec-text};
+}
+
+.bit-tag-ter {
+    --bit-tag-clr: #{$clr-ter};
+    --bit-tag-clr-txt: #{$clr-ter-text};
+}
+
+.bit-tag-inf {
+    --bit-tag-clr: #{$clr-inf};
+    --bit-tag-clr-txt: #{$clr-inf-text};
+}
+
+.bit-tag-suc {
+    --bit-tag-clr: #{$clr-suc};
+    --bit-tag-clr-txt: #{$clr-suc-text};
+}
+
+.bit-tag-wrn {
+    --bit-tag-clr: #{$clr-wrn};
+    --bit-tag-clr-txt: #{$clr-wrn-text};
+}
+
+.bit-tag-swr {
+    --bit-tag-clr: #{$clr-swr};
+    --bit-tag-clr-txt: #{$clr-swr-text};
+}
+
+.bit-tag-err {
+    --bit-tag-clr: #{$clr-err};
+    --bit-tag-clr-txt: #{$clr-err-text};
+}
+
+.bit-tag-sm {
+    --bit-tag-fontsize: #{spacing(1.5)};
+    --bit-tag-padding: #{spacing(0.5)} #{spacing(1)};
+}
+
+.bit-tag-md {
+    --bit-tag-fontsize: #{spacing(1.75)};
+    --bit-tag-padding: #{spacing(0.75)} #{spacing(1.5)};
+}
+
+.bit-tag-lg {
+    --bit-tag-fontsize: #{spacing(2)};
+    --bit-tag-padding: #{spacing(1)} #{spacing(2)};
+}

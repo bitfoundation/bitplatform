@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json.schemastore.org/vs-2017.3.host",
+    "requiredComponents": [
+        {
+            "id": "Microsoft.VisualStudio.Workload.NetWeb",
+            "hostId": "vs",
+            "componentType": "setupComponent"
+        }
+    ],
+    "symbolInfo": [
+        {
+            "id": "helpUrl"
+        },
+        {
+            "id": "database"
+        },
+        {
+            "id": "filesStorage"
+        },
+        {
+            "id": "api"
+        },
+        {
+            "id": "captcha"
+        },
+        {
+            "id": "pipeline"
+        },
+        {
+            "id": "sample"
+        },
+        {
+            "id": "signalr"
+        },
+        {
+            "id": "offlineDb"
+        },
+        {
+            "id": "windows"
+        },
+        {
+            "id": "appInsights"
+        },
+        {
+            "id": "appCenter"
+        },
+        {
+            "id": "serverUrl",
+            "isVisible": false
+        }
+    ]
+}

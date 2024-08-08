@@ -2,17 +2,15 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitCheckbox : IDisposable
+public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
-    private bool IsIndeterminateHasBeenSet;
-
-    private bool isIndeterminate;
-    private BitCheckboxSide boxSide;
-
     private string _inputId = string.Empty;
-    private ElementReference _checkboxElement;
+
+
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
 
     /// <summary>
     /// Detailed description of the checkbox input for the benefit of screen readers
@@ -35,29 +33,14 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
-    /// Determines whether the checkbox should be shown before the label (start) or after (end)
-    /// </summary>
-    [Parameter]
-    public BitCheckboxSide BoxSide
-    {
-        get => boxSide;
-        set
-        {
-            if (value == boxSide) return;
-            boxSide = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
     /// Custom icon for the check mark rendered by the checkbox instead of default check mark icon
     /// </summary>
-    [Parameter] public string CheckmarkIconName { get; set; } = "Accept";
+    [Parameter] public string CheckIconName { get; set; } = "Accept";
 
     /// <summary>
     /// he aria label of the icon for the benefit of screen readers
     /// </summary>
-    [Parameter] public string? CheckmarkIconAriaLabel { get; set; }
+    [Parameter] public string? CheckIconAriaLabel { get; set; }
 
     /// <summary>
     /// Used to customize the content of checkbox(Label and Box).
@@ -72,7 +55,7 @@ public partial class BitCheckbox : IDisposable
     /// <summary>
     /// Default indeterminate visual state for checkbox
     /// </summary>
-    [Parameter] public bool? DefaultIsIndeterminate { get; set; }
+    [Parameter] public bool? DefaultIndeterminate { get; set; }
 
     /// <summary>
     /// Default checkbox state
@@ -82,22 +65,10 @@ public partial class BitCheckbox : IDisposable
 
     /// <summary>
     /// An indeterminate visual state for checkbox. 
-    /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state
+    /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
-    [Parameter]
-    public bool IsIndeterminate
-    {
-        get => isIndeterminate;
-        set
-        {
-            if (value == isIndeterminate) return;
-            isIndeterminate = value;
-            _ = _js.SetProperty(_checkboxElement, "indeterminate", value);
-            ClassBuilder.Reset();
-            _ = IsIndeterminateChanged.InvokeAsync(value);
-        }
-    }
-    [Parameter] public EventCallback<bool> IsIndeterminateChanged { get; set; }
+    [Parameter, ResetClassBuilder, TwoWayBound]
+    public bool Indeterminate { get; set; }
 
     /// <summary>
     /// Descriptive label for the checkbox.
@@ -110,19 +81,15 @@ public partial class BitCheckbox : IDisposable
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Name for the checkbox input. This is intended for use with forms and NOT displayed in the UI
-    /// </summary>
-    [Parameter] public string? Name { get; set; }
-
-    /// <summary>
-    /// Callback that is called when the checked value has changed
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
-
-    /// <summary>
     ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Reverses the label and checkbox location.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
@@ -136,23 +103,7 @@ public partial class BitCheckbox : IDisposable
 
 
 
-    protected override string RootElementClass => "bit-chb";
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => IsIndeterminate ? $"{RootElementClass}-ind" : string.Empty);
-
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-ckd" : string.Empty);
-
-        ClassBuilder.Register(() => BoxSide == BitCheckboxSide.End ? $"{RootElementClass}-end" : string.Empty);
-    }
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
-    }
-
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitCheckbox-{UniqueId}-input";
 
@@ -160,28 +111,53 @@ public partial class BitCheckbox : IDisposable
 
         if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            CurrentValue = DefaultValue.Value;
+            Value = DefaultValue.Value;
         }
 
-        if (IsIndeterminateHasBeenSet is false && DefaultIsIndeterminate is not null)
+        if (IndeterminateHasBeenSet is false && DefaultIndeterminate is not null)
         {
-            IsIndeterminate = DefaultIsIndeterminate.Value;
+            await SetIndeterminate(DefaultIndeterminate.Value);
         }
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            _ = _js.SetProperty(_checkboxElement, "indeterminate", IsIndeterminate);
+            _ = _js.SetProperty(InputElement, "indeterminate", Indeterminate);
         }
 
         base.OnAfterRender(firstRender);
     }
 
-    protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override string RootElementClass => "bit-chb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => CurrentValue ? "bit-chb-ckd" : string.Empty);
+
+        ClassBuilder.Register(() => Indeterminate ? "bit-chb-ind" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-chb-rvs" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
     protected override void Dispose(bool disposing)
@@ -196,26 +172,31 @@ public partial class BitCheckbox : IDisposable
 
 
 
-    private async Task HandleCheckboxClick(MouseEventArgs args)
+    private async Task HandleOnCheckboxClick(MouseEventArgs args)
     {
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(args);
 
-        if (IsIndeterminate)
+        if (Indeterminate)
         {
-            if (IsIndeterminateHasBeenSet && IsIndeterminateChanged.HasDelegate is false) return;
+            if (IndeterminateHasBeenSet && IndeterminateChanged.HasDelegate is false) return;
 
-            IsIndeterminate = false;
+            await SetIndeterminate(false);
         }
 
-        CurrentValue = !CurrentValue;
-
-        _ = OnChange.InvokeAsync(CurrentValue);
+        CurrentValue = CurrentValue is false;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
+    }
+
+    private async Task SetIndeterminate(bool value)
+    {
+        if (await AssignIndeterminate(value) is false) return;
+
+        await _js.SetProperty(InputElement, "indeterminate", value);
     }
 }

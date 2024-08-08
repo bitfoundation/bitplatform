@@ -43,12 +43,6 @@ public partial class BitToggleDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<bool>",
-            Description = "Callback that is called when the checked value has changed.",
-        },
-        new()
-        {
             Name = "OffText",
             Type = "string?",
             DefaultValue = "null",
@@ -172,7 +166,7 @@ public partial class BitToggleDemo
 <BitToggle Label=""OnText & OffText"" OnText=""Toggle is On"" OffText=""Toggle is Off"" />";
 
     private readonly string example3RazorCode = @"
-<BitToggle Label=""This is an inline label"" IsInlineLabel=""true"" />
+<BitToggle Label=""This is an inline label"" IsInlineLabel />
 
 <BitToggle>
     <LabelTemplate>
@@ -184,60 +178,62 @@ public partial class BitToggleDemo
 </BitToggle>";
 
     private readonly string example4RazorCode = @"
+<BitToggle Reversed Label=""This is a reversed label"" />
+
+<BitToggle Reversed IsInlineLabel Label=""This is a reversed inline label"" />";
+
+    private readonly string example5RazorCode = @"
 <BitToggle Label=""One-way"" Value=""oneWayValue"" />
 <BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
-    .custom-class {
-        padding: 0.5rem;
-        width: max-content;
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-text {
-        color: lightskyblue;
-        text-shadow: 0 0 0.5rem red;
+    .custom-thumb {
+        background: #fff;
+        width: 30px;
+        height: 30px;
     }
 
     .custom-button {
-        border-radius: 1rem;
-        background-color: darkslategray;
+        padding: 0;
+        width: 52px;
+        height: 22px;
+        border: none;
+        background: #ccc;
+        border-radius: 11px;
+    }
+
+    .custom-check .custom-thumb {
+        background: #ff6868;
     }
 
     .custom-check .custom-button {
-        border-radius: 1rem;
-        background-color: red;
+        background: #ffcece;
     }
 
-    .custom-check .custom-text {
-        color: rebeccapurple;
+    .custom-check .custom-button:hover .custom-thumb {
+        background: #ff6868;
     }
 </style>
 
-<BitToggle Label=""Styled"" Style=""width:fit-content;background:forestgreen;border-radius:1rem;padding:1rem"" />
-<BitToggle Label=""Classed"" Class=""custom-class"" />
-
 
 <BitToggle Label=""Styles""
-           Styles=""@(new() { Root = ""width:fit-content;background:pink;padding:1rem"",
-                             Thumb = ""background:darkorange"",
-                             Button = ""border-radius:0.5rem 0 0.5rem 0"",
-                             Label = ""color:blue;font-weight:900;font-size:1.25rem"" } )"" />
+           Styles=""@(new() { Root = ""--toggle-background: lightgray;"", Checked = ""--toggle-background: #2ecc71;"",
+                             Thumb = ""background: whitesmoke; height: 28px; width: 28px;"",
+                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;"" } )"" />
+
 <BitToggle Label=""Classes""
-           DefaultText=""GooGooLi""
-           Classes=""@(new() { Text = ""custom-text"",
+           Classes=""@(new() { Thumb = ""custom-thumb"",
                               Button = ""custom-button"",
                               Checked = ""custom-check"" } )"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -252,7 +248,7 @@ private bool twoWayValue;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
@@ -264,6 +260,6 @@ public BitToggleValidationModel validationModel { get; set; } = new();
 private async Task HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitToggle Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />";
 }

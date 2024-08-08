@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitOtpInput : IDisposable
+public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 {
     private string?[] _inputValues = default!;
     private ElementReference[] _inputRefs = default!;
@@ -33,11 +33,6 @@ public partial class BitOtpInput : IDisposable
     /// Length of the OTP or number of the inputs.
     /// </summary>
     [Parameter] public int Length { get; set; } = 5;
-
-    /// <summary>
-    /// Callback for when the OtpInput value changes.
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
     /// Callback for when all of the inputs are filled.
@@ -85,6 +80,7 @@ public partial class BitOtpInput : IDisposable
     [Parameter] public bool Vertical { get; set; }
 
 
+
     /// <summary>
     /// The ElementReferences to the input elements of the BitOtpInput.
     /// </summary>
@@ -94,6 +90,21 @@ public partial class BitOtpInput : IDisposable
     /// Gives focus to a specific input element of the BitOtpInput.
     /// </summary>
     public ValueTask FocusAsync(int index = 0) => _inputRefs[index].FocusAsync();
+
+    [JSInvokable]
+    public async Task SetPastedData(string pastedValue)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (pastedValue.HasNoValue()) return;
+        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+
+        SetInputsValue(pastedValue);
+
+        CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+        await CallOnFill();
+    }
 
 
 
@@ -151,10 +162,10 @@ public partial class BitOtpInput : IDisposable
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = value;
-        validationErrorMessage = null;
+        parsingErrorMessage = null;
         return true;
     }
 
@@ -166,23 +177,6 @@ public partial class BitOtpInput : IDisposable
         }
 
         base.Dispose(disposing);
-    }
-
-
-
-    [JSInvokable]
-    public async Task SetPastedData(string pastedValue)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-        if (pastedValue.HasNoValue()) return;
-        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
-
-        SetInputsValue(pastedValue);
-
-        CurrentValueAsString = string.Join(string.Empty, _inputValues);
-
-        await CallOnChange();
     }
 
 
@@ -259,7 +253,7 @@ public partial class BitOtpInput : IDisposable
         CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
         await OnInput.InvokeAsync((e, index));
-        await CallOnChange();
+        await CallOnFill();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
@@ -323,10 +317,8 @@ public partial class BitOtpInput : IDisposable
         }
     }
 
-    private async Task CallOnChange()
+    private async Task CallOnFill()
     {
-        await OnChange.InvokeAsync(CurrentValue);
-
         if (Length == CurrentValue?.Length)
         {
             await OnFill.InvokeAsync(CurrentValue);

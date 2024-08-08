@@ -12,19 +12,17 @@
         aria-label="@AriaLabel"
         aria-hidden="@AriaHidden"
         aria-describedby="@AriaDescription">
-    <span style="@Styles?.Container" class="bit-tgb-con @Classes?.Container">
-        @if (ChildContent is not null)
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        var iconName = GetIconName();
+        if (iconName.HasValue())
         {
-            @ChildContent
+            <i style="@Styles?.Icon" class="bit-tgb-ico bit-icon bit-icon--@iconName @Classes?.Icon" />
         }
-        else
-        {
-            var iconName = GetIconName();
-            if (iconName.HasValue())
-            {
-                <i style="@Styles?.Icon" class="bit-icon bit-icon--@iconName @Classes?.Icon" />
-            }
-            <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@GetText()</span>
-        }
-    </span>
+        <span style="@Styles?.Text" class="bit-tgb-btx @Classes?.Text">@GetText()</span>
+    }
 </button>

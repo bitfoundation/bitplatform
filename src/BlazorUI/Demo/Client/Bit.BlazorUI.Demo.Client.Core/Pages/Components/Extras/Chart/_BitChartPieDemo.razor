@@ -1,0 +1,21 @@
+﻿<ComponentExampleBox Title="Pie Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example5">
+    <ExamplePreview>
+        <div class="example-desc">
+            Pie and doughnut charts are probably the most commonly used charts. 
+            They are divided into segments, the arc of each segment shows the proportional value of each piece of data. 
+            They are excellent at showing the relational proportions between data.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" @ref="_chart" />
+            </div>
+        </div>
+        <div class="buttons-container">
+            <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizePieData">Randomize Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddPieDataset">Add Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemovePieDataset">Remove Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddPieData">Add Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemovePieData">Remove Data</BitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

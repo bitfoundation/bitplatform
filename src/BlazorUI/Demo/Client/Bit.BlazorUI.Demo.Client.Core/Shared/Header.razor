@@ -5,7 +5,10 @@
         <div class="content">
             @if (_currentUrl != "/")
             {
-                <BitIconButton Class="menu-btn" IconName="@BitIconName.CollapseMenu" OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
+                <BitButton Class="menu-btn"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.CollapseMenu"
+                           OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
             }
             <a class="logo" href="/" aria-label="Homepage"></a>
             <a class="link @(_currentUrl == "/" ? "link--active" : "")" href="/">Home</a>

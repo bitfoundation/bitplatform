@@ -1,0 +1,128 @@
+﻿@import "../../../../Styles/functions.scss";
+
+.bit-clp {
+    display: flex;
+    font-weight: 400;
+    user-select: none;
+    position: relative;
+    touch-action: none;
+    width: spacing(33.5);
+    height: spacing(37.5);
+    flex-direction: column;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+}
+
+.bit-clp-rec {
+    flex-grow: 1;
+    outline: none;
+    position: relative;
+    box-sizing: border-box;
+    margin-bottom: spacing(1);
+    border-radius: spacing(0.25);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-clp-des {
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: spacing(0.125);
+    height: spacing(0.125);
+    margin: spacing(-0.125);
+}
+
+.bit-clp-dark {
+    inset: 0;
+    position: absolute;
+    background: linear-gradient(transparent 0, rgb(0, 0, 0) 100%);
+}
+
+.bit-clp-light {
+    inset: 0;
+    position: absolute;
+    background: linear-gradient(to right, white 0%, transparent 100%);
+}
+
+.bit-clp-thumb {
+    position: absolute;
+    border-radius: 50%;
+    width: spacing(2.5);
+    height: spacing(2.5);
+    transform: translate(-50%,-50%);
+    background: $clr-bg-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
+
+    &::before {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        box-sizing: border-box;
+        border: $shp-border-width $shp-border-style $clr-ntr-white;
+    }
+}
+
+.bit-clp-cnt {
+    display: flex;
+    gap: spacing(1);
+}
+
+.bit-clp-sct {
+    flex-grow: 1;
+}
+
+.bit-clp-sld {
+    width: 100%;
+    outline: none;
+    position: relative;
+    height: spacing(2.5);
+    box-sizing: border-box;
+    margin-bottom: spacing(1);
+    forced-color-adjust: none;
+    border-radius: spacing(0.25);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-clp-hsd {
+    background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
+}
+
+.bit-clp-inp {
+    background: none;
+    position: relative;
+    top: spacing(-0.0625);
+    -webkit-appearance: none;
+    margin: 0 spacing(-0.875);
+    width: calc(100% + #{spacing(1.75)});
+
+    &::-webkit-slider-thumb {
+        cursor: pointer;
+        appearance: none;
+        border-radius: 50%;
+        width: spacing(2.5);
+        height: spacing(2.5);
+        -webkit-appearance: none;
+        background-color: $clr-ntr-white;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    &::-moz-range-thumb {
+        cursor: pointer;
+        border-radius: 50%;
+        width: spacing(2.5);
+        height: spacing(2.5);
+        background-color: $clr-ntr-white;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+}
+
+
+.bit-clp-pre {
+    width: spacing(6);
+    height: spacing(6);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}

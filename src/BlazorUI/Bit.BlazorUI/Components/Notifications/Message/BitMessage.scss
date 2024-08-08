@@ -1,0 +1,143 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-msg {
+    width: 100%;
+    display: flex;
+    font-weight: 400;
+    flex-flow: column;
+    box-sizing: border-box;
+    font-size: spacing(1.5);
+    justify-content: center;
+    font-family: $tg-font-family;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
+}
+
+.bit-msg-con {
+    width: 100%;
+    display: flex;
+    align-items: start;
+    line-height: normal;
+    padding: 0 spacing(0.5);
+}
+
+.bit-msg-ict {
+    display: flex;
+    margin: spacing(1);
+}
+
+.bit-msg-ico {
+    font-size: spacing(2);
+}
+
+.bit-msg-cnc {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-cnx {
+    white-space: normal;
+}
+
+.bit-msg-cnw {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    margin: spacing(1);
+    flex-direction: column;
+}
+
+.bit-msg-cnt {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bit-msg-mcn {
+    white-space: normal;
+}
+
+.bit-msg-act {
+    display: flex;
+    max-height: spacing(4);
+    justify-content: flex-end;
+}
+
+.bit-msg-mac {
+    margin: 0 spacing(1.5) spacing(1) spacing(1);
+}
+
+.bit-msg-exb,
+.bit-msg-dmb {
+    cursor: pointer;
+    min-width: spacing(4);
+    min-height: spacing(4);
+    background-color: transparent;
+}
+
+.bit-msg-exi,
+.bit-msg-dmi {
+    font-size: spacing(1.25);
+}
+
+.bit-msg-fil {
+    color: var(--bit-msg-clr);
+    border-color: var(--bit-msg-clr-bg);
+    background-color: var(--bit-msg-clr-bg);
+}
+
+.bit-msg-otl {
+    color: var(--bit-msg-clr-bg);
+    border-color: var(--bit-msg-clr-bg);
+    background-color: transparent;
+}
+
+.bit-msg-txt {
+    color: var(--bit-msg-clr-bg);
+    border-color: transparent;
+    background-color: transparent;
+}
+
+.bit-msg-pri {
+    --bit-msg-clr: #{$clr-pri-text};
+    --bit-msg-clr-bg: #{$clr-pri};
+}
+
+.bit-msg-sec {
+    --bit-msg-clr: #{$clr-sec-text};
+    --bit-msg-clr-bg: #{$clr-sec};
+}
+
+.bit-msg-ter {
+    --bit-msg-clr: #{$clr-ter-text};
+    --bit-msg-clr-bg: #{$clr-ter};
+}
+
+.bit-msg-inf {
+    --bit-msg-clr: #{$clr-inf-text};
+    --bit-msg-clr-bg: #{$clr-inf};
+}
+
+.bit-msg-suc {
+    --bit-msg-clr: #{$clr-suc-text};
+    --bit-msg-clr-bg: #{$clr-suc};
+}
+
+.bit-msg-wrn {
+    --bit-msg-clr: #{$clr-wrn-text};
+    --bit-msg-clr-bg: #{$clr-wrn};
+}
+
+.bit-msg-swr {
+    --bit-msg-clr: #{$clr-swr-text};
+    --bit-msg-clr-bg: #{$clr-swr};
+}
+
+.bit-msg-err {
+    --bit-msg-clr: #{$clr-err-text};
+    --bit-msg-clr-bg: #{$clr-err};
+}

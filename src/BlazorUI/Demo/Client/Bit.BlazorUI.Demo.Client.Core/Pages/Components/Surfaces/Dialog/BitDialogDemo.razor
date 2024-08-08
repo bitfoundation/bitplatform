@@ -1,0 +1,238 @@
+﻿@page "/components/dialog"
+
+<PageOutlet Url="components/dialog"
+            Title="Dialog"
+            Description="dialog component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Dialog"
+               ComponentDescription="Dialogs are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a Dialog should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick="@(() => IsOpen = true)">Open Dialog</BitButton>
+                <BitDialog @bind-IsOpen="IsOpen" Title="Missing Subject" Message="Do you want to send this message without a subject?" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick="@(() => IsOpen1 = true)">Open Dialog</BitButton>
+                <br /><br />
+                <span>Result is: @dialogRef?.Result</span>
+                <BitDialog @ref="@dialogRef"
+                           @bind-IsOpen="@IsOpen1"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Custom content" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick="@(() => IsOpen2 = true)">Open Dialog</BitButton>
+                <br /><br />
+                <div>Result is: @customDialogRef?.Result</div>
+                @if (customDialogRef?.Result == BitDialogResult.Ok)
+                {
+                    <div>Value is: @optionValue</div>
+                }
+
+                <BitDialog @ref="customDialogRef" @bind-IsOpen="@IsOpen2" ShowCloseButton="false">
+                    <div class="dialog-title">
+                        <span>All emails together</span>
+                    </div>
+                    <div class="dialog-body">
+                        <p>
+                            Your Inbox has changed. No longer does it include favorites, it is a singular destination for your emails.
+                        </p>
+                        <br />
+                        <BitChoiceGroup @bind-Value="optionValue" Label="Basic Options" TItem="BitChoiceGroupOption<string?>" TValue="string?">
+                            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+                            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+                            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+                        </BitChoiceGroup>
+                    </div>
+                </BitDialog>
+
+                <br /><br />
+                <BitButton OnClick="@(() => IsOpen3 = true)">Open Dialog</BitButton>
+                <BitDialog @bind-IsOpen="@IsOpen3" ShowCloseButton="false">
+                    <Body>
+                        <div class="dialog-title">
+                            Delete all
+                        </div>
+                        <div class="dialog-body">
+                            +99 Emails will be deleted.
+                        </div>
+                    </Body>
+                    <FooterTemplate>
+                        <div class="dialog-footer">
+                            Are you sure?! there's no going back.
+                        </div>
+                    </FooterTemplate>
+                </BitDialog>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Advanced options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div class="example-desc">BitDialog has some advanced options to be customized .</div>
+            <div class="btn-container">
+                <BitButton OnClick="@(() => IsOpen4 = true)">Open Dialog (IsBlocking = true)</BitButton>
+                <BitButton OnClick="@(() => IsOpen5 = true)">Open Dialog (AutoToggleScroll = false)</BitButton>
+            </div>
+            <div>
+                <BitDialog IsBlocking
+                           @bind-IsOpen="IsOpen4"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+
+                <BitDialog AutoToggleScroll="false"
+                           @bind-IsOpen="IsOpen5"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Absolute positioning" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div class="example-desc">BitDialog has an abosolute position option to further customize it's location.</div>
+
+            <div class="btn-container">
+                <BitButton OnClick="@(() => IsOpen6 = true)">Open Dialog (AbsolutePosition = true)</BitButton>
+                <BitButton OnClick="@(() => IsOpen7 = true)">Open Dialog (ScrollerSelector)</BitButton>
+            </div>
+
+            <div class="relative-container">
+                <BitDialog AbsolutePosition IsModeless
+                           @bind-IsOpen="IsOpen6"
+                           AutoToggleScroll="false"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+
+                <BitDialog AbsolutePosition
+                           @bind-IsOpen="IsOpen7"
+                           ScrollerSelector=".relative-container"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                efficitur.
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Position" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <ExamplePreview>
+            <div class="example-desc">To set the Dialog position on the page you can use the Position parameter.</div>
+            <div>
+                <div class="position-btn">
+                    <div>
+                        <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.TopLeft)">Top Left</BitButton>
+                        <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.TopRight)">Top Right</BitButton>
+                    </div>
+                    <div>
+                        <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.BottomLeft)">Bottom Left</BitButton>
+                        <BitButton OnClick="() => OpenDialogInPosition(BitDialogPosition.BottomRight)">Bottom Right</BitButton>
+                    </div>
+                </div>
+                <BitDialog @bind-IsOpen="IsOpenInPosition"
+                           Position="position"
+                           Title="Missing Subject"
+                           Message="Do you want to send this message without a subject?" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Draggable" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <ExamplePreview>
+            <div>
+                <BitToggle Label="Is Draggable" @bind-Value="IsDraggable" />
+                <br />
+                <BitButton OnClick="@(() => IsOpen8 = true)">Open Dialog</BitButton>
+                <BitDialog @bind-IsOpen="IsOpen8"
+                           IsDraggable="IsDraggable"
+                           Title="Draggable dialog"
+                           Message="Do you want to send this message without a subject?" />
+
+                <BitSeparator Style="margin: 1rem 0" />
+
+                <div class="example-desc">Using custom drag element.</div>
+                <BitButton OnClick="@(() => IsOpen9 = true)">Open Dialog</BitButton>
+                <BitDialog IsDraggable @bind-IsOpen="IsOpen9" ShowCloseButton="false" DragElementSelector=".dialog-title-drag">
+                    <div class="dialog-title dialog-title-drag">
+                        <span>Draggble Dialog with custom drag element</span>
+                        <BitButton Variant="BitVariant.Text" OnClick="@(() => IsOpen9 = false)" IconName="@BitIconName.ChromeClose" Title="Close" />
+                    </div>
+                    <div class="dialog-body">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                            sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                            turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                            ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                            Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                            Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                            efficitur.
+                        </p>
+                    </div>
+                </BitDialog>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <ExamplePreview>
+            <div dir="rtl">
+                <BitButton Dir="BitDir.Rtl" OnClick="@(() => IsOpen10 = true)">باز کردن پنجره پیام</BitButton>
+                <BitDialog @bind-IsOpen="IsOpen10"
+                           Dir="BitDir.Rtl"
+                           Title="بدون موضوع"
+                           OkText="تایید"
+                           CancelText="انصراف"
+                           Message="آیا می خواهید این پیام را بدون موضوع ارسال کنید؟" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

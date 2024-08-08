@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json"/>
+        <EmbeddedResource Update="appsettings.*.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" />
+        <PackageReference Include="Riok.Mapperly" Version="3.6.0" PrivateAssets="all" ExcludeAssets="runtime">
+          <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <Using Include="Boilerplate.Shared.Attributes" />
+        <Using Include="Boilerplate.Shared.Services.Contracts" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
+        </Compile>
+        <EmbeddedResource Update="Resources\AppStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\AppStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\AppStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Boilerplate.Shared.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>AppStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\IdentityStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\IdentityStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\IdentityStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Boilerplate.Shared.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>IdentityStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

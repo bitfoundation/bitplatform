@@ -1,0 +1,52 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-ico {
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-ico-pri {
+    color: $clr-pri;
+}
+
+.bit-ico-sec {
+    color: $clr-sec;
+}
+
+.bit-ico-ter {
+    color: $clr-ter;
+}
+
+.bit-ico-inf {
+    color: $clr-inf;
+}
+
+.bit-ico-suc {
+    color: $clr-suc;
+}
+
+.bit-ico-wrn {
+    color: $clr-wrn;
+}
+
+.bit-ico-swr {
+    color: $clr-swr;
+}
+
+.bit-ico-err {
+    color: $clr-err;
+}
+
+
+.bit-ico-sm {
+    font-size: spacing(1.5);
+}
+
+.bit-ico-md {
+    font-size: spacing(2.5);
+}
+
+.bit-ico-lg {
+    font-size: spacing(3.5);
+}

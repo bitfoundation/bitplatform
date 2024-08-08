@@ -4,17 +4,6 @@
         display: flex;
         flex-flow: row wrap;
         align-items: center;
-        margin-bottom: 30px;
-
-        &.column {
-            flex-flow: column wrap;
-            align-items: flex-start;
-        }
-    }
-
-    .clicked-item {
-        font-weight: 600;
-        margin-top: 0.5rem;
     }
 
     .item-template-box {
@@ -23,21 +12,53 @@
     }
 
     .custom-class {
-        color: aqua;
-        overflow: hidden;
+        margin-inline: 1rem;
         border-radius: 1rem;
+        border-color: tomato;
+        border-width: 0.25rem;
+    }
+
+    .custom-class > button {
+        color: tomato;
+        border-color: tomato;
+        background: transparent;
+    }
+
+    .custom-class > button:hover {
+        background-color: #ff63473b;
     }
 
     .custom-item {
-        color: aqua;
-        background-color: darkgoldenrod;
+        color: peachpuff;
+        background-color: tomato;
     }
 
-    .custom-icon {
-        color: red;
+    .custom-button {
+        color: deepskyblue;
+        background: transparent;
     }
 
-    .custom-text {
-        color: aqua;
+    .custom-opened .custom-button {
+        color: cornflowerblue;
+    }
+
+    .custom-callout {
+        border-radius: 1rem;
+        border-color: lightgray;
+        backdrop-filter: blur(20px);
+        background-color: transparent;
+        box-shadow: darkgray 0 0 0.5rem;
+    }
+
+    .custom-item-button {
+        border-bottom: 1px solid gray;
+    }
+
+    .custom-item-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .custom-callout li:last-child .custom-item-button {
+        border-bottom: none;
     }
 }

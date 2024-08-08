@@ -2,16 +2,8 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitTextField
+public partial class BitTextField : BitTextInputBase<string?>
 {
-    private bool hasBorder = true;
-    private bool isMultiline;
-    private bool isReadOnly;
-    private bool isRequired;
-    private bool isUnderlined;
-    private bool isResizable = true;
-    private BitTextFieldType type = BitTextFieldType.Text;
-
     private bool _hasFocus;
     private bool _isPasswordRevealed;
     private BitTextFieldType _elementType;
@@ -19,7 +11,8 @@ public partial class BitTextField
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
-    private ElementReference _inputRef = default!;
+
+
 
     /// <summary>
     /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
@@ -59,98 +52,26 @@ public partial class BitTextField
     /// <summary>
     /// Whether or not the text field is borderless.
     /// </summary>
-    [Parameter]
-    public bool HasBorder
-    {
-        get => hasBorder;
-        set
-        {
-            if (hasBorder == value) return;
-
-            hasBorder = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool HasBorder { get; set; } = true;
 
     /// <summary>
     /// Whether or not the text field is a Multiline text field.
     /// </summary>
-    [Parameter]
-    public bool IsMultiline
-    {
-        get => isMultiline;
-        set
-        {
-            if (isMultiline == value) return;
-
-            isMultiline = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// If true, the text field is readonly.
-    /// </summary>
-    [Parameter]
-    public bool IsReadOnly
-    {
-        get => isReadOnly;
-        set
-        {
-            if (isReadOnly == value) return;
-
-            isReadOnly = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// Whether the associated input is required or not, add an asterisk "*" to its label.
-    /// </summary>
-    [Parameter]
-    public bool IsRequired
-    {
-        get => isRequired;
-        set
-        {
-            if (isRequired == value) return;
-
-            isRequired = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsMultiline { get; set; }
 
     /// <summary>
     /// Whether or not the text field is underlined.
     /// </summary>
-    [Parameter]
-    public bool IsUnderlined
-    {
-        get => isUnderlined;
-        set
-        {
-            if (isUnderlined == value) return;
-
-            isUnderlined = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsUnderlined { get; set; }
 
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
-    [Parameter]
-    public bool IsResizable
-    {
-        get => isResizable;
-        set
-        {
-            if (isResizable == value) return;
-
-            isResizable = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public bool IsResizable { get; set; } = true;
 
     /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.
@@ -176,11 +97,6 @@ public partial class BitTextField
     /// Specifies the maximum number of characters allowed in the input.
     /// </summary>
     [Parameter] public int MaxLength { get; set; } = -1;
-
-    /// <summary>
-    /// Callback for when the input value changes. This is called on both input and change events. 
-    /// </summary>
-    [Parameter] public EventCallback<string?> OnChange { get; set; }
 
     /// <summary>
     /// Callback for when focus moves into the input
@@ -257,30 +173,17 @@ public partial class BitTextField
     /// <summary>
     /// Input type.
     /// </summary>
-    [Parameter]
-    public BitTextFieldType Type
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(SetElementType))]
+    public BitTextFieldType Type { get; set; }
+
+
+
+    public void ToggleRevealPassword()
     {
-        get => type;
-        set
-        {
-            if (type == value) return;
-
-            type = value;
-            SetElementType();
-            ClassBuilder.Reset();
-        }
+        _isPasswordRevealed = _isPasswordRevealed is false;
+        SetElementType();
     }
-
-
-    /// <summary>
-    /// The ElementReference to the input element of the BitTextField.
-    /// </summary>
-    public ElementReference InputElement => _inputRef;
-
-    /// <summary>
-    /// Gives focus to the input element of the BitTextField.
-    /// </summary>
-    public ValueTask FocusAsync() => _inputRef.FocusAsync();
 
 
 
@@ -291,18 +194,18 @@ public partial class BitTextField
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"{RootElementClass}-{(IsResizable ? "mln" : "mlf")}"
+                                    ? $"bit-txt-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && IsRequired ? $"{RootElementClass}-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-txt-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-txt-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-txt-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _hasFocus ? $"{RootElementClass}-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-txt-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => IsRequired && Label is null ? $"{RootElementClass}-rnl" : string.Empty);
+        ClassBuilder.Register(() => Required && Label is null ? "bit-txt-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -312,18 +215,18 @@ public partial class BitTextField
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitTextField-{UniqueId}-input";
         _labelId = $"BitTextField-{UniqueId}-label";
         _descriptionId = $"BitTextField-{UniqueId}-description";
 
-        if (CurrentValueAsString.HasNoValue() && DefaultValue.HasValue())
+        if (ValueHasBeenSet is false && DefaultValue is not null)
         {
-            CurrentValueAsString = DefaultValue;
+            await SetCurrentValueAsStringAsync(DefaultValue, true);
         }
 
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -334,17 +237,24 @@ public partial class BitTextField
 
         if (AutoFocus)
         {
-            await _inputRef.FocusAsync();
+            await InputElement.FocusAsync();
         }
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        result = IsTrimmed ? value?.Trim() : value;
+        parsingErrorMessage = null;
+        return true;
     }
 
 
 
     private void SetElementType()
     {
-        _elementType = type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
+        _elementType = Type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
                          ? BitTextFieldType.Text
-                         : type;
+                         : Type;
 
         _inputType = _elementType switch
         {
@@ -364,6 +274,7 @@ public partial class BitTextField
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -373,6 +284,7 @@ public partial class BitTextField
 
         _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
     }
 
@@ -382,16 +294,8 @@ public partial class BitTextField
 
         _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync(e);
-    }
-
-    private async Task HandleOnChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        CurrentValueAsString = e.Value?.ToString();
-        await OnChange.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -413,18 +317,5 @@ public partial class BitTextField
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
-    }
-
-    public void ToggleRevealPassword()
-    {
-        _isPasswordRevealed = !_isPasswordRevealed;
-        SetElementType();
-    }
-
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
-    {
-        result = IsTrimmed ? value?.Trim() : value;
-        validationErrorMessage = null;
-        return true;
     }
 }

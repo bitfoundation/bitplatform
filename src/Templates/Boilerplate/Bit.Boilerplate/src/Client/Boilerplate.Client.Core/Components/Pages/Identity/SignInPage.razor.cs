@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -13,7 +13,7 @@ public partial class SignInPage
     private readonly SignInRequestDto model = new();
 
     private string? message;
-    private BitSeverity messageSeverity;
+    private BitColor messageColor;
     private ElementReference messageRef = default!;
 
 
@@ -24,6 +24,9 @@ public partial class SignInPage
 
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "userName")]
+    public string? UserNameQueryString { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
@@ -42,22 +45,18 @@ public partial class SignInPage
     {
         await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(EmailQueryString) is false)
-        {
-            model.Email = EmailQueryString;
-        }
-
-        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
-        {
-            model.PhoneNumber = PhoneNumberQueryString;
-        }
+        model.UserName = UserNameQueryString;
+        model.Email = EmailQueryString;
+        model.PhoneNumber = PhoneNumberQueryString;
+        model.DeviceInfo = AppPlatform.OSDescription;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
             model.Otp = OtpQueryString;
 
             if (InPrerenderSession is false &&
-                (string.IsNullOrEmpty(model.Email) is false ||
+                (string.IsNullOrEmpty(model.UserName) is false ||
+                 string.IsNullOrEmpty(model.Email) is false ||
                  string.IsNullOrEmpty(model.PhoneNumber) is false))
             {
                 await DoSignIn();
@@ -67,7 +66,7 @@ public partial class SignInPage
         if (string.IsNullOrEmpty(ErrorQueryString) is false)
         {
             message = ErrorQueryString;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
         }
     }
 
@@ -95,7 +94,7 @@ public partial class SignInPage
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -117,13 +116,13 @@ public partial class SignInPage
             await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.OtpSentMessage)];
-            messageSeverity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -144,13 +143,13 @@ public partial class SignInPage
             await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
 
             message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
-            messageSeverity = BitSeverity.Success;
+            messageColor = BitColor.Success;
             await messageRef.ScrollIntoView();
         }
         catch (KnownException e)
         {
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
             await messageRef.ScrollIntoView();
         }
         finally
@@ -183,9 +182,9 @@ public partial class SignInPage
 
         try
         {
-            var port = await localHttpServer.Start();
+            var port = localHttpServer.Start(CurrentCancellationToken);
 
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port);
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateToAsync(redirectUrl);
         }
@@ -194,7 +193,7 @@ public partial class SignInPage
             isWaiting = false;
 
             message = e.Message;
-            messageSeverity = BitSeverity.Error;
+            messageColor = BitColor.Error;
 
             await messageRef.ScrollIntoView();
         }

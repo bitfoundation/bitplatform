@@ -1,0 +1,12 @@
+﻿@import "../../../../Styles/abstracts/_functions.scss";
+
+::deep {
+    .custom-color-picker {
+        width: rem2(100px);
+        height: rem2(250px);
+    }
+}
+
+.example-content {
+    padding: 0 1rem;
+}

@@ -2,8 +2,8 @@
 
 public partial class BitButtonDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "AllowDisabledFocus",
@@ -27,222 +27,328 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "ButtonStyle",
-            Type = "BitButtonStyle",
-            LinkType = LinkType.Link,
-            Href = "#button-style-enum",
-            DefaultValue = "BitButtonStyle.Primary",
-            Description = "The style of the button, Possible values: Primary | Standard | Text.",
-        },
-        new()
-        {
             Name = "ButtonType",
-            Type = "BitButtonType",
+            Type = "BitButtonType?",
+            DefaultValue = "null",
+            Description = "The value of the type attribute of the button.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum",
-            DefaultValue = "null",
-            Description = "The type of the button.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of button, It can be Any custom tag or a text.",
+            Description = "The content of primary section of the button.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitButtonClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the button.",
             LinkType = LinkType.Link,
             Href = "#button-class-styles",
-            DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitButton.",
         },
         new()
         {
             Name = "Color",
-            Type = "BitColor",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the button.",
             LinkType = LinkType.Link,
-            Href = "#button-color-enum",
-            DefaultValue = "null",
-            Description = "The color of the button.",
-        },
-        new()
-        {
-            Name = "Content",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Alias of ChildContent",
+            Href = "#color-enum",
         },
         new()
         {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
-            Description = "URL the link points to, if provided, button renders as an anchor.",
+            Description = "The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.",
         },
         new()
         {
             Name = "IconName",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The icon to show inside the BitButton."
+            Description = "The name of the icon to render inside the button."
         },
         new()
         {
-            Name = "IconPosition",
-            Type = "BitButtonIconPosition",
-            DefaultValue = "BitButtonIconPosition.Start",
-            Description = "Specifies Icon position which can be rendered either on start or end of the component.",
-            LinkType = LinkType.Link,
-            Href = "#button-icon-enum"
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines that only the icon should be rendered."
         },
         new()
         {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determine whether the button is in loading mode or not."
+            Description = "Determines whether the button is in loading mode or not."
         },
         new()
         {
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The loading label to show next to the spinner."
+            Description = "The loading label text to show next to the spinner icon."
         },
         new()
         {
             Name = "LoadingLabelPosition",
             Type = "BitLabelPosition",
             DefaultValue = "BitLabelPosition.End",
-            Description = "The position of the loading Label in regards to the spinner animation.",
+            Description = "The position of the loading Label in regards to the spinner icon.",
             LinkType = LinkType.Link,
-            Href = "#button-labelPosition-enum"
+            Href = "#label-position-enum"
         },
         new()
         {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize the content inside the Button in the Loading state.",
+            Description = "The custom template used to replace the default loading text inside the button in the loading state.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the button clicked.",
+            DefaultValue = "",
+            Description = "The callback for the click event of the button.",
+        },
+        new()
+        {
+            Name = "PrimaryTemplate",
+            Type = "RenderFragment?",
+            DefaultValue="",
+            Description = "The content of the primary section of the button (alias of the ChildContent).",
+        },
+        new()
+        {
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the positions of the icon and the main content of the button.",
+        },
+        new()
+        {
+            Name = "SecondaryText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the secondary section of the button.",
+        },
+        new()
+        {
+            Name = "SecondaryTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "",
+            Description = "The custom template for the secondary section of the button.",
         },
         new()
         {
             Name = "Size",
-            Type = "BitButtonSize",
-            LinkType = LinkType.Link,
-            Href = "#button-size-enum",
+            Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of button, Possible values: Small | Medium | Large.",
+            Description = "The size of the button.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
             Name = "Styles",
             Type = "BitButtonClassStyles?",
-            LinkType = LinkType.Link,
-            Href = "#class-styles",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitButton.",
+            Description = "Custom CSS styles for different parts of the button.",
+            LinkType = LinkType.Link,
+            Href = "#button-class-styles",
         },
         new()
         {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "If Href provided, specifies how to open the link.",
+            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).",
         },
         new()
         {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title to show when the mouse is placed on the button.",
-        }
-    };
-
-    private readonly List<ComponentSubEnum> componentSubEnums = new()
-    {
+            Description = "The tooltip to show when the mouse is placed on the button.",
+        },
         new()
         {
-            Id = "button-style-enum",
-            Name = "BitButtonStyle",
-            Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the button.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "button-class-styles",
+            Title = "BitButtonClassStyles",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitButton."
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitButton."
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the internal container of the BitButton."
+               },
+               new()
+               {
+                   Name = "Primary",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the primary section of the BitButton."
+               },
+               new()
+               {
+                   Name = "Secondary",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the secondary section of the BitButton."
+               },
+               new()
+               {
+                   Name = "LoadingContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading container of the BitButton."
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner section of the BitButton."
+               },
+               new()
+               {
+                   Name = "LoadingLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the loading label section of the BitButton."
+               },
+            ]
+        }
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
                 new()
                 {
-                    Name= "Primary",
-                    Description="The button for primary actions that are high-emphasis.",
+                    Name= "Fill",
+                    Description="Fill styled variant.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Standard",
-                    Description="The button for important actions that are medium-emphasis.",
+                    Name= "Outline",
+                    Description="Outline styled variant.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Text",
-                    Description="The button for less-pronounced actions.",
+                    Description="Text styled variant.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
-            Id = "button-color-enum",
+            Id = "color-enum",
             Name = "BitColor",
-            Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
                 new()
                 {
-                    Name= "Info",
-                    Description="Info styled Button.",
+                    Name= "Primary",
+                    Description="Info Primary general color.",
                     Value="0",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success styled Button.",
+                    Name= "Secondary",
+                    Description="Secondary general color.",
                     Value="1",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning styled Button.",
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
                     Value="2",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="Severe Warning styled Button.",
+                    Name= "Info",
+                    Description="Info general color.",
                     Value="3",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error styled Button.",
+                    Name= "Success",
+                    Description="Success general color.",
                     Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
                 }
-            }
+            ]
         },
         new()
         {
-            Id = "button-size-enum",
-            Name = "BitButtonSize",
+            Id = "size-enum",
+            Name = "BitSize",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Small",
@@ -261,15 +367,15 @@ public partial class BitButtonDemo
                     Description="The large size button.",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
             Id = "button-type-enum",
             Name = "BitButtonType",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Button",
@@ -288,36 +394,15 @@ public partial class BitButtonDemo
                     Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
-            }
+            ]
         },
         new()
         {
-            Id = "button-icon-enum",
-            Name = "BitButtonIconPosition",
-            Description = "",
-            Items = new()
-            {
-                new()
-                {
-                    Name= "Start",
-                    Description="Renders the icon at the start of component.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "End",
-                    Description="Renders the icon at the end of component.",
-                    Value="1",
-                }
-            }
-        },
-        new()
-        {
-            Id = "button-labelPosition-enum",
+            Id = "label-position-enum",
             Name = "BitLabelPosition",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Top",
@@ -342,401 +427,83 @@ public partial class BitButtonDemo
                     Description="The label shows on the start of the button.",
                     Value="3",
                 },
-            }
+            ]
         }
-    };
+    ];
 
-    private readonly List<ComponentSubClass> componentSubClasses = new()
+
+
+    private bool fillIsLoading;
+    private bool outlineIsLoading;
+    private bool textIsLoading;
+
+    private bool stylesIsLoading;
+    private bool classesIsLoading;
+
+    private bool templateIsLoading;
+
+    private async Task LoadingFillClick()
     {
-        new()
-        {
-            Id = "button-class-styles",
-            Title = "BitButtonClassStyles",
-            Parameters = new()
-            {
-               new()
-               {
-                   Name = "Root",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitButton."
-               },
-               new()
-               {
-                   Name = "Icon",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the icon of the BitButton."
-               },
-               new()
-               {
-                   Name = "LoadingContainer",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the internal container of the BitButton."
-               },
-               new()
-               {
-                   Name = "Spinner",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the spinner section of the BitButton."
-               },
-               new()
-               {
-                   Name = "LoadingLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the label section of the BitButton."
-               },
-            }
-        }
-    };
-
-
-
-    private readonly string example1RazorCode = @"
-<BitButton>Primary</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>";
-
-    private readonly string example2RazorCode = @"
-<BitButton>Primary</BitButton>
-<BitButton IsEnabled=""false"">Disabled</BitButton>
-<BitButton Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example3RazorCode = @"
-<BitButton ButtonStyle=""BitButtonStyle.Standard"">Standard</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" IsEnabled=""false"">Disabled</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Standard"" Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example4RazorCode = @"
-<BitButton ButtonStyle=""BitButtonStyle.Text"">Text</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Text"" IsEnabled=""false"">Disabled</BitButton>
-<BitButton ButtonStyle=""BitButtonStyle.Text"" Href=""https://bitplatform.dev"">Link</BitButton>";
-
-    private readonly string example5RazorCode = @"
-<BitButton IconName=""@BitIconName.Emoji"">
-    Default (Start)
-</BitButton>
-
-<BitButton IconName=""@BitIconName.Emoji2""
-           ButtonStyle=""BitButtonStyle.Standard""
-           IconPosition=""BitButtonIconPosition.End"">
-    End
-</BitButton>";
-
-    private readonly string example6RazorCode = @"
-<BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-    private readonly string example6CsharpCode = @"
-private int clickCounter;";
-
-    private readonly string example7RazorCode = @"
-<BitButton Color=""BitColor.Info"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Standard"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" ButtonStyle=""BitButtonStyle.Text"">Info</BitButton>
-
-<BitButton Color=""BitColor.Success"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Standard"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" ButtonStyle=""BitButtonStyle.Text"">Success</BitButton>
-
-<BitButton Color=""BitColor.Warning"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Standard"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" ButtonStyle=""BitButtonStyle.Text"">Warning</BitButton>
-
-<BitButton Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Standard"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" ButtonStyle=""BitButtonStyle.Text"">SevereWarning</BitButton>
-
-<BitButton Color=""BitColor.Error"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Standard"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" ButtonStyle=""BitButtonStyle.Text"">Error</BitButton>";
-
-    private readonly string example8RazorCode = @"
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Primary"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Primary"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Primary"">Large</BitButton>
-
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Standard"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Standard"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Standard"">Large</BitButton>
-
-<BitButton Size=""BitButtonSize.Small"" ButtonStyle=""BitButtonStyle.Text"">Small</BitButton>
-<BitButton Size=""BitButtonSize.Medium"" ButtonStyle=""BitButtonStyle.Text"">Medium</BitButton>
-<BitButton Size=""BitButtonSize.Large"" ButtonStyle=""BitButtonStyle.Text"">Large</BitButton>";
-
-    private readonly string example9RazorCode = @"
-<style>
-    .custom-content {
-        gap: 0.5rem;
-        display: flex;
-        align-items: center;
-    }
-</style>
-
-
-<BitButton Class=""custom-content"">
-    <BitIcon IconName=""@BitIconName.Airplane"" />
-    <span>A Primary custom content</span>
-    <BitRippleLoading Size=""20"" />
-</BitButton>
-
-<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Standard"">
-    <BitIcon IconName=""@BitIconName.Accept"" />
-    <span>A Standard custom content</span>
-    <BitRollerLoading Size=""20"" />
-</BitButton>
-
-<BitButton Class=""custom-content"" ButtonStyle=""BitButtonStyle.Text"">
-    <BitIcon IconName=""@BitIconName.Asterisk"" />
-    <span>A Text custom content</span>
-    <BitCircleLoading Size=""20"" />
-</BitButton>";
-
-    private readonly string example10RazorCode = @"
-<EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <BitTextField Label=""Required"" IsRequired=""true"" @bind-Value=""buttonValidationModel.RequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.RequiredText"" />
-    <BitTextField Label=""Nonrequired"" @bind-Value=""buttonValidationModel.NonRequiredText"" />
-    <ValidationMessage For=""() => buttonValidationModel.NonRequiredText"" />
-    <div>
-        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-        <BitButton ButtonType=""BitButtonType.Reset"">Reset</BitButton>
-        <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
-    </div>
-</EditForm>";
-    private readonly string example10CsharpCode = @"
-public class ButtonValidationModel
-{
-    [Required]
-    public string RequiredText { get; set; } = string.Empty;
-    public string? NonRequiredText { get; set; }
-}
-
-private ButtonValidationModel buttonValidationModel = new();
-
-private async Task HandleValidSubmit()
-{
-    await Task.Delay(2000);
-
-    buttonValidationModel = new();
-
-    StateHasChanged();
-}";
-
-    private readonly string example11RazorCode = @"
-<BitButton IsLoading=""primaryIsLoading""
-           Style=""min-width: 6rem;""
-           ButtonStyle=""BitButtonStyle.Primary""
-           OnClick=""LoadingPrimaryClick"">
-    Primary
-</BitButton>
-
-<BitButton IsLoading=""standardIsLoading""
-           Style=""min-width: 6rem;""
-           ButtonStyle=""BitButtonStyle.Standard""
-           OnClick=""LoadingStandardClick"">
-    Standard
-</BitButton>
-
-<BitButton IsLoading=""textIsLoading""
-           Style=""min-width: 6rem;""
-           ButtonStyle=""BitButtonStyle.Text""
-           OnClick=""LoadingTextClick"">
-    Text
-</BitButton>";
-    private readonly string example11CsharpCode = @"
-private bool primaryIsLoading;
-private bool standardIsLoading;
-private bool textIsLoading;
-
-private async Task LoadingPrimaryClick()
-{
-    primaryIsLoading = true;
-    await Task.Delay(3000);
-    primaryIsLoading = false;
-}
-
-private async Task LoadingStandardClick()
-{
-    standardIsLoading = true;
-    await Task.Delay(3000);
-    standardIsLoading = false;
-}
-
-private async Task LoadingTextClick()
-{
-    textIsLoading = true;
-    await Task.Delay(3000);
-    textIsLoading = false;
-}";
-
-    private readonly string example12RazorCode = @"
-<BitButton IsLoading=""true""
-           LoadingLabel=""End...""
-           Style=""min-width: 6.5rem;""
-           ButtonStyle=""BitButtonStyle.Standard""
-           LoadingLabelPosition=""BitLabelPosition.End"">
-    End
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Start...""
-           Style=""min-width: 6.5rem;""
-           ButtonStyle=""BitButtonStyle.Standard""
-           LoadingLabelPosition=""BitLabelPosition.Start"">
-    Start
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Bottom...""
-           Style=""min-width: 6.5rem;""
-           ButtonStyle=""BitButtonStyle.Standard""
-           LoadingLabelPosition=""BitLabelPosition.Bottom"">
-    Bottom
-</BitButton>
-
-<BitButton IsLoading=""true""
-           LoadingLabel=""Top...""
-           Style=""min-width: 6.5rem;""
-           ButtonStyle=""BitButtonStyle.Standard""
-           LoadingLabelPosition=""BitLabelPosition.Top"">
-    Top
-</BitButton>";
-
-    private readonly string example13RazorCode = @"
-<style>
-    .custom-loading {
-        display: flex;
-        gap: 0.3125rem;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
-
-
-<BitButton IsLoading=""true""
-           Size=""BitButtonSize.Large""
-           Title=""Ellipsis loading..."">
-    <LoadingTemplate>
-        <div class=""custom-loading"">
-            <BitEllipsisLoading Size=""20"" />
-            <span>Wait...</span>
-        </div>
-    </LoadingTemplate>
-    <Content>
-        Ellipsis...
-    </Content>
-</BitButton>";
-
-    private readonly string example14RazorCode = @"
-<style>
-    .custom-class {
-        color: blueviolet;
-        border-radius: 1rem;
+        fillIsLoading = true;
+        await Task.Delay(3000);
+        fillIsLoading = false;
     }
 
-    .custom-root {
-        min-width: 7.2rem;
-        box-shadow: aqua 0 0 0.5rem;
+    private async Task LoadingOutlineClick()
+    {
+        outlineIsLoading = true;
+        await Task.Delay(3000);
+        outlineIsLoading = false;
     }
 
-    .custom-container {
-        text-shadow: aqua 0 0 0.5rem;
+    private async Task LoadingTextClick()
+    {
+        textIsLoading = true;
+        await Task.Delay(3000);
+        textIsLoading = false;
     }
 
-    .custom-label {
-        color: goldenrod;
+    private async Task LoadingStylesClick()
+    {
+        stylesIsLoading = true;
+        await Task.Delay(3000);
+        stylesIsLoading = false;
     }
 
-    .custom-spinner {
-        border-color: aqua;
-        border-top-color: goldenrod;
+    private async Task LoadingClassesClick()
+    {
+        classesIsLoading = true;
+        await Task.Delay(3000);
+        classesIsLoading = false;
     }
-</style>
 
+    private async Task LoadingTemplateClick()
+    {
+        templateIsLoading = true;
+        await Task.Delay(3000);
+        templateIsLoading = false;
+    }
 
-<BitButton Style=""color:darkblue; font-weight:bold"">
-    Styled Button
-</BitButton>
+    private int clickCounter;
 
-<BitButton Class=""custom-class"" ButtonStyle=""BitButtonStyle.Standard"">
-    Classed Button
-</BitButton>
+    private bool formIsValidSubmit;
+    private ButtonValidationModel buttonValidationModel = new();
 
+    private async Task HandleValidSubmit()
+    {
+        formIsValidSubmit = true;
 
-<BitButton IsLoading=""stylesIsLoading""
-           LoadingLabel=""Wait...""
-           OnClick=""LoadingStylesClick""
-           Styles=""@(new() { Root = ""border-radius: 1rem; min-width: 6rem;"",
-                             LoadingLabel = ""color: tomato;"",
-                             Spinner = ""border-color: goldenrod; border-top-color: tomato;"" })"">
-    Primary
-</BitButton>
+        await Task.Delay(2000);
 
-<BitButton IsLoading=""classesIsLoading""
-           LoadingLabel=""Sending...""
-           OnClick=""LoadingClassesClick"" 
-           ButtonStyle=""BitButtonStyle.Standard""
-           Classes=""@(new() { Root = ""custom-root"",
-                              LoadingContainer = ""custom-container"",
-                              LoadingLabel = ""custom-label"",
-                              Spinner = ""custom-spinner"" })"">
-    Standard
-</BitButton>";
+        buttonValidationModel = new();
 
-    private readonly string example14CsharpCode = @"
-private bool stylesIsLoading;
-private bool classesIsLoading;
+        formIsValidSubmit = false;
 
-private async Task LoadingStylesClick()
-{
-    stylesIsLoading = true;
-    await Task.Delay(3000);
-    stylesIsLoading = false;
-}
+        StateHasChanged();
+    }
 
-private async Task LoadingClassesClick()
-{
-    classesIsLoading = true;
-    await Task.Delay(3000);
-    classesIsLoading = false;
-}";
-
-    private readonly string example15RazorCode = @"
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           ButtonStyle=""BitButtonStyle.Primary"">
-    دکمه با نماد
-</BitButton>
-
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           ButtonStyle=""BitButtonStyle.Standard"">
-    دکمه با نماد
-</BitButton>
-
-<BitButton Dir=""BitDir.Rtl""
-           IconName=""@BitIconName.Emoji""
-           ButtonStyle=""BitButtonStyle.Text"">
-    دکمه با نماد
-</BitButton>
-
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           ButtonStyle=""BitButtonStyle.Primary"" />
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           ButtonStyle=""BitButtonStyle.Standard"" />
-
-<BitButton IsLoading
-           Dir=""BitDir.Rtl""
-           LoadingLabel=""دکمه ی بارگذاری""
-           ButtonStyle=""BitButtonStyle.Text"" />
-";
+    private void HandleInvalidSubmit()
+    {
+        formIsValidSubmit = false;
+    }
 }

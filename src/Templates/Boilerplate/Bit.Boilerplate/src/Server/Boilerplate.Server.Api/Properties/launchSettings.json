@@ -1,0 +1,53 @@
+{
+    "profiles": {
+        "Boilerplate.Server.Api": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "http://localhost:5031"
+        },
+        "WSL": {
+            "commandName": "WSL2",
+            "launchBrowser": true,
+            "launchUrl": "http://localhost:5031/swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5031"
+            }
+        },
+        "Docker": {
+            "commandName": "SdkContainer",
+            "launchBrowser": true,
+            "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+            "DockerfileRunArguments": "-v C:\\DockerVolumes\\AC87AA5B-4B37-4E52-8468-2D5DF24AF256:/container_volume",
+            "environmentVariables": {
+                "ASPNETCORE_HTTP_PORTS": "5031",
+                "ConnectionStrings__SqliteConnectionString": "Data Source=/container_volume/App_Data/BoilerplateDb.db;"
+            },
+            "publishAllPorts": true,
+            "useSSL": false,
+            "httpPort": 5031
+        },
+        "IIS Express": {
+            "commandName": "IISExpress",
+            "launchBrowser": true,
+            "launchUrl": "swagger",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    },
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iisExpress": {
+            "applicationUrl": "http://localhost:57278/",
+            "httpPort": 5031
+        }
+    },
+    "$schema": "http://json.schemastore.org/launchsettings.json"
+}

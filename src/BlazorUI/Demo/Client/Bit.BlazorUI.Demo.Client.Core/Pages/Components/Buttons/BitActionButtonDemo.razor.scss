@@ -1,17 +1,7 @@
-﻿.buttons-container {
+﻿.example-content {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
-
-    &.column {
-        flex-flow: column;
-        max-width: max-content;
-    }
-}
-
-.buttons-container-grid {
-    gap: 0.5rem;
-    display: grid;
 }
 
 .form-container {
@@ -24,26 +14,30 @@
 }
 
 ::deep {
-    .custom-class {
-        border-radius: 1rem;
-        border: 2px solid #777;
+    .custom-icon {
+        color: hotpink;
     }
 
-    .custom-container {
-        gap: 5px;
-        color: gold;
-        padding: 8px;
-        display: flex;
-        flex-flow: column;
-        background-color: purple;
+    .custom-content {
+        position: relative;
     }
 
-    .validation-message {
-        color: red;
+    .custom-content::after {
+        content: '';
+        left: 0;
+        width: 0;
+        height: 2px;
+        bottom: -6px;
+        position: absolute;
+        transition: 0.3s ease;
+        background: linear-gradient(90deg, #ff00cc, #3333ff);
     }
 
-    .custom-btn-ctn {
-        gap: 0.5rem;
-        display: flex;
+    .custom-root:hover .custom-content {
+        color: blueviolet;
+    }
+
+    .custom-root:hover .custom-content::after {
+        width: 100%;
     }
 }

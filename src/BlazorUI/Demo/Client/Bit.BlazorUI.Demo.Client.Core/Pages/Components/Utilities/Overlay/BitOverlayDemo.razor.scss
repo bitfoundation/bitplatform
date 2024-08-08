@@ -1,0 +1,66 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.content {
+    width: 87%;
+    display: flex;
+    overflow: auto;
+    position: relative;
+    padding: rem2(15px);
+    max-width: rem2(960px);
+    max-height: rem2(288px);
+    border-radius: rem2(3px);
+    flex-flow: column nowrap;
+    border: dodgerblue solid rem2(1.6px);
+    background-color: $bit-color-background-primary;
+}
+
+.scroller {
+    overflow: auto;
+    height: rem2(360px);
+    padding: rem2(15px);
+    position: relative;
+    align-items: center;
+    margin-top: rem2(15px);
+    border-radius: rem2(3px);
+    border: rem2(2px) solid green;
+}
+
+.container {
+    display: flex;
+    height: rem2(480px);
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    border: rem2(2px) solid blue;
+}
+
+.btn-container {
+    gap: 1rem;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+::deep {
+    .overlay {
+        z-index: 10;
+        align-items: center;
+        justify-content: center;
+        background-color: $bit-color-background-overlay;
+    }
+
+    .close-button {
+        right: rem2(10px);
+        position: absolute;
+    }
+
+    .show-button {
+        gap: rem2(5px);
+        display: flex;
+        top: rem2(15px);
+        left: rem2(10px);
+        width: fit-content;
+        position: absolute;
+        flex-flow: row wrap;
+    }
+}

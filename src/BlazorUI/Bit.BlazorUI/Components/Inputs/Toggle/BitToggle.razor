@@ -41,5 +41,10 @@
             </label>
         }
     </div>
-    <input @attributes="InputHtmlAttributes" type="checkbox" value="@CurrentValueAsString" class="bit-input-hidden" />
+
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           name="@Name"
+           type="checkbox"
+           class="bit-input-hidden"
+           value="@CurrentValueAsString" />
 </div>

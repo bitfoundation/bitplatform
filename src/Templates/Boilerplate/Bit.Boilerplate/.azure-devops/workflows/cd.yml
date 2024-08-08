@@ -7,8 +7,8 @@ variables:
   APP_SERVICE_NAME: 'app-service-bp-test'
   AZURE_SUBSCRIPTION: 'bp-test-service-connection' # https://learn.microsoft.com/en-us/azure/devops/pipelines/library/service-endpoints?view=azure-devops&tabs=yaml#azure-resource-manager-service-connection
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
-  AppSettings.IdentitySettings.IdentityCertificatePassword: $(API_IDENTITY_CERTIFICATE_PASSWORD)
-  ApiServerAddress: 'https://use-your-server-url-here.com/'
+  DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
+  ServerAddress: 'https://use-your-server-url-here.com/'
   WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
 
 jobs:
@@ -50,19 +50,19 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
 
   - task: Bash@3
     displayName: 'Publish'
     inputs:
       targetType: 'inline'
-      script: 'dotnet publish src/Boilerplate.Server/Boilerplate.Server.csproj -c Release --self-contained -r linux-x64 -o server'
+      script: 'dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload server artifact
@@ -75,12 +75,12 @@ jobs:
     displayName: 'Build migrations bundle'
     inputs:
       targetType: 'inline'
-      script: 'cd src/Boilerplate.Server/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.csproj'
+      script: 'cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj'
   
   - task: PublishPipelineArtifact@1
     displayName: Upload ef migrations bundle
     inputs:
-      targetPath: 'src/Boilerplate.Server/efbundle'
+      targetPath: 'src/Boilerplate.Server.Api/efbundle'
       artifact: 'migrations-bundle'
       publishLocation: 'pipeline'
 
@@ -114,13 +114,13 @@ jobs:
 
   - task: DownloadSecureFile@1
     displayName: Download .pfx file
-    name: IdentityCertificate
+    name: DataProtectionCertificate
     inputs:
-      secureFile: 'IdentityCertificate.pfx'
+      secureFile: 'DataProtectionCertificate.pfx'
           
   - script: |
-      rm IdentityCertificate.pfx
-      cp "$(IdentityCertificate.secureFilePath)" "IdentityCertificate.pfx"
+      rm DataProtectionCertificate.pfx
+      cp "$(DataProtectionCertificate.secureFilePath)" "DataProtectionCertificate.pfx"
     failOnStderr: true
     displayName: Copy .pfx file
 
@@ -168,13 +168,13 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore'
+      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
 
   - task: Bash@3
     displayName: 'Publish'
@@ -195,7 +195,7 @@ jobs:
         echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
         echo A | xcopy .\bin\publish .\publish-result /s /e /h
         dotnet tool restore
-        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.6-x86-desktop,net8.0.6-x86-aspnetcore,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.7-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -250,11 +250,11 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json'
+      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
   
   - script: |
-      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:InstallNodejsDependencies,BeforeBuildTasks --no-restore
-      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore
+      dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+      dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
     failOnStderr: true
     displayName: Generate CSS/JS files
 

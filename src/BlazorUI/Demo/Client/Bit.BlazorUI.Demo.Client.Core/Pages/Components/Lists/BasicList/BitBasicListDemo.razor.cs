@@ -2,8 +2,8 @@
 
 public partial class BitBasicListDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "EmptyContent",
@@ -68,7 +68,7 @@ public partial class BitBasicListDemo
             DefaultValue = "null",
             Description = "Optional custom template for placeholder Text.",
         },
-    };
+    ];
 
 
 

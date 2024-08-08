@@ -16,10 +16,11 @@ public static class Urls
 
     public const string Twitter = "https://twitter.com/bitplatformhq";
 
-    public const string YouTube = "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog";
+    public const string YouTube = "https://www.youtube.com/@bitplatform";
 
     public const string Facebook = "#";
 
+    public const string LowCodeNoCode = "/lowcode-nocode";
     public const string Templates = "/templates/overview";
 
     public const string Bswup = "/bswup/overview";
@@ -31,14 +32,14 @@ public static class Urls
     public const string TodoTemplatePwaPrerendered = "https://todo.bitplatform.dev/";
     public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
     public const string TodoTemplateAppleStore = "https://apps.apple.com/us/app/bit-todotemplate/id6450611072";
-    public const string TodoTemplateFigma = "https://www.figma.com/file/PHDEnipl4PCWIoh5dCRpLd/Todo-Template?node-id=2022%3A5223";
+    public const string TodoTemplateWindows = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";
 
     public const string BlazorWebTemplate = "https://www.nuget.org/packages/Bit.BlazorWeb/";
 
     public const string AdminPanelMultiLingual = "https://adminpanel.bitplatform.dev/";
     public const string AdminPanelGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template";
     public const string AdminPanelAppleStore = "https://apps.apple.com/us/app/bit-adminpanel/id6450611349";
-    public const string AdminPanelFigma = "https://www.figma.com/community/file/1161030350747233731";
+    public const string AdminPanelWindows = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
 
     public const string BlazorUI = "https://blazorui.bitplatform.dev/";
 

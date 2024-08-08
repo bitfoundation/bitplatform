@@ -1,0 +1,216 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-upl {
+    display: flex;
+    flex-flow: column nowrap;
+    max-width: spacing(43.75);
+    font-family: $tg-font-family;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: $clr-brd-dis;
+            }
+        }
+
+        &:active {
+            background-color: $clr-bg-dis;
+        }
+    }
+
+    @keyframes bit-upl-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}
+
+.bit-upl-fi {
+    display: none;
+}
+
+.bit-upl-lbl {
+    outline: 0;
+    display: flex;
+    cursor: pointer;
+    font-weight: 300;
+    user-select: none;
+    align-items: center;
+    font-size: spacing(2);
+    justify-content: center;
+    min-height: spacing(4.5);
+    border-radius: spacing(0.5);
+    padding: spacing(0.5) spacing(2);
+    color: $clr-fg-pri;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
+    }
+
+    i {
+        padding-right: spacing(0.625);
+    }
+}
+
+.bit-upl-fl {
+    padding: 0;
+    margin: 0;
+}
+
+.bit-upl-itm {
+    display: flex;
+    overflow: hidden;
+    font-weight: 100;
+    align-items: center;
+    flex-flow: row nowrap;
+    font-size: spacing(1.75);
+    margin-top: spacing(0.375);
+    border-radius: spacing(0.625);
+    justify-content: space-between;
+    color: $clr-fg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+
+    .bit-upl-us {
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.bit-upl-uld {
+    .bit-upl-us {
+        color: $clr-suc;
+    }
+}
+
+.bit-upl-fld {
+    .bit-upl-us {
+        color: $clr-err;
+    }
+}
+
+.bit-upl-psd {
+    .bit-upl-us {
+        color: $clr-pri;
+    }
+}
+
+.bit-upl-fic {
+    height: 100%;
+    display: flex;
+    cursor: default;
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: center;
+    flex-flow: column nowrap;
+    width: calc(100% - #{40px});
+    padding: spacing(1) spacing(2);
+}
+
+.bit-upl-fnc {
+    width: 100%;
+    display: flex;
+
+    i {
+        padding-top: spacing(1);
+    }
+}
+
+.bit-upl-fn {
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-top: spacing(1);
+    text-overflow: ellipsis;
+    width: calc(100% - #{32px});
+}
+
+.bit-upl-fsc {
+    width: 100%;
+    display: flex;
+}
+
+.bit-upl-fs {
+    padding-top: spacing(1);
+    margin-right: spacing(1);
+}
+
+.bit-upl-pct {
+    padding-top: spacing(1);
+}
+
+.bit-upl-pbc {
+    width: 100%;
+    overflow: hidden;
+    height: spacing(0.25);
+    padding-top: spacing(1);
+    padding-bottom: spacing(1);
+    padding-left: spacing(0.25);
+}
+
+.bit-upl-pbr {
+    height: spacing(0.25);
+    transition: width 0.15s linear 0s;
+    background-color: $clr-pri;
+}
+
+.bit-upl-usi {
+    height: 100%;
+    display: flex;
+    cursor: pointer;
+    width: spacing(4);
+    align-items: center;
+    justify-content: center;
+
+    @media (hover: hover) {
+        &:hover {
+            i {
+                color: $clr-pri;
+            }
+        }
+    }
+}
+
+.bit-upl-ldg {
+    height: 100%;
+    display: flex;
+    width: spacing(4);
+    margin-right: spacing(0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-upl-spn {
+    border-radius: 50%;
+    width: spacing(2);
+    height: spacing(2);
+    border-width: spacing(0.2125);
+    border-style: $shp-border-style;
+    border-color: $clr-brd-sec;
+    border-top-color: $clr-pri-dark;
+    animation: bit-upl-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+}

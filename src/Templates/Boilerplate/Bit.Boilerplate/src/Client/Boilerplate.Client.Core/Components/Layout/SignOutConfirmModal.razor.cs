@@ -29,6 +29,6 @@ public partial class SignOutConfirmModal
     {
         await CloseModal();
 
-        await AuthenticationManager.SignOut();
+        await AuthenticationManager.SignOut(CurrentCancellationToken);
     }
 }

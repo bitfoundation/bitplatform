@@ -1,0 +1,232 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-pvt {
+    display: flex;
+
+    &.bit-dis {
+        .content-container {
+            cursor: default;
+            pointer-events: none;
+            color: $clr-fg-dis;
+        }
+
+        .bit-pvti {
+            cursor: default;
+            pointer-events: none;
+            color: $clr-fg-dis;
+        }
+
+        .bit-pvti-sel::before {
+            background-color: $clr-brd-dis;
+        }
+    }
+}
+
+.bit-pvt-hct {
+    display: flex;
+    white-space: nowrap;
+
+    * {
+        font-size: spacing(2);
+    }
+}
+
+.bit-pvt-cct {
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    box-shadow: none;
+    font-weight: 400;
+    position: relative;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    color: $clr-fg-pri;
+}
+
+.bit-pvt-top {
+    flex-flow: column;
+}
+
+.bit-pvt-bottom {
+    flex-flow: column-reverse;
+}
+
+.bit-pvt-left {
+    flex-flow: row;
+}
+
+.bit-pvt-right {
+    flex-flow: row-reverse;
+}
+
+.bit-pvt-left,
+.bit-pvt-right {
+    .bit-pvt-hct {
+        height: unset;
+        flex-flow: column;
+    }
+}
+
+.bit-pvt-links {
+    .bit-pvti {
+        @media(hover:hover) {
+            &:hover {
+                cursor: pointer;
+                color: $clr-fg-pri-hover;
+                background-color: $clr-bg-pri-hover;
+            }
+        }
+    }
+
+    .bit-pvti-sel {
+        &:before {
+            background-color: $clr-pri;
+        }
+
+        @media(hover:hover) {
+            &:hover {
+                &::before {
+                    left: 0;
+                    right: 0;
+                }
+            }
+        }
+    }
+}
+
+.bit-pvt-tabs {
+    .bit-pvti {
+        @media(hover:hover) {
+            &:hover {
+                color: $clr-pri-text;
+                background-color: $clr-pri-hover;
+            }
+        }
+    }
+
+    .bit-pvti-sel {
+        font-weight: 400;
+        color: $clr-pri-text;
+        background-color: $clr-pri;
+    }
+}
+
+.bit-pvt-scroll {
+    .bit-pvt-hct {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: spacing(0.5);
+
+        &::-webkit-scrollbar {
+            height: spacing(0.625);
+        }
+
+        &::-webkit-scrollbar-track {
+            border-radius: spacing(1.25);
+            background-color: $clr-bg-sec;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: spacing(1.25);
+            background-color: $clr-fg-sec;
+        }
+    }
+}
+
+.bit-pvt-sm {
+    .bit-pvt-hct {
+        * {
+            font-size: spacing(1.5);
+        }
+    }
+}
+
+.bit-pvt-lg {
+    .bit-pvt-hct {
+        * {
+            font-size: spacing(2.5);
+        }
+    }
+}
+
+.bit-pvti {
+    border: 0;
+    cursor: pointer;
+    border-radius: 0;
+    user-select: none;
+    position: relative;
+    text-align: center;
+    height: spacing(5.5);
+    outline: transparent;
+    display: inline-block;
+    padding: 0 spacing(1);
+    text-decoration: none;
+    box-sizing: border-box;
+    margin-right: spacing(1);
+    line-height: spacing(5.5);
+    background-color: transparent;
+    color: $clr-fg-pri;
+
+    > span {
+        height: 100%;
+        display: flex;
+        gap: spacing(0.5);
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    &.bit-dis {
+        cursor: default;
+        pointer-events: none;
+        color: $clr-fg-dis;
+
+        &.bit-pvti-sel::before {
+            background-color: $clr-brd-dis;
+        }
+    }
+}
+
+.bit-pvti-sel {
+    border: 0;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 0;
+    user-select: none;
+    position: relative;
+    text-align: center;
+    height: spacing(5.5);
+    outline: transparent;
+    display: inline-block;
+    padding: 0 spacing(1);
+    text-decoration: none;
+    box-sizing: border-box;
+    margin-right: spacing(1);
+    line-height: spacing(5.5);
+    background-color: transparent;
+    color: $clr-fg-pri;
+
+    &:before {
+        bottom: 0;
+        content: "";
+        left: spacing(1);
+        right: spacing(1);
+        position: absolute;
+        height: spacing(0.25);
+        background-color: transparent;
+        transition: left 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s, right 0.267s cubic-bezier(0.1, 0.25, 0.75, 0.9) 0s;
+    }
+
+    &:after {
+        display: block;
+        overflow: hidden;
+        font-weight: 700;
+        color: transparent;
+        visibility: hidden;
+        height: spacing(0.125);
+    }
+
+    span {
+        font-size: spacing(2);
+    }
+}

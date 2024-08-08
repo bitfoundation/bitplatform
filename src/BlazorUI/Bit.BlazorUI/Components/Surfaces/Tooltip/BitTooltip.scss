@@ -1,0 +1,247 @@
+﻿@import "../../../Styles/functions.scss";
+
+:root {
+    --bit-shd-ttp-clr: rgba(0, 0, 0, 0.1);
+}
+
+:root[bit-theme="dark"],
+:root[bit-theme="fluent-dark"] {
+    --bit-shd-ttp-clr: rgba(255, 255, 255, 0.1);
+}
+
+.bit-ttp {
+    position: relative;
+    display: inline-flex;
+
+    &.bit-dis {
+        .bit-ttp-ctn {
+            color: $clr-fg-dis;
+        }
+    }
+}
+
+.bit-ttp-wrp {
+    top: 0;
+    left: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    visibility: hidden;
+    position: absolute;
+    pointer-events: none;
+    transition: all 0.2s linear;
+    --bit-ttp-arrow-spacing: #{spacing(1.25)};
+}
+
+.bit-ttp-ctn {
+    height: auto;
+    font-weight: 500;
+    position: absolute;
+    text-align: center;
+    width: max-content;
+    height: max-content;
+    padding: spacing(1.25);
+    font-size: spacing(1.5);
+    z-index: $zindex-callout;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
+}
+
+.bit-ttp-vis {
+    opacity: 1;
+    visibility: visible;
+}
+
+.bit-ttp-arw {
+    position: absolute;
+    width: spacing(1.5);
+    height: spacing(1.5);
+    z-index: $zindex-callout;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
+}
+
+.bit-ttp-top {
+    .bit-ttp-ctn {
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: $box-shadow-callout;
+        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
+    }
+
+    .bit-ttp-arw {
+        bottom: 100%;
+        left: calc(50% - spacing(0.25));
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-tlf {
+    .bit-ttp-ctn {
+        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        bottom: 100%;
+        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-trg {
+    .bit-ttp-ctn {
+        left: calc(100% - var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% + var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        left: 100%;
+        bottom: 100%;
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-rtp {
+    .bit-ttp-ctn {
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        transform: rotate(-45deg) translateY(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-rgt {
+    .bit-ttp-ctn {
+        bottom: 50%;
+        transform: translateY(50%);
+        box-shadow: $box-shadow-callout;
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+    }
+
+    .bit-ttp-arw {
+        top: calc(50% - spacing(0.25));
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        transform: rotate(-45deg) translateY(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-rbm {
+    .bit-ttp-ctn {
+        top: calc(100% - var(--bit-ttp-arrow-spacing));
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        top: calc(100% - var(--bit-ttp-arrow-spacing));
+        left: calc(100% + var(--bit-ttp-arrow-spacing));
+        transform: rotate(-135deg) translateY(-50%);
+        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-brg {
+    .bit-ttp-ctn {
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        left: calc(100% - var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        left: calc(100% - var(--bit-ttp-arrow-spacing));
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-btm {
+    .bit-ttp-ctn {
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: $box-shadow-callout;
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+    }
+
+    .bit-ttp-arw {
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        left: calc(50% - spacing(0.25));
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-blf {
+    .bit-ttp-ctn {
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        top: calc(100% + var(--bit-ttp-arrow-spacing));
+        right: calc(100% - var(--bit-ttp-arrow-spacing));
+        transform: rotate(45deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-lbm {
+    .bit-ttp-ctn {
+        top: calc(100% - var(--bit-ttp-arrow-spacing));
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        top: calc(100% - var(--bit-ttp-arrow-spacing));
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        transform: rotate(-135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-lft {
+    .bit-ttp-ctn {
+        bottom: 50%;
+        transform: translateY(50%);
+        box-shadow: $box-shadow-callout;
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+    }
+
+    .bit-ttp-arw {
+        top: calc(50% - spacing(0.25));
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}
+
+.bit-ttp-ltp {
+    .bit-ttp-ctn {
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        box-shadow: $box-shadow-callout;
+    }
+
+    .bit-ttp-arw {
+        right: calc(100% + var(--bit-ttp-arrow-spacing));
+        bottom: calc(100% - var(--bit-ttp-arrow-spacing));
+        transform: rotate(135deg) translateX(-50%);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+    }
+}

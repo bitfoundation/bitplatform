@@ -1,20 +1,15 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitToggleButton
+public partial class BitToggleButton : BitComponentBase
 {
-    private bool IsCheckedHasBeenSet;
-
-    private bool isChecked;
-    private BitButtonSize? size;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-
     private int? _tabIndex;
+
 
 
     /// <summary>
     /// Whether the toggle button can have focus in disabled mode.
     /// </summary>
-    [Parameter] public bool AllowDisabledFocus { get; set; } = true;
+    [Parameter] public bool AllowDisabledFocus { get; set; }
 
     /// <summary>
     /// Detailed description of the toggle button for the benefit of screen readers.
@@ -27,127 +22,104 @@ public partial class BitToggleButton
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of compound button, Possible values: Primary | Standard.
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// The content of BitToggleButton.
+    /// The content of the toggle button.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitToggleButton component.
+    /// Custom CSS classes for different parts of the toggle button.
     /// </summary>
     [Parameter] public BitToggleButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Default value of the IsChecked.
+    /// The general color of the toggle button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Default value of the IsChecked parameter.
     /// </summary>
     [Parameter] public bool? DefaultIsChecked { get; set; }
 
     /// <summary>
-    /// The icon that shows in the button.
+    /// The icon name that renders inside the toggle button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Determine if the button is in checked state, default is true.
+    /// Determines if the toggle button is in the checked state.
     /// </summary>        
-    [Parameter]
-    public bool IsChecked
-    {
-        get => isChecked;
-        set
-        {
-            if (value == isChecked) return;
-            isChecked = value;
-            ClassBuilder.Reset();
-            _ = IsCheckedChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
+    public bool IsChecked { get; set; }
 
     /// <summary>
-    /// Callback that is called when the IsChecked value has changed.
+    /// Callback for when the IsChecked value has changed.
     /// </summary>
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
-    /// Callback that is called when the button is clicked.
+    /// Callback for when the toggle button is clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// The icon of the BitToggleButton when it is not checked.
+    /// The icon of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffIconName { get; set; }
 
     /// <summary>
-    /// The text of the BitToggleButton when it is not checked.
+    /// The text of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffText { get; set; }
 
     /// <summary>
-    /// The title of the BitToggleButton when it is not checked.
+    /// The title of the toggle button when it is not checked.
     /// </summary>
     [Parameter] public string? OffTitle { get; set; }
 
     /// <summary>
-    /// The icon of the BitToggleButton when it is checked.
+    /// The icon of the toggle button when it is checked.
     /// </summary>
     [Parameter] public string? OnIconName { get; set; }
 
     /// <summary>
-    /// The text of the BitToggleButton when it is checked.
+    /// The text of the toggle button when it is checked.
     /// </summary>
     [Parameter] public string? OnText { get; set; }
 
     /// <summary>
-    /// The title of the BitToggleButton when it is checked.
+    /// The title of the toggle button when it is checked.
     /// </summary>
     [Parameter] public string? OnTitle { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The size of the toggle button.
     /// </summary>
-    [Parameter]
-    public BitButtonSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitToggleButton component.
+    /// Custom CSS styles for different parts of the toggle button.
     /// </summary>
     [Parameter] public BitToggleButtonClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The text of the BitToggleButton.
+    /// The text of the toggle button.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The title to show when the mouse is placed on the button.
+    /// The title to show when the mouse is placed on the toggle button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// The visual variant of the toggle button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     protected override string RootElementClass => "bit-tgb";
@@ -158,23 +130,36 @@ public partial class BitToggleButton
 
         ClassBuilder.Register(() => IsChecked ? $"bit-tgb-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => Color switch
         {
-            BitButtonStyle.Primary => "bit-tgb-pri",
-            BitButtonStyle.Standard => "bit-tgb-std",
-            BitButtonStyle.Text => "bit-tgb-txt",
+            BitColor.Primary => "bit-tgb-pri",
+            BitColor.Secondary => "bit-tgb-sec",
+            BitColor.Tertiary => "bit-tgb-ter",
+            BitColor.Info => "bit-tgb-inf",
+            BitColor.Success => "bit-tgb-suc",
+            BitColor.Warning => "bit-tgb-wrn",
+            BitColor.SevereWarning => "bit-tgb-swr",
+            BitColor.Error => "bit-tgb-err",
             _ => "bit-tgb-pri"
         });
 
         ClassBuilder.Register(() => Size switch
         {
-            BitButtonSize.Small => "bit-tgb-sm",
-            BitButtonSize.Medium => "bit-tgb-md",
-            BitButtonSize.Large => "bit-tgb-lg",
-            _ => string.Empty
+            BitSize.Small => "bit-tgb-sm",
+            BitSize.Medium => "bit-tgb-md",
+            BitSize.Large => "bit-tgb-lg",
+            _ => "bit-tgb-md"
+        });
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-tgb-fil",
+            BitVariant.Outline => "bit-tgb-otl",
+            BitVariant.Text => "bit-tgb-txt",
+            _ => "bit-tgb-fil"
         });
     }
-    
+
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
@@ -191,23 +176,23 @@ public partial class BitToggleButton
 
         if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
-            IsChecked = DefaultIsChecked.Value;
+            await AssignIsChecked(DefaultIsChecked.Value);
         }
 
         await base.OnInitializedAsync();
     }
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
 
-        if (IsCheckedHasBeenSet && IsCheckedChanged.HasDelegate is false) return;
+        if (await AssignIsChecked(IsChecked is false) is false) return;
 
-        IsChecked = !IsChecked;
         await OnChange.InvokeAsync(IsChecked);
     }
+
 
 
     private string? GetIconName()

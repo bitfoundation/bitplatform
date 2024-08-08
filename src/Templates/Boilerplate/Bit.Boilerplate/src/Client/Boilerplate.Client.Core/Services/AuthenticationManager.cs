@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -11,9 +11,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IUserController userController = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IPrerenderStateService prerenderStateService;
 
     public async Task<bool> SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
@@ -30,20 +32,30 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         return false;
     }
 
-    public async Task SignOut()
+    public async Task SignOut(CancellationToken cancellationToken)
     {
-        await storageService.RemoveItem("access_token");
-        await storageService.RemoveItem("refresh_token");
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
+        try
         {
-            await cookie.Remove("access_token");
+            if (await storageService.GetItem("refresh_token") is not null)
+            {
+                await userController.SignOut(cancellationToken);
+            }
         }
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        finally
+        {
+            await storageService.RemoveItem("access_token");
+            await storageService.RemoveItem("refresh_token");
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                await cookie.Remove("access_token");
+            }
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+        }
     }
 
     public async Task RefreshToken()
     {
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
+        if (AppPlatform.IsBlazorHybrid is false)
         {
             await cookie.Remove("access_token");
         }
@@ -55,7 +67,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await tokenProvider.GetAccessTokenAsync();
+            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
 
             if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
             {
@@ -69,7 +81,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
                     try
                     {
-                        var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token });
+                        var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, CancellationToken.None);
                         await StoreTokens(refreshTokenResponse!);
                         access_token = refreshTokenResponse!.AccessToken;
                     }
@@ -106,15 +118,15 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (AppRenderMode.PrerenderEnabled && AppRenderMode.IsBlazorHybrid is false)
+        if (AppRenderMode.PrerenderEnabled && AppPlatform.IsBlazorHybrid is false)
         {
             await cookie.Set(new()
             {
                 Name = "access_token",
                 Value = response.AccessToken,
-                MaxAge = response.ExpiresIn,
+                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
                 SameSite = SameSite.Strict,
-                Secure = BuildConfiguration.IsRelease()
+                Secure = AppEnvironment.IsDev() is false
             });
         }
     }

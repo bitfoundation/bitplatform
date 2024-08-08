@@ -1,0 +1,58 @@
+﻿@import '../../../../Styles/abstracts/_colors.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+
+.number {
+    color: $Gray3;
+    top: rem2(12px);
+    position: absolute;
+    padding: rem2(12px);
+    font-size: rem2(12px);
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+}
+
+.text-title {
+    width: 100%;
+    color: $White;
+    bottom: rem2(55px);
+    position: absolute;
+    text-align: center;
+    font-size: rem2(15px);
+}
+
+.text-description {
+    width: 100%;
+    color: $White;
+    bottom: rem2(30px);
+    position: absolute;
+    text-align: center;
+    font-size: rem2(11px);
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.goto-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+::deep .goto-button {
+    margin-right: rem2(10px);
+}
+
+::deep .item {
+    color: black;
+    text-align: center;
+    border: 1px solid blue;
+    background-color: lightblue;
+
+    div {
+        transform: translate(0, 80%);
+    }
+}

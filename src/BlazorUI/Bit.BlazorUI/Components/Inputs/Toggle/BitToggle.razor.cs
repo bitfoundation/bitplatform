@@ -3,14 +3,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitToggle
+public partial class BitToggle : BitInputBase<bool>
 {
-    private string? _labelledById;
-    private string? _stateText;
-    private string? _buttonId;
     private string? _labelId;
+    private string? _buttonId;
+    private string? _stateText;
     private string? _stateTextId;
+    private string? _labelledById;
     private string? _ariaChecked => CurrentValueAsString;
+
 
 
     /// <summary>
@@ -50,9 +51,10 @@ public partial class BitToggle
     [Parameter] public string? OffText { get; set; }
 
     /// <summary>
-    /// Callback that is called when the checked value has changed.
+    /// Reverses the positions of the label and input of the toggle.
     /// </summary>
-    [Parameter] public EventCallback<bool> OnChange { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Reversed { get; set; }
 
     /// <summary>
     /// Denotes role of the toggle, default is switch.        
@@ -72,9 +74,11 @@ public partial class BitToggle
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => CurrentValue ? $"{RootElementClass}-chk {Classes?.Checked}" : string.Empty);
+        ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => IsInlineLabel ? $"{RootElementClass}-inl" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => IsInlineLabel ? "bit-tgl-inl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -97,39 +101,10 @@ public partial class BitToggle
         base.OnInitialized();
     }
 
-
-
-    private void HandleOnValueChanged(object? sender, EventArgs args)
-    {
-        SetStateText();
-
-        ClassBuilder.Reset();
-    }
-
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        CurrentValue = !CurrentValue;
-
-        await OnChange.InvokeAsync(CurrentValue);
-    }
-
-    private void SetStateText()
-    {
-        _stateText = (CurrentValue ? OnText : OffText) ?? DefaultText;
-
-        if (AriaLabel.HasValue()) return;
-
-        _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
-    }
-
     protected override string? FormatValueAsString(bool value) => value.ToString().ToLower(CultureInfo.CurrentUICulture);
 
-    protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
-
 
     protected override void Dispose(bool disposing)
     {
@@ -139,5 +114,32 @@ public partial class BitToggle
         }
 
         base.Dispose(disposing);
+    }
+
+
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        SetStateText();
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+    }
+
+    private async Task HandleOnClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        CurrentValue = !CurrentValue;
+    }
+
+    private void SetStateText()
+    {
+        _stateText = (CurrentValue ? OnText : OffText) ?? DefaultText;
+
+        if (AriaLabel.HasValue()) return;
+
+        _labelledById = $"{(Label.HasValue() ? _labelId : "")} {(_stateText.HasValue() ? _stateTextId : "")}".Trim();
     }
 }

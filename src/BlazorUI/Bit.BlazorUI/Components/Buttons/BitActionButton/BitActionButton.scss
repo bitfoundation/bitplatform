@@ -2,62 +2,178 @@
 
 .bit-acb {
     border: none;
+    display: flex;
     cursor: pointer;
+    gap: spacing(1);
+    color: $clr-fg-pri;
+    align-items: center;
     text-decoration: none;
-    min-width: spacing(8);
-    min-height: spacing(4);
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    justify-content: center;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
     background-color: transparent;
-    padding: 0 spacing(0.5);
-    color: $color-foreground-primary;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
+    padding: var(--bit-acb-padding);
+    font-size: var(--bit-acb-fontsize);
+
+    &.bit-dis {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+        --bit-acb-clr-ico: #{$clr-fg-dis};
+    }
+}
+
+.bit-acb-ico {
+    color: var(--bit-acb-clr-ico);
+}
+
+.bit-acb-con {
+}
+
+.bit-acb-rvi {
+    flex-direction: row-reverse;
+}
+
+.bit-acb-pri {
+    --bit-acb-clr-ico: #{$clr-pri};
 
     @media (hover: hover) {
         &:hover {
-            color: $color-action-hover-primary;
-
-            .bit-icon {
-                color: $color-action-hover-primary;
-            }
+            color: #{$clr-pri-hover};
+            --bit-acb-clr-ico: #{$clr-pri-hover};
         }
     }
 
     &:active {
-        color: $color-action-active-primary;
-
-        .bit-icon {
-            color: $color-action-active-primary;
-        }
-    }
-
-    &.bit-dis {
-        cursor: default;
-        pointer-events: none;
-        color: $color-foreground-disabled;
-
-        .bit-icon {
-            color: $color-foreground-disabled;
-        }
+        color: #{$clr-pri-active};
+        --bit-acb-clr-ico: #{$clr-pri-active};
     }
 }
 
-.bit-acb-ictn {
-    display: flex;
-    align-items: center;
+.bit-acb-sec {
+    --bit-acb-clr-ico: #{$clr-sec};
 
-    .bit-icon {
-        flex-shrink: 0;
-        flex-wrap: nowrap;
-        text-align: center;
-        align-items: center;
-        margin: 0 spacing(0.5);
-        justify-content: center;
-        color: $color-primary-main;
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-sec-hover};
+            --bit-acb-clr-ico: #{$clr-sec-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-sec-active};
+        --bit-acb-clr-ico: #{$clr-sec-active};
     }
 }
 
-.bit-acb-con {
-    margin: 0 spacing(0.5);
+.bit-acb-ter {
+    --bit-acb-clr-ico: #{$clr-ter};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-ter-hover};
+            --bit-acb-clr-ico: #{$clr-ter-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-ter-active};
+        --bit-acb-clr-ico: #{$clr-ter-active};
+    }
+}
+
+.bit-acb-inf {
+    --bit-acb-clr-ico: #{$clr-inf};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-inf-hover};
+            --bit-acb-clr-ico: #{$clr-inf-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-inf-active};
+        --bit-acb-clr-ico: #{$clr-inf-active};
+    }
+}
+
+.bit-acb-suc {
+    --bit-acb-clr-ico: #{$clr-suc};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-suc-hover};
+            --bit-acb-clr-ico: #{$clr-suc-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-suc-active};
+        --bit-acb-clr-ico: #{$clr-suc-active};
+    }
+}
+
+.bit-acb-wrn {
+    --bit-acb-clr-ico: #{$clr-wrn};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-wrn-hover};
+            --bit-acb-clr-ico: #{$clr-wrn-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-wrn-active};
+        --bit-acb-clr-ico: #{$clr-wrn-active};
+    }
+}
+
+.bit-acb-swr {
+    --bit-acb-clr-ico: #{$clr-swr};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-swr-hover};
+            --bit-acb-clr-ico: #{$clr-swr-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-swr-active};
+        --bit-acb-clr-ico: #{$clr-swr-active};
+    }
+}
+
+.bit-acb-err {
+    --bit-acb-clr-ico: #{$clr-err};
+
+    @media (hover: hover) {
+        &:hover {
+            color: #{$clr-err-hover};
+            --bit-acb-clr-ico: #{$clr-err-hover};
+        }
+    }
+
+    &:active {
+        color: #{$clr-err-active};
+        --bit-acb-clr-ico: #{$clr-err-active};
+    }
+}
+
+.bit-acb-sm {
+    --bit-acb-fontsize: #{spacing(1.25)};
+    --bit-acb-padding: #{spacing(0.50)} #{spacing(1)};
+}
+
+.bit-acb-md {
+    --bit-acb-fontsize: #{spacing(1.75)};
+    --bit-acb-padding: #{spacing(0.75)} #{spacing(1.5)};
+}
+
+.bit-acb-lg {
+    --bit-acb-fontsize: #{spacing(2.25)};
+    --bit-acb-padding: #{spacing(1.00)} #{spacing(2.00)};
 }

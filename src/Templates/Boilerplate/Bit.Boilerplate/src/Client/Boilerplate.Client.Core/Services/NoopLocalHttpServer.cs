@@ -6,7 +6,5 @@
 /// </summary>
 public class NoopLocalHttpServer : ILocalHttpServer
 {
-    public int Port => -1;
-
-    public Task<int> Start() => Task.FromResult(Port);
+    public int Start(CancellationToken cancellationToken) => -1;
 }

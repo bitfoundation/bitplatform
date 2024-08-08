@@ -13,9 +13,9 @@
         </div>
 
         @{
-            var todayYear = Culture.Calendar.GetYear(DateTime.Now);
-            var todayMonth = Culture.Calendar.GetMonth(DateTime.Now);
-            var todayDay = Culture.Calendar.GetDayOfMonth(DateTime.Now);
+            var todayYear = _culture.Calendar.GetYear(DateTime.Now);
+            var todayMonth = _culture.Calendar.GetMonth(DateTime.Now);
+            var todayDay = _culture.Calendar.GetDayOfMonth(DateTime.Now);
         }
 
         @if (DayPickerIsVisible())
@@ -113,7 +113,7 @@
 
                     @for (var index = 0; index < 7; index++)
                     {
-                        var dayOfWeekName = Culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
+                        var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(GetDayOfWeek(index));
                         <div title="@dayOfWeekName"
                              style="@Styles?.WeekNumbersHeader"
                              class="bit-cal-wlb @Classes?.WeekNumbersHeader">
@@ -261,7 +261,7 @@
                             @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                             {
                                 var month = (rowIndex * 4) + cellIndex;
-                                var monthName = Culture.DateTimeFormat.GetMonthName(month);
+                                var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                 var disabled = IsMonthOutOfMinAndMaxDate(month);
                                 var selected = month == _currentMonth;
                                 <button @onclick="() => SelectMonth(month)"
@@ -282,7 +282,7 @@
                                     }
                                     else
                                     {
-                                        @Culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                        @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
                                     }
                                 </button>
                             }
@@ -448,7 +448,7 @@
                             <i style="@Styles?.TimePickerDecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerDecreaseHourIcon" aria-hidden="true" />
                         </button>
                     </div>
-                    <div style="@Styles?.TimePickerDivider" class="bit-cal-tpr bit-cal-tdv @Classes?.TimePickerDivider">:</div>
+                    <div style="@Styles?.TimePickerHourMinuteSeparator" class="bit-cal-tpr bit-cal-tdv @Classes?.TimePickerHourMinuteSeparator">:</div>
                     <div style="@Styles?.MinuteInputContainer" class="bit-cal-tpr @Classes?.MinuteInputContainer">
                         <button @onpointerup="HandleOnPointerUpOrOut"
                                 @onpointerout="HandleOnPointerUpOrOut"
@@ -486,14 +486,14 @@
                                     type="button"
                                     style="@Styles?.TimePickerAmButton"
                                     class="bit-cal-tbt bit-cal-bam @(IsAm() is true ? "bit-cal-bns" : string.Empty) @Classes?.TimePickerAmButton">
-                                @Culture.DateTimeFormat.AMDesignator
+                                @_culture.DateTimeFormat.AMDesignator
                             </button>
 
                             <button @onclick="HandleOnPmClick"
                                     type="button"
                                     style="@Styles?.TimePickerPmButton"
                                     class="bit-cal-tbt bit-cal-bpm @(IsAm() is false ? "bit-cal-bns" : string.Empty) @Classes?.TimePickerPmButton">
-                                @Culture.DateTimeFormat.PMDesignator
+                                @_culture.DateTimeFormat.PMDesignator
                             </button>
                         </div>
                     }

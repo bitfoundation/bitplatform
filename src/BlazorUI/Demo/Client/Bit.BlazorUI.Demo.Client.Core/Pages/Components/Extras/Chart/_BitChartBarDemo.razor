@@ -1,0 +1,20 @@
+﻿<ComponentExampleBox Title="Bar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-desc">
+            A bar chart provides a way of showing data values represented as vertical bars.
+            It is sometimes used to show trend data, and the comparison of multiple data sets side by side.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" @ref="_chart" />
+            </div>
+        </div>
+        <div class="buttons-container">
+            <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizeBarData">Randomize Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddBarDataset">Add Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveBarDataset">Remove Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddBarData">Add Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveBarData">Remove Data</BitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

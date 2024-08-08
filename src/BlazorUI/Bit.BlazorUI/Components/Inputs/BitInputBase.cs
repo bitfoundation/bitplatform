@@ -1,34 +1,54 @@
-﻿using System.Reflection;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A base class for bit BlazorUI input components. This base class automatically
+/// integrates with an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>, which must be supplied
+/// as a cascading parameter.
+/// </summary>
 public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 {
     protected bool IsDisposed;
     protected bool ValueHasBeenSet;
 
-    private TValue? value;
 
+
+    private TValue? value;
     private bool? valueInvalid;
 
+
+
+    private bool _parsingFailed;
     private bool _isUnderlyingTypeNullable;
     private bool _hasInitializedParameters;
     private bool _previousParsingAttemptFailed;
+    private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
+
+
     protected event EventHandler OnValueChanged = default!;
+
+
+
+    protected BitInputBase()
+    {
+        _validationStateChangedHandler = OnValidateStateChanged;
+    }
+
 
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
 
+
     /// <summary>
     /// Gets or sets the display name for this field.
-    /// <para>This value is used when generating error messages when the input value fails to parse correctly.</para>
+    /// This value is used when generating error messages when the input value fails to parse correctly.
     /// </summary>
     [Parameter] public string? DisplayName { get; set; }
 
@@ -36,6 +56,27 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? InputHtmlAttributes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the element.
+    /// Allows access by name from the associated form.
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>
+    /// Callback for when the input value changes.
+    /// </summary>
+    [Parameter] public EventCallback<TValue?> OnChange { get; set; }
+
+    /// <summary>
+    /// Makes the input read-only.
+    /// </summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Makes the input required.
+    /// </summary>
+    [Parameter] public bool Required { get; set; }
 
     /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -53,10 +94,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
             this.value = value;
 
-            if (OnValueChanged is not null)
-            {
-                OnValueChanged(this, EventArgs.Empty);
-            }
+            OnValueChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -71,10 +109,34 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
 
 
+
+    /// <summary>
+    /// The ElementReference of the input element.
+    /// </summary>
+    public ElementReference InputElement { get; internal set; }
+
+    /// <summary>
+    /// Gives focus to the input element.
+    /// </summary>
+    public ValueTask FocusAsync() => InputElement.FocusAsync();
+
+    /// <summary>
+    /// Gives focus to the input element.
+    /// </summary>
+    /// <param name="preventScroll">A Boolean value indicating whether or not the browser should scroll
+    /// the document to bring the newly-focused element into view. A value of false for preventScroll (the default)
+    /// means that the browser will scroll the element into view after focusing it.
+    /// If preventScroll is set to true, no scrolling will occur.</param>
+    public ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
+
+
+
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
+
         var parametersDictionary = parameters.ToDictionary() as Dictionary<string, object>;
+
         foreach (var parameter in parametersDictionary!)
         {
             switch (parameter.Key)
@@ -84,8 +146,37 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(DisplayName):
+                    DisplayName = (string?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(InputHtmlAttributes):
                     InputHtmlAttributes = (IReadOnlyDictionary<string, object>?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(Name):
+                    Name = (string?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(OnChange):
+                    OnChange = (EventCallback<TValue?>)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(ReadOnly):
+                    var readOnly = (bool)parameter.Value;
+                    if (ReadOnly != readOnly) ClassBuilder.Reset();
+                    ReadOnly = readOnly;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
+                case nameof(Required):
+                    var required = (bool)parameter.Value;
+                    if (Required != required) ClassBuilder.Reset();
+                    Required = required;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -104,11 +195,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     ValueExpression = (Expression<Func<TValue>>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
-
-                case nameof(DisplayName):
-                    DisplayName = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
             }
         }
 
@@ -117,7 +203,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
             // This is the first run
             // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInitialized to call base.OnInitialized()
 
-            RegisterFieldIdentifier();
+            CreateFieldIdentifier();
 
             _hasInitializedParameters = true;
         }
@@ -137,12 +223,6 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
     }
 
-
-    protected BitInputBase()
-    {
-        _validationStateChangedHandler = OnValidateStateChanged;
-    }
-
     protected override void OnInitialized()
     {
         ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
@@ -151,12 +231,16 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     }
 
 
+
     protected bool? ValueInvalid
     {
         get => valueInvalid;
         private set
         {
+            if (valueInvalid == value) return;
+
             valueInvalid = value;
+
             ClassBuilder.Reset();
         }
     }
@@ -170,90 +254,122 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         get => Value;
         set
         {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (IsEnabled is false) return;
 
-            var hasChanged = EqualityComparer<TValue>.Default.Equals(value, Value) is false;
-            if (hasChanged is false) return;
+            if (EqualityComparer<TValue>.Default.Equals(value, Value)) return;
 
-            Value = value;
-            _ = ValueChanged.InvokeAsync(value);
+            _parsingFailed = false;
 
-            EditContext?.NotifyFieldChanged(FieldIdentifier);
+            _ = SetCurrentValueAsync(value);
         }
     }
 
     protected string? CurrentValueAsString
     {
-        get => FormatValueAsString(CurrentValue);
-        set
-        {
-            _parsingValidationMessages?.Clear();
-
-            bool parsingFailed;
-
-            if (_isUnderlyingTypeNullable && value.HasNoValue())
-            {
-                // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
-                // Then all subclasses get nullable support almost automatically (they just have to
-                // not reject Nullable<T> based on the type itself).
-                parsingFailed = false;
-                CurrentValue = default;
-            }
-            else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
-            {
-                parsingFailed = false;
-                CurrentValue = parsedValue!;
-            }
-            else
-            {
-                parsingFailed = true;
-
-                // EditContext may be null if the input is not a child component of EditForm.
-                if (EditContext is not null)
-                {
-                    _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
-                    _parsingValidationMessages.Add(FieldIdentifier, validationErrorMessage);
-
-                    // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                    EditContext.NotifyFieldChanged(FieldIdentifier);
-                }
-            }
-
-            // We can skip the validation notification if we were previously valid and still are
-            if (parsingFailed || _previousParsingAttemptFailed)
-            {
-                EditContext?.NotifyValidationStateChanged();
-                _previousParsingAttemptFailed = parsingFailed;
-            }
-        }
+        // BitInputBase-derived components can hold invalid states (e.g., an BitNumberField being blank even when bound
+        // to an int value). So, if parsing fails, we keep the rejected string in the UI even though it doesn't
+        // match what's on the .NET model. This avoids interfering with typing, but still notifies the EditContext
+        // about the validation error message.
+        get => _parsingFailed ? _incomingValueBeforeParsing : FormatValueAsString(CurrentValue);
+        set => _ = SetCurrentValueAsStringAsync(value);
     }
 
-    protected virtual string? FormatValueAsString(TValue? value) => value?.ToString();
 
-    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
-    protected virtual void RegisterFieldIdentifier()
+    protected virtual void CreateFieldIdentifier()
     {
-        RegisterFieldIdentifier(ValueExpression, typeof(TValue));
+        CreateFieldIdentifier(ValueExpression, typeof(TValue));
     }
 
-    protected void RegisterFieldIdentifier<TField>(Expression<Func<TField>>? valueExpression, Type valueType)
+    protected void CreateFieldIdentifier<TField>(Expression<Func<TField>>? valueExpression, Type valueType)
     {
-        if (CascadedEditContext is not null && valueExpression is not null)
+        if (valueExpression is not null)
         {
             FieldIdentifier = FieldIdentifier.Create(valueExpression);
+        }
+        else if (ValueChanged.HasDelegate)
+        {
+            FieldIdentifier = FieldIdentifier.Create(() => Value);
+        }
+
+        if (CascadedEditContext is not null)
+        {
             EditContext = CascadedEditContext;
             EditContext.OnValidationStateChanged += _validationStateChangedHandler;
         }
 
-        if (Nullable.GetUnderlyingType(valueType) is not null)
+        _isUnderlyingTypeNullable = Nullable.GetUnderlyingType(valueType) is not null || default(TValue) is null;
+    }
+
+    protected virtual string? FormatValueAsString(TValue? value) => value?.ToString();
+
+    protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
+
+    protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass = false)
+    {
+        if (bypass && IsEnabled is false) return;
+
+        _incomingValueBeforeParsing = value;
+        _parsingValidationMessages?.Clear();
+
+        if (_isUnderlyingTypeNullable && value.HasNoValue())
         {
-            _isUnderlyingTypeNullable = true;
-            return;
+            // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
+            // Then all subclasses get nullable support almost automatically (they just have to
+            // not reject Nullable<T> based on the type itself).
+            _parsingFailed = false;
+
+            CurrentValue = default;
+        }
+        else if (TryParseValueFromString(value, out var parsedValue, out var parsingErrorMessage))
+        {
+            _parsingFailed = false;
+
+            if (bypass)
+            {
+                Value = parsedValue;
+            }
+            else
+            {
+                await SetCurrentValueAsync(parsedValue);
+            }
+        }
+        else
+        {
+            _parsingFailed = true;
+
+            // EditContext may be null if the input is not a child component of EditForm.
+            if (EditContext is not null)
+            {
+                _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
+                _parsingValidationMessages.Add(FieldIdentifier, parsingErrorMessage);
+
+                // Since we're not writing to CurrentValue, we'll need to notify about modification from here
+                EditContext.NotifyFieldChanged(FieldIdentifier);
+            }
         }
 
-        _isUnderlyingTypeNullable = default(TValue) is null;
+        // We can skip the validation notification if we were previously valid and still are
+        if (_parsingFailed || _previousParsingAttemptFailed)
+        {
+            EditContext?.NotifyValidationStateChanged();
+            _previousParsingAttemptFailed = _parsingFailed;
+        }
     }
+
+    protected async Task SetCurrentValueAsync(TValue? value)
+    {
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+
+        Value = value;
+
+        await ValueChanged.InvokeAsync(value);
+
+        EditContext?.NotifyFieldChanged(FieldIdentifier);
+
+        await OnChange.InvokeAsync(value);
+    }
+
 
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
@@ -268,11 +384,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         if (EditContext is null) return;
 
         var hasAriaInvalidAttribute = InputHtmlAttributes is not null && InputHtmlAttributes.ContainsKey("aria-invalid");
+
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
             if (hasAriaInvalidAttribute) return; // Do not overwrite the attribute value
 
-            if (ConvertToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
+            if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
             {
                 InputHtmlAttributes = inputHtmlAttributes;
             }
@@ -288,34 +405,34 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         {
             ValueInvalid = false;
 
-            if (hasAriaInvalidAttribute)
+            if (hasAriaInvalidAttribute is false) return;
+
+            // No validation errors. Need to remove `aria-invalid` if it was rendered already
+
+            if (InputHtmlAttributes!.Count == 1)
             {
-                // No validation errors. Need to remove `aria-invalid` if it was rendered already
-
-                if (InputHtmlAttributes!.Count == 1)
+                // Only aria-invalid argument is present which we don't need any more
+                InputHtmlAttributes = null;
+            }
+            else
+            {
+                if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
                 {
-                    // Only aria-invalid argument is present which we don't need any more
-                    InputHtmlAttributes = null;
+                    InputHtmlAttributes = inputHtmlAttributes;
                 }
-                else
-                {
-                    if (ConvertToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
-                    {
-                        InputHtmlAttributes = inputHtmlAttributes;
-                    }
 
-                    inputHtmlAttributes.Remove("aria-invalid");
-                }
+                inputHtmlAttributes.Remove("aria-invalid");
             }
         }
     }
 
-    private static bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
+    private static bool TryConvertingToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
     {
         var newDictionaryCreated = true;
-        if (source == null)
+
+        if (source is null)
         {
-            result = new Dictionary<string, object>();
+            result = [];
         }
         else if (source is Dictionary<string, object> currentDictionary)
         {
@@ -324,7 +441,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         }
         else
         {
-            result = new Dictionary<string, object>();
+            result = [];
             foreach (var item in source)
             {
                 result.Add(item.Key, item.Value);
@@ -333,6 +450,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
         return newDictionaryCreated;
     }
+
 
 
     public void Dispose()

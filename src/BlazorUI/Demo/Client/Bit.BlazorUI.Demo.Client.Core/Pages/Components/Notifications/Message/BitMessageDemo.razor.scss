@@ -1,0 +1,32 @@
+﻿.box {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+}
+
+::deep {
+    .custom-class {
+        padding: 1rem;
+        color: deeppink;
+        font-size: 1rem;
+        font-style: italic;
+    }
+
+    .custom-icon {
+        font-size: 2rem;
+    }
+
+    .custom-content {
+        font-size: 1.5rem;
+    }
+
+    .custom-expander-icon {
+        margin: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .custom-dismiss-icon {
+        margin: 0.5rem;
+        font-size: 2rem;
+    }
+}

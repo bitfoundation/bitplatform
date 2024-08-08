@@ -1,0 +1,198 @@
+﻿@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
+
+.highlight-1 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(351deg, #6f31af 23%, #b2aeeb 87%)
+}
+
+.highlight-2 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(241deg, #6c05c9 20%, #817ccf 56%, #2426af 84%);
+}
+
+.highlight-3 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(241deg, #982ff7 20%, #524add 56%, #6668eb 84%);
+}
+
+.highlight-4 {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(241deg, #b5319c 20%, #473def 56%, #ad59df 84%);
+}
+
+.page-container {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: flex-start;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+}
+
+.page-section {
+    width: 100%;
+    display: flex;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    justify-content: center;
+}
+
+.page-section-content {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    max-width: rem2(1200px);
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+}
+
+.section-title-container {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+::deep .section-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: $bit-color-foreground-secondary;
+}
+
+.section-title-line {
+    height: 2px;
+    flex-grow: 1;
+    background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
+
+    &.reversed {
+        background-image: linear-gradient(9deg, transparent 20%, #8c85ff 100%);
+    }
+}
+
+::deep {
+    .text-title {
+        line-height: 1.1;
+        font-size: 6rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+
+        @include lt-xl {
+            font-size: 5rem;
+        }
+
+        @include lt-lg {
+            font-size: 3.25rem;
+            margin-bottom: 1rem;
+        }
+
+        @include lt-md {
+            font-size: 2.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @include lt-sm {
+            margin-bottom: 0;
+            font-size: 1.75rem;
+        }
+    }
+
+    .text-subtitle {
+        font-size: 2.25rem;
+        color: $bit-color-foreground-secondary;
+
+        @include lt-xl {
+            font-size: 2rem;
+        }
+
+        @include lt-lg {
+            font-size: 1.25rem;
+        }
+
+        @include lt-md {
+            font-size: 1rem;
+        }
+    }
+}
+
+.products-container {
+    line-height: 2.5em;
+    margin-bottom: 2em;
+
+    span {
+        display: block;
+        min-width: 5em;
+        font-weight: bold;
+    }
+
+    a {
+        margin: 0.5em;
+        border: 1px solid;
+        border-radius: 0.5em;
+        padding: 0.25em 0.5em;
+        text-decoration: none;
+        color: $bit-color-primary-dark;
+        border-color: $bit-color-primary-dark;
+        background-color: rgb(150 150 250 / 0.05);
+    }
+}
+
+.benefits-container {
+    display: flex;
+    flex-flow: row wrap;
+
+    span {
+        margin: 0.5em;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
+    }
+}
+
+.comparison-container {
+    display: flex;
+    flex-flow: column;
+
+    span {
+        margin: 0.5em 0;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
+        background-color: rgb(150 150 250 / 0.05);
+    }
+
+    div {
+        margin-bottom: 2em;
+    }
+}
+
+.stats-container {
+    display: flex;
+    flex-flow: row wrap;
+
+    div {
+        margin: 0.5em;
+        padding: 0.5em;
+        border: 1px solid;
+        border-radius: 0.25em;
+        border-color: $bit-color-primary-light;
+    }
+}

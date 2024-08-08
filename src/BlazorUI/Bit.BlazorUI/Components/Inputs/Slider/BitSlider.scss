@@ -1,0 +1,439 @@
+﻿@import "../../../Styles/functions.scss";
+
+$BgDefult: $clr-bg-sec;
+$BgTrack: $clr-fg-sec;
+$BgTrackHover: $clr-pri;
+$BgHover: $clr-pri-light;
+
+.bit-sld {
+    font-family: $tg-font-family;
+
+    input {
+        --range: calc(var(--max) - var(--min));
+        --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
+        --ratio: calc((var(--value) - var(--min))/var(--range));
+        background: none;
+
+        &:focus {
+            outline: none;
+        }
+    }
+    /**/
+    /*webkit*/
+    input::-webkit-slider-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        touch-action: none;
+        pointer-events: auto;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        margin-top: spacing(-0.75);
+        border-radius: spacing(1.25);
+        background-color: $clr-bg-pri;
+        border: spacing(0.25) $shp-border-style $BgTrack;
+    }
+
+    input::-webkit-slider-runnable-track {
+        box-shadow: none;
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background-color: $BgDefult;
+    }
+
+    input::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /**/
+    /*mozilla*/
+    input::-moz-range-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        touch-action: none;
+        pointer-events: auto;
+        box-sizing: border-box;
+        border-radius: spacing(1.25);
+        background-color: $clr-bg-sec;
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+        border: spacing(0.25) $shp-border-style $BgTrack;
+    }
+
+    input::-moz-range-track {
+        box-shadow: none;
+        height: spacing(0.5);
+        background-color: $BgDefult;
+        border-radius: spacing(0.5);
+    }
+
+    input::-moz-range-track {
+        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
+    }
+    /**/
+    /*ms*/
+    input::-ms-fill-upper {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-fill-lower {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    input::-ms-thumb {
+        width: spacing(2);
+        height: spacing(2);
+        touch-action: none;
+        pointer-events: auto;
+        box-sizing: border-box;
+        border-radius: spacing(1.25);
+        border: spacing(0.25) $shp-border-style $BgTrack;
+        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
+    }
+
+    input::-ms-track {
+        box-shadow: none;
+        height: spacing(0.5);
+        background-color: $BgDefult;
+        border-radius: spacing(0.5);
+    }
+
+    input::-ms-fill-lower {
+        box-shadow: none;
+        height: spacing(0.5);
+        border-radius: spacing(0.5);
+        background-color: $BgDefult;
+    }
+
+    input::-webkit-slider-runnable-track,
+    input::-webkit-slider-thumb,
+    input {
+        -webkit-appearance: none;
+    }
+
+    input:hover ~ .bit-sld-ztk {
+        background-color: $clr-bg-pri-hover;
+    }
+
+    input::-webkit-slider-thumb:hover,
+    input::-webkit-slider-thumb:active,
+    input:hover::-webkit-slider-thumb,
+    input:active::-webkit-slider-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track {
+        background-color: $BgTrackHover;
+    }
+
+    input:active::-webkit-slider-runnable-track {
+        background-color: $BgTrackHover;
+    }
+
+    input:hover::-webkit-slider-runnable-track,
+    input:active::-webkit-slider-runnable-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-moz-range-thumb:hover,
+    input:hover::-moz-range-track,
+    input::-moz-range-thumb:active,
+    input:active::-moz-range-track {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-moz-range-track,
+    input:active::-moz-range-track {
+        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
+    }
+
+    input::-ms-thumb:hover,
+    input:hover::-ms-thumb,
+    input::-ms-thumb:active,
+    input:active::-ms-thumb {
+        border-color: $BgTrackHover;
+    }
+
+    input:hover::-ms-fill-lower,
+    input:active::-ms-fill-lower {
+        background-color: $BgTrackHover;
+    }
+
+    &.bit-dis {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        input {
+            opacity: 0.5;
+        }
+
+        .bit-sld-lbl,
+        .bit-sld-vlb {
+            color: $clr-fg-dis;
+        }
+
+        .bit-sld-ztk {
+            background-color: $clr-bg-dis;
+        }
+    }
+
+    &.bit-rtl {
+        input::-webkit-slider-runnable-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+
+        input:hover::-webkit-slider-runnable-track,
+        input:active::-webkit-slider-runnable-track {
+            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
+        }
+
+        input::-moz-range-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+
+        input:hover::-moz-range-track,
+        input:active::-moz-range-track {
+            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
+        }
+
+        input::-ms-track {
+            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        }
+    }
+}
+
+.bit-sld-hrz {
+    input {
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    .bit-sld-ztk {
+        height: spacing(2);
+        width: spacing(0.125);
+    }
+}
+
+.bit-sld-vrt {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    input {
+        height: spacing(7.5);
+        transform-origin: left;
+        margin: 0 spacing(3.125);
+        margin-top: spacing(1.25);
+    }
+
+    .bit-sld-vlb {
+        text-align: center;
+        box-sizing: border-box;
+        padding-top: spacing(6.25);
+    }
+
+    .bit-sld-cnt {
+        height: 100%;
+        display: block;
+        margin-inline-start: 0;
+        width: spacing(6.25);
+    }
+
+    .bit-sld-ztk {
+        width: spacing(1.75);
+        height: spacing(0.125);
+        margin-inline-start: spacing(2.25);
+    }
+}
+
+.bit-sld-rgd-hrz {
+    input {
+        top: 0;
+        left: 0;
+        margin: 0;
+        z-index: 1;
+        grid-row: 3;
+        background: none;
+        grid-column: 1/span 2;
+        --col: #000; /* get rid of white Chrome background */
+    }
+
+    input::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    input::-moz-range-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    .bit-sld-box {
+        width: 100%;
+        display: grid;
+        margin: 1em auto;
+        position: relative;
+        --dif: calc(var(--max) - var(--min));
+        grid-template: repeat(2, max-content) 4px/1fr 1fr;
+        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+        background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+    }
+
+    .bit-sld-box::before,
+    .bit-sld-box::after {
+        content: "";
+        grid-row: 3;
+        height: spacing(0.5);
+        grid-column: 1/span 2;
+        background-color: $BgTrack;
+    }
+
+    .bit-sld-box::before {
+        width: calc((var(--h) - var(--l))/var(--dif)*100%);
+        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-sld-box::after {
+        width: calc((var(--l) - var(--h))/var(--dif)*100%);
+        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-sld-ztk {
+        height: spacing(2);
+        width: spacing(0.125);
+        margin-top: spacing(-0.625);
+    }
+}
+
+.bit-sld-rgd-vrt {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    input {
+        top: 0;
+        left: 0;
+        margin: 0;
+        z-index: 1;
+        --col: #000;
+        grid-row: 3;
+        background: none;
+        grid-column: 1/span 2;
+    }
+
+    input::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    input::-moz-range-track {
+        width: 100%;
+        height: 100%;
+        background: none;
+    }
+
+    .bit-sld-vlb {
+        text-align: center;
+    }
+
+    .bit-sld-box {
+        display: grid;
+        margin: 1em auto;
+        position: relative;
+        --dif: calc(var(--max) - var(--min));
+        grid-template: repeat(2, max-content) 4px/1fr 1fr;
+        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
+        background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
+    }
+
+    .bit-sld-box::before,
+    .bit-sld-box::after {
+        grid-row: 3;
+        content: "";
+        height: spacing(0.5);
+        grid-column: 1/span 2;
+        background-color: $BgTrack;
+    }
+
+    .bit-sld-box::before {
+        width: calc((var(--h) - var(--l))/var(--dif)*100%);
+        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-sld-box::after {
+        width: calc((var(--l) - var(--h))/var(--dif)*100%);
+        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
+    }
+
+    .bit-sld-cnt {
+        flex-grow: 1;
+        margin: 1rem 0;
+        transform: rotate(270deg);
+    }
+
+    .bit-sld-ztk {
+        width: spacing(2);
+        height: spacing(0.125);
+        transform: rotate(270deg);
+        margin-top: spacing(0.125);
+        margin-inline-start: spacing(2.25);
+    }
+}
+
+.bit-sld-rgd-hrz,
+.bit-sld-rgd-vrt {
+    input {
+        pointer-events: none;
+    }
+
+    .bit-sld-box:hover {
+        background: linear-gradient(0deg, $BgHover spacing(0.5), transparent 0);
+    }
+
+    .bit-sld-box:hover::before,
+    .bit-sld-box:hover::after {
+        background-color: $BgTrackHover;
+    }
+}
+
+.bit-sld-lbl {
+    margin: 0;
+    padding: 0;
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    overflow-wrap: break-word;
+    color: $clr-fg-pri;
+}
+
+.bit-sld-cnt {
+    padding: 0;
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.bit-sld-vlb {
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    width: spacing(5);
+    white-space: nowrap;
+    margin: 0 spacing(1);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+    color: $clr-fg-pri;
+}
+
+.bit-sld-ztk {
+    z-index: 2;
+    position: absolute;
+    background-color: $clr-bg-sec;
+}

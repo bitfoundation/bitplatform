@@ -1,0 +1,68 @@
+﻿@using Boilerplate.Server.Api.Models.Emailing
+
+@code {
+    [Parameter] public EmailTokenTemplateModel Model { get; set; } = default!;
+    [Parameter] public HttpContext HttpContext { get; set; } = default!;
+    [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <title>@EmailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject), Model.Token]</title>
+</head>
+<body dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)" style="font-family:Arial,sans-serif">
+    <main style="padding:50px">
+        <table style="width:100%;border:1px solid #EDEBE9;border-radius:2px;padding:50px;text-align:center;">
+            <tr>
+                <td style="color:#0D2960;font-weight:600;font-size:24px;padding-bottom:50px;">
+                    @EmailLocalizer[nameof(EmailStrings.WelcomeToApp)]
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-bottom:20px;">
+                    @EmailLocalizer[nameof(EmailStrings.EmailConfirmationMessageSubtitle), Model.Email!]
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-bottom:20px;">
+                    @EmailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBodyToken)]
+                </td>
+            </tr>
+            <tr>
+                <td style="font-size:20px;font-weight:600;padding-bottom:50px;">
+                    @Model.Token
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-bottom:20px;">
+                    @EmailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBodyLink)]
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="@Model.Link">
+                        @Model.Link
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <table style="width:100%;text-align:center;margin-top:30px;">
+            <tr>
+                <td style="padding-bottom:10px;">
+                    <img alt="Company Logo" src="@(new Uri(HttpContext.Request.GetBaseUrl(), "images/icon.png"))" width="30" height="20" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a style="font-size:12px" href="@HttpContext.Request.GetBaseUrl()">
+                        @EmailLocalizer[nameof(EmailStrings.AppName)]
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Debug with BlazorUI": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Bit.BlazorUI\\Bit.BlazorUI.csproj"
+    }
+  }
+}

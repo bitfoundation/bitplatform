@@ -1,0 +1,241 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-dlg {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    font-weight: 400;
+    z-index: $zindex-modal;
+    font-size: spacing(1.75);
+    font-family: $tg-font-family;
+}
+
+.bit-dlg-nta {
+    touch-action: none;
+
+    * {
+        touch-action: none;
+    }
+}
+
+.bit-dlg-abs {
+    z-index: unset;
+    position: absolute;
+}
+
+.bit-dlg-doc {
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: absolute;
+    pointer-events: auto;
+    background-color: transparent;
+    transition: opacity 300ms ease 0s;
+}
+
+.bit-dlg-ovl {
+    inset: 0;
+    z-index: 0;
+    position: absolute;
+    background-color: $clr-bg-overlay;
+}
+
+.bit-dlg-ctn {
+    max-width: 100%;
+    position: absolute;
+    box-sizing: border-box;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+}
+
+.bit-dlg-hdr {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    overflow-wrap: anywhere;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(3) spacing(2.5);
+}
+
+.bit-dlg-ttl {
+    margin: 0;
+    width: 100%;
+    font-weight: 600;
+    line-height: normal;
+    font-size: spacing(2.5);
+    min-height: spacing(2.5);
+    color: $clr-fg-pri;
+}
+
+.bit-dlg-scr-cnt {
+    flex-grow: 1;
+    display: flex;
+    overflow-y: auto;
+    max-height: 100vh;
+    flex-direction: column;
+}
+
+.bit-dlg-msg {
+    font-weight: 400;
+    line-height: 1.5;
+    font-size: spacing(1.75);
+    overflow-wrap: break-word;
+    margin: 0 spacing(3) spacing(3);
+    color: $clr-fg-sec;
+}
+
+.bit-dlg-bct {
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 spacing(3) spacing(3);
+    background-color: $clr-bg-pri;
+
+    button {
+        cursor: pointer;
+        text-decoration: none;
+        min-width: spacing(8);
+        min-height: spacing(4);
+        box-sizing: border-box;
+        margin: 0 spacing(0.5);
+        font-size: spacing(1.75);
+        padding: spacing(0.5) spacing(2);
+        border-width: $shp-border-width;
+        border-style: $shp-border-style;
+        border-radius: $shp-border-radius;
+        font-family: $tg-font-family;
+        font-weight: $tg-font-weight;
+    }
+}
+
+.bit-dlg-okb {
+    color: $clr-pri-text;
+    border-color: $clr-pri;
+    background-color: $clr-pri;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: $clr-pri-hover;
+            background-color: $clr-pri-hover;
+        }
+    }
+
+    &:active {
+        border-color: $clr-pri-active;
+        background-color: $clr-pri-active;
+    }
+}
+
+.bit-dlg-cnb {
+    color: $clr-pri;
+    border-color: $clr-pri;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-pri-text;
+            border-color: $clr-pri-hover;
+            background-color: $clr-pri-hover;
+        }
+    }
+
+    &:active {
+        color: $clr-pri-text;
+        border-color: $clr-pri-active;
+        background-color: $clr-pri-active;
+    }
+}
+
+.bit-dlg-cls {
+    border: none;
+    cursor: pointer;
+    font-weight: 400;
+    width: spacing(4);
+    margin-left: auto;
+    height: spacing(4);
+    align-self: normal;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    font-size: spacing(1.75);
+    border-radius: spacing(0.25);
+    background-color: transparent;
+    color: $clr-fg-pri;
+
+    span {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            margin: 0 spacing(0.5);
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
+    }
+}
+
+.bit-dlg-ctr {
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-dlg-tl {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-dlg-tc {
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.bit-dlg-tr {
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bit-dlg-cl {
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bit-dlg-cr {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.bit-dlg-bl {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.bit-dlg-bc {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bit-dlg-br {
+    align-items: flex-end;
+    justify-content: flex-end;
+}

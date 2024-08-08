@@ -22,7 +22,7 @@
                 disabled="@(isEnabled is false)"
                 aria-disabled="@(isEnabled is false)"
                 style="@GetStyle(item)"
-                class="bit-btg-itm@(GetItemClass(i, isEnabled)) @GetClass(item)">
+                class="bit-btg-itm @GetClass(item)">
             @if (template is not null)
             {
                 @template(item)

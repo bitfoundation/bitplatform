@@ -2,171 +2,148 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitButton
+public partial class BitButton : BitComponentBase
 {
-    private BitColor? color;
-    private BitButtonSize? size;
-    private BitButtonStyle buttonStyle = BitButtonStyle.Primary;
-    private BitButtonIconPosition? iconPosition = BitButtonIconPosition.Start;
-
     private int? _tabIndex;
     private BitButtonType _buttonType;
 
 
+
     /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
+    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>.
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
 
+
     /// <summary>
-    /// Whether the button can have focus in disabled mode
+    /// Whether the button can have focus in disabled mode.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; } = true;
 
     /// <summary>
-    /// Detailed description of the button for the benefit of screen readers
+    /// Detailed description of the button for the benefit of screen readers.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element
+    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// The style of button, Possible values: Primary | Standard | Text
-    /// </summary>
-    [Parameter]
-    public BitButtonStyle ButtonStyle
-    {
-        get => buttonStyle;
-        set
-        {
-            if (buttonStyle == value) return;
-
-            buttonStyle = value;
-            ClassBuilder.Reset();
-        }
-    }
-
-    /// <summary>
-    /// The type of the button
+    /// The value of the type attribute of the button.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
-    /// The content of button, It can be Any custom tag or a text
+    /// The content of primary section of the button.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitButton.
+    /// Custom CSS classes for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The color of button
+    /// The general color of the button.
     /// </summary>
-    [Parameter]
-    public BitColor? Color
-    {
-        get => color;
-        set
-        {
-            if (color == value) return;
-
-            color = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Alias of ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Content { get; set; }
-
-    /// <summary>
-    /// URL the link points to, if provided, button renders as an anchor
+    /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
-    /// The icon to show inside the BitButton.
+    /// The name of the icon to render inside the button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Specifies Icon position which can be rendered either at the start or end of the component.
+    /// Determines that only the icon should be rendered.
     /// </summary>
-    [Parameter]
-    public BitButtonIconPosition? IconPosition
-    {
-        get => iconPosition;
-        set
-        {
-            if (iconPosition == value) return;
-
-            iconPosition = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
-    /// Determine whether the button is in loading mode or not.
+    /// Determines whether the button is in loading mode or not.
     /// </summary>        
     [Parameter] public bool IsLoading { get; set; }
 
     /// <summary>
-    /// The loading label to show next to the spinner.
+    /// The loading label text to show next to the spinner icon.
     /// </summary>
     [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
-    /// The position of the loading Label in regards to the spinner animation.
+    /// The position of the loading Label in regards to the spinner icon.
     /// </summary>
     [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
 
     /// <summary>
-    /// Used to customize the content inside the Button in the Loading state.
+    /// The custom template used to replace the default loading text inside the button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// Callback for when the button clicked
+    /// The callback for the click event of the button.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// The size of button, Possible values: Small | Medium | Large
+    /// The content of the primary section of the button (alias of the ChildContent).
     /// </summary>
-    [Parameter]
-    public BitButtonSize? Size
-    {
-        get => size;
-        set
-        {
-            if (size == value) return;
-
-            size = value;
-            ClassBuilder.Reset();
-        }
-    }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? PrimaryTemplate { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitButton.
+    /// Reverses the positions of the icon and the main content of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ReversedIcon { get; set; }
+
+    /// <summary>
+    /// The text of the secondary section of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? SecondaryText { get; set; }
+
+    /// <summary>
+    /// The custom template for the secondary section of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? SecondaryTemplate { get; set; }
+
+    /// <summary>
+    /// The size of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the button.
     /// </summary>
     [Parameter] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// If Href provided, specifies how to open the link
+    /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// The title to show when the mouse is placed on the button
+    /// The tooltip to show when the mouse is placed on the button.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// The visual variant of the button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     protected override string RootElementClass => "bit-btn";
@@ -175,38 +152,42 @@ public partial class BitButton
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ButtonStyle switch
+        ClassBuilder.Register(() => ((PrimaryTemplate ?? ChildContent) is null &&
+                                    SecondaryText.HasNoValue() && SecondaryTemplate is null) ||
+                                    IconOnly
+                                        ? "bit-btn-ntx"
+                                        : string.Empty);
+
+        ClassBuilder.Register(() => Variant switch
         {
-            BitButtonStyle.Primary => "bit-btn-pri",
-            BitButtonStyle.Standard => "bit-btn-std",
-            BitButtonStyle.Text => "bit-btn-txt",
-            _ => "bit-btn-pri"
+            BitVariant.Fill => "bit-btn-fil",
+            BitVariant.Outline => "bit-btn-otl",
+            BitVariant.Text => "bit-btn-txt",
+            _ => "bit-btn-fil"
         });
-        
+
         ClassBuilder.Register(() => Color switch
         {
+            BitColor.Primary => "bit-btn-pri",
+            BitColor.Secondary => "bit-btn-sec",
+            BitColor.Tertiary => "bit-btn-ter",
             BitColor.Info => "bit-btn-inf",
             BitColor.Success => "bit-btn-suc",
             BitColor.Warning => "bit-btn-wrn",
             BitColor.SevereWarning => "bit-btn-swr",
             BitColor.Error => "bit-btn-err",
-            _ => string.Empty
-        });
-        
-        ClassBuilder.Register(() => Size switch
-        {
-            BitButtonSize.Small => "bit-btn-sm",
-            BitButtonSize.Medium => "bit-btn-md",
-            BitButtonSize.Large => "bit-btn-lg",
-            _ => string.Empty
+            _ => "bit-btn-pri"
         });
 
-        ClassBuilder.Register(() => IconPosition switch
+        ClassBuilder.Register(() => Size switch
         {
-            BitButtonIconPosition.Start => "bit-btn-srt",
-            BitButtonIconPosition.End => "bit-btn-end",
-            _ => "bit-btn-srt"
+            BitSize.Small => "bit-btn-sm",
+            BitSize.Medium => "bit-btn-md",
+            BitSize.Large => "bit-btn-lg",
+            _ => "bit-btn-md"
         });
+
+        ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -225,7 +206,9 @@ public partial class BitButton
 
         base.OnParametersSet();
     }
-        
+
+
+
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {
@@ -236,11 +219,10 @@ public partial class BitButton
             _ => "bit-btn-end"
         };
 
-    protected virtual async Task HandleOnClick(MouseEventArgs e)
+    private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 }

@@ -9,9 +9,9 @@ public partial class Routes
 
     protected override async Task OnInitializedAsync()
     {
-        if (AppRenderMode.IsBlazorHybrid)
+        if (AppPlatform.IsBlazorHybrid)
         {
-            if (AppRenderMode.MultilingualEnabled)
+            if (CultureInfoManager.MultilingualEnabled)
             {
                 cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
                                                      CultureInfo.CurrentUICulture.Name); // 2- OS settings
@@ -27,19 +27,19 @@ public partial class Routes
     {
         var cssClasses = new List<string> { };
 
-        if (OperatingSystem.IsWindows())
+        if (AppPlatform.IsWindows)
         {
             cssClasses.Add("bit-windows");
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+        else if (AppPlatform.IsMacOS)
         {
             cssClasses.Add("bit-macos");
         }
-        else if (OperatingSystem.IsIOS() && OperatingSystem.IsMacCatalyst() is false)
+        else if (AppPlatform.IsIOS)
         {
             cssClasses.Add("bit-ios");
         }
-        else if (OperatingSystem.IsAndroid())
+        else if (AppPlatform.IsAndroid)
         {
             cssClasses.Add("bit-android");
         }
@@ -47,7 +47,7 @@ public partial class Routes
         var cssVariables = new Dictionary<string, string>();
         var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
 
-        if (OperatingSystem.IsMacCatalyst() is false)
+        if (AppPlatform.IsMacOS is false)
         {
             //For iOS this is handled in css using safe-area env() variables
             //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626
@@ -57,6 +57,16 @@ public partial class Routes
 
         cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender && AppPlatform.IsBlazorHybrid is false)
+        {
+            AppPlatform.OSDescription = await jsRuntime.GetBrowserPlatform();
+        }
     }
 
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }

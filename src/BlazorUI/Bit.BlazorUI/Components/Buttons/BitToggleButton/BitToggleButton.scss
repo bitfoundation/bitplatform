@@ -7,146 +7,208 @@
     align-items: center;
     display: inline-flex;
     text-decoration: none;
-    min-width: spacing(10);
-    min-height: spacing(4);
+
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
-    padding: spacing(0.5) spacing(2);
-    border-width: $shape-border-width;
-    border-style: $shape-border-style;
-    border-radius: $shape-border-radius;
-    font-family: $typography-font-family;
-    font-weight: $typography-font-weight;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-radius: $shp-border-radius;
 
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: $color-foreground-disabled;
+        color: $clr-fg-dis;
     }
 }
 
-.bit-tgb-pri {
-    color: var(--bit-tgb-pri-clr);
-    background-color: var(--bit-tgb-bg-clr);
-    border-color: var(--bit-tgb-pri-brd-clr);
-    --bit-tgb-bg-clr: #{$color-primary-main};
-    --bit-tgb-pri-clr: #{$color-primary-text};
-    --bit-tgb-pri-brd-clr: #{$color-primary-main};
-    --bit-tgb-pri-hover-bg-clr: #{$color-action-hover-primary};
-    --bit-tgb-pri-active-bg-clr: #{$color-action-active-primary};
-    --bit-tgb-chk-bg-clr: #{$color-primary-dark};
-    --bit-tgb-chk-brd-clr: #{$color-primary-dark};
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-tgb-pri-hover-bg-clr);
-            background-color: var(--bit-tgb-pri-hover-bg-clr);
-        }
-    }
-
-    &:active {
-        border-color: var(--bit-tgb-pri-active-bg-clr);
-        background-color: var(--bit-tgb-pri-active-bg-clr);
-    }
-
-    &.bit-dis {
-        border-color: $color-border-disabled;
-        background-color: $color-background-disabled;
-    }
-}
-
-.bit-tgb-std {
-    color: var(--bit-tgb-sec-clr);
-    background-color: $color-secondary-main;
-    border-color: var(--bit-tgb-sec-brd-clr);
-    --bit-tgb-sec-clr: #{$color-secondary-text};
-    --bit-tgb-sec-brd-clr: #{$color-secondary-text};
-    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
-    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
-    --bit-tgb-chk-brd-clr: #{$color-secondary-text};
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-tgb-sec-hover-bg-clr);
-        }
-    }
-
-    &:active {
-        background-color: var(--bit-tgb-sec-active-bg-clr);
-    }
-
-    &.bit-dis {
-        border-color: $color-border-disabled;
-    }
-}
-
-.bit-tgb-txt {
-    border-color: transparent;
-    color: var(--bit-tgb-sec-clr);
-    background-color: transparent;
-    --bit-tgb-sec-clr: #{$color-secondary-text};
-    --bit-tgb-sec-hover-bg-clr: #{$color-action-hover-secondary};
-    --bit-tgb-sec-active-bg-clr: #{$color-action-active-secondary};
-    --bit-tgb-chk-bg-clr: #{$color-secondary-dark};
-    --bit-tgb-chk-brd-clr: transparent;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: var(--bit-tgb-sec-hover-bg-clr);
-        }
-    }
-
-    &:active {
-        background-color: var(--bit-tgb-sec-active-bg-clr);
-    }
-}
-
-.bit-tgb-chk {
-    border-color: var(--bit-tgb-chk-brd-clr);
-    background-color: var(--bit-tgb-chk-bg-clr);
-
-    @media (hover: hover) {
-        &:hover {
-            border-color: var(--bit-tgb-chk-brd-clr);
-            background-color: var(--bit-tgb-chk-bg-clr);
-        }
-    }
-
-    &:active {
-        border-color: var(--bit-tgb-chk-brd-clr);
-        background-color: var(--bit-tgb-chk-bg-clr);
-    }
-}
-
-.bit-tgb-con {
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    justify-content: center;
-
-    .bit-icon {
-        flex-shrink: 0;
-        text-align: center;
-        margin: 0 spacing(0.5);
-    }
+.bit-tgb-ico {
+    flex-shrink: 0;
+    text-align: center;
+    margin: 0 spacing(0.5);
 }
 
 .bit-tgb-btx {
     display: block;
 }
 
+.bit-tgb-fil {
+    color: var(--bit-tgb-clr-txt);
+    border-color: var(--bit-tgb-clr);
+    background-color: var(--bit-tgb-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-clr-hover);
+            background-color: var(--bit-tgb-clr-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-tgb-clr-active);
+        background-color: var(--bit-tgb-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+.bit-tgb-otl {
+    color: var(--bit-tgb-clr);
+    border-color: var(--bit-tgb-clr);
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-tgb-clr-txt);
+            border-color: var(--bit-tgb-clr-hover);
+            background-color: var(--bit-tgb-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-tgb-clr-txt);
+        border-color: var(--bit-tgb-clr-active);
+        background-color: var(--bit-tgb-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+    }
+}
+
+.bit-tgb-txt {
+    color: var(--bit-tgb-clr);
+    border-color: transparent;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-tgb-clr-txt);
+            border-color: var(--bit-tgb-clr-hover);
+            background-color: var(--bit-tgb-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-tgb-clr-txt);
+        border-color: var(--bit-tgb-clr-active);
+        background-color: var(--bit-tgb-clr-active);
+    }
+}
+
+.bit-tgb-chk {
+    color: var(--bit-tgb-clr-txt);
+    border-color: var(--bit-tgb-clr-dark);
+    background-color: var(--bit-tgb-clr-dark);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-tgb-clr-dark-hover);
+            background-color: var(--bit-tgb-clr-dark-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-tgb-clr-dark-active);
+        background-color: var(--bit-tgb-clr-dark-active);
+    }
+}
+
+.bit-tgb-pri {
+    --bit-tgb-clr-txt: #{$clr-pri-text};
+    --bit-tgb-clr: #{$clr-pri};
+    --bit-tgb-clr-hover: #{$clr-pri-hover};
+    --bit-tgb-clr-active: #{$clr-pri-active};
+    --bit-tgb-clr-dark: #{$clr-pri-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-pri-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-pri-dark-active};
+}
+
+.bit-tgb-sec {
+    --bit-tgb-clr-txt: #{$clr-sec-text};
+    --bit-tgb-clr: #{$clr-sec};
+    --bit-tgb-clr-hover: #{$clr-sec-hover};
+    --bit-tgb-clr-active: #{$clr-sec-active};
+    --bit-tgb-clr-dark: #{$clr-sec-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-sec-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-sec-dark-active};
+}
+
+.bit-tgb-ter {
+    --bit-tgb-clr-txt: #{$clr-ter-text};
+    --bit-tgb-clr: #{$clr-ter};
+    --bit-tgb-clr-hover: #{$clr-ter-hover};
+    --bit-tgb-clr-active: #{$clr-ter-active};
+    --bit-tgb-clr-dark: #{$clr-ter-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-ter-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-ter-dark-active};
+}
+
+.bit-tgb-inf {
+    --bit-tgb-clr-txt: #{$clr-inf-text};
+    --bit-tgb-clr: #{$clr-inf};
+    --bit-tgb-clr-hover: #{$clr-inf-hover};
+    --bit-tgb-clr-active: #{$clr-inf-active};
+    --bit-tgb-clr-dark: #{$clr-inf-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-inf-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-inf-dark-active};
+}
+
+.bit-tgb-suc {
+    --bit-tgb-clr-txt: #{$clr-suc-text};
+    --bit-tgb-clr: #{$clr-suc};
+    --bit-tgb-clr-hover: #{$clr-suc-hover};
+    --bit-tgb-clr-active: #{$clr-suc-active};
+    --bit-tgb-clr-dark: #{$clr-suc-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-suc-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-suc-dark-active};
+}
+
+.bit-tgb-wrn {
+    --bit-tgb-clr-txt: #{$clr-wrn-text};
+    --bit-tgb-clr: #{$clr-wrn};
+    --bit-tgb-clr-hover: #{$clr-wrn-hover};
+    --bit-tgb-clr-active: #{$clr-wrn-active};
+    --bit-tgb-clr-dark: #{$clr-wrn-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-wrn-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-wrn-dark-active};
+}
+
+.bit-tgb-swr {
+    --bit-tgb-clr-txt: #{$clr-swr-text};
+    --bit-tgb-clr: #{$clr-swr};
+    --bit-tgb-clr-hover: #{$clr-swr-hover};
+    --bit-tgb-clr-active: #{$clr-swr-active};
+    --bit-tgb-clr-dark: #{$clr-swr-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-swr-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-swr-dark-active};
+}
+
+.bit-tgb-err {
+    --bit-tgb-clr-txt: #{$clr-err-text};
+    --bit-tgb-clr: #{$clr-err};
+    --bit-tgb-clr-hover: #{$clr-err-hover};
+    --bit-tgb-clr-active: #{$clr-err-active};
+    --bit-tgb-clr-dark: #{$clr-err-dark};
+    --bit-tgb-clr-dark-hover: #{$clr-err-dark-hover};
+    --bit-tgb-clr-dark-active: #{$clr-err-dark-active};
+}
+
 .bit-tgb-sm {
-    min-width: spacing(6);
-    min-height: spacing(3);
     font-size: spacing(1.5);
-    padding: spacing(0.3) spacing(1.5);
+    padding: spacing(0.5) spacing(1.5);
+}
+
+.bit-tgb-md {
+    font-size: spacing(1.75);
+    padding: spacing(0.75) spacing(2);
 }
 
 .bit-tgb-lg {
-    min-width: spacing(10);
-    min-height: spacing(5);
     font-size: spacing(2);
-    padding: spacing(0.7) spacing(2.5);
+    padding: spacing(1) spacing(2.5);
 }

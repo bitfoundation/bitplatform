@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Client.Core.Controllers.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
 
@@ -81,7 +81,7 @@ public partial class TwoFactorSection
 
         try
         {
-            var response = await userController.TwoFactorAuth(request);
+            var response = await userController.TwoFactorAuth(request, CurrentCancellationToken);
 
             qrCode = response.QrCode;
             sharedKey = response.SharedKey;

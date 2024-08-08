@@ -8,11 +8,6 @@ public class BitActionButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the main container of the BitActionButton.
-    /// </summary>
-    public string? Container { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the Icon of the BitActionButton.
     /// </summary>
     public string? Icon { get; set; }

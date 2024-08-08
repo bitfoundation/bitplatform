@@ -1,5 +1,5 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Client.Core.Controllers.Categories;
+using Boilerplate.Shared.Controllers.Categories;
 using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Categories;
@@ -85,12 +85,12 @@ public partial class CategoriesPage
 
     private void CreateCategory()
     {
-        NavigationManager.NavigateTo("add-edit-category");
+        NavigationManager.NavigateTo(Urls.AddOrEditCategoryPage);
     }
 
     private void EditCategory(CategoryDto category)
     {
-        NavigationManager.NavigateTo($"add-edit-category/{category.Id}");
+        NavigationManager.NavigateTo($"{Urls.AddOrEditCategoryPage}/{category.Id}");
     }
 
     private async Task DeleteCategory(CategoryDto category)

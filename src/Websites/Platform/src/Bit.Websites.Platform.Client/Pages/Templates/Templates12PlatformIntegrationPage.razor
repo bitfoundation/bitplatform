@@ -43,20 +43,14 @@
             Then register them in the following locations:
             <br />
             src/Client/Boilerplate.Client.Maui/Platforms/Android/Extensions/IServiceCollectionExtensions
-            <div class="code-box">
-                services.AddTransient&lt;IContactsService, AndroidContactsService&gt;();
-            </div>
+            <CodeBox>services.AddTransient&lt;IContactsService, AndroidContactsService&gt;();</CodeBox>
             src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/IServiceCollectionExtensions
-            <div class="code-box">
-                services.AddTransient&lt;IContactsService, iOSContactsService&gt;();
-            </div>
+            <CodeBox>services.AddTransient&lt;IContactsService, iOSContactsService&gt;();</CodeBox>
             In each platform folder you've access to all native platform features!
             <br />
             Implement that interface once more in src\Client\Boilerplate.Client.Core/Services/ that leverages http client to get synced contacts from the server,
             and register that in src/Client/Boilerplate.Client.Core/Extensions/IServiceCollectionExtensions
-            <div class="code-box">
-                services.TryAddTransient&lt;IContactsService, AndroidContactsService&gt;();
-            </div>
+            <CodeBox>services.TryAddTransient&lt;IContactsService, AndroidContactsService&gt;();</CodeBox>
             Using <b>TryAdd</b>, we're registering that service for all app models, unless one of them registers another implementation with Add instead of TryAdd.
             So Web, Windows and macOS versions of the app are using this shared implementaion that gets synced contacts from the sever, but Android and iOS have their own implementations.
             <br />
@@ -67,7 +61,7 @@
         </div>
 
         src/Client/Boilerplate.Client.Core/Services/Contracts
-        <pre class="code-box">public class ContactData
+        <CodeBox>public class ContactData
 {
     public string Name { get;set; }
 }
@@ -75,10 +69,10 @@
 public interface IContactsService
 {
     Task&lt;List&lt;ContactData&gt;&gt; GetContactData();
-}</pre>
+}</CodeBox>
 
         src/Client/Boilerplate.Client.Maui/Platforms/Android/Contracts
-        <pre class="code-box">public class AndroidContactsService : IContactsService
+        <CodeBox>public class AndroidContactsService : IContactsService
 {
     public async Task&lt;List&lt;ContactData&gt;&gt; GetContactData()
     {
@@ -100,7 +94,7 @@ public interface IContactsService
 
         // return contacts
     }
-}</pre>
+}</CodeBox>
     </section>
 
     <section class="section-card">

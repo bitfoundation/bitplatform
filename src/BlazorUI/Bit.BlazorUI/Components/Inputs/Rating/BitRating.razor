@@ -7,8 +7,8 @@
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@AriaLabel"
-     aria-readonly="@IsReadOnly"
-     role=@(IsReadOnly ? null : "radiogroup")>
+     aria-readonly="@ReadOnly"
+     role=@(ReadOnly ? null : "radiogroup")>
 
     @for (int item = 1; item <= Max; item++)
     {
@@ -19,11 +19,11 @@
                 type="button"
                 role="radio"
                 style="@Styles?.Button"
-                aria-hidden="@IsReadOnly"
+                aria-hidden="@ReadOnly"
                 class="bit-rtg-btn @Classes?.Button"
                 aria-checked="@(index == CurrentValue)"
                 data-is-current="@(index == CurrentValue)"
-                disabled=@(IsEnabled is false || IsReadOnly)
+                disabled=@(IsEnabled is false || ReadOnly)
                 tabindex=@(index == CurrentValue ? "0" : "-1")>
 
             @if (AriaLabelFormat.HasValue())
@@ -46,10 +46,12 @@
         </button>
     }
 
-    <input @attributes="InputHtmlAttributes"
-           type="number"
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
            max="@Max"
-           min="@(AllowZeroStars ? 0 : 1)"
+           name="@Name"
+           type="number"
+           readonly="@ReadOnly"
+           class="bit-input-hidden"
            value="@CurrentValueAsString"
-           class="bit-input-hidden" />
+           min="@(AllowZeroStars ? 0 : 1)" />
 </div>

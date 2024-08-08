@@ -1,60 +1,49 @@
-﻿#if LocalHttpServerEnabled
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using Microsoft.Maui.Platform;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Extensions;
+using EmbedIO;
+using EmbedIO.Actions;
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui.Services;
 
-public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHttpServer
+public partial class MauiLocalHttpServer : ILocalHttpServer
 {
-    private int port = -1;
-    private Task<int>? startTask;
-    private WebApplication? localHttpServer;
+    [AutoInject] private IConfiguration configuration;
+    [AutoInject] private IExceptionHandler exceptionHandler;
 
-    public Task<int> Start()
+    private WebServer? localHttpServer;
+
+    public int Start(CancellationToken cancellationToken)
     {
-        return startTask ??= StartImplementation();
-    }
+        var port = GetAvailableTcpPort();
 
-    public int Port => port;
+        localHttpServer = new WebServer(o => o
+            .WithUrlPrefix($"http://localhost:{port}")
+            .WithMode(AppPlatform.IsWindows ? HttpListenerMode.Microsoft : HttpListenerMode.EmbedIO))
+            .WithModule(new ActionModule(Urls.SignInPage, HttpVerbs.Get, async ctx =>
+            {
+                try
+                {
+                    var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
 
-    private async Task<int> StartImplementation()
-    {
-        var builder = WebApplication.CreateEmptyBuilder(options: new()
-        {
-            ApplicationName = "LocalHttpServer",
-            ContentRootPath = Directory.GetCurrentDirectory(),
-            EnvironmentName = BuildConfiguration.IsDebug() ? Environments.Development : Environments.Production,
-            WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot")
-        });
+                    ctx.Redirect(url);
 
-        port = GetAvailableTcpPort();
+                    _ = Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                }
+                catch (Exception exp)
+                {
+                    exceptionHandler.Handle(exp);
+                }
+            }));
 
-        builder.WebHost.UseKestrel(options => options.ListenLocalhost(port));
-
-        builder.Services.AddAuthorization();
-        builder.Services.AddRouting();
-        builder.Services.AddRange(services);
-
-        var app = localHttpServer = builder.Build();
-
-        app.UseStaticFiles(); // Put static files in wwwroot folder of the Client.Maui project.
-
-        app.MapGet("sign-in", async (HttpContext context, IConfiguration configuration) =>
-        {
-            await Routes.OpenUniversalLink(context.Request.GetEncodedPathAndQuery(), replace: true);
-
-            var url = $"{configuration.GetApiServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
-            context.Response.Redirect(url);
-        });
-
-        await app.StartAsync();
+        _ = localHttpServer.RunAsync(cancellationToken)
+            .ContinueWith(task =>
+            {
+                if (task.Exception is not null)
+                {
+                    exceptionHandler.Handle(task.Exception);
+                }
+            }, cancellationToken);
 
         return port;
     }
@@ -63,9 +52,8 @@ public partial class MauiLocalHttpServer(IServiceCollection services) : ILocalHt
     {
         using TcpListener l = new TcpListener(IPAddress.Loopback, 0);
         l.Start();
-        int port = ((IPEndPoint)l.LocalEndpoint).Port;
+        var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
     }
 }
-#endif

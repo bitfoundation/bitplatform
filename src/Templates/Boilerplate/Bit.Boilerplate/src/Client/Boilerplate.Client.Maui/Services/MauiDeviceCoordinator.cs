@@ -8,17 +8,17 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()
     {
-#if ANDROID
+#if Android
         var resourceId = MauiApplication.Current.Resources!.GetIdentifier("status_bar_height", "dimen", "android");
         var dimensionPixelSize = MauiApplication.Current.Resources.GetDimensionPixelSize(resourceId);
         var density = (double)DeviceDisplay.Current.MainDisplayInfo.Density;
         return dimensionPixelSize / density;
-#elif IOS
+#elif iOS
         var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
         return window!.StatusBarManager!.StatusBarFrame.Height;
-#elif WINDOWS
+#elif Windows
         return 30;
-#elif MACCATALYST
+#elif Mac
         return 25;
 #else
         return 0;
@@ -28,7 +28,7 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
     public async Task ApplyTheme(bool isDark)
     {
         Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
-#if ANDROID
+#if Android
         var window = Platform.CurrentActivity?.Window;
         window!.DecorView!.SystemUiFlags = Android.Views.SystemUiFlags.LightStatusBar;
         if (isDark)

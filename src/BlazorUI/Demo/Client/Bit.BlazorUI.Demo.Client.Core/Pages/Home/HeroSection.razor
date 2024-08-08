@@ -5,10 +5,7 @@
     <BitTypography Variant="BitTypographyVariant.H1">bit BlazorUI</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>bit BlazorUI components are native, easy-to-customize, and work seamlessly in all Blazor modes (WASM, Server, Hybrid, pre-rendering), saving you time and making development enjoyable.</BitTypography>
     <br />
-    <BitButton Href="/getting-started"
-               Size="BitButtonSize.Large"
-               IconName="@BitIconName.ChevronRightSmall"
-               IconPosition="BitButtonIconPosition.End">
+    <BitButton Href="/getting-started" Size="BitSize.Large" IconName="@BitIconName.ChevronRightSmall" ReversedIcon>
         Get started
     </BitButton>
 </div>
@@ -34,10 +31,10 @@
         <div class="hero-section-components-col">
             <div class="component-box--transparent">
                 <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string"
-                                LayoutFlow="BitLayoutFlow.Horizontal" Label="Select an item" DefaultValue=@("pie")>
+                                Horizontal Label="Select an item" DefaultValue=@("pie")>
                     <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="@BitIconName.BarChart4" />
                     <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="@BitIconName.DonutChart" />
-                    <BitChoiceGroupOption Text="Disabeled" IsEnabled="false" Value=@("disabeled_option") IconName="@BitIconName.BarChartVerticalFill" />
+                    <BitChoiceGroupOption Text="Disabled" IsEnabled="false" Value=@("disabled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
             <div class="component-box @BitCss.Class.Color.Background.Primary">
@@ -52,23 +49,23 @@
                            Style="width: 100%" />
             </div>
             <div class="component-box @BitCss.Class.Color.Background.Primary">
-                <BitCompoundButton IsEnabled="true"
-                                   SecondaryText="This Button is a compound button"
-                                   Style="margin-right: 10px">
-                    Primary
-                </BitCompoundButton>
-                <BitCompoundButton IsEnabled="true"
-                                   AriaHidden="true"
-                                   SecondaryText="This Button is a compound button"
-                                   ButtonStyle="BitButtonStyle.Standard">
-                    Standard
-                </BitCompoundButton>
+                <BitButton IsEnabled="true"
+                           SecondaryText="This is a button"
+                           Style="margin-right: 10px">
+                    Fill
+                </BitButton>
+                <BitButton IsEnabled="true"
+                           AriaHidden="true"
+                           SecondaryText="This is a button"
+                           Variant="BitVariant.Outline">
+                    Outline
+                </BitButton>
             </div>
-            <BitProgressBar Height="20" Style="margin-bottom: 30px" Indeterminate />
-            <BitPivot LinkFormat="@BitPivotLinkFormat.Links"
+            <BitProgress Thickness="20" Style="margin-bottom: 30px" Indeterminate />
+            <BitPivot HeadersOnly
+                      LinkSize="@BitSize.Large"
                       DefaultSelectedKey="Overview"
-                      LinkSize="@BitPivotLinkSize.Large"
-                      HeadersOnly="true"
+                      LinkFormat="@BitPivotLinkFormat.Links"
                       OnItemClick="@(item => _pivotSelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                 <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>
