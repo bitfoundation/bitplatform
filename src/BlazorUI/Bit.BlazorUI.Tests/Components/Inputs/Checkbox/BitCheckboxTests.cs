@@ -62,11 +62,11 @@ public class BitCheckboxTests : BunitTestContext
 
         if (reversed)
         {
-            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-end"));
+            Assert.IsTrue(checkBox.ClassList.Contains("bit-chb-rvs"));
         }
         else
         {
-            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-end"));
+            Assert.IsFalse(checkBox.ClassList.Contains("bit-chb-rvs"));
         }
     }
 
