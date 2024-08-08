@@ -106,15 +106,17 @@
 
     <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
-            <div>Component's Style & Class:</div><br />
-            <BitCheckbox Label="Styled checkbox" Style="background-color:aqua;color:red" />
-            <br />
-            <BitCheckbox Label="Classed checkbox" Class="custom-class" />
-            <br /><br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitCheckbox Label="Styles" Styles="@(new() { Label="color:darkgoldenrod", Box="border-color:brown", Icon="color:red" })" />
-            <br />
-            <BitCheckbox Label="Classes" Classes="@(new() { Label="custom-label", Box="custom-box" })" />
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitCheckbox Label="Styled checkbox" Style="background-color:aqua;color:red" />
+                <br />
+                <BitCheckbox Label="Classed checkbox" Class="custom-class" />
+                <br /><br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div><br />
+                <BitCheckbox Label="Styles" Styles="@(new() { Label="color:darkgoldenrod", Box="border-color:brown", Icon="color:red" })" />
+                <br />
+                <BitCheckbox Label="Classes" Classes="@(new() { Label="custom-label", Box="custom-box" })" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
