@@ -26,7 +26,7 @@ dotnet new bit-bp –-name MyFirstProject
                     You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
                     The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
                     as it only includes the Backend API and the web version of your application. Conversely, the MyFirstProject.sln file encompasses all projects,
-                    such as Android and Windows, and may result in slower opening and compilation times.
+                    such as Android and Windows, and may result in slower opening and build times.
                     <br />
                     <br />
                 </div>
@@ -37,15 +37,15 @@ dotnet new bit-bp –-name MyFirstProject
                     The subsequent sections will provide detailed information about these files.
                     <br />
                     <br />
-                    The .devcontainer enables seamless integration with GitHub Codespaces when uploading your project to GitHub. Please refer to the sample we've added to GitHub, which can be opened directly using GitHub Codespaces.
+                    The .devcontainer enables seamless integration with GitHub Codespaces when pushing your project to GitHub repository. <a href="https://github.com/bitfoundation/bit-templates-playground" target="_blank">Demo repository</a>
                     <br />
                     <br />
-                    To enhance the development experience with Visual Studio Code, the .vscode directory has been included.
+                    To enhance the development experience with Visual Studio Code, several configuration files has been included in .vscode directory.
                     <br />
                     <br />
                     In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
                     which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove all auto-generated files from your project.
-                    To understand which files will be removed, please refer to the comments within these scripts.
+                    To understand what are these extra files, please refer to the comments within these scripts.
                     <br />
                     <br />
                     There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
@@ -103,7 +103,7 @@ dotnet new bit-bp –-name MyFirstProject
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server Projects</BitTypography>
 
-            Inside the src/Server folder, there are three projects: Server.Api, Server.Web and Server.Test.
+            Inside the src/Server folder, there are two projects: Server.Api, Server.Web.
             <ul>
                 <li>
                     <b>Server.Api:</b> This project is built on Web API, ASP.NET Core Identity,
@@ -120,17 +120,17 @@ dotnet new bit-bp –-name MyFirstProject
                 </li>
             </ul>
 
-            With Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, and with or without pre-rendering.
+            With Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, with optionally enabled PWA and/or pre-rendering.
             Additionally, Blazor Static SSR is available.
 
             When publishing this project, you can choose to output it as either a ZIP file or a Docker image.
-            Note that since this project references Server.Api, it will be published alongside it.
+            Note that since this project references Server.Api by default, these two will be published together.
 
             <br />
             <br />
 
             Please note that if you choose not to use Blazor Server, Blazor Auto, or Blazor Static SSR in production and instead opt for Blazor WebAssembly without pre-rendering, the Server.Web project remains essential.
-            In our boilerplate structure, we recommend using Blazor Server mode during development for an enhanced development experience compared to Blazor WebAssembly.
+            In our Boilerplate structure, we recommend using Blazor Server mode during development for an enhanced development experience compared to Blazor WebAssembly.
             When it comes time to publish, you can easily switch to Blazor WebAssembly by making a simple configuration change.
         </div>
     </section>
@@ -148,7 +148,7 @@ dotnet new bit-bp –-name MyFirstProject
             On the client side, the Client.Core project contains various components, including Layouts, Pages, and other essential elements.
             <br />
             <br />
-            The Client.Maui project enables the development of applications with comprehensive access to the full range of operating system features.
+            The Client.Maui project enables the development of applications with 100% percent access to native OS features.
             Additionally, it supports the use of libraries in Swift, Kotlin, Java, and Objective-C with ease.
             <br />
             <br />
