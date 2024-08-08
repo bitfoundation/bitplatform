@@ -61,4 +61,31 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(rgb, com.Instance.Rgb);
         Assert.AreEqual(alpha, com.Instance.Alpha);
     }
+
+    [TestMethod]
+    public void BitColorPickerMemoryLeakTest()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Color, "rgb(255,255,255)");
+        });
+
+        // Simulate pointer down event
+        com.Find(".bit-clp-rec").PointerDown();
+
+        // Simulate pointer move event
+        for (int i = 0; i < 100; i++)
+        {
+            com.Find(".bit-clp-rec").PointerMove(i, i);
+        }
+
+        // Simulate pointer up event
+        com.Find(".bit-clp-rec").PointerUp();
+
+        // Verify that the component is disposed properly
+        com.Dispose();
+
+        // Check for memory leaks
+        Assert.IsTrue(Context.JSInterop.VerifyNoOutstandingInvocations());
+    }
 }

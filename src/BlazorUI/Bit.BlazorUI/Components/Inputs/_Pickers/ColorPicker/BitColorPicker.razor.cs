@@ -15,6 +15,7 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
     private ElementReference _saturationPickerRef;
     private (double Left, double Top)? _saturationPickerThumbPosition;
     private DotNetObjectReference<BitColorPicker> _dotnetObj = default!;
+    private readonly BitThrottler _throttler = new();
 
 
 
@@ -99,7 +100,7 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
     {
         if (_saturationPickerPointerDown is false) return;
 
-        await UpdateColor(e);
+        await _throttler.Do(50, async () => await UpdateColor(e));
     }
 
 
@@ -242,6 +243,8 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
 
         _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
         _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+
+        _dotnetObj?.Dispose();
 
         _disposed = true;
     }
