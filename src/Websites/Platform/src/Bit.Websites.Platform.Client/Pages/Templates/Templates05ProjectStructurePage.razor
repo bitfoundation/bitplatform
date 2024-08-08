@@ -37,6 +37,12 @@ dotnet new bit-bp –-name MyFirstProject
                     The subsequent sections will provide detailed information about these files.
                     <br />
                     <br />
+                    The .devcontainer enables seamless integration with GitHub Codespaces when uploading your project to GitHub. Please refer to the sample we've added to GitHub, which can be opened directly using GitHub Codespaces.
+                    <br />
+                    <br />
+                    To enhance the development experience with Visual Studio Code, the .vscode directory has been included.
+                    <br />
+                    <br />
                     In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
                     which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove all auto-generated files from your project.
                     To understand which files will be removed, please refer to the comments within these scripts.
@@ -97,7 +103,7 @@ dotnet new bit-bp –-name MyFirstProject
         <div class="section-card-txt">
             <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server Projects</BitTypography>
 
-            Inside the src/Server folder, there are two projects: Server.Api and Server.Web.
+            Inside the src/Server folder, there are three projects: Server.Api, Server.Web and Server.Test.
             <ul>
                 <li>
                     <b>Server.Api:</b> This project is built on Web API, ASP.NET Core Identity,
@@ -107,6 +113,10 @@ dotnet new bit-bp –-name MyFirstProject
                 <li>
                     <b>Server.Web:</b> This project references Server.Api by default.
                     Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
+                </li>
+                <li>
+                    <b>Server.Test:</b> A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real 
+                    behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
                 </li>
             </ul>
 
