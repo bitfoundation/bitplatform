@@ -340,6 +340,16 @@
     aspect-ratio: 1;
 }
 
+.bit-tpc-sal {
+    width: fit-content;
+
+    .bit-tpc-cal {
+        display: block;
+        z-index: unset;
+        position: relative;
+    }
+}
+
 .bit-tpc-rsp {
     @media only screen and (max-width: 600px) {
         .bit-tpc-tdv {

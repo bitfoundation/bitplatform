@@ -216,6 +216,13 @@ public partial class BitTimePickerDemo
             DefaultValue = "Close time picker",
             Description = "The title of the close button (tooltip).",
         },
+        new()
+        {
+            Name = "Standalone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the BitTimePicker is rendered standalone or with the input component and callout.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -761,4 +768,12 @@ private FormValidationTimePickerModel formValidationTimePickerModel = new();";
                MinuteStep=""15""
                AriaLabel=""Select a time""
                Placeholder=""Select a time..."" />";
+
+    private readonly string example16RazorCode = @"
+<BitTimePicker Standalone
+               Label=""Standalone picker"" />
+
+<BitTimePicker Standalone
+               TimeFormat=""BitTimeFormat.TwelveHours""
+               Label=""Standalone picker"" />";
 }

@@ -20,44 +20,58 @@
         </label>
     }
 
-    <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
-        <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
-            <input @ref="InputElement" @attributes="InputHtmlAttributes"
-                   @onfocus="@HandleOnFocus"
-                   @oninput="@HandleOnChange"
-                   @onfocusin="@HandleOnFocusIn"
-                   @onfocusout="@HandleOnFocusOut"
-                   type="text"
-                   name="@Name"
-                   role="combobox"
-                   id="@_inputId"
-                   tabindex="@TabIndex"
-                   aria-haspopup="dialog"
-                   aria-label="@AriaLabel"
-                   placeholder="@Placeholder"
-                   value="@CurrentValueAsString"
-                   disabled=@(IsEnabled is false)
-                   readonly=@(AllowTextInput is false)
-                   aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-controls="@(IsOpen ? _calloutId : null)"
-                   aria-labelledby="@(Label.HasValue() ? _labelId : null)"
-                   style="@Styles?.Input"
-                   class="bit-tpc-inp@(AllowTextInput ? " bit-tpc-ein" : null) @Classes?.Input" />
+    @if (Standalone is false)
+    {
+        <div style="@Styles?.InputWrapper" class="bit-tpc-wrp @Classes?.InputWrapper" id="@_timePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+            <div style="@Styles?.InputContainer" class="bit-tpc-icn @Classes?.InputContainer">
+                <input @ref="InputElement" @attributes="InputHtmlAttributes"
+                       @onfocus="@HandleOnFocus"
+                       @oninput="@HandleOnChange"
+                       @onfocusin="@HandleOnFocusIn"
+                       @onfocusout="@HandleOnFocusOut"
+                       type="text"
+                       name="@Name"
+                       role="combobox"
+                       id="@_inputId"
+                       tabindex="@TabIndex"
+                       aria-haspopup="dialog"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       value="@CurrentValueAsString"
+                       disabled="@(IsEnabled is false)"
+                       readonly="@(AllowTextInput is false)"
+                       aria-expanded="@(IsOpen ? "true" : "false")"
+                       aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-labelledby="@(Label.HasValue() ? _labelId : null)"
+                       style="@Styles?.Input"
+                       class="bit-tpc-inp@(AllowTextInput ? " bit-tpc-ein" : null) @Classes?.Input" />
 
-            @if (IconTemplate is not null)
-            {
-                @IconTemplate
-            }
-            else
-            {
-                <i style="@Styles?.Icon" class="bit-tpc-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
-            }
+                @if (IconTemplate is not null)
+                {
+                    @IconTemplate
+                }
+                else
+                {
+                    <i style="@Styles?.Icon" class="bit-tpc-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                }
+            </div>
         </div>
-    </div>
 
-    <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
-         class="bit-tpc-ovl @Classes?.Overlay"></div>
+        <div @onclick="CloseCallout"
+             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+             class="bit-tpc-ovl @Classes?.Overlay"></div>
+    }
+    else
+    {
+        <input @ref="InputElement" @attributes="InputHtmlAttributes"
+               type="text"
+               name="@Name"
+               id="@_inputId"
+               aria-label="@AriaLabel"
+               class="bit-input-hidden"
+               value="@CurrentValueAsString"
+               disabled="@(IsEnabled is false)" />
+    }
 
     <div style="@Styles?.Callout" class="bit-tpc-cal @Classes?.Callout" id="@_calloutId">
         <div style="@Styles?.CalloutContainer" class="bit-tpc-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">

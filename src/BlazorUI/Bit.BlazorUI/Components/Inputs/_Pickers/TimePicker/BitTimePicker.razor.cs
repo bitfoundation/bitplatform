@@ -229,6 +229,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public BitTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Whether the BitTimePicker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter] public bool Standalone { get; set; }
+
+    /// <summary>
     /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -244,11 +249,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? ValueFormat { get; set; }
 
 
-
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
+        if (Standalone is false) return;
 
         if (await AssignIsOpen(false) is false) return;
 
@@ -270,6 +275,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         ClassBuilder.Register(() => IsUnderlined ? "bit-tpc-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => Standalone ? "bit-tpc-sal" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -387,6 +394,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task ToggleCallout()
     {
         if (IsEnabled is false) return;
+        if (Standalone is false) return;
 
         await _js.ToggleCallout(_dotnetObj,
                                 _timePickerId,
@@ -416,6 +424,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
+        if (Standalone is false) return;
 
         if (await AssignIsOpen(true) is false) return;
 
