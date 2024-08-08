@@ -22,6 +22,7 @@
         <PackageReference Include="Bit.BlazorUI.Assets" Version="8.10.0-pre-05" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.10.0-pre-05" />
+        <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.7" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
         <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.10.0-pre-05" />
         <!--/-:msbuild-conditional:noEmit -->
@@ -50,18 +51,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Shared\Boilerplate.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
-        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

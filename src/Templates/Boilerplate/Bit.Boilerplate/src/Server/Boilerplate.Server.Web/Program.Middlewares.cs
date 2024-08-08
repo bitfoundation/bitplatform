@@ -112,12 +112,15 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
+        //#if (signalr == true)
+        app.MapHub<Api.Hubs.IdentityHub>("/identity-hub");
+        //#endif
+
         app.MapControllers().RequireAuthorization();
         //#endif
 
         app.UseSiteMap();
-
-
+        
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()

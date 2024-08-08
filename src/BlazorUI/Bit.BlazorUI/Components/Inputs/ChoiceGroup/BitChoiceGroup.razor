@@ -42,7 +42,7 @@
             var template = GetTemplate(item);
             var isChecked = GetIsCheckedItem(item);
 
-            <div style="@GetStyle(item);@Styles?.ItemContainer" class="@GetItemContainerCssClasses(item) @GetClass(item) @Classes?.ItemContainer">
+            <div style="@GetItemContainerCssStyles(item)" class="@GetItemContainerCssClasses(item)">
                 <label for="@inputId" style="@Styles?.ItemLabel" class="@Classes?.ItemLabel">
                     @if (template is not null)
                     {

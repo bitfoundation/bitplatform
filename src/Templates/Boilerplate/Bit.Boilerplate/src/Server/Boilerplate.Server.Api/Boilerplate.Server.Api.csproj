@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
+        <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -74,9 +75,14 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
         </Compile>
-        <EmbeddedResource Update="**\*.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
+        <EmbeddedResource Update="Resources\EmailStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\EmailStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\EmailStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Boilerplate.Server.Api.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>EmailStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
         </EmbeddedResource>
     </ItemGroup>
 

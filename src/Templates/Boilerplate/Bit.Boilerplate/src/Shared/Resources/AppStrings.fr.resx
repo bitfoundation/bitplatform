@@ -234,6 +234,14 @@
     <value>Modifier le profil hors ligne</value>
   </data>
     <!--#endif-->
+    <!--#if (signalr == true) -->
+    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
+    <value>Nouvelle session !</value>
+  </data>
+    <data name="DeviceDetails" xml:space="preserve">
+    <value>Appareil : {0}</value>
+  </data>
+    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>Nom et prénom</value>
   </data>
