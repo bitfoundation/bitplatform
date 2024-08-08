@@ -1,0 +1,180 @@
+﻿@page "/todo-template/project-structure"
+@page "/admin-panel/project-structure"
+@page "/templates/project-structure"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/project-structure"
+            Title="Project structure - Templates"
+            Description="project structure of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project structure</BitTypography>
+    <br />
+    <section class="section-card">
+        <div class="section-card-txt">
+            To examine the structure, start by creating a project with the following command in the command line:
+            <br />
+            <CodeBox>
+dotnet new bit-bp –-name MyFirstProject
+            </CodeBox>
+        </div>
+        <div class="row-section-container">
+            <div>
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Solution files</BitTypography>
+                    The image on the right displays project structure.
+                    You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
+                    The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
+                    as it only includes the Backend API and the web version of your application. Conversely, the MyFirstProject.sln file encompasses all projects,
+                    such as Android and Windows, and may result in slower opening and build times.
+                    <br />
+                    <br />
+                </div>
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Global files</BitTypography>
+                    When navigating to the MyFirstProject folder, open the .github directory.
+                    Here, you will find the workflows responsible for managing the CI/CD pipeline.
+                    The subsequent sections will provide detailed information about these files.
+                    <br />
+                    <br />
+                    The .devcontainer enables seamless integration with GitHub Codespaces when pushing your project to GitHub repository. <a href="https://github.com/bitfoundation/bit-templates-playground" target="_blank">Demo repository</a>
+                    <br />
+                    <br />
+                    To enhance the development experience with Visual Studio Code, several configuration files has been included in .vscode directory.
+                    <br />
+                    <br />
+                    In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
+                    which have clear purposes, there are two additional files: Clean.bat and Clean.sh. These scripts are designed to remove all auto-generated files from your project.
+                    To understand what are these extra files, please refer to the comments within these scripts.
+                    <br />
+                    <br />
+                    There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
+                    <br />
+                    <br />
+                </div>
+
+                <div class="section-card-txt">
+                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
+                    In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
+                    Just like csproj files, Directory.Build.props consists of two primary sections: PropertyGroup and ItemGroup.
+
+                    <ul>
+                        <li>
+                            <b>PropertyGroup:</b> This section specifies properties such as TargetFramework. For instance, the following line indicates that the project uses .NET 8:
+                            <br />
+                            <br />
+                            <code>
+                                &lt;TargetFramework>net8.0&lt;/TargetFramework>
+                            </code>
+                            <br />
+                            <br />
+                        </li>
+                        <li>
+                            <b>ItemGroup:</b> This section details items such as NuGet packages used in the project. For example:
+                            <br />
+                            <br />
+                            <code>
+                                &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
+                            </code>
+                            <br />
+                            <br />
+                        </li>
+                    </ul>
+                    Any settings specified in this file are implicitly applied to all .csproj files within the directory. For instance:
+                    <br />
+                    <br />
+                    <code>
+                        &lt;LangVersion>12.0&lt;/langVersion>
+                    </code>
+                    <br />
+                    <br />
+                    This setting enforces the use of C# 12 across all projects.
+
+                    The following sections will provide further details on the Directory.Build.props file and .csproj files.
+                    <br />
+                    <br />
+                </div>
+            </div>
+         
+            <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure.webp" />
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server Projects</BitTypography>
+
+            Inside the src/Server folder, there are two projects: Server.Api, Server.Web.
+            <ul>
+                <li>
+                    <b>Server.Api:</b> This project is built on Web API, ASP.NET Core Identity,
+                    and Entity Framework Core. It includes robust backend features such as social sign-in, two-factor authentication (2FA), Magic Link, and OTP.
+                    Despite these advanced features, the architecture remains straightforward, allowing for easy customization similar to a basic ASP.NET Core setup.
+                </li>
+                <li>
+                    <b>Server.Web:</b> This project references Server.Api by default.
+                    Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
+                </li>
+            </ul>
+
+            With Server.Web project, you can run the application in various modes: Blazor Server, Blazor WebAssembly, Blazor Auto, with optionally enabled PWA and/or pre-rendering.
+            Additionally, Blazor Static SSR is available.
+
+            When publishing this project, you can choose to output it as either a ZIP file or a Docker image.
+            Note that since this project references Server.Api by default, these two will be published together.
+
+            <br />
+            <br />
+
+            Please note that if you choose not to use Blazor Server, Blazor Auto, or Blazor Static SSR in production and instead opt for Blazor WebAssembly without pre-rendering, the Server.Web project remains essential.
+            In our Boilerplate structure, we recommend using Blazor Server mode during development for an enhanced development experience compared to Blazor WebAssembly.
+            When it comes time to publish, you can easily switch to Blazor WebAssembly by making a simple configuration change.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared Project</BitTypography>
+            Since both the client and server are written in C#, it is logical to have a shared project that contains code used by both, such as Data Transfer Objects (DTOs) and other common classes.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client Projects</BitTypography>
+            On the client side, the Client.Core project contains various components, including Layouts, Pages, and other essential elements.
+            <br />
+            <br />
+            The Client.Maui project enables the development of applications with 100% percent access to native OS features.
+            Additionally, it supports the use of libraries in Swift, Kotlin, Java, and Objective-C with ease.
+            <br />
+            <br />
+            In contrast to Client.Maui, which is applicable only to Windows 10 and 11, the Client.Windows project is designed to run on Windows 7, 8, 10, and 11.
+            Additionally, it features an auto-update capability.
+            <br />
+            <br />
+            If you set BlazorWebAssemblyStandalone to true in the Directory.Build.props file, the Client.Web project can be published as a
+            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>,
+            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>,
+            <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>, and others, without requiring ASP.NET Core.
+            <br />
+            <br />
+            We recommend keeping BlazorWebAssemblyStandalone set to false during development and only enabling it during the publishing process.
+            To do this, use the following command:
+            <br />
+            <CodeBox>
+dotnet publish MyFirstProject.Client.Web -c Release -p:BlazorWebAssemblyStandalone=true
+            </CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Test Project</BitTypography>
+            A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real
+            behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Create project" NextUrl="/templates/create-project" />

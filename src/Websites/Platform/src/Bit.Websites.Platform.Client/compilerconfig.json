@@ -102,14 +102,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates04CreateProjectPage.razor.css",
-        "inputFile": "Pages/Templates/Templates04CreateProjectPage.razor.scss",
+        "outputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.css",
+        "inputFile": "Pages/Templates/Templates04ProjectStructurePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.css",
-        "inputFile": "Pages/Templates/Templates05ProjectStructurePage.razor.scss",
+        "outputFile": "Pages/Templates/Templates05CreateProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates05CreateProjectPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
