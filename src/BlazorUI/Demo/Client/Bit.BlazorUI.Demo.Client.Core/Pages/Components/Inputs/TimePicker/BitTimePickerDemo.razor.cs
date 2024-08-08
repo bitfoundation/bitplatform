@@ -775,5 +775,11 @@ private FormValidationTimePickerModel formValidationTimePickerModel = new();";
 
 <BitTimePicker Standalone
                TimeFormat=""BitTimeFormat.TwelveHours""
-               Label=""Standalone picker"" />";
+               Label=""Picker (AM/PM)"" />
+
+<BitTimePicker Standalone
+               IsEnabled=""false""
+               Value=""new(10, 24, 0)""
+               TimeFormat=""BitTimeFormat.TwelveHours""
+               Label=""Disabled"" />";
 }

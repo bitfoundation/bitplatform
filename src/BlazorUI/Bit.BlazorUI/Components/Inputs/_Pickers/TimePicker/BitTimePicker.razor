@@ -83,7 +83,8 @@
                             @onpointerdown="() => HandleOnPointerDown(true, true)"
                             type="button"
                             style="@Styles?.IncreaseHourButton"
-                            class="bit-tpc-tbt @Classes?.IncreaseHourButton">
+                            class="bit-tpc-tbt @Classes?.IncreaseHourButton"
+                            disabled="@(IsEnabled is false)">
                         <i style="@Styles?.IncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.IncreaseHourIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputHourRef"
@@ -96,13 +97,15 @@
                            inputmode="numeric"
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
-                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                           disabled="@(IsEnabled is false)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, true)"
                             type="button"
                             style="@Styles?.DecreaseHourButton"
-                            class="bit-tpc-tbt @Classes?.DecreaseHourButton">
+                            class="bit-tpc-tbt @Classes?.DecreaseHourButton"
+                            disabled="@(IsEnabled is false)">
                         <i style="@Styles?.DecreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseHourIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -113,7 +116,8 @@
                             @onpointerdown="() => HandleOnPointerDown(true, false)"
                             type="button"
                             style="@Styles?.IncreaseMinuteButton"
-                            class="bit-tpc-tbt @Classes?.IncreaseMinuteButton">
+                            class="bit-tpc-tbt @Classes?.IncreaseMinuteButton"
+                            disabled="@(IsEnabled is false)">
                         <i style="@Styles?.IncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputMinuteRef"
@@ -126,13 +130,15 @@
                            inputmode="numeric"
                            style="@Styles?.MinuteInput"
                            class="bit-tpc-tin @Classes?.MinuteInput"
-                           autocomplete="@BitAutoCompleteValue.NewPassword" />
+                           autocomplete="@BitAutoCompleteValue.NewPassword"
+                           disabled="@(IsEnabled is false)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, false)"
                             type="button"
                             style="@Styles?.DecreaseMinuteButton"
-                            class="bit-tpc-tbt @Classes?.DecreaseMinuteButton">
+                            class="bit-tpc-tbt @Classes?.DecreaseMinuteButton"
+                            disabled="@(IsEnabled is false)">
                         <i style="@Styles?.DecreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -144,20 +150,22 @@
                     <button @onclick="HandleOnAmClick"
                             type="button"
                             style="@Styles?.AmButton"
-                            class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton">
+                            class="bit-tpc-tbt bit-tpc-bam @(IsAm() is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton"
+                            disabled="@(IsEnabled is false)">
                         @_culture.DateTimeFormat.AMDesignator
                     </button>
 
                     <button @onclick="HandleOnPmClick"
                             type="button"
                             style="@Styles?.PmButton"
-                            class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton">
+                            class="bit-tpc-tbt bit-tpc-bpm @(IsAm() is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton"
+                            disabled="@(IsEnabled is false)">
                         @_culture.DateTimeFormat.PMDesignator
                     </button>
                 </div>
             }
 
-            @if (ShowCloseButton)
+            @if (ShowCloseButton && Standalone is false)
             {
                 <button @onclick="CloseCallout"
                         type="button"

@@ -40,6 +40,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
         set
         {
+            if (IsEnabled is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
             if (val > 23)
@@ -65,6 +66,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         get => _minute?.ToString("D2");
         set
         {
+            if (IsEnabled is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
             if (val > 59)
@@ -231,7 +233,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether the BitTimePicker is rendered standalone or with the input component and callout.
     /// </summary>
-    [Parameter, ResetClassBuilder] 
+    [Parameter, ResetClassBuilder]
     public bool Standalone { get; set; }
 
     /// <summary>
@@ -443,12 +445,16 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnAmClick()
     {
+        if (IsEnabled is false) return;
+
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
     private async Task HandleOnPmClick()
     {
+        if (IsEnabled is false) return;
+
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
             _hour += 12;

@@ -252,6 +252,11 @@
     overflow: hidden;
     aspect-ratio: 1;
 
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
         -webkit-appearance: none;
@@ -301,6 +306,7 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
 
@@ -319,6 +325,10 @@
 .bit-tpc-bns {
     color: $clr-pri-text;
     background-color: $clr-pri;
+
+    &:disabled {
+        background-color: $clr-pri;
+    }
 
     @media (hover: hover) {
         &:hover {
