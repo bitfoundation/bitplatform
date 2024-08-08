@@ -4,18 +4,15 @@
     cursor: pointer;
     width: fit-content;
     font-family: $tg-font-family;
-    //----
-    --bit-chb-box-clr-bg: transparent;
-    --bit-chb-box-clr-brd: #{$clr-brd-pri};
     --bit-chb-ico-opa: 0;
     --bit-chb-ico-clr: #{$clr-fg-sec};
-    --bit-chb-ico-clr-bg: transparent;
+    --bit-chb-box-clr-brd: #{$clr-brd-pri};
 
     @media (hover: hover) {
         &:hover {
+            --bit-chb-ico-opa: 1;
             --bit-chb-box-clr-bg: transparent;
             --bit-chb-box-clr-brd: #{$clr-brd-pri};
-            --bit-chb-ico-opa: 1;
         }
     }
 
@@ -74,17 +71,21 @@
     background-color: var(--bit-chb-box-clr-bg);
 
     .bit-chb-ico {
-        width: 100%;
-        height: 100%;
         display: flex;
-        transition: 0.1s;
-        align-items: center;
-        justify-content: center;
-        font-size: spacing(1.375);
-        color: var(--bit-chb-ico-clr);
-        opacity: var(--bit-chb-ico-opa);
-        background-color: var(--bit-chb-ico-clr-bg);
     }
+}
+
+.bit-chb-ico {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    transition: 0.1s;
+    align-items: center;
+    justify-content: center;
+    font-size: spacing(1.375);
+    color: var(--bit-chb-ico-clr);
+    opacity: var(--bit-chb-ico-opa);
+    background-color: var(--bit-chb-ico-clr-bg);
 }
 
 .bit-chb-txt {
@@ -102,6 +103,8 @@
     position: relative;
     align-items: center;
     font-size: spacing(1.75);
+    justify-content: var(--bit-chb-lbl-justify-content);
+    flex-direction: var(--bit-chb-lbl-flex-direction);
 }
 
 
@@ -141,8 +144,7 @@
     .bit-chb-ico {
         width: spacing(1.25);
         height: spacing(1.25);
-        display: inline-block;
-        border-radius: spacing(0.375);
+        border-radius: $shp-border-radius;
 
         &:before {
             content: '';
@@ -151,16 +153,6 @@
 }
 
 .bit-chb-rvs {
-    .bit-chb-lbl {
-        justify-content: flex-end;
-        flex-direction: row-reverse;
-    }
-
-    .bit-chb-box {
-        margin: 0 0 0 spacing(0.5);
-    }
-
-    .bit-chb-txt {
-        margin: 0 spacing(0.5) 0 0;
-    }
+    --bit-chb-lbl-justify-content: flex-end;
+    --bit-chb-lbl-flex-direction: row-reverse;
 }

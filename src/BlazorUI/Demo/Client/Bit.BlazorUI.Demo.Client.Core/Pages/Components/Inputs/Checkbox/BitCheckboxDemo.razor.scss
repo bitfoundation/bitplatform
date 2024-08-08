@@ -2,40 +2,14 @@
 @import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-.example-content {
-    gap: 0.5rem;
-    display: flex;
-    flex-flow: column wrap;
-    align-items: flex-start;
-}
-
-.controlled-box {
+.example-box {
     gap: 1rem;
     display: flex;
     width: fit-content;
-    margin-bottom: 1rem;
-    flex-direction: row;
 
     @include sm {
         flex-direction: column;
     }
-}
-
-.custom-checkbox {
-    gap: 0.5rem;
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-}
-
-.custom-box {
-    display: flex;
-    width: rem2(32px);
-    height: rem2(32px);
-    border: 1px solid;
-    align-items: center;
-    margin-right: rem2(5px);
-    justify-content: center;
 }
 
 ::deep {
