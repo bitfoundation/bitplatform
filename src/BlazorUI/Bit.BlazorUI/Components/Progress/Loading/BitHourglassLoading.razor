@@ -4,4 +4,9 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"></div>
+     class="@ClassBuilder.Value">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="bit-ldn-lbl-@(LabelPosition?.ToString().ToLower())">@Label</label>
+    }
+</div>

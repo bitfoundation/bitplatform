@@ -2,6 +2,9 @@
 
 public partial class BitRingLoading : BitLoadingBase
 {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+
     protected override string RootElementClass => "bit-ldn-rng";
 
     protected override void RegisterCssStyles()

@@ -2,6 +2,9 @@
 
 public partial class BitHeartLoading : BitLoadingBase
 {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+
     protected override string RootElementClass => "bit-ldn-hrt";
 
     protected override void RegisterCssStyles()

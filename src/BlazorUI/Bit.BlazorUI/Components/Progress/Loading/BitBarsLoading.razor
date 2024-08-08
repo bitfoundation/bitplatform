@@ -9,4 +9,8 @@
     {
         <div style="@ChildStyle" class="@ChildClass"></div>
     }
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="bit-ldn-lbl-@(LabelPosition?.ToString().ToLower())">@Label</label>
+    }
 </div>

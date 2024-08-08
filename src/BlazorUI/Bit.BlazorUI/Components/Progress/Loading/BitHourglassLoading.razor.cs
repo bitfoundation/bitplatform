@@ -2,6 +2,9 @@
 
 public partial class BitHourglassLoading : BitLoadingBase
 {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+
     protected override string RootElementClass => "bit-ldn-hgl";
 
     protected override void RegisterCssStyles()

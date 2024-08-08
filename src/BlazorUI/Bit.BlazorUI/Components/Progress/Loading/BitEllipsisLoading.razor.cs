@@ -2,6 +2,9 @@
 
 public partial class BitEllipsisLoading : BitLoadingBase
 {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+
     protected override string RootElementClass => "bit-ldn-elp";
 
     protected override void RegisterCssStyles()
