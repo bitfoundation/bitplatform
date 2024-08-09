@@ -1,9 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 {
+    private bool[] _inputFocusStates = default!;
     private string?[] _inputValues = default!;
     private ElementReference[] _inputRefs = default!;
     private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
@@ -116,6 +118,8 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
         _inputValues = new string[Length];
 
+        _inputFocusStates = new bool[Length];
+
         _dotnetObj = DotNetObjectReference.Create(this);
 
         base.OnInitialized();
@@ -197,10 +201,49 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         _ => string.Empty
     };
 
+    private string GetInputStyles(int index)
+    {
+        StringBuilder cssStyles = new();
+
+        if (Styles?.Input is not null)
+        {
+            cssStyles.Append(Styles?.Input);
+        }
+
+        if (Styles?.Focused is not null && _inputFocusStates[index])
+        {
+            cssStyles.Append(' ').Append(Styles?.Focused);
+        }
+
+        return cssStyles.ToString();
+    }
+
+    private string GetInputClasses(int index)
+    {
+        StringBuilder cssClasses = new();
+
+        cssClasses.Append("bit-otp-inp");
+
+        if (Classes?.Input is not null)
+        {
+            cssClasses.Append(' ').Append(Classes?.Input);
+        }
+
+        if (Classes?.Focused is not null && _inputFocusStates[index])
+        {
+            cssClasses.Append(' ').Append(Classes?.Focused);
+        }
+
+        return cssClasses.ToString();
+    }
+
     private async Task HandleOnFocusIn(FocusEventArgs e, int index)
     {
         if (IsEnabled is false) return;
 
+        _inputFocusStates[index] = true;
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync((e, index));
     }
 
@@ -208,6 +251,9 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     {
         if (IsEnabled is false) return;
 
+        _inputFocusStates[index] = false;
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync((e, index));
     }
 

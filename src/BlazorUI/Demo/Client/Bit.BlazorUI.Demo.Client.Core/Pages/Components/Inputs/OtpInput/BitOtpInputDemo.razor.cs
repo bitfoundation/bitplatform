@@ -120,6 +120,13 @@ public partial class BitOtpInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for each input in otp input.",
+                },
+                new()
+                {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the focused input in otp input.",
                 }
             }
         }
