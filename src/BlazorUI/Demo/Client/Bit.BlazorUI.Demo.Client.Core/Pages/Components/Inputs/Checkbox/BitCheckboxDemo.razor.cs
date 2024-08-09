@@ -159,6 +159,13 @@ public partial class BitCheckboxDemo
                },
                new()
                {
+                   Name = "Checked",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the checked state of the BitCheckbox."
+               },
+               new()
+               {
                    Name = "Box",
                    Type = "string?",
                    DefaultValue = "null",
