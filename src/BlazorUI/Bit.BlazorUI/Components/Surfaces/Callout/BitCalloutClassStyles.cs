@@ -1,0 +1,24 @@
+﻿namespace Bit.BlazorUI;
+
+public class BitCalloutClassStyles
+{
+    /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitCallout.
+    /// </summary>
+    public string? Root { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the opened callout state of the BitCallout.
+    /// </summary>
+    public string? Opened { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout container of the BitCallout.
+    /// </summary>
+    public string? Callout { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the overlay of the BitCallout.
+    /// </summary>
+    public string? Overlay { get; set; }
+}
