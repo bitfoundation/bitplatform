@@ -6,6 +6,117 @@ public partial class BitTimePickerDemo
     [
         new()
         {
+            Name = "AllowTextInput",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker allows input a time string directly or not.",
+        },
+        new()
+        {
+            Name = "CalloutAriaLabel",
+            Type = "string",
+            DefaultValue = "Clock",
+            Description = "Aria label for time picker popup for screen reader users."
+        },
+        new()
+        {
+            Name = "CalloutHtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new Dictionary<String, Object>()",
+            Description = "Capture and render additional attributes in addition to the main callout's parameters."
+        },
+        new()
+        {
+            Name = "Classes",
+            Type = "BitTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "CloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close time picker",
+            Description = "The title of the close button (tooltip).",
+        },
+        new()
+        {
+            Name = "Culture",
+            Type = "CultureInfo",
+            DefaultValue = "CultureInfo.CurrentUICulture",
+            Description = "CultureInfo for the TimePicker."
+        },
+        new()
+        {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout.",
+            Href = "#drop-direction-enum",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "HasBorder",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Determines if the TimePicker has a border.",
+        },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for time-picker's hour.",
+        },
+        new()
+        {
+            Name = "IconName",
+            Type = "string",
+            DefaultValue = "Clock",
+            Description = "Optional TimePicker icon."
+        },
+        new()
+        {
+            Name = "IconLocation",
+            Type = "BitIconLocation",
+            LinkType = LinkType.Link,
+            Href = "#icon-location-enum",
+            DefaultValue = "BitIconLocation.Right",
+            Description = "TimePicker icon location."
+        },
+        new()
+        {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom TimePicker icon template."
+        },
+        new()
+        {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not this TimePicker is open.",
+        },
+        new()
+        {
+            Name = "IsResponsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new()
+        {
+            Name = "IsUnderlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the Text field of the TimePicker is underlined.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -20,75 +131,10 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "AllowTextInput",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the TimePicker allows input a time string directly or not.",
-        },
-        new()
-        {
-            Name = "TabIndex",
+            Name = "MinuteStep",
             Type = "int",
-            DefaultValue = "0",
-            Description = "The tabIndex of the TextField.",
-        },
-        new()
-        {
-            Name = "Placeholder",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Placeholder text for the DatePicker.",
-        },
-        new()
-        {
-            Name = "IconTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Custom TimePicker icon template."
-        },
-        new()
-        {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "TimePicker icon location."
-        },
-        new()
-        {
-            Name = "IconName",
-            Type = "string",
-            DefaultValue = "Clock",
-            Description = "Optional TimePicker icon."
-        },
-        new()
-        {
-            Name = "IsOpen",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not this TimePicker is open.",
-        },
-        new()
-        {
-            Name = "CalloutHtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "new Dictionary<String, Object>()",
-            Description = "Capture and render additional attributes in addition to the main callout's parameters."
-        },
-        new()
-        {
-            Name = "CalloutAriaLabel",
-            Type = "string",
-            DefaultValue = "Clock",
-            Description = "Aria label for time picker popup for screen reader users."
-        },
-        new()
-        {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for time-picker's minute.",
         },
         new()
         {
@@ -116,24 +162,46 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "IsUnderlined",
+            Name = "OnSelectTime",
+            Type = "EventCallback<TimeSpan?>",
+            Description = "Callback for when the on selected time changed.",
+        },
+        new()
+        {
+            Name = "Placeholder",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Placeholder text for the DatePicker.",
+        },
+        new()
+        {
+            Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the Text field of the TimePicker is underlined.",
+            Description = "Whether the BitTimePicker's close button should be shown or not."
         },
         new()
         {
-            Name = "HasBorder",
+            Name = "Styles",
+            Type = "BitTimePickerClassStyles",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the TimePicker.",
+            Href = "#timepicker-class-styles",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "Standalone",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Determines if the TimePicker has a border.",
+            DefaultValue = "false",
+            Description = "Whether the BitTimePicker is rendered standalone or with the input component and callout.",
         },
         new()
         {
-            Name = "Culture",
-            Type = "CultureInfo",
-            DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the TimePicker."
+            Name = "TabIndex",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The tabIndex of the TextField.",
         },
         new()
         {
@@ -150,79 +218,7 @@ public partial class BitTimePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
-        },
-        new()
-        {
-            Name = "InvalidErrorMessage",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom validation error message for the invalid value."
-        },
-        new()
-        {
-            Name = "OnSelectTime",
-            Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the on selected time changed.",
-        },
-        new()
-        {
-            Name = "Value",
-            Type = "TimeSpan?",
-            DefaultValue = "null",
-            Description = "The value of TimePicker.",
-        },
-        new()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the on time value changed.",
-        },
-        new()
-        {
-            Name = "HourStep",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's hour.",
-        },
-        new()
-        {
-            Name = "MinuteStep",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's minute.",
-        },
-        new()
-        {
-            Name = "Styles",
-            Type = "BitTimePickerClassStyles",
-            DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the TimePicker.",
-            Href = "#timepicker-class-styles",
-            LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "Classes",
-            Type = "BitTimePickerClassStyles",
-            DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the TimePicker.",
-            Href = "#timepicker-class-styles",
-            LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "CloseButtonTitle",
-            Type = "string",
-            DefaultValue = "Close time picker",
-            Description = "The title of the close button (tooltip).",
-        },
-        new()
-        {
-            Name = "Standalone",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the BitTimePicker is rendered standalone or with the input component and callout.",
-        },
+        }
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -320,6 +316,27 @@ public partial class BitTimePickerDemo
                     Name= "TwelveHours",
                     Description="Show time pickers in 12 hours format.",
                     Value="1",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Auto",
+                    Description = "Show the callout at the top, bottom, left and right sides according to the space.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Description = "Show the callout at the top or bottom side.",
+                    Value = "1",
                 }
             ]
         }
@@ -528,13 +545,6 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the close button icon of the BitTimePicker."
-                },
-                new()
-                {
-                    Name = "ShowCloseButton",
-                    Type = "bool",
-                    DefaultValue = "false",
-                    Description = "Whether the BitTimePicker's close button should be shown or not."
                 }
             ]
         }
