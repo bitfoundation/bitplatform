@@ -48,8 +48,5 @@
 }
 
 .example-box {
-    display: flex;
-    gap: rem2(15px);
-    flex-flow: column nowrap;
-    width: fit-content;
+    padding: 0 0.5rem;
 }
