@@ -11,4 +11,9 @@ public class BitOtpInputClassStyles
     /// Custom CSS classes/styles for each input in otp input.
     /// </summary>
     public string? Input { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for current focused input in otp input.
+    /// </summary>
+    public string? Focused { get; set; }
 }

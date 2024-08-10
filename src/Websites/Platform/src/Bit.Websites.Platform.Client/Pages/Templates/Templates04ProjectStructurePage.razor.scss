@@ -34,14 +34,13 @@
     font-weight: bold;
 }
 
-.image-container {
-    @include ImageContainer;
+.row-section-container{
+    display:flex;
 }
 
 .image {
     @include Image;
-    width: 69%;
-    max-width: 400px;
+    width: rem2(300px);
 }
 
 ::deep a {

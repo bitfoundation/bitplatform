@@ -12,8 +12,6 @@ public partial class Templates03GettingStartedPage
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
 
-
-
     private List<(string text, string command)> GetSelectedComands()
     {
         List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
@@ -40,7 +38,7 @@ public partial class Templates03GettingStartedPage
 
     private string GetDisplayableSelectedCommands()
     {
-        return string.Join($"{Environment.NewLine}", GetSelectedComands()[..^1].Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
+        return string.Join($"{Environment.NewLine}", GetSelectedComands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
     }
 
     private async Task CopyCommandsToClipboard()
@@ -80,7 +78,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools wasm-experimental;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::8.10.0-pre-05;"),
+            command:"dotnet new install Bit.Boilerplate::8.10.0;"),
         ],
 
         [CommandGroup.Additional] =

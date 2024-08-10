@@ -145,16 +145,18 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd {Classes?.Checked}" : string.Empty);
+
         ClassBuilder.Register(() => Indeterminate ? "bit-chb-ind" : string.Empty);
 
-        ClassBuilder.Register(() => CurrentValue ? "bit-chb-ckd" : string.Empty);
-
-        ClassBuilder.Register(() => Reversed ? "bit-chb-end" : string.Empty);
+        ClassBuilder.Register(() => Reversed ? "bit-chb-rvs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => CurrentValue ? Styles?.Checked : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -191,6 +193,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
     private async Task SetIndeterminate(bool value)
