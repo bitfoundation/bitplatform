@@ -11,7 +11,8 @@
     font-family: $tg-font-family;
 
     &.bit-dis {
-        .bit-tpc-lbl {
+        .bit-tpc-lbl,
+        .bit-tpc-tdv {
             color: $clr-fg-dis;
         }
 
