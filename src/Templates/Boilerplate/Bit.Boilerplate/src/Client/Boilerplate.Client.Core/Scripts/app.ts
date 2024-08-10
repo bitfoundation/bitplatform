@@ -17,7 +17,7 @@ BitTheme.init({
         if (newTheme === 'dark') {
             document.body.classList.add('theme-dark');
             document.body.classList.remove('theme-light');
-            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#0d1117');
+            document.querySelector("meta[name=theme-color]")!.setAttribute('content', '#010409');
         } else {
             document.body.classList.add('theme-light');
             document.body.classList.remove('theme-dark');

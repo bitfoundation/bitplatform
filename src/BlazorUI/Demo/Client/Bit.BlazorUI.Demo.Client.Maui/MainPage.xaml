@@ -4,17 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:client="clr-namespace:Bit.BlazorUI.Demo.Client.Core;assembly=Bit.BlazorUI.Demo.Client.Core"
-    BackgroundColor="{AppThemeBinding Light={OnPlatform Android=#0D2960,
-                                                        Default=#ffffff},
-                                      Dark={OnPlatform Android=#0D2960,
-                                                       Default=#000000}}">
+    BackgroundColor="{AppThemeBinding Light=#ffffff,
+                                      Dark=#010409}">
 
     <b:BlazorWebView
         x:Name="blazorWebView"
-        BackgroundColor="{AppThemeBinding Light={OnPlatform Android=#0D2960,
-                                                            Default=#ffffff},
-                                          Dark={OnPlatform Android=#0D2960,
-                                                           Default=#000000}}"
+        BackgroundColor="{AppThemeBinding Light=#ffffff,
+                                          Dark=#010409}"
         HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
             <b:RootComponent ComponentType="{x:Type client:Routes}" Selector="#app-container" />
