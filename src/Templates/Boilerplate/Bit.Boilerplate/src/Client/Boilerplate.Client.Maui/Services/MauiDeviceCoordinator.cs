@@ -39,7 +39,7 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor(backgroundColor) : Android.Graphics.Color.White);
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(backgroundColor));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>

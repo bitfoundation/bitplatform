@@ -95,6 +95,8 @@ public static partial class MauiProgram
         {
             var webView = handler.PlatformView;
 #if Windows
+            webView.DefaultBackgroundColor = (Windows.UI.Color)Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(Windows.UI.Color), "#0D2960");
+
             if (AppEnvironment.IsDev() is false)
             {
                 webView.EnsureCoreWebView2Async()
@@ -115,8 +117,9 @@ public static partial class MauiProgram
             webView.Configuration.AllowsInlineMediaPlayback = true;
 
             webView.BackgroundColor = UIColor.Clear;
-            webView.ScrollView.Bounces = false;
             webView.Opaque = false;
+
+            webView.ScrollView.Bounces = false;
 
             if (AppEnvironment.IsDev())
             {
@@ -127,6 +130,9 @@ public static partial class MauiProgram
                 }
             }
 #elif Android
+
+            webView.SetBackgroundColor(Android.Graphics.Color.ParseColor("#0D2960"));
+
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
             webView.HapticFeedbackEnabled = false;
