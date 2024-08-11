@@ -27,7 +27,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Name</BitTypography>
-                <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" />
+                <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" Immediate DebounceTime="300" />
             </div>
             <br />
             <CodeBox>
@@ -40,7 +40,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Captcha</BitTypography>
-                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Selected" OnChange="(string selected) => OnChangeParameter(captcha)"></BitDropdown>
+                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Selected" />
             </div>
             <div class="default-txt">Default: None</div>
             <br />
@@ -57,7 +57,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Pipeline</BitTypography>
-                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Selected" OnChange="(string selected) => OnChangeParameter(pipeline)"></BitDropdown>
+                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Selected"/>
             </div>
             <div class="default-txt">Default: GitHub</div>
             <br />
@@ -75,7 +75,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Sample</BitTypography>
-                <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Selected" OnChange="(string selected) => OnChangeParameter(sample)"></BitDropdown>
+                <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Selected"/>
             </div>
             <div class="default-txt">Default: None</div>
             <br />
@@ -92,7 +92,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Windows</BitTypography>
-                <BitToggle @bind-IsChecked="windows.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(windows)" />
+                <BitToggle @bind-Value="windows.SelectedBoolean" OnText="true" OffText="false" />
             </div>
             <div class="default-txt">Default: True</div>
             <br />
@@ -109,7 +109,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>App Center</BitTypography>
-                <BitToggle @bind-IsChecked="appCenter.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(appCenter)" />
+                <BitToggle @bind-Value="appCenter.SelectedBoolean" OnText="true" OffText="false" />
             </div>
             <div class="default-txt">Default: false</div>
             <br />
@@ -128,7 +128,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Database</BitTypography>
-                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Selected" OnChange="(string selected) => OnChangeParameter(database)"></BitDropdown>
+                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Selected" />
             </div>
             <div class="default-txt">Default: SqlServer</div>
             <br />
@@ -175,7 +175,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
-                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Selected" OnChange="(string selected) => OnChangeParameter(fileStorage)"></BitDropdown>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Selected" />
             </div>
             <div class="default-txt">Default: Local</div>
             <br />
@@ -227,7 +227,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Api</BitTypography>
-                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Selected" OnChange="(string selected) => OnChangeParameter(api)"></BitDropdown>
+                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Selected" />
             </div>
             <div class="default-txt">Default: Integrated</div>
             <br />
@@ -249,7 +249,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>OfflineDb</BitTypography>
-                <BitToggle @bind-IsChecked="offlineDb.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(offlineDb)" />
+                <BitToggle @bind-Value="offlineDb.SelectedBoolean" OnText="true" OffText="false" />
             </div>
             <div class="default-txt">Default: false</div>
             <br />
@@ -270,7 +270,7 @@
         <div class="params-item-card">
             <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>AppInsights</BitTypography>
-                <BitToggle @bind-IsChecked="appInsight.SelectedBoolean" OnText="true" OffText="false" OnChange="(bool selected) => OnChangeParameter(appInsight)" />
+                <BitToggle @bind-Value="appInsight.SelectedBoolean" OnText="true" OffText="false" />
             </div>
             <div class="default-txt">Default: false</div>
             <br />
