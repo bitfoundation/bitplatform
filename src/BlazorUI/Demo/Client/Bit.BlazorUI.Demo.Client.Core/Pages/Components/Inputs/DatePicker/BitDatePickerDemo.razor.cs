@@ -330,6 +330,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "Standalone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the date-picker is rendered standalone or with the input component and callout.",
+        },
+        new()
+        {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
@@ -1173,4 +1180,11 @@ private void HandleInvalidSubmit() { }";
 <BitDatePicker ShowTimePicker=""true""
                Label=""MinuteStep = 15""
                MinuteStep=""15"" />";
+
+    private readonly string example13RazorCode = @"
+<BitDatePicker Label=""Basic DatePicker"" Standalone />
+<BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDatePicker Label=""Week numbers"" ShowWeekNumbers=""true"" Standalone />
+<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" Standalone />
+<BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" Standalone />";
 }
