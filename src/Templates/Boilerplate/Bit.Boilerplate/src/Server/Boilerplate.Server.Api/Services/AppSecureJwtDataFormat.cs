@@ -57,7 +57,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             {
                 Issuer = appSettings.Identity.Issuer,
                 Audience = appSettings.Identity.Audience,
-                IssuedAt = DateTime.UtcNow,
+                IssuedAt = DateTimeOffset.UtcNow.DateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.RsaSha512),
                 Subject = new ClaimsIdentity(data.Principal.Claims),

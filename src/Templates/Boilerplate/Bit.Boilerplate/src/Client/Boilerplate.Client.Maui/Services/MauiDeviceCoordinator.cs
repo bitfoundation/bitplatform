@@ -25,6 +25,10 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
+    public static readonly string BackgroundColorPrimaryDark = "#000000";
+    public static readonly string BackgroundColorPrimaryLight = "#FFFFFF";
+    // In case you need to change the background color, make sure to also update app.scss's --bit-clr-bg-pri accordingly.
+
     public async Task ApplyTheme(bool isDark)
     {
         Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
@@ -36,7 +40,7 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#0D1117") : Android.Graphics.Color.White);
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(isDark ? BackgroundColorPrimaryDark : BackgroundColorPrimaryLight));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>
