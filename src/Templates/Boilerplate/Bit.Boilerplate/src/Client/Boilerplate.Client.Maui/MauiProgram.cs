@@ -95,11 +95,6 @@ public static partial class MauiProgram
         {
             var webView = handler.PlatformView;
 #if Windows
-            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-            {
-                webView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
-            }
-
             if (AppEnvironment.IsDev() is false)
             {
                 webView.EnsureCoreWebView2Async()
@@ -132,11 +127,6 @@ public static partial class MauiProgram
                 }
             }
 #elif Android
-            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-            {
-                webView.SetBackgroundColor(Android.Graphics.Color.ParseColor("#010409"));
-            }
-
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
             webView.HapticFeedbackEnabled = false;

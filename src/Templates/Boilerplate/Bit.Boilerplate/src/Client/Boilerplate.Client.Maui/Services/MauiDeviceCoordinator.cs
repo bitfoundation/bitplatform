@@ -1,4 +1,6 @@
 ﻿//-:cnd:noEmit
+using Microsoft.JSInterop;
+
 namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
@@ -25,7 +27,8 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
-    public async Task ApplyTheme(bool isDark)
+    [JSInvokable(nameof(ApplyTheme))]
+    public static async Task ApplyTheme(string backgroundColor, bool isDark)
     {
         Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
 #if Android
@@ -36,13 +39,13 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#010409") : Android.Graphics.Color.White);
+        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor(backgroundColor) : Android.Graphics.Color.White);
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>
         {
             UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
-            Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
+            Platform.GetCurrentUIViewController()!.SetNeedsStatusBarAppearanceUpdate();
         });
 #elif MACCATALYST
         var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;

@@ -42,8 +42,6 @@ public partial class MainPage
         {
             base.OnAppearing();
 
-            await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
-
             await CheckForUpdates();
         }
         catch (Exception exp)

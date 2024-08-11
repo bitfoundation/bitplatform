@@ -51,6 +51,6 @@ public partial class Footer
 
     private async Task ToggleTheme()
     {
-        await bitDeviceCoordinator.ApplyTheme(await bitThemeManager.ToggleDarkLightAsync() == "dark");
+        await bitThemeManager.ToggleDarkLightAsync();
     }
 }
