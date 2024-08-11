@@ -4,6 +4,8 @@ namespace Bit.Websites.Platform.Client.Pages.Templates;
 
 public partial class Templates05CreateProjectPage
 {
+    private double verticalSpacing = 1;
+    private double horizontalSpacing = 1;
     private string name = "MyFirstProject";
 
     private Parameter windows = new()
@@ -37,7 +39,14 @@ public partial class Templates05CreateProjectPage
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },
-        ]
+        ],
+        Details = new()
+        {
+            ["reCaptcha"] = new DetailItem()
+            {
+                Text = "To integrate Google reCAPTCHA into the Sign Up page, include --captcha reCaptcha in the dotnet new command."
+            }
+        }
     };
 
     private Parameter pipeline = new()
@@ -48,7 +57,22 @@ public partial class Templates05CreateProjectPage
             new() { Text = "None", Value = "None" },
             new() { Text = "GitHub", Value = "GitHub" },
             new() { Text = "Azure", Value = "Azure" },
-        ]
+        ],
+        Details = new()
+        {
+            ["GitHub"] = new DetailItem()
+            {
+                Command = "--pipeline GitHub",
+                Reference = "https://github.com/features/actions",
+                Text = "Github Actions"
+            },
+            ["Azure"] = new DetailItem()
+            {
+                Command = "--pipeline Azure",
+                Reference = "https://azure.microsoft.com/en-us/products/devops/pipelines",
+                Text = "Azure Devops"
+            }
+        }
     };
 
     private Parameter sample = new()
@@ -59,7 +83,18 @@ public partial class Templates05CreateProjectPage
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
             new() { Text = "Todo", Value = "Todo" },
-        ]
+        ],
+        Details = new()
+        {
+            ["Admin"] = new DetailItem()
+            {
+                Reference = "https://adminpanel.bitplatform.dev/"
+            },
+            ["Todo"] = new DetailItem()
+            {
+                Reference = "https://todo.bitplatform.dev/"
+            }
+        }
     };
 
     private Parameter database = new()
@@ -76,11 +111,30 @@ public partial class Templates05CreateProjectPage
         ],
         Details = new()
         {
-            ["Sqlite"] = (null, "https://www.sqlite.org/download.html", null),
-            ["SqlServer"] = (null, "https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb", "LocalDB is insalled by default along with Visual Studio."),
-            ["PostgreSQL"] = ("winget install --id=PostgreSQL.PostgreSQL.14  -e", "https://www.postgresql.org/download/", null),
-            ["MySQL"] = (null, "https://mariadb.org/download", "Maria db is supported as well."),
-            ["Cosmos"] = ("winget install -e --id Microsoft.Azure.CosmosEmulator", "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql", null),
+            ["Sqlite"] = new DetailItem()
+            {
+                Reference = "https://www.sqlite.org/download.html"
+            },
+            ["SqlServer"] = new DetailItem()
+            {
+                Reference = "https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb",
+                Text = "LocalDB is insalled by default along with Visual Studio."
+            },
+            ["PostgreSQL"] = new DetailItem()
+            {
+                Command = "winget install --id=PostgreSQL.PostgreSQL.14  -e",
+                Reference = "https://www.postgresql.org/download/"
+            },
+            ["MySQL"] = new DetailItem()
+            {
+                Reference = "https://mariadb.org/download",
+                Text = "Maria db is supported as well."
+            },
+            ["Cosmos"] = new DetailItem()
+            {
+                Command = "winget install -e --id Microsoft.Azure.CosmosEmulator",
+                Reference = "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql"
+            }
         }
     };
 
@@ -95,7 +149,10 @@ public partial class Templates05CreateProjectPage
         ],
         Details = new()
         {
-            ["AzureBlobStorage"] = (null, "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite", null),
+            ["AzureBlobStorage"] = new DetailItem()
+            {
+                Reference = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite"
+            }
         }
     };
 
@@ -106,7 +163,21 @@ public partial class Templates05CreateProjectPage
         Items = [
             new() { Text = "Integrated", Value = "Integrated" },
             new() { Text = "Standalone", Value = "Standalone" },
-        ]
+        ],
+        Details = new()
+        {
+            ["Integrated"] = new DetailItem()
+            {
+                Text = @"If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project, 
+hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.",
+                Image = "api-integrated.webp"
+            },
+            ["Standalone"] = new DetailItem()
+            {
+                Text = "Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.",
+                Image = "api-standalone.webp"
+            }
+        }
     };
 
     private string GetFinalCommand()
@@ -188,12 +259,12 @@ public partial class Templates05CreateProjectPage
 
     private string GetWindowsCommand()
     {
-        return $"--windows {(windows.SelectedBoolean ? "true" : "false")} ";
+        return $"--windows {windows.SelectedBoolean.ToString().ToLowerInvariant()} ";
     }
 
     private string GetAppCenterCommand()
     {
-        return $"--appCenter {appCenter.SelectedBoolean} ";
+        return $"--appCenter {appCenter.SelectedBoolean.ToString().ToLowerInvariant()} ";
     }
 
     private string GetDatabaseCommand()
@@ -213,12 +284,12 @@ public partial class Templates05CreateProjectPage
 
     private string GetOfflineDbCommand()
     {
-        return $"--offlineDb {offlineDb.SelectedBoolean} ";
+        return $"--offlineDb {offlineDb.SelectedBoolean.ToString().ToLowerInvariant()} ";
     }
 
     private string GetAppInsightsCommand()
     {
-        return $"--appinsights {appInsight.SelectedBoolean} ";
+        return $"--appinsights {appInsight.SelectedBoolean.ToString().ToLowerInvariant()} ";
     }
 
     private bool IncludeCommand(Parameter parameter)
@@ -235,8 +306,15 @@ public partial class Templates05CreateProjectPage
         public string? Default { get; set; }
         public bool SelectedBoolean { get; set; }
         public bool DefaultBoolean { get; set; }
-        public bool IsChanged => Selected != Default || SelectedBoolean != DefaultBoolean;
         public BitDropdownItem<string>[]? Items { get; set; }
-        public Dictionary<string, (string? installCommand, string reference, string? text)> Details { get; set; }
+        public Dictionary<string, DetailItem> Details { get; set; }
+    }
+
+    public class DetailItem
+    {
+        public string? Command { get; set; }
+        public string? Reference { get; set; }
+        public string? Text { get; set; }
+        public string? Image { get; set; }
     }
 }

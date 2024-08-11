@@ -29,6 +29,7 @@
 
 .image {
     @include Image;
+    width: rem2(600px);
 }
 
 ::deep a {
@@ -49,31 +50,30 @@
     margin-bottom:rem2(10px);
 }
 
-.params-container {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-}
-
-.params-item-card {
-    width: rem2(550px);
-    overflow: auto;
-    position: relative;
-    padding: rem2(28px);
-    word-wrap: break-word;
-    border-radius: rem2(4px);
-    margin-bottom: rem2(28px);
-    background-clip: padding-box;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-primary;
-}
-
 .default-txt {
     font-size: rem2(12px);
+}
+
+.api-image-container {
+    display: flex;
+    justify-content: center;
 }
 
 ::deep {
     .bit-drp {
         width: rem2(150px);
+    }
+
+    .grid-item {
+        width: rem2(550px);
+        min-height: rem2(416px);
+        overflow: auto;
+        position: relative;
+        padding: rem2(28px);
+        word-wrap: break-word;
+        border-radius: rem2(4px);
+        background-clip: padding-box;
+        box-shadow: $bit-box-shadow-callout;
+        background-color: $bit-color-background-primary;
     }
 }
