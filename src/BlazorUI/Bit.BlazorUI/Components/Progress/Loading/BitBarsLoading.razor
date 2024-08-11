@@ -5,6 +5,17 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value">
+    @if (LabelTemplate is not null)
+    {
+        @LabelTemplate
+    }
+    else if (Label is not null)
+    {
+        <label style="" class="">
+            @Label
+        </label>
+    }
+
     @for (int i = 0; i < 3; i++)
     {
         <div style="@ChildStyle" class="@ChildClass"></div>

@@ -30,6 +30,21 @@ public abstract class BitLoadingBase : BitComponentBase
     [Parameter] public int? CustomSize { get; set; }
 
     /// <summary>
+    /// The text content of the label of the loading component.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The position of the label of the loading component.
+    /// </summary>
+    [Parameter] public BitLabelPosition? LabelPosition { get; set; }
+
+    /// <summary>
+    /// The custom content of the label of the loading component.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
     /// The Size of the loading component.
     /// </summary>
     [Parameter] public BitSize? Size { get; set; }
@@ -68,6 +83,24 @@ public abstract class BitLoadingBase : BitComponentBase
                     var customSize = (int?)parameter.Value;
                     if (CustomSize != customSize) StyleBuilder.Reset();
                     CustomSize = customSize;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+                case nameof(Label):
+                    var label = (string?)parameter.Value;
+                    if (Label != label) StyleBuilder.Reset();
+                    Label = label;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+                case nameof(LabelPosition):
+                    var labelPosition = (BitLabelPosition?)parameter.Value;
+                    if (LabelPosition != labelPosition) StyleBuilder.Reset();
+                    LabelPosition = labelPosition;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+                case nameof(LabelTemplate):
+                    var labelTemplate = (RenderFragment?)parameter.Value;
+                    if (LabelTemplate != labelTemplate) StyleBuilder.Reset();
+                    LabelTemplate = labelTemplate;
                     parametersDictionary.Remove(parameter.Key);
                     break;
                 case nameof(Size):
