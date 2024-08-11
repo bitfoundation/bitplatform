@@ -9,7 +9,7 @@
     "theme_color": "#2EA3FF",
     "related_applications": [],
     "name": "bit BlazorUI Demo",
-    "background_color": "#010409",
+    "background_color": "#0D1117",
     "short_name": "bit BlazorUI Demo",
     "prefer_related_applications": false,
     "display_override": [ "window-controls-overlay" ],

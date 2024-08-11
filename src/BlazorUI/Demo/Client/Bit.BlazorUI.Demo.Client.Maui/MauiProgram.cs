@@ -109,10 +109,7 @@ public static class MauiProgram
                     }
                 }
 #elif ANDROID
-            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-            {
-                webView.SetBackgroundColor(Android.Graphics.Color.ParseColor("#010409"));
-            }
+            webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
