@@ -11,7 +11,8 @@
     font-family: $tg-font-family;
 
     &.bit-dis {
-        .bit-tpc-lbl {
+        .bit-tpc-lbl,
+        .bit-tpc-tdv {
             color: $clr-fg-dis;
         }
 
@@ -252,6 +253,11 @@
     overflow: hidden;
     aspect-ratio: 1;
 
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
         -webkit-appearance: none;
@@ -301,6 +307,7 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
 
@@ -320,6 +327,10 @@
     color: $clr-pri-text;
     background-color: $clr-pri;
 
+    &:disabled {
+        background-color: $clr-pri;
+    }
+
     @media (hover: hover) {
         &:hover {
             background-color: $clr-pri-hover;
@@ -338,6 +349,16 @@
     right: 0;
     max-width: spacing(5);
     aspect-ratio: 1;
+}
+
+.bit-tpc-sta {
+    width: fit-content;
+
+    .bit-tpc-cal {
+        display: block;
+        z-index: unset;
+        position: relative;
+    }
 }
 
 .bit-tpc-rsp {

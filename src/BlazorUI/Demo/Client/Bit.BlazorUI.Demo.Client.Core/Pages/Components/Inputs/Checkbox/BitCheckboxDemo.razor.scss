@@ -1,62 +1,57 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-.example-content {
-    gap: 0.5rem;
-    display: flex;
-    flex-flow: column wrap;
-    align-items: flex-start;
-}
-
-.controlled-box {
+.example-box {
     gap: 1rem;
     display: flex;
     width: fit-content;
-    margin-bottom: 1rem;
-    flex-direction: row;
 
     @include sm {
         flex-direction: column;
     }
 }
 
-.custom-checkbox {
-    gap: 0.5rem;
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-}
-
-.custom-box {
-    display: flex;
-    width: rem2(32px);
-    height: rem2(32px);
-    border: 1px solid;
-    align-items: center;
-    margin-right: rem2(5px);
-    justify-content: center;
-}
-
 ::deep {
     .custom-class {
-        color: brown;
-        padding: 1rem;
-        background-color: aquamarine;
+        padding: 0.5rem;
+        border-radius: 0.125rem;
+        background-color: #d3d3d347;
+        border: 1px solid dodgerblue;
     }
 
     .custom-label {
-        color: darkblue;
-        font-size: 18px;
         font-weight: bold;
+        color: lightseagreen;
+    }
+
+    .custom-icon {
+        color: lightseagreen
     }
 
     .custom-box {
-        border-width: 3px;
-        border-color: crimson;
+        border-radius: 0.2rem;
+        border-color: lightseagreen;
+    }
+
+    .custom-checked .custom-icon {
+        color: white
+    }
+
+    .custom-checked:hover .custom-icon {
+        color: whitesmoke;
+    }
+
+    .custom-checked .custom-box {
+        background-color: lightseagreen;
+    }
+
+    .custom-checked:hover .custom-box {
+        border-color: mediumseagreen;
     }
 
     .validation-message {
-        color: #A4262C;
         font-size: 0.75rem;
+        color: $bit-color-error;
     }
 }

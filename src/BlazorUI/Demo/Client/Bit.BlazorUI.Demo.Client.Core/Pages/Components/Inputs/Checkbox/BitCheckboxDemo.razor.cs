@@ -159,6 +159,13 @@ public partial class BitCheckboxDemo
                },
                new()
                {
+                   Name = "Checked",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the checked state of the BitCheckbox."
+               },
+               new()
+               {
                    Name = "Box",
                    Type = "string?",
                    DefaultValue = "null",
@@ -189,7 +196,6 @@ public partial class BitCheckboxDemo
     private bool oneWayIndeterminate = true;
     private bool twoWayIndeterminate = true;
 
-    private bool labelTemplateValue;
     private bool customCheckboxValue;
 
     private bool customContentValue;
@@ -214,75 +220,46 @@ public partial class BitCheckboxDemo
 
     private readonly string example1RazorCode = @"
 <BitCheckbox Label=""Basic checkbox"" />
-
 <BitCheckbox Label=""Disable checkbox"" IsEnabled=""false"" />
-
 <BitCheckbox Label=""Disable checked checkbox"" IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitCheckbox Label=""Custom check icon"" CheckIconName=""@BitIconName.Heart"" />
-
 <BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
 <BitCheckbox Label=""Reversed"" Reversed />
-
 <BitCheckbox Label=""Reversed - Disabled"" Reversed IsEnabled=""false"" />
-
 <BitCheckbox Label=""Reversed - Disable Checked"" Reversed IsEnabled=""false"" Value=""true"" />";
 
     private readonly string example4RazorCode = @"
-<style>
-    .custom-class {
-        color: brown;
-        padding: 1rem;
-        background-color: aquamarine;
-    }
-
-    .custom-label {
-        color: darkblue;
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .custom-box {
-        border-width: 3px;
-        border-color: crimson;
-    }
-</style>
-
-
-<BitCheckbox Label=""Styled checkbox"" Style=""background-color:aqua;color:red"" />
-
-<BitCheckbox Label=""Classed checkbox"" Class=""custom-class"" />
-
-
-<BitCheckbox Label=""Styles"" Styles=""@(new() { Label=""color:darkgoldenrod"", Box=""border-color:brown"", Icon=""color:red"" })"" />
-
-<BitCheckbox Label=""Classes"" Classes=""@(new() { Label=""custom-label"", Box=""custom-box"" })"" />";
+<BitCheckbox>
+    <LabelTemplate>
+        <BitTag Color=""BitColor.Success"">Label Template</BitTag>
+    </LabelTemplate>
+</BitCheckbox>";
 
     private readonly string example5RazorCode = @"
 <BitCheckbox Label=""Indeterminate checkbox"" Indeterminate />
-
 <BitCheckbox Label=""Disabled indeterminate checkbox"" Indeterminate IsEnabled=""false"" />";
 
     private readonly string example6RazorCode = @"
-<BitCheckbox Label=""One-way checked checkbox (Fixed)"" Value=""true"" />
+<BitCheckbox Label=""One-way checked (Fixed)"" Value=""true"" />
 
-<BitCheckbox Label=""One-way controlled checkbox"" Value=""oneWayValue"" />
-<BitButton OnClick=""() => oneWayValue = !oneWayValue"">@(oneWayValue ? ""Remove"" : ""Make"") Checked</BitButton>
+<BitCheckbox Label=""One-way"" Value=""oneWayValue"" />
+<BitToggleButton @bind-IsChecked=""oneWayValue"" Text=""Toggle"" />
 
 <BitCheckbox Label=""Two-way controlled checkbox"" @bind-Value=""twoWayValue"" />
-<BitButton OnClick=""() => twoWayValue = !twoWayValue"">@(twoWayValue ? ""Remove"" : ""Make"") Checked</BitButton>
+<BitToggleButton @bind-IsChecked=""twoWayValue"" Text=""Toggle"" />
 
 
-<BitCheckbox Label=""One-way indeterminate checkbox (Fixed)"" Indeterminate />
+<BitCheckbox Label=""One-way indeterminate (Fixed)"" Indeterminate />
 
-<BitCheckbox Label=""One-way Controlled indeterminate checkbox"" Indeterminate=""oneWayIndeterminate"" />
-<BitButton OnClick=""() => oneWayIndeterminate = !oneWayIndeterminate"">@(oneWayIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>
+<BitCheckbox Label=""One-way indeterminate"" Indeterminate=""oneWayIndeterminate"" />
+<BitToggleButton @bind-IsChecked=""oneWayIndeterminate"" Text=""Toggle"" />
 
-<BitCheckbox Label=""Two-way Controlled indeterminate checkbox"" @bind-Indeterminate=""twoWayIndeterminate"" />
-<BitButton OnClick=""() => twoWayIndeterminate = !twoWayIndeterminate"">@(twoWayIndeterminate ? ""Remove"" : ""Make"") Indeterminate</BitButton>";
+<BitCheckbox Label=""Two-way indeterminate"" @bind-Indeterminate=""twoWayIndeterminate"" />
+<BitToggleButton @bind-IsChecked=""twoWayIndeterminate"" Text=""Toggle"" />";
     private readonly string example6CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;
@@ -290,74 +267,99 @@ private bool oneWayIndeterminate = true;
 private bool twoWayIndeterminate = true;";
 
     private readonly string example7RazorCode = @"
-<BitCheckbox @bind-Value=""labelTemplateValue"">
-    <LabelTemplate>
-        <span style=""@(labelTemplateValue ? ""color: green;"" : ""color: red;"")"">Label Template</span>
-    </LabelTemplate>
-</BitCheckbox>";
-    private readonly string example7CsharpCode = @"
-private bool labelTemplateValue;";
-
-    private readonly string example8RazorCode = @"
-<style>
-    .custom-checkbox {
-        gap: 0.5rem;
-        display: flex;
-        cursor: pointer;
-        align-items: center;
-    }
-
-    .custom-box {
-        display: flex;
-        width: rem2(32px);
-        height: rem2(32px);
-        border: 1px solid;
-        align-items: center;
-        margin-right: rem2(5px);
-        justify-content: center;
-    }
-</style>
-
 <BitCheckbox @bind-Value=""customCheckboxValue"">
-    <div class=""custom-checkbox"">
-        <div class=""custom-box"">
-            <BitIcon IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
-        </div>
-        <span>Custom basic checkbox</span>
-    </div>
+    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+             IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
+    <span>Custom basic checkbox</span>
 </BitCheckbox>
+
 
 <BitCheckbox @bind-Value=""customContentValue"" @bind-Indeterminate=""customContentIndeterminate"">
-    <div class=""custom-checkbox"">
-        <div class=""custom-box"">
-            <BitIcon IconName=""@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
-        </div>
-        <span>Custom indeterminate checkbox</span>
-    </div>
+    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+             IconName=""@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
+    <span>Custom indeterminate checkbox</span>
 </BitCheckbox>
 <BitButton OnClick=""() => customContentIndeterminate = true"">Make Indeterminate</BitButton>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool customCheckboxValue;
 private bool customContentValue;
 private bool customContentIndeterminate = true;";
 
-    private readonly string example9RazorCode = @"
-@using System.ComponentModel.DataAnnotations;
+    private readonly string example8RazorCode = @"
+<style>
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.125rem;
+        background-color: #d3d3d347;
+        border: 1px solid dodgerblue;
+    }
 
+
+    .custom-label {
+        font-weight: bold;
+        color: lightseagreen;
+    }
+
+    .custom-icon {
+        color: lightseagreen
+    }
+
+    .custom-box {
+        border-radius: 0.2rem;
+        border-color: lightseagreen;
+    }
+
+    .custom-checked .custom-icon {
+        color: white
+    }
+
+    .custom-checked:hover .custom-icon {
+        color: whitesmoke;
+    }
+
+    .custom-checked .custom-box {
+        background-color: lightseagreen;
+    }
+
+    .custom-checked:hover .custom-box {
+        border-color: mediumseagreen;
+    }
+</style>
+
+
+<BitCheckbox Label=""Styled checkbox"" Style=""color: dodgerblue; text-shadow: lightskyblue 0 0 1rem;"" />
+
+<BitCheckbox Label=""Classed checkbox"" Class=""custom-class"" />
+
+
+<BitCheckbox Label=""Styles"" 
+             Styles=""@(new() { Checked = ""--check-color: deeppink; --icon-color: white;"", 
+                               Label = ""color: var(--check-color);"",
+                               Box = ""border-radius: 50%; border-color: var(--check-color); background-color: var(--check-color);"",
+                               Icon = ""color: var(--icon-color);"" })"" />
+
+<BitCheckbox Label=""Classes"" 
+             Classes=""@(new() { Checked = ""custom-checked"",
+                                Icon = ""custom-icon"",
+                                Label=""custom-label"",
+                                Box=""custom-box"" })"" />";
+
+    private readonly string example9RazorCode = @"
 <style>
     .validation-message {
-        color: #A4262C;
+        color: red;
         font-size: 0.75rem;
     }
 </style>
 
-<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""validationModel""
+          OnValidSubmit=""HandleValidSubmit""
+          OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
-    <div>
-        <BitCheckbox Label=""I agree with the terms and conditions."" @bind-Value=""validationModel.TermsAgreement"" />
-        <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
-    </div>
-    <br />
+    <BitCheckbox Label=""I agree with the terms and conditions.""
+                 @bind-Value=""validationModel.TermsAgreement"" />
+    <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
     private readonly string example9CsharpCode = @"
@@ -375,9 +377,7 @@ private void HandleInvalidSubmit() { }";
 
     private readonly string example10RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
-
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
-
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";
 
 }
