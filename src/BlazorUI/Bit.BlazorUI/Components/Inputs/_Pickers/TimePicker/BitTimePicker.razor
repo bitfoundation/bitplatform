@@ -74,7 +74,7 @@
                readonly="@(AllowTextInput is false)" />
     }
 
-    <div style="@Styles?.Callout" class="bit-tpc-cal @Classes?.Callout" id="@_calloutId">
+    <div style="@Styles?.Callout" class="bit-tpc-cal @Classes?.Callout" id="@_calloutId" disabled="@(IsEnabled is false)">
         <div style="@Styles?.CalloutContainer" class="bit-tpc-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
             <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
                 <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
