@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Templates;
 
-public partial class Templates04CreateProjectPage
+public partial class Templates05CreateProjectPage
 {
     private string name = "MyFirstProject";
 
@@ -188,7 +188,7 @@ public partial class Templates04CreateProjectPage
 
     private string GetWindowsCommand()
     {
-        return $"--windows {windows.SelectedBoolean} ";
+        return $"--windows {(windows.SelectedBoolean ? "true" : "false")} ";
     }
 
     private string GetAppCenterCommand()
@@ -229,18 +229,13 @@ public partial class Templates04CreateProjectPage
         return parameter.SelectedBoolean != parameter.DefaultBoolean;
     }
 
-    private void OnChangeParameter(Parameter parameter)
-    {
-        parameter.IsChanged = true;
-    }
-
     private class Parameter
     {
         public string? Selected { get; set; }
         public string? Default { get; set; }
         public bool SelectedBoolean { get; set; }
         public bool DefaultBoolean { get; set; }
-        public bool IsChanged { get; set; }
+        public bool IsChanged => Selected != Default || SelectedBoolean != DefaultBoolean;
         public BitDropdownItem<string>[]? Items { get; set; }
         public Dictionary<string, (string? installCommand, string reference, string? text)> Details { get; set; }
     }
