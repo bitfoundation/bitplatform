@@ -14,20 +14,40 @@
 
 ::deep {
     .custom-class {
-        color: brown;
-        padding: 1rem;
-        background-color: aquamarine;
+        padding: 0.5rem;
+        border-radius: 0.125rem;
+        background-color: #d3d3d347;
+        border: 1px solid dodgerblue;
     }
 
     .custom-label {
-        color: darkblue;
-        font-size: 18px;
         font-weight: bold;
+        color: lightseagreen;
+    }
+
+    .custom-icon {
+        color: lightseagreen
     }
 
     .custom-box {
-        border-width: 3px;
-        border-color: crimson;
+        border-radius: 0.2rem;
+        border-color: lightseagreen;
+    }
+
+    .custom-checked .custom-icon {
+        color: white
+    }
+
+    .custom-checked:hover .custom-icon {
+        color: whitesmoke;
+    }
+
+    .custom-checked .custom-box {
+        background-color: lightseagreen;
+    }
+
+    .custom-checked:hover .custom-box {
+        border-color: mediumseagreen;
     }
 
     .validation-message {
