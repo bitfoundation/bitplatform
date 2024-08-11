@@ -412,6 +412,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// </summary>
     [Parameter] public DateTimeOffset? StartingValue { get; set; }
 
+    /// <summary>
+    /// Whether the date-picker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Standalone { get; set; }
+
 
 
     public Task OpenCallout()
@@ -422,6 +428,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
@@ -445,6 +452,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-dtp-nbd" : string.Empty);
 
+        ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
+
         ClassBuilder.Register(() => _focusClass);
     }
 
@@ -461,6 +470,19 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
         _inputId = $"{_datePickerId}-input";
+
+        if (Standalone)
+        {
+            _isMonthPickerOverlayOnTop = false;
+            _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+            _isTimePickerOverlayOnTop = false;
+            _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+
+            if (CurrentValue.HasValue)
+            {
+                CheckCurrentCalendarMatchesCurrentValue();
+            }
+        }
 
         base.OnInitialized();
     }
@@ -532,6 +554,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnClick()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(true) is false) return;
@@ -654,7 +677,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             _currentYear--;
         }
 
-        if (AutoClose)
+        if (AutoClose && Standalone is false)
         {
             await AssignIsOpen(false);
 
@@ -920,6 +943,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
+        if (IsEnabled is false) return true;
+
         if (showYearPicker)
         {
             return _yearPickerStartYear == todayYear - 1
@@ -1011,6 +1036,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYearRange(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) < _yearPickerStartYear + 12) ||
                 (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) >= _yearPickerStartYear)
@@ -1380,6 +1407,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task<bool> ToggleCallout()
     {
+        if (Standalone) return false;
         if (IsEnabled is false) return false;
 
         _isMonthPickerOverlayOnTop = false;

@@ -33,6 +33,16 @@
             color: $clr-fg-dis;
             background: none $clr-bg-dis;
         }
+
+        .bit-dtp-pkt,
+        .bit-dtp-nbt,
+        .bit-dtp-wlb,
+        .bit-dtp-dbt,
+        .bit-dtp-pkb,
+        .bit-dtp-ptb,
+        .bit-dtp-tdv {
+            color: $clr-fg-dis;
+        }
     }
 
     &.bit-inv {
@@ -456,6 +466,16 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+
+    &:disabled {
+        pointer-events: none;
+        background-color: transparent;
+
+        .bit-dtp-gti,
+        .bit-icon {
+            color: $clr-fg-dis;
+        }
+    }
 }
 
 .bit-dtp-nbc {
@@ -541,6 +561,7 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
 
@@ -710,6 +731,11 @@
         border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
         outline: none;
     }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-dtp-bam,
@@ -721,6 +747,10 @@
 .bit-dtp-bns {
     color: $clr-pri-text;
     background-color: $clr-pri;
+
+    &:disabled {
+        background-color: $clr-pri;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -775,5 +805,18 @@
 .bit-dtp-nbd {
     .bit-dtp-icn {
         border: none;
+    }
+}
+
+.bit-dtp-sta {
+    width: fit-content;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+
+    .bit-dtp-cal {
+        display: block;
+        z-index: unset;
+        position: relative;
     }
 }
