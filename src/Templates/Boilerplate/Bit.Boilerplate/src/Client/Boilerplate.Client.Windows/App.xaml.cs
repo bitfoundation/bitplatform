@@ -3,6 +3,9 @@ using System.IO;
 using System.Windows;
 using System.Text.Json;
 using System.Collections;
+using Microsoft.Win32;
+using System.Windows.Media;
+using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Windows;
 
@@ -14,6 +17,15 @@ public partial class App
 
         var splash = new SplashScreen(typeof(App).Assembly, @"Resources\SplashScreen.png");
         splash.Show(autoClose: true, topMost: true);
+
+        Resources["BackgroundColorPrimary"] = new BrushConverter().ConvertFrom(IsDarkTheme() ? ThemeColors.BackgroundColorPrimaryDark : ThemeColors.BackgroundColorPrimaryLight);
+    }
+
+    private static bool IsDarkTheme()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+        var value = key?.GetValue("AppsUseLightTheme");
+        return value is int i && i == 0;
     }
 
     const string WindowsStorageFilename = "windows.storage.json";

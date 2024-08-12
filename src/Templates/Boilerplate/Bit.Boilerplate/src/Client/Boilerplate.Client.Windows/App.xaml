@@ -5,4 +5,10 @@
     DispatcherUnhandledException="App_DispatcherUnhandledException"
     Exit="App_Exit"
     Startup="App_Startup"
-    StartupUri="MainWindow.xaml" />
+    StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="BackgroundColorPrimary">#0D2960</SolidColorBrush>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
