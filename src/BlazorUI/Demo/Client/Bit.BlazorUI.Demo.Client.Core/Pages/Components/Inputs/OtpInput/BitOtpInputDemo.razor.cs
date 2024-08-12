@@ -228,23 +228,45 @@ public partial class BitOtpInputDemo
     private readonly string example4RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem;
-        max-width: max-content;
-        background-color: lightskyblue;
+        gap: 1rem;
+        margin-inline: 1rem;
+    }
+
+    .custom-class input {
+        border-radius: 0;
+        border-width: 0 0 1px 0;
+        border-color: lightseagreen;
+    }
+
+
+    .custom-root {
+        margin-inline: 1rem;
     }
 
     .custom-input {
         border-radius: 50%;
-        border: 1px solid red;
+        border: 1px solid tomato;
+    }
+
+    .custom-focused {
+        border-color: red;
         box-shadow: tomato 0 0 1rem;
     }
 </style>
 
-<BitOtpInput Style=""box-shadow:aqua 0 0 0.5rem;max-width:max-content;"" />
+
+<BitOtpInput Style=""margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;"" />
+
 <BitOtpInput Class=""custom-class"" />
 
-<BitOtpInput Styles=""@(new() { Input = ""padding:0.5rem;background-color:goldenrod""})"" />
-<BitOtpInput Classes=""@(new() { Input = ""custom-input""})"" />";
+
+<BitOtpInput Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                               Input = ""border-color: blueviolet;"",
+                               Focused = ""box-shadow: blueviolet 0 0 1rem;"" })"" />
+
+<BitOtpInput Classes=""@(new() { Root = ""custom-root"",
+                                Input = ""custom-input"",
+                                Focused = ""custom-focused"" })"" />";
 
     private readonly string example5RazorCode = @"
 <BitOtpInput Value=""@oneWayValue"" />

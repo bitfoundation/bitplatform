@@ -13,6 +13,8 @@
                ComponentPublicMembers="componentPublicMembers">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>Basic usage examples of BitOtpInput, including different lengths, disabled state, and autofocus.</div>
+            <br />
             <div class="example-box">
                 <div class="lbl">Basic</div>
                 <BitOtpInput />
@@ -31,6 +33,8 @@
 
     <ComponentExampleBox Title="InputType" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
+            <div>Set different input types for the OTP input: text, number, and password.</div>
+            <br />
             <div class="example-box">
                 <div class="lbl">Text</div>
                 <BitOtpInput InputType="BitOtpInputType.Text" />
@@ -46,6 +50,8 @@
 
     <ComponentExampleBox Title="Directions" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
+            <div>Demonstrating various layout directions for BitOtpInput: default, reversed, vertical, and reversed vertical.</div>
+            <br />
             <div class="example-box">
                 <div class="lbl">Default</div>
                 <BitOtpInput />
@@ -64,24 +70,32 @@
 
     <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
+            <div>Explore styling and class customization for BitOtpInput, including component styles, custom classes, and detailed styles.</div>
+            <br /><br />
             <div class="example-box">
-                <div class="lbl">Component's Style & Class:</div>
-                <BitOtpInput Style="box-shadow:aqua 0 0 0.5rem;max-width:max-content;" />
+                <div>Component's Style & Class:</div><br />
+                <BitOtpInput Style="margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;" />
                 <br />
                 <BitOtpInput Class="custom-class" />
                 <br />
                 <br />
                 <br />
-                <div class="lbl"><b>Styles</b> & <b>Classes</b>:</div>
-                <BitOtpInput Styles="@(new() { Input = "padding:0.5rem;background-color:goldenrod"})" />
+                <div><b>Styles</b> & <b>Classes</b>:</div><br />
+                <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
+                                               Input = "border-color: blueviolet;",
+                                               Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
                 <br />
-                <BitOtpInput Classes="@(new() { Input = "custom-input"})" />
+                <BitOtpInput Classes="@(new() { Root = "custom-root",
+                                                Input = "custom-input",
+                                                Focused = "custom-focused" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
+            <div>Examples of one-way and two-way data binding with BitOtpInput.</div>
+            <br />
             <div class="example-box">
                 <div class="lbl">One-way</div>
                 <BitOtpInput Value="@oneWayValue" />
@@ -96,6 +110,8 @@
 
     <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
+            <div>Handle various events in BitOtpInput, including change, fill, focus, input, keydown, and paste events.</div>
+            <br />
             <div class="example-box">
                 <div class="lbl">OnChange</div>
                 <BitOtpInput OnChange="v => onChangeValue = v" />
@@ -135,6 +151,8 @@
 
     <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
+            <div>Use data annotations to validate the OTP input component in a form submission scenario.</div>
+            <br />
             <div class="example-box">
                 @if (formIsValidSubmit is false)
                 {
@@ -161,7 +179,9 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
-            <div class="example-box">
+            <div>Use the BitOtpInput component in a right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl" class="example-box">
                 <div class="lbl">Default</div>
                 <BitOtpInput Dir="BitDir.Rtl" />
                 <br />
