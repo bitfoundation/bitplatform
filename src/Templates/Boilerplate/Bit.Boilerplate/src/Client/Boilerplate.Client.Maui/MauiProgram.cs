@@ -3,7 +3,9 @@ using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
 using Microsoft.Maui.LifecycleEvents;
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Styles;
+using Boilerplate.Client.Maui.Services;
+using Microsoft.Maui.Platform;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -55,7 +57,7 @@ public static partial class MauiProgram
                     {
                         var url = $"{userActivity.WebPageUrl.Path}?{userActivity.WebPageUrl.Query}";
 
-                        _ = Routes.OpenUniversalLink(url);
+                        _ = Core.Routes.OpenUniversalLink(url);
 
                         return true;
                     }
@@ -94,11 +96,10 @@ public static partial class MauiProgram
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", static (handler, view) =>
         {
             var webView = handler.PlatformView;
+            var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
+                ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor;
 #if Windows
-            if (AppInfo.Current.RequestedTheme == AppTheme.Dark)
-            {
-                webView.DefaultBackgroundColor = Microsoft.UI.Colors.Black;
-            }
+            webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
             if (AppEnvironment.IsDev() is false)
             {
@@ -132,7 +133,7 @@ public static partial class MauiProgram
                 }
             }
 #elif Android
-            webView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));
 
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 

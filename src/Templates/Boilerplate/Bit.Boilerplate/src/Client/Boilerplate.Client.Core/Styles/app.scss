@@ -2,6 +2,11 @@
     --bit-status-bar-height: 0px;
 }
 
+:root[bit-theme="dark"] {
+    --bit-clr-bg-pri: #000000;
+    // In case you need to change the background color, make sure to also update ThemeColors.cs's PrimaryDarkBgColor accordingly.
+}
+
 * {
     box-sizing: border-box;
     font-family: "Segoe UI";

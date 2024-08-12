@@ -3,11 +3,31 @@ using System.IO;
 using System.Windows;
 using System.Text.Json;
 using System.Collections;
+using Microsoft.Win32;
+using System.Windows.Media;
+using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Windows;
 
 public partial class App
 {
+    public App()
+    {
+        InitializeComponent();
+
+        var splash = new SplashScreen(typeof(App).Assembly, @"Resources\SplashScreen.png");
+        splash.Show(autoClose: true, topMost: true);
+
+        Resources["PrimaryBgColor"] = new BrushConverter().ConvertFrom(IsDarkTheme() ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor);
+    }
+
+    private static bool IsDarkTheme()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+        var value = key?.GetValue("AppsUseLightTheme");
+        return value is int i && i == 0;
+    }
+
     const string WindowsStorageFilename = "windows.storage.json";
 
     private void App_Startup(object sender, StartupEventArgs e)
@@ -38,7 +58,7 @@ public partial class App
     {
         try
         {
-            ((MainWindow)MainWindow).BlazorWebView.Services.GetRequiredService<IExceptionHandler>().Handle(e.Exception);
+            ((MainWindow)MainWindow).AppWebView.Services.GetRequiredService<IExceptionHandler>().Handle(e.Exception);
         }
         catch { }
 
