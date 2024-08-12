@@ -8,7 +8,7 @@
     BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.BackgroundColorPrimaryLight},
                                       Dark={x:Static themeColors:ThemeColors.BackgroundColorPrimaryDark}}">
     <b:BlazorWebView
-        x:Name="blazorWebView"
+        x:Name="AppWebView"
         BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.BackgroundColorPrimaryLight},
                                           Dark={x:Static themeColors:ThemeColors.BackgroundColorPrimaryDark}}"
         HostPage="wwwroot/index.html">

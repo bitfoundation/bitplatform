@@ -26,7 +26,7 @@ public partial class Program
         {
             try
             {
-                var services = await App.Current.Dispatcher.InvokeAsync(() => ((MainWindow)App.Current.MainWindow).BlazorWebView.Services);
+                var services = await App.Current.Dispatcher.InvokeAsync(() => ((MainWindow)App.Current.MainWindow).AppWebView.Services);
                 var windowsUpdateSettings = services.GetRequiredService<IOptionsSnapshot<WindowsUpdateSettings>>().Value;
                 if (windowsUpdateSettings?.FilesUrl is null)
                 {

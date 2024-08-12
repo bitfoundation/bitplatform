@@ -12,7 +12,7 @@
     mc:Ignorable="d">
     <Grid>
         <blazor:BlazorWebView
-            x:Name="BlazorWebView"
+            x:Name="AppWebView"
             x:FieldModifier="public"
             HostPage="wwwroot\index.html">
             <blazor:BlazorWebView.RootComponents>

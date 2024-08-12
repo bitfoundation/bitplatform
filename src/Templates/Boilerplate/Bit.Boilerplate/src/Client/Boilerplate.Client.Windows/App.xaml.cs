@@ -58,7 +58,7 @@ public partial class App
     {
         try
         {
-            ((MainWindow)MainWindow).BlazorWebView.Services.GetRequiredService<IExceptionHandler>().Handle(e.Exception);
+            ((MainWindow)MainWindow).AppWebView.Services.GetRequiredService<IExceptionHandler>().Handle(e.Exception);
         }
         catch { }
 
