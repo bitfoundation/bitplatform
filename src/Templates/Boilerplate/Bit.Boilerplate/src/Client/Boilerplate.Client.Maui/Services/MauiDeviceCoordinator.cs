@@ -1,4 +1,6 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Styles;
+
 namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
@@ -25,10 +27,6 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
 #endif
     }
 
-    public static readonly string BackgroundColorPrimaryDark = "#000000";
-    public static readonly string BackgroundColorPrimaryLight = "#FFFFFF";
-    // In case you need to change the background color, make sure to also update app.scss's --bit-clr-bg-pri accordingly.
-
     public async Task ApplyTheme(bool isDark)
     {
         Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;
@@ -40,7 +38,7 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(isDark ? BackgroundColorPrimaryDark : BackgroundColorPrimaryLight));
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(isDark ? ThemeColors.BackgroundColorPrimaryDark : ThemeColors.BackgroundColorPrimaryLight));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>

@@ -4,7 +4,7 @@
 
 :root[bit-theme="dark"] {
     --bit-clr-bg-pri: #000000;
-    // In case you need to change the background color, make sure to also update MauiDeviceCoordinator.BackgroundColorPrimaryDark accordingly.
+    // In case you need to change the background color, make sure to also update ThemeColors.cs's BackgroundColorPrimaryDark accordingly.
 }
 
 * {

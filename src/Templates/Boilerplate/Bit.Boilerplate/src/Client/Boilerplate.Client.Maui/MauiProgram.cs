@@ -3,7 +3,9 @@ using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
 using Microsoft.Maui.LifecycleEvents;
+using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
+using Microsoft.Maui.Platform;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -95,10 +97,9 @@ public static partial class MauiProgram
         {
             var webView = handler.PlatformView;
             var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
-                MauiDeviceCoordinator.BackgroundColorPrimaryDark : MauiDeviceCoordinator.BackgroundColorPrimaryLight;
+                ThemeColors.BackgroundColorPrimaryDark : ThemeColors.BackgroundColorPrimaryLight;
 #if Windows
-
-            webView.DefaultBackgroundColor = webView.DefaultBackgroundColor = (Windows.UI.Color)Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(Windows.UI.Color), webViewBackgroundColor);
+            webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
             if (AppEnvironment.IsDev() is false)
             {

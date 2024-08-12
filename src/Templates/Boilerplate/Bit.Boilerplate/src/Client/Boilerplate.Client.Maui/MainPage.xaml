@@ -4,13 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:core="clr-namespace:Boilerplate.Client.Core;assembly=Boilerplate.Client.Core"
-    xmlns:maui="clr-namespace:Boilerplate.Client.Maui.Services"
-    BackgroundColor="{AppThemeBinding Light={x:Static maui:MauiDeviceCoordinator.BackgroundColorPrimaryLight},
-                                      Dark={x:Static maui:MauiDeviceCoordinator.BackgroundColorPrimaryDark}}">
+    xmlns:themeColors="clr-namespace:Boilerplate.Client.Core.Styles;assembly=Boilerplate.Client.Core"
+    BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.BackgroundColorPrimaryLight},
+                                      Dark={x:Static themeColors:ThemeColors.BackgroundColorPrimaryDark}}">
     <b:BlazorWebView
         x:Name="blazorWebView"
-        BackgroundColor="{AppThemeBinding Light={x:Static maui:MauiDeviceCoordinator.BackgroundColorPrimaryLight},
-                                          Dark={x:Static maui:MauiDeviceCoordinator.BackgroundColorPrimaryDark}}"
+        BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.BackgroundColorPrimaryLight},
+                                          Dark={x:Static themeColors:ThemeColors.BackgroundColorPrimaryDark}}"
         HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
             <b:RootComponent ComponentType="{x:Type core:Routes}" Selector="#app-container" />
