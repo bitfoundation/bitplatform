@@ -97,7 +97,7 @@ public static partial class MauiProgram
         {
             var webView = handler.PlatformView;
             var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
-                ThemeColors.BackgroundColorPrimaryDark : ThemeColors.BackgroundColorPrimaryLight;
+                ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor;
 #if Windows
             webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 

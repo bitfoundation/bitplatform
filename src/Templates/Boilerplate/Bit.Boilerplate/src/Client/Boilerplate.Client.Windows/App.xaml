@@ -8,7 +8,7 @@
     StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <SolidColorBrush x:Key="BackgroundColorPrimary">#0D2960</SolidColorBrush>
+            <SolidColorBrush x:Key="PrimaryBgColor">#0D2960</SolidColorBrush>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

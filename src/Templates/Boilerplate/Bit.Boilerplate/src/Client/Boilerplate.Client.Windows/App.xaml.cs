@@ -18,7 +18,7 @@ public partial class App
         var splash = new SplashScreen(typeof(App).Assembly, @"Resources\SplashScreen.png");
         splash.Show(autoClose: true, topMost: true);
 
-        Resources["BackgroundColorPrimary"] = new BrushConverter().ConvertFrom(IsDarkTheme() ? ThemeColors.BackgroundColorPrimaryDark : ThemeColors.BackgroundColorPrimaryLight);
+        Resources["PrimaryBgColor"] = new BrushConverter().ConvertFrom(IsDarkTheme() ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor);
     }
 
     private static bool IsDarkTheme()
