@@ -1,27 +1,38 @@
-﻿.example-box {
-    display: flex;
-    max-width: max-content;
-    flex-flow: column nowrap;
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-    .lbl {
-        margin-bottom: 0.25rem;
-    }
+.example-box {
+    display: flex;
+    align-items: flex-start;
+    flex-flow: column nowrap;
 }
 
 ::deep {
     .custom-class {
-        padding: 1rem;
-        max-width: max-content;
-        background-color: lightskyblue;
+        gap: 1rem;
+        margin-inline: 1rem;
+    }
+
+    .custom-class input {
+        border-radius: 0;
+        border-width: 0 0 1px 0;
+        border-color: lightseagreen;
+    }
+
+    .custom-root {
+        margin-inline: 1rem;
     }
 
     .custom-input {
         border-radius: 50%;
-        border: 1px solid red;
+        border: 1px solid tomato;
+    }
+
+    .custom-focused {
+        border-color: red;
         box-shadow: tomato 0 0 1rem;
     }
 
     .validation-message {
-        color: red;
+        color: $bit-color-error;
     }
 }
