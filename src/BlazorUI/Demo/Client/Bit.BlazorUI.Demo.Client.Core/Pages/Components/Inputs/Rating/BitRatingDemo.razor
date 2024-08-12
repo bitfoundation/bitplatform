@@ -11,17 +11,15 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>Basic usage examples of BitRating, including disabled and readonly states.</div>
+            <br />
             <div class="example-box">
                 <div>Basic:</div>
                 <BitRating />
-
                 <br />
-
                 <div>Disabled:</div>
                 <BitRating IsEnabled="false" DefaultValue="2" />
-
                 <br />
-
                 <div>ReadOnly:</div>
                 <BitRating ReadOnly DefaultValue="3.5" />
             </div>
@@ -30,6 +28,8 @@
 
     <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
+            <div>Demonstrating different visibility options: visible, hidden, and collapsed.</div>
+            <br />
             <div class="example-box">
                 <div style="display:flex;align-items:center">Visible: [ <BitRating Visibility="BitVisibility.Visible" /> ]</div>
                 <div style="display:flex;align-items:center">Hidden: [ <BitRating Visibility="BitVisibility.Hidden" /> ]</div>
@@ -40,30 +40,32 @@
 
     <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example2">
         <ExamplePreview>
+            <div>Explore styling and class customization for BitRating, including component styles, custom classes, and detailed styles.</div>
+            <br /><br />
             <div class="example-box">
-                <div>Component's Style & Class:</div>
-                <BitRating Style="background-color: #888; border-radius: 1rem; margin: 1rem 0" />
-                <BitRating Class="custom-class" />
-
+                <div>Component's Style & Class:</div><br />
+                <div style="max-width: max-content;">
+                    <BitRating Style="padding-inline: 0.5rem; margin-inline: 1rem; box-shadow: tomato 0 0 1rem; border-radius: 1rem;" />
+                    <br />
+                    <BitRating Class="custom-class" />
+                </div>
                 <br /><br />
-
-                <div>Styles & Classes:</div>
-                <BitRating Styles="@(new() { IconContainer = "background-color: tomato; border-radius: 0.5rem",
-                                             Button = "padding: 0.5rem; background-color: goldenrod" })" />
-                <BitRating Classes="@(new() { SelectedIcon = "custom-selected",
-                                              UnselectedIcon = "custom-unselected" })" />
+                <div>Styles & Classes:</div><br />
+                <BitRating Styles="@(new() { SelectedIcon = "color: blueviolet;", UnselectedIcon = "color: blueviolet;" })" />
+                <br />
+                <BitRating Classes="@(new() { SelectedIcon = "custom-selected", UnselectedIcon = "custom-unselected" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Max value" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
+            <div>Adjust the maximum rating value to customize the rating scale.</div>
+            <br />
             <div class="example-box">
                 <div>Max is 6</div>
                 <BitRating Max="6" />
-
                 <br />
-
                 <div style="width: 200px;">
                     <div>Max is 100</div>
                     <BitRating Max="100" />
@@ -74,17 +76,15 @@
 
     <ComponentExampleBox Title="Icons" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
+            <div>Customize the rating icons to better match the context, such as hearts, checkboxes, or likes.</div>
+            <br />
             <div class="example-box">
                 <div>Heart:</div>
                 <BitRating SelectedIconName="@BitIconName.HeartFill" UnselectedIconName="@BitIconName.Heart" />
-
                 <br />
-
                 <div>Checkbox:</div>
                 <BitRating SelectedIconName="@BitIconName.CheckboxCompositeReversed" UnselectedIconName="@BitIconName.Checkbox" />
-
                 <br />
-
                 <div>Like:</div>
                 <BitRating SelectedIconName="@BitIconName.LikeSolid" UnselectedIconName="@BitIconName.Dislike" />
             </div>
@@ -93,17 +93,15 @@
 
     <ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
+            <div>Set different sizes for the rating component: small, medium, and large.</div>
+            <br />
             <div class="example-box">
                 <div>Small:</div>
                 <BitRating Size="BitSize.Small" />
-
                 <br />
-
                 <div>Medium:</div>
                 <BitRating Size="BitSize.Medium" />
-
                 <br />
-
                 <div>Large:</div>
                 <BitRating Size="BitSize.Large" />
             </div>
@@ -112,19 +110,17 @@
 
     <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
+            <div>Examples of one-way and two-way data binding with BitRating, as well as change event handling.</div>
+            <br />
             <div class="example-box">
                 <div>One-way:</div>
                 <BitRating AllowZeroStars="true" Value="oneWayBinding" />
                 <BitToggleButton OnChange="v => oneWayBinding = v ? 5 : 0" Text="@(oneWayBinding == 5 ? "Unstar All" : "Star All")" />
-
                 <br />
-
                 <div>Two-way:</div>
                 <BitRating @bind-Value="twoWayBinding" />
                 <BitSpinButton @bind-Value="twoWayBinding" />
-
                 <br />
-
                 <div>OnChange:</div>
                 <BitRating DefaultValue="2" OnChange="v => onChangeValue = v" />
                 <BitLabel>Changed Value: @onChangeValue</BitLabel>
@@ -134,6 +130,8 @@
 
     <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
+            <div>Validate the rating component using data annotations in a form submission.</div>
+            <br />
             <div class="example-box">
                 @if (string.IsNullOrEmpty(SuccessMessage))
                 {
@@ -159,7 +157,9 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
-            <div class="example-box">
+            <div>Use the BitRating component in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl" class="example-box">
                 <BitRating Dir="BitDir.Rtl" />
             </div>
         </ExamplePreview>

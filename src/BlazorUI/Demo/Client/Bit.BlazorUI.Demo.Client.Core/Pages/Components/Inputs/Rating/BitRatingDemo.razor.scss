@@ -1,4 +1,6 @@
-﻿.example-box {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.example-box {
     display: flex;
     width: fit-content;
     flex-direction: column;
@@ -6,20 +8,26 @@
 
 ::deep {
     .custom-class {
-        padding: 0.5rem;
-        border: 1px solid red;
-        max-width: max-content;
+        margin-inline: 1rem;
+        border-radius: 0.25rem;
+        padding-inline: 0.5rem;
+        border: 1px solid dodgerblue;
+        box-shadow: dodgerblue 0 0 1rem;
     }
 
     .custom-selected {
-        color: blueviolet;
+        color: seagreen;
     }
 
     .custom-unselected {
-        color: darkorange;
+        color: mediumseagreen;
+    }
+
+    .custom-unselected:hover {
+        color: lightseagreen;
     }
 
     .validation-message {
-        color: red;
+        color: $bit-color-error;
     }
 }
