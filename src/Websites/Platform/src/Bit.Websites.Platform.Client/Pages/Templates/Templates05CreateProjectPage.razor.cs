@@ -4,102 +4,67 @@ namespace Bit.Websites.Platform.Client.Pages.Templates;
 
 public partial class Templates05CreateProjectPage
 {
-    private double verticalSpacing = 1;
-    private double horizontalSpacing = 1;
     private string name = "MyFirstProject";
 
-    private Parameter windows = new()
+    private Parameter<bool> windows = new()
     {
-        SelectedBoolean = true,
-        DefaultBoolean = true,
+        Value = true,
+        Default = true,
     };
 
-    private Parameter appCenter = new()
+    private Parameter<bool> appCenter = new()
     {
-        SelectedBoolean = false,
-        DefaultBoolean = false,
+        Value = false,
+        Default = false,
     };
 
-    private Parameter offlineDb = new()
+    private Parameter<bool> offlineDb = new()
     {
-        SelectedBoolean = false,
-        DefaultBoolean = false,
+        Value = false,
+        Default = false,
     };
 
-    private Parameter appInsight = new()
+    private Parameter<bool> appInsight = new()
     {
-        SelectedBoolean = false,
-        DefaultBoolean = false,
+        Value = false,
+        Default = false,
     };
 
-    private Parameter captcha = new()
+    private Parameter<string> captcha = new()
     {
-        Selected = "reCaptcha",
+        Value = "reCaptcha",
         Default = "reCaptcha",
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },
-        ],
-        Details = new()
-        {
-            ["reCaptcha"] = new DetailItem()
-            {
-                Text = "To integrate Google reCAPTCHA into the Sign Up page, include --captcha reCaptcha in the dotnet new command."
-            }
-        }
+        ]
     };
 
-    private Parameter pipeline = new()
+    private Parameter<string> pipeline = new()
     {
-        Selected = "GitHub",
+        Value = "GitHub",
         Default = "GitHub",
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "GitHub", Value = "GitHub" },
             new() { Text = "Azure", Value = "Azure" },
-        ],
-        Details = new()
-        {
-            ["GitHub"] = new DetailItem()
-            {
-                Command = "--pipeline GitHub",
-                Reference = "https://github.com/features/actions",
-                Text = "Github Actions"
-            },
-            ["Azure"] = new DetailItem()
-            {
-                Command = "--pipeline Azure",
-                Reference = "https://azure.microsoft.com/en-us/products/devops/pipelines",
-                Text = "Azure Devops"
-            }
-        }
+        ]
     };
 
-    private Parameter sample = new()
+    private Parameter<string> sample = new()
     {
-        Selected = "None",
+        Value = "None",
         Default = "None",
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
             new() { Text = "Todo", Value = "Todo" },
-        ],
-        Details = new()
-        {
-            ["Admin"] = new DetailItem()
-            {
-                Reference = "https://adminpanel.bitplatform.dev/"
-            },
-            ["Todo"] = new DetailItem()
-            {
-                Reference = "https://todo.bitplatform.dev/"
-            }
-        }
+        ]
     };
 
-    private Parameter database = new()
+    private Parameter<string> database = new()
     {
-        Selected = "Sqlite",
+        Value = "Sqlite",
         Default = "Sqlite",
         Items = [
             new() { Text = "Sqlite", Value = "Sqlite" },
@@ -108,128 +73,80 @@ public partial class Templates05CreateProjectPage
             new() { Text = "MySQL", Value = "MySQL" },
             new() { Text = "Cosmos", Value = "Cosmos" },
             new() { Text = "Other", Value = "Other" },
-        ],
-        Details = new()
-        {
-            ["Sqlite"] = new DetailItem()
-            {
-                Reference = "https://www.sqlite.org/download.html"
-            },
-            ["SqlServer"] = new DetailItem()
-            {
-                Reference = "https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb",
-                Text = "LocalDB is insalled by default along with Visual Studio."
-            },
-            ["PostgreSQL"] = new DetailItem()
-            {
-                Command = "winget install --id=PostgreSQL.PostgreSQL.14  -e",
-                Reference = "https://www.postgresql.org/download/"
-            },
-            ["MySQL"] = new DetailItem()
-            {
-                Reference = "https://mariadb.org/download",
-                Text = "Maria db is supported as well."
-            },
-            ["Cosmos"] = new DetailItem()
-            {
-                Command = "winget install -e --id Microsoft.Azure.CosmosEmulator",
-                Reference = "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql"
-            }
-        }
+        ]
     };
 
-    private Parameter fileStorage = new()
+    private Parameter<string> fileStorage = new()
     {
-        Selected = "Local",
+        Value = "Local",
         Default = "Local",
         Items = [
             new() { Text = "Local", Value = "Local" },
             new() { Text = "AzureBlobStorage", Value = "AzureBlobStorage" },
             new() { Text = "Other", Value = "Other" },
-        ],
-        Details = new()
-        {
-            ["AzureBlobStorage"] = new DetailItem()
-            {
-                Reference = "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite"
-            }
-        }
+        ]
     };
 
-    private Parameter api = new()
+    private Parameter<string> api = new()
     {
-        Selected = "Integrated",
+        Value = "Integrated",
         Default = "Integrated",
         Items = [
             new() { Text = "Integrated", Value = "Integrated" },
             new() { Text = "Standalone", Value = "Standalone" },
-        ],
-        Details = new()
-        {
-            ["Integrated"] = new DetailItem()
-            {
-                Text = @"If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project, 
-hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.",
-                Image = "api-integrated.webp"
-            },
-            ["Standalone"] = new DetailItem()
-            {
-                Text = "Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.",
-                Image = "api-standalone.webp"
-            }
-        }
+        ]
     };
 
     private string GetFinalCommand()
     {
         StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
 
-        if (IncludeCommand(captcha))
+        if (captcha.IsModified)
         {
             finalCommand.Append(GetCaptchaCommand());
         }
 
-        if (IncludeCommand(pipeline))
+        if (pipeline.IsModified)
         {
             finalCommand.Append(GetPipelineCommand());
         }
 
-        if (IncludeCommand(sample))
+        if (sample.IsModified)
         {
             finalCommand.Append(GetSampleCommand());
         }
 
-        if (IncludeCommand(windows))
+        if (windows.IsModified)
         {
             finalCommand.Append(GetWindowsCommand());
         }
 
-        if (IncludeCommand(appCenter))
+        if (appCenter.IsModified)
         {
             finalCommand.Append(GetAppCenterCommand());
         }
 
-        if (IncludeCommand(database))
+        if (database.IsModified)
         {
             finalCommand.Append(GetDatabaseCommand());
         }
 
-        if (IncludeCommand(fileStorage))
+        if (fileStorage.IsModified)
         {
             finalCommand.Append(GetFileStorageCommand());
         }
 
-        if (IncludeCommand(api))
+        if (api.IsModified)
         {
             finalCommand.Append(GetApiCommand());
         }
 
-        if (IncludeCommand(offlineDb))
+        if (offlineDb.IsModified)
         {
             finalCommand.Append(GetOfflineDbCommand());
         }
 
-        if (IncludeCommand(appInsight))
+        if (appInsight.IsModified)
         {
             finalCommand.Append(GetAppInsightsCommand());
         }
@@ -244,77 +161,59 @@ hence provides options for various modes such as Blazor Auto, Blazor Server, pre
 
     private string GetCaptchaCommand()
     {
-        return $"--captcha {captcha.Selected} ";
+        return $"--captcha {captcha.Value} ";
     }
 
     private string GetPipelineCommand()
     {
-        return $"--pipeline {pipeline.Selected} ";
+        return $"--pipeline {pipeline.Value} ";
     }
 
     private string GetSampleCommand()
     {
-        return $"--sample {sample.Selected} ";
+        return $"--sample {sample.Value} ";
     }
 
     private string GetWindowsCommand()
     {
-        return $"--windows {windows.SelectedBoolean.ToString().ToLowerInvariant()} ";
+        return $"--windows {windows.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetAppCenterCommand()
     {
-        return $"--appCenter {appCenter.SelectedBoolean.ToString().ToLowerInvariant()} ";
+        return $"--appCenter {appCenter.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetDatabaseCommand()
     {
-        return $"--database {database.Selected} ";
+        return $"--database {database.Value} ";
     }
 
     private string GetFileStorageCommand()
     {
-        return $"--fluentStorage {fileStorage.Selected} ";
+        return $"--fluentStorage {fileStorage.Value} ";
     }
 
     private string GetApiCommand()
     {
-        return $"--api {api.Selected} ";
+        return $"--api {api.Value} ";
     }
 
     private string GetOfflineDbCommand()
     {
-        return $"--offlineDb {offlineDb.SelectedBoolean.ToString().ToLowerInvariant()} ";
+        return $"--offlineDb {offlineDb.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetAppInsightsCommand()
     {
-        return $"--appinsights {appInsight.SelectedBoolean.ToString().ToLowerInvariant()} ";
+        return $"--appinsights {appInsight.Value.ToString().ToLowerInvariant()} ";
     }
 
-    private bool IncludeCommand(Parameter parameter)
+    private class Parameter<T>
     {
-        if (parameter.Selected is not null)
-            return !string.Equals(parameter.Selected, parameter.Default, StringComparison.InvariantCultureIgnoreCase);
-
-        return parameter.SelectedBoolean != parameter.DefaultBoolean;
-    }
-
-    private class Parameter
-    {
-        public string? Selected { get; set; }
-        public string? Default { get; set; }
-        public bool SelectedBoolean { get; set; }
-        public bool DefaultBoolean { get; set; }
+        public T? Value { get; set; }
+        public T? Default { get; set; }
         public BitDropdownItem<string>[]? Items { get; set; }
-        public Dictionary<string, DetailItem> Details { get; set; }
-    }
-
-    public class DetailItem
-    {
-        public string? Command { get; set; }
-        public string? Reference { get; set; }
-        public string? Text { get; set; }
-        public string? Image { get; set; }
+        public bool IsModified => EqualityComparer<T>.Default.Equals(Default, Value) is false;
     }
 }
