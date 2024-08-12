@@ -200,28 +200,35 @@ Collapsed: [ <BitRating Visibility=""""BitVisibility.Collapsed"""" /> ]";
     private readonly string example3RazorCode = @"
 <style>
     .custom-class {
-        padding: 0.5rem;
-        border: 1px solid red;
-        max-width: max-content;
+        margin-inline: 1rem;
+        border-radius: 0.25rem;
+        padding-inline: 0.5rem;
+        border: 1px solid dodgerblue;
+        box-shadow: dodgerblue 0 0 1rem;
     }
 
     .custom-selected {
-        color: blueviolet;
+        color: seagreen;
     }
 
     .custom-unselected {
-        color: darkorange;
+        color: mediumseagreen;
+    }
+
+    .custom-unselected:hover {
+        color: lightseagreen;
     }
 </style>
 
 
-<BitRating Style=""background-color: #888; border-radius: 1rem; margin: 1rem 0"" />
+<BitRating Style=""padding-inline: 0.5rem; margin-inline: 1rem; box-shadow: tomato 0 0 1rem; border-radius: 1rem;"" />
+
 <BitRating Class=""custom-class"" />
 
-<BitRating Styles=""@(new() { IconContainer = ""background-color: tomato; border-radius: 0.5rem"",
-                             Button = ""padding: 0.5rem; background-color: goldenrod"" })"" />
-<BitRating Classes=""@(new() { SelectedIcon = ""custom-selected"",
-                              UnselectedIcon = ""custom-unselected"" })"" />";
+
+<BitRating Styles=""@(new() { SelectedIcon = ""color: blueviolet;"", UnselectedIcon = ""color: blueviolet;"" })"" />
+
+<BitRating Classes=""@(new() { SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />";
 
     private readonly string example4RazorCode = @"
 <BitRating Max=""6"" />
