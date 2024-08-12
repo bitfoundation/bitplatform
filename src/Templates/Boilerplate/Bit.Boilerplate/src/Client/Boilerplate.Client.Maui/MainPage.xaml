@@ -6,11 +6,11 @@
     xmlns:core="clr-namespace:Boilerplate.Client.Core;assembly=Boilerplate.Client.Core"
     xmlns:themeColors="clr-namespace:Boilerplate.Client.Core.Styles;assembly=Boilerplate.Client.Core"
     BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.PrimaryLightBgColor},
-                                      Dark={x:Static themeColors:ThemeColors.PrimaryBgColorDark}}">
+                                      Dark={x:Static themeColors:ThemeColors.PrimaryDarkBgColor}}">
     <b:BlazorWebView
         x:Name="AppWebView"
         BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.PrimaryLightBgColor},
-                                          Dark={x:Static themeColors:ThemeColors.PrimaryBgColorDark}}"
+                                          Dark={x:Static themeColors:ThemeColors.PrimaryDarkBgColor}}"
         HostPage="wwwroot/index.html">
         <b:BlazorWebView.RootComponents>
             <b:RootComponent ComponentType="{x:Type core:Routes}" Selector="#app-container" />
