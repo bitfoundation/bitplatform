@@ -94,10 +94,11 @@ public static partial class MauiProgram
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", static (handler, view) =>
         {
             var webView = handler.PlatformView;
-            var isDark = AppInfo.Current.RequestedTheme == AppTheme.Dark;
+            var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
+                MauiDeviceCoordinator.BackgroundColorPrimaryDark : MauiDeviceCoordinator.BackgroundColorPrimaryLight;
 #if Windows
 
-            webView.DefaultBackgroundColor = webView.DefaultBackgroundColor = (Windows.UI.Color)Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(Windows.UI.Color), isDark ? MauiDeviceCoordinator.BackgroundColorPrimaryDark: MauiDeviceCoordinator.BackgroundColorPrimaryLight);
+            webView.DefaultBackgroundColor = webView.DefaultBackgroundColor = (Windows.UI.Color)Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(Windows.UI.Color), webViewBackgroundColor);
 
             if (AppEnvironment.IsDev() is false)
             {
@@ -131,7 +132,7 @@ public static partial class MauiProgram
                 }
             }
 #elif Android
-            webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(isDark ? MauiDeviceCoordinator.BackgroundColorPrimaryDark : MauiDeviceCoordinator.BackgroundColorPrimaryLight));
+            webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));
 
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
