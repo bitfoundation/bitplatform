@@ -56,6 +56,10 @@
         <IsolatedScssFiles Include="**\*.razor.scss" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Resource Include="Resources\**\*.*" />
+    </ItemGroup>
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <CallTarget Targets="BuildIsolatedScssFiles" />
     </Target>

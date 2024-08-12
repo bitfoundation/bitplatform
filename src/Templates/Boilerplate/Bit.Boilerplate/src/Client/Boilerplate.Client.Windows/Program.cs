@@ -22,7 +22,6 @@ public partial class Program
         // https://github.com/velopack/velopack
         VelopackApp.Build().Run();
         var application = new App();
-        application.InitializeComponent();
         Task.Run(async () =>
         {
             try

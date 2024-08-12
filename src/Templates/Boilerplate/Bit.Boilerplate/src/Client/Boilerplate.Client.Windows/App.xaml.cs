@@ -8,6 +8,14 @@ namespace Boilerplate.Client.Windows;
 
 public partial class App
 {
+    public App()
+    {
+        InitializeComponent();
+
+        var splash = new SplashScreen(typeof(App).Assembly, @"Resources\SplashScreen.png");
+        splash.Show(autoClose: true, topMost: true);
+    }
+
     const string WindowsStorageFilename = "windows.storage.json";
 
     private void App_Startup(object sender, StartupEventArgs e)
