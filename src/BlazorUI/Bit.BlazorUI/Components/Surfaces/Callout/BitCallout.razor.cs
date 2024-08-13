@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitCallout : BitComponentBase, IDisposable
 {
     private bool _disposed;
     private string _calloutId = default!;
+    private string _anchorId = default!;
     private DotNetObjectReference<BitCallout> _dotnetObj = default!;
 
 
@@ -13,12 +12,17 @@ public partial class BitCallout : BitComponentBase, IDisposable
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     /// <summary>
-    /// 
+    /// The content of the anchor section.
     /// </summary>
-    [Parameter] public ElementReference? Anchor { get; set; }
+    [Parameter] public RenderFragment? Anchor { get; set; }
 
     /// <summary>
-    /// 
+    /// The element reference to the anchor element.
+    /// </summary>
+    [Parameter] public ElementReference? AnchorElement { get; set; }
+
+    /// <summary>
+    /// The id of the anchor element.
     /// </summary>
     [Parameter] public string? AnchorId { get; set; }
 
@@ -31,6 +35,11 @@ public partial class BitCallout : BitComponentBase, IDisposable
     /// Custom CSS classes for different parts of the menu button.
     /// </summary>
     [Parameter] public BitCalloutClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Alias for ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -94,6 +103,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
     protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitCallout-{UniqueId}-callout";
+        _anchorId = $"BitCallout-{UniqueId}-anchor";
 
         await base.OnInitializedAsync();
     }
@@ -128,8 +138,10 @@ public partial class BitCallout : BitComponentBase, IDisposable
     {
         if (IsEnabled is false) return;
 
+        var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
+
         await _js.ToggleCallout(_dotnetObj,
-                                _Id,
+                                id,
                                 _calloutId,
                                 IsOpen,
                                 BitResponsiveMode.None,

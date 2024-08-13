@@ -7,14 +7,24 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    
-     <div @onclick="CloseCallout" @onclick:stopPropagation
+
+    @if (Anchor is not null)
+    {
+        <div @onclick="OpenCallout"
+             id="@_anchorId"
+             style="@Styles?.AnchorContainer"
+             class="bit-clo-acn @Classes?.AnchorContainer">
+            @Anchor
+        </div>
+    }
+
+    <div @onclick="CloseCallout" @onclick:stopPropagation
          style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-mnb-ovl @Classes?.Overlay"></div>
+         class="bit-clo-ovl @Classes?.Overlay"></div>
 
     <div id="@_calloutId"
          style="@Styles?.Callout"
-         class="bit-mnb-cal @Classes?.Callout">
-        @ChildContent
+         class="bit-clo-cal @Classes?.Callout">
+        @(Content ?? ChildContent)
     </div>
 </div>
