@@ -17,9 +17,9 @@ public class BitCalloutClassStyles
     public string? Opened { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the callout container of the BitCallout.
+    /// Custom CSS classes/styles for the content of the BitCallout.
     /// </summary>
-    public string? Callout { get; set; }
+    public string? Content { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the overlay of the BitCallout.

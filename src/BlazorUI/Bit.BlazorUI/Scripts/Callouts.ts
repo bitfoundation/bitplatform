@@ -8,7 +8,7 @@ namespace BitBlazorUI {
     }
 
     enum BitDropDirection {
-        Auto,
+        All,
         TopAndBottom
     }
 
@@ -53,7 +53,9 @@ namespace BitBlazorUI {
         public static toggle(
             dotnetObj: DotNetObject,
             componentId: string,
+            component: HTMLElement | null,
             calloutId: string,
+            callout: HTMLElement | null,
             isCalloutOpen: boolean,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
@@ -65,10 +67,10 @@ namespace BitBlazorUI {
             setCalloutWidth: boolean,
             rootCssClass: string
         ) {
-            const component = document.getElementById(componentId);
+            component ??= document.getElementById(componentId);
             if (component == null) return false;
 
-            const callout = document.getElementById(calloutId);
+            callout ??= document.getElementById(calloutId);
             if (callout == null) return false;
 
             const scrollContainer = (scrollContainerId

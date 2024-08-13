@@ -1389,7 +1389,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _datePickerId,
+                                       null,
                                        _calloutId,
+                                       null,
                                        IsOpen,
                                        IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,

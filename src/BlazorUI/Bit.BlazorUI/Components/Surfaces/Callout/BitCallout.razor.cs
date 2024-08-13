@@ -3,7 +3,7 @@
 public partial class BitCallout : BitComponentBase, IDisposable
 {
     private bool _disposed;
-    private string _calloutId = default!;
+    private string _contentId = default!;
     private string _anchorId = default!;
     private DotNetObjectReference<BitCallout> _dotnetObj = default!;
 
@@ -11,28 +11,30 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
+
+
     /// <summary>
-    /// The content of the anchor section.
+    /// The content of the anchor element of the callout.
     /// </summary>
     [Parameter] public RenderFragment? Anchor { get; set; }
 
     /// <summary>
-    /// The element reference to the anchor element.
+    /// The element reference to the external anchor element.
     /// </summary>
     [Parameter] public ElementReference? AnchorElement { get; set; }
 
     /// <summary>
-    /// The id of the anchor element.
+    /// The id of the external anchor element.
     /// </summary>
     [Parameter] public string? AnchorId { get; set; }
 
     /// <summary>
-    /// The content of the menu button, that are BitMenuButtonOption components.
+    /// The content of the callout.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the menu button.
+    /// Custom CSS classes for different parts of the callout.
     /// </summary>
     [Parameter] public BitCalloutClassStyles? Classes { get; set; }
 
@@ -40,6 +42,11 @@ public partial class BitCallout : BitComponentBase, IDisposable
     /// Alias for ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// Determines the allowed directions in which the callout should decide to be opened.
+    /// </summary>
+    [Parameter] public BitDropDirection? Direction { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -50,17 +57,17 @@ public partial class BitCallout : BitComponentBase, IDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// The callback is called when the menu button header is clicked.
-    /// </summary>
-    [Parameter] public EventCallback OnClick { get; set; }
-
-    /// <summary>
     /// The callback that is called when the callout opens or closes.
     /// </summary>
     [Parameter] public EventCallback<bool> OnToggle { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the menu button.
+    /// Configures the responsive mode of the callout for the small screens.
+    /// </summary>
+    [Parameter] public BitResponsiveMode? ResponsiveMode { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the callout.
     /// </summary>
     [Parameter] public BitCalloutClassStyles? Styles { get; set; }
 
@@ -102,7 +109,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        _calloutId = $"BitCallout-{UniqueId}-callout";
+        _contentId = $"BitCallout-{UniqueId}-content";
         _anchorId = $"BitCallout-{UniqueId}-anchor";
 
         await base.OnInitializedAsync();
@@ -142,10 +149,12 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
         await _js.ToggleCallout(_dotnetObj,
                                 id,
-                                _calloutId,
+                                AnchorElement,
+                                _contentId,
+                                null,
                                 IsOpen,
-                                BitResponsiveMode.None,
-                                BitDropDirection.TopAndBottom,
+                                ResponsiveMode ?? BitResponsiveMode.None,
+                                Direction ?? BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
                                 "",
                                 0,
@@ -153,6 +162,8 @@ public partial class BitCallout : BitComponentBase, IDisposable
                                 "",
                                 true,
                                 RootElementClass);
+
+        await OnToggle.InvokeAsync(IsOpen);
     }
 
 
@@ -169,7 +180,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
         if (_dotnetObj is not null)
         {
-            await _js.ClearCallout(_calloutId);
+            await _js.ClearCallout(_contentId);
             _dotnetObj.Dispose();
         }
 

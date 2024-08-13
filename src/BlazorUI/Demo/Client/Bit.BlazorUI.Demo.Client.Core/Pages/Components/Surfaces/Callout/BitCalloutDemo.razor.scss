@@ -1,4 +1,9 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
+.example-box {
+    gap: 3rem;
+    display: flex;
+}
+
 ::deep {
 }

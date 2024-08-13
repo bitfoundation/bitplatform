@@ -30,8 +30,6 @@
     z-index: $zindex-callout;
     background-color: $clr-bg-pri;
     opacity: var(--bit-mnb-cal-opa);
-    box-shadow: $box-shadow-callout;
     transform: var(--bit-mnb-cal-tra);
     transition: opacity 100ms, transform 300ms;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
 }

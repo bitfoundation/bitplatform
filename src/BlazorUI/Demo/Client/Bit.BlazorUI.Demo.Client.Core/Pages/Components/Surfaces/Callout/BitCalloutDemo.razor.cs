@@ -6,84 +6,97 @@ public partial class BitCalloutDemo
     [
         new()
         {
-            Name = "Classes",
-            Type = "BitAccordionClassStyles?",
+            Name = "Anchor",
+            Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitAccordion.",
-            LinkType = LinkType.Link,
-            Href = "#accordion-class-styles"
+            Description = "The content of the anchor element of the callout.",
+        },
+        new()
+        {
+            Name = "AnchorElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "The element reference to an external anchor element."
+        },
+        new()
+        {
+            Name = "AnchorId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the external anchor element."
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the Accordion."
+            Description = "The content of the callout."
         },
         new()
         {
-            Name = "DefaultIsExpanded",
-            Type = "bool?",
+            Name = "Classes",
+            Type = "BitCalloutClassStyles?",
             DefaultValue = "null",
-            Description = "Default value of the IsExpanded."
+            Description = "Custom CSS classes for different parts of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
         },
         new()
         {
-            Name = "Description",
-            Type = "string?",
+            Name = "Content",
+            Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A short description in the header of Accordion."
+            Description = "Alias for ChildContent."
         },
         new()
         {
-            Name = "HeaderTemplate",
-            Type = "RenderFragment<bool>?",
+            Name = "Direction",
+            Type = "BitDropDirection?",
             DefaultValue = "null",
-            Description = "Used to customize how the header inside the Accordion is rendered."
+            Description = "Determines the allowed directions in which the callout should decide to be opened.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum"
         },
         new()
         {
-            Name = "IsExpanded",
+            Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the accordion is expanding or collapses."
+            Description = "Determines the opening state of the callout."
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback that is called when the header is clicked."
-        },
-        new()
-        {
-            Name = "OnChange",
+            Name = "OnToggle",
             Type = "EventCallback<bool>",
-            Description = "Callback that is called when the IsExpanded value has changed."
+            DefaultValue = "",
+            Description = "The callback that is called when the callout opens or closes."
+        },
+        new()
+        {
+            Name = "ResponsiveMode",
+            Type = "BitResponsiveMode?",
+            DefaultValue = "null",
+            Description = "Configures the responsive mode of the callout for the small screens.",
+            LinkType = LinkType.Link,
+            Href = "#responsive-mode-enum"
         },
         new()
         {
             Name = "Styles",
-            Type = "BitAccordionClassStyles?",
+            Type = "BitCalloutClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitAccordion.",
+            Description = "Custom CSS styles for different parts of the callout.",
             LinkType = LinkType.Link,
-            Href = "#accordion-class-styles"
+            Href = "#class-styles"
         },
-        new()
-        {
-            Name = "Title",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Title in the header of Accordion."
-        }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
         {
-            Id = "accordion-class-styles",
-            Title = "BitAccordionClassStyles",
+            Id = "class-styles",
+            Title = "BitCalloutClassStyles",
             Parameters =
             [
                 new()
@@ -91,60 +104,96 @@ public partial class BitCalloutDemo
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root element of the BitAccordion."
+                    Description = "Custom CSS classes/styles for the root element of the BitCallout."
                 },
                 new()
                 {
-                    Name = "Expanded",
+                    Name = "AnchorContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the expanded state of the BitAccordion."
+                    Description = "Custom CSS classes/styles for the anchor container element of the BitCallout."
                 },
                 new()
                 {
-                    Name = "Header",
+                    Name = "Opened",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the header of the BitAccordion."
-                },
-                new()
-                {
-                    Name = "HeaderContent",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the header content of the BitAccordion."
-                },
-                new()
-                {
-                    Name = "Title",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the title of the BitAccordion."
-                },
-                new()
-                {
-                    Name = "Description",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the description of the BitAccordion."
-                },
-                new()
-                {
-                    Name = "ChevronDownIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the chevron down icon of the BitAccordion."
+                    Description = "Custom CSS classes/styles for the opened callout state of the BitCallout."
                 },
                 new()
                 {
                     Name = "Content",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the content of the BitAccordion."
-                }
+                    Description = "Custom CSS classes/styles for the content of the BitCallout."
+                },
+                new()
+                {
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the overlay of the BitCallout."
+                },
             ]
         }
     ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Value = "0",
+                    Description = "The direction determined automatically based on the available spaces in all directions."
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Value = "1",
+                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions."
+                },
+            ]
+        },
+        new()
+        {
+            Id = "responsive-mode-enum",
+            Name = "BitResponsiveMode",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "Disables the responsive mode."
+                },
+                new()
+                {
+                    Name = "Panel",
+                    Value = "1",
+                    Description = "Enables the panel responsive mode."
+                },
+                new()
+                {
+                    Name = "Top",
+                    Value = "2",
+                    Description = "Enables the top responsive mode."
+                },
+            ]
+        }
+    ];
+
+
+    private ElementReference anchorEl = default!;
+    private BitCallout callout1 = default!;
+    private BitCallout callout2 = default!;
 
 
 

@@ -7,13 +7,37 @@
 <ComponentDemo ComponentName="Callout"
                ComponentDescription="The Callout component ..."
                ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses">
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <BitCallout>
+                <Anchor>
+                    <BitButton>Click me</BitButton>
+                </Anchor>
+                <Content>
+                    <div style="width: fit-content; padding: 1rem; border:1px solid gray;">
+                        This is the callout content.
+                    </div>
+                </Content>
+            </BitCallout>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="External anchor" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
             <div class="example-box">
-                <BitAccordion Title="Accordion 1">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
-                </BitAccordion>
+                <BitButton Id="anchor_id" OnClick="() => callout1.Toggle()">Click me</BitButton>
+                <BitCallout AnchorId="anchor_id" @ref="callout1">
+                    <BitCalendar />
+                </BitCallout>
+
+                <button @ref="anchorEl" @onclick="() => callout2.Toggle()">Click me</button>
+                <BitCallout AnchorElement="anchorEl" @ref="callout2">
+                    <div style="padding:1rem; border:1px solid gray;">
+                        <BitCalendar />
+                    </div>
+                </BitCallout>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
