@@ -199,9 +199,7 @@
                         Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
                         Alternatively, use the following command:
                         <br />
-                        <CodeBox>
-                            winget install --id=PostgreSQL.PostgreSQL.14
-                        </CodeBox>
+                        <CodeBox>winget install --id=PostgreSQL.PostgreSQL.14</CodeBox>
                     </div>
                     break;
                 case "MySQL":
@@ -214,9 +212,7 @@
                         Download and install Cosmos Storage emulator <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
                         Alternatively, use the following command:
                         <br />
-                        <CodeBox>
-                            winget install -e --id Microsoft.Azure.CosmosEmulator
-                        </CodeBox>
+                        <CodeBox>winget install -e --id Microsoft.Azure.CosmosEmulator</CodeBox>
                     </div>
                     break;
                 case "Other":
@@ -295,7 +291,7 @@
                     Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
                 </div>
             }
-            @if(fileStorage.Value == "Other")
+            @if (fileStorage.Value == "Other")
             {
                 <div>
                     Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
