@@ -52,7 +52,7 @@
                                     <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
                                 </li>
                                 <li>
-                                    <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">SQLite and SQL Server Compact Toolbox extension</a>
+                                    <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResXManager</a>
                                 </li>
                             </ol>
                         </div>
@@ -76,13 +76,15 @@
                             </li>
                             <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                 <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-mkdir -p $HOME/.dotnet
-tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-dotnet dev-certs https --trust
-rm dotnet.tar.gz</CodeBox>
+                                <CodeBox>
+                                    wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                    mkdir -p $HOME/.dotnet
+                                    tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+                                    echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+                                    export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+                                    dotnet dev-certs https --trust
+                                    rm dotnet.tar.gz
+                                </CodeBox>
                             </BitAccordion>
                             <br />
                             <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
@@ -183,7 +185,6 @@ rm dotnet.tar.gz</CodeBox>
                                     {
                                         <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
                                     }
-                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" title="SQLite3 Editor" rel="nofollow">SQLite3 Editor</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a></li>
                                 </ul>
                             </li>
@@ -191,22 +192,24 @@ rm dotnet.tar.gz</CodeBox>
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
-code --install-extension ms-dotnettools.blazorwasm-companion
-code --install-extension glenn2223.live-sass
-code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension ms-dotnettools.dotnet-maui
-code --install-extension yy0931.vscode-sqlite3-editor
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+                                <CodeBox>
+                                    code --install-extension ms-dotnettools.csdevkit
+                                    code --install-extension ms-dotnettools.blazorwasm-companion
+                                    code --install-extension glenn2223.live-sass
+                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+                                    code --install-extension ms-dotnettools.dotnet-maui
+                                    code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                             else
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
-code --install-extension ms-dotnettools.blazorwasm-companion
-code --install-extension glenn2223.live-sass
-code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension yy0931.vscode-sqlite3-editor
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+                                <CodeBox>
+                                    code --install-extension ms-dotnettools.csdevkit
+                                    code --install-extension ms-dotnettools.blazorwasm-companion
+                                    code --install-extension glenn2223.live-sass
+                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+                                    code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                         </BitAccordion>
                     </div>

@@ -191,7 +191,10 @@
                     break;
                 case "SqlServer":
                     <div>
-                        Download and install Sql Server LocalDB (Recommended for development purposes) <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a>.
+                        You can use Sql Server LocalDb 2022 for development purposes.
+                        <br />
+                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
+                        <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
                     </div>
                     break;
                 case "PostgreSQL":
