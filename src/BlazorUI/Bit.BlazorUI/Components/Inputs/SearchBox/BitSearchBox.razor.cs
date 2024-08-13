@@ -165,7 +165,7 @@ public partial class BitSearchBox : BitInputBase<string?>
 
         ClassBuilder.Register(() => IsUnderlined ? "bit-srb-und" : string.Empty);
 
-        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc" : string.Empty);
+        ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 
@@ -175,6 +175,8 @@ public partial class BitSearchBox : BitInputBase<string?>
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _inputHasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -222,12 +224,14 @@ public partial class BitSearchBox : BitInputBase<string?>
     {
         _inputHasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
     private void HandleInputFocusOut()
     {
         _inputHasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
     }
 
     private async Task HandleOnSearchButtonClick()

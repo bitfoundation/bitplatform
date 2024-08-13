@@ -13,6 +13,11 @@ public class BitSearchBoxClassStyles
     public string? InputContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the focus state of the BitSearchBox.
+    /// </summary>
+    public string? Focused { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's clear button.
     /// </summary>
     public string? ClearButton { get; set; }
