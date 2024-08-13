@@ -149,6 +149,16 @@ jobs:
     - name: Set app center secret
       run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
       shell: pwsh
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Windows/Resources/SplashScreen.png
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Windows/Resources/'
+          fileName: 'SplashScreen.png'
+          encodedString: ${{ vars.TODO_WPF_SPLASH_SCREEN }}
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release

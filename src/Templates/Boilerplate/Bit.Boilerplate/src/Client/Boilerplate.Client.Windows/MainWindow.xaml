@@ -7,11 +7,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Boilerplate"
+    Background="{DynamicResource PrimaryBgColor}"
     WindowState="Maximized"
     mc:Ignorable="d">
     <Grid>
         <blazor:BlazorWebView
-            x:Name="BlazorWebView"
+            x:Name="AppWebView"
             x:FieldModifier="public"
             HostPage="wwwroot\index.html">
             <blazor:BlazorWebView.RootComponents>
