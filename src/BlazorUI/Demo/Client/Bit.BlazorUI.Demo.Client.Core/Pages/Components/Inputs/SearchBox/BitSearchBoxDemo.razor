@@ -13,6 +13,8 @@
                    ComponentPublicMembers="componentPublicMembers">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <ExamplePreview>
+                <div>Basic examples of BitSearchBox including a default and a disabled state.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Basic</BitLabel>
@@ -29,6 +31,8 @@
 
         <ComponentExampleBox Title="IsUnderlined" RazorCode="@example2RazorCode" Id="example2">
             <ExamplePreview>
+                <div>Demonstrating the underlined style of BitSearchBox in both enabled and disabled states.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Basic Underlined SearchBox</BitLabel>
@@ -45,6 +49,8 @@
 
         <ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" Id="example3">
             <ExamplePreview>
+                <div>Examples of BitSearchBox with various icon configurations such as fixed icon, no animation, custom icon, and no icon.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>SearchBox with fixed icon</BitLabel>
@@ -71,6 +77,8 @@
 
         <ComponentExampleBox Title="Search Button" RazorCode="@example4RazorCode" Id="example4">
             <ExamplePreview>
+                <div>Showcasing BitSearchBox with a search button in various configurations, including custom button icon and disabled state.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Basic SearchBox</BitLabel>
@@ -98,22 +106,34 @@
 
         <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
             <ExamplePreview>
+                <div>Explore styling and class customization for BitSearchBox, including component styles, custom classes, and detailed styles.</div>
+                <br /><br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Component's Style & Class:</BitLabel>
-                        <BitSearchBox Placeholder="Search" Style="background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0" />
+                        <br />
+                        <BitSearchBox Placeholder="Search" Style="box-shadow: dodgerblue 0 0 1rem; margin-inline: 1rem;" />
+                        <br />
                         <BitSearchBox Placeholder="Search" Class="custom-class" />
                     </div>
-                    <br />
+                    <br /><br />
                     <div>
                         <BitLabel>Styles & Classes:</BitLabel>
-                        <BitSearchBox Placeholder="Search"
-                                      Styles="@(new() { Icon = "color: darkorange;",
-                                                        Input = "padding: 0.5rem; background-color: goldenrod" })" />
                         <br />
-                        <BitSearchBox Placeholder="Search" DefaultValue="This is default value"
-                                      Classes="@(new() { ClearButtonIcon = "custom-clear",
-                                                         IconWrapper = "custom-search" })" />
+                        <BitSearchBox Placeholder="Search"
+                                      Styles="@(new() { Root = "margin-inline: 1rem;",
+                                                        Focused = "--focused-background: #b2b2b25a;",
+                                                        Input = "padding: 0.5rem;",
+                                                        InputContainer = "background: var(--focused-background);" })" />
+                        <br />
+                        <BitSearchBox FixedIcon
+                                      Placeholder="Search" DefaultValue="This is default value"
+                                      Classes="@(new() { Root = "custom-root",
+                                                         Icon = "custom-icon",
+                                                         Focused = "custom-focused",
+                                                         ClearButton = "custom-clear",
+                                                         IconWrapper = "custom-icon-wrapper",
+                                                         InputContainer = "custom-input-container" })" />
                     </div>
                 </div>
             </ExamplePreview>
@@ -121,6 +141,8 @@
 
         <ComponentExampleBox Title="Visibility" RazorCode="@example6RazorCode" Id="example6">
             <ExamplePreview>
+                <div>BitSearchBox visibility examples including visible, hidden, and collapsed states.</div>
+                <br />
                 <div class="example-content">
                     <div class="visibility-items">Visible: [ <BitSearchBox Visibility="BitVisibility.Visible" Placeholder="Visible SearchBox" /> ]</div>
                     <div class="visibility-items">Hidden: [ <BitSearchBox Visibility="BitVisibility.Hidden" Placeholder="Hidden SearchBox" />  ]</div>
@@ -131,6 +153,8 @@
 
         <ComponentExampleBox Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <ExamplePreview>
+                <div>Binding examples for BitSearchBox including two-way binding, OnChange, and OnSearch events.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Two-way Bind</BitLabel>
@@ -155,6 +179,8 @@
 
         <ComponentExampleBox Title="Validation" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <ExamplePreview>
+                <div>Demonstrating validation of BitSearchBox using data annotations.</div>
+                <br />
                 <div class="example-content">
                     <EditForm Model="ValidationSearchBoxModel">
                         <DataAnnotationsValidator />
@@ -167,6 +193,8 @@
 
         <ComponentExampleBox Title="Suggest List" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <ExamplePreview>
+                <div>Examples of BitSearchBox with suggestion list, including custom filtering, minimum trigger characters, and more.</div>
+                <br />
                 <div class="example-content">
                     <div>
                         <BitLabel>Items:</BitLabel>
@@ -210,7 +238,9 @@
 
         <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
             <ExamplePreview>
-                <div class="example-content">
+                <div>Use the BitSearchBox component in right-to-left (RTL).</div>
+                <br />
+                <div dir="rtl" class="example-content">
                     <BitSearchBox Dir="BitDir.Rtl" Placeholder="جستجو" />
                     <br />
                     <BitSearchBox IsUnderlined Dir="BitDir.Rtl" Placeholder="جستجو" />

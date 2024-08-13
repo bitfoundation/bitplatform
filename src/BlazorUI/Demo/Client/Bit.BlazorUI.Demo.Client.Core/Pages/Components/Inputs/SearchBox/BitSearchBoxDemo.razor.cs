@@ -377,31 +377,73 @@ public partial class BitSearchBoxDemo
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid tomato;
     }
 
-    .custom-clear {
-        color: blueviolet;
+    .custom-class * {
+        border: none;
     }
 
-    .custom-search {
-        margin-right: 0.25rem;
-        border-radius: 0.5rem;
-        background-color: tomato;
+
+    .custom-root {
+        margin-inline: 1rem;
+    }
+
+    .custom-input-container {
+        height: 3rem;
+        overflow: hidden;
+        align-items: center;
+        border-radius: 1.5rem;
+        border-color: #13a3a375;
+        background-color: #13a3a375;
+    }
+
+    .custom-focused .custom-input-container {
+        border-width: 1px;
+        border-color: #13a3a375;
+    }
+
+    .custom-clear:hover {
+        background: transparent;
+    }
+
+    .custom-icon {
+        color: darkslategrey;
+    }
+
+    .custom-icon-wrapper {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 1rem;
+        margin-inline: 0.5rem;
+        background-color: whitesmoke;
+    }
     }
 </style>
 
-<BitSearchBox Placeholder=""Search"" Style=""background-color: lightskyblue; border-radius: 1rem; margin: 1rem 0"" />
+
+<BitSearchBox Placeholder=""Search"" Style=""box-shadow: dodgerblue 0 0 1rem; margin-inline: 1rem;"" />
+
 <BitSearchBox Placeholder=""Search"" Class=""custom-class"" />
 
-<BitSearchBox Placeholder=""Search""
-              Styles=""@(new() { SearchIcon = ""color: darkorange;"",
-                                Input = ""padding: 0.5rem; background-color: goldenrod"" })"" />
 
-<BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value""
-              Classes=""@(new() { ClearButtonIcon = ""custom-clear"",
-                                 IconWrapper = ""custom-search"" })"" />";
+<BitSearchBox Placeholder=""Search""
+              Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                Focused = ""--focused-background: #b2b2b25a;"",
+                                Input = ""padding: 0.5rem;"",
+                                InputContainer = ""background: var(--focused-background);"" })"" />
+
+<BitSearchBox FixedIcon
+              Placeholder=""Search"" DefaultValue=""This is default value""
+              Classes=""@(new() { Root = ""custom-root"",
+                                 Icon = ""custom-icon"",
+                                 Focused = ""custom-focused"",
+                                 ClearButton = ""custom-clear"",
+                                 IconWrapper = ""custom-icon-wrapper"",
+                                 InputContainer = ""custom-input-container"" })"" />";
 
     private readonly string example6RazorCode = @"
 Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
