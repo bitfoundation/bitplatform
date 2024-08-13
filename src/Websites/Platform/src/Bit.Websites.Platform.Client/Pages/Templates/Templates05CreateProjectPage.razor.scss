@@ -50,10 +50,6 @@
     margin-bottom:rem2(10px);
 }
 
-.default-txt {
-    font-size: rem2(12px);
-}
-
 .api-image-container {
     display: flex;
     justify-content: center;
@@ -66,7 +62,7 @@
 
     .grid-item {
         width: rem2(550px);
-        min-height: rem2(416px);
+        min-height: rem2(400px);
         overflow: auto;
         position: relative;
         padding: rem2(28px);

@@ -52,13 +52,14 @@
                 @if (captcha.Value == "None")
                 {
                     <div>
-                        None!
+                        By setting this parameter to None, CAPTCHA will be disabled for your application.
                     </div>
                 }
                 else
                 {
                     <div>
-                        Google?!
+                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
+                        the Sign Up page, include --captcha reCaptcha in the dotnet new command.
                     </div>
                 }
             </div>
@@ -75,6 +76,24 @@
             </CodeBox>
             <br />
             Ensure a rapid and reliable deployment by utilizing a pipeline.
+            @switch (pipeline.Value)
+            {
+                case "None":
+                    <div>
+                        By selecting None, no CI/CD pipeline will be added.
+                    </div>
+                    break;
+                case "GitHub":
+                    <div>
+                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
+                    </div>
+                    break;
+                case "Azure":
+                    <div>
+                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank">Azure Devops</a>.
+                    </div>
+                    break;
+            }
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
@@ -86,7 +105,8 @@
             <CodeBox>
                 @GetSampleCommand()
             </CodeBox>
-            To initialize the project with sample code, use the --sample parameter.
+            Use this parameter to initialize the project with a sample code. 
+            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
@@ -164,6 +184,48 @@
             package and configure it in the AddDbContextPool method, which is located in the Program.Services.cs file within the Server.Api project.
             <br />
             <br />
+            @switch(database.Value)
+            {
+                case "Sqlite":
+                <div>
+                    Download and install @database.Value <a href="https://www.sqlite.org/download.html" target="_blank">here</a>.
+                </div>
+                    break;
+                case "SqlServer":
+                <div>
+                    Download and install @database.Value <a href="https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb" target="_blank">here</a>.
+                    LocalDB is installed by default along with Visual Studio.
+                </div>
+                    break;
+                case "PostgreSQL":
+                <div>
+                    Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
+                    Alternatively, use the following command:
+                    <br />
+                    <CodeBox>
+winget install --id=PostgreSQL.PostgreSQL.14
+                    </CodeBox>
+                </div>
+                    break;
+                case "MySQL":
+                <div>
+                    Download and install @database.Value <a href="https://mariadb.org/download" target="_blank">here</a>.
+                    Maria db is supported as well.
+                </div>
+                    break;
+                case "Cosmos":
+                <div>
+                    Download and install @database.Value <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
+                    Alternatively, use the following command:
+                    <br />
+                    <CodeBox>
+winget install -e --id Microsoft.Azure.CosmosEmulator
+                    </CodeBox>
+                </div>
+                    break;
+                case "Other":
+                    break;
+            }
         </BitGridItem>
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
@@ -176,6 +238,62 @@
                 @GetApiCommand()
             </CodeBox>
             Select the API mode that best aligns with your specific requirements.
+            <br />
+            <br />
+            @if(api.Value == "Integrated")
+            {
+                 <div>
+                   If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project, 
+                   hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.
+                 </div>
+                 <br />
+                 <br />
+                 <div class="api-image-container">
+                    <img class="image" src="images/templates/api-integrated.webp" />
+                 </div>   
+            }
+            else
+            {
+                <div>
+                  Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
+                </div>
+                <br />
+                <br />
+                <div class="api-image-container">
+                    <img class="image" src="images/templates/api-standalone.webp" />
+                </div>   
+            }
+            
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item" ColumnSpan="2">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
+            </div>
+                <CodeBox>
+                    @GetFileStorageCommand()
+                </CodeBox>
+
+            The API project includes an Attachment Controller responsible for handling user images,
+            including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
+            and various implementations of this project can be applied.
+            <br />
+            <br />
+            Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
+            This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces.
+            <br />
+            <br />
+            To configure file storage to use your local hard drive, use the Local value. Other available options include
+            AzureBlobStorage and Other. If you choose Other, you may select any FluentStorage package of your preference.
+            <br />
+            <br />
+            @if(fileStorage.Value == "AzureBlobStorage")
+            {
+                <div>
+                    Download and install @fileStorage.Value <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                </div>
+            }
         </BitGridItem>
     </BitGrid>
     <br />
