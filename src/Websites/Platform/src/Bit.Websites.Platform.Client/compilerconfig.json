@@ -114,66 +114,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Templates/Templates06DatabasePage.razor.css",
-        "inputFile": "Pages/Templates/Templates06DatabasePage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates07RunPage.razor.css",
-        "inputFile": "Pages/Templates/Templates07RunPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates08AppModelsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates08AppModelsPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.css",
-        "inputFile": "Pages/Templates/Templates09DeploymentTypePage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.css",
-        "inputFile": "Pages/Templates/Templates10CacheMechanismPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates11DevOpsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates11DevOpsPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.css",
-        "inputFile": "Pages/Templates/Templates12PlatformIntegrationPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates13SettingsPage.razor.css",
-        "inputFile": "Pages/Templates/Templates13SettingsPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.css",
-        "inputFile": "Pages/Templates/Templates14ExceptionHandlingPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Pages/Templates/Templates15MultilingualismPage.razor.css",
-        "inputFile": "Pages/Templates/Templates15MultilingualismPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Pages/Bswup/Bswup01OverviewPage.razor.css",
         "inputFile": "Pages/Bswup/Bswup01OverviewPage.razor.scss",
         "minify": { "enabled": false },
