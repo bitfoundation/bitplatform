@@ -151,6 +151,59 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>SignalR</BitTypography>
+                <BitToggle @bind-Value="signalr.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetSignalRCommand()
+            </CodeBox>
+            Enabling this parameter will provide you with sample code for SignalR.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
+            </div>
+            <CodeBox>
+                @GetFileStorageCommand()
+            </CodeBox>
+
+            @if (fileStorage.Value == "Local")
+            {
+                <div>
+                    The API project includes an Attachment Controller responsible for handling user images,
+                    including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
+                    and various implementations of this project can be applied.
+                    <br />
+                    <br />
+                    Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
+                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
+                    <br />
+                    <br />
+                    To configure file storage to use your local hard drive, use the Local value. Other available options include
+                    AzureBlobStorage and Other. If you choose Other, you may select any <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage package</a> of your preference.
+                    <br />
+                    <br />
+                </div>
+            }
+            @if (fileStorage.Value == "AzureBlobStorage")
+            {
+                <div>
+                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                </div>
+            }
+            @if (fileStorage.Value == "Other")
+            {
+                <div>
+                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+                </div>
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>Offline Database</BitTypography>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
             </div>
@@ -262,47 +315,6 @@
                 </div>
             }
 
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
-                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
-            </div>
-            <CodeBox>
-                @GetFileStorageCommand()
-            </CodeBox>
-
-            @if (fileStorage.Value == "Local")
-            {
-                <div>
-                    The API project includes an Attachment Controller responsible for handling user images,
-                    including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
-                    and various implementations of this project can be applied.
-                    <br />
-                    <br />
-                    Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
-                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
-                    <br />
-                    <br />
-                    To configure file storage to use your local hard drive, use the Local value. Other available options include
-                    AzureBlobStorage and Other. If you choose Other, you may select any <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage package</a> of your preference.
-                    <br />
-                    <br />
-                </div>
-            }
-            @if (fileStorage.Value == "AzureBlobStorage")
-            {
-                <div>
-                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
-                </div>
-            }
-            @if (fileStorage.Value == "Other")
-            {
-                <div>
-                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
-                </div>
-            }
         </BitGridItem>
     </BitGrid>
     <br />

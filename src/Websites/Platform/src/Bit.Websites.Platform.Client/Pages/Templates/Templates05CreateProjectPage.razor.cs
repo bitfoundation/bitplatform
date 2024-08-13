@@ -30,6 +30,12 @@ public partial class Templates05CreateProjectPage
         Default = false,
     };
 
+    private Parameter<bool> signalr = new()
+    {
+        Value = false,
+        Default = false,
+    };
+
     private Parameter<string> captcha = new()
     {
         Value = "reCaptcha",
@@ -151,6 +157,11 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetAppInsightsCommand());
         }
 
+        if (signalr.IsModified)
+        {
+            finalCommand.Append(GetSignalRCommand());
+        }
+
         return finalCommand.ToString();
     }
 
@@ -207,6 +218,11 @@ public partial class Templates05CreateProjectPage
     private string GetAppInsightsCommand()
     {
         return $"--appinsights {appInsight.Value.ToString().ToLowerInvariant()} ";
+    }
+
+    private string GetSignalRCommand()
+    {
+        return $"--signalr {signalr.Value.ToString().ToLowerInvariant()} ";
     }
 
     private class Parameter<T>
