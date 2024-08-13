@@ -34,7 +34,8 @@
                     </BitTypography>
                     <br />
                     <BitStack Gap="1rem">
-                        <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
+                        <BitCheckbox Label="Required dependencies for Web and Backend API development" Value="true" />
+                        <BitCheckbox Label="Optional dependencies for cross-platform development (Android, iOS, macOS, Windows)" @bind-Value="enableCrossPlatform" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
                         <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
@@ -69,7 +70,7 @@
                     </BitTypography>
                     <br />
                     <div class="section-card-txt">
-                        <BitToggle IsInlineLabel Label="Show steps for cross-platform development" @bind-Value="showCrossPlatform" />
+                        <BitToggle IsInlineLabel Label="Include steps for cross-platform development (Android, iOS, Windows, macOS)" @bind-Value="showCrossPlatform" />
                         <ol>
                             <li style="margin-bottom:8px">
                                 Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
