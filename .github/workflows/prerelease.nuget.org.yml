@@ -3,10 +3,8 @@ name: Prerelease nuget packages
 on:
   workflow_dispatch:
   push:
-    branches:
-      - 'develop'
     tags:
-      - 'v-*'
+      - 'v-*-pre-*'
 
 jobs:
   build-publish:
