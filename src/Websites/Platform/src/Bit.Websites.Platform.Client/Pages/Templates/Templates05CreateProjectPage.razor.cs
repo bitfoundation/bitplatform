@@ -191,7 +191,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetFileStorageCommand()
     {
-        return $"--fluentStorage {fileStorage.Value} ";
+        return $"--filesStorage {fileStorage.Value} ";
     }
 
     private string GetApiCommand()
