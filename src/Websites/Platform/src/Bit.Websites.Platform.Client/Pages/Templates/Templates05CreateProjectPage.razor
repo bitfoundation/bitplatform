@@ -52,14 +52,14 @@
                 @if (captcha.Value == "None")
                 {
                     <div>
-                        By setting this parameter to None, CAPTCHA will be disabled for your application.
+                        By setting this parameter to None, CAPTCHA won't be added to the project.
                     </div>
                 }
                 else
                 {
                     <div>
                         To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
-                        the Sign Up page, include --captcha reCaptcha in the dotnet new command.
+                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank">Live demo</a>
                     </div>
                 }
             </div>
@@ -75,7 +75,6 @@
                 @GetPipelineCommand()
             </CodeBox>
             <br />
-            Ensure a rapid and reliable deployment by utilizing a pipeline.
             @switch (pipeline.Value)
             {
                 case "None":
@@ -85,6 +84,7 @@
                     break;
                 case "GitHub":
                     <div>
+                        Ensure a rapid and reliable deployment by utilizing a pipeline.
                         By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
                     </div>
                     break;
@@ -105,7 +105,7 @@
             <CodeBox>
                 @GetSampleCommand()
             </CodeBox>
-            Use this parameter to initialize the project with a sample code. 
+            Use this parameter to initialize the project with a sample pages.
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
         </BitGridItem>
 
@@ -159,11 +159,10 @@
                 @GetOfflineDbCommand()
             </CodeBox>
             Setting this parameter to True enables SQLite and Entity Framework Core,
-            allowing for the development of an offline-capable web application. This feature, in conjunction with Progressive
-            Web App (PWA) capabilities, supports functionality within a browser environment.
+            allowing for the development of an offline-capable cross platform application.
             <br />
             <br />
-            Note: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce performance.
+            Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
@@ -175,53 +174,50 @@
             <CodeBox>
                 @GetDatabaseCommand()
             </CodeBox>
-            The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
-            Therefore, we support only those databases commonly used by .NET developers with Entity Framework Core.
-            <br />
-            <br />
-            Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
-            If you require a database not listed among the options, select Other. After project initialization, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
-            package and configure it in the AddDbContextPool method, which is located in the Program.Services.cs file within the Server.Api project.
-            <br />
-            <br />
-            @switch(database.Value)
+            @switch (database.Value)
             {
                 case "Sqlite":
-                <div>
-                    Download and install @database.Value <a href="https://www.sqlite.org/download.html" target="_blank">here</a>.
-                </div>
+                    <div>
+                        The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
+                        <br />
+                        <br />
+                        Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
+                        If you require a database not listed among the options, select Other. After project initialization, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
+                        package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
+                        <br />
+                        <br />
+                        For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
+                    </div>
                     break;
                 case "SqlServer":
-                <div>
-                    Download and install @database.Value <a href="https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb" target="_blank">here</a>.
-                    LocalDB is installed by default along with Visual Studio.
-                </div>
+                    <div>
+                        Download and install Sql Server LocalDB (Recommended for development purposes) <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a>.
+                    </div>
                     break;
                 case "PostgreSQL":
-                <div>
-                    Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
-                    Alternatively, use the following command:
-                    <br />
-                    <CodeBox>
-winget install --id=PostgreSQL.PostgreSQL.14
-                    </CodeBox>
-                </div>
+                    <div>
+                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
+                        Alternatively, use the following command:
+                        <br />
+                        <CodeBox>
+                            winget install --id=PostgreSQL.PostgreSQL.14
+                        </CodeBox>
+                    </div>
                     break;
                 case "MySQL":
-                <div>
-                    Download and install @database.Value <a href="https://mariadb.org/download" target="_blank">here</a>.
-                    Maria db is supported as well.
-                </div>
+                    <div>
+                        Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
+                    </div>
                     break;
                 case "Cosmos":
-                <div>
-                    Download and install @database.Value <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
-                    Alternatively, use the following command:
-                    <br />
-                    <CodeBox>
-winget install -e --id Microsoft.Azure.CosmosEmulator
-                    </CodeBox>
-                </div>
+                    <div>
+                        Download and install Cosmos Storage emulator <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
+                        Alternatively, use the following command:
+                        <br />
+                        <CodeBox>
+                            winget install -e --id Microsoft.Azure.CosmosEmulator
+                        </CodeBox>
+                    </div>
                     break;
                 case "Other":
                     break;
@@ -240,30 +236,30 @@ winget install -e --id Microsoft.Azure.CosmosEmulator
             Select the API mode that best aligns with your specific requirements.
             <br />
             <br />
-            @if(api.Value == "Integrated")
+            @if (api.Value == "Integrated")
             {
-                 <div>
-                   If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project, 
-                   hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.
-                 </div>
-                 <br />
-                 <br />
-                 <div class="api-image-container">
+                <div>
+                    If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project,
+                    hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.
+                </div>
+                <br />
+                <br />
+                <div class="api-image-container">
                     <img class="image" src="images/templates/api-integrated.webp" />
-                 </div>   
+                </div>
             }
             else
             {
                 <div>
-                  Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
+                    Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
                 </div>
                 <br />
                 <br />
                 <div class="api-image-container">
                     <img class="image" src="images/templates/api-standalone.webp" />
-                </div>   
+                </div>
             }
-            
+
         </BitGridItem>
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
@@ -271,27 +267,38 @@ winget install -e --id Microsoft.Azure.CosmosEmulator
                 <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
             </div>
-                <CodeBox>
-                    @GetFileStorageCommand()
-                </CodeBox>
+            <CodeBox>
+                @GetFileStorageCommand()
+            </CodeBox>
 
-            The API project includes an Attachment Controller responsible for handling user images,
-            including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
-            and various implementations of this project can be applied.
-            <br />
-            <br />
-            Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
-            This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces.
-            <br />
-            <br />
-            To configure file storage to use your local hard drive, use the Local value. Other available options include
-            AzureBlobStorage and Other. If you choose Other, you may select any FluentStorage package of your preference.
-            <br />
-            <br />
-            @if(fileStorage.Value == "AzureBlobStorage")
+            @if (fileStorage.Value == "Local")
             {
                 <div>
-                    Download and install @fileStorage.Value <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                    The API project includes an Attachment Controller responsible for handling user images,
+                    including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
+                    and various implementations of this project can be applied.
+                    <br />
+                    <br />
+                    Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
+                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
+                    <br />
+                    <br />
+                    To configure file storage to use your local hard drive, use the Local value. Other available options include
+                    AzureBlobStorage and Other. If you choose Other, you may select any <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage package</a> of your preference.
+                    <br />
+                    <br />
+                </div>
+            }
+            @if (fileStorage.Value == "AzureBlobStorage")
+            {
+                <div>
+                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                </div>
+            }
+            @if(fileStorage.Value == "Other")
+            {
+                <div>
+                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
                 </div>
             }
         </BitGridItem>
