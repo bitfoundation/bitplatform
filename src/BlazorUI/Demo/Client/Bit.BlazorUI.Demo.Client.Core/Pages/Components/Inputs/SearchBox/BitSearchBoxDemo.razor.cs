@@ -187,6 +187,20 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
+                    Name = "InputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input container of the BitSearchBox.",
+                },
+                new()
+                {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the focus state of the BitSearchBox.",
+                },
+                new()
+                {
                     Name = "ClearButton",
                     Type = "string?",
                     DefaultValue = "null",
