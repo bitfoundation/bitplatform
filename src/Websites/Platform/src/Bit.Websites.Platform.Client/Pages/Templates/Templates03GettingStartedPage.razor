@@ -25,12 +25,13 @@
                         To enhance the developer experience, we’ve consolidated the installation process into a single,
                         easy-to-use chain of commands.
                         <br />
-                        The required components are installed using the
+                        The components are installed using the
                         <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>
                         which is installed by default on Windows 11.
-                        <br />
-                        Please choose your preferred options below, click the Copy button,
-                        and paste them into the Windows PowerShell running as an Administrator.
+                        <br /><br />
+                        The default commands listed below are required for Web & API development, however,
+                        you can choose other options too, then click the Copy button and paste them into 
+                        the Windows PowerShell as an Administrator to run.
                     </BitTypography>
                     <br />
                     <BitStack Gap="1rem">
@@ -69,22 +70,20 @@
                     </BitTypography>
                     <br />
                     <div class="section-card-txt">
-                        <BitToggle IsInlineLabel Label="Show steps for cross-platform development" @bind-Value="showCrossPlatform" />
+                        <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                         <ol>
                             <li style="margin-bottom:8px">
                                 Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
                             </li>
                             <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                 <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>
-                                    wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-                                    mkdir -p $HOME/.dotnet
-                                    tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-                                    echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-                                    export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-                                    dotnet dev-certs https --trust
-                                    rm dotnet.tar.gz
-                                </CodeBox>
+                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+dotnet dev-certs https --trust
+rm dotnet.tar.gz</CodeBox>
                             </BitAccordion>
                             <br />
                             <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
@@ -164,7 +163,7 @@
                                         Extensions:
                                         <ul dir="auto">
                                             <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
-                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" title="SQLite and SQL Server Compact Toolbox" rel="nofollow">SQLite and SQL Server Compact Toolbox</a> extension</li>
+                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a> extension</li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -192,24 +191,20 @@
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                    code --install-extension ms-dotnettools.dotnet-maui
-                                    code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                    code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                         </BitAccordion>
                     </div>
