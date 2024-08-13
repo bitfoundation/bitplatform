@@ -15,11 +15,9 @@
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitTypography>
     <br />
-    <br />
     <CodeBox>
         @GetFinalCommand()
     </CodeBox>
-    <br />
     <br />
 
     <BitGrid Columns="2"
@@ -174,18 +172,10 @@
             {
                 <div>
                     The API project includes an Attachment Controller responsible for handling user images,
-                    including resizing and saving them in the WebP format. The <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a> project is utilized for file storage,
-                    and various implementations of this project can be applied.
+                    including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
                     <br />
                     <br />
-                    Notably, one implementation is FluentStorage.AWS, which supports Amazon S3.
-                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
-                    <br />
-                    <br />
-                    To configure file storage to use your local hard drive, use the Local value. Other available options include
-                    AzureBlobStorage and Other. If you choose Other, you may select any <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage package</a> of your preference.
-                    <br />
-                    <br />
+                    Local option stores files on local hard drive.
                 </div>
             }
             @if (fileStorage.Value == "AzureBlobStorage")
@@ -198,6 +188,10 @@
             {
                 <div>
                     Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+                    <br />
+                    <br />
+                    One noteable implementation is <a href="https://nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
+                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
                 </div>
             }
         </BitGridItem>
@@ -294,10 +288,8 @@
             @if (api.Value == "Integrated")
             {
                 <div>
-                    If this parameter is set to Integrated, the Server.Web project will encompass all features of the Api project,
-                    hence provides options for various modes such as Blazor Auto, Blazor Server, pre-rendering, and static SSR.
+                    Easily debug and deploy Server.Web projects that serves restful API services, SSR, Blazor Server, Blazor Auto and pre-rendering.
                 </div>
-                <br />
                 <br />
                 <div class="api-image-container">
                     <img class="image" src="images/templates/api-integrated.webp" />
@@ -308,7 +300,6 @@
                 <div>
                     Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
                 </div>
-                <br />
                 <br />
                 <div class="api-image-container">
                     <img class="image" src="images/templates/api-standalone.webp" />

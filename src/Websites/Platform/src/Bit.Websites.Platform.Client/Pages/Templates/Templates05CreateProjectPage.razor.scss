@@ -46,13 +46,14 @@
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid $White;
-    padding-bottom:rem2(10px);
-    margin-bottom:rem2(10px);
+    padding-bottom: rem2(10px);
+    margin-bottom: rem2(10px);
 }
 
 .api-image-container {
     display: flex;
     justify-content: center;
+    height: 350px;
 }
 
 ::deep {
