@@ -1,7 +1,7 @@
 ﻿::deep {
     .example-content {
-        gap: 0.5rem;
-        display: flex;
+        overflow-x: auto;
+        padding-block: 1rem;
     }
 
     .dot-template {
@@ -15,25 +15,33 @@
     }
 
     .custom-class {
-        padding: 1rem 0;
-        border-radius: 1rem;
-        background-color: blueviolet;
+        color: dodgerblue;
+        font-weight: bold;
+        margin-inline: 1rem;
+        padding-block: 1rem;
+        text-shadow: dodgerblue 0 0 1rem;
     }
 
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: dodgerblue;
+        font-weight: bold;
+        text-shadow: dodgerblue 0 0 1rem;
+    }
+
+    .custom-dot {
+        border-color: blueviolet;
+        box-shadow: blueviolet 0 0 1rem;
     }
 
     .custom-icon {
-        color: goldenrod;
+        color: blueviolet;
     }
 
     .custom-divider::before {
-        background: green;
+        background: blueviolet;
     }
 
-    .custom-text {
-        color: rebeccapurple;
+    .custom-item-text {
+        color: blueviolet;
     }
 }
