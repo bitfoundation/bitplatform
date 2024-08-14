@@ -1,7 +1,7 @@
 ﻿::deep {
     .example-content {
-        overflow-x: auto;
-        padding-block: 1rem;
+        gap: 0.5rem;
+        display: flex;
     }
 
     .dot-template {
