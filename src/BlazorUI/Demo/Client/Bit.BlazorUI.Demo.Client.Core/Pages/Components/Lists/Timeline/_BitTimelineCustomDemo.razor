@@ -1,8 +1,6 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <div class="example-content">
-            <BitTimeline Items="basicCustoms" NameSelectors="nameSelectors" />
-        </div>
+        <BitTimeline Items="basicCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -10,9 +8,7 @@
     <ExamplePreview>
         <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
         <br />
-        <div class="example-content">
-            <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" />
-        </div>
+        <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -20,17 +16,11 @@
     <ExamplePreview>
         <div>The Timeline offers two orientation options: Vertical (default) and Horizontal.</div>
         <br /><br /><br />
-        <div>
-            <div>Disabled component</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" IsEnabled="false" />
-            </div>
-            <br /><br /><br />
-            <div>Disabled item</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="disabledCustoms" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Disabled component</div><br />
+        <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" IsEnabled="false" />
+        <br /><br /><br />
+        <div>Disabled item</div><br />
+        <BitTimeline Horizontal Items="disabledCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -38,22 +28,14 @@
     <ExamplePreview>
         <div>The Timeline has three variants: Fill (default), Outline, and Text.</div>
         <br /><br /><br />
-        <div>
-            <div>Fill</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Variant="BitVariant.Fill" Items="disabledCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Outline</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Variant="BitVariant.Outline" Items="disabledCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Text</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Variant="BitVariant.Text" Items="disabledCustoms" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Fill</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Fill" Items="disabledCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Outline</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Outline" Items="disabledCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Text</div><br />
+        <BitTimeline Horizontal Variant="BitVariant.Text" Items="disabledCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -61,22 +43,14 @@
     <ExamplePreview>
         <div>Each item in the Timeline can have an icon.</div>
         <br /><br /><br />
-        <div>
-            <div>Fill</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" />
-            </div>
-            <br /><br /><br />
-            <div>Outline</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
-            </div>
-            <br /><br /><br />
-            <div>Text</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
-            </div>
-        </div>
+        <div>Fill</div><br />
+        <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" />
+        <br /><br /><br />
+        <div>Outline</div><br />
+        <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
+        <br /><br /><br />
+        <div>Text</div><br />
+        <BitTimeline Horizontal Items="iconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -84,20 +58,16 @@
     <ExamplePreview>
         <div>Each item in the Timeline can be reversed and be on the opposite side.</div>
         <br /><br /><br />
-        <div>
-            <div>Vertical</div><br />
-            <div class="example-content">
-                <BitTimeline Items="basicCustoms" NameSelectors="nameSelectors" Reversed />
-                <BitTimeline Items="reversedCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Horizontal</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" Reversed />
-                <br /><br />
-                <BitTimeline Horizontal Items="reversedCustoms" NameSelectors="nameSelectors" />
-            </div>
+        <div>Vertical</div><br />
+        <div class="example-content">
+            <BitTimeline Items="basicCustoms" NameSelectors="nameSelectors" Reversed />
+            <BitTimeline Items="reversedCustoms" NameSelectors="nameSelectors" />
         </div>
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" Reversed />
+        <br /><br />
+        <BitTimeline Horizontal Items="reversedCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -105,17 +75,11 @@
     <ExamplePreview>
         <div>Here are some examples of customizing the Timeline content.</div>
         <br /><br /><br />
-        <div>
-            <div>Vertical</div><br />
-            <div class="example-content">
-                <BitTimeline Items="templateItems" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Horizontal</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Items="templateItems" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Vertical</div><br />
+        <BitTimeline Items="templateItems" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline Horizontal Items="templateItems" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -123,79 +87,61 @@
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br /><br />
-        <div>
-            <div>Primary</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Primary" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Secondary</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Secondary" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Tertiary</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Tertiary" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Info</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Info" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Success</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Success" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Warning</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Warning" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>SevereWarning</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.SevereWarning" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Error</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Color="BitColor.Error" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Primary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Primary" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Primary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Secondary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Secondary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Tertiary</div><br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Info</div><br />
+        <BitTimeline Horizontal Color="BitColor.Info" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Info" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Success</div><br />
+        <BitTimeline Horizontal Color="BitColor.Success" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Success" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Warning</div><br />
+        <BitTimeline Horizontal Color="BitColor.Warning" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Warning" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>SevereWarning</div><br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Error</div><br />
+        <BitTimeline Horizontal Color="BitColor.Error" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Color="BitColor.Error" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -203,34 +149,26 @@
     <ExamplePreview>
         <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
         <br /><br /><br />
-        <div>
-            <div>Small</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Size="BitSize.Small" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Medium</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Size="BitSize.Medium" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Large</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Size="BitSize.Large" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
-                <br />
-                <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Small</div><br />
+        <BitTimeline Horizontal Size="BitSize.Small" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Small" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Medium</div><br />
+        <BitTimeline Horizontal Size="BitSize.Medium" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Medium" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Large</div><br />
+        <BitTimeline Horizontal Size="BitSize.Large" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="nameSelectors" />
+        <br />
+        <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -238,52 +176,39 @@
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br /><br />
-        <div>
-            <div>Component's Style & Class:</div><br />
-            <div class="example-content">
-                <BitTimeline Style="max-width: max-content; color: dodgerblue;" Items="basicCustoms" NameSelectors="nameSelectors" />
-                <br /><br />
-                <BitTimeline Horizontal Class="custom-class" Items="basicCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br /><br />
-            <div>Item's Style & Class:</div><br />
-            <div class="example-content">
-                <BitTimeline Items="styleClassCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <div class="example-content">
-                <BitTimeline Items="iconCustoms" NameSelectors="nameSelectors"
-                             Styles="@(new() { Icon = "color: whitesmoke;",
-                                               Dot = "background-color: lightseagreen; border-color: mediumseagreen;",
-                                               PrimaryText = "color: lightseagreen; font-weight: bold;" })" />
-                <br /><br />
-                <BitTimeline Items="iconCustoms" NameSelectors="nameSelectors"
-                             Variant="BitVariant.Outline"
-                             Classes="@(new() { Dot = "custom-dot",
-                                                Icon = "custom-icon",
-                                                Item = "custom-item-text",
-                                                Divider = "custom-divider" })" />
-            </div>
+        <div>Component's Style & Class:</div><br />
+        <BitTimeline Style="max-width: max-content; color: dodgerblue;" Items="basicCustoms" NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitTimeline Horizontal Class="custom-class" Items="basicCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br /><br />
+        <div>Item's Style & Class:</div><br />
+        <BitTimeline Items="styleClassCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div><br />
+        <div class="example-content">
+            <BitTimeline Items="iconCustoms" NameSelectors="nameSelectors"
+                         Styles="@(new() { Icon = "color: whitesmoke;",
+                                           Dot = "background-color: lightseagreen; border-color: mediumseagreen;",
+                                           PrimaryText = "color: lightseagreen; font-weight: bold;" })" />
+            <BitTimeline Items="iconCustoms" NameSelectors="nameSelectors"
+                         Variant="BitVariant.Outline"
+                         Classes="@(new() { Dot = "custom-dot",
+                                            Icon = "custom-icon",
+                                            Item = "custom-item-text",
+                                            Divider = "custom-divider" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <ExamplePreview>
+    <ExamplePreview>        
         <div>Use the BitTimeline component in right-to-left (RTL).</div>
         <br /><br /><br />
-        <div dir="rtl">
-            <div>Vertical</div><br />
-            <div class="example-content">
-                <BitTimeline Dir="BitDir.Rtl" Items="basicRtlCustoms" NameSelectors="nameSelectors" />
-            </div>
-            <br /><br /><br />
-            <div>Horizontal</div><br />
-            <div class="example-content">
-                <BitTimeline Horizontal Dir="BitDir.Rtl" Items="basicRtlCustoms" NameSelectors="nameSelectors" />
-            </div>
-        </div>
+        <div>Vertical</div><br />
+        <BitTimeline Dir="BitDir.Rtl" Items="basicRtlCustoms" NameSelectors="nameSelectors" />
+        <br /><br /><br />
+        <div>Horizontal</div><br />
+        <BitTimeline Horizontal Dir="BitDir.Rtl" Items="basicRtlCustoms" NameSelectors="nameSelectors" />
     </ExamplePreview>
 </ComponentExampleBox>
 
