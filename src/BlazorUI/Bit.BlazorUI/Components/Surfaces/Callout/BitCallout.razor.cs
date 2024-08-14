@@ -52,6 +52,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
+    [CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -126,8 +127,6 @@ public partial class BitCallout : BitComponentBase, IDisposable
         {
             _dotnetObj = DotNetObjectReference.Create(this);
         }
-
-        await ToggleCallout();
     }
 
 
