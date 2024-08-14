@@ -15,7 +15,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js?v=8.0.400"
+        url: "_framework/blazor.web.js?v=9.0.100-preview.7.24407.12"
     }
 ];
 
@@ -31,6 +31,7 @@ self.serverHandledUrls = [
     /\/signin-/,
     /\/.well-known/,
     /\/sitemap.xml/,
+    /\/terms/,
 ];
 
 self.defaultUrl = "/";

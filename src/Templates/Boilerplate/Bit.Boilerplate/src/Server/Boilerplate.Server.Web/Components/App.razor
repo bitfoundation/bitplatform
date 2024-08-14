@@ -1,9 +1,16 @@
 ﻿@using Boilerplate.Client.Web.Components
+@using Microsoft.AspNetCore.Components.Routing
+
 @*+:cnd:noEmit*@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    if (HttpContext.AcceptsInteractiveRouting() is false)
+    {
+        // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
+        renderMode = null;
+    }
 }
 
 <!DOCTYPE html>
@@ -54,7 +61,11 @@
     {
         <LoadingComponent />
     }
-
+    @if (renderMode == null && (AppRenderMode.Current == AppRenderMode.BlazorWebAssembly || AppRenderMode.Current == AppRenderMode.Auto))
+    {
+        // Ensure Blazor WebAssembly is preloaded and initiated in the background while the user interacts with the server-side rendered (SSR) Blazor page.
+        <WebAssemblyRuntimeStarter @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
+    }
     <Routes @rendermode=renderMode />
 
     @if (HttpContext.Request.IsCrawlerClient() is false)

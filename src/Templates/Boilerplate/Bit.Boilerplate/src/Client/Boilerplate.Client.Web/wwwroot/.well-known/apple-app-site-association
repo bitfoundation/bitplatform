@@ -18,6 +18,7 @@
                     "NOT /swagger*",
                     "NOT /signin*",
                     "NOT /.well-known*",
+                    "NOT /terms*",
                     "*"
                 ]
             },
@@ -34,6 +35,7 @@
                     "NOT /swagger*",
                     "NOT /signin*",
                     "NOT /.well-known*",
+                    "NOT /terms*",
                     "*"
                 ]
             }

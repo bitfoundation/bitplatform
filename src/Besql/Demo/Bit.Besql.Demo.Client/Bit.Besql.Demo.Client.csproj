@@ -1,20 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-    <WasmBuildNative>true</WasmBuildNative>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <WasmBuildNative>true</WasmBuildNative>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
-  </ItemGroup>
+    <PropertyGroup>
+        <EFOptimizeContext>true</EFOptimizeContext>
+        <DbContextName>OfflineDbContext</DbContextName>
+        <EFStartupProject>..\Bit.Besql.Demo\Bit.Besql.Demo.csproj</EFStartupProject>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Bit.Besql\Bit.Besql.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0-preview.7.24406.2" />
+        <!--<PackageReference Include="Microsoft.EntityFrameworkCore.Tasks" Version="9.0.0-preview.4.24205.3" />-->
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Besql\Bit.Besql.csproj" />
+    </ItemGroup>
 
 </Project>

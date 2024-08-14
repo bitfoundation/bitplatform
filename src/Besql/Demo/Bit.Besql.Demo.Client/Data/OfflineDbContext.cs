@@ -1,5 +1,4 @@
-﻿using Bit.Besql.Demo.Client.Data.CompiledModel;
-using Bit.Besql.Demo.Client.Model;
+﻿using Bit.Besql.Demo.Client.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -30,7 +29,7 @@ public class OfflineDbContext(DbContextOptions<OfflineDbContext> options)
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
+            // .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
             .UseSqlite("Data Source=Offline-ClientDb.db");
 
         base.OnConfiguring(optionsBuilder);

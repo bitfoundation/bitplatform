@@ -63,7 +63,7 @@ public static partial class Program
             {
                 policy.SetIsOriginAllowed(origin => 
                             LocalhostOriginRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(appSettings.WebClientUrl) is false && string.Equals(origin, appSettings.WebClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                            (string.IsNullOrEmpty(configuration["WebClientUrl"]) is false && string.Equals(origin, configuration["WebClientUrl"], StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
@@ -118,11 +118,6 @@ public static partial class Program
             });
             //#elif (database == "Cosmos")
             options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
-            {
-
-            });
-            //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });

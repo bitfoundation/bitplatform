@@ -73,11 +73,11 @@
                         <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                         <ol>
                             <li style="margin-bottom:8px">
-                                Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.400</a>
+                                Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">9.0.100-preview.7.24407.12</a>
                             </li>
                             <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                 <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/14951030-5b4e-45ce-af0b-3d4aa613a70b/25acaeb050bbba6950a55960c5d3ad73/dotnet-sdk-8.0.400-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/84a39cad-2147-4a3e-b8fd-ec6fca0f80dd/d86fc06f750e758770f5a2237e01f5c5/dotnet-sdk-9.0.100-preview.7.24407.12-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc

@@ -24,4 +24,10 @@ public static class IConfigurationExtensions
             ? serverAddress.TrimEnd('/')
             : throw new InvalidOperationException($"Api server address {serverAddress} is invalid");
     }
+
+    public static string GetWebClientUrl(this IConfiguration configuration)
+    {
+        return string.IsNullOrEmpty(configuration["WebClientUrl"]) is false ? 
+            configuration["WebClientUrl"]! : GetServerAddress(configuration);
+    }
 }

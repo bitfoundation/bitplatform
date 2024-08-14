@@ -81,6 +81,7 @@ public class Middlewares
             });
         }
 
+        app.MapStaticAssets();
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

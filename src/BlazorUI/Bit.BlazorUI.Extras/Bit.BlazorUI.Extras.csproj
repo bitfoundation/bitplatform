@@ -3,12 +3,12 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <IsTrimmable>false</IsTrimmable>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -22,9 +22,8 @@
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net6.0'" Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net7.0'" Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.7.24406.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -55,7 +54,7 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildJavaScript"/>
         <CallTarget Targets="BuildCss"/>

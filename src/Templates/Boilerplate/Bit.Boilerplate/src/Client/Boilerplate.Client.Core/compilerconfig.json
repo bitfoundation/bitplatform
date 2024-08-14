@@ -73,12 +73,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/TermsPage.razor.css",
-        "inputFile": "Components/Pages/TermsPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.css",
         "inputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.scss",
         "minify": { "enabled": false },

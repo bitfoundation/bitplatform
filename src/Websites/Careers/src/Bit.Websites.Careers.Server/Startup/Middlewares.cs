@@ -73,6 +73,8 @@ public class Middlewares
             app.MapHealthChecksUI();
         }
 
+        app.MapStaticAssets();
+
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
