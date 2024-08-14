@@ -73,6 +73,12 @@ namespace BitBlazorUI {
             callout ??= document.getElementById(calloutId);
             if (callout == null) return false;
 
+            if (!isCalloutOpen) {
+                callout.style.display = 'none';
+                Callouts.reset();
+                return false;
+            }
+
             const scrollContainer = (scrollContainerId
                 ? document.getElementById(scrollContainerId)
                 : { style: {} as any, getBoundingClientRect: () => ({ y: 0 }) })!;
@@ -85,11 +91,6 @@ namespace BitBlazorUI {
                 ? document.getElementById(footerId)
                 : { getBoundingClientRect: () => ({ height: 0 }) })!;
 
-            if (!isCalloutOpen) {
-                callout.style.display = 'none';
-                Callouts.reset();
-                return false;
-            }
             Callouts.replaceCurrent({ dotnetObj, calloutId, responsiveMode, scrollContainerId });
             callout.style.display = 'block';
 

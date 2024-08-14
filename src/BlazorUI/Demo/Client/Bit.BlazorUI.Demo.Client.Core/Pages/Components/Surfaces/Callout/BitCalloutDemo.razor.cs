@@ -190,135 +190,71 @@ public partial class BitCalloutDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Toggle",
+            Type = "Task",
+            Description = "Toggles the callout to open/close it.",
+        }
+    ];
+
+
 
     private ElementReference anchorEl = default!;
     private BitCallout callout1 = default!;
     private BitCallout callout2 = default!;
 
+    private bool isOpen = true;
+
 
 
     private readonly string example1RazorCode = @"
-<BitAccordion Title=""Accordion 1"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
-</BitAccordion>
-
-<BitAccordion Title=""Accordion 1"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
-</BitAccordion>
-<BitAccordion Title=""Accordion 2"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
-</BitAccordion>
-<BitAccordion Title=""Accordion 3"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
-</BitAccordion>";
+<BitCallout>
+    <Anchor>
+        <BitButton>Click me</BitButton>
+    </Anchor>
+    <Content>
+        <div style=""width: fit-content; padding: 1rem; border:1px solid gray;"">
+            This is the callout content.
+        </div>
+    </Content>
+</BitCallout>";
 
     private readonly string example2RazorCode = @"
-<BitAccordion Title=""General settings"" Description=""I am an accordion"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
-</BitAccordion>
+<BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">Click me</BitButton>
+<BitCallout AnchorId=""anchor_id"" @ref=""callout1"">
+    <div style=""padding:1rem; border:1px solid gray;"">
+        <BitCalendar />
+    </div>
+</BitCallout>
 
-<BitAccordion Title=""Users"" Description=""You are currently not an owner"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique.
-</BitAccordion>
 
-<BitAccordion Title=""Advanced settings"" Description=""Filtering has been entirely disabled for whole web server"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
-</BitAccordion>
-
-<BitAccordion Title=""Advanced settings"" Description=""Filtering has been entirely disabled for whole web server"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae.
-</BitAccordion>";
+<button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">Click me</button>
+<BitCallout AnchorEl=""() => anchorEl"" @ref=""callout2"">
+    <div style=""padding:1rem; border:1px solid gray;"">
+        <BitCalendar />
+    </div>
+</BitCallout>";
+    private readonly string example2CsharpCode = @"
+private ElementReference anchorEl;
+private BitCallout callout1;
+private BitCallout callout2;";
 
     private readonly string example3RazorCode = @"
-<BitAccordion Title=""General settings""
-              Description=""I am an accordion""
-              OnClick=""() => controlledAccordionExpandedItem = 1""
-              IsExpanded=""controlledAccordionExpandedItem == 1"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl.
-</BitAccordion>
+<BitButton OnClick=""() => isOpen = true"">Click me</BitButton>
 
-<BitAccordion Title=""Users""
-              Description=""You are currently not an owner""
-              OnClick=""() => controlledAccordionExpandedItem = 2""
-              IsExpanded=""controlledAccordionExpandedItem == 2"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor.
-</BitAccordion>
-
-<BitAccordion Title=""Advanced settings""
-              Description=""Filtering has been entirely disabled for whole web server""
-              OnClick=""() => controlledAccordionExpandedItem = 3""
-              IsExpanded=""controlledAccordionExpandedItem == 3"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu.
-</BitAccordion>";
-    private readonly string example3CsharpCode = @"
-private byte controlledAccordionExpandedItem = 1;";
-
-    private readonly string example4RazorCode = @"
-<BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" Style=""margin-right: 10px;"" />
-<BitToggle @bind-Value=""AccordionToggleIsEnabled"" OnText=""Expanded"" OffText=""Collapsed"" />
-
-<BitAccordion Title=""Accordion 1""
-                Description=""I am an accordion""
-                IsEnabled=""@AccordionToggleIsEnabled""
-                @bind-IsExpanded=""AccordionToggleIsExpanded"">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit.
-</BitAccordion>";
-
-    private readonly string example4CsharpCode = @"
-private bool AccordionToggleIsEnabled;
-private bool AccordionToggleIsExpanded;";
-
-    private readonly string example5RazorCode = @"
-<style>
-    .custom-header {
-        flex-grow: 1;
-        display: flex;
-        color: #0054C6;
-        line-height: 1.5;
-    }
-
-    .custom-title {
-        width: 30%;
-        font-weight: 600;
-        font-size: rem(16px);
-    }
-</style>
-
-<BitAccordion>
-    <HeaderTemplate Context=""isExpanded"">
-        <BitButton Variant=""BitVariant.Text"" IconName=""@(isExpanded ? BitIconName.ChevronDown : BitIconName.ChevronRight)"" />
-        <div class=""custom-header"">
-            <span class=""custom-title"">Accordion 1</span>
-            <span>I am an accordion</span>
+<BitCallout @bind-IsOpen=""isOpen"">
+    <Anchor>
+        <button>Anchor</button>
+    </Anchor>
+    <Content>
+        <div style=""width: fit-content; padding: 1rem; border:1px solid gray;"">
+            This is the callout content.
         </div>
-    </HeaderTemplate>
-    <ChildContent>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.
-    </ChildContent>
-</BitAccordion>
-
-<BitAccordion Title=""Nature"" Description=""I am an accordion"">
-    <BitCarousel AnimationDuration=""1"">
-        <BitCarouselItem>
-            <img src=""img1.jpg"">
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""img2.jpg"" />
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""img3.jpg"" />
-        </BitCarouselItem>
-        <BitCarouselItem>
-            <img src=""img4.jpg"" />
-        </BitCarouselItem>
-    </BitCarousel>
-</BitAccordion>";
-
-    private readonly string example6RazorCode = @"
-<BitAccordion Dir=""BitDir.Rtl"" 
-              Title=""تنظیمات"" 
-              Description=""من یک آکاردئون هستم!"">
-    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-</BitAccordion>
-";
+    </Content>
+</BitCallout>";
+    private readonly string example3CsharpCode = @"
+private bool isOpen;";
 }

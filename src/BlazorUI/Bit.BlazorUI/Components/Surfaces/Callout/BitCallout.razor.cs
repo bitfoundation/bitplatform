@@ -52,7 +52,6 @@ public partial class BitCallout : BitComponentBase, IDisposable
     /// Determines the opening state of the callout.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -73,19 +72,23 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
 
 
+    /// <summary>
+    /// Toggles the callout to open/close it.
+    /// </summary>
+    /// <returns></returns>
+    public async Task Toggle()
+    {
+        if (await AssignIsOpen(IsOpen is false) is false) return;
+
+        await ToggleCallout();
+    }
+
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
-    }
-
-    public async Task Toggle()
-    {
-        if (await AssignIsOpen(IsOpen is false) is false) return;
-
-        await ToggleCallout();
     }
 
 
@@ -115,14 +118,16 @@ public partial class BitCallout : BitComponentBase, IDisposable
         await base.OnInitializedAsync();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
+
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
         }
 
-        base.OnAfterRender(firstRender);
+        await ToggleCallout();
     }
 
 
@@ -146,7 +151,6 @@ public partial class BitCallout : BitComponentBase, IDisposable
         if (IsEnabled is false) return;
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
-
 
         await _js.ToggleCallout(_dotnetObj,
                                 id,
