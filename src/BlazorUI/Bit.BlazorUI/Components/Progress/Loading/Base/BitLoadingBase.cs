@@ -2,18 +2,8 @@
 
 namespace Bit.BlazorUI;
 
-public abstract partial class BitLoadingBase : BitComponentBase
+public abstract class BitLoadingBase : BitComponentBase
 {
-    /// <summary>
-    /// Custom CSS class for the child element(s) of the loading component.
-    /// </summary>
-    [Parameter] public string? ChildClass { get; set; }
-
-    /// <summary>
-    /// Custom CSS style for the child element(s) of the loading component.
-    /// </summary>
-    [Parameter] public string? ChildStyle { get; set; }
-
     /// <summary>
     /// Custom CSS classes for different parts of the loading component.
     /// </summary>
@@ -69,14 +59,6 @@ public abstract partial class BitLoadingBase : BitComponentBase
         {
             switch (parameter.Key)
             {
-                case nameof(ChildClass):
-                    ChildClass = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-                case nameof(ChildStyle):
-                    ChildStyle = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
                 case nameof(Color):
                     var color = (BitColor?)parameter.Value;
                     if (Color != color) StyleBuilder.Reset();
@@ -97,7 +79,6 @@ public abstract partial class BitLoadingBase : BitComponentBase
                     break;
                 case nameof(Label):
                     var label = (string?)parameter.Value;
-                    if (Label != label) StyleBuilder.Reset();
                     Label = label;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -109,7 +90,6 @@ public abstract partial class BitLoadingBase : BitComponentBase
                     break;
                 case nameof(LabelTemplate):
                     var labelTemplate = (RenderFragment?)parameter.Value;
-                    if (LabelTemplate != labelTemplate) StyleBuilder.Reset();
                     LabelTemplate = labelTemplate;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -125,6 +105,8 @@ public abstract partial class BitLoadingBase : BitComponentBase
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
     }
+
+
 
     protected override void RegisterCssClasses()
     {
@@ -170,6 +152,8 @@ public abstract partial class BitLoadingBase : BitComponentBase
     {
         return (value * GetSize() / OriginalSize).ToString(CultureInfo.InvariantCulture);
     }
+
+
 
     private int GetSize()
     {

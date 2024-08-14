@@ -6,20 +6,6 @@ public partial class BitLoadingDemo
     [
         new()
         {
-            Name = "ChildClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS class for the root element of the loading component.",
-        },
-        new()
-        {
-            Name = "ChildStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS style for the root element of the loading component.",
-        },
-        new()
-        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
