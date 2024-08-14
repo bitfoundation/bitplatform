@@ -1,7 +1,6 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -20,7 +19,8 @@
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
          style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-         class="bit-clo-ovl @Classes?.Overlay"></div>
+         class="bit-clo-ovl @Classes?.Overlay">
+    </div>
 
     <div id="@_contentId"
          style="@Styles?.Content"

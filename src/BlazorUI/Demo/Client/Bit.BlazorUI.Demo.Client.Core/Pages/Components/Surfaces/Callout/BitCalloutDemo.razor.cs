@@ -206,7 +206,7 @@ public partial class BitCalloutDemo
     private BitCallout callout1 = default!;
     private BitCallout callout2 = default!;
 
-    private bool isOpen = true;
+    private bool isOpen;
 
 
 
@@ -223,7 +223,7 @@ public partial class BitCalloutDemo
 </BitCallout>";
 
     private readonly string example2RazorCode = @"
-<BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">Click me</BitButton>
+<BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">AnchorId</BitButton>
 <BitCallout AnchorId=""anchor_id"" @ref=""callout1"">
     <div style=""padding:1rem; border:1px solid gray;"">
         <BitCalendar />
@@ -231,7 +231,7 @@ public partial class BitCalloutDemo
 </BitCallout>
 
 
-<button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">Click me</button>
+<button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">AnchorEl</button>
 <BitCallout AnchorEl=""() => anchorEl"" @ref=""callout2"">
     <div style=""padding:1rem; border:1px solid gray;"">
         <BitCalendar />
@@ -243,7 +243,7 @@ private BitCallout callout1;
 private BitCallout callout2;";
 
     private readonly string example3RazorCode = @"
-<BitButton OnClick=""() => isOpen = true"">Click me</BitButton>
+<BitButton OnClick=""() => isOpen = true"">Open callout</BitButton>
 
 <BitCallout @bind-IsOpen=""isOpen"">
     <Anchor>
