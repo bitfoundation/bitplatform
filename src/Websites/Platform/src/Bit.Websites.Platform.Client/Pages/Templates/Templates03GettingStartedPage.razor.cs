@@ -66,7 +66,7 @@ public partial class Templates03GettingStartedPage
             command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
 
             (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
-            command:"winget install Microsoft.DotNet.SDK.8 -v 8.0.303 --accept-source-agreements --accept-package-agreements;"),
+            command:"winget install Microsoft.DotNet.SDK.8 -v 8.0.400 --accept-source-agreements --accept-package-agreements;"),
 
             (text:@"echo 'Discover installed .NET SDK';",
             command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),

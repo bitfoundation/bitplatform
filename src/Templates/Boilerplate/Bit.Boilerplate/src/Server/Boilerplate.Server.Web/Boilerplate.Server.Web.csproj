@@ -9,9 +9,9 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.7" PrivateAssets="all" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" PrivateAssets="all" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
