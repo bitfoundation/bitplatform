@@ -809,11 +809,11 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
 };";
 
     private readonly string example10RazorCode = @"
-<BitDropdown Label=""Auto""
+<BitDropdown Label=""All""
              Items=""dropDirectionCustoms""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             DropDirection=""BitDropDirection.Auto"" />
+             DropDirection=""BitDropDirection.All"" />
 
 <BitDropdown Label=""TopAndBottom""
              Items=""dropDirectionCustoms""

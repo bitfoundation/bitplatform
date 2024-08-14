@@ -721,9 +721,9 @@ private readonly List<BitDropdownItem<string>> rtlItems =
 ];";
 
     private readonly string example10RazorCode = @"
-<BitDropdown Label=""Auto""
+<BitDropdown Label=""All""
              Placeholder=""Select an item""
-             DropDirection=""BitDropDirection.Auto""
+             DropDirection=""BitDropDirection.All""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in dropDirectionItems)
     {
