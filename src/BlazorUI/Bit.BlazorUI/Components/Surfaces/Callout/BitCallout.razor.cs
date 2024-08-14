@@ -19,9 +19,9 @@ public partial class BitCallout : BitComponentBase, IDisposable
     [Parameter] public RenderFragment? Anchor { get; set; }
 
     /// <summary>
-    /// The element reference to the external anchor element.
+    /// The setter function for element reference to the external anchor element.
     /// </summary>
-    [Parameter] public ElementReference? AnchorElement { get; set; }
+    [Parameter] public Func<ElementReference>? AnchorEl { get; set; }
 
     /// <summary>
     /// The id of the external anchor element.
@@ -147,9 +147,10 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
+
         await _js.ToggleCallout(_dotnetObj,
                                 id,
-                                AnchorElement,
+                                AnchorEl is null ? null : AnchorEl(),
                                 _contentId,
                                 null,
                                 IsOpen,

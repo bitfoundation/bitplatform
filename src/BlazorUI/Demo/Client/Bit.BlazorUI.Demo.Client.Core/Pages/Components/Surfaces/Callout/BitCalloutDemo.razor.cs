@@ -13,10 +13,10 @@ public partial class BitCalloutDemo
         },
         new()
         {
-            Name = "AnchorElement",
-            Type = "ElementReference?",
+            Name = "AnchorEl",
+            Type = "Func<ElementReference>?",
             DefaultValue = "null",
-            Description = "The element reference to an external anchor element."
+            Description = "The setter function for element reference to the external anchor element."
         },
         new()
         {

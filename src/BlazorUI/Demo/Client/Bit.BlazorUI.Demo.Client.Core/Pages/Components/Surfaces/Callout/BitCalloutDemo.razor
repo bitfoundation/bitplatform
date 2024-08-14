@@ -29,11 +29,13 @@
             <div class="example-box">
                 <BitButton Id="anchor_id" OnClick="() => callout1.Toggle()">Click me</BitButton>
                 <BitCallout AnchorId="anchor_id" @ref="callout1">
-                    <BitCalendar />
+                    <div style="padding:1rem; border:1px solid gray;">
+                        <BitCalendar />
+                    </div>
                 </BitCallout>
 
                 <button @ref="anchorEl" @onclick="() => callout2.Toggle()">Click me</button>
-                <BitCallout AnchorElement="anchorEl" @ref="callout2">
+                <BitCallout AnchorEl="() => anchorEl" @ref="callout2">
                     <div style="padding:1rem; border:1px solid gray;">
                         <BitCalendar />
                     </div>
