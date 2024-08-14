@@ -7,7 +7,7 @@
 
     <ItemGroup>
         <Content Remove="appsettings*.json" />
-        <EmbeddedResource Include="appsettings*.json"/>
+        <EmbeddedResource Include="appsettings*.json" />
         <EmbeddedResource Update="appsettings.*.json">
             <DependentUpon>appsettings.json</DependentUpon>
         </EmbeddedResource>
@@ -16,10 +16,10 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
         <PackageReference Include="System.Text.Json" Version="8.0.4" />
