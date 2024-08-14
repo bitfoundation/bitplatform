@@ -1,9 +1,12 @@
 .bit-ldn-cir {
+}
+
+.bit-ldn-cir-ccn {
     display: inline-block;
     transform: translateZ(1px);
 }
 
-.bit-ldn-cir > div {
+.bit-ldn-cir-chl {
     border-radius: 50%;
     display: inline-block;
     width: var(--bit-ldn-size);

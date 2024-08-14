@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public abstract class BitLoadingBase : BitComponentBase
+public abstract partial class BitLoadingBase : BitComponentBase
 {
     /// <summary>
     /// Custom CSS class for the child element(s) of the loading component.
@@ -13,6 +13,11 @@ public abstract class BitLoadingBase : BitComponentBase
     /// Custom CSS style for the child element(s) of the loading component.
     /// </summary>
     [Parameter] public string? ChildStyle { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the loading component.
+    /// </summary>
+    [Parameter] public BitLoadingClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the loading component.
@@ -48,6 +53,11 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The Size of the loading component.
     /// </summary>
     [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the loading component.
+    /// </summary>
+    [Parameter] public BitLoadingClassStyles? Styles { get; set; }
 
 
 
@@ -93,7 +103,7 @@ public abstract class BitLoadingBase : BitComponentBase
                     break;
                 case nameof(LabelPosition):
                     var labelPosition = (BitLabelPosition?)parameter.Value;
-                    if (LabelPosition != labelPosition) StyleBuilder.Reset();
+                    if (LabelPosition != labelPosition) ClassBuilder.Reset();
                     LabelPosition = labelPosition;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -114,6 +124,20 @@ public abstract class BitLoadingBase : BitComponentBase
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+    }
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => "bit-ldn");
+
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Top => "bit-ldn-ltp",
+            BitLabelPosition.Bottom => "bit-ldn-lbm",
+            BitLabelPosition.Start => "bit-ldn-lst",
+            BitLabelPosition.End => "bit-ldn-led",
+            _ => "bit-ldn-ltp"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -137,6 +161,7 @@ public abstract class BitLoadingBase : BitComponentBase
         });
 
         StyleBuilder.Register(() => $"--bit-ldn-size:{GetSize()}px");
+        StyleBuilder.Register(() => $"--bit-ldn-font-size:{GetFontSize()}px");
     }
 
     protected virtual int OriginalSize => 80;
@@ -150,10 +175,21 @@ public abstract class BitLoadingBase : BitComponentBase
     {
         return Size switch
         {
-            BitSize.Small => 32,
+            BitSize.Small => 40,
             BitSize.Medium => 64,
-            BitSize.Large => 96,
+            BitSize.Large => 88,
             _ => CustomSize ?? 64
+        };
+    }
+
+    private int GetFontSize()
+    {
+        return Size switch
+        {
+            BitSize.Small => 10,
+            BitSize.Medium => 14,
+            BitSize.Large => 18,
+            _ => ((CustomSize / 64) ?? 1) * 14
         };
     }
 }

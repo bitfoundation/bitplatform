@@ -1,10 +1,13 @@
 .bit-ldn-dur {
+}
+
+.bit-ldn-dur-ccn {
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-dur:after {
+.bit-ldn-dur-ccn:after {
     content: " ";
     display: block;
     border-radius: 50%;

@@ -1,11 +1,14 @@
 .bit-ldn-elp {
+}
+
+.bit-ldn-elp-ccn {
     position: relative;
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-elp div {
+.bit-ldn-elp-chl {
     position: absolute;
     border-radius: 50%;
     top: var(--bit-ldn-elp-33);
@@ -15,22 +18,22 @@
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
-.bit-ldn-elp div:nth-child(1) {
+.bit-ldn-elp-ch1 {
     left: var(--bit-ldn-elp-8);
     animation: bit-ldn-elp-anm1 0.6s infinite;
 }
 
-.bit-ldn-elp div:nth-child(2) {
+.bit-ldn-elp-ch2 {
     left: var(--bit-ldn-elp-8);
     animation: bit-ldn-elp-anm2 0.6s infinite;
 }
 
-.bit-ldn-elp div:nth-child(3) {
+.bit-ldn-elp-ch3 {
     left: var(--bit-ldn-elp-32);
     animation: bit-ldn-elp-anm2 0.6s infinite;
 }
 
-.bit-ldn-elp div:nth-child(4) {
+.bit-ldn-elp-ch4 {
     left: var(--bit-ldn-elp-56);
     animation: bit-ldn-elp-anm3 0.6s infinite;
 }

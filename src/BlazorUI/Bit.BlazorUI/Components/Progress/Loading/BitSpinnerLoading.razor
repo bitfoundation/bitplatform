@@ -1,12 +1,19 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitLoadingBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
-    @for (int i = 0; i < 12; i++)
-    {
-        <div style="@ChildStyle" class="@ChildClass"></div>
-    }
-</div>
+<BitLoading This="this">
+    <div style="@Styles?.Container" class="bit-ldn-spn-ccn @Classes?.Container">
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch1 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch2 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch3 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch4 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch5 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch6 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch7 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch8 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch9 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch10 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch11 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-spn-chl bit-ldn-spn-ch12 @Classes?.Child"></div>
+    </div>
+</BitLoading>

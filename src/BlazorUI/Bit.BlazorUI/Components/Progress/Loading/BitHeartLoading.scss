@@ -1,4 +1,7 @@
 .bit-ldn-hrt {
+}
+
+.bit-ldn-hrt-ccn {
     position: relative;
     display: inline-block;
     transform: rotate(45deg);
@@ -7,7 +10,7 @@
     transform-origin: var(--bit-ldn-hrt-40) var(--bit-ldn-hrt-40);
 }
 
-.bit-ldn-hrt div {
+.bit-ldn-hrt-chl {
     position: absolute;
     top: var(--bit-ldn-hrt-32);
     left: var(--bit-ldn-hrt-32);
@@ -17,8 +20,8 @@
     animation: bit-ldn-hrt-anm 1.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.bit-ldn-hrt div:after,
-.bit-ldn-hrt div:before {
+.bit-ldn-hrt-chl:after,
+.bit-ldn-hrt-chl:before {
     content: " ";
     display: block;
     position: absolute;
@@ -27,12 +30,12 @@
     background: var(--bit-ldn-color);
 }
 
-.bit-ldn-hrt div:before {
+.bit-ldn-hrt-chl:before {
     border-radius: 50% 0 0 50%;
     left: calc(-1 * var(--bit-ldn-hrt-24));
 }
 
-.bit-ldn-hrt div:after {
+.bit-ldn-hrt-chl:after {
     border-radius: 50% 50% 0 0;
     top: calc(-1 * var(--bit-ldn-hrt-24));
 }
