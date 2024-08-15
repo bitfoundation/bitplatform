@@ -11,6 +11,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
+    private bool _hasFocus;
     private int _currentDay;
     private int _currentYear;
     private int _currentMonth;
@@ -21,7 +22,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool _showMonthPicker = true;
     private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
-    private string _focusClass = string.Empty;
     private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
@@ -454,12 +454,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -593,8 +595,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -602,8 +605,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -611,8 +615,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
