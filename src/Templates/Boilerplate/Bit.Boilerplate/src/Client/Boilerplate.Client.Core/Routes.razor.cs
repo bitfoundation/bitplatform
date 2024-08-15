@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Boilerplate.Client.Core;
+﻿namespace Boilerplate.Client.Core;
 
 public partial class Routes
 {
