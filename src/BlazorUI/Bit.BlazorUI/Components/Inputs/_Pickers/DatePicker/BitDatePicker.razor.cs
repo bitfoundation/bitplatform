@@ -11,6 +11,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
+    private bool _hasFocus;
     private int _currentDay;
     private int _currentYear;
     private int _currentMonth;
@@ -18,13 +19,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private int? _selectedDateDayOfWeek;
-    private bool _hasFocus;
     private bool _showMonthPicker = true;
     private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
+    private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
-    private string _monthTitle = string.Empty;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDatePicker> _dotnetObj = default!;
