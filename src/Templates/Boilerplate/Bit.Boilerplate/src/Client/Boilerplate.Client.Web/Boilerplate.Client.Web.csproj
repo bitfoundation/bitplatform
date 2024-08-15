@@ -8,6 +8,8 @@
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
+        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>

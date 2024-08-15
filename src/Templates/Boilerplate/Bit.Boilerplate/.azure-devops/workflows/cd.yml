@@ -56,7 +56,9 @@ jobs:
     displayName: 'Generate CSS/JS files'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release'
+      script: |
+        dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
+        dotnet build src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -t:BeforeBuildTasks --no-restore -c Release
 
   - task: Bash@3
     displayName: 'Publish'

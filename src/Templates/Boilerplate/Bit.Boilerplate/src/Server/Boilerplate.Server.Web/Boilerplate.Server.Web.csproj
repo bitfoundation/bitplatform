@@ -4,8 +4,19 @@
         <TargetFramework>net9.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
-    
+
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+        <Watch Remove="*.scss" />
+        <IsolatedScssFiles Include="**\*.razor.scss" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.10.0" PrivateAssets="all" />
@@ -31,5 +42,13 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <EnableSdkContainerDebugging Condition="'$(Configuration)' == 'Debug'">True</EnableSdkContainerDebugging>
     </PropertyGroup>
+
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <CallTarget Targets="BuildIsolatedScssFiles" />
+    </Target>
+
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+        <Exec Command="../../Client/Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
 
 </Project>
