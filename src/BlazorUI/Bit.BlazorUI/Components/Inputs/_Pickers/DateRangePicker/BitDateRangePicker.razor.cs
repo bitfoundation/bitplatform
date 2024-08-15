@@ -1924,7 +1924,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
+                                       null,
                                        _calloutId,
+                                       null,
                                        IsOpen,
                                        IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,

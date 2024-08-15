@@ -1,8 +1,19 @@
 ﻿namespace Bit.BlazorUI;
 
-internal enum BitResponsiveMode
+public enum BitResponsiveMode
 {
+    /// <summary>
+    /// Disables the responsive mode.
+    /// </summary>
     None,
+
+    /// <summary>
+    /// Enables the panel responsive mode.
+    /// </summary>
     Panel,
+
+    /// <summary>
+    /// Enables the top responsive mode.
+    /// </summary>
     Top
 }

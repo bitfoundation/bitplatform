@@ -306,6 +306,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Surfaces/Callout/BitCalloutDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Callout/BitCalloutDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.scss",
         "minify": { "enabled": false },

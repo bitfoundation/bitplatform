@@ -328,8 +328,8 @@ public partial class BitTimePickerDemo
             [
                 new()
                 {
-                    Name = "Auto",
-                    Description = "Show the callout at the top, bottom, left and right sides according to the space.",
+                    Name = "All",
+                    Description = "The direction determined automatically based on the available spaces in all directions.",
                     Value = "0",
                 },
                 new()

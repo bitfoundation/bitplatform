@@ -424,7 +424,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
 
         await _js.ToggleCallout(_dotnetObj,
                                 _overflowAnchorId,
+                                null,
                                 _calloutId,
+                                null,
                                 _isCalloutOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
