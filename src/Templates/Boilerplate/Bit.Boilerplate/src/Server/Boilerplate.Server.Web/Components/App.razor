@@ -62,7 +62,7 @@
     {
         <LoadingComponent />
     }
-    @if (renderMode == null && (AppRenderMode.Current == AppRenderMode.BlazorWebAssembly || AppRenderMode.Current == AppRenderMode.Auto))
+    @if (renderMode == null && (AppRenderMode.Current == AppRenderMode.BlazorWebAssembly || AppRenderMode.Current == AppRenderMode.BlazorAuto))
     {
         // Ensure Blazor WebAssembly is preloaded and initiated in the background while the user interacts with the server-side rendered (SSR) Blazor page.
         <WebAssemblyRuntimeStarter @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
