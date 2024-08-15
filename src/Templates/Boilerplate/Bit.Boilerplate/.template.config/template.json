@@ -63,10 +63,6 @@
                     "description": "Azure Cosmos DB"
                 },
                 {
-                    "choice": "MySql",
-                    "description": "MySql - MariaDB"
-                },
-                {
                     "choice": "Other",
                     "description": "You can install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)"
                 }

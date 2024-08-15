@@ -11,7 +11,6 @@
 
     <PropertyGroup>
         <EFOptimizeContext>true</EFOptimizeContext>
-        <DbContextName>OfflineDbContext</DbContextName>
         <EFStartupProject>..\Bit.Besql.Demo\Bit.Besql.Demo.csproj</EFStartupProject>
     </PropertyGroup>
 

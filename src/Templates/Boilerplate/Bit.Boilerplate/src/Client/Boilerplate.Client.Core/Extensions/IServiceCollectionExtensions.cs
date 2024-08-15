@@ -53,7 +53,7 @@ public static class IServiceCollectionExtensions
             var dbPath = Path.Combine(dirPath, "Offline.db");
 
             options
-                // .UseModel(Boilerplate.Client.Core.OfflineDbContextModel.Instance)
+                // .UseModel(OfflineDbContextModel.Instance)
                 .UseSqlite($"Data Source={dbPath}");
 
             options.EnableSensitiveDataLogging(AppEnvironment.IsDev())

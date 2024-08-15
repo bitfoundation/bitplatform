@@ -61,7 +61,7 @@ jobs:
         cd ../../Tests
         dotnet test
 
-    - name: Test PostgreSQL, Cosmos, MySql, Other database options
+    - name: Test PostgreSQL, Cosmos, Other database options
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
@@ -69,10 +69,6 @@ jobs:
         cd ../../../../
         dotnet new bit-bp --name TestCosmos --database Cosmos
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
-        cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build
         cd ../../../../
         dotnet new bit-bp --name TestOther --database Other
