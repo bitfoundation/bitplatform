@@ -2,6 +2,13 @@
 @attribute [ExcludeFromInteractiveRouting]
 @inherits AppComponentBase
 
+@*
+    Since the `TermsPage` is marked with the `ExcludeFromInteractiveRouting` attribute, its rendering mode is always static SSR, regardless of the value of
+    AppRenderMode.Current. However, you can still use features like Blazor Enhanced Forms, and JavaScript libraries (e.g., htmx https://youtu.be/mHDt3jxU3DI?si=2K8NIb9_huqGJdzX)
+    to make the page interactive. If AppRenderMode.Current is set to BlazorWebAssembly, the .NET WebAssembly runtime will be downloaded and initialized behind the scenes.
+    This ensures that the runtime is ready when the user navigates to other pages within the Client.Core project.
+*@
+
 <PageTitle>@Localizer[nameof(AppStrings.TermsTitle)]</PageTitle>
 
 <div class="page-container">
