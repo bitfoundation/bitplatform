@@ -166,7 +166,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
                                 0,
                                 "",
                                 "",
-                                true,
+                                false,
                                 RootElementClass);
 
         await OnToggle.InvokeAsync(IsOpen);
