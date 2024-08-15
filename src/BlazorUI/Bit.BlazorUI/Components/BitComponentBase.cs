@@ -8,7 +8,7 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected bool Rendered { get; private set; }
 
-    protected string _Id => Id ?? _uniqueId;
+    internal string _Id => Id ?? _uniqueId;
 
 
 
@@ -171,9 +171,9 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected abstract string RootElementClass { get; }
 
-    protected ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
+    internal ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
 
-    protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
+    internal ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
 
     protected virtual void RegisterCssStyles() { }
 

@@ -6,20 +6,6 @@ public partial class BitLoadingDemo
     [
         new()
         {
-            Name = "ChildClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS class for the root element of the loading component.",
-        },
-        new()
-        {
-            Name = "ChildStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS style for the root element of the loading component.",
-        },
-        new()
-        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -33,8 +19,6 @@ public partial class BitLoadingDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom css color of the loading component.",
-            LinkType = LinkType.Link,
-            Href = "#size-enum",
         },
         new()
         {
@@ -45,10 +29,35 @@ public partial class BitLoadingDemo
         },
         new()
         {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text content of the label of the loading component.",
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the label of the loading component.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the label of the loading component.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The Size of the loading component."
+            Description = "The Size of the loading component.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         }
     ];
 
@@ -113,6 +122,39 @@ public partial class BitLoadingDemo
         },
         new()
         {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the button.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The label shows on the end of the button.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the button.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The label shows on the start of the button.",
+                    Value="3",
+                },
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "",
@@ -168,37 +210,56 @@ public partial class BitLoadingDemo
 <BitSpinnerLoading />";
 
     private readonly string example2RazorCode = @"
-<BitBarsLoading Color=""BitColor.Primary"" />
-                
-<BitCircleLoading Color=""BitColor.Secondary"" />
-
-<BitDotsRingLoading Color=""BitColor.Tertiary"" />
-
-<BitDualRingLoading Color=""BitColor.Info"" />
-
-<BitEllipsisLoading Color=""BitColor.Success"" />
-
-<BitGridLoading Color=""BitColor.Warning"" />
-
-<BitHeartLoading Color=""BitColor.SevereWarning"" />
-
-<BitHourglassLoading Color=""BitColor.Error"" />";
+<BitGridLoading Label=""Loading"" />";
 
     private readonly string example3RazorCode = @"
-<BitBarsLoading CustomColor=""brown"" />
+<BitDotsRingLoading Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
 
-<BitCircleLoading CustomColor=""rgb(0 107 185 / 75%)"" />
+<BitDotsRingLoading Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
 
-<BitDotsRingLoading CustomColor=""#426985"" />
+<BitDotsRingLoading Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
 
-<BitDualRingLoading CustomColor=""hsl(106 100% 22% / 1)"" />";
+<BitDotsRingLoading Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
 
     private readonly string example4RazorCode = @"
-<BitBarsLoading Size=""BitSize.Small"" />
+<BitEllipsisLoading>
+    <LabelTemplate>
+        <div style=""color:green""><b>Loading</b></div>
+    </LabelTemplate>
+</BitEllipsisLoading>";
 
-<BitBarsLoading Size=""BitSize.Medium"" />
+    private readonly string example5RazorCode = @"
+<BitBarsLoading Label=""Primary"" Color=""BitColor.Primary"" />
 
-<BitBarsLoading Size=""BitSize.Large"" />
+<BitCircleLoading Label=""Secondary"" Color=""BitColor.Secondary"" />
 
-<BitBarsLoading CustomSize=""128"" />";
+<BitDotsRingLoading Label=""Tertiary"" Color=""BitColor.Tertiary"" />
+
+<BitDualRingLoading Label=""Info"" Color=""BitColor.Info"" />
+
+<BitEllipsisLoading Label=""Success"" Color=""BitColor.Success"" />
+
+<BitGridLoading Label=""Warning"" Color=""BitColor.Warning"" />
+
+<BitHeartLoading Label=""SevereWarning"" Color=""BitColor.SevereWarning"" />
+
+<BitHourglassLoading Label=""Error"" Color=""BitColor.Error"" />";
+
+    private readonly string example6RazorCode = @"
+<BitBarsLoading Label=""brown"" CustomColor=""brown"" />
+
+<BitCircleLoading Label=""rgb(0 107 185 / 75%)"" CustomColor=""rgb(0 107 185 / 75%)"" />
+
+<BitDotsRingLoading Label=""#426985"" CustomColor=""#426985"" />
+
+<BitDualRingLoading Label=""hsl(106 100% 22% / 1)"" CustomColor=""hsl(106 100% 22% / 1)"" />";
+
+    private readonly string example7RazorCode = @"
+<BitHourglassLoading Label=""Small"" Size=""BitSize.Small"" />
+
+<BitHourglassLoading Label=""Medium"" Size=""BitSize.Medium"" />
+
+<BitHourglassLoading Label=""Large"" Size=""BitSize.Large"" />
+
+<BitHourglassLoading Label=""Custom (128)"" CustomSize=""128"" />";
 }

@@ -1,7 +1,6 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitLoadingBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"></div>
+<BitLoading This="this">
+    <div style="@Styles?.Container" class="bit-ldn-dur-ccn @Classes?.Container"></div>
+</BitLoading>
