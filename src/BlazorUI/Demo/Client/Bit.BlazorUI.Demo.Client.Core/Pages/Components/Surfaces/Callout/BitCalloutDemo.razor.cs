@@ -211,21 +211,37 @@ public partial class BitCalloutDemo
 
 
     private readonly string example1RazorCode = @"
+<style>
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+</style>
+
 <BitCallout>
     <Anchor>
-        <BitButton>Click me</BitButton>
+        <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""width: fit-content; padding: 1rem; border:1px solid gray;"">
+        <div class=""custom-content"">
             This is the callout content.
         </div>
     </Content>
 </BitCallout>";
 
     private readonly string example2RazorCode = @"
+<style>
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+</style>
+
 <BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">AnchorId</BitButton>
 <BitCallout AnchorId=""anchor_id"" @ref=""callout1"">
-    <div style=""padding:1rem; border:1px solid gray;"">
+    <div class=""custom-content"">
         <BitCalendar />
     </div>
 </BitCallout>
@@ -233,7 +249,7 @@ public partial class BitCalloutDemo
 
 <button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">AnchorEl</button>
 <BitCallout AnchorEl=""() => anchorEl"" @ref=""callout2"">
-    <div style=""padding:1rem; border:1px solid gray;"">
+    <div class=""custom-content"">
         <BitCalendar />
     </div>
 </BitCallout>";
@@ -243,18 +259,72 @@ private BitCallout callout1;
 private BitCallout callout2;";
 
     private readonly string example3RazorCode = @"
-<BitButton OnClick=""() => isOpen = true"">Open callout</BitButton>
+<style>
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+</style>
+
+<BitButton OnClick=""() => isOpen = true"">Show callout</BitButton>
 
 <BitCallout @bind-IsOpen=""isOpen"">
     <Anchor>
         <button>Anchor</button>
     </Anchor>
     <Content>
-        <div style=""width: fit-content; padding: 1rem; border:1px solid gray;"">
+        <div class=""custom-content"">
             This is the callout content.
+            <br />
+            You can even close it from here!
+            <br /><br />
+            <div>
+                <BitButton OnClick=""() => isOpen = false"">Done</BitButton>
+                <BitButton OnClick=""() => isOpen = false"" Variant=""BitVariant.Outline"">Cancel</BitButton>
+            </div>
         </div>
     </Content>
 </BitCallout>";
     private readonly string example3CsharpCode = @"
 private bool isOpen;";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+</style>
+
+<BitCallout Direction=""BitDropDirection.All"">
+    <Anchor>
+        <BitButton>Show callout</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""custom-content"">
+            @for (int i = 1; i < 13; i++)
+            {
+                var item = i;
+                <div>Callout content @(item)</div><br />
+            }
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout Direction=""BitDropDirection.TopAndBottom"">
+    <Anchor>
+        <BitButton>Show callout</BitButton>
+    </Anchor>
+    <Content>
+        <div class=""custom-content"">
+            @for (int i = 1; i < 13; i++)
+            {
+                var item = i;
+                <div>Callout content @(item)</div><br />
+            }
+        </div>
+    </Content>
+</BitCallout>";
 }
