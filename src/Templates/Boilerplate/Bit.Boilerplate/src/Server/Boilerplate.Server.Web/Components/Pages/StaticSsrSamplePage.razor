@@ -7,11 +7,13 @@
 
 <PageTitle>Static ssr sample</PageTitle>
 
-<h1>@Localizer[nameof(AppStrings.HomeMessage)]</h1>
+<h2>@Localizer[nameof(AppStrings.HomeMessage)]</h2>
 
-<h3>
+<h4>
     Since the `StaticSsrSamplePage` is marked with the `ExcludeFromInteractiveRouting` attribute, its rendering mode is always static SSR, regardless of the value of
     AppRenderMode.Current. However, you can still use features like Blazor Enhanced Forms, and JavaScript libraries (e.g., htmx https://youtu.be/mHDt3jxU3DI?si=2K8NIb9_huqGJdzX)
     to make the page interactive. If AppRenderMode.Current is set to BlazorWebAssembly, the .NET WebAssembly runtime will be downloaded and initialized behind the scenes.
     This ensures that the runtime is ready when the user navigates to other pages within the Client.Core project.
-</h3>
+    <br />
+    To create a link that opens this page from other client-side pages, use absolute URL like <a href="@($"{Configuration.GetWebClientUrl()}{Urls.StaticSsrSamplePage}")">this</a>.
+</h4>
