@@ -1,12 +1,16 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitLoadingBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
-    @for (int i = 0; i < 9; i++)
-    {
-        <div style="@ChildStyle" class="@ChildClass"></div>
-    }
-</div>
+<BitLoading This="this">
+    <div style="@Styles?.Container" class="bit-ldn-grd-ccn @Classes?.Container">
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch1 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch2 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch3 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch4 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch5 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch6 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch7 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch8 @Classes?.Child"></div>
+        <div style="@Styles?.Child" class="bit-ldn-grd-chl bit-ldn-grd-ch9 @Classes?.Child"></div>
+    </div>
+</BitLoading>

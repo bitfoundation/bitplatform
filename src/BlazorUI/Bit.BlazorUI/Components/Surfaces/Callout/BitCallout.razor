@@ -1,0 +1,30 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (Anchor is not null)
+    {
+        <div @onclick="OpenCallout"
+             id="@_anchorId"
+             style="@Styles?.AnchorContainer"
+             class="bit-clo-acn @Classes?.AnchorContainer">
+            @Anchor
+        </div>
+    }
+
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-clo-ovl @Classes?.Overlay">
+    </div>
+
+    <div id="@_contentId"
+         style="@Styles?.Content"
+         class="bit-clo-cal @Classes?.Content">
+        @(Content ?? ChildContent)
+    </div>
+</div>

@@ -554,11 +554,11 @@ private List<BitDropdownItem<string>> GetRtlItems() => new()
 };";
 
     private readonly string example10RazorCode = @"
-<BitDropdown Label=""Auto""
+<BitDropdown Label=""All""
              Items=""dropDirectionItems""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             DropDirection=""BitDropDirection.Auto"" />
+             DropDirection=""BitDropDirection.All"" />
 
 <BitDropdown Label=""TopAndBottom""
              Items=""dropDirectionItems""

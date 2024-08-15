@@ -63,86 +63,105 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Label" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitGridLoading Label="Loading" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+    
+    <ComponentExampleBox Title="LabelPosition" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div class="container">
                 <div class="wrapper">
-                    <div>Primary</div>
-                    <BitBarsLoading Color="BitColor.Primary" />
+                    <BitDotsRingLoading Label="Top" LabelPosition="BitLabelPosition.Top" />
                 </div>
                 <div class="wrapper">
-                    <div>Secondary</div>
-                    <BitCircleLoading Color="BitColor.Secondary" />
+                    <BitDotsRingLoading Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
                 </div>
                 <div class="wrapper">
-                    <div>Tertiary</div>
-                    <BitDotsRingLoading Color="BitColor.Tertiary" />
+                    <BitDotsRingLoading Label="Start" LabelPosition="BitLabelPosition.Start" />
                 </div>
                 <div class="wrapper">
-                    <div>Info</div>
-                    <BitDualRingLoading Color="BitColor.Info" />
-                </div>
-                <div class="wrapper">
-                    <div>Success</div>
-                    <BitEllipsisLoading Color="BitColor.Success" />
-                </div>
-                <div class="wrapper">
-                    <div>Warning</div>
-                    <BitGridLoading Color="BitColor.Warning" />
-                </div>
-                <div class="wrapper">
-                    <div>SevereWarning</div>
-                    <BitHeartLoading Color="BitColor.SevereWarning" />
-                </div>
-                <div class="wrapper">
-                    <div>Error</div>
-                    <BitHourglassLoading Color="BitColor.Error" />
+                    <BitDotsRingLoading Label="End" LabelPosition="BitLabelPosition.End" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom Color" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="LabelTemplate" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <BitEllipsisLoading>
+                <LabelTemplate>
+                    <div style="color:green"><b>Loading</b></div>
+                </LabelTemplate>
+            </BitEllipsisLoading>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div class="container">
                 <div class="wrapper">
-                    <div>brown</div>
-                    <BitBarsLoading CustomColor="brown" />
+                    <BitBarsLoading Label="Primary" Color="BitColor.Primary" />
                 </div>
                 <div class="wrapper">
-                    <div>rgb(0 107 185 / 75%)</div>
-                    <BitCircleLoading CustomColor="rgb(0 107 185 / 75%)" />
+                    <BitCircleLoading Label="Secondary" Color="BitColor.Secondary" />
                 </div>
                 <div class="wrapper">
-                    <div>#426985</div>
-                    <BitDotsRingLoading CustomColor="#426985" />
+                    <BitDotsRingLoading Label="Tertiary" Color="BitColor.Tertiary" />
                 </div>
                 <div class="wrapper">
-                    <div>hsl(106 100% 22% / 1)</div>
-                    <BitDualRingLoading CustomColor="hsl(106 100% 22% / 1)" />
+                    <BitDualRingLoading Label="Info" Color="BitColor.Info" />
+                </div>
+                <div class="wrapper">
+                    <BitEllipsisLoading Label="Success" Color="BitColor.Success" />
+                </div>
+                <div class="wrapper">
+                    <BitGridLoading Label="Warning" Color="BitColor.Warning" />
+                </div>
+                <div class="wrapper">
+                    <BitHeartLoading Label="SevereWarning" Color="BitColor.SevereWarning" />
+                </div>
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Error" Color="BitColor.Error" />
                 </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Custom Color" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="container">
                 <div class="wrapper">
-                    <div>Small</div>
-                    <BitBarsLoading Size="BitSize.Small" />
+                    <BitBarsLoading Label="brown" CustomColor="brown" />
                 </div>
                 <div class="wrapper">
-                    <div>Medium</div>
-                    <BitBarsLoading Size="BitSize.Medium" />
+                    <BitCircleLoading Label="rgb(0 107 185 / 75%)" CustomColor="rgb(0 107 185 / 75%)" />
                 </div>
                 <div class="wrapper">
-                    <div>Large</div>
-                    <BitBarsLoading Size="BitSize.Large" />
+                    <BitDotsRingLoading Label="#426985" CustomColor="#426985" />
                 </div>
                 <div class="wrapper">
-                    <div>Custom (128)</div>
-                    <BitBarsLoading CustomSize="128" />
+                    <BitDualRingLoading Label="hsl(106 100% 22% / 1)" CustomColor="hsl(106 100% 22% / 1)" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <div class="container">
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Small" Size="BitSize.Small" />
+                </div>
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Medium" Size="BitSize.Medium" />
+                </div>
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Large" Size="BitSize.Large" />
+                </div>
+                <div class="wrapper">
+                    <BitHourglassLoading Label="Custom (128)" CustomSize="128" />
                 </div>
             </div>
         </ExamplePreview>

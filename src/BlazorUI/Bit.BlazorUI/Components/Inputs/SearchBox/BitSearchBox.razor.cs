@@ -299,7 +299,9 @@ public partial class BitSearchBox : BitInputBase<string?>
 
         await _js.ToggleCallout(_dotnetObj,
                                 _Id,
+                                null,
                                 _calloutId,
+                                null,
                                 _isOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,

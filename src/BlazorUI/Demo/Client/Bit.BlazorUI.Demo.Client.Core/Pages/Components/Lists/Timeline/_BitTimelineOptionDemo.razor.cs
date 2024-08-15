@@ -433,31 +433,41 @@ public partial class _BitTimelineOptionDemo
     private readonly string example10RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem 0;
-        border-radius: 1rem;
-        background-color: blueviolet;
+        color: dodgerblue;
+        font-weight: bold;
+        margin-inline: 1rem;
+        padding-block: 1rem;
+        text-shadow: dodgerblue 0 0 1rem;
     }
 
+
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: dodgerblue;
+        font-weight: bold;
+        text-shadow: dodgerblue 0 0 1rem;
+    }
+
+
+    .custom-dot {
+        border-color: blueviolet;
+        box-shadow: blueviolet 0 0 1rem;
     }
 
     .custom-icon {
-        color: goldenrod;
+        color: blueviolet;
     }
 
     .custom-divider::before {
-        background: green;
+        background: blueviolet;
     }
 
-    .custom-text {
-        color: rebeccapurple;
+    .custom-item-text {
+        color: blueviolet;
     }
 </style>
 
 
-<BitTimeline Style=""background-color: tomato; box-shadow: red 0 0 1rem;"" TItem=""BitTimelineOption"">
+<BitTimeline Style=""max-width: max-content; color: dodgerblue;"" TItem=""BitTimelineOption"">
     <BitTimelineOption PrimaryText=""Option 1"" />
     <BitTimelineOption PrimaryText=""Option 2"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
     <BitTimelineOption PrimaryText=""Option 3"" />
@@ -471,16 +481,16 @@ public partial class _BitTimelineOptionDemo
 
 
 <BitTimeline TItem=""BitTimelineOption"">
-    <BitTimelineOption PrimaryText=""Styled"" IconName=""@BitIconName.Brush"" Style=""color: darkred;"" />
+    <BitTimelineOption PrimaryText=""Styled"" IconName=""@BitIconName.Brush"" Style=""color: dodgerblue;"" />
     <BitTimelineOption PrimaryText=""Classed"" IconName=""@BitIconName.FormatPainter"" Class=""custom-item"" />
 </BitTimeline>
 
 
 <div class=""example-content"">
     <BitTimeline TItem=""BitTimelineOption""
-                 Styles=""@(new() { Icon = ""color: red;"",
-                                   PrimaryText = ""color: aqua; font-size: 1.5rem;"",
-                                   Dot = ""background-color: dodgerblue;"" })"">
+                 Styles=""@(new() { Icon = ""color: whitesmoke;"",
+                                   Dot = ""background-color: lightseagreen; border-color: mediumseagreen;"",
+                                   PrimaryText = ""color: lightseagreen; font-weight: bold;"" })"">
         <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
         <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
         <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />
@@ -488,9 +498,10 @@ public partial class _BitTimelineOptionDemo
 
     <BitTimeline TItem=""BitTimelineOption""
                  Variant=""BitVariant.Outline""
-                 Classes=""@(new() { Icon = ""custom-icon"",
-                                    Divider = ""custom-divider"",
-                                    PrimaryText = ""custom-text"" })"">
+                 Classes=""@(new() { Dot = ""custom-dot"",
+                                    Icon = ""custom-icon"",
+                                    Item = ""custom-item-text"",
+                                    Divider = ""custom-divider"" })"">
         <BitTimelineOption PrimaryText=""Option 1"" IconName=""@BitIconName.Add"" />
         <BitTimelineOption PrimaryText=""Option 2"" IconName=""@BitIconName.Edit"" SecondaryText=""Option 2 Secondary"" IsEnabled=""false"" />
         <BitTimelineOption PrimaryText=""Option 3"" IconName=""@BitIconName.Delete"" />

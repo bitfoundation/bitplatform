@@ -401,7 +401,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         await _js.ToggleCallout(_dotnetObj,
                                 _timePickerId,
+                                null,
                                 _calloutId,
+                                null,
                                 IsOpen,
                                 IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 DropDirection,

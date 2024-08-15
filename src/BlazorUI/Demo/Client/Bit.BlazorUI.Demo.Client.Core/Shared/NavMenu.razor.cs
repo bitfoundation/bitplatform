@@ -118,6 +118,7 @@ public partial class NavMenu : IDisposable
             ChildItems =
             [
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
+                new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup" },
                 new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },

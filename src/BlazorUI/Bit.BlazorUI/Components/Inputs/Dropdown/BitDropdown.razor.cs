@@ -822,7 +822,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _isResponsiveMode = await _js.ToggleCallout(_dotnetObj,
                                                     _dropdownId,
+                                                    null,
                                                     _calloutId,
+                                                    null,
                                                     IsOpen,
                                                     IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                                     DropDirection,

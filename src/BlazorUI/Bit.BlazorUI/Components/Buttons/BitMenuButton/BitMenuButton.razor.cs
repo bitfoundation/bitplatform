@@ -569,7 +569,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
         await _js.ToggleCallout(_dotnetObj,
                                 _Id,
+                                null,
                                 _calloutId,
+                                null,
                                 IsOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
