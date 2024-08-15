@@ -207,46 +207,57 @@ private List<BitTimelineItem> iconItems =
     private readonly string example10RazorCode = @"
 <style>
     .custom-class {
-        padding: 1rem 0;
-        border-radius: 1rem;
-        background-color: blueviolet;
+        color: dodgerblue;
+        font-weight: bold;
+        margin-inline: 1rem;
+        padding-block: 1rem;
+        text-shadow: dodgerblue 0 0 1rem;
     }
 
+
     .custom-item {
-        color: blueviolet;
-        background-color: goldenrod;
+        color: dodgerblue;
+        font-weight: bold;
+        text-shadow: dodgerblue 0 0 1rem;
+    }
+
+
+    .custom-dot {
+        border-color: blueviolet;
+        box-shadow: blueviolet 0 0 1rem;
     }
 
     .custom-icon {
-        color: goldenrod;
+        color: blueviolet;
     }
 
     .custom-divider::before {
-        background: green;
+        background: blueviolet;
     }
 
-    .custom-text {
-        color: rebeccapurple;
+    .custom-item-text {
+        color: blueviolet;
     }
 </style>
 
 
-<BitTimeline Style=""background-color: tomato; box-shadow: red 0 0 1rem;"" Items=""basicItems"" />
+<BitTimeline Style=""max-width: max-content; color: dodgerblue;"" Items=""basicItems"" />
 
 <BitTimeline Horizontal Class=""custom-class"" Items=""basicItems"" />
 
 <BitTimeline Items=""styleClassItems"" />
 
 <BitTimeline Items=""iconItems""
-             Styles=""@(new() { Icon = ""color: red;"",
-                               PrimaryText = ""color: aqua; font-size: 1.5rem;"",
-                               Dot = ""background-color: dodgerblue;"" })"" />
+             Styles=""@(new() { Icon = ""color: whitesmoke;"",
+                               Dot = ""background-color: lightseagreen; border-color: mediumseagreen;"",
+                               PrimaryText = ""color: lightseagreen; font-weight: bold;"" })"" />
 
 <BitTimeline Items=""iconItems""
              Variant=""BitVariant.Outline""
-             Classes=""@(new() { Icon = ""custom-icon"",
-                                Divider = ""custom-divider"",
-                                PrimaryText = ""custom-text"" })"" />";
+             Classes=""@(new() { Dot = ""custom-dot"",
+                                Icon = ""custom-icon"",
+                                Item = ""custom-item-text"",
+                                Divider = ""custom-divider"" })"" />";
     private readonly string example10CsharpCode = @"
 private List<BitTimelineItem> basicItems =
 [
@@ -257,7 +268,7 @@ private List<BitTimelineItem> basicItems =
 
 private List<BitTimelineItem> styleClassItems =
 [
-    new() { PrimaryText = ""Styled"", Style = ""color: darkred;"", IconName = BitIconName.Brush },
+    new() { PrimaryText = ""Styled"", Style = ""color: dodgerblue;"", IconName = BitIconName.Brush },
     new() { PrimaryText = ""Classed"", Class = ""custom-item"", IconName = BitIconName.FormatPainter }
 ];
 

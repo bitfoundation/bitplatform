@@ -43,7 +43,7 @@ public partial class _BitTimelineCustomDemo
 
     private List<TimelineActionItem> styleClassCustoms =
     [
-        new() { FirstText = "Styled", Style = "color: darkred;", Icon = BitIconName.Brush },
+        new() { FirstText = "Styled", Style = "color: dodgerblue;", Icon = BitIconName.Brush },
         new() { FirstText = "Classed", Class = "custom-item", Icon = BitIconName.FormatPainter }
     ];
 
