@@ -3,8 +3,8 @@
 public partial class BitCallout : BitComponentBase, IDisposable
 {
     private bool _disposed;
-    private string _contentId = default!;
     private string _anchorId = default!;
+    private string _contentId = default!;
     private DotNetObjectReference<BitCallout> _dotnetObj = default!;
 
 
@@ -79,6 +79,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
     /// <returns></returns>
     public async Task Toggle()
     {
+        if (IsEnabled is false) return;
         if (await AssignIsOpen(IsOpen is false) is false) return;
 
         await ToggleCallout();
@@ -100,7 +101,6 @@ public partial class BitCallout : BitComponentBase, IDisposable
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsOpen ? "bit-clo-opn" : string.Empty);
         ClassBuilder.Register(() => IsOpen ? Classes?.Opened : string.Empty);
     }
 
@@ -113,8 +113,8 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        _contentId = $"BitCallout-{UniqueId}-content";
         _anchorId = $"BitCallout-{UniqueId}-anchor";
+        _contentId = $"BitCallout-{UniqueId}-content";
 
         await base.OnInitializedAsync();
     }
@@ -133,6 +133,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
     private async Task OpenCallout()
     {
+        if (IsEnabled is false) return;
         if (await AssignIsOpen(true) is false) return;
 
         await ToggleCallout();
@@ -140,6 +141,7 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
     private async Task CloseCallout()
     {
+        if (IsEnabled is false) return;
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
