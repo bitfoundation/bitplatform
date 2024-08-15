@@ -18,7 +18,7 @@
                     "NOT /swagger*",
                     "NOT /signin*",
                     "NOT /.well-known*",
-                    "NOT /terms*",
+                    "NOT /static-ssr-sample",
                     "*"
                 ]
             },
@@ -35,7 +35,7 @@
                     "NOT /swagger*",
                     "NOT /signin*",
                     "NOT /.well-known*",
-                    "NOT /terms*",
+                    "NOT /static-ssr-sample",
                     "*"
                 ]
             }

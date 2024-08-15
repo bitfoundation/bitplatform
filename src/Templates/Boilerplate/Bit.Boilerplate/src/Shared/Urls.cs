@@ -10,6 +10,8 @@ public static class Urls
     public const string NotFoundPage = "/not-found";
 
     public const string TermsPage = "/terms";
+    
+    public const string StaticSsrSamplePage = "/static-ssr-sample";
 
     public const string ProfilePage = "/profile";
 

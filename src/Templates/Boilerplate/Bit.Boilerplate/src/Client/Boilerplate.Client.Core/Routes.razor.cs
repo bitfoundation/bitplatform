@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core;
+﻿using System.Reflection;
+
+namespace Boilerplate.Client.Core;
 
 public partial class Routes
 {
@@ -6,6 +8,8 @@ public partial class Routes
     [AutoInject] IBitDeviceCoordinator bitDeviceCoordinator = default!;
     [AutoInject] IStorageService storageService = default!;
     [AutoInject] CultureInfoManager cultureInfoManager = default!;
+
+    [Parameter] public bool UseDefaultLayout { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {

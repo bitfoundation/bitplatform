@@ -76,7 +76,7 @@
             <div class="form-input-container">
                 <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
                     <LabelTemplate>
-                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="@($"{Configuration.GetWebClientUrl()}{Urls.TermsPage}")">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
+                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
                     </LabelTemplate>
                 </BitCheckbox>
                 <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />

@@ -1,6 +1,6 @@
 ﻿<CascadingAuthenticationState>
 	<AuthenticationStateLogger />
-    <LayoutView Layout="@typeof(MainLayout)">
+    <LayoutView Layout="@(UseDefaultLayout ? typeof(MainLayout) : null)">
         <Router AppAssembly="@GetType().Assembly"
                 AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true))">
             <Found Context="routeData">

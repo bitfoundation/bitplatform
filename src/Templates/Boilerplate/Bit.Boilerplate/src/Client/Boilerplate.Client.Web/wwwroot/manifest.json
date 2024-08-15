@@ -30,6 +30,10 @@
         }
     ],
     "shortcuts": [
+        {
+            "name": "Terms",
+            "url": "/terms"
+        },
         //#if (sample == "Todo")
         {
             "name": "Todo",

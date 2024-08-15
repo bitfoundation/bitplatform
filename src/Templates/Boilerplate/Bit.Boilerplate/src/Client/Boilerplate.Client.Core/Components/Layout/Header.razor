@@ -11,7 +11,7 @@
     <div class="header-contact">
         @if (isUserAuthenticated is false)
         {
-            <BitActionButton Class="header-item" IconName="@BitIconName.EntityExtraction" Href="@($"{Configuration.GetWebClientUrl()}{Urls.TermsPage}")" Target="_self">
+            <BitActionButton Class="header-item" IconName="@BitIconName.EntityExtraction" Href="@Urls.TermsPage" Target="_self">
                 @Localizer[nameof(AppStrings.TermsTitle)]
             </BitActionButton>
             <BitActionButton Class="header-item" IconName="@BitIconName.AddFriend" Href="@Urls.SignUpPage" Target="_self">

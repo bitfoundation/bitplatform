@@ -1,0 +1,17 @@
+﻿@using Boilerplate.Server.Web.Components.Layout
+
+@attribute [Route(Urls.StaticSsrSamplePage)]
+@attribute [ExcludeFromInteractiveRouting]
+@inherits AppComponentBase
+@layout SsrLayout
+
+<PageTitle>Static ssr sample</PageTitle>
+
+<h1>@Localizer[nameof(AppStrings.HomeMessage)]</h1>
+
+<h3>
+    Since the `StaticSsrSamplePage` is marked with the `ExcludeFromInteractiveRouting` attribute, its rendering mode is always static SSR, regardless of the value of
+    AppRenderMode.Current. However, you can still use features like Blazor Enhanced Forms, and JavaScript libraries (e.g., htmx https://youtu.be/mHDt3jxU3DI?si=2K8NIb9_huqGJdzX)
+    to make the page interactive. If AppRenderMode.Current is set to BlazorWebAssembly, the .NET WebAssembly runtime will be downloaded and initialized behind the scenes.
+    This ensures that the runtime is ready when the user navigates to other pages within the Client.Core project.
+</h3>

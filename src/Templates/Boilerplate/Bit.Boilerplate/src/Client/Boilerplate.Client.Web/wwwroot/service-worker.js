@@ -31,7 +31,7 @@ self.serverHandledUrls = [
     /\/signin-/,
     /\/.well-known/,
     /\/sitemap.xml/,
-    /\/terms/,
+    /\/static-ssr-sample/
 ];
 
 self.defaultUrl = "/";

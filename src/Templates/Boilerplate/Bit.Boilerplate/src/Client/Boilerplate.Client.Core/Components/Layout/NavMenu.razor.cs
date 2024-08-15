@@ -76,7 +76,7 @@ public partial class NavMenu
             {
                 Text = Localizer[nameof(AppStrings.TermsTitle)],
                 IconName = BitIconName.EntityExtraction,
-                Url = $"{Configuration.GetWebClientUrl()}{Urls.TermsPage}",
+                Url = Urls.TermsPage,
             }
         ];
 

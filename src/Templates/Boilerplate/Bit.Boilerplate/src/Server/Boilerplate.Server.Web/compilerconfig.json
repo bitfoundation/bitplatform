@@ -1,7 +1,7 @@
 ﻿[
     {
-        "outputFile": "Components/Pages/TermsPage.razor.css",
-        "inputFile": "Components/Pages/TermsPage.razor.scss",
+        "outputFile": "Components/Pages/StaticSsrSamplePage.razor.css",
+        "inputFile": "Components/Pages/StaticSsrSamplePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     }
