@@ -10,6 +10,10 @@
     }
 }
 
+.bit-clo-acn {
+    width: fit-content;
+}
+
 .bit-clo-ovl {
     top: 0;
     left: 0;
@@ -24,13 +28,12 @@
 .bit-clo-cal {
     display: none;
     position: fixed;
-    overflow: hidden auto;
     min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    background-color: $clr-bg-pri;
     animation-fill-mode: both;
     animation-duration: 0.367s;
+    background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
