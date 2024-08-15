@@ -55,6 +55,7 @@ public class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
+        app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
            .AddInteractiveServerRenderMode()
