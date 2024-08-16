@@ -912,10 +912,13 @@ public partial class BitDatePickerDemo
     private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset);
     private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
 
+    private DateTimeOffset? classesValue;
+
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
     private BitDatePickerValidationModel validationModel = new();
     private string SuccessMessage = string.Empty;
+
 
     private async Task HandleValidSubmit()
     {
@@ -936,11 +939,11 @@ public partial class BitDatePickerDemo
 <BitDatePicker Label=""Basic DatePicker"" />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" />
 <BitDatePicker Label=""PlaceHolder"" Placeholder=""Select a date"" />
-<BitDatePicker Label=""Week numbers"" ShowWeekNumbers=""true"" />
-<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" />
-<BitDatePicker Label=""Show clear button when has a value"" ShowClearButton=""true"" />
-<BitDatePicker Label=""StartingValue: December 2020, 20:45"" ShowTimePicker=""true"" StartingValue=""startingValue"" />";
+<BitDatePicker Label=""Week numbers"" ShowWeekNumbers />
+<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />
+<BitDatePicker Label=""TimePicker"" ShowTimePicker />
+<BitDatePicker Label=""Show clear button when has a value"" ShowClearButton />
+<BitDatePicker Label=""StartingValue: December 2020, 20:45"" ShowTimePicker StartingValue=""startingValue"" />";
 
     private readonly string example1CsharpCode = @"
 private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);";
@@ -964,18 +967,80 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
     private readonly string example5RazorCode = @"
 <style>
     .custom-class {
-        margin: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid tomato;
     }
 
+    .custom-class *, .custom-class *:after {
+        border: none;
+    }
+
+
     .custom-root {
+        height: 3rem;
         margin: 1rem;
+        display: flex;
+        align-items: end;
+        position: relative;
         border-radius: 0.5rem;
-        background-color: #211e1b;
+    }
+
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
+    }
+
+    .custom-input {
+        padding: 0;
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .custom-input-container {
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
+    }
+
+    .custom-input-container::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-focus {
+        .custom-input-container::after {
+            left: 0;
+            width: 100%;
+        }
+
+        .custom-label {
+            color: blueviolet;
+            transform: translate(0, 1.5px) scale(0.75);
+        }
     }
 
     .custom-day-picker {
-        border: 1px solid #e9981e;
+        border: 1px solid blueviolet;
         background-color: #211e1b;
         border-end-start-radius: 0.5rem;
         border-start-start-radius: 0.5rem;
@@ -988,15 +1053,19 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
     }
 
     .custom-day {
-        color: #e9981e;
+        color: blueviolet;
         margin: 0.15rem;
         border-radius: 50%;
-        border: 1px solid #e9981e;
+        border: 1px solid blueviolet;
     }
 
     .custom-today-day {
         color: #211e1b;
-        background-color: #e9981e;
+        background-color: blueviolet;
+    }
+
+    .custom-selected-day {
+        background-color: violet;
     }
 
     .custom-week-header {
@@ -1009,50 +1078,57 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
         color: white;
         margin: 0.15rem;
         padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e9981e;
+        border-bottom: 1px solid blueviolet;
     }
 
     .custom-year-picker {
         border: 1px solid #211e1b;
-        background-color: #e9981e;
+        background-color: blueviolet;
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
-    }
-
-    .custom-increase-btn {
-        background-color: #48900f;
-    }
-
-    .custom-decrease-btn {
-        background-color: #c70505;
     }
 </style>
 
 
-<BitDatePicker Style=""""margin: 1rem; background: purple;"""" />
-<BitDatePicker Class=""""custom-class"""" />
+<BitDatePicker Style=""margin: 1rem; box-shadow: dodgerblue 0 0 1rem;"" />
 
-<BitDatePicker Styles=""""@(new() { Root = """"margin: 1rem; border: 1px solid gold;"""",
-                                   Divider = """"border-color: green;"""",
-                                   DayPickerMonth = """"color: red;"""",
-                                   TodayDayButton = """"background-color: red;"""",
-                                   SelectedDayButton = """"background-color: purple;"""",
-                                   YearPickerToggleButton = """"color: blue;"""" })"""" />
-<BitDatePicker ShowTimePicker=""true""
+<BitDatePicker Class=""custom-class"" />
+
+
+<BitDatePicker ShowTimePicker
+               Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                 Focused = ""--focused-background: #b2b2b25a;"",
+                                 Input = ""padding: 0.5rem;"",
+                                 InputContainer = ""background: var(--focused-background);"",
+                                 Group = ""border: 1px solid mediumseagreen; background: #1c73324d;"",
+                                 Divider = ""border-color: mediumseagreen;"",
+                                 DayPickerMonth = ""color: darkgreen;"",
+                                 TodayDayButton = ""background-color: green;"",
+                                 SelectedDayButton = ""background-color: limegreen;"",
+                                 TimePickerIncreaseHourButton = ""background-color: limegreen;"",
+                                 TimePickerIncreaseMinuteButton = ""background-color: limegreen;"",
+                                 TimePickerDecreaseHourButton = ""background-color: limegreen;"",
+                                 TimePickerDecreaseMinuteButton = ""background-color: limegreen;"" })"" />
+
+<BitDatePicker @bind-Value=""@classesValue""
+               Label=""Select a date""
                Classes=""@(new() { Root = ""custom-root"",
+                                  Focused = ""custom-focus"",
+                                  Input = ""custom-input"",
+                                  InputContainer = ""custom-input-container"",
+                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"",
                                   DayPickerWrapper = ""custom-day-picker"",
                                   DayButton = ""custom-day"",
                                   TodayDayButton = ""custom-today-day"",
+                                  SelectedDayButton = ""custom-selected-day"",
                                   PrevMonthNavButton = ""custom-prev-month"",
                                   NextMonthNavButton = ""custom-next-month"",
                                   DayPickerMonth = ""custom-day-month"",
                                   DayPickerHeader = ""custom-day-header"",
                                   WeekNumbersHeader = ""custom-week-header"",
-                                  YearMonthPickerWrapper = ""custom-year-picker"",
-                                  TimePickerIncreaseHourButton = ""custom-increase-btn"",
-                                  TimePickerIncreaseMinuteButton = ""custom-increase-btn"",
-                                  TimePickerDecreaseHourButton = ""custom-decrease-btn"",
-                                  TimePickerDecreaseMinuteButton = ""custom-decrease-btn""})"" />";
+                                  YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
+    private readonly string example5CsharpCode = @"
+private DateTimeOffset? classesValue;";
 
     private readonly string example6RazorCode = @"
 <BitDatePicker @bind-Value=""@selectedDate"" />
@@ -1141,8 +1217,8 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Response DatePicker""
-               IsResponsive=""true""
-               ShowWeekNumbers=""true""
+               IsResponsive
+               ShowWeekNumbers
                Placeholder=""Select a date"" />";
 
     private readonly string example10RazorCode = @"
@@ -1180,18 +1256,18 @@ private void HandleInvalidSubmit() { }";
 <BitDatePicker Dir=""BitDir.Rtl"" />";
 
     private readonly string example12RazorCode = @"
-<BitDatePicker ShowTimePicker=""true""
+<BitDatePicker ShowTimePicker
                Label=""HourStep = 2""
                HourStep=""2"" />
 
-<BitDatePicker ShowTimePicker=""true""
+<BitDatePicker ShowTimePicker
                Label=""MinuteStep = 15""
                MinuteStep=""15"" />";
 
     private readonly string example13RazorCode = @"
 <BitDatePicker Label=""Basic DatePicker"" Standalone />
 <BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
-<BitDatePicker Label=""Week numbers"" ShowWeekNumbers=""true"" Standalone />
-<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth=""true"" HighlightSelectedMonth=""true"" Standalone />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker=""true"" Standalone />";
+<BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
+<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+<BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 }
