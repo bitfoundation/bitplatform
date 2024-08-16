@@ -211,45 +211,28 @@ public partial class BitCalloutDemo
 
 
     private readonly string example1RazorCode = @"
-<style>
-    .custom-content {
-        padding: 16px;
-        border-radius: 2px;
-        box-shadow: #a9a9a92e 0px 0px 4px 2px;
-    }
-</style>
-
 <BitCallout>
     <Anchor>
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div class=""custom-content"">
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
             This is the callout content.
         </div>
     </Content>
 </BitCallout>";
 
     private readonly string example2RazorCode = @"
-<style>
-    .custom-content {
-        padding: 16px;
-        border-radius: 2px;
-        box-shadow: #a9a9a92e 0px 0px 4px 2px;
-    }
-</style>
-
 <BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">AnchorId</BitButton>
 <BitCallout AnchorId=""anchor_id"" @ref=""callout1"">
-    <div class=""custom-content"">
+    <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
         <BitCalendar />
     </div>
 </BitCallout>
 
-
 <button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">AnchorEl</button>
 <BitCallout AnchorEl=""() => anchorEl"" @ref=""callout2"">
-    <div class=""custom-content"">
+    <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
         <BitCalendar />
     </div>
 </BitCallout>";
@@ -259,14 +242,6 @@ private BitCallout callout1;
 private BitCallout callout2;";
 
     private readonly string example3RazorCode = @"
-<style>
-    .custom-content {
-        padding: 16px;
-        border-radius: 2px;
-        box-shadow: #a9a9a92e 0px 0px 4px 2px;
-    }
-</style>
-
 <BitButton OnClick=""() => isOpen = true"">Show callout</BitButton>
 
 <BitCallout @bind-IsOpen=""isOpen"">
@@ -274,7 +249,7 @@ private BitCallout callout2;";
         <button>Anchor</button>
     </Anchor>
     <Content>
-        <div class=""custom-content"">
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
             This is the callout content.
             <br />
             You can even close it from here!
@@ -290,20 +265,12 @@ private BitCallout callout2;";
 private bool isOpen;";
 
     private readonly string example4RazorCode = @"
-<style>
-    .custom-content {
-        padding: 16px;
-        border-radius: 2px;
-        box-shadow: #a9a9a92e 0px 0px 4px 2px;
-    }
-</style>
-
 <BitCallout Direction=""BitDropDirection.All"">
     <Anchor>
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div class=""custom-content"">
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
             @for (int i = 1; i < 13; i++)
             {
                 var item = i;
@@ -318,13 +285,81 @@ private bool isOpen;";
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div class=""custom-content"">
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
             @for (int i = 1; i < 13; i++)
             {
                 var item = i;
                 <div>Callout content @(item)</div><br />
             }
         </div>
+    </Content>
+</BitCallout>";
+
+    private readonly string example5RazorCode = @"
+<style>
+    .custom-class {
+        width: fit-content;
+        box-shadow: dodgerblue 0px 0px 8px;
+    }
+
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+
+    .custom-anchor {
+        color: white;
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 2px;
+        background-color: darkviolet;
+    }
+</style>
+
+
+<BitCallout Style=""width: fit-content; box-shadow: tomato 0px 0px 8px;"">
+    <Anchor>
+        <BitButton Color=""BitColor.Error"">Show callout</BitButton>
+    </Anchor>
+    <Content>
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+            This is the callout content.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout Class=""custom-class"">
+    <Anchor>
+        <BitButton>Show callout</BitButton>
+    </Anchor>
+    <Content>
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+            This is the callout content.
+        </div>
+    </Content>
+</BitCallout>
+
+
+<BitCallout Styles=""@(new() { Root = ""--anchor-color: #2e8b5775; width: fit-content;"",
+                              Opened = ""--anchor-color: #04cb5b75;"",
+                              AnchorContainer = ""background-color: var(--anchor-color);"" })"">
+    <Anchor>
+        <BitActionButton>Show callout</BitActionButton>
+    </Anchor>
+    <Content>
+        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+            This is the callout content.
+        </div>
+    </Content>
+</BitCallout>
+
+<BitCallout Classes=""@(new() { Content = ""custom-content"", AnchorContainer = ""custom-anchor"" })"">
+    <Anchor>
+        Show callout
+    </Anchor>
+    <Content>
+        This is the callout content.
     </Content>
 </BitCallout>";
 }
