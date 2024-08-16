@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSearchBox : BitInputBase<string?>
+public partial class BitSearchBox : BitTextInputBase<string?>
 {
     private bool _isOpen;
     private bool _inputHasFocus;
@@ -54,10 +54,9 @@ public partial class BitSearchBox : BitInputBase<string?>
     public bool HideIcon { get; set; }
 
     /// <summary>
-    /// Whether or not the SearchBox is underlined.
+    /// Whether to hide the clear button when the BitSearchBox has value.
     /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsUnderlined { get; set; }
+    [Parameter] public bool HideClearButton { get; set; }
 
     /// <summary>
     /// The icon name for the icon shown at the beginning of the search box.
@@ -65,14 +64,24 @@ public partial class BitSearchBox : BitInputBase<string?>
     [Parameter] public string IconName { get; set; } = "Search";
 
     /// <summary>
-    /// Callback executed when the user presses escape in the search box.
+    /// The maximum number of items or suggestions that will be displayed.
     /// </summary>
-    [Parameter] public EventCallback OnEscape { get; set; }
+    [Parameter] public int MaxSuggestCount { get; set; } = 5;
+
+    /// <summary>
+    /// The minimum character requirement for doing a search in suggest items.
+    /// </summary>
+    [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
 
     /// <summary>
     /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
     /// </summary>
     [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// Callback executed when the user presses escape in the search box.
+    /// </summary>
+    [Parameter] public EventCallback OnEscape { get; set; }
 
     /// <summary>
     /// Callback executed when the user presses enter in the search box.
@@ -85,9 +94,25 @@ public partial class BitSearchBox : BitInputBase<string?>
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Custom icon name for the search button.
+    /// </summary>
+    [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
+
+    /// <summary>
+    /// Whether to show the search button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ShowSearchButton { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitSearchBox.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm.
+    /// </summary>
+    [Parameter] public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
 
     /// <summary>
     /// The list of suggest items to display in the callout.
@@ -105,40 +130,10 @@ public partial class BitSearchBox : BitInputBase<string?>
     [Parameter] public RenderFragment<string>? SuggestItemTemplate { get; set; }
 
     /// <summary>
-    /// Custom search function to be used in place of the default search algorithm.
-    /// </summary>
-    [Parameter] public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
-
-    /// <summary>
-    /// The delay, in milliseconds, applied to the search functionality.
-    /// </summary>
-    [Parameter] public int SuggestThrottleTime { get; set; } = 400;
-
-    /// <summary>
-    /// The maximum number of items or suggestions that will be displayed.
-    /// </summary>
-    [Parameter] public int MaxSuggestCount { get; set; } = 5;
-
-    /// <summary>
-    /// The minimum character requirement for doing a search in suggest items.
-    /// </summary>
-    [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
-
-    /// <summary>
-    /// Custom icon name for the search button.
-    /// </summary>
-    [Parameter] public string SearchButtonIconName { get; set; } = "ChromeBackMirrored";
-
-    /// <summary>
-    /// Whether to show the search button.
+    /// Whether or not the SearchBox is underlined.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool ShowSearchButton { get; set; }
-
-    /// <summary>
-    /// Whether to hide the clear button when the BitSearchBox has value.
-    /// </summary>
-    [Parameter] public bool HideClearButton { get; set; }
+    public bool Underlined { get; set; }
 
 
 
@@ -163,7 +158,7 @@ public partial class BitSearchBox : BitInputBase<string?>
 
         ClassBuilder.Register(() => DisableAnimation ? "bit-srb-nan" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-srb-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-srb-und" : string.Empty);
 
         ClassBuilder.Register(() => _inputHasFocus ? $"bit-srb-{(FixedIcon ? "fic-" : string.Empty)}foc {Classes?.Focused}" : string.Empty);
 
@@ -218,7 +213,12 @@ public partial class BitSearchBox : BitInputBase<string?>
 
 
 
-    private void HandleOnValueChanged(object? sender, EventArgs args) => ClassBuilder.Reset();
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        _ = SearchItems();
+
+        ClassBuilder.Reset();
+    }
 
     private void HandleInputFocusIn()
     {
@@ -247,21 +247,11 @@ public partial class BitSearchBox : BitInputBase<string?>
     {
         if (IsEnabled is false) return;
 
-        await HandleOnChange(new() { Value = string.Empty });
+        await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
 
         await InputElement.FocusAsync();
 
         await OnClear.InvokeAsync();
-    }
-
-    private async Task HandleOnChange(ChangeEventArgs e)
-    {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
-
-        CurrentValue = e.Value?.ToString();
-
-        ThrottleSearch();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -326,44 +316,31 @@ public partial class BitSearchBox : BitInputBase<string?>
 
     private async Task SearchItems()
     {
-        if (SuggestItemProvider is not null)
+        if (CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars)
         {
-            _searchItems = [.. (await SuggestItemProvider.Invoke(CurrentValue, MaxSuggestCount)).Distinct().Take(MaxSuggestCount)];
+            _searchItems = [];
+        }
+        else if (SuggestItemProvider is not null)
+        {
+            _searchItems = [.. (await SuggestItemProvider.Invoke(CurrentValue, MaxSuggestCount)).Take(MaxSuggestCount)];
+        }
+        else if (SuggestItems is not null)
+        {
+            _searchItems = SuggestItems
+                            .Where(i => SuggestFilterFunction is not null
+                                        ? SuggestFilterFunction.Invoke(CurrentValue, i)
+                                        : (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
+                            .Take(MaxSuggestCount).ToList();
         }
         else
         {
-            _searchItems = CurrentValue.HasNoValue() || CurrentValue!.Length < MinSuggestTriggerChars
-                ? []
-                : SuggestItems?.Where(i => SuggestFilterFunction is not null ?
-                                    SuggestFilterFunction.Invoke(CurrentValue, i) :
-                                    (i?.Contains(CurrentValue!, StringComparison.OrdinalIgnoreCase) ?? false))
-                        .Distinct().Take(MaxSuggestCount).ToList() ?? [];
-
+            _searchItems = [];
         }
 
-        await ChangeStateCallout();
+        await HandleCallout();
     }
 
-    private void ThrottleSearch()
-    {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        _cancellationTokenSource = new();
-
-        Task.Run(async () =>
-        {
-            await Task.Delay(SuggestThrottleTime, _cancellationTokenSource.Token);
-            await InvokeAsync(async () =>
-            {
-                if (_cancellationTokenSource.IsCancellationRequested) return;
-
-                await SearchItems();
-                StateHasChanged();
-            });
-        }, _cancellationTokenSource.Token);
-    }
-
-    private async Task ChangeStateCallout()
+    private async Task HandleCallout()
     {
         if (IsEnabled is false) return;
 

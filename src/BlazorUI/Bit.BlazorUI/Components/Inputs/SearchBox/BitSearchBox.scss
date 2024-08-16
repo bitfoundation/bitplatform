@@ -1,11 +1,11 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-srb {
-    font-weight: 400;
-    font-family: $tg-font-family;
     display: flex;
-    flex-flow: row nowrap;
+    font-weight: 400;
     align-items: stretch;
+    flex-flow: row nowrap;
+    font-family: $tg-font-family;
 
     &.bit-dis {
         cursor: default;
@@ -40,6 +40,10 @@
         .bit-srb-sbn {
             border-color: $clr-brd-dis;
             background-color: $clr-bg-dis;
+
+            i {
+                color: $clr-fg-dis;
+            }
         }
 
         &.bit-srb-und {
@@ -49,10 +53,6 @@
 
             .bit-srb-sbn {
                 background-color: transparent;
-
-                i {
-                    color: $clr-fg-dis;
-                }
             }
         }
     }
