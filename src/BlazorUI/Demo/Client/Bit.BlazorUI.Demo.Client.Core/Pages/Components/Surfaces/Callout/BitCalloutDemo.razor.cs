@@ -216,7 +216,7 @@ public partial class BitCalloutDemo
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             This is the callout content.
         </div>
     </Content>
@@ -225,14 +225,14 @@ public partial class BitCalloutDemo
     private readonly string example2RazorCode = @"
 <BitButton Id=""anchor_id"" OnClick=""() => callout1.Toggle()"">AnchorId</BitButton>
 <BitCallout AnchorId=""anchor_id"" @ref=""callout1"">
-    <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+    <div style=""padding: 1rem; border: 1px solid gray;"">
         <BitCalendar />
     </div>
 </BitCallout>
 
 <button @ref=""anchorEl"" @onclick=""() => callout2.Toggle()"">AnchorEl</button>
 <BitCallout AnchorEl=""() => anchorEl"" @ref=""callout2"">
-    <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+    <div style=""padding: 1rem; border: 1px solid gray;"">
         <BitCalendar />
     </div>
 </BitCallout>";
@@ -249,7 +249,7 @@ private BitCallout callout2;";
         <button>Anchor</button>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             This is the callout content.
             <br />
             You can even close it from here!
@@ -270,7 +270,7 @@ private bool isOpen;";
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             @for (int i = 1; i < 13; i++)
             {
                 var item = i;
@@ -285,7 +285,7 @@ private bool isOpen;";
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             @for (int i = 1; i < 13; i++)
             {
                 var item = i;
@@ -323,7 +323,7 @@ private bool isOpen;";
         <BitButton Color=""BitColor.Error"">Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             This is the callout content.
         </div>
     </Content>
@@ -334,7 +334,7 @@ private bool isOpen;";
         <BitButton>Show callout</BitButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             This is the callout content.
         </div>
     </Content>
@@ -348,7 +348,7 @@ private bool isOpen;";
         <BitActionButton>Show callout</BitActionButton>
     </Anchor>
     <Content>
-        <div style=""border-radius: 2px; padding: 16px; box-shadow: #a9a9a92e 0px 0px 4px 2px;"">
+        <div style=""padding: 1rem; border: 1px solid gray;"">
             This is the callout content.
         </div>
     </Content>
