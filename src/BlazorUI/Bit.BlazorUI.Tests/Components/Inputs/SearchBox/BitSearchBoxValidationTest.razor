@@ -2,6 +2,7 @@
     <DataAnnotationsValidator />
 
     <BitSearchBox IsEnabled="IsEnabled"
+                  Immediate="Immediate"
                   Placeholder="@Placeholder"
                   @bind-Value="@TestModel.Value"
                   DisableAnimation="@DisableAnimation"
@@ -23,6 +24,7 @@
     [Parameter] public string DefaultValue { get; set; }
     [Parameter] public bool ShowIcon { get; set; }
     [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool Immediate { get; set; }
     [Parameter] public string AutoComplete { get; set; }
 
     public int CurrentCount { get; set; }
