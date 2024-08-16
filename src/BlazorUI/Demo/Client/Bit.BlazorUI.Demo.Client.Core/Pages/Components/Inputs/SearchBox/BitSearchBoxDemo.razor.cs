@@ -59,38 +59,10 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the SearchBox is underlined.",
-        },
-        new()
-        {
             Name = "IconName",
             Type = "string",
             DefaultValue = "Search",
             Description = "The icon name for the icon shown at the beginning of the search box.",
-        },
-        new()
-        {
-            Name = "SuggestItems",
-            Type = "ICollection<string>?",
-            DefaultValue = "null",
-            Description = "The list of suggest items to display in the callout."
-        },
-        new()
-        {
-            Name = "SuggestItemProvider",
-            Type = "Func<string?, int, Task<ICollection<string>>>?",
-            DefaultValue = "null",
-            Description = "The function providing suggest items.",
-        },
-        new()
-        {
-            Name = "SuggestItemTemplate",
-            Type = "RenderFragment<string>?",
-            DefaultValue = "null",
-            Description = "The custom template for rendering the suggest items of the BitSearchBox.",
         },
         new()
         {
@@ -133,6 +105,20 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "SearchButtonIconName",
+            Type = "string",
+            DefaultValue = "ChromeBackMirrored",
+            Description = "Custom icon name for the search button.",
+        },
+        new()
+        {
+            Name = "ShowSearchButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the search button.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
@@ -149,25 +135,32 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "SuggestThrottleTime",
-            Type = "int",
-            DefaultValue = "400",
-            Description = "The delay, in milliseconds, applied to the search functionality.",
+            Name = "SuggestItems",
+            Type = "ICollection<string>?",
+            DefaultValue = "null",
+            Description = "The list of suggest items to display in the callout."
         },
         new()
         {
-            Name = "SearchButtonIconName",
-            Type = "string",
-            DefaultValue = "ChromeBackMirrored",
-            Description = "Custom icon name for the search button.",
+            Name = "SuggestItemProvider",
+            Type = "Func<string?, int, Task<ICollection<string>>>?",
+            DefaultValue = "null",
+            Description = "The function providing suggest items.",
         },
         new()
         {
-            Name = "ShowSearchButton",
+            Name = "SuggestItemTemplate",
+            Type = "RenderFragment<string>?",
+            DefaultValue = "null",
+            Description = "The custom template for rendering the suggest items of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the search button.",
-        }
+            Description = "Whether or not the SearchBox is underlined.",
+        },
     ];
     private readonly List<ComponentSubClass> componentSubClasses =
     [
@@ -267,20 +260,24 @@ public partial class BitSearchBoxDemo
         }
     ];
 
+
+
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
-    private string? TwoWaySearchValue;
-    private string? OnChangeSearchValue;
-    private string? OnSearchValue;
-    private string? SearchValue;
-    private string? SearchValueWithSuggestFilterFunction;
-    private string? SearchValueWithSearchDelay;
-    private string? SearchValueWithMinSearchLength;
-    private string? SearchValueWithMaxSuggestedItems;
-    private string? ItemsProviderSearchValue;
+    private string? twoWaySearchValue;
+    private string? immediateTwoWaySearchValue;
+    private string? onChangeSearchValue;
+    private string? onSearchValue;
 
-    private readonly ValidationSearchBoxModel ValidationSearchBoxModel = new();
+    private string? searchValue;
+    private string? searchValueWithSuggestFilterFunction;
+    private string? searchValueWithSearchDelay;
+    private string? searchValueWithMinSearchLength;
+    private string? searchValueWithMaxSuggestedItems;
+    private string? searchValueWithItemsProvider;
+
+    private readonly ValidationSearchBoxModel validationModel = new();
 
     private List<string> GetSuggestedItems() =>
     [
@@ -327,52 +324,32 @@ public partial class BitSearchBoxDemo
         }
         catch
         {
-            return new List<string>();
+            return [];
         }
     }
 
+
+
     private readonly string example1RazorCode = @"
-<BitLabel>Basic</BitLabel>
 <BitSearchBox Placeholder=""Search"" />
-    
-<BitLabel>Disabled</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" />";
+<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" />
-
-<BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" />";
+<BitSearchBox Placeholder=""Search"" Underlined />
+<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" Underlined />";
 
     private readonly string example3RazorCode = @"
-<BitLabel>SearchBox with fixed icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" FixedIcon=""true"" />
-
-<BitLabel>SearchBox without icon animation</BitLabel>
-<BitSearchBox Placeholder=""Search"" DisableAnimation=""true"" />
-
-<BitLabel>SearchBox with custom icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" IconName=""@BitIconName.Filter"" />
-
-<BitLabel>SearchBox without icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" HideIcon />";
+<BitSearchBox Placeholder=""FixedIcon"" FixedIcon />
+<BitSearchBox Placeholder=""DisableAnimation"" DisableAnimation />
+<BitSearchBox Placeholder=""Custom icon"" IconName=""@BitIconName.Filter"" />
+<BitSearchBox Placeholder=""HideIcon"" HideIcon />";
 
     private readonly string example4RazorCode = @"
-<BitLabel>Basic SearchBox</BitLabel>
-<BitSearchBox  Placeholder=""Search"" ShowSearchButton=""true"" />
-<br />
-<BitLabel>Basic Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" ShowSearchButton=""true"" />
-<br />
-<BitLabel>SearchBox with custom button icon</BitLabel>
-<BitSearchBox Placeholder=""Search"" ShowSearchButton=""true"" SearchButtonIconName=""PageListFilter"" />
-<br />
-<BitLabel>Disabled Basic SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsEnabled=""false"" ShowSearchButton=""true"" />
-<br />
-<BitLabel>Disabled Underlined SearchBox</BitLabel>
-<BitSearchBox Placeholder=""Search"" IsUnderlined=""true"" IsEnabled=""false"" ShowSearchButton=""true"" />";
+<BitSearchBox Placeholder=""Search"" ShowSearchButton />
+<BitSearchBox Placeholder=""SearchButtonIconName"" ShowSearchButton SearchButtonIconName=""PageListFilter"" />
+<BitSearchBox Placeholder=""Underlined"" Underlined ShowSearchButton />
+<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" ShowSearchButton />
+<BitSearchBox Placeholder=""Disabled Underlined"" IsEnabled=""false"" Underlined ShowSearchButton />";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -425,19 +402,18 @@ public partial class BitSearchBoxDemo
 </style>
 
 
-<BitSearchBox Placeholder=""Search"" Style=""box-shadow: dodgerblue 0 0 1rem; margin-inline: 1rem;"" />
+<BitSearchBox Placeholder=""Style"" Style=""box-shadow: dodgerblue 0 0 1rem; margin-inline: 1rem;"" />
 
-<BitSearchBox Placeholder=""Search"" Class=""custom-class"" />
+<BitSearchBox Placeholder=""Class"" Class=""custom-class"" />
 
-
-<BitSearchBox Placeholder=""Search""
+<BitSearchBox Placeholder=""Styles""
               Styles=""@(new() { Root = ""margin-inline: 1rem;"",
-                                Focused = ""--focused-background: #b2b2b25a;"",
                                 Input = ""padding: 0.5rem;"",
+                                Focused = ""--focused-background: #b2b2b25a;"",
                                 InputContainer = ""background: var(--focused-background);"" })"" />
 
 <BitSearchBox FixedIcon
-              Placeholder=""Search"" DefaultValue=""This is default value""
+              Placeholder=""Classes""
               Classes=""@(new() { Root = ""custom-root"",
                                  Icon = ""custom-icon"",
                                  Focused = ""custom-focused"",
@@ -446,78 +422,93 @@ public partial class BitSearchBoxDemo
                                  InputContainer = ""custom-input-container"" })"" />";
 
     private readonly string example6RazorCode = @"
-Visible: [ <BitSearchBox Visibility=""BitVisibility.Visible"" Placeholder=""Visible SearchBox"" /> ]
-Hidden: [ <BitSearchBox Visibility=""BitVisibility.Hidden"" Placeholder=""Hidden SearchBox"" />  ]
-Collapsed: [ <BitSearchBox Visibility=""BitVisibility.Collapsed"" Placeholder=""Collapsed SearchBox"" />  ]";
+<BitSearchBox Placeholder=""Search"" @bind-Value=""twoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" @bind-Value=""twoWaySearchValue"" />
+
+
+<BitSearchBox Placeholder=""Search"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
+<BitTextField Placeholder=""Search Value"" Immediate @bind-Value=""immediateTwoWaySearchValue"" />
+
+
+<BitSearchBox Placeholder=""Search"" Immediate
+              OnChange=""s => onChangeSearchValue = s""
+              OnClear=""() => onChangeSearchValue = string.Empty"" />
+<div>Search Value: @onChangeSearchValue</div>
+
+
+<BitSearchBox Placeholder=""Search"" Immediate
+              OnSearch=""s => onSearchValue = s""
+              OnClear=""() => onSearchValue = string.Empty"" />
+<div>Search Value: @onSearchValue</div>";
+    private readonly string example6CsharpCode = @"
+private string twoWaySearchValue;
+private string onChangeSearchValue;
+private string onSearchValue;";
 
     private readonly string example7RazorCode = @"
-<BitLabel>Two-way Bind</BitLabel>
-<BitSearchBox Placeholder=""Search"" @bind-Value=""TwoWaySearchValue"" />
-<BitTextField Placeholder=""Search Value"" Style=""margin-top: 5px;"" @bind-Value=""TwoWaySearchValue"" />
-
-<BitLabel>OnChange</BitLabel>
-<BitSearchBox Placeholder=""Search"" OnChange=""(s) => OnChangeSearchValue = s"" OnClear=""() => OnChangeSearchValue = string.Empty"" />
-<BitLabel>Search Value: @OnChangeSearchValue</BitLabel>
-
-<BitLabel>OnSearch (Serach by Enter)</BitLabel>
-<BitSearchBox Placeholder=""Search"" OnSearch=""(s) => OnSearchValue = s"" OnClear=""() => OnSearchValue = string.Empty"" />
-<BitLabel>Search Value: @OnSearchValue</BitLabel>";
-    private readonly string example7CsharpCode = @"
-private string TwoWaySearchValue;
-private string OnChangeSearchValue;
-private string OnSearchValue;";
-
-    private readonly string example8RazorCode = @"
-<EditForm Model=""ValidationSearchBoxModel"">
+<EditForm Model=""validationBoxModel"">
     <DataAnnotationsValidator />
-    <BitSearchBox Placeholder=""Search"" DefaultValue=""This is default value"" @bind-Value=""ValidationSearchBoxModel.Text"" />
-    <ValidationMessage For=""() => ValidationSearchBoxModel.Text"" />
+    <BitSearchBox Placeholder=""Search"" Immediate
+                  DefaultValue=""This is default value""
+                  @bind-Value=""validationBoxModel.Text"" />
+    <ValidationMessage For=""() => validationBoxModel.Text"" />
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ValidationSearchBoxModel
 {
-    [StringLength(6, MinimumLength = 2, ErrorMessage = ""The text field length must be between 6 and 2 characters in length."")]
+    [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
     public string Text { get; set; }
 }
 
-private ValidationSearchBoxModel ValidationSearchBoxModel = new();";
+private ValidationSearchBoxModel validationBoxModel = new();";
 
-    private readonly string example9RazorCode = @"
-<BitLabel>Items:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" @bind-Value=""@SearchValue"" />
-SearchValue: @SearchValue
-                    
+    private readonly string example8RazorCode = @"
+<BitSearchBox @bind-Value=""@searchValue""
+              Immediate
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()"" />
 
-<BitLabel>SuggestFilterFunction (use StartsWith):</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" SuggestFilterFunction=""@SearchFunc"" @bind-Value=""@SearchValueWithSuggestFilterFunction"" />
-SearchValue: @SearchValueWithSuggestFilterFunction
-                    
 
-<BitLabel>MinSuggestTriggerChars equals 1:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" MinSuggestTriggerChars=""1"" @bind-Value=""@SearchValueWithMinSearchLength"" />
-SearchValue: @SearchValueWithMinSearchLength
-                    
+<BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
+              Immediate
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()""
+              SuggestFilterFunction=""@SearchFunc"" />
 
-<BitLabel>MaxSuggestCount equals 2:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" MaxSuggestCount=""2"" @bind-Value=""@SearchValueWithMaxSuggestedItems"" />
-SearchValue: @SearchValueWithMaxSuggestedItems
-                        
-<BitLabel>SuggestThrottleTime equals 2 seconds:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Apple"" SuggestItems=""GetSuggestedItems()"" SuggestThrottleTime=""2000"" @bind-Value=""@SearchValueWithSearchDelay"" />
-SearchValue: @SearchValueWithSearchDelay
 
-<BitLabel>ItemsProvider:</BitLabel>
-<BitSearchBox Placeholder=""e.g. Pro""
-              SuggestItemProvider=""LoadItems""
-              @bind-Value=""@ItemsProviderSearchValue"" />
-SearchValue: @ItemsProviderSearchValue";
-    private readonly string example9CsharpCode = @"
-private string SearchValue;
-private string SearchValueWithSuggestFilterFunction;
-private string SearchValueWithSearchDelay;
-private string SearchValueWithMinSearchLength;
-private string SearchValueWithMaxSuggestedItems;
-private string ItemsProviderSearchValue;
+<BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
+              Immediate
+              Placeholder=""e.g. Apple""
+              MinSuggestTriggerChars=""1""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
+              Immediate
+              Placeholder=""e.g. Apple""
+              MaxSuggestCount=""2""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
+              Immediate
+              DebounceTime=""2000""
+              Placeholder=""e.g. Apple""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
+              Immediate
+              Placeholder=""e.g. Pro""
+              SuggestItemProvider=""LoadItems"" />
+<div>SearchValue: @searchValueWithItemsProvider</div>";
+    private readonly string example8CsharpCode = @"
+private string searchValue;
+private string searchValueWithSuggestFilterFunction;
+private string searchValueWithSearchDelay;
+private string searchValueWithMinSearchLength;
+private string searchValueWithMaxSuggestedItems;
+private string searchValueWithItemsProvider;
 
 private List<string> GetSuggestedItems() =>
 [
@@ -562,14 +553,12 @@ private async Task<ICollection<string>> LoadItems(string? search, int count)
     }
     catch
     {
-        return new List<string>();
+        return [];
     }
 }";
 
-    private readonly string example10RazorCode = @"
-<BitSearchBox Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
-<BitSearchBox IsUnderlined Dir=""BitDir.Rtl"" Placeholder=""جستجو"" />
-<BitSearchBox ShowSearchButton
-              Dir=""BitDir.Rtl""
-              Placeholder=""جستجو"" />";
+    private readonly string example9RazorCode = @"
+<BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
+<BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
+<BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />";
 }

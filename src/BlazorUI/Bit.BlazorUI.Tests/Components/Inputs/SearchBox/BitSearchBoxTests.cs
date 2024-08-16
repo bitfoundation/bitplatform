@@ -50,7 +50,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(false)]
     public void SearchBoxUnderlinedShouldHaveClassName(bool isUnderlined)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.IsUnderlined, isUnderlined));
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Underlined, isUnderlined));
 
         var searchBox = component.Find(".bit-srb");
 
