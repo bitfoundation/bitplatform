@@ -264,7 +264,7 @@ public partial class BitSpinButton : BitInputBase<double>
     {
         if (disposing)
         {
-            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource?.Dispose();
         }
 
         base.Dispose(disposing);
@@ -357,8 +357,8 @@ public partial class BitSpinButton : BitInputBase<double>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 

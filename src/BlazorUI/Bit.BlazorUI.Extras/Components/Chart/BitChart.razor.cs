@@ -99,6 +99,10 @@ public partial class BitChart : IAsyncDisposable
     {
         if (disposing is false) return;
 
-        await _js.RemoveChart(Config?.CanvasId);
+        try
+        {
+            await _js.RemoveChart(Config?.CanvasId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

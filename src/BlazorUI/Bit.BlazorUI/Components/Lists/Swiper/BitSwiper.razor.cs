@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSwiper : BitComponentBase, IDisposable
+public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 {
     private double _lastX;
     private bool _disposed;
@@ -256,13 +256,13 @@ public partial class BitSwiper : BitComponentBase, IDisposable
     }
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
@@ -274,8 +274,12 @@ public partial class BitSwiper : BitComponentBase, IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
-            //_dotnetObjRef.Dispose();
+            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+               await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

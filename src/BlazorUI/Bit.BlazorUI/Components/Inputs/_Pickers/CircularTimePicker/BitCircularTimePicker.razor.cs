@@ -4,10 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
+public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
     private int? _hour;
     private int? _minute;
+    private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
@@ -619,16 +620,31 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return time.ToString(GetValueFormat() ?? _culture.DateTimeFormat.ShortTimePattern, _culture);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
 
-            _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
-            _ = _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        if (_dotnetObj is not null)
+        {
+            // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+                await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
+                await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        base.Dispose(disposing);
+        _disposed = true;
     }
 }

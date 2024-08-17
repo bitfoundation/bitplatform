@@ -2,9 +2,10 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSearchBox : BitTextInputBase<string?>
+public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 {
     private bool _isOpen;
+    private bool _disposed;
     private bool _inputHasFocus;
     private int _selectedIndex = -1;
     private string _inputId = string.Empty;
@@ -197,18 +198,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         result = value;
         parsingErrorMessage = null;
         return true;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            OnValueChanged -= HandleOnValueChanged;
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 
 
@@ -422,5 +411,35 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool GetIsSelected(string item)
     {
         return _selectedIndex > -1 && _searchItems.IndexOf(item) == _selectedIndex;
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        _cancellationTokenSource?.Dispose();
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        _disposed = true;
     }
 }

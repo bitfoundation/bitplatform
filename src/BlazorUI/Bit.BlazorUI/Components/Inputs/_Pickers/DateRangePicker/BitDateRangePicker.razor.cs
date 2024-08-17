@@ -623,8 +623,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (disposing)
         {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
+            _dotnetObj?.Dispose();
+            _cancellationTokenSource?.Dispose();
         }
 
         base.Dispose(disposing);
@@ -1635,8 +1635,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 

@@ -4,8 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDisposable where TItem : class, new()
 {
+    private bool _disposed;
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
@@ -593,16 +594,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             base.CreateFieldIdentifier();
         }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 
 
@@ -1312,5 +1303,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         UpdateSelectedItemsFromValues();
 
         EditContext?.NotifyFieldChanged(FieldIdentifier);
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        _disposed = true;
     }
 }

@@ -3,8 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTimePicker : BitInputBase<TimeSpan?>
+public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
+    private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
@@ -344,18 +345,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return time.ToString(GetValueFormat(), Culture);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task HandleOnFocusIn()
@@ -596,8 +585,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 
@@ -608,5 +597,35 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             : TimeFormat == BitTimeFormat.TwentyFourHours
                 ? "HH:mm"
                 : "hh:mm tt";
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        _cancellationTokenSource?.Dispose();
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        _disposed = true;
     }
 }

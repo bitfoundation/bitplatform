@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A component that wraps the HTML file input element and uploads them.
 /// </summary>
-public partial class BitFileUpload : BitComponentBase, IDisposable
+public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 {
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
@@ -674,26 +674,35 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _ = Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    private async Task Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
         if (_dropZoneRef is not null)
         {
-            await _dropZoneRef.InvokeVoidAsync("dispose");
-            await _dropZoneRef.DisposeAsync();
+            try
+            {
+                await _dropZoneRef.InvokeVoidAsync("dispose");
+                await _dropZoneRef.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
-            await _js.BitFileUploadDispose(UniqueId);
+
+            try
+            {
+                await _js.BitFileUploadDispose(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;
