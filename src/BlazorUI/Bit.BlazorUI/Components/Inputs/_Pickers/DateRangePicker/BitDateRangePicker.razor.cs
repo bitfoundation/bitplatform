@@ -479,7 +479,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public BitDateRangePickerValue? StartingValue { get; set; }
 
     /// <summary>
-    /// Whether the date-picker is rendered standalone or with the input component and callout.
+    /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Standalone { get; set; }
