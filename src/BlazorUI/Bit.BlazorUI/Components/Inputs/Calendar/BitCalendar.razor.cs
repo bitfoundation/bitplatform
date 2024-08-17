@@ -669,6 +669,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
+        if (IsEnabled is false) return true;
+
         if (showYearPicker)
         {
             return _yearPickerStartYear == todayYear - 1
@@ -730,6 +732,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeMonth(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         if (isNext && MaxDate.HasValue)
         {
             var maxDateYear = _culture.Calendar.GetYear(MaxDate.Value.DateTime);
@@ -752,6 +756,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYear(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) == _currentYear) ||
                 (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) == _currentYear)
@@ -760,6 +766,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYearRange(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) < _yearPickerStartYear + 12) ||
                 (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) >= _yearPickerStartYear)

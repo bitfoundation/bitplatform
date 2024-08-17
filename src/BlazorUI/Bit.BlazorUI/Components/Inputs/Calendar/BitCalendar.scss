@@ -18,6 +18,7 @@
             -webkit-user-select: none;
         }
 
+        .bit-cal-tdv,
         .bit-cal-pkt,
         .bit-cal-nbt,
         .bit-cal-wlb,
@@ -27,8 +28,10 @@
             color: $clr-fg-dis;
         }
 
-        .bit-cal-dbt.bit-cal-dtd {
-            background-color: $clr-bg-dis;
+        .bit-cal-dbt {
+            &.bit-cal-dtd {
+                background-color: $clr-bg-dis;
+            }
         }
     }
 }
@@ -312,6 +315,7 @@
     }
 
     &:disabled {
+        color: $clr-fg-dis;
         pointer-events: none;
         background-color: transparent;
 
@@ -461,6 +465,11 @@
         margin: 0;
     }
 
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
     &:focus {
         border: none;
         border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
@@ -477,6 +486,10 @@
 .bit-cal-bns {
     color: $clr-pri-text;
     background-color: $clr-pri;
+
+    &:disabled {
+        background-color: $clr-bg-dis;
+    }
 
     @media (hover: hover) {
         &:hover {
