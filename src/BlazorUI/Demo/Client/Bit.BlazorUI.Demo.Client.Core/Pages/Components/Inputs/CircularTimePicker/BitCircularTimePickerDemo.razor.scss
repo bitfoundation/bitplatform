@@ -8,6 +8,10 @@
     flex-flow: column wrap;
 }
 
+.example-content-standalone {
+    padding: rem2(5px);
+}
+
 .validation-summary {
     overflow: hidden;
     margin-bottom: rem2(10px);

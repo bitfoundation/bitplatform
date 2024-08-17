@@ -162,6 +162,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     [Parameter] public BitCircularTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Whether the TimePicker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Standalone { get; set; }
+
+    /// <summary>
     /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -185,6 +191,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
@@ -195,11 +202,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     [JSInvokable(nameof(HandlePointerUp))]
     public async Task HandlePointerUp(MouseEventArgs e)
     {
+        if (IsEnabled is false) return;
         if (_isPointerDown is false) return;
 
         _isPointerDown = false;
 
-        if (AutoClose && ((_showHourView is false && _minute.HasValue) || (_showHourView && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
+        if (AutoClose && Standalone is false && ((_showHourView is false && _minute.HasValue) || (_showHourView && EditMode == BitCircularTimePickerEditMode.OnlyHours)))
         {
             await CloseCallout();
         }
@@ -235,6 +243,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
+
+        ClassBuilder.Register(() => Standalone ? "bit-ctp-sta" : string.Empty);
 
         ClassBuilder.Register(() => _focusClass);
     }
@@ -307,6 +317,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task CloseCallout()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
@@ -428,9 +439,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private int GetHours() => TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.GetValueOrDefault()) : _hour.GetValueOrDefault();
 
-    private void HandleOnHourClick() => _showHourView = true;
+    private void HandleOnHourClick()
+    {
+        if (IsEnabled is false) return;
 
-    private void HandleOnMinuteClick() => _showHourView = false;
+        _showHourView = true;
+    }
+
+    private void HandleOnMinuteClick()
+    {
+        if (IsEnabled is false) return;
+
+        _showHourView = false;
+    }
 
     private async Task HandleOnAmClick()
     {
@@ -468,6 +489,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task ToggleCallout()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         await _js.ToggleCallout(_dotnetObj,
@@ -489,7 +511,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task UpdateTime(MouseEventArgs e)
     {
-        if (IsOpen is false) return;
+        if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         var rect = await _js.GetBoundingClientRect(_clockRef);

@@ -191,6 +191,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Standalone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker is rendered standalone or with the input component and callout.",
+        },
+        new()
+        {
             Name = "TabIndex",
             Type = "int",
             DefaultValue = "0",
@@ -742,4 +749,10 @@ private async Task HandleValidSubmit()
 
     private readonly string example10RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl"" />";
+
+    private readonly string example11RazorCode = @"
+<BitCircularTimePicker Label=""Basic CircularTimePicker"" Standalone />
+<BitCircularTimePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitCircularTimePicker Label=""PlaceHolder"" Placeholder=""Select a time"" Standalone />
+<BitCircularTimePicker Label=""TimeFormat (AM/PM)"" TimeFormat=""BitTimeFormat.TwelveHours"" Standalone />";
 }
