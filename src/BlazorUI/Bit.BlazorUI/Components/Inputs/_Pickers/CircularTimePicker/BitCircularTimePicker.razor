@@ -20,44 +20,59 @@
         </label>
     }
 
-    <div style="@Styles?.InputWrapper" class="bit-ctp-wrp @Classes?.InputWrapper" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
-        <div style="@Styles?.InputContainer" class="bit-ctp-icn @Classes?.InputContainer">
-            <input @ref="InputElement" @attributes="InputHtmlAttributes"
-                   @onfocus="@HandleOnFocus"
-                   @oninput="@HandleOnChange"
-                   @onfocusin="@HandleOnFocusIn"
-                   @onfocusout="@HandleOnFocusOut"
-                   type="text"
-                   name="@Name"
-                   id="@_inputId"
-                   role="combobox"
-                   tabindex="@TabIndex"
-                   aria-haspopup="dialog"
-                   aria-label="@AriaLabel"
-                   placeholder="@Placeholder"
-                   value="@CurrentValueAsString"
-                   disabled=@(IsEnabled is false)
-                   readonly=@(AllowTextInput is false)
-                   aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-controls="@(IsOpen ? _calloutId : null)"
-                   aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
-                   style="@Styles?.Input"
-                   class="bit-ctp-inp@(AllowTextInput ? " bit-ctp-ein" : "") @Classes?.Input" />
+    @if (Standalone is false)
+    {
+        <div style="@Styles?.InputWrapper" class="bit-ctp-wrp @Classes?.InputWrapper" id="@_circularTimePickerId" aria-owns="@(IsOpen ? _calloutId : null)" @onclick="HandleOnClick">
+            <div style="@Styles?.InputContainer" class="bit-ctp-icn @Classes?.InputContainer">
+                <input @ref="InputElement" @attributes="InputHtmlAttributes"
+                       @onfocus="@HandleOnFocus"
+                       @oninput="@HandleOnChange"
+                       @onfocusin="@HandleOnFocusIn"
+                       @onfocusout="@HandleOnFocusOut"
+                       type="text"
+                       name="@Name"
+                       id="@_inputId"
+                       role="combobox"
+                       tabindex="@TabIndex"
+                       aria-haspopup="dialog"
+                       aria-label="@AriaLabel"
+                       placeholder="@Placeholder"
+                       value="@CurrentValueAsString"
+                       disabled=@(IsEnabled is false)
+                       readonly=@(AllowTextInput is false)
+                       aria-expanded="@(IsOpen ? "true" : "false")"
+                       aria-controls="@(IsOpen ? _calloutId : null)"
+                       aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)"
+                       style="@Styles?.Input"
+                       class="bit-ctp-inp@(AllowTextInput ? " bit-ctp-ein" : "") @Classes?.Input" />
 
-            @if (IconTemplate is not null)
-            {
-                @IconTemplate
-            }
-            else
-            {
-                <i style="@Styles?.Icon" class="bit-ctp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
-            }
+                @if (IconTemplate is not null)
+                {
+                    @IconTemplate
+                }
+                else
+                {
+                    <i style="@Styles?.Icon" class="bit-ctp-ico bit-icon bit-icon--@IconName @Classes?.Icon" aria-hidden="true" />
+                }
+            </div>
         </div>
-    </div>
 
-    <div @onclick="CloseCallout"
-         style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
-         class="bit-ctp-ovl @Classes?.Overlay"></div>
+        <div @onclick="CloseCallout"
+             style="display:@(IsOpen ? "block" : "none"); @Styles?.Overlay"
+             class="bit-ctp-ovl @Classes?.Overlay"></div>
+    }
+    else
+    {
+        <input @ref="InputElement" @attributes="InputHtmlAttributes"
+               type="text"
+               name="@Name"
+               id="@_inputId"
+               aria-label="@AriaLabel"
+               class="bit-input-hidden"
+               value="@CurrentValueAsString"
+               disabled="@(IsEnabled is false)"
+               readonly="@(AllowTextInput is false)" />
+    }
 
     <div style="@Styles?.Callout" class="bit-ctp-cal @Classes?.Callout" id="@_calloutId">
         <div style="@Styles?.CalloutContainer" class="bit-ctp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
@@ -66,16 +81,18 @@
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
                         <button @onclick="HandleOnHourClick"
+                                type="button"
                                 style="@GetHourButtonStyle()"
-                                class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton"
-                                type="button">
+                                disabled="@(IsEnabled is false)"
+                                class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
                             @GetHourString()
                         </button>
                         <span style="@Styles?.HourMinuteSeparator" class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
                         <button @onclick="HandleOnMinuteClick"
+                                type="button"
                                 style="@GetMinuteButtonStyle()"
-                                class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton"
-                                type="button">
+                                disabled="@(IsEnabled is false)"
+                                class="bit-ctp-txt @(_showHourView ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.MinuteButton">
                             @GetMinuteString()
                         </button>
                     }
@@ -91,12 +108,14 @@
                         <button @onclick="HandleOnAmClick"
                                 type="button"
                                 style="@GetAmButtonStyle(isAm)"
+                                disabled="@(IsEnabled is false)"
                                 class="bit-ctp-apb @(isAm ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.AmButton">
                             @_culture.DateTimeFormat.AMDesignator
                         </button>
                         <button @onclick="HandleOnPmClick"
                                 type="button"
                                 style="@GetPmButtonStyle(isAm)"
+                                disabled="@(IsEnabled is false)"
                                 class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : Classes?.SelectedButtons) @Classes?.PmButton">
                             @_culture.DateTimeFormat.PMDesignator
                         </button>
@@ -152,7 +171,7 @@
                 </div>
             </div>
 
-            @if (ShowCloseButton)
+            @if (ShowCloseButton && Standalone is false)
             {
                 <button @onclick="CloseCallout"
                         type="button"
