@@ -17,7 +17,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitCarousel>? _dotnetObjRef = default!;
+    private DotNetObjectReference<BitCarousel> _dotnetObjRef = default!;
 
 
 
@@ -92,6 +92,8 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         await GotoPage(index - 1);
     }
 
+
+
     [JSInvokable("OnRootResize")]
     public async Task OnRootResize(ContentRect rect)
     {
@@ -118,6 +120,13 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     protected override string RootElementClass => "bit-csl";
 
+    protected override void OnInitialized()
+    {
+        _dotnetObjRef = DotNetObjectReference.Create(this);
+
+        base.OnInitialized();
+    }
+
     protected override void OnParametersSet()
     {
         _internalScrollItemsCount = ScrollItemsCount;
@@ -133,7 +142,6 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
         if (firstRender is false) return;
 
-        _dotnetObjRef = DotNetObjectReference.Create(this);
         _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
 
         if (AutoPlay)
@@ -326,6 +334,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             await GoRight();
         }
     }
+
     private async Task HandlePointerDown(MouseEventArgs e)
     {
         _isPointerDown = true;
@@ -333,6 +342,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         await _js.SetStyle(_carousel, "cursor", "grabbing");
         StateHasChanged();
     }
+
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
