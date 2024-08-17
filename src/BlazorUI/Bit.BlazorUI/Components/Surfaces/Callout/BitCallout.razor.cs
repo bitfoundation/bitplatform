@@ -186,8 +186,12 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
         if (_dotnetObj is not null)
         {
-            await _js.ClearCallout(_contentId);
             _dotnetObj.Dispose();
+            try
+            {
+                await _js.ClearCallout(_contentId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

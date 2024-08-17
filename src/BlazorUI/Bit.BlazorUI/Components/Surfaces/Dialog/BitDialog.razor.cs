@@ -317,7 +317,11 @@ public partial class BitDialog : BitComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+        try
+        {
+            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _tcs?.SetResult(Result = null);
         _tcs = null;

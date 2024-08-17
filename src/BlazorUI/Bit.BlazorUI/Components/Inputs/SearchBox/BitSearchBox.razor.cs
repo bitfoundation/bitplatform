@@ -203,9 +203,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (disposing)
         {
-            OnValueChanged -= HandleOnValueChanged;
             _dotnetObj.Dispose();
             _cancellationTokenSource.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);

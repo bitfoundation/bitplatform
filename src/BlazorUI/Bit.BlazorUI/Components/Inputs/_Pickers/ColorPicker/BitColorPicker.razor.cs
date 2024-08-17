@@ -240,8 +240,12 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
     {
         if (_disposed || disposing is false) return;
 
-        _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
-        _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+        try
+        {
+            _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
+            _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _disposed = true;
     }

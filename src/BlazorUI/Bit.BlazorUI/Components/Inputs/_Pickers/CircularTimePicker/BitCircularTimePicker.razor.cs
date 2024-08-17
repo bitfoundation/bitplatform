@@ -625,8 +625,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         {
             OnValueChanged -= HandleOnValueChanged;
 
-            _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
-            _ = _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+            try
+            {
+                _ = _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
+                _ = _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         base.Dispose(disposing);

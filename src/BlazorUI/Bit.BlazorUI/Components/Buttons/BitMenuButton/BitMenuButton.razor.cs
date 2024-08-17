@@ -598,7 +598,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
         if (_dotnetObj is not null)
         {
-            await _js.ClearCallout(_calloutId);
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
             _dotnetObj.Dispose();
         }
 

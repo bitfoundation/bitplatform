@@ -686,14 +686,22 @@ public partial class BitFileUpload : BitComponentBase, IDisposable
 
         if (_dropZoneRef is not null)
         {
-            await _dropZoneRef.InvokeVoidAsync("dispose");
-            await _dropZoneRef.DisposeAsync();
+            try
+            {
+                await _dropZoneRef.InvokeVoidAsync("dispose");
+                await _dropZoneRef.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
-            await _js.BitFileUploadDispose(UniqueId);
+            try
+            {
+                await _js.BitFileUploadDispose(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

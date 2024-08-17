@@ -365,8 +365,12 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
-            //_dotnetObjRef.Dispose();
+            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+                _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;
