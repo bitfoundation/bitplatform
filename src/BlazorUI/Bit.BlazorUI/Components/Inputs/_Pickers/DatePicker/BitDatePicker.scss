@@ -749,7 +749,7 @@
     background-color: $clr-pri;
 
     &:disabled {
-        background-color: $clr-pri;
+        background-color: $clr-bg-dis;
     }
 
     @media (hover: hover) {
