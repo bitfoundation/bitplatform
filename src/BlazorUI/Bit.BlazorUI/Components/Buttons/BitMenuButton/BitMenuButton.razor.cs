@@ -241,6 +241,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
 
     protected override async Task OnInitializedAsync()
     {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -275,16 +277,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
             item = _items.FirstOrDefault(GetIsEnabled);
             await AssignSelectedItem(item);
         }
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _dotnetObj = DotNetObjectReference.Create(this);
-        }
-
-        base.OnAfterRender(firstRender);
     }
 
 

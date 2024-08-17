@@ -24,7 +24,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     private string _resizeObserverId = string.Empty;
     private readonly List<BitSwiperItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitSwiper>? _dotnetObjRef = default!;
+    private DotNetObjectReference<BitSwiper> _dotnetObjRef = default!;
 
 
 
@@ -82,57 +82,6 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
 
 
-    internal void RegisterItem(BitSwiperItem item)
-    {
-        item.Index = _allItems.Count;
-
-        _allItems.Add(item);
-    }
-
-    internal void UnregisterItem(BitSwiperItem carouselItem) => _allItems.Remove(carouselItem);
-
-
-
-    protected override string RootElementClass => "bit-swp";
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
-
-        await base.OnParametersSetAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await GetDimensions();
-
-        var itemsCount = _allItems.Count;
-        _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
-                                  : ScrollItemsCount > itemsCount ? itemsCount
-                                  : ScrollItemsCount;
-
-        if (firstRender)
-        {
-            //if (AutoPlay)
-            //{
-            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
-            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
-            //    _autoPlayTimer.Start();
-            //}
-
-            _dotnetObjRef = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
-
-            await _js.BitSwiperRegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
-
-            SetNavigationButtonsVisibility(_translateX);
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-
-
     [JSInvokable("OnRootResize")]
     public async Task OnRootResize(ContentRect rect)
     {
@@ -160,6 +109,63 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
         var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
+    }
+
+
+
+    internal void RegisterItem(BitSwiperItem item)
+    {
+        item.Index = _allItems.Count;
+
+        _allItems.Add(item);
+    }
+
+    internal void UnregisterItem(BitSwiperItem carouselItem) => _allItems.Remove(carouselItem);
+
+
+
+    protected override string RootElementClass => "bit-swp";
+
+    protected override void OnInitialized()
+    {
+        _dotnetObjRef = DotNetObjectReference.Create(this);
+
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetDimensions();
+
+        var itemsCount = _allItems.Count;
+        _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
+                                  : ScrollItemsCount > itemsCount ? itemsCount
+                                  : ScrollItemsCount;
+
+        if (firstRender)
+        {
+            //if (AutoPlay)
+            //{
+            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            //    _autoPlayTimer.Start();
+            //}
+
+            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
+
+            await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObjRef);
+
+            SetNavigationButtonsVisibility(_translateX);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
@@ -254,6 +260,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         _swiperEffectiveWidth = dimensions?.EffectiveSwiperWidth ?? 0;
         _translateX = dimensions?.SwiperTranslateX ?? 0;
     }
+
 
 
     public async ValueTask DisposeAsync()
