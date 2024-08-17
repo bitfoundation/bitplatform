@@ -17,6 +17,7 @@ using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
 using Boilerplate.Server.Api.Controllers;
+using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Boilerplate.Server.Api;
 
@@ -324,6 +325,34 @@ public static partial class Program
                 options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
                 options.RetrieveUserDetails = true;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+            });
+        }
+        
+        if (string.IsNullOrEmpty(configuration["Authentication:MicrosoftAccount:ClientId"]) is false)
+        {
+            authenticationBuilder.AddMicrosoftAccount(options =>
+            {
+                var tenantId = configuration["Authentication:MicrosoftAccount:TenantId"]!;
+                options.ClientId  = configuration["Authentication:MicrosoftAccount:ClientId"]!;
+                options.ClientSecret  = configuration["Authentication:MicrosoftAccount:ClientSecret"]!;
+                options.SaveTokens = true;
+                
+                if (string.IsNullOrEmpty(tenantId) is false)
+                {
+                    options.AuthorizationEndpoint = $"https://login.microsoftonline.com/{tenantId}/oauth2/authorize";
+                    options.TokenEndpoint         = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token";
+                }
+                options.Events = new OAuthEvents()
+                {
+                     OnRemoteFailure = context =>
+                        {
+                           
+                           var errorMessage = context.Failure?.Message ?? "An error occurred during authentication.";
+                           context.Response.Redirect($"{Urls.ErrorPage}?message={Uri.EscapeDataString(errorMessage)}");
+                           context.HandleResponse();
+                           return Task.CompletedTask;
+                        }
+                    };
             });
         }
 

@@ -48,6 +48,15 @@
                        OnClick="WrapHandled(TwitterSignIn)">
                 @Localizer[AppStrings.TwitterSignInButtonText]
             </BitButton>
+            <br />
+            <BitButton Style="width:300px"
+                       IsLoading="isWaiting"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Outline"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(MicrosoftSignIn)">
+                @Localizer[AppStrings.MicrosoftSignInButtonText]
+            </BitButton>
             <br /><br />
             <BitSeparator Style="width:100%">Or</BitSeparator>
             <br />

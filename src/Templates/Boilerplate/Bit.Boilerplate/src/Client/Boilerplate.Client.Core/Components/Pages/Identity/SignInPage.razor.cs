@@ -172,6 +172,11 @@ public partial class SignInPage
     {
         await SocialSignIn("Twitter");
     }
+    
+    private async Task MicrosoftSignIn()
+    {
+        await SocialSignIn("Microsoft");
+    }
 
     private async Task SocialSignIn(string provider)
     {

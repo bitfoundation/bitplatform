@@ -83,6 +83,11 @@ public partial class SignUpPage
     {
         await SocialSignUp("Twitter");
     }
+    
+    private async Task MicrosoftSignUp()
+    {
+        await SocialSignUp("Microsoft");
+    }
 
     private async Task SocialSignUp(string provider)
     {

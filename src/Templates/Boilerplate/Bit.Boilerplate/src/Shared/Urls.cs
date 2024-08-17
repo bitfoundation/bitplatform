@@ -41,4 +41,6 @@ public static class Urls
     //#endif
 
     public const string AboutPage = "/about";
+    
+    public const string ErrorPage = "/error";
 }

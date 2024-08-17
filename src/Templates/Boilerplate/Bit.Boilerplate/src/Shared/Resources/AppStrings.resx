@@ -985,4 +985,10 @@
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
     <!--#endif -->
+    <data name="MicrosoftSignInButtonText" xml:space="preserve">
+    <value>Sign in with Microsoft</value>
+  </data>
+    <data name="MicrosoftSignUpButtonText" xml:space="preserve">
+    <value>Sign up with Microsoft</value>
+  </data>
 </root>
