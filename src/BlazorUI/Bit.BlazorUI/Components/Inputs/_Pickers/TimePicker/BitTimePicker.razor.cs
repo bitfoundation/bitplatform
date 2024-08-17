@@ -585,8 +585,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 

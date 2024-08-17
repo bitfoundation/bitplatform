@@ -377,7 +377,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (disposing)
         {
-            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource?.Dispose();
         }
 
         base.Dispose(disposing);
@@ -1011,8 +1011,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 

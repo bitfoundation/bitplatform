@@ -545,8 +545,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (disposing)
         {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
+            _dotnetObj?.Dispose();
+            _cancellationTokenSource?.Dispose();
         }
 
         base.Dispose(disposing);
@@ -1310,8 +1310,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 

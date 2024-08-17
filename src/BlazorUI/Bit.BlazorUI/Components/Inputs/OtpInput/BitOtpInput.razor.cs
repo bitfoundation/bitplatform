@@ -177,7 +177,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     {
         if (disposing)
         {
-            _dotnetObj.Dispose();
+            _dotnetObj?.Dispose();
         }
 
         base.Dispose(disposing);

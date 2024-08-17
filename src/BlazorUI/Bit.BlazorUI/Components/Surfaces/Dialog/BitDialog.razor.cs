@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitDialog : BitComponentBase, IDisposable
+public partial class BitDialog : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;
     private bool _disposed;
@@ -307,19 +307,19 @@ public partial class BitDialog : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
         try
         {
-            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

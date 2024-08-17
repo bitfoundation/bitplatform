@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitCarousel : BitComponentBase, IDisposable
+public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
     private int _pagesCount;
@@ -347,13 +347,13 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
@@ -368,7 +368,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
             //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+                await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

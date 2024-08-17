@@ -105,6 +105,8 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
         await Parent.OnItemClick.InvokeAsync(this);
     }
 
+
+
     public void Dispose()
     {
         Dispose(true);

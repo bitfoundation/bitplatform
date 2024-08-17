@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitColorPicker : BitComponentBase, IDisposable
+public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
     private double _selectedHue;
@@ -230,22 +230,26 @@ public partial class BitColorPicker : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        try
+        if (_dotnetObj is not null)
         {
-            _ = _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
-            _ = _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+            // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+                await _js.BitColorPickerAbort(_pointerUpAbortControllerId, true);
+                await _js.BitColorPickerAbort(_pointerMoveAbortControllerId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _disposed = true;
     }

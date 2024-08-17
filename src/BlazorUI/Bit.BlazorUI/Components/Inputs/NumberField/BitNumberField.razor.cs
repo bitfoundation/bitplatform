@@ -303,7 +303,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (disposing)
         {
-            _continuousChangeValueCts.Dispose();
+            _continuousChangeValueCts?.Dispose();
         }
 
         base.Dispose(disposing);
@@ -489,8 +489,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ResetCts()
     {
-        _continuousChangeValueCts.Cancel();
-        _continuousChangeValueCts.Dispose();
+        _continuousChangeValueCts?.Cancel();
+        _continuousChangeValueCts?.Dispose();
         _continuousChangeValueCts = new();
     }
 
