@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitCallout : BitComponentBase, IDisposable
+public partial class BitCallout : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
     private string _anchorId = default!;
@@ -174,19 +174,20 @@ public partial class BitCallout : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected async void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
             _dotnetObj.Dispose();
+
             try
             {
                 await _js.ClearCallout(_contentId);

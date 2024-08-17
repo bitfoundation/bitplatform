@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
 {
     private bool _disposed;
     private List<TItem> _items = [];
@@ -586,25 +586,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected async void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
+            _dotnetObj.Dispose();
+
             try
             {
                 await _js.ClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
-
-            _dotnetObj.Dispose();
         }
 
         _disposed = true;
