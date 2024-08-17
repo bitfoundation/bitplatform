@@ -342,6 +342,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "Standalone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the DateRangePicker is rendered standalone or with the input component and callout.",
+        },
+        new()
+        {
             Name = "StartingValue",
             Type = "BitDateRangePickerValue?",
             DefaultValue = "null",
@@ -1206,4 +1213,11 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 <BitDateRangePicker ShowTimePicker=""true""
                     Label=""MinuteStep = 15""
                     MinuteStep=""15"" />";
+
+    private readonly string example11CsharpCode = @"
+<BitDateRangePicker Label=""Basic DatePicker"" Standalone />
+<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
+<BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+<BitDateRangePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 }
