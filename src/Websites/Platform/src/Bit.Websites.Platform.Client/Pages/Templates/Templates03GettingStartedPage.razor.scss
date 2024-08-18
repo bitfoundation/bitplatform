@@ -23,6 +23,20 @@
     @include SectionCardText;
 }
 
+.row {
+    display: flex;
+}
+
+.image{
+    width: rem2(600px);
+    margin-left: rem2(30px);
+}
+
+::deep .plt-drp{
+    width: rem2(150px);
+    margin-left: rem2(20px);
+}
+
 ::deep {
     a {
         color: $bit-color-primary;

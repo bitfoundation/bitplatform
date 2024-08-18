@@ -30,7 +30,7 @@
                         which is installed by default on Windows 11.
                         <br /><br />
                         The default commands listed below are required for Web & API development, however,
-                        you can choose other options too, then click the Copy button and paste them into 
+                        you can choose other options too, then click the Copy button and paste them into
                         the Windows PowerShell as an Administrator to run.
                     </BitTypography>
                     <br />
@@ -61,114 +61,145 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>
-                        Windows, macOS, Linux - Any IDE
-                    </BitTypography>
+                    <div class="row">
+                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>
+                            Step-by-step instructions for
+                        </BitTypography>
+                        <BitDropdown Class="plt-drp" Items="@platforms" @bind-Value="@platform" />
+                    </div>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        Here are the step-by-step instructions to setup your development environment:
-                    </BitTypography>
+                    <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                     <br />
-                    <div class="section-card-txt">
-                        <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
-                        <ol>
-                            <li style="margin-bottom:8px">
-                                Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.400</a>
-                            </li>
-                            <BitAccordion Title=".NET 8 Sdk on Linux instructions">
-                                <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/14951030-5b4e-45ce-af0b-3d4aa613a70b/25acaeb050bbba6950a55960c5d3ad73/dotnet-sdk-8.0.400-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                    @switch (platform)
+                    {
+                        case "Windows":
+                            <ol>
+                                <li style="margin-bottom:8px">
+                                    Install .NET Sdk <a href="https://download.visualstudio.microsoft.com/download/pr/f5f1c28d-7bc9-431e-98da-3e2c1bbd1228/864e152e374b5c9ca6d58ee953c5a6ed/dotnet-sdk-8.0.401-win-x64.exe" target="_blank">8.0.401</a>
+                                </li>
+                                <br />
+                                <li>Install <a href="https://nodejs.org/dist/v20.16.0/node-v20.16.0-x64.msi" title="Node.js" rel="nofollow">Node.js</a></li>
+                                <br />
+                                <li>
+                                    <div style="margin-bottom:8px">Install .NET workloads</div>
+                                    @if (showCrossPlatform)
+                                    {
+                                        <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
+                                    else
+                                    {
+                                        <CodeBox>dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
+                                </li>
+                                <li>
+                                    <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
+                                    <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-01 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                </li>
+                                @if (showCrossPlatform)
+                                {
+                                    <li>
+                                        Enable long paths files in Windows
+                                        <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    </li>
+                                    <li>
+                                        Enable Windows developer mode
+                                        <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    </li>
+                                }
+                            </ol>
+                            break;
+                        case "macOS":
+                            <ol>
+                                <li style="margin-bottom:8px">
+                                    Install .NET Sdk <a href="https://download.visualstudio.microsoft.com/download/pr/62d5b0f6-e67e-4d89-9758-e285c407eb6c/38cd1ca749bffd444fe4fc1cedf3b692/dotnet-sdk-8.0.401-osx-x64.pkg" target="_blank">8.0.401</a>
+                                </li>
+                                <br />
+                                <li>Install <a href="https://nodejs.org/dist/v20.16.0/node-v20.16.0.pkg" title="Node.js" rel="nofollow">Node.js</a></li>
+                                <br />
+                                <li>
+                                    <div style="margin-bottom:8px">Install .NET workloads</div>
+                                    @if (showCrossPlatform)
+                                    {
+                                        <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
+                                    else
+                                    {
+                                        <CodeBox>sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
+                                </li>
+                                <li>
+                                    <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
+                                    <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-01 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                </li>
+                            </ol>
+                            break;
+                        case "Linux":
+                            <ol>
+                                <li style="margin-bottom:8px">
+                                    Install .NET Sdk <a href="https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz" target="_blank">8.0.401</a>
+                                    <CodeBox>
+wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 dotnet dev-certs https --trust
-rm dotnet.tar.gz</CodeBox>
-                            </BitAccordion>
-                            <br />
-                            <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
-                            <br />
-                            <li>
-                                <div style="margin-bottom:8px">Install .NET workloads</div>
-                                <BitPivot>
-                                    <BitPivotItem HeaderText="Windows">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                    <BitPivotItem HeaderText="Linux">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>dotnet workload update <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                    <BitPivotItem HeaderText="macOS">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                </BitPivot>
-                            </li>
-                            <li>
-                                <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
-                                <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-01 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
-                            </li>
-                            @if (showCrossPlatform)
-                            {
+rm dotnet.tar.gz
+                                    </CodeBox>
+                                </li>
+                                <li>Install <a href="https://nodejs.org/dist/v20.16.0/node-v20.16.0-linux-x64.tar.xz" title="Node.js" rel="nofollow">Node.js</a></li>
+                                <br />
                                 <li>
-                                    Enable long paths files in Windows
-                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    <div style="margin-bottom:8px">Install .NET workloads</div>
+                                    @if (showCrossPlatform)
+                                    {
+                                        <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
+                                    else
+                                    {
+                                        <CodeBox>dotnet workload update <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
+                                    }
                                 </li>
                                 <li>
-                                    Enable Windows developer mode
-                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                                    <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
+                                    <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-01 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
                                 </li>
-                            }
-                        </ol>
-                    </div>
+                            </ol>
+
+                            break;
+                    }
                     <br />
                     <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
                     <br />
                     <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
-                    <div class="section-card-txt">
-                        <ul>
-                            <li>
-                                <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
-                                <ul dir="auto">
-                                    <li>
-                                        Workloads:
-                                        <ul dir="auto">
-                                            <li>ASP.NET and web development</li>
-                                            @if (showCrossPlatform)
-                                            {
-                                                <li>.NET Multi-Platform App UI development + Android Sdk setup</li>
-                                            }
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Extensions:
-                                        <ul dir="auto">
-                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
-                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a> extension</li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
+                    <div class="row">
+                        <div class="section-card-txt">
+                            <ul>
+                                <li>
+                                    <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
+                                    <ul dir="auto">
+                                        <li>
+                                            Workloads:
+                                            <ul dir="auto">
+                                                <li>ASP.NET and web development</li>
+                                                @if (showCrossPlatform)
+                                                {
+                                                    <li>.NET Multi-Platform App UI development + Android Sdk setup</li>
+                                                }
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            Extensions:
+                                            <ul dir="auto">
+                                                <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
+                                                <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a> extension</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" /> 
                     </div>
                     <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
                     <div class="section-card-txt">
@@ -191,20 +222,24 @@ rm dotnet.tar.gz</CodeBox>
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>
+code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
 code --install-extension ms-dotnettools.dotnet-maui
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                             else
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>
+code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                         </BitAccordion>
                     </div>

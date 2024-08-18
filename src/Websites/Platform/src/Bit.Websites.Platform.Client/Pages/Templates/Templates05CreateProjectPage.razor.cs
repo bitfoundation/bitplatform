@@ -217,7 +217,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetAppInsightsCommand()
     {
-        return $"--appinsights {appInsight.Value.ToString().ToLowerInvariant()} ";
+        return $"--appInsights {appInsight.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetSignalRCommand()
