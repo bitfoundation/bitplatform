@@ -8,6 +8,11 @@ public class BitCircularTimePickerClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the focused state of the BitCircularTimePicker.
+    /// </summary>
+    public string? Focused { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the label of the BitCircularTimePicker.
     /// </summary>
     public string? Label { get; set; }

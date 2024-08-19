@@ -9,10 +9,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     private int? _hour;
     private int? _minute;
     private bool _disposed;
+    private bool _hasFocus;
     private string? _labelId;
     private string? _inputId;
     private bool _isPointerDown;
-    private string? _focusClass;
     private bool _showHourView = true;
     private ElementReference _clockRef;
     private string _calloutId = string.Empty;
@@ -246,12 +246,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         ClassBuilder.Register(() => Standalone ? "bit-ctp-sta" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-ctp-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -292,8 +294,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-ctp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -301,8 +304,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     {
         if (IsEnabled is false) return;
 
-        _focusClass = null;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -310,8 +314,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-ctp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
