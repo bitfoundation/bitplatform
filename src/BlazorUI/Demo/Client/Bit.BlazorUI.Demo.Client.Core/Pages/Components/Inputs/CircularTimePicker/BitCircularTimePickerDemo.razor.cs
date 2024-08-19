@@ -563,10 +563,13 @@ public partial class BitCircularTimePickerDemo
     private string successMessage = string.Empty;
     private BitCircularTimePicker circularTimePicker = default!;
 
+    private TimeSpan? classesValue;
+
     private async Task OpenCallout()
     {
         await circularTimePicker.OpenCallout();
     }
+
     private async Task HandleValidSubmit()
     {
         successMessage = "Form Submitted Successfully!";
@@ -603,25 +606,85 @@ public partial class BitCircularTimePickerDemo
     private readonly string example4RazorCode = @"
 <style>
     .custom-class {
-        margin: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid tomato;
     }
 
+    .custom-class *, .custom-class *:after {
+        border: none;
+    }
+
+
     .custom-root {
+        height: 3rem;
         margin: 1rem;
+        display: flex;
+        align-items: end;
+        position: relative;
         border-radius: 0.5rem;
     }
 
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
+    }
+
+    .custom-input {
+        padding: 0;
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .custom-input-container {
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
+    }
+
+    .custom-input-container::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-focus .custom-input-container::after {
+        left: 0;
+        width: 100%;
+    }
+
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
+    }
+
     .custom-toolbar {
-        background-color: #ff6a00;
+        background-color: blueviolet;
     }
 
     .custom-clock-face {
-        background-color: #ff6a00;
+        background-color: blueviolet;
     }
 
     .custom-clock-number {
-        color: #621402;
         font-weight: bold;
     }
 
@@ -629,33 +692,49 @@ public partial class BitCircularTimePickerDemo
     .custom-clock-pointer,
     .custom-clock-pointer-thumb,
     .custom-clock-selected-number {
-        background-color: #fff;
+        color: gray;
+        background-color: white;
     }
 
     .custom-clock-pointer-thumb-minute {
-        border-color: #fff;
+        border-color: white;
     }
 </style>
 
-<BitCircularTimePicker Style=""padding: 1rem; background: purple;"" />
+
+<BitCircularTimePicker Style=""margin: 1rem; box-shadow: dodgerblue 0 0 1rem;"" />
+
 <BitCircularTimePicker Class=""custom-class"" />
 
-<BitCircularTimePicker Styles=""@(new() { Root = ""margin: 1rem; border: 1px solid gold;"",
-                                         HourMinuteSeparator = ""border-color: green;"",
-                                         Toolbar = ""color: red;"",
-                                         ClockPointer = ""background-color: red;"",
-                                         ClockPointerThumb = ""background-color: purple;"",
-                                         SelectedButtons = ""color: blue;"",
-                                         ClockFace=""background-color: green;""})"" />
-<BitCircularTimePicker Classes=""@(new() { Root = ""custom-root"",
+
+<BitCircularTimePicker Styles=""@(new() { Root = ""margin-inline: 1rem;"",
+                                         Focused = ""--focused-background: #b2b2b25a;"",
+                                         Input = ""padding: 0.5rem;"",
+                                         InputContainer = ""background: var(--focused-background);"",
+                                         HourButton = ""color: gray;"",
+                                         MinuteButton = ""color: gray;"",
+                                         HourMinuteSeparator = ""color: gray;"",
+                                         Toolbar = ""background-color: transparent;"",
+                                         ClockFace=""box-shadow: dodgerblue 0 0 1rem;"",
+                                         ClockPointerThumb = ""background-color: blue;"" })"" />
+
+<BitCircularTimePicker @bind-Value=""@classesValue""
+                       Label=""Select a date""
+                       Classes=""@(new() { Root = ""custom-root"",
+                                          Focused = ""custom-focus"",
+                                          Input = ""custom-input"",
+                                          InputContainer = ""custom-input-container"",
+                                          Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"",
                                           Toolbar = ""custom-toolbar"",
-                                          ClockFace = ""custom-clock-face"",
                                           ClockPin = ""custom-clock-pin"",
+                                          ClockFace = ""custom-clock-face"",
+                                          ClockNumber = ""custom-clock-number"",
                                           ClockPointer = ""custom-clock-pointer"",
                                           ClockPointerThumb = ""custom-clock-pointer-thumb"",
-                                          ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"",
                                           ClockSelectedNumber = ""custom-clock-selected-number"",
-                                          ClockNumber = ""custom-clock-number"" })"" />";
+                                          ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"" })"" />";
+    private readonly string example4CsharpCode = @"
+private TimeSpan? classesValue;";
 
     private readonly string example5RazorCode = @"
 <BitCircularTimePicker @bind-Value=""@selectedTime"" />
