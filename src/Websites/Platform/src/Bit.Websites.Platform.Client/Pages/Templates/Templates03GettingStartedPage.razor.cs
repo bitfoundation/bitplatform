@@ -9,16 +9,9 @@ public partial class Templates03GettingStartedPage
     private bool installVs;
     private bool installVsCode;
     private bool enableCrossPlatform;
-    private string platform = "Windows";
+    private string devOS = "Windows";
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
-
-    private List<BitDropdownItem<string>> platforms = new()
-    {
-        new(){ Text="Windows", Value="Windows"},
-        new(){ Text="macOS", Value="macOS"},
-        new(){ Text="Linux", Value="Linux"},
-    };
 
     private List<(string text, string command)> GetSelectedComands()
     {
