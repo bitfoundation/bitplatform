@@ -341,13 +341,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// The maximum date allowed for the DateRangePicker.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))]
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum date allowed for the DateRangePicker.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))]
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
@@ -398,13 +400,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Show month picker on top of date range picker when visible.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))]
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))] 
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public bool ShowTimePicker { get; set; }
 
     /// <summary>
@@ -455,7 +459,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Show month picker on top of date range picker when visible.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))]
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
@@ -481,13 +486,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Specifies the date and time of the date and time picker when it is opened without any selected value.
     /// </summary>
-    [Parameter, CallOnSet(nameof(OnInit))]
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public BitDateRangePickerValue? StartingValue { get; set; }
 
     /// <summary>
     /// Whether the DateRangePicker is rendered standalone or with the input component and callout.
     /// </summary>
-    [Parameter, ResetClassBuilder, CallOnSet(nameof(OnInit))]
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public bool Standalone { get; set; }
 
 
@@ -545,7 +552,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         OnValueChanged += HandleOnValueChanged;
 
-        OnInit();
+        HandleParameterChanges();
 
         base.OnInitialized();
     }
@@ -699,10 +706,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        OnInit();
+        HandleParameterChanges();
     }
 
-    private void OnInit()
+    private void HandleParameterChanges()
     {
         _culture = Culture ?? CultureInfo.CurrentUICulture;
 
