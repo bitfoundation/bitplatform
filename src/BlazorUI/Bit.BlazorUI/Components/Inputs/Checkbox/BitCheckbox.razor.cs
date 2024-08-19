@@ -68,6 +68,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
+    [CallOnSet(nameof(SetIndeterminate))]
     public bool Indeterminate { get; set; }
 
     /// <summary>
@@ -122,21 +123,14 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
-    }
-
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _ = _js.SetProperty(InputElement, "indeterminate", Indeterminate);
+            await SetIndeterminate();
         }
 
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     protected override string RootElementClass => "bit-chb";
@@ -173,6 +167,11 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     }
 
 
+
+    private async Task SetIndeterminate()
+    {
+        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
+    }
 
     private async Task HandleOnCheckboxClick(MouseEventArgs args)
     {
