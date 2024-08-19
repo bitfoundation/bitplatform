@@ -65,15 +65,17 @@
                         <BitTypography Variant="BitTypographyVariant.H6" Gutter>
                             Step-by-step instructions for
                         </BitTypography>
-                        <BitDropdown Class="plt-drp" @bind-Value="@devOS" TItem="BitDropdownOption<string>" TValue="string">
-                            <BitDropdownOption Value="@("Windows")" Text="Windows" />
-                            <BitDropdownOption Value="@("macOS")" Text="macOS" />
-                            <BitDropdownOption Value="@("Linux")" Text="Linux" />
-                        </BitDropdown>
                     </div>
+                    <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
+                                  DefaultSelectedKey="Windows"
+                                  HeadersOnly="true"
+                                  OnItemClick="@(item => devOS = item?.Key)">
+                            <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
+                            <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
+                            <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
+                        </BitPivot>
                     <br />
                     <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
-                    <br />
                     <ol>
                         <li style="margin-bottom:8px">
                             Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">.NET 8 SDK</a>
@@ -127,10 +129,9 @@ rm dotnet.tar.gz</CodeBox>
                                 }
                             }
                         </li>
-                        <br />
                         <li>
-                            <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-02 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0-pre-02" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-02</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {
