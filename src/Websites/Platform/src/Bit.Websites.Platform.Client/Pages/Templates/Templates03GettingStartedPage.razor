@@ -61,25 +61,23 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <div class="row">
+                    <BitStack Horizontal VerticalAlign="BitStackAlignment.End" Gap="1rem">
                         <BitTypography Variant="BitTypographyVariant.H6" Gutter>
                             Step-by-step instructions for
                         </BitTypography>
-                    </div>
-                    <BitPivot LinkFormat="@BitPivotLinkFormat.Tabs"
-                                  DefaultSelectedKey="Windows"
-                                  HeadersOnly="true"
-                                  OnItemClick="@(item => devOS = item?.Key)">
+                        <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
                             <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
                         </BitPivot>
-                    <br />
+                    </BitStack>
+                    <br /><br />
                     <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
+                    <br />
                     <ol>
                         <li style="margin-bottom:8px">
                             Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">.NET 8 SDK</a>
-                            @if(devOS is "Linux")
+                            @if (devOS is "Linux")
                             {
                                 <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
@@ -151,7 +149,7 @@ rm dotnet.tar.gz</CodeBox>
                     @if (devOS is "Windows")
                     {
                         <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
-                        <div class="row">
+                        <BitStack Horizontal VerticalAlign="BitStackAlignment.Center" Gap="2rem" Style="overflow-x:auto">
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
@@ -179,7 +177,7 @@ rm dotnet.tar.gz</CodeBox>
                                 </ul>
                             </div>
                             <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
-                        </div>
+                        </BitStack>
                     }
                     <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
                     <div class="section-card-txt">
