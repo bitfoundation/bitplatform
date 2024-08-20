@@ -15,6 +15,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
+    private bool _hasFocus;
     private int _currentYear;
     private int _currentMonth;
     private int _yearPickerEndYear;
@@ -26,7 +27,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
     private int? _selectedStartDateDayOfWeek;
-    private string _focusClass = string.Empty;
     private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
@@ -533,12 +533,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => Standalone ? "bit-dtrp-sta" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-dtrp-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -652,8 +654,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtrp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -661,8 +664,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -670,8 +674,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtrp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 

@@ -469,6 +469,13 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the focused state of the BitDateRangePicker."
+                },
+                new()
+                {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
