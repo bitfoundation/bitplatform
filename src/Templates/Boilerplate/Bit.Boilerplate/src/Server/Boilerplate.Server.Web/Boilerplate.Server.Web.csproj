@@ -12,6 +12,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" PrivateAssets="all" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" PrivateAssets="all" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     </ItemGroup>
 
     <ItemGroup>
