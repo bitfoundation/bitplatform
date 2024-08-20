@@ -458,7 +458,9 @@ public partial class BitDataGridDemo
         <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
             <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
-                    <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                    <BitSearchBox Immediate
+                                  DebounceTime=""300""
+                                  @bind-Value=""typicalSampleNameFilter""
                                   Placeholder=""Search on Name""
                                   InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
@@ -475,7 +477,7 @@ public partial class BitDataGridDemo
 private IQueryable<CountryModel> allCountries;
 private string typicalSampleNameFilter = string.Empty;
 private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+private IQueryable<CountryModel> FilteredItems => typicalSampleNameFilter is null ? allCountries : allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
@@ -658,8 +660,10 @@ public class MedalsModel
             <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
                     <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                    Placeholder=""Search on Name""
-                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                                  Immediate
+                                  DebounceTime=""300""
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
             <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"">
@@ -680,7 +684,7 @@ public class MedalsModel
 private IQueryable<CountryModel> allCountries;
 private string typicalSampleNameFilter = string.Empty;
 private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+private IQueryable<CountryModel> FilteredItems => typicalSampleNameFilter is null ? allCountries : allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
@@ -764,7 +768,11 @@ public class MedalsModel
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
+    <BitSearchBox @bind-Value=""virtualSampleNameFilter""
+                  Immediate
+                  DebounceTime=""300""
+                  Width=""250px""
+                  Placeholder=""Search on Company""/>
 </div>";
     private readonly string example3CsharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
@@ -999,7 +1007,11 @@ public class Openfda
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-    <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
+    <BitSearchBox @bind-Value=""ODataSampleNameFilter""
+                  Width=""250px""
+                  Immediate
+                  DebounceTime=""300""
+                  Placeholder=""Search on Name"" />
 </div>";
     private readonly string example4CsharpCode = @"
 

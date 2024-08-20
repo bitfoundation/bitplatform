@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
+using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#endif
@@ -21,10 +23,33 @@ public static partial class Program
 
         AddBlazor(builder);
 
-        services.AddHttpContextAccessor();
-
         //#if (api == "Integrated")
         builder.ConfigureApiServices();
+        //#else
+        services.AddOptions<ForwardedHeadersOptions>()
+            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddResponseCaching();
+
+        services.AddHttpContextAccessor();
+
+        services.AddResponseCompression(opts =>
+        {
+            opts.EnableForHttps = true;
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
+            opts.Providers.Add<BrotliCompressionProvider>();
+            opts.Providers.Add<GzipCompressionProvider>();
+        })
+            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
+            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+
+        //#if (appInsights == true)
+        services.AddApplicationInsightsTelemetry(configuration);
+        //#endif
+
+        services.AddAntiforgery();
         //#endif
 
         services.AddClientWebProjectServices();

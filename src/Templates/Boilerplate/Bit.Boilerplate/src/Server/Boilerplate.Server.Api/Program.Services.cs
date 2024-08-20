@@ -17,6 +17,7 @@ using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
 using Boilerplate.Server.Api.Controllers;
+using System.Configuration;
 
 namespace Boilerplate.Server.Api;
 
@@ -61,9 +62,11 @@ public static partial class Program
         {
             builder.AddDefaultPolicy(policy =>
             {
+                var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+
                 policy.SetIsOriginAllowed(origin => 
                             LocalhostOriginRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(appSettings.WebClientUrl) is false && string.Equals(origin, appSettings.WebClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                            (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);

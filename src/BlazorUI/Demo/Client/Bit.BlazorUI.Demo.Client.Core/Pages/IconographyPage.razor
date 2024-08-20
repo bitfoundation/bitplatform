@@ -18,7 +18,9 @@
     </section>
     <section class="page-section">
         <BitTypography Variant="BitTypographyVariant.H4" Gutter>Available icons</BitTypography>
-        <BitSearchBox Class="iconography-search-box"
+        <BitSearchBox Immediate
+                      DebounceTime="300"
+                      Class="iconography-search-box"
                       Placeholder="Search icons"
                       IconName="@BitIconName.Search"
                       Value="@searchText"

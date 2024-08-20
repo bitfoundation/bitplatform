@@ -436,6 +436,12 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/SqlServerPrimaryKeySequentialGuidDefaultValueConvention.cs"
                     ]
+                },
+                {
+                    "condition": "(api == Integrated)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                    ]
                 }
             ]
         }

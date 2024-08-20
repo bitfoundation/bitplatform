@@ -23,7 +23,9 @@
                 <BitDataGrid @ref="dataGrid" ItemsProvider="categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="pagination">
                     <BitDataGridPropertyColumn Sortable="true" Property="c => c!.Name" Title="@Localizer[nameof(AppStrings.Name)]" Align="BitDataGridAlign.Left">
                         <ColumnOptions>
-                            <BitSearchBox @bind-Value="CategoryNameFilter"
+                            <BitSearchBox Immediate
+                                          DebounceTime="300"
+                                          @bind-Value="CategoryNameFilter"
                                           Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
                                           InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                         </ColumnOptions>

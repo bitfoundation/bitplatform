@@ -5,7 +5,9 @@
 
 <div class="page-container">
     <div class="search-box-container">
-        <BitSearchBox @ref="searchBox"
+        <BitSearchBox Immediate
+                      DebounceTime="300"
+                      @ref="searchBox"
                       Style="width: 300px"
                       OnChange="SearchTodoItems"
                       OnClear="@(() => SearchTodoItems(""))"
