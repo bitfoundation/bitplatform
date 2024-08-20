@@ -229,3 +229,5 @@ custom.aprof
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
 
 .env
+
+!**/.gitkeep
