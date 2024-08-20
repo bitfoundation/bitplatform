@@ -9,6 +9,7 @@ public partial class Templates03GettingStartedPage
     private bool installVs;
     private bool installVsCode;
     private bool enableCrossPlatform;
+    private string devOS = "Windows";
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
 
@@ -47,7 +48,6 @@ public partial class Templates03GettingStartedPage
         await clipboard.WriteText(commands);
         copyButtonText = "Now paste commands in Windows PowerShell";
     }
-
 
     private Dictionary<CommandGroup, List<(string text, string command)>> commandGroups = new()
     {
