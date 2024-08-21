@@ -46,7 +46,7 @@ jobs:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools
       
     - name: Generate CSS/JS files
       run: dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
