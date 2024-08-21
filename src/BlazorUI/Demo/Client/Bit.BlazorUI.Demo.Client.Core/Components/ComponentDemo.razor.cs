@@ -237,7 +237,7 @@ public partial class ComponentDemo
 
 
     private readonly List<string> _textInputComponents = [
-        "NumberField", "TextField"
+        "NumberField", "TextField", "SearchBox"
     ];
 
     private readonly List<ComponentParameter> _textInputBaseParameters =
