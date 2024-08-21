@@ -52,7 +52,7 @@ public partial class ProductsPage
 
                 if (string.IsNullOrEmpty(productNameFilter) is false)
                 {
-                    productController.AddQueryString("$filter", $"contains(Name,'{productNameFilter}')");
+                    productController.AddQueryString("$filter", $"contains(tolower(Name),'{productNameFilter.ToLower()}')");
                 }
 
                 if (req.GetSortByProperties().Any())
