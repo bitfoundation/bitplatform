@@ -136,6 +136,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// CultureInfo for the DatePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -275,12 +276,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The maximum date allowed for the DatePicker.
     /// </summary>
-    [Parameter] public DateTimeOffset? MaxDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum date allowed for the DatePicker.
     /// </summary>
-    [Parameter] public DateTimeOffset? MinDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
     /// Custom template to render the month cells of the DatePicker.
@@ -340,12 +345,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowTimePicker { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -390,7 +399,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether the clear button should be shown or not when the BitDatePicker has a value.
@@ -410,12 +421,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Specifies the date and time of the date-picker when it is opened without any selected value.
     /// </summary>
-    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? StartingValue { get; set; }
 
     /// <summary>
     /// Whether the date-picker is rendered standalone or with the input component and callout.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public bool Standalone { get; set; }
 
 
@@ -473,44 +487,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _calloutId = $"{_datePickerId}-callout";
         _inputId = $"{_datePickerId}-input";
 
-        if (Standalone)
-        {
-            _isMonthPickerOverlayOnTop = false;
-            _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
-            _isTimePickerOverlayOnTop = false;
-            _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+        OnValueChanged += HandleOnValueChanged;
 
-            if (CurrentValue.HasValue)
-            {
-                CheckCurrentCalendarMatchesCurrentValue();
-            }
-        }
+        HandleParameterChanges();
 
         base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _culture = Culture ?? CultureInfo.CurrentUICulture;
-
-        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
-
-        if (MinDate.HasValue && MinDate > dateTime)
-        {
-            dateTime = MinDate.Value;
-        }
-
-        if (MaxDate.HasValue && MaxDate < dateTime)
-        {
-            dateTime = MaxDate.Value;
-        }
-
-        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
-        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
-
-        GenerateCalendarData(dateTime.DateTime);
-
-        base.OnParametersSet();
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -547,6 +528,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             _dotnetObj?.Dispose();
             _cancellationTokenSource?.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);
@@ -657,6 +639,56 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _selectedDateDayOfWeek = null;
 
         await InputElement.FocusAsync();
+    }
+
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        HandleParameterChanges();
+    }
+
+    private void HandleParameterChanges()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
+
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
+
+        if (MinDate.HasValue && MinDate > dateTime)
+        {
+            dateTime = MinDate.Value;
+        }
+
+        if (MaxDate.HasValue && MaxDate < dateTime)
+        {
+            dateTime = MaxDate.Value;
+        }
+
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
+
+        GenerateCalendarData(dateTime.DateTime);
+
+        if (Standalone)
+        {
+            _isMonthPickerOverlayOnTop = false;
+            _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+            _isTimePickerOverlayOnTop = false;
+            _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+
+            if (_showMonthPickerAsOverlayInternal)
+            {
+                _isMonthPickerOverlayOnTop = false;
+            }
+
+            if (_showTimePickerAsOverlayInternal)
+            {
+                _isTimePickerOverlayOnTop = false;
+            }
+
+            if (CurrentValue.HasValue)
+            {
+                CheckCurrentCalendarMatchesCurrentValue();
+            }
+        }
     }
 
     private async Task SelectDate(int dayIndex, int weekIndex)
