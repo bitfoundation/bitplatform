@@ -39,6 +39,7 @@ public partial class CategoriesPage
         categoriesProvider = async req =>
         {
             isLoading = true;
+            await Task.Delay(1000);
 
             try
             {
@@ -52,7 +53,7 @@ public partial class CategoriesPage
 
                 if (string.IsNullOrEmpty(categoryNameFilter) is false)
                 {
-                    categoryController.AddQueryString("$filter", $"contains(Name,'{categoryNameFilter}')");
+                    categoryController.AddQueryString("$filter", $"contains(tolower(Name),'{categoryNameFilter.ToLower()}')");
                 }
 
                 if (req.GetSortByProperties().Any())
