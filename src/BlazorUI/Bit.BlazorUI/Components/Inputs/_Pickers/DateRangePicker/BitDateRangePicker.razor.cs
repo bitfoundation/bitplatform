@@ -212,6 +212,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// CultureInfo for the DateRangePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
