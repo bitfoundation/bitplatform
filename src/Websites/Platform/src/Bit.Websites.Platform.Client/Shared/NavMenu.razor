@@ -6,13 +6,13 @@
 }
 <div class="nav-menu @(isNavOpen is false ? "nav-menu--desktop" : null)">
     <div class="search-box-container">
-        <BitSearchBox Class="nav-menu-search-box"
+        <BitSearchBox Underlined
                       Placeholder="Search"
-                      IconName="@BitIconName.Search"
-                      IsUnderlined="true"
-                      Value="@searchText"
-                      ValueChanged="@HandleValueChanged"
-                      OnClear="@HandleOnClear" />
+                      OnClear="HandleOnClear"
+                      Class="nav-menu-search-box"
+                      Immediate DebounceTime="300"
+                      OnChange="HandleValueChanged"
+                      IconName="@BitIconName.Search" />
         @if (filteredNavItems.Count == 0)
         {
             <br />
