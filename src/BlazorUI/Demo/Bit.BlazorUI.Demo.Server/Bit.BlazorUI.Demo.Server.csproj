@@ -13,7 +13,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.0.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.1" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
