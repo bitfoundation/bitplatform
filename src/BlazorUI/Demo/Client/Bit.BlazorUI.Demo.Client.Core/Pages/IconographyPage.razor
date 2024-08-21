@@ -20,12 +20,11 @@
         <BitTypography Variant="BitTypographyVariant.H4" Gutter>Available icons</BitTypography>
         <BitSearchBox Immediate
                       DebounceTime="300"
-                      Class="iconography-search-box"
+                      OnClear="HandleClear"
+                      OnChange="HandleChange"
                       Placeholder="Search icons"
                       IconName="@BitIconName.Search"
-                      Value="@searchText"
-                      ValueChanged="@HandleChange"
-                      OnClear="@HandleClear" />
+                      Class="iconography-search-box" />
         <div class="icon-list">
             @if (filteredIcons.Count == 0)
             {

@@ -10,6 +10,7 @@
                       @ref="searchBox"
                       Style="width: 300px"
                       OnChange="SearchTodoItems"
+                      Immediate DebounceTime="300"
                       OnClear="@(() => SearchTodoItems(""))"
                       Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
     </div>
