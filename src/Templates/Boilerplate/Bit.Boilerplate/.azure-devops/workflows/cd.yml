@@ -43,7 +43,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-          'cd src && dotnet workload install wasm-tools wasm-experimental'
+          'cd src && dotnet workload install wasm-tools'
 
   - task: FileTransform@2
     displayName: Update appsettings.json

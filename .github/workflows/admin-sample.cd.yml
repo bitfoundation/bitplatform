@@ -51,7 +51,7 @@ jobs:
         node-version: 20
         
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure app render mode
       run: |

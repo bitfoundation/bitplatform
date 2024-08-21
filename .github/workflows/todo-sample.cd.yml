@@ -49,7 +49,7 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure app render mode
       run: |
