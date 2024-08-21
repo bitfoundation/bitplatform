@@ -16,7 +16,7 @@
             <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
                     <ColumnOptions>
-                        <BitStack Horizontal VerticalAlign="BitStackAlignment.Center" Gap="8px">
+                        <BitStack Horizontal Gap="8px">
                             <BitSearchBox @bind-Value="ProductNameFilter"
                                           Immediate DebounceTime="500"
                                           Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"

@@ -39,7 +39,6 @@ public partial class CategoriesPage
         categoriesProvider = async req =>
         {
             isLoading = true;
-            await Task.Delay(1000);
 
             try
             {
