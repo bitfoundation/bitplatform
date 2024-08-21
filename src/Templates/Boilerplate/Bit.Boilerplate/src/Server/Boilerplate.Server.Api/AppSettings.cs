@@ -17,11 +17,6 @@ public class AppSettings : IValidatableObject
     public string GoogleRecaptchaSecretKey { get; set; } = default!;
     //#endif
 
-    /// <summary>
-    /// See WebClientUrl_Comment in appsettings.json for more info.
-    /// </summary>
-    public string? WebClientUrl { get; set; }
-
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = new List<ValidationResult>();
