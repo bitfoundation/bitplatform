@@ -1035,6 +1035,89 @@ private BitDateRangePickerValue? startingValue = new()
 <BitDateRangePicker Label=""ValueFormat: 'Dep: {0}, Arr: {1}'"" ValueFormat=""Dep: {0}, Arr: {1}"" />";
 
     private readonly string example4RazorCode = @"
+<BitDateRangePicker @bind-Value=""@selectedDateRange"" />
+<div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
+<div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>";
+    private readonly string example4CsharpCode = @"
+private BitDateRangePickerValue? selectedDateRange = new()
+{
+    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
+    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
+};";
+
+    private readonly string example5RazorCode = @"
+<BitDateRangePicker Label=""fa-IR culture with Farsi names""
+                    GoToTodayTitle=""برو به امروز""
+                    ValueFormat=""شروع: {0}, پایان: {1}""
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
+
+<BitDateRangePicker Label=""fa-IR culture with Fingilish names""
+                    GoToTodayTitle=""Boro be emrouz""
+                    ValueFormat=""Shoro: {0}, Payan: {1}""
+                    Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
+
+    private readonly string example6RazorCode = @"
+<BitDateRangePicker>
+    <LabelTemplate>
+        Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
+    </LabelTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""DayCellTemplate"">
+    <DayCellTemplate>
+        <span class=""day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? "" weekend-cell"" : null)"">
+            @context.Day
+
+            @if (context.Day % 5 is 0)
+            {
+                <span class=""badge""></span>
+            }
+        </span>
+    </DayCellTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""MonthCellTemplate"">
+    <MonthCellTemplate>
+        <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
+            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+        </div>
+    </MonthCellTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""YearCellTemplate"">
+    <YearCellTemplate>
+        <span style=""position: relative"">
+            @context
+            <span class=""year-suffix"">AC</span>
+        </span>
+    </YearCellTemplate>
+</BitDateRangePicker>";
+    private readonly string example6CsharpCode = @"
+private CultureInfo culture = CultureInfo.CurrentUICulture;";
+
+    private readonly string example7RazorCode = @"
+<BitDateRangePicker Label=""Responsive DateRangePicker""
+                    IsResponsive
+                    ShowWeekNumbers
+                    Placeholder=""Select a date range"" />";
+
+    private readonly string example8RazorCode = @"
+<BitDateRangePicker ShowTimePicker
+                    Label=""HourStep = 2""
+                    HourStep=""2"" />
+
+<BitDateRangePicker ShowTimePicker
+                    Label=""MinuteStep = 15""
+                    MinuteStep=""15"" />";
+
+    private readonly string example9CsharpCode = @"
+<BitDateRangePicker Label=""Basic DatePicker"" Standalone />
+<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
+<BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+<BitDateRangePicker Label=""TimePicker"" ShowTimePicker Standalone />";
+
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -1219,92 +1302,9 @@ private BitDateRangePickerValue? startingValue = new()
                                        DayPickerHeader = ""custom-day-header"",
                                        WeekNumbersHeader = ""custom-week-header"",
                                        YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private BitDateRangePickerValue? classesValue;";
 
-    private readonly string example5RazorCode = @"
-<BitDateRangePicker @bind-Value=""@selectedDateRange"" />
-<div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
-<div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>";
-    private readonly string example5CsharpCode = @"
-private BitDateRangePickerValue? selectedDateRange = new()
-{
-    StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
-    EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
-};";
-
-    private readonly string example6RazorCode = @"
-<BitDateRangePicker Label=""fa-IR culture with Farsi names""
-                    GoToTodayTitle=""برو به امروز""
-                    ValueFormat=""شروع: {0}, پایان: {1}""
-                    Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
-
-<BitDateRangePicker Label=""fa-IR culture with Fingilish names""
-                    GoToTodayTitle=""Boro be emrouz""
-                    ValueFormat=""Shoro: {0}, Payan: {1}""
-                    Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
-
-    private readonly string example7RazorCode = @"
-<BitDateRangePicker>
-    <LabelTemplate>
-        Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
-    </LabelTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""DayCellTemplate"">
-    <DayCellTemplate>
-        <span class=""day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? "" weekend-cell"" : null)"">
-            @context.Day
-
-            @if (context.Day % 5 is 0)
-            {
-                <span class=""badge""></span>
-            }
-        </span>
-    </DayCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""MonthCellTemplate"">
-    <MonthCellTemplate>
-        <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
-            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
-        </div>
-    </MonthCellTemplate>
-</BitDateRangePicker>
-
-<BitDateRangePicker Label=""YearCellTemplate"">
-    <YearCellTemplate>
-        <span style=""position: relative"">
-            @context
-            <span class=""year-suffix"">AC</span>
-        </span>
-    </YearCellTemplate>
-</BitDateRangePicker>";
-    private readonly string example7CsharpCode = @"
-private CultureInfo culture = CultureInfo.CurrentUICulture;";
-
-    private readonly string example8RazorCode = @"
-<BitDateRangePicker Label=""Responsive DateRangePicker""
-                    IsResponsive
-                    ShowWeekNumbers
-                    Placeholder=""Select a date range"" />";
-
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitDateRangePicker Dir=""BitDir.Rtl"" />";
-
-    private readonly string example10RazorCode = @"
-<BitDateRangePicker ShowTimePicker
-                    Label=""HourStep = 2""
-                    HourStep=""2"" />
-
-<BitDateRangePicker ShowTimePicker
-                    Label=""MinuteStep = 15""
-                    MinuteStep=""15"" />";
-
-    private readonly string example11CsharpCode = @"
-<BitDateRangePicker Label=""Basic DatePicker"" Standalone />
-<BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
-<BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
-<BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-<BitDateRangePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 }
