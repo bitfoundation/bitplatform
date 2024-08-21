@@ -61,16 +61,6 @@
     padding: rem2(24px) rem2(22px);
 }
 
-::deep .nav-menu-search-box {
-    width: 100%;
-    height: rem2(40px);
-
-    input::-webkit-input-placeholder {
-        font-weight: 500;
-        font-size: rem2(14px);
-    }
-}
-
 .nav-menu-list {
     width: 100%;
     overflow-y: auto;
