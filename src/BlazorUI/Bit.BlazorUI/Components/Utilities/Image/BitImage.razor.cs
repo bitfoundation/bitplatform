@@ -26,12 +26,13 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// The image height value.
     /// </summary>
-    [Parameter] public string? Height { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Height { get; set; }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the image's parameters
     /// </summary>
-    [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = new Dictionary<string, object>();
+    [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = [];
 
     /// <summary>
     /// Used to determine how the image is scaled and cropped to fit the frame.
@@ -46,7 +47,8 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// If true, the image frame will expand to fill its parent container.
     /// </summary>
-    [Parameter] public bool MaximizeFrame { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool MaximizeFrame { get; set; }
 
     /// <summary>
     /// Callback for when the image clicked.
@@ -62,7 +64,8 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// If true, fades the image in when loaded.
     /// </summary>
-    [Parameter] public bool ShouldFadeIn { get; set; } = true;
+    [Parameter, ResetClassBuilder]
+    public bool ShouldFadeIn { get; set; } = true;
 
     /// <summary>
     /// If true, the image starts as visible and is hidden on error. Otherwise, the image is hidden until it is successfully loaded.
@@ -87,7 +90,8 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// The image width value.
     /// </summary>
-    [Parameter] public string? Width { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public string? Width { get; set; }
 
 
 
@@ -97,9 +101,9 @@ public partial class BitImage : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => ShouldFadeIn ? $"{RootElementClass}-fde" : string.Empty);
+        ClassBuilder.Register(() => ShouldFadeIn ? "bit-img-fde" : string.Empty);
 
-        ClassBuilder.Register(() => MaximizeFrame ? $"{RootElementClass}-max" : string.Empty);
+        ClassBuilder.Register(() => MaximizeFrame ? "bit-img-max" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -107,6 +111,7 @@ public partial class BitImage : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+
         StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
     }
 
@@ -116,30 +121,30 @@ public partial class BitImage : BitComponentBase
     {
         StringBuilder className = new StringBuilder();
 
-        className.Append($"{RootElementClass}-img");
+        className.Append("bit-img-img");
 
         className.Append(' ').Append(ImageFit switch
         {
-            BitImageFit.Center => $"{RootElementClass}-ctr",
-            BitImageFit.Contain => $"{RootElementClass}-cnt",
-            BitImageFit.Cover => $"{RootElementClass}-cvr",
-            BitImageFit.CenterCover => $"{RootElementClass}-ccv",
-            BitImageFit.CenterContain => $"{RootElementClass}-cct",
-            _ => $"{RootElementClass}-non"
+            BitImageFit.Center => "bit-img-ctr",
+            BitImageFit.Contain => "bit-img-cnt",
+            BitImageFit.Cover => "bit-img-cvr",
+            BitImageFit.CenterCover => "bit-img-ccv",
+            BitImageFit.CenterContain => "bit-img-cct",
+            _ => "bit-img-non"
         });
 
         className.Append(' ').Append(CoverStyle switch
         {
-            BitImageCoverStyle.Portrait => $"{RootElementClass}-por",
-            _ => $"{RootElementClass}-lan"
+            BitImageCoverStyle.Portrait => "bit-img-por",
+            _ => "bit-img-lan"
         });
 
         if (_loadingState == BitImageLoadingState.Loaded || (_loadingState == BitImageLoadingState.NotLoaded && ShouldStartVisible))
         {
-            className.Append($" {RootElementClass}-vis");
+            className.Append(" bit-img-vis");
         }
 
-        if (string.IsNullOrEmpty(Classes?.Image) is false)
+        if (Classes?.Image.HasValue() ?? false)
         {
             className.Append(' ').Append(Classes?.Image);
         }
@@ -149,10 +154,9 @@ public partial class BitImage : BitComponentBase
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled)
-        {
-            await OnClick.InvokeAsync(e);
-        }
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
     }
 
     private void HandleOnError()
