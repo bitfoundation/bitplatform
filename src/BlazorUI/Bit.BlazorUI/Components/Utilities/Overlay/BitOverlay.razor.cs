@@ -49,7 +49,7 @@ public partial class BitOverlay : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
+        StyleBuilder.Register(() => _offsetTop > 0 ? $"top:{_offsetTop}px" : string.Empty);
     }
 
     protected override void RegisterCssClasses()
