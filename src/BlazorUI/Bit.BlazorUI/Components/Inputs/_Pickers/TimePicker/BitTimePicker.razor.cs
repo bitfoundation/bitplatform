@@ -5,11 +5,11 @@ namespace Bit.BlazorUI;
 
 public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
+    private bool _hasFocus;
     private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
-    private string _focusClass = string.Empty;
     private string _timePickerId = string.Empty;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -282,12 +282,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
         ClassBuilder.Register(() => Standalone ? "bit-tpc-sta" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-tpc-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -351,8 +353,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-tpc-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -360,8 +363,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -369,8 +373,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-tpc-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 

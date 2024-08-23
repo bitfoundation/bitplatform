@@ -359,6 +359,13 @@ public partial class BitTimePickerDemo
                 },
                 new()
                 {
+                    Name = "Focused",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the focused state of the BitTimePicker."
+                },
+                new()
+                {
                     Name = "Label",
                     Type = "string?",
                     DefaultValue = "null",
