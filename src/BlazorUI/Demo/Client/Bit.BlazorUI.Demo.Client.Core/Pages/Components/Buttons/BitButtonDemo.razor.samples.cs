@@ -74,7 +74,10 @@ public partial class BitButtonDemo
 
 <BitButton IsLoading=""textIsLoading"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"" Style=""min-width: 11rem"" OnClick=""LoadingTextClick"">
     Click me
-</BitButton>";
+</BitButton>
+
+
+<BitButton OnClick=""AutoLoadingClick"" AutoLoading>Click me</BitButton>";
     private readonly string example5CsharpCode = @"
 private bool fillIsLoading;
 private bool outlineIsLoading;
@@ -99,6 +102,11 @@ private async Task LoadingTextClick()
     textIsLoading = true;
     await Task.Delay(3000);
     textIsLoading = false;
+}
+
+private async Task AutoLoadingClick()
+{
+    await Task.Delay(3000);
 }";
 
     private readonly string example6RazorCode = @"

@@ -27,9 +27,14 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
+    /// If true, adds an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, shows the loading state while the OnClick event is in progress.
+    /// </summary>
+    [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
     /// The value of the type attribute of the button.
@@ -71,7 +76,9 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>        
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter]
+    [TwoWayBound]
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// The loading label text to show next to the spinner icon.
@@ -223,6 +230,13 @@ public partial class BitButton : BitComponentBase
     {
         if (IsEnabled is false) return;
 
+        if (AutoLoading)
+        {
+            if (await AssignIsLoading(true) is false) return;
+        }
+
         await OnClick.InvokeAsync(e);
+
+        await AssignIsLoading(false);
     }
 }
