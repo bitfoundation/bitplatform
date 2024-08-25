@@ -75,9 +75,8 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Determines whether the button is in loading mode or not.
-    /// </summary>        
-    [Parameter]
-    [TwoWayBound]
+    /// </summary>
+    [Parameter, TwoWayBound]
     public bool IsLoading { get; set; }
 
     /// <summary>
