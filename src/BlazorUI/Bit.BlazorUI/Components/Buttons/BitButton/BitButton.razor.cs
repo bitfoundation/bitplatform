@@ -182,6 +182,14 @@ public partial class BitButton : BitComponentBase
             BitColor.Warning => "bit-btn-wrn",
             BitColor.SevereWarning => "bit-btn-swr",
             BitColor.Error => "bit-btn-err",
+            BitColor.PrimaryBackground => "bit-btn-pbg",
+            BitColor.SecondaryBackground => "bit-btn-sbg",
+            BitColor.TertiaryBackground => "bit-btn-tbg",
+            BitColor.PrimaryForeground => "bit-btn-pfg",
+            BitColor.SecondaryForeground => "bit-btn-sfg",
+            BitColor.TertiaryForeground => "bit-btn-tfg",
+            BitColor.PrimaryBorder => "bit-btn-pbr",
+            BitColor.SecondaryBorder => "bit-btn-sbr",
             _ => "bit-btn-pri"
         });
 
