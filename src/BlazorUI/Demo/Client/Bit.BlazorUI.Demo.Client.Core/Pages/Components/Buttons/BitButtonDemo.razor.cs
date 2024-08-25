@@ -23,7 +23,14 @@ public partial class BitButtonDemo
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element.",
+            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the element.",
+        },
+        new()
+        {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, shows the loading state while the OnClick event is in progress.",
         },
         new()
         {
@@ -462,6 +469,12 @@ public partial class BitButtonDemo
         await Task.Delay(3000);
         textIsLoading = false;
     }
+
+    private async Task AutoLoadingClick()
+    {
+        await Task.Delay(3000);
+    }
+
 
     private async Task LoadingStylesClick()
     {
