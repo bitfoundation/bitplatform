@@ -86,5 +86,10 @@ public enum BitColor
     /// <summary>
     /// Secondary border color.
     /// </summary>
-    SecondaryBorder
+    SecondaryBorder,
+
+    /// <summary>
+    /// Tertiary border color.
+    /// </summary>
+    TertiaryBorder,
 }

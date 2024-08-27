@@ -278,6 +278,14 @@
     --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
+.bit-btn-tbr {
+    --bit-btn-clr-txt: #{$clr-fg-pri};
+    --bit-btn-clr: #{$clr-brd-ter};
+    --bit-btn-clr-hover: #{$clr-brd-ter-hover};
+    --bit-btn-clr-active: #{$clr-brd-ter-active};
+    --bit-btn-clr-spn: #{$clr-fg-pri};
+}
+
 
 .bit-btn-sm {
     --bit-btn-spn-size: #{spacing(1.75)};

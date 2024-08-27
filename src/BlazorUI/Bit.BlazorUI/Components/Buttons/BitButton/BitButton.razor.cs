@@ -190,6 +190,7 @@ public partial class BitButton : BitComponentBase
             BitColor.TertiaryForeground => "bit-btn-tfg",
             BitColor.PrimaryBorder => "bit-btn-pbr",
             BitColor.SecondaryBorder => "bit-btn-sbr",
+            BitColor.TertiaryBorder => "bit-btn-tbr",
             _ => "bit-btn-pri"
         });
 
