@@ -440,16 +440,8 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/_appsettings*.json"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
                     ]
-                },
-                {
-                    "condition": "(api == Standalone)",
-                    "rename": {
-                        "src/Server/Boilerplate.Server.Web/_appsettings.json": "src/Server/Boilerplate.Server.Web/appsettings.json",
-                        "src/Server/Boilerplate.Server.Web/_appsettings.Development.json": "src/Server/Boilerplate.Server.Web/appsettings.Development.json",
-                        "src/Server/Boilerplate.Server.Web/_appsettings.Production.json": "src/Server/Boilerplate.Server.Web/appsettings.Production.json"
-                    }
                 }
             ]
         }
