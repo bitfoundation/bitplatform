@@ -19,6 +19,11 @@ public static partial class Program
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
+        //#if IsInsideProjectTemplate
+        builder.Configuration.AddJsonFile("_appsettings.json");
+        builder.Configuration.AddJsonFile($"_appsettings.{AppEnvironment.Current}.json");
+        //#endif
+
         builder.Configuration.AddClientConfigurations();
 
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
