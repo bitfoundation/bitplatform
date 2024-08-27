@@ -276,72 +276,72 @@ private int clickCounter;";
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
 
-<BitButton Color=""BitColor.Primary"" SecondaryText=""this is the secondary text"">Primary</BitButton>
-<BitButton Color=""BitColor.Primary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Primary</BitButton>
-<BitButton Color=""BitColor.Primary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Primary</BitButton>
-
-
 <BitButton Color=""BitColor.Secondary"">Secondary</BitButton>
 <BitButton Color=""BitColor.Secondary"" Variant=""BitVariant.Outline"">Secondary</BitButton>
 <BitButton Color=""BitColor.Secondary"" Variant=""BitVariant.Text"">Secondary</BitButton>
-
-<BitButton Color=""BitColor.Secondary"" SecondaryText=""this is the secondary text"">Secondary</BitButton>
-<BitButton Color=""BitColor.Secondary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Secondary</BitButton>
-<BitButton Color=""BitColor.Secondary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Secondary</BitButton>
-
 
 <BitButton Color=""BitColor.Tertiary"">Tertiary</BitButton>
 <BitButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Tertiary</BitButton>
 <BitButton Color=""BitColor.Tertiary"" Variant=""BitVariant.Text"">Tertiary</BitButton>
 
-<BitButton Color=""BitColor.Tertiary"" SecondaryText=""this is the secondary text"">Tertiary</BitButton>
-<BitButton Color=""BitColor.Tertiary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Tertiary</BitButton>
-<BitButton Color=""BitColor.Tertiary"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Tertiary</BitButton>
-
-
 <BitButton Color=""BitColor.Info"">Info</BitButton>
 <BitButton Color=""BitColor.Info"" Variant=""BitVariant.Outline"">Info</BitButton>
 <BitButton Color=""BitColor.Info"" Variant=""BitVariant.Text"">Info</BitButton>
-
-<BitButton Color=""BitColor.Info"" SecondaryText=""this is the secondary text"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Info</BitButton>
-<BitButton Color=""BitColor.Info"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Info</BitButton>
-
 
 <BitButton Color=""BitColor.Success"">Success</BitButton>
 <BitButton Color=""BitColor.Success"" Variant=""BitVariant.Outline"">Success</BitButton>
 <BitButton Color=""BitColor.Success"" Variant=""BitVariant.Text"">Success</BitButton>
 
-<BitButton Color=""BitColor.Success"" SecondaryText=""this is the secondary text"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Success</BitButton>
-<BitButton Color=""BitColor.Success"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Success</BitButton>
-
-
 <BitButton Color=""BitColor.Warning"">Warning</BitButton>
 <BitButton Color=""BitColor.Warning"" Variant=""BitVariant.Outline"">Warning</BitButton>
 <BitButton Color=""BitColor.Warning"" Variant=""BitVariant.Text"">Warning</BitButton>
-
-<BitButton Color=""BitColor.Warning"" SecondaryText=""this is the secondary text"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Warning</BitButton>
-<BitButton Color=""BitColor.Warning"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Warning</BitButton>
-
 
 <BitButton Color=""BitColor.SevereWarning"">SevereWarning</BitButton>
 <BitButton Color=""BitColor.SevereWarning"" Variant=""BitVariant.Outline"">SevereWarning</BitButton>
 <BitButton Color=""BitColor.SevereWarning"" Variant=""BitVariant.Text"">SevereWarning</BitButton>
 
-<BitButton Color=""BitColor.SevereWarning"" SecondaryText=""this is the secondary text"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">SevereWarning</BitButton>
-<BitButton Color=""BitColor.SevereWarning"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">SevereWarning</BitButton>
-
-
 <BitButton Color=""BitColor.Error"">Error</BitButton>
 <BitButton Color=""BitColor.Error"" Variant=""BitVariant.Outline"">Error</BitButton>
 <BitButton Color=""BitColor.Error"" Variant=""BitVariant.Text"">Error</BitButton>
 
-<BitButton Color=""BitColor.Error"" SecondaryText=""this is the secondary text"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Outline"">Error</BitButton>
-<BitButton Color=""BitColor.Error"" SecondaryText=""this is the secondary text"" Variant=""BitVariant.Text"">Error</BitButton>";
+
+<BitButton Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitButton>
+<BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Outline"">PrimaryBackground</BitButton>
+<BitButton Color=""BitColor.PrimaryBackground"" Variant=""BitVariant.Text"">PrimaryBackground</BitButton>
+
+<BitButton Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitButton>
+<BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Outline"">SecondaryBackground</BitButton>
+<BitButton Color=""BitColor.SecondaryBackground"" Variant=""BitVariant.Text"">SecondaryBackground</BitButton>
+
+<BitButton Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitButton>
+<BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Outline"">TertiaryBackground</BitButton>
+<BitButton Color=""BitColor.TertiaryBackground"" Variant=""BitVariant.Text"">TertiaryBackground</BitButton>
+
+
+<BitButton Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitButton>
+<BitButton Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Outline"">PrimaryForeground</BitButton>
+<BitButton Color=""BitColor.PrimaryForeground"" Variant=""BitVariant.Text"">PrimaryForeground</BitButton>
+
+<BitButton Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitButton>
+<BitButton Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Outline"">SecondaryForeground</BitButton>
+<BitButton Color=""BitColor.SecondaryForeground"" Variant=""BitVariant.Text"">SecondaryForeground</BitButton>
+
+<BitButton Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitButton>
+<BitButton Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Outline"">TertiaryForeground</BitButton>
+<BitButton Color=""BitColor.TertiaryForeground"" Variant=""BitVariant.Text"">TertiaryForeground</BitButton>
+
+
+<BitButton Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitButton>
+<BitButton Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Outline"">PrimaryBorder</BitButton>
+<BitButton Color=""BitColor.PrimaryBorder"" Variant=""BitVariant.Text"">PrimaryBorder</BitButton>
+
+<BitButton Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitButton>
+<BitButton Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"">SecondaryBorder</BitButton>
+<BitButton Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Text"">SecondaryBorder</BitButton>
+
+<BitButton Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitButton>
+<BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
+<BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
     private readonly string example13RazorCode = @"
 <style>
