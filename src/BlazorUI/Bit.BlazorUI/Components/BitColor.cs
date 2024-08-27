@@ -43,48 +43,5 @@ public enum BitColor
     /// <summary>
     /// Error general color.
     /// </summary>
-    Error,
-
-
-    /// <summary>
-    /// Primary background color.
-    /// </summary>
-    PrimaryBackground,
-
-    /// <summary>
-    /// Secondary background color.
-    /// </summary>
-    SecondaryBackground,
-
-    /// <summary>
-    /// Tertiary background color.
-    /// </summary>
-    TertiaryBackground,
-
-
-    /// <summary>
-    /// Primary foreground color.
-    /// </summary>
-    PrimaryForeground,
-
-    /// <summary>
-    /// Secondary foreground color.
-    /// </summary>
-    SecondaryForeground,
-
-    /// <summary>
-    /// Tertiary foreground color.
-    /// </summary>
-    TertiaryForeground,
-
-
-    /// <summary>
-    /// Primary border color.
-    /// </summary>
-    PrimaryBorder,
-
-    /// <summary>
-    /// Secondary border color.
-    /// </summary>
-    SecondaryBorder
+    Error
 }
