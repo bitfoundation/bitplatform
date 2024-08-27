@@ -54,7 +54,7 @@ public class BitOverlayTests : BunitTestContext
         var com = RenderComponent<BitOverlay>(parameters =>
         {
             parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
-            parameters.Add(p => p.AutoClose, false);
+            parameters.Add(p => p.NoAutoClose, false);
         });
 
         var element = com.Find(".bit-ovl");

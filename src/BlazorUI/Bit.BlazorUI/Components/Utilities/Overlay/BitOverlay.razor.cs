@@ -12,14 +12,9 @@ public partial class BitOverlay : BitComponentBase
 
 
     /// <summary>
-    /// When true, the Overlay will be closed by clicking on it.
-    /// </summary>
-    [Parameter] public bool AutoClose { get; set; } = true;
-
-    /// <summary>
     /// When true, the scroll behavior of the Scroller element behind the overlay will be disabled.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Overlay will be positioned absolute instead of fixed.
@@ -39,9 +34,19 @@ public partial class BitOverlay : BitComponentBase
     public bool IsVisible { get; set; }
 
     /// <summary>
+    /// When true, the Overlay will be closed by clicking on it.
+    /// </summary>
+    [Parameter] public bool NoAutoClose { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the overlay is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
     /// Set the selector of the Selector element for the Overlay to disable its scroll if applicable.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public string? ScrollerSelector { get; set; }
 
 
 
@@ -70,7 +75,9 @@ public partial class BitOverlay : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitOverlayToggleScroll(ScrollerSelector, IsVisible);
+        var scrollerSelector = ScrollerSelector.HasValue() ? ScrollerSelector! : "body";
+
+        _offsetTop = await _js.BitOverlayToggleScroll(scrollerSelector, IsVisible);
 
         if (AbsolutePosition is false) return;
 
@@ -81,10 +88,13 @@ public partial class BitOverlay : BitComponentBase
 
 
 
-    private async Task CloseOverlay()
+    private async Task CloseOverlay(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (AutoClose is false) return;
+
+        await OnClick.InvokeAsync(e);
+
+        if (NoAutoClose) return;
 
         await AssignIsVisible(false);
     }
