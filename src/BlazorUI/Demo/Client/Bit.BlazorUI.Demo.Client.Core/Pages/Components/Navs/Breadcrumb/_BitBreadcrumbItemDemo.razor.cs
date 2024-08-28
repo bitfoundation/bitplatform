@@ -30,13 +30,13 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Folder 3", Href = "/components/breadcrumb", Class = "custom-item" },
         new() { Text = "Folder 4", Href = "/components/breadcrumb", Class = "custom-item", IsSelected = true }
     ];
-
+        
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
     [
-        new() { Text = "Folder 1", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
-        new() { Text = "Folder 2", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
-        new() { Text = "Folder 3", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow" },
-        new() { Text = "Folder 4", Href = "/components/breadcrumb", Style = "color:red;background:greenyellow", IsSelected = true }
+        new() { Text = "Folder 1", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Text = "Folder 2", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Text = "Folder 3", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Text = "Folder 4", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;", IsSelected = true }
     ];
 
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithControlled =

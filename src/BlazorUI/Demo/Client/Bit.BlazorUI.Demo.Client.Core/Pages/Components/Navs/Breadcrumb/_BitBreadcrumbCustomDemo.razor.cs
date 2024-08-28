@@ -32,10 +32,10 @@ public partial class _BitBreadcrumbCustomDemo
 
     private readonly List<PageInfoModel> CustomBreadcrumbItemsWithStyle =
     [
-        new() { Name = "Folder 1", Address = "/components/breadcrumb", HtmlStyle = "color:red;background:greenyellow" },
-        new() { Name = "Folder 2", Address = "/components/breadcrumb", HtmlStyle = "color:red;background:greenyellow" },
-        new() { Name = "Folder 3", Address = "/components/breadcrumb", HtmlStyle = "color:red;background:greenyellow" },
-        new() { Name = "Folder 4", Address = "/components/breadcrumb", HtmlStyle = "color:red;background:greenyellow", IsCurrent = true }
+        new() { Name = "Folder 1", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Name = "Folder 2", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Name = "Folder 3", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Name = "Folder 4", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;", IsCurrent = true }
     ];
 
     private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled =
