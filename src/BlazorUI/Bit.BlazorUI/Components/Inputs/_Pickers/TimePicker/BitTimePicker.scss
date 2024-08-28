@@ -181,11 +181,11 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-size: spacing(1.75);
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
-    font-family: $tg-font-family;
     animation-fill-mode: both;
     animation-duration: 0.367s;
+    font-family: $tg-font-family;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
@@ -361,8 +361,8 @@
     .bit-tpc-cal {
         display: block;
         z-index: unset;
-        position: relative;
         animation: none;
+        position: relative;
     }
 }
 
