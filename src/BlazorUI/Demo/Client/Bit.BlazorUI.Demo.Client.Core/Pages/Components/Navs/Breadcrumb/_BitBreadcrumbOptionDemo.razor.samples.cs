@@ -167,7 +167,9 @@ private int SelectedOptionNumber = 6;";
     @for (int i = 0; i < ItemsCount; i++)
     {
         int index = i + 1;
-        <BitBreadcrumbOption Text=""@($""Folder {index}"")"" IsSelected=""@(CustomizedSelectedOptionNumber == index)"" OnClick=""() => CustomizedSelectedOptionNumber = index"" />
+        <BitBreadcrumbOption Text=""@($""Folder {index}"")""
+                             OnClick=""() => CustomizedSelectedOptionNumber = index""
+                             IsSelected=""@(CustomizedSelectedOptionNumber == index)"" />
     }
 </BitBreadcrumb>
 
