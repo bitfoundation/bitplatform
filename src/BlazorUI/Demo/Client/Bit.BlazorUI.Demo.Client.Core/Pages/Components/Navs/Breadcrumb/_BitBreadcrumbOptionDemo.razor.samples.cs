@@ -176,7 +176,7 @@ private int SelectedOptionNumber = 6;";
 <BitButton OnClick=""() => ItemsCount++"">Add Option</BitButton>
 <BitButton OnClick=""() => ItemsCount--"">Remove Option</BitButton>
 
-<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed option"" ShowArrows=""true"" />
+<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed options"" ShowArrows=""true"" />
 <BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowArrows=""true"" />";
     private readonly string example6CsharpCode = @"
 private int ItemsCount = 4;
