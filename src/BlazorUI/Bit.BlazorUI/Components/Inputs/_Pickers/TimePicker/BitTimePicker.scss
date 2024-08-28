@@ -184,6 +184,10 @@
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
     font-family: $tg-font-family;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-tpc-cac {
@@ -358,6 +362,7 @@
         display: block;
         z-index: unset;
         position: relative;
+        animation: none;
     }
 }
 
