@@ -2,8 +2,6 @@
 
 public partial class _BitBreadcrumbCustomDemo
 {
-
-
     private readonly string example1RazorCode = @"
 <BitLabel>Basic</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""

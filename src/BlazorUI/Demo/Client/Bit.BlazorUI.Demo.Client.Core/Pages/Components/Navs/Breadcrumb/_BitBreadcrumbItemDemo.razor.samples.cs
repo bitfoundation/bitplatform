@@ -218,8 +218,7 @@ private void RemoveCustomItem()
 }";
 
     private readonly string example7RazorCode = @"
-<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
-";
+<BitBreadcrumb Dir=""BitDir.Rtl"" Items=""RtlBreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
     private readonly string example7CsharpCode = @"
 private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =
 [
