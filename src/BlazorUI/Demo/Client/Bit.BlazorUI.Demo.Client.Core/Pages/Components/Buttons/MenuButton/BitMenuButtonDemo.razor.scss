@@ -48,6 +48,7 @@
         backdrop-filter: blur(20px);
         background-color: transparent;
         box-shadow: darkgray 0 0 0.5rem;
+        -webkit-backdrop-filter: blur(20px);
     }
 
     .custom-item-button {
