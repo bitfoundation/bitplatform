@@ -750,4 +750,30 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
         return BitDropdownItemsProviderResult.From(new List<BitDropdownItem<string>>(), 0);
     }
 }";
+
+    private readonly string example14RazorCode = @"
+<BitDropdown Label=""Single select"" FitWidth
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"" />
+
+<BitDropdown Label=""Multi select"" FitWidth
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select items""
+             IsMultiSelect=""true"" />";
+    private readonly string example14CsharpCode = @"
+private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
 }

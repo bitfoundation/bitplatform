@@ -1100,4 +1100,56 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownCustom>> LoadI
         return BitDropdownItemsProviderResult.From(new List<BitDropdownCustom>(), 0);
     }
 }";
+
+    private readonly string example14RazorCode = @"
+<BitDropdown Label=""Single select"" FitWidth
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"" />
+
+<BitDropdown Label=""Multi select"" FitWidth
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select items""
+             IsMultiSelect=""true"" />";
+    private readonly string example14CsharpCode = @"
+public class BitDropdownCustom
+{
+    public string? Label { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
+private List<BitDropdownCustom> GetBasicCustoms() => new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new() 
+{
+    AriaLabel = { Selector = c => c.Label },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+};";
 }

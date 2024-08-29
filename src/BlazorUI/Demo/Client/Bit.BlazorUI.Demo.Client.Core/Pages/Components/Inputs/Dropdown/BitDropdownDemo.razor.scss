@@ -3,6 +3,10 @@
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
+    .example-content {
+        max-width: 18rem;
+    }
+
     .custom-class {
         margin-inline: 1rem;
         box-shadow: dodgerblue 0 0 0.5rem;

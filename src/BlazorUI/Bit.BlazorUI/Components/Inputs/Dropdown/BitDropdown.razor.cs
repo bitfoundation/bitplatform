@@ -85,6 +85,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
+    /// Enables fit-content value for the width of the root element.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
     /// Enables the multi select mode.
     /// </summary>
     [Parameter] public bool IsMultiSelect { get; set; }
@@ -536,7 +542,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     protected override void RegisterCssStyles()
     {
-        ClassBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

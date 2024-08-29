@@ -2,28 +2,30 @@
     <ExamplePreview>
         <div>Displays basic dropdowns demonstrating single and multi-select options, including required and disabled states.</div>
         <br /><br />
-        <BitDropdown Label="Single select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br />
-        <BitDropdown Label="Multi select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items"
-                     IsMultiSelect="true" />
-        <br /><br />
-        <BitDropdown Label="Required" Required
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br />
-        <BitDropdown Label="Disabled"
-                     Items="GetBasicCustoms()"
-                     DefaultValue="@("f-ora")"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     IsEnabled="false" />
+        <div class="example-content">
+            <BitDropdown Label="Single select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown Label="Multi select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items"
+                         IsMultiSelect="true" />
+            <br /><br />
+            <BitDropdown Label="Required" Required
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown Label="Disabled"
+                         Items="GetBasicCustoms()"
+                         DefaultValue="@("f-ora")"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         IsEnabled="false" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -31,41 +33,43 @@
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
-        <div>Component's Style & Class:</div><br />
-        <BitDropdown Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     Style="margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;" />
-        <br />
-        <BitDropdown Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     Class="custom-class" />
-        <br /><br /><br /><br />
-        <div>Item's Style & Class:</div><br/>
-        <BitDropdown Items="GetStyleClassCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div><br />
-        <BitDropdown Label="Styles"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     Styles="@(new() { Label = "text-shadow: dodgerblue 0 0 0.5rem;",
-                                       Container = "box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;",
-                                       ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
-                                       ItemButton = "color: lightskyblue",
-                                       Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })" />
-        <br />
-        <BitDropdown Label="Classes"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     Classes="@(new() { Callout = "custom-callout",
-                                        Container = "custom-container",
-                                        ItemButton = "custom-item-button",
-                                        ScrollContainer = "custom-scroll-container" })" />
+        <div class="example-content">
+            <div>Component's Style & Class:</div><br />
+            <BitDropdown Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         Style="margin: 1rem; box-shadow: aqua 0 0 0.5rem; text-shadow: aqua 0 0 0.5rem;" />
+            <br />
+            <BitDropdown Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         Class="custom-class" />
+            <br /><br /><br /><br />
+            <div>Item's Style & Class:</div><br />
+            <BitDropdown Items="GetStyleClassCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <BitDropdown Label="Styles"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         Styles="@(new() { Label = "text-shadow: dodgerblue 0 0 0.5rem;",
+                                           Container = "box-shadow: dodgerblue 0 0 0.5rem; border-color: lightskyblue; color: lightskyblue;",
+                                           ItemHeader = "color: dodgerblue; text-shadow: dodgerblue 0 0 0.5rem;",
+                                           ItemButton = "color: lightskyblue",
+                                           Callout = "border-radius: 0.25rem; box-shadow: lightskyblue 0 0 0.5rem;" })" />
+            <br />
+            <BitDropdown Label="Classes"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         Classes="@(new() { Callout = "custom-callout",
+                                            Container = "custom-container",
+                                            ItemButton = "custom-item-button",
+                                            ScrollContainer = "custom-scroll-container" })" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -73,63 +77,65 @@
     <ExamplePreview>
         <div>Demonstrates two-way binding and change event handling for dropdowns, showcasing single and multi-select scenarios.</div>
         <br /><br />
-        <div>Two-way binding:</div><br />
-        <BitDropdown @bind-Value="controlledValue"
-                     Label="Single select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br />
-        <div>Selected Value: @controlledValue</div>
-        <br /><br />
-        <BitDropdown @bind-Values="controlledValues"
-                     Label="Multi select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items"
-                     IsMultiSelect="true" />
-        <br />
-        <div>Selected Values: @string.Join(",", controlledValues)</div>
-        <br /><br /><br /><br />
-        <div>OnChange:</div><br />
-        <BitDropdown Label="Single select"
-                     Items="GetBasicCustoms()"
-                     Placeholder="Select an item"
-                     NameSelectors="nameSelectors"
-                     TItem="BitDropdownCustom" TValue="string"
-                     OnValuesChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
-        <br />
-        <div>Changed Value: @changedItem?.Value</div>
-        <br /><br />
-        <BitDropdown Label="Multi select"
-                     IsMultiSelect="true"
-                     Items="GetBasicCustoms()"
-                     Placeholder="Select items"
-                     NameSelectors="nameSelectors"
-                     TItem="BitDropdownCustom" TValue="string"
-                     OnValuesChange="(BitDropdownCustom[] items) => changedItems = items" />
-        <br />
-        <div>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</div>
-        <br /><br /><br /><br />
-        <div>OnSelectItem:</div><br />
-        <BitDropdown Label="Single select"
-                     Items="GetBasicCustoms()"
-                     DefaultValue="@string.Empty"
-                     Placeholder="Select an item"
-                     NameSelectors="nameSelectors"
-                     OnSelectItem="(BitDropdownCustom item) => selectedItem1 = item" />
-        <br />
-        <div>Selected Value: @selectedItem1?.Value</div>
-        <br /><br />
-        <BitDropdown Label="Multi select"
-                     IsMultiSelect="true"
-                     Items="GetBasicCustoms()"
-                     Placeholder="Select items"
-                     DefaultValue="@string.Empty"
-                     NameSelectors="nameSelectors"
-                     OnSelectItem="(BitDropdownCustom item) => selectedItem2 = item" />
-        <br />
-        <div>Selected Value: @selectedItem2?.Value</div>
+        <div class="example-content">
+            <div>Two-way binding:</div><br />
+            <BitDropdown @bind-Value="controlledValue"
+                         Label="Single select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br />
+            <div>Selected Value: @controlledValue</div>
+            <br /><br />
+            <BitDropdown @bind-Values="controlledValues"
+                         Label="Multi select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items"
+                         IsMultiSelect="true" />
+            <br />
+            <div>Selected Values: @string.Join(",", controlledValues)</div>
+            <br /><br /><br /><br />
+            <div>OnChange:</div><br />
+            <BitDropdown Label="Single select"
+                         Items="GetBasicCustoms()"
+                         Placeholder="Select an item"
+                         NameSelectors="nameSelectors"
+                         TItem="BitDropdownCustom" TValue="string"
+                         OnValuesChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
+            <br />
+            <div>Changed Value: @changedItem?.Value</div>
+            <br /><br />
+            <BitDropdown Label="Multi select"
+                         IsMultiSelect="true"
+                         Items="GetBasicCustoms()"
+                         Placeholder="Select items"
+                         NameSelectors="nameSelectors"
+                         TItem="BitDropdownCustom" TValue="string"
+                         OnValuesChange="(BitDropdownCustom[] items) => changedItems = items" />
+            <br />
+            <div>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</div>
+            <br /><br /><br /><br />
+            <div>OnSelectItem:</div><br />
+            <BitDropdown Label="Single select"
+                         Items="GetBasicCustoms()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item"
+                         NameSelectors="nameSelectors"
+                         OnSelectItem="(BitDropdownCustom item) => selectedItem1 = item" />
+            <br />
+            <div>Selected Value: @selectedItem1?.Value</div>
+            <br /><br />
+            <BitDropdown Label="Multi select"
+                         IsMultiSelect="true"
+                         Items="GetBasicCustoms()"
+                         Placeholder="Select items"
+                         DefaultValue="@string.Empty"
+                         NameSelectors="nameSelectors"
+                         OnSelectItem="(BitDropdownCustom item) => selectedItem2 = item" />
+            <br />
+            <div>Selected Value: @selectedItem2?.Value</div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -137,77 +143,79 @@
     <ExamplePreview>
         <div>Shows how to customize dropdowns using templates for header, text, item, placeholder, label, and callout sections.</div>
         <br /><br />
-        <BitDropdown Label="Header template"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item">
-            <HeaderTemplate Context="item">
-                <div class="custom-drp custom-drp-header">
-                    <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
-                    <div>@item.Text</div>
-                </div>
-            </HeaderTemplate>
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="Text & Item templates"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item">
-            <TextTemplate Context="dropdown">
-                <div class="custom-drp custom-drp-txt">
-                    <BitIcon IconName="@((dropdown.SelectedItem?.Payload as DropdownItemData)?.IconName)" />
-                    <div>@dropdown.SelectedItem?.Text</div>
-                </div>
-            </TextTemplate>
-            <ItemTemplate Context="item">
-                <div class="custom-drp custom-drp-item">
-                    <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
-                    <div Style="text-decoration:underline">@item.Text</div>
-                </div>
-            </ItemTemplate>
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="Placeholder template"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item">
-            <PlaceholderTemplate Context="dropdown">
-                <div class="custom-drp custom-drp-ph">
-                    <BitIcon IconName="@BitIconName.MessageFill" />
-                    <div>@dropdown.Placeholder</div>
-                </div>
-            </PlaceholderTemplate>
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="Label template"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item">
-            <LabelTemplate>
-                <div class="custom-drp custom-drp-lbl">
-                    <div>Custom label</div>
-                    <BitIcon IconName="@BitIconName.Info" AriaLabel="Info" />
-                </div>
-            </LabelTemplate>
-        </BitDropdown>
-        <br /><br />
-        <BitDropdown Label="CaretDownIconName"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     CaretDownIconName="@BitIconName.ScrollUpDown" />
-        <br /><br />
-        <BitDropdown Label="Callout templates"
-                     Items="GetDataCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item">
-            <CalloutHeaderTemplate>
-                <div Style="padding:0.5rem;border-bottom:1px solid #555">Best in the world</div>
-            </CalloutHeaderTemplate>
-            <CalloutFooterTemplate>
-                <BitActionButton IconName="@BitIconName.Add">New Item</BitActionButton>
-            </CalloutFooterTemplate>
-        </BitDropdown>
+        <div class="example-content">
+            <BitDropdown Label="Header template"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <HeaderTemplate Context="item">
+                    <div class="custom-drp custom-drp-header">
+                        <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
+                        <div>@item.Text</div>
+                    </div>
+                </HeaderTemplate>
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="Text & Item templates"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <TextTemplate Context="dropdown">
+                    <div class="custom-drp custom-drp-txt">
+                        <BitIcon IconName="@((dropdown.SelectedItem?.Payload as DropdownItemData)?.IconName)" />
+                        <div>@dropdown.SelectedItem?.Text</div>
+                    </div>
+                </TextTemplate>
+                <ItemTemplate Context="item">
+                    <div class="custom-drp custom-drp-item">
+                        <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
+                        <div Style="text-decoration:underline">@item.Text</div>
+                    </div>
+                </ItemTemplate>
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="Placeholder template"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <PlaceholderTemplate Context="dropdown">
+                    <div class="custom-drp custom-drp-ph">
+                        <BitIcon IconName="@BitIconName.MessageFill" />
+                        <div>@dropdown.Placeholder</div>
+                    </div>
+                </PlaceholderTemplate>
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="Label template"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <LabelTemplate>
+                    <div class="custom-drp custom-drp-lbl">
+                        <div>Custom label</div>
+                        <BitIcon IconName="@BitIconName.Info" AriaLabel="Info" />
+                    </div>
+                </LabelTemplate>
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown Label="CaretDownIconName"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         CaretDownIconName="@BitIconName.ScrollUpDown" />
+            <br /><br />
+            <BitDropdown Label="Callout templates"
+                         Items="GetDataCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item">
+                <CalloutHeaderTemplate>
+                    <div Style="padding:0.5rem;border-bottom:1px solid #555">Best in the world</div>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <BitActionButton IconName="@BitIconName.Add">New Item</BitActionButton>
+                </CalloutFooterTemplate>
+            </BitDropdown>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -215,11 +223,13 @@
     <ExamplePreview>
         <div>When the <b>IsResponsive</b> parameter is true, on small screens the drop down items will render in a side panel.</div>
         <br />
-        <BitDropdown Label="Responsive Dropdown"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     IsResponsive=true />
+        <div class="example-content">
+            <BitDropdown Label="Responsive Dropdown"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         IsResponsive=true />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -227,40 +237,42 @@
     <ExamplePreview>
         <div>Examples of dropdowns with search functionality, including default and custom search functions.</div>
         <br /><br />
-        <BitDropdown Label="Single select & auto focus"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     ShowSearchBox="true"
-                     AutoFocusSearchBox="true"
-                     SearchBoxPlaceholder="Search item" />
-        <br /><br />
-        <BitDropdown Label="Multi select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items"
-                     IsMultiSelect="true"
-                     ShowSearchBox="true"
-                     SearchBoxPlaceholder="Search items" />
-        <br /><br /><br /><br />
-        <div><b>Custom search function</b>:</div><br />
-        <BitDropdown Label="Single select & auto focus"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     ShowSearchBox="true"
-                     AutoFocusSearchBox="true"
-                     SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
-                     SearchBoxPlaceholder="Search item" />
-        <br /><br />
-        <BitDropdown Label="Multi select"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items"
-                     IsMultiSelect="true"
-                     ShowSearchBox="true"
-                     SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
-                     SearchBoxPlaceholder="Search items" />
+        <div class="example-content">
+            <BitDropdown Label="Single select & auto focus"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         ShowSearchBox="true"
+                         AutoFocusSearchBox="true"
+                         SearchBoxPlaceholder="Search item" />
+            <br /><br />
+            <BitDropdown Label="Multi select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items"
+                         IsMultiSelect="true"
+                         ShowSearchBox="true"
+                         SearchBoxPlaceholder="Search items" />
+            <br /><br /><br /><br />
+            <div><b>Custom search function</b>:</div><br />
+            <BitDropdown Label="Single select & auto focus"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         ShowSearchBox="true"
+                         AutoFocusSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
+                         SearchBoxPlaceholder="Search item" />
+            <br /><br />
+            <BitDropdown Label="Multi select"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items"
+                         IsMultiSelect="true"
+                         ShowSearchBox="true"
+                         SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
+                         SearchBoxPlaceholder="Search items" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -268,65 +280,67 @@
     <ExamplePreview>
         <div>When the <b>Combo</b> parameter is true, you can type in BitDropdown input and search between items.</div>
         <br />
-        <BitDropdown @bind-Value="comboBoxValueSample1"
-                     Combo
-                     Label="Single select combo box"
-                     Placeholder="Select an option"
-                     Items="comboBoxCustoms"
-                     NameSelectors="comboBoxNameSelectors" />
-        <br />
-        <div>Value: @comboBoxValueSample1</div>
-        <br /><br /><br /><br />
-        <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
-        <br />
-        <BitDropdown @bind-Value="comboBoxValueSample2"
-                     Combo Chips
-                     Label="Single select combo box & chips"
-                     Placeholder="Select an option"
-                     Items="comboBoxCustoms"
-                     NameSelectors="comboBoxNameSelectors" />
-        <br />
-        <div>Value: @comboBoxValueSample2</div>
-        <br /><br /><br /><br />
-        <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
-        <br />
-        <BitDropdown @bind-Value="comboBoxValueSample3"
-                     Combo Dynamic
-                     Label="Single select combo box & dynamic"
-                     Placeholder="Select an option"
-                     Items="comboBoxCustoms"
-                     NameSelectors="comboBoxNameSelectors"
-                     DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                     OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
-        <br />
-        <div>Value: @comboBoxValueSample3</div>
-        <br /><br /><br /><br />
-        <div>When the <b>Combo</b>, <b>Chips</b> and <b>Dynamic</b> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
-        <br />
-        <BitDropdown @bind-Value="comboBoxValueSample4"
-                     Combo Chips Dynamic
-                     Label="Single select combo box, chips & dynamic"
-                     Placeholder="Select an option"
-                     Items="comboBoxCustoms"
-                     IsResponsive="true"
-                     NameSelectors="comboBoxNameSelectors"
-                     DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                     OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
-        <br />
-        <div>Value: @comboBoxValueSample4</div>
-        <br /><br />
-        <BitDropdown @bind-Values="comboBoxValues"
-                     Combo Chips Dynamic
-                     Label="Multi select combo box, chips & dynamic"
-                     Placeholder="Select options"
-                     Items="comboBoxCustoms"
-                     IsMultiSelect="true"
-                     IsResponsive="true"
-                     NameSelectors="comboBoxNameSelectors"
-                     DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                     OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
-        <br />
-        <div>Values: @string.Join(',', comboBoxValues)</div>
+        <div class="example-content">
+            <BitDropdown @bind-Value="comboBoxValueSample1"
+                         Combo
+                         Label="Single select combo box"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors" />
+            <br />
+            <div>Value: @comboBoxValueSample1</div>
+            <br /><br /><br /><br />
+            <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
+            <br />
+            <BitDropdown @bind-Value="comboBoxValueSample2"
+                         Combo Chips
+                         Label="Single select combo box & chips"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors" />
+            <br />
+            <div>Value: @comboBoxValueSample2</div>
+            <br /><br /><br /><br />
+            <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
+            <br />
+            <BitDropdown @bind-Value="comboBoxValueSample3"
+                         Combo Dynamic
+                         Label="Single select combo box & dynamic"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <br />
+            <div>Value: @comboBoxValueSample3</div>
+            <br /><br /><br /><br />
+            <div>When the <b>Combo</b>, <b>Chips</b> and <b>Dynamic</b> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
+            <br />
+            <BitDropdown @bind-Value="comboBoxValueSample4"
+                         Combo Chips Dynamic
+                         Label="Single select combo box, chips & dynamic"
+                         Placeholder="Select an option"
+                         Items="comboBoxCustoms"
+                         IsResponsive="true"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <br />
+            <div>Value: @comboBoxValueSample4</div>
+            <br /><br />
+            <BitDropdown @bind-Values="comboBoxValues"
+                         Combo Chips Dynamic
+                         Label="Multi select combo box, chips & dynamic"
+                         Placeholder="Select options"
+                         Items="comboBoxCustoms"
+                         IsMultiSelect="true"
+                         IsResponsive="true"
+                         NameSelectors="comboBoxNameSelectors"
+                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
+                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+            <br />
+            <div>Values: @string.Join(',', comboBoxValues)</div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -334,32 +348,34 @@
     <ExamplePreview>
         <div>Use prefixes and suffixes in BitDropdown, including combinations and the disabled state.</div>
         <br />
-        <BitDropdown Label="Prefix"
-                     Prefix="Fruits:"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br />
-        <BitDropdown Label="Suffix"
-                     Suffix="kg"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br />
-        <BitDropdown Label="Prefix and Suffix"
-                     Prefix="Fruits:"
-                     Suffix="kg"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item" />
-        <br /><br />
-        <BitDropdown Label="Disabled"
-                     Prefix="Fruits:"
-                     Suffix="kg"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     IsEnabled="false" />
+        <div class="example-content">
+            <BitDropdown Label="Prefix"
+                         Prefix="Fruits:"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown Label="Suffix"
+                         Suffix="kg"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown Label="Prefix and Suffix"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown Label="Disabled"
+                         Prefix="Fruits:"
+                         Suffix="kg"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         IsEnabled="false" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -367,7 +383,7 @@
     <ExamplePreview>
         <div>Use BitDropdown in right-to-left (RTL).</div>
         <br />
-        <div dir="rtl">
+        <div dir="rtl" class="example-content">
             <BitDropdown Label="تک انتخابی"
                          Items="GetRtlCustoms()"
                          NameSelectors="nameSelectors"
@@ -388,17 +404,19 @@
     <ExamplePreview>
         <div>Explores different drop directions for the BitDropdown component, including automatic and explicit directions.</div>
         <br />
-        <BitDropdown Label="All"
-                     Items="dropDirectionCustoms"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     DropDirection="BitDropDirection.All" />
-        <br /><br />
-        <BitDropdown Label="TopAndBottom"
-                     Items="dropDirectionCustoms"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     DropDirection="BitDropDirection.TopAndBottom" />
+        <div class="example-content">
+            <BitDropdown Label="All"
+                         Items="dropDirectionCustoms"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         DropDirection="BitDropDirection.All" />
+            <br /><br />
+            <BitDropdown Label="TopAndBottom"
+                         Items="dropDirectionCustoms"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         DropDirection="BitDropDirection.TopAndBottom" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -406,24 +424,26 @@
     <ExamplePreview>
         <div>Shows the usage of the clear button in BitDropdown, allowing users to clear selected values in single and multi-select dropdowns.</div>
         <br />
-        <BitDropdown @bind-Value="clearValue"
-                     Label="Single select dropdown"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an option"
-                     ShowClearButton="true" />
-        <br />
-        <div>Value: @clearValue</div>
-        <br /><br /><br />
-        <BitDropdown @bind-Values="clearValues"
-                     Label="Multi select dropdown"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select options"
-                     IsMultiSelect="true"
-                     ShowClearButton="true" />
-        <br />
-        <div>Values: @string.Join(',', clearValues)</div>
+        <div class="example-content">
+            <BitDropdown @bind-Value="clearValue"
+                         Label="Single select dropdown"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an option"
+                         ShowClearButton="true" />
+            <br />
+            <div>Value: @clearValue</div>
+            <br /><br /><br />
+            <BitDropdown @bind-Values="clearValues"
+                         Label="Multi select dropdown"
+                         Items="GetBasicCustoms()"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select options"
+                         IsMultiSelect="true"
+                         ShowClearButton="true" />
+            <br />
+            <div>Values: @string.Join(',', clearValues)</div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -431,39 +451,41 @@
     <ExamplePreview>
         <div>Demonstrates how validation can be applied to BitDropdown, including required fields, numeric input, character constraints, email validation, and range validation.</div>
         <br />
-        @if (string.IsNullOrEmpty(successMessage))
-        {
-            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                <DataAnnotationsValidator />
+        <div class="example-content">
+            @if (string.IsNullOrEmpty(successMessage))
+            {
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
 
-                <BitDropdown @bind-Value="validationModel.Category"
-                             Label="Select 1 item"
-                             Items="GetBasicCustoms()"
-                             NameSelectors="nameSelectors"
-                             Placeholder="Select and item" />
+                    <BitDropdown @bind-Value="validationModel.Category"
+                                 Label="Select 1 item"
+                                 Items="GetBasicCustoms()"
+                                 NameSelectors="nameSelectors"
+                                 Placeholder="Select and item" />
 
-                <ValidationMessage For="@(() => validationModel.Category)" />
+                    <ValidationMessage For="@(() => validationModel.Category)" />
 
-                <br />
+                    <br />
 
-                <BitDropdown @bind-Values="validationModel.Products"
-                             Label="Select min 1 and max 2 items"
-                             Items="GetBasicCustoms()"
-                             NameSelectors="nameSelectors"
-                             Placeholder="Select items"
-                             IsMultiSelect="true" />
+                    <BitDropdown @bind-Values="validationModel.Products"
+                                 Label="Select min 1 and max 2 items"
+                                 Items="GetBasicCustoms()"
+                                 NameSelectors="nameSelectors"
+                                 Placeholder="Select items"
+                                 IsMultiSelect="true" />
 
-                <ValidationMessage For="@(() => validationModel.Products)" />
+                    <ValidationMessage For="@(() => validationModel.Products)" />
 
-                <br />
+                    <br />
 
-                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-            </EditForm>
-        }
-        else
-        {
-            <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
-        }
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            }
+            else
+            {
+                <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
+            }
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -471,32 +493,51 @@
     <ExamplePreview>
         <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
         <br /><br /><br />
-        <div>With <b>Items</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Items="virtualizeCustoms1"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select an item"
-                     Virtualize="true" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Items="virtualizeCustoms2"
-                     NameSelectors="nameSelectors"
-                     IsMultiSelect="true"
-                     Placeholder="Select items"
-                     Virtualize="true" />
-        <br /><br /><br /><br />
-        <div>With <b>ItemsProvider</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize="true"
-                     ItemsProvider="LoadItems"
+        <div class="example-content">
+            <div>With <b>Items</b>:</div><br />
+            <BitDropdown Label="Single select"
+                         Items="virtualizeCustoms1"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item"
+                         Virtualize="true" />
+            <br />
+            <BitDropdown Label="Multi select"
+                         Items="virtualizeCustoms2"
+                         NameSelectors="nameSelectors"
+                         IsMultiSelect="true"
+                         Placeholder="Select items"
+                         Virtualize="true" />
+            <br /><br /><br /><br />
+            <div>With <b>ItemsProvider</b>:</div><br />
+            <BitDropdown Label="Single select"
+                         Virtualize="true"
+                         ItemsProvider="LoadItems"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select an item" />
+            <br />
+            <BitDropdown Label="Multi select"
+                         Virtualize="true"
+                         IsMultiSelect="true"
+                         ItemsProvider="LoadItems"
+                         NameSelectors="nameSelectors"
+                         Placeholder="Select items" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="FitWidth" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <ExamplePreview>
+        <div>Enables fit-content width for the dropdown that sets the width of the component based on its content size.</div>
+        <br /><br />
+        <BitDropdown Label="Single select" FitWidth
+                     Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize="true"
-                     IsMultiSelect="true"
-                     ItemsProvider="LoadItems"
+        <br /><br />
+        <BitDropdown Label="Multi select" FitWidth
+                     Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
+                     Placeholder="Select items"
+                     IsMultiSelect="true" />
     </ExamplePreview>
 </ComponentExampleBox>
