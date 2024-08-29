@@ -36,6 +36,16 @@
                 }
             </BitDropdown>
             <br /><br />
+            <BitDropdown Label="PreserveCalloutWidth"
+                         PreserveCalloutWidth
+                         Placeholder="Select an item"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in basicItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <br /><br />
             <BitDropdown Label="Disabled"
                          DefaultValue="@("f-ora")"
                          Placeholder="Select an item"

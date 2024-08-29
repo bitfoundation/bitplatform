@@ -193,6 +193,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? PlaceholderTemplate { get; set; }
 
     /// <summary>
+    /// Disables automatic setting of the callout width and preserves its original width.
+    /// </summary>
+    [Parameter] public bool PreserveCalloutWidth { get; set; }
+
+    /// <summary>
     /// The placeholder text of the SearchBox input.
     /// </summary>
     [Parameter] public string? SearchBoxPlaceholder { get; set; }
@@ -832,7 +837,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
                                                     ShowSearchBox && Combo is false ? 32 : 0,
                                                     CalloutHeaderTemplate is not null ? _headerId : "",
                                                     CalloutFooterTemplate is not null ? _footerId : "",
-                                                    true,
+                                                    PreserveCalloutWidth is false,
                                                     RootElementClass);
     }
 
