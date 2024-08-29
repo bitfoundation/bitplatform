@@ -112,6 +112,30 @@
     }
 }
 
+.bit-drp-hvl {
+    .bit-drp-wrp {
+        color: $clr-fg-pri;
+    }
+}
+
+.bit-drp-nbd {
+    .bit-drp-wrp {
+        border: none;
+
+        @media (hover: hover) {
+            &:hover {
+                border: none;
+            }
+        }
+
+        &:focus {
+            &::after {
+                border: none;
+            }
+        }
+    }
+}
+
 .bit-drp-lbl {
     margin: 0;
     display: block;
@@ -122,9 +146,55 @@
     color: $clr-fg-pri;
 }
 
-.bit-drp-hvl {
-    .bit-drp-wrp {
+.bit-drp-wrp {
+    display: flex;
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    box-sizing: border-box;
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    color: $clr-fg-sec;
+
+    @media (hover: hover) {
+        &:hover {
+            border: $shp-border-width $shp-border-style $clr-brd-pri-hover;
+            color: $clr-fg-pri-hover;
+
+            .bit-drp-icn i {
+                color: $clr-fg-pri-hover;
+            }
+        }
+    }
+
+    &:active {
+        border-color: $clr-brd-pri-active;
+        color: $clr-fg-pri-active;
+
+        .bit-drp-icn {
+            i {
+                color: $clr-fg-pri-active;
+            }
+        }
+    }
+
+    &:focus {
         color: $clr-fg-pri;
+
+        .bit-drp-icn i {
+            color: $clr-fg-pri;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+            inset: spacing(-0.125);
+            border-radius: $shp-border-radius;
+            border: spacing(0.25) $shp-border-style $clr-pri;
+        }
     }
 }
 
@@ -184,58 +254,6 @@
         display: inline-block;
         font-size: spacing(1.5);
         color: $clr-fg-sec;
-    }
-}
-
-.bit-drp-wrp {
-    display: flex;
-    outline: none;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    box-sizing: border-box;
-    border-radius: $shp-border-radius;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    color: $clr-fg-sec;
-
-    @media (hover: hover) {
-        &:hover {
-            border: $shp-border-width $shp-border-style $clr-brd-pri-hover;
-            color: $clr-fg-pri-hover;
-
-            .bit-drp-icn i {
-                color: $clr-fg-pri-hover;
-            }
-        }
-    }
-
-    &:active {
-        border-color: $clr-brd-pri-active;
-        color: $clr-fg-pri-active;
-
-        .bit-drp-icn {
-            i {
-                color: $clr-fg-pri-active;
-            }
-        }
-    }
-
-    &:focus {
-        color: $clr-fg-pri;
-
-        .bit-drp-icn i {
-            color: $clr-fg-pri;
-        }
-
-        &::after {
-            content: "";
-            position: absolute;
-            pointer-events: none;
-            inset: spacing(-0.125);
-            border-radius: $shp-border-radius;
-            border: spacing(0.25) $shp-border-style $clr-pri;
-        }
     }
 }
 
@@ -651,6 +669,7 @@
 
 .bit-drp-ihd {
     width: 100%;
+    color: $clr-pri;
     cursor: default;
     font-weight: 600;
     user-select: none;
@@ -659,7 +678,6 @@
     box-sizing: border-box;
     font-size: spacing(1.875);
     line-height: spacing(4.5);
-    color: $clr-pri;
     background: none transparent;
 }
 

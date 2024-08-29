@@ -153,6 +153,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public BitDropdownNameSelectors<TItem, TValue>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Removes the border from the root element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
+
+    /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
     [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
@@ -543,6 +549,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
         ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
+
+        ClassBuilder.Register(() => NoBorder ? "bit-drp-nbd" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
