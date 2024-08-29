@@ -24,7 +24,7 @@
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.0-pre-04" />
         <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-        <PackageReference Condition=" '$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-04" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-04" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-04" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04" PrivateAssets="all" />
