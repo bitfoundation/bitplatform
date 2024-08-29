@@ -151,14 +151,14 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Label=""Single select""
              Items=""GetBasicItems()""
              Placeholder=""Select an item"" />
-<BitLabel>Selected Value: @controlledValue</BitLabel>
+<div>Selected Value: @controlledValue</div>
 
 <BitDropdown @bind-Values=""controlledValues""
              Label=""Multi select""
              Items=""GetBasicItems()""
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+<div>Selected Values: @string.Join("","", controlledValues)</div>
 
 
 
@@ -167,7 +167,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Placeholder=""Select an item""
              TItem=""BitDropdownItem<string>"" TValue=""string""
              OnValuesChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
-<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+<div>Changed Value: @changedItem?.Value</div>
             
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
@@ -175,7 +175,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Placeholder=""Select items""
              TItem=""BitDropdownItem<string>"" TValue=""string""
              OnValuesChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
-<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
 
 
 
@@ -184,7 +184,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              OnSelectItem=""(BitDropdownItem<string> item) => selectedItem1 = item"" />
-<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+<div>Selected Value: @selectedItem1?.Value</div>
 
 <BitDropdown Label=""Multi select""
              Items=""GetBasicItems()""
@@ -192,7 +192,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Placeholder=""Select items""
              IsMultiSelect=""true""
              OnSelectItem=""(BitDropdownItem<string> item) => selectedItem2 = item"" />
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
+<div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -271,13 +271,13 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     <TextTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-txt"">
             <BitIcon IconName=""@((dropdown.SelectedItem?.Data as DropdownItemData)?.IconName)"" />
-            <BitLabel>@dropdown.SelectedItem?.Text</BitLabel>
+            <div>@dropdown.SelectedItem?.Text</div>
         </div>
     </TextTemplate>
     <ItemTemplate Context=""item"">
         <div class=""custom-drp custom-drp-item"">
             <BitIcon IconName=""@((item.Data as DropdownItemData)?.IconName)"" />
-            <BitLabel Style=""text-decoration:underline"">@item.Text</BitLabel>
+            <div Style=""text-decoration:underline"">@item.Text</div>
         </div>
     </ItemTemplate>
 </BitDropdown>
@@ -289,7 +289,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     <PlaceholderTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-ph"">
             <BitIcon IconName=""@BitIconName.MessageFill"" />
-            <BitLabel>@dropdown.Placeholder</BitLabel>
+            <div>@dropdown.Placeholder</div>
         </div>
     </PlaceholderTemplate>
 </BitDropdown>
@@ -300,7 +300,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Placeholder=""Select an item"">
     <LabelTemplate>
         <div class=""custom-drp custom-drp-lbl"">
-            <BitLabel>Custom label</BitLabel>
+            <div>Custom label</div>
             <BitIcon IconName=""@BitIconName.Info"" AriaLabel=""Info"" />
         </div>
     </LabelTemplate>
@@ -317,7 +317,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
     <CalloutHeaderTemplate>
-        <BitLabel Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</BitLabel>
+        <div Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</div>
     </CalloutHeaderTemplate>
     <CalloutFooterTemplate>
         <BitActionButton IconName=""@BitIconName.Add"">New Item</BitActionButton>
@@ -420,14 +420,14 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Label=""Single select combo box""
              Placeholder=""Select an option""
              Items=""comboBoxItems"" />
-<strong>Value: @comboBoxValueSample1</strong>
+<div>Value: @comboBoxValueSample1</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Label=""Single select combo box & chips""
              Placeholder=""Select an option""
              Items=""comboBoxItems"" />
-<strong>Value: @comboBoxValueSample2</strong>
+<div>Value: @comboBoxValueSample2</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
@@ -436,7 +436,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Items=""comboBoxItems""
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
-<strong>Value: @comboBoxValueSample3</strong>
+<div>Value: @comboBoxValueSample3</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
@@ -446,7 +446,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              IsResponsive=""true""
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
-<strong>Value: @comboBoxValueSample4</strong>
+<div>Value: @comboBoxValueSample4</div>
 
 <BitDropdown @bind-Values=""comboBoxValues""
              Combo Chips Dynamic
@@ -457,7 +457,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              IsResponsive=""true""
              DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
-<strong>Values: @string.Join(',', comboBoxValues)</strong>";
+<div>Values: @string.Join(',', comboBoxValues)</div>";
     private readonly string example7CsharpCode = @"
 private string comboBoxValueSample1 = default!;
 private string comboBoxValueSample2 = default!;
@@ -581,7 +581,7 @@ protected override void OnInitialized()
              Items=""GetBasicItems()""
              Placeholder=""Select an option""
              ShowClearButton=""true"" />
-<BitLabel>Value: @clearValue</BitLabel>
+<div>Value: @clearValue</div>
 
 
 <BitDropdown @bind-Values=""clearValues""
@@ -590,7 +590,7 @@ protected override void OnInitialized()
              Placeholder=""Select options""
              IsMultiSelect=""true""
              ShowClearButton=""true"" />
-<BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
+<div>Values: @string.Join(',', clearValues)</div>";
     private readonly string example11CsharpCode = @"
 private string? clearValue = ""f-app"";
 private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
@@ -619,7 +619,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     }
 </style>
 
-<EditForm style=""width: 100%"" Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Value=""validationModel.Category""

@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-drp {
-    width: 100%;
+    width: fit-content;
     position: relative;
     font-family: $tg-font-family;
 
@@ -9,8 +9,8 @@
         .bit-drp-lbl {
             &::after {
                 content: " *";
-                padding-right: spacing(1.5);
                 color: $clr-req;
+                padding-right: spacing(1.5);
             }
         }
     }

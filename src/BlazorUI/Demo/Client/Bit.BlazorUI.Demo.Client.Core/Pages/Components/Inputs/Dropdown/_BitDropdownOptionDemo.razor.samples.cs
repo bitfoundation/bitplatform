@@ -204,7 +204,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
     <BitDropdownOption Text=""Carrot"" Value=""@(""v-car"")"" />
     <BitDropdownOption Text=""Lettuce"" Value=""@(""v-let"")"" />
 </BitDropdown>
-<BitLabel>Selected Value: @controlledValue</BitLabel>
+<div>Selected Value: @controlledValue</div>
 
 <BitDropdown @bind-Values=""controlledValues""
              Label=""Multi select""
@@ -216,7 +216,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+<div>Selected Values: @string.Join("","", controlledValues)</div>
 
 
 
@@ -229,7 +229,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+<div>Changed Value: @changedItem?.Value</div>
 
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
@@ -241,7 +241,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
 
 
 
@@ -255,7 +255,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+<div>Selected Value: @selectedItem1?.Value</div>
 
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
@@ -268,7 +268,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
+<div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example3CsharpCode = @"
 private string controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -351,13 +351,13 @@ private readonly List<BitDropdownItem<string>> basicItems =
     <TextTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-txt"">
             <BitIcon IconName=""@((dropdown.SelectedItem?.Data as DropdownItemData)?.IconName)"" />
-            <BitLabel>@dropdown.SelectedItem?.Text</BitLabel>
+            <div>@dropdown.SelectedItem?.Text</div>
         </div>
     </TextTemplate>
     <ItemTemplate Context=""item"">
         <div class=""custom-drp custom-drp-item"">
             <BitIcon IconName=""@((item.Data as DropdownItemData)?.IconName)"" />
-            <BitLabel Style=""text-decoration:underline"">@item.Text</BitLabel>
+            <div Style=""text-decoration:underline"">@item.Text</div>
         </div>
     </ItemTemplate>
     <Options>
@@ -374,7 +374,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
     <PlaceholderTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-ph"">
             <BitIcon IconName=""@BitIconName.MessageFill"" />
-            <BitLabel>@dropdown.Placeholder</BitLabel>
+            <div>@dropdown.Placeholder</div>
         </div>
     </PlaceholderTemplate>
     <Options>
@@ -390,7 +390,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <LabelTemplate>
         <div class=""custom-drp custom-drp-lbl"">
-            <BitLabel>Custom label</BitLabel>
+            <div>Custom label</div>
             <BitIcon IconName=""@BitIconName.Info"" AriaLabel=""Info"" />
         </div>
     </LabelTemplate>
@@ -416,7 +416,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <CalloutHeaderTemplate>
-        <BitLabel Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</BitLabel>
+        <div Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</div>
     </CalloutHeaderTemplate>
     <CalloutFooterTemplate>
         <BitActionButton IconName=""@BitIconName.Add"">New Item</BitActionButton>
@@ -538,7 +538,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<strong>Value: @comboBoxValueSample1</strong>
+<div>Value: @comboBoxValueSample1</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
@@ -550,7 +550,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<strong>Value: @comboBoxValueSample2</strong>
+<div>Value: @comboBoxValueSample2</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
@@ -564,7 +564,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<strong>Value: @comboBoxValueSample3</strong>
+<div>Value: @comboBoxValueSample3</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
@@ -579,7 +579,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<strong>Value: @comboBoxValueSample4</strong>
+<div>Value: @comboBoxValueSample4</div>
 
 <BitDropdown @bind-Values=""comboBoxValues""
                 Combo Chips Dynamic
@@ -595,7 +595,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<strong>Values: @string.Join(',', comboBoxValues)</strong>";
+<div>Values: @string.Join(',', comboBoxValues)</div>";
     private readonly string example7CsharpCode = @"
 private string comboBoxValueSample1 = default!;
 private string comboBoxValueSample2 = default!;
@@ -761,7 +761,7 @@ protected override void OnInitialized()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Value: @clearValue</BitLabel>
+<div>Value: @clearValue</div>
 
 
 <BitDropdown @bind-Values=""clearValues""
@@ -775,7 +775,7 @@ protected override void OnInitialized()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
+<div>Values: @string.Join(',', clearValues)</div>";
     private readonly string example11CsharpCode = @"
 private string? clearValue = ""f-app"";
 private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
@@ -804,7 +804,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
     }
 </style>
 
-<EditForm style=""width: 100%"" Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Value=""validationModel.Category""

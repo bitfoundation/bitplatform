@@ -209,7 +209,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />
-<BitLabel>Selected Value: @controlledValue</BitLabel>
+<div>Selected Value: @controlledValue</div>
 
 <BitDropdown @bind-Values=""controlledValues""
              Label=""Multi select""
@@ -217,7 +217,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              Placeholder=""Select items""
              IsMultiSelect=""true"" />
-<BitLabel>Selected Values: @string.Join("","", controlledValues)</BitLabel>
+<div>Selected Values: @string.Join("","", controlledValues)</div>
 
 
 
@@ -227,7 +227,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
              OnValuesChange=""(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()"" />
-<BitLabel>Changed Value: @changedItem?.Value</BitLabel>
+<div>Changed Value: @changedItem?.Value</div>
 
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
@@ -236,7 +236,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              TItem=""BitDropdownCustom"" TValue=""string""
              OnValuesChange=""(BitDropdownCustom[] items) => changedItems = items"" />
-<BitLabel>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</BitLabel>
+<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
 
 
 
@@ -246,7 +246,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an item""
              NameSelectors=""nameSelectors""
              OnSelectItem=""(BitDropdownCustom item) => selectedItem1 = item"" />
-<BitLabel>Selected Value: @selectedItem1?.Value</BitLabel>
+<div>Selected Value: @selectedItem1?.Value</div>
 
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
@@ -255,7 +255,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
              OnSelectItem=""(BitDropdownCustom item) => selectedItem2 = item"" />
-<BitLabel>Selected Value: @selectedItem2?.Value</BitLabel>";
+<div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example3CsharpCode = @"
 private string? controlledValue = ""f-app"";
 private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
@@ -360,13 +360,13 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     <TextTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-txt"">
             <BitIcon IconName=""@((dropdown.SelectedItem?.Payload as DropdownItemData)?.IconName)"" />
-            <BitLabel>@dropdown.SelectedItem?.Text</BitLabel>
+            <div>@dropdown.SelectedItem?.Text</div>
         </div>
     </TextTemplate>
     <ItemTemplate Context=""item"">
         <div class=""custom-drp custom-drp-item"">
             <BitIcon IconName=""@((item.Payload as DropdownItemData)?.IconName)"" />
-            <BitLabel Style=""text-decoration:underline"">@item.Text</BitLabel>
+            <div Style=""text-decoration:underline"">@item.Text</div>
         </div>
     </ItemTemplate>
 </BitDropdown>
@@ -378,7 +378,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     <PlaceholderTemplate Context=""dropdown"">
         <div class=""custom-drp custom-drp-ph"">
             <BitIcon IconName=""@BitIconName.MessageFill"" />
-            <BitLabel>@dropdown.Placeholder</BitLabel>
+            <div>@dropdown.Placeholder</div>
         </div>
     </PlaceholderTemplate>
 </BitDropdown>
@@ -389,7 +389,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an item"">
     <LabelTemplate>
         <div class=""custom-drp custom-drp-lbl"">
-            <BitLabel>Custom label</BitLabel>
+            <div>Custom label</div>
             <BitIcon IconName=""@BitIconName.Info"" AriaLabel=""Info"" />
         </div>
     </LabelTemplate>
@@ -406,7 +406,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"">
     <CalloutHeaderTemplate>
-        <BitLabel Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</BitLabel>
+        <div Style=""padding:0.5rem;border-bottom:1px solid #555"">Best in the world</div>
     </CalloutHeaderTemplate>
     <CalloutFooterTemplate>
         <BitActionButton IconName=""@BitIconName.Add"">New Item</BitActionButton>
@@ -588,7 +588,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an option""
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors"" />
-<strong>Value: @comboBoxValueSample1</strong>
+<div>Value: @comboBoxValueSample1</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
@@ -596,7 +596,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select an option""
              Items=""comboBoxCustoms""
              NameSelectors=""comboBoxNameSelectors"" />
-<strong>Value: @comboBoxValueSample2</strong>
+<div>Value: @comboBoxValueSample2</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
@@ -606,7 +606,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""comboBoxNameSelectors""
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
-<strong>Value: @comboBoxValueSample3</strong>
+<div>Value: @comboBoxValueSample3</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
              Combo Chips Dynamic
@@ -617,7 +617,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""comboBoxNameSelectors""
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
-<strong>Value: @comboBoxValueSample4</strong>
+<div>Value: @comboBoxValueSample4</div>
 
 <BitDropdown @bind-Values=""comboBoxValues""
              Combo Chips Dynamic
@@ -629,7 +629,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""comboBoxNameSelectors""
              DynamicValueGenerator=""@((BitDropdownCustom item) => item.Text ?? """")""
              OnDynamicAdd=""(BitDropdownCustom item) => HandleOnDynamicAdd(item)"" />
-<strong>Values: @string.Join(',', comboBoxValues)</strong>";
+<div>Values: @string.Join(',', comboBoxValues)</div>";
     private readonly string example7CsharpCode = @"
 private string comboBoxValueSample1 = default!;
 private string comboBoxValueSample2 = default!;
@@ -850,7 +850,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              NameSelectors=""nameSelectors""
              Placeholder=""Select an option""
              ShowClearButton=""true"" />
-<BitLabel>Value: @clearValue</BitLabel>
+<div>Value: @clearValue</div>
 
 
 <BitDropdown @bind-Values=""clearValues""
@@ -860,7 +860,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
              Placeholder=""Select options""
              IsMultiSelect=""true""
              ShowClearButton=""true"" />
-<BitLabel>Values: @string.Join(',', clearValues)</BitLabel>";
+<div>Values: @string.Join(',', clearValues)</div>";
     private readonly string example11CsharpCode = @"
 private string? clearValue = ""f-app"";
 private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
@@ -915,7 +915,7 @@ private BitDropdownNameSelectors<BitDropdownCustom, string?> nameSelectors = new
     }
 </style>
 
-<EditForm style=""width: 100%"" Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
     <BitDropdown @bind-Value=""validationModel.Category""
