@@ -111,6 +111,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables fit-content value for the width of the root element.",
+        },
+        new()
+        {
             Name = "IsMultiSelect",
             Type = "bool",
             DefaultValue = "false",
