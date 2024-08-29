@@ -78,7 +78,7 @@
 .bit-tpc-ico {
     cursor: pointer;
     padding-right: 0;
-    padding-left: spacing(1);
+    padding-inline-start: spacing(1);
     color: $clr-fg-sec;
 }
 
@@ -175,6 +175,7 @@
 
 .bit-tpc-cal {
     display: none;
+    direction: ltr;
     position: fixed;
     font-weight: 400;
     outline: transparent;
