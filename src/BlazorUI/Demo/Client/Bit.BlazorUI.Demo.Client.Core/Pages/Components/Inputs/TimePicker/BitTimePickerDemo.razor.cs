@@ -814,4 +814,16 @@ private async Task OpenCallout()
                                   DecreaseMinuteButton = ""custom-button"" })"" />";
     private readonly string example12CsharpCode = @"
 private TimeSpan? classesValue;";
+
+    private readonly string example13RazorCode = @"
+<BitTimePicker Dir=""BitDir.Rtl""
+               Standalone
+               Label=""تایم""
+               Value=""new(10, 24, 0)""
+               TimeFormat=""BitTimeFormat.TwelveHours"" />
+
+<BitTimePicker Dir=""BitDir.Rtl""
+               ShowCloseButton
+               Label=""تایم""
+               Placeholder=""تایم خود را انتخاب کنید..."" />";
 }
