@@ -38,7 +38,7 @@ internal static class BitChartJsInterop
     /// <returns></returns>
     public static ValueTask<bool> SetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
-        dynamic dynParam = StripNulls(chartConfig);
+        var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
@@ -93,7 +93,7 @@ internal static class BitChartJsInterop
     /// <returns></returns>
     public static ValueTask<bool> UpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
-        dynamic dynParam = StripNulls(chartConfig);
+        var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.updateChart", param);
     }

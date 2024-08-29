@@ -342,10 +342,6 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     ];
 
-    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
-
-    private bool isLoadingAssemblies = true;
-
     protected override async Task OnInitAsync()
     {
         allCountries = _countries.AsQueryable();
@@ -419,18 +415,6 @@ public partial class BitDataGridDemo
                 return BitDataGridItemsProviderResult.From<ProductDto>(new List<ProductDto> { }, 0);
             }
         };
-
-        try
-        {
-            if (OperatingSystem.IsBrowser())
-            {
-                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
-            }
-        }
-        finally
-        {
-            isLoadingAssemblies = false;
-        }
 
         await base.OnInitAsync();
     }
