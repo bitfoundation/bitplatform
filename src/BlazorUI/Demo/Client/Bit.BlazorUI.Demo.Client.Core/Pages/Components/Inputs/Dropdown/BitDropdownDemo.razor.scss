@@ -1,28 +1,10 @@
-﻿@import '../../../../Styles/abstracts/_colors.scss';
-@import '../../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
-    .example-content,
-    .example-content-cb {
-        display: flex;
-        gap: rem2(20px);
-        flex-flow: row wrap;
-        align-items: center;
-        max-width: rem2(304px);
-
-        &.column {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        & > div {
-            width: 100%;
-        }
-    }
-
-    .example-content-cb {
-        gap: rem2(4px);
+    .example-content {
+        max-width: 18rem;
     }
 
     .custom-class {
@@ -48,7 +30,8 @@
         -webkit-backdrop-filter: blur(20px);
     }
 
-    .custom-container, .custom-container:after {
+    .custom-container,
+    .custom-container:after {
         border-radius: 1rem;
     }
 
@@ -60,13 +43,17 @@
         background-color: rgba(255, 255, 255, 0.2);
     }
 
-    .custom-scroll-container div:last-child .custom-item-button {
-        border-bottom: none;
+    .custom-scroll-container {
+        div:last-child {
+            .custom-item-button {
+                border-bottom: none;
+            }
+        }
     }
 
     .validation-message {
-        color: $Red20;
         font-size: rem2(12px);
+        color: $bit-color-requried;
     }
 
     .custom-drp {

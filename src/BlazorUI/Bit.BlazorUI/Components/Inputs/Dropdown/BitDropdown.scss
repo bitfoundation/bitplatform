@@ -9,8 +9,8 @@
         .bit-drp-lbl {
             &::after {
                 content: " *";
-                padding-right: spacing(1.5);
                 color: $clr-req;
+                padding-right: spacing(1.5);
             }
         }
     }
