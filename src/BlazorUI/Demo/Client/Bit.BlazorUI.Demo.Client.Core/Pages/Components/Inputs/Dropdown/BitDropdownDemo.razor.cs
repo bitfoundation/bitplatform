@@ -292,6 +292,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "PreserveCalloutWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables automatic setting of the callout width and preserves its original width.",
+        },
+        new()
+        {
             Name = "SearchBoxPlaceholder",
             Type = "string?",
             DefaultValue = "null",

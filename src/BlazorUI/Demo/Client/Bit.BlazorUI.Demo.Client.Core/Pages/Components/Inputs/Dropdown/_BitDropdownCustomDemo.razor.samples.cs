@@ -19,6 +19,12 @@ public partial class _BitDropdownCustomDemo
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />
 
+<BitDropdown Label=""PreserveCalloutWidth""
+             PreserveCalloutWidth
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"" />
+
 <BitDropdown Label=""Disabled""
              Items=""GetBasicCustoms()""
              DefaultValue=""@(""f-ora"")""

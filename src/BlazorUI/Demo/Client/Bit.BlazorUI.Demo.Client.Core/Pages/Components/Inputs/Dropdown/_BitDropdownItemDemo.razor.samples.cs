@@ -19,6 +19,12 @@ public partial class _BitDropdownItemDemo
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"" />
 
+<BitDropdown Label=""PreserveCalloutWidth""
+             PreserveCalloutWidth
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"" />
+
 <BitDropdown Label=""Disabled""
              Items=""GetBasicItems()""
              DefaultValue=""@(""f-ora"")""
