@@ -92,7 +92,7 @@
     <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div>
-                Validation will happen when the <code>Submit</code> button is clicked. 
+                Validation will happen when the <code>Submit</code> button is clicked.
                 This example demonstrates how to use the BitTimePicker within a form to validate the selected time.
             </div>
             <br />
@@ -146,7 +146,7 @@
                         Custom label <BitButton Variant="BitVariant.Text" IconName="@BitIconName.AlarmClock" OnClick="OpenCallout"></BitButton>
                     </LabelTemplate>
                 </BitTimePicker>
-                <br/><br/>
+                <br /><br />
                 <BitTimePicker Label="Custom icon" Placeholder="Select a time...">
                     <IconTemplate>
                         <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
@@ -176,7 +176,7 @@
         <ExamplePreview>
             <div>Use the BitTimePicker as a standalone component, including options for time format and disabled state.</div>
             <br />
-            <div class="example-box">
+            <div class="example-content">
                 <BitTimePicker Standalone Label="Standalone picker" />
                 <br />
                 <BitTimePicker Standalone
@@ -207,7 +207,7 @@
             <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="example-content">
-                <BitTimePicker Placeholder="Select a time..." 
+                <BitTimePicker Placeholder="Select a time..."
                                Styles="@(new() { Root = "margin-inline: 1rem;",
                                                  Focused = "--focused-background: #b2b2b25a;",
                                                  Input = "padding: 0.5rem;",
@@ -228,6 +228,30 @@
                                                   DecreaseHourButton = "custom-button",
                                                   IncreaseMinuteButton = "custom-button",
                                                   DecreaseMinuteButton = "custom-button" })" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div>Use BitTimePicker in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <div class="example-content">
+                    <BitTimePicker Dir="BitDir.Rtl"
+                                   Standalone
+                                   Label="تایم"
+                                   Value="new(10, 24, 0)"
+                                   TimeFormat="BitTimeFormat.TwelveHours" />
+
+                    <br />
+                    <br />
+
+                    <BitTimePicker Dir="BitDir.Rtl"
+                                   ShowCloseButton
+                                   Label="تایم"
+                                   Placeholder="تایم خود را انتخاب کنید..." />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
