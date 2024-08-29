@@ -3,15 +3,12 @@
 public partial class _BitBreadcrumbCustomDemo
 {
     private readonly string example1RazorCode = @"
-<BitLabel>Basic</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors"" />
 
-<BitLabel>Disabled</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors"" />
 
-<BitLabel>Item Disabled</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItemsDisabled""
                NameSelectors=""nameSelectors"" />";
     private readonly string example1CsharpCode = @"
@@ -32,18 +29,18 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItems =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private readonly List<PageInfoModel> CustomBreadcrumbItemsDisabled =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -56,34 +53,28 @@ private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
 };";
 
     private readonly string example2RazorCode = @"
-<BitLabel>Max displayed items (1)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""1"" />
 
-<BitLabel>Max displayed items (2)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""2"" />
 
-<BitLabel>Max displayed items (3)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (0)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""0"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (1)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""1"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (2)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
@@ -106,10 +97,10 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItems =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -122,14 +113,12 @@ private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
 };";
 
     private readonly string example3RazorCode = @"
-<BitLabel>BitIconName (ChevronDown)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OverflowIcon=""@BitIconName.ChevronDown"" />
 
-<BitLabel>BitIconName (CollapseMenu)</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
@@ -153,10 +142,10 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItems =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -192,21 +181,17 @@ private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
 </style>
 
 
-<BitLabel>Items Class</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
                NameSelectors=""nameSelectors"" />
 
-<BitLabel>Items Style</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithStyle""
                NameSelectors=""nameSelectors"" />
 
 
-<BitLabel>Selected Item Class</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                SelectedItemClass=""custom-selected-item"" />
 
-<BitLabel>Selected Item Style</BitLabel>
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
@@ -228,26 +213,26 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItems =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private readonly List<PageInfoModel> CustomBreadcrumbItemsWithClass =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"", IsCurrent = true }
 ];
 
 private readonly List<PageInfoModel> CustomBreadcrumbItemsWithStyle =
 [
-    new() { Name = ""Folder 1"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Name = ""Folder 2"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Name = ""Folder 3"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Name = ""Folder 4"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -284,12 +269,12 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled =
 [
-    new() { Name = ""Folder 1"" },
-    new() { Name = ""Folder 2"" },
-    new() { Name = ""Folder 3"" },
-    new() { Name = ""Folder 4"" },
-    new() { Name = ""Folder 5"" },
-    new() { Name = ""Folder 6"", IsCurrent = true }
+    new() { Name = ""Custom 1"" },
+    new() { Name = ""Custom 2"" },
+    new() { Name = ""Custom 3"" },
+    new() { Name = ""Custom 4"" },
+    new() { Name = ""Custom 5"" },
+    new() { Name = ""Custom 6"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -341,10 +326,10 @@ public class PageInfoModel
 
 private readonly List<PageInfoModel> CustomBreadcrumbItemsWithCustomized =
 [
-    new() { Name = ""Folder 1"" },
-    new() { Name = ""Folder 2"" },
-    new() { Name = ""Folder 3"" },
-    new() { Name = ""Folder 4"", IsCurrent = true }
+    new() { Name = ""Custom 1"" },
+    new() { Name = ""Custom 2"" },
+    new() { Name = ""Custom 3"" },
+    new() { Name = ""Custom 4"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
@@ -367,7 +352,7 @@ private void AddCustomItem()
     ItemsCount++;
     BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
     {
-        Text = $""Folder {ItemsCount}""
+        Text = $""Custom {ItemsCount}""
     });
 }
 

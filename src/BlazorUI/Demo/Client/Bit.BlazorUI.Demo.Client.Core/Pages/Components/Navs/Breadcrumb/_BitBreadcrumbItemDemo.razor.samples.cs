@@ -3,66 +3,55 @@
 public partial class _BitBreadcrumbItemDemo
 {
     private readonly string example1RazorCode = @"
-<BitLabel>Basic</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" />
 
-<BitLabel>Disabled</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" IsEnabled=""false"" />
 
-<BitLabel>Item Disabled</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItemsDisabled"" />";
     private readonly string example1CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsDisabled =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", IsEnabled = false },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", IsEnabled = false },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
     private readonly string example2RazorCode = @"
-<BitLabel>Max displayed items (1)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""1"" />
 
-<BitLabel>Max displayed items (2)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""2"" />
 
-<BitLabel>Max displayed items (3)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (0)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""0"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (1)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""1"" />
 
-<BitLabel>Max displayed items (3), OverflowIndex (2)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
     private readonly string example2CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
     private readonly string example3RazorCode = @"
-<BitLabel>BitIconName (ChevronDown)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OverflowIcon=""@BitIconName.ChevronDown"" />
 
-<BitLabel>BitIconName (CollapseMenu)</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
@@ -70,10 +59,10 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
     private readonly string example3CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
     private readonly string example4RazorCode = @"
@@ -100,43 +89,39 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 </style>
 
 
-<BitLabel>Items Class</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
 
-<BitLabel>Items Style</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 
 
-<BitLabel>Selected Item Class</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems""
                SelectedItemClass=""custom-selected-item"" />
 
-<BitLabel>Selected Item Style</BitLabel>
 <BitBreadcrumb Items=""BreadcrumbItems""
                SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
     private readonly string example4CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", Class = ""custom-item"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Class = ""custom-item"", IsSelected = true }
 ];
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
 [
-    new() { Text = ""Folder 1"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Text = ""Folder 2"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Text = ""Folder 3"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Text = ""Folder 4"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsSelected = true }
 ];";
 
     private readonly string example5RazorCode = @"
@@ -148,12 +133,12 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
     private readonly string example5CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithControlled =
 [
-    new() { Text = ""Folder 1"" },
-    new() { Text = ""Folder 2"" },
-    new() { Text = ""Folder 3"" },
-    new() { Text = ""Folder 4"" },
-    new() { Text = ""Folder 5"" },
-    new() { Text = ""Folder 6"", IsSelected = true }
+    new() { Text = ""Item 1"" },
+    new() { Text = ""Item 2"" },
+    new() { Text = ""Item 3"" },
+    new() { Text = ""Item 4"" },
+    new() { Text = ""Item 5"" },
+    new() { Text = ""Item 6"", IsSelected = true }
 ];
 
 private void HandleOnItemClick(BitBreadcrumbItem item)
@@ -180,10 +165,10 @@ private uint MaxDisplayedItems = 3;
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCustomized =
 [
-    new() { Text = ""Folder 1"" },
-    new() { Text = ""Folder 2"" },
-    new() { Text = ""Folder 3"" },
-    new() { Text = ""Folder 4"", IsSelected = true }
+    new() { Text = ""Item 1"" },
+    new() { Text = ""Item 2"" },
+    new() { Text = ""Item 3"" },
+    new() { Text = ""Item 4"", IsSelected = true }
 ];
 
 private void HandleOnCustomizedItemClick(BitBreadcrumbItem item)
@@ -197,7 +182,7 @@ private void AddCustomItem()
     ItemsCount++;
     CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
     {
-        Name = $""Folder {ItemsCount}""
+        Name = $""Item {ItemsCount}""
     });
 }
 
