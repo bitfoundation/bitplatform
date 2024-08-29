@@ -6,7 +6,7 @@
         <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
-        <IsTrimmable>false</IsTrimmable>
+        <IsTrimmable>true</IsTrimmable>
         <WarningLevel>0</WarningLevel>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
             BeforeBuildTasks;

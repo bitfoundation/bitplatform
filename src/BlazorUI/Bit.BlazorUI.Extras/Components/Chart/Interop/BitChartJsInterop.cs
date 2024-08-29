@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -36,9 +37,68 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
     /// <returns></returns>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartScatterConfig))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartConfigBase<,>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartConfigBase<>))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonStringEnumConverter))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexableOptionConverter))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FloatingBarPointConverter))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ClippingJsonConverter))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonWriteOnlyConverter<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsonObjectEnumConverter))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBaseConfigOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartIndexableOption<>))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBubbleDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLineDataset<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPieDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPolarAreaDataset))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartRadarDataset))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLegend))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartPosition))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTooltips))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartAnimation))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarScales))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartScales))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCategoryTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLinearCartesianTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLogarithmicTicks))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTimeTicks))]
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarCategoryAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarLinearCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarLogarithmicAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartBarTimeAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCartesianAxis<>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartCategoryAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLinearCartesianAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartLogarithmicAxis))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChartTimeAxis))]
+
     public static ValueTask<bool> SetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
-        dynamic dynParam = StripNulls(chartConfig);
+        ExpandoObject dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
@@ -93,7 +153,7 @@ internal static class BitChartJsInterop
     /// <returns></returns>
     public static ValueTask<bool> UpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
-        dynamic dynParam = StripNulls(chartConfig);
+        ExpandoObject dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.updateChart", param);
     }
