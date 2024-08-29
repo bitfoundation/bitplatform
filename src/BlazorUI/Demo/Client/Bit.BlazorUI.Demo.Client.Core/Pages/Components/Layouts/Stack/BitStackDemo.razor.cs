@@ -56,6 +56,27 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "Full",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the width and height of the stack 100%."
+        },
+        new()
+        {
+            Name = "FullHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the height of the stack 100%."
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the width of the stack 100%."
+        },
+        new()
+        {
             Name = "Reversed",
             Type = "bool",
             DefaultValue = "false",
