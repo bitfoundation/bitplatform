@@ -45,6 +45,24 @@ public partial class BitStack : BitComponentBase
     public BitStackAlignment HorizontalAlign { get; set; }
 
     /// <summary>
+    /// Make the width and height of the stack 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool Full { get; set; }
+
+    /// <summary>
+    /// Make the height of the stack 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullHeight { get; set; }
+
+    /// <summary>
+    /// Make the width of the stack 100%.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Defines whether to render Stack children in the opposite direction (bottom-to-top if it's a vertical Stack and right-to-left if it's a horizontal Stack).
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -73,12 +91,15 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign : HorizontalAlign]}");
 
         StyleBuilder.Register(() => $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign : VerticalAlign]}");
-        
+
         StyleBuilder.Register(() => Gap.HasValue() ? $"gap:{Gap}" : string.Empty);
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
 
         StyleBuilder.Register(() => Wrap ? "flex-wrap:wrap" : string.Empty);
+
+        StyleBuilder.Register(() => (Full || FullWidth) ? "width:100%" : string.Empty);
+        StyleBuilder.Register(() => (Full || FullHeight) ? "height:100%" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
