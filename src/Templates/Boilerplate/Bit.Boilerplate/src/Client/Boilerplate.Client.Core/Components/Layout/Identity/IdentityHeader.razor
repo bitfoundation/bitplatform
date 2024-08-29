@@ -1,16 +1,18 @@
 @inherits AppComponentBase
 
-<BitStack Horizontal Grows>
-    <BitLink>
-        <BitIcon IconName="@BitIconName.DecreaseIndentArrow" />
-        <BitTypography Variant="BitTypographyVariant.Body2">Back to home</BitTypography>
-    </BitLink>
+<header>
+    <BitStack Horizontal Grows>
+        <BitLink>
+            <BitIcon IconName="@BitIconName.DecreaseIndentArrow" />
+            <BitTypography Variant="BitTypographyVariant.Body2">Back to home</BitTypography>
+        </BitLink>
 
-    <BitSpacer />
+        <BitSpacer />
 
-    <BitButton IconName="@BitIconName.Sunny" IconOnly Variant="BitVariant.Text" />
-    <BitDropdown @bind-Value="SelectedCulture"
-                 Class="culture-drp"
-                 Items="cultures"
-                 OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
-</BitStack>
+        <BitButton IconName="@BitIconName.Sunny" IconOnly Variant="BitVariant.Text" />
+        <BitDropdown @bind-Value="SelectedCulture"
+                     Class="culture-drp"
+                     Items="cultures"
+                     OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
+    </BitStack>
+</header>
