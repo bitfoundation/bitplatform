@@ -7,7 +7,7 @@ public partial class BitLink : BitComponentBase
 
 
     /// <summary>
-    /// The content of link, can be any custom tag or a text
+    /// The content of the link, can be any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -33,7 +33,7 @@ public partial class BitLink : BitComponentBase
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// Styles the link with a fixed underline.
+    /// Styles the link with a fixed underline at all states.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }

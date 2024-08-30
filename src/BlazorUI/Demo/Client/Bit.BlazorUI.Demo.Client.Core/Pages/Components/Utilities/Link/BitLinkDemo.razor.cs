@@ -12,14 +12,7 @@ public partial class BitLinkDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of link, can be any custom tag or a text.",
-        },
-        new()
-        {
-            Name = "Underlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the link is styled with an underline or not.",
+            Description = "The content of the link, can be any custom tag or a text.",
         },
         new()
         {
@@ -30,9 +23,16 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "NoUnderline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Styles the link to have no underline at any state.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the action button clicked.",
+            Description = "Callback for when the link clicked.",
         },
         new()
         {
@@ -42,7 +42,14 @@ public partial class BitLinkDemo
             Description = "If Href provided, specifies how to open the link.",
             LinkType = LinkType.Link,
             Href = "#link-target",
-        }
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Styles the link with a fixed underline at all states.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
