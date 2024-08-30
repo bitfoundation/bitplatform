@@ -6,39 +6,7 @@
 .layout {
     width: 100%;
     height: 100%;
-}
-
-main {
-    width: 100%;
-    display: flex;
-    min-height: 100vh;
-    position: relative;
-    box-sizing: border-box;
-    justify-content: flex-start;
-    padding-bottom: $footerHeight;
     background-color: $bit-color-background-primary;
-    padding-top: calc($headerHeight + var(--bit-status-bar-height));
-
-    .bit-ios & {
-        padding-top: calc($headerHeight + env(safe-area-inset-top));
-        padding-bottom: calc($footerHeight + env(safe-area-inset-bottom));
-    }
-}
-
-.main-content {
-    flex-grow: 1;
-    display: flex;
-    padding: 1rem;
-    min-height: 100%;
-    flex-flow: column;
-    align-items: center;
-    justify-content: center;
-    width: calc(100% - $navMenuWidth);
-    background-color: $bit-color-background-secondary;
-
-    @include lt-lg {
-        width: 100%;
-    }
 }
 
 .status-bar {
@@ -63,6 +31,12 @@ main {
     .bit-windows &, .bit-macos & {
         display: flex;
         height: var(--bit-status-bar-height);
+    }
+}
+
+.bit-ios {
+    ::deep .form-message-bar {
+        scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
     }
 }
 
@@ -135,14 +109,8 @@ main {
         border-radius: rem2(4px) rem2(4px) 0 0;
         scroll-margin-top: calc($headerHeight + var(--bit-status-bar-height) + 1px);
     }
-}
 
-.bit-ios {
-    ::deep .form-message-bar {
-        scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
+    .loading-container {
+        text-align: center;
     }
-}
-
-::deep .loading-container {
-    text-align: center;
 }
