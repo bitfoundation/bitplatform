@@ -371,6 +371,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Transparent",
+            Type = "bool",
+            DefaultValue = "null",
+            Description = "Removes the default background color from the root element.",
+        },
+        new()
+        {
             Name = "TextSetter",
             Type = "Action<string, TItem>?",
             DefaultValue = "null",

@@ -239,6 +239,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
 
     /// <summary>
+    /// Removes the default background color from the root element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Transparent { get; set; }
+
+    /// <summary>
     /// The values of the selected items in multi select mode. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
@@ -551,6 +557,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-drp-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => Transparent ? "bit-drp-trn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
