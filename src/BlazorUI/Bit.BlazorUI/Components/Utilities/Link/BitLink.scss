@@ -4,13 +4,13 @@
     margin: 0;
     padding: 0;
     outline: none;
+    color: $clr-pri;
     cursor: pointer;
     font-size: inherit;
     font-weight: inherit;
     text-decoration: none;
-    color: $clr-pri;
-    background-color: transparent;
     font-family: $tg-font-family;
+    background-color: transparent;
 
     &:hover,
     &:active,
@@ -37,6 +37,16 @@
         &:active {
             text-decoration: none;
         }
+    }
+}
+
+.bit-lnk-nun {
+    text-decoration: none;
+
+    &:hover,
+    &:active,
+    &:focus {
+        text-decoration: none;
     }
 }
 

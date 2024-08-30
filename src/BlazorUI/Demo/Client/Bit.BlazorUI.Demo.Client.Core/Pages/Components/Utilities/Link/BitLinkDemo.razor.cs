@@ -102,34 +102,20 @@ public partial class BitLinkDemo
 ";
 
     private readonly string example2RazorCode = @"
-Visible: [ <BitLink Visibility=""BitVisibility.Visible"">Visible Link</BitLink> ]
-Hidden: [ <BitLink Visibility=""BitVisibility.Hidden"">Hidden Link</BitLink> ]
-Collapsed: [ <BitLink Visibility=""BitVisibility.Collapsed"">Collapsed Link</BitLink> ]";
-
-    private readonly string example3RazorCode = @"
-<style>
-    .custom-class {
-        padding: 0.5rem;
-        border: 1px solid red;
-        max-width: max-content;
-    }
-</style>
-
-<BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
-<BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
-
-    private readonly string example4RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Underlined>Underlined link</BitLink>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example3RazorCode = @"
+<BitLink Href=""https://github.com/bitfoundation/bitplatform"" NoUnderline>NoUnderline link</BitLink>";
+
+    private readonly string example4RazorCode = @"
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"">Blank target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_parent"">Parent target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_self"">Self target link</BitLink>
 <BitLink Href=""https://github.com/bitfoundation/bitplatform"" Target=""_top"">Top target link</BitLink>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitLink OnClick=""HandleOnClick"">Click to navigate to the bitplatform GitHub repo!</BitLink>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 [Inject] private NavigationManager Navigation { get; set; } = default!;
 
 private void HandleOnClick()
@@ -137,7 +123,7 @@ private void HandleOnClick()
     Navigation.NavigateTo(""https://github.com/bitfoundation/bitplatform"");
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitLink Style=""scroll-margin: 70px"" Id=""start-article"" Href=""#end-article"">Go To End of this Article</BitLink>
 <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -183,6 +169,18 @@ private void HandleOnClick()
 <BitLink Style=""scroll-margin: 70px"" Id=""end-article"" Href=""#start-article"">Go To Start of this Article</BitLink>
 ";
 
+    private readonly string example7RazorCode = @"
+<style>
+    .custom-class {
+        padding: 0.5rem;
+        border: 1px solid red;
+        max-width: max-content;
+    }
+</style>
+
+<BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
+<BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
+
     private readonly string example8RazorCode = @"
-<BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند</BitLink>";
+<BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>";
 }
