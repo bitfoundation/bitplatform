@@ -48,12 +48,26 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "Chips",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the selected items like chips in the BitDropdown.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitDropdownClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitDropdown.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Combo",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Activates the ComboBox feature in BitDropDown component.",
         },
         new()
         {
@@ -104,17 +118,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "HeaderTemplate",
-            Type = "RenderFragment<TItem>?",
-            DefaultValue = "null",
-            Description = "The custom template for rendering the header items of the dropdown.",
-        },
-        new()
-        {
             Name = "FitWidth",
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables fit-content value for the width of the root element.",
+        },
+        new()
+        {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template for rendering the header items of the dropdown.",
         },
         new()
         {
@@ -176,20 +190,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsSelectedSetter",
-            Type = "Action<bool, TItem>?",
-            DefaultValue = "null",
-            Description = "The callback that is called for setting text on a IsSelected property in a custom items.",
-        },
-        new()
-        {
-            Name = "Combo",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Activates the ComboBox feature in BitDropDown component.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -220,15 +220,22 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "OnValuesChange",
-            Type = "EventCallback<TItem[]>",
-            Description = "The callback that called when selected items change.",
+            Name = "NoBorder",
+            Type = "bool",
+            DefaultValue = "",
+            Description = "Removes the border from the root element.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "The click callback for the dropdown.",
+        },
+        new()
+        {
+            Name = "OnDynamicAdd",
+            Type = "EventCallback<string>",
+            Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
         },
         new()
         {
@@ -241,6 +248,12 @@ public partial class BitDropdownDemo
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
             Description = "The callback that called when an item gets selected.",
+        },
+        new()
+        {
+            Name = "OnValuesChange",
+            Type = "EventCallback<TItem[]>",
+            Description = "The callback that called when selected items change.",
         },
         new()
         {
@@ -258,9 +271,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "OnDynamicAdd",
-            Type = "EventCallback<string>",
-            Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
+            Name = "Placeholder",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The placeholder text of the dropdown.",
+        },
+        new()
+        {
+            Name = "PlaceholderTemplate",
+            Type = "RenderFragment<BitDropdown<TItem, TValue>>?",
+            DefaultValue = "null",
+            Description = "The custom template for the placeholder of the dropdown.",
         },
         new()
         {
@@ -275,20 +296,6 @@ public partial class BitDropdownDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom prefix for dropdown.",
-        },
-        new()
-        {
-            Name = "Placeholder",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The placeholder text of the dropdown.",
-        },
-        new()
-        {
-            Name = "PlaceholderTemplate",
-            Type = "RenderFragment<BitDropdown<TItem, TValue>>?",
-            DefaultValue = "null",
-            Description = "The custom template for the placeholder of the dropdown.",
         },
         new()
         {
@@ -327,13 +334,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "Chips",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Shows the selected items like chips in the BitDropdown.",
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitDropdownClassStyles?",
             DefaultValue = "null",
@@ -357,17 +357,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "Title",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The title to show when the mouse hovers over the dropdown.",
-        },
-        new()
-        {
             Name = "TextTemplate",
             Type = "RenderFragment<<TItem, TValue>>?",
             DefaultValue = "null",
             Description = "The custom template for the text of the dropdown.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title to show when the mouse hovers over the dropdown.",
         },
         new()
         {
@@ -378,24 +378,10 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "TextSetter",
-            Type = "Action<string, TItem>?",
-            DefaultValue = "null",
-            Description = "The callback that is called for setting text on a text property in a custom item when a new item is on added Dynamic ComboBox mode.",
-        },
-        new()
-        {
             Name = "Values",
             Type = "ICollection<TValue?>",
             DefaultValue = "null",
             Description = "The key values of the selected items in multi select mode. (two-way bound)",
-        },
-        new()
-        {
-            Name = "ValueSetter",
-            Type = "Action<TItem, TValue>?",
-            DefaultValue = "null",
-            Description = "The callback that is called for setting text on a value property in a custom item when a new item is on added Dynamic ComboBox mode.",
         },
         new()
         {
@@ -418,8 +404,8 @@ public partial class BitDropdownDemo
         {
             Id = "dropdown-item",
             Title = "BitDropdownItem<TValue>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -499,14 +485,14 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "The value of the dropdown item."
                },
-            },
+            ],
         },
         new()
         {
             Id = "dropdown-option",
             Title = "BitDropdownOption<TValue>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -593,14 +579,14 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "The value of the dropdown option."
                },
-            },
+            ],
         },
         new()
         {
             Id = "name-selectors",
             Title = "BitDropdownNameSelectors<TItem, TValue>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "AriaLabel",
@@ -712,14 +698,14 @@ public partial class BitDropdownDemo
                    Type = "Action<TItem, TItem>?",
                    Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
                }
-            },
+            ],
         },
         new()
         {
             Id = "name-selector-pair",
             Title = "BitNameSelectorPair<TItem, TProp>",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Name",
@@ -732,14 +718,14 @@ public partial class BitDropdownDemo
                    Type = "Func<TItem, TProp?>?",
                    Description = "Custom class property selector."
                }
-            }
+            ]
         },
         new()
         {
             Id = "class-styles",
             Title = "BitDropdownClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "Root",
@@ -929,17 +915,18 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item divider of the BitDropdown."
                },
-            },
+            ],
         }
     ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
         {
             Id = "item-type-enum",
             Name = "BitDropdownItemType",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Normal",
@@ -958,9 +945,10 @@ public partial class BitDropdownDemo
                     Description = "Dropdown items are being rendered as a divider, just draw a line.",
                     Value = "2",
                 }
-            }
+            ]
         },
     ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
