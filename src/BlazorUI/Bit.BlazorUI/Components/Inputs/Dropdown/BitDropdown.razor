@@ -3,9 +3,12 @@
 @typeparam TItem
 @typeparam TValue
 
-<CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
-</CascadingValue>
+@if ((Options ?? ChildContent) is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+    </CascadingValue>
+}
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"

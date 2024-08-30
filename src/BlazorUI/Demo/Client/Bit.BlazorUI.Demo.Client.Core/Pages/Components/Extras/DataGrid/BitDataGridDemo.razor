@@ -16,12 +16,6 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    @if (isLoadingAssemblies)
-    {
-        <LoadingComponent />
-    }
-    else
-    {
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
                 <div class="grid1">
@@ -114,5 +108,4 @@
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
-    }
 </ComponentDemo>

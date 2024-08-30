@@ -122,6 +122,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     /// CultureInfo for the TimePicker
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -309,11 +310,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         base.OnInitialized();
     }
 
-    protected override void OnParametersSet()
-    {
-        _culture = Culture ?? CultureInfo.CurrentUICulture;
-    }
-
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         if (value.HasNoValue())
@@ -430,6 +426,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
+    }
+
+    private void HandleParameterChanges()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
     }
 
     private async Task UpdateCurrentValue()

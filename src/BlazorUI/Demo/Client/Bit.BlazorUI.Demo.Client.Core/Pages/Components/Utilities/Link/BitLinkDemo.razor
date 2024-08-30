@@ -10,60 +10,43 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div class="example-box">
-                <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
-            </div>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform">Basic Link</BitLink>
+            <br /><br />
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" IsEnabled="false">Disabled Link</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
-            <div class="example-box">
-                <div style="display: flex">Visible: [ <BitLink Visibility="BitVisibility.Visible">Visible Link</BitLink> ]</div>
-                <div style="display: flex">Hidden: [ <BitLink Visibility="BitVisibility.Hidden">Hidden Link</BitLink> ]</div>
-                <div style="display: flex">Collapsed: [ <BitLink Visibility="BitVisibility.Collapsed">Collapsed Link</BitLink> ]</div>
-            </div>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Underlined>Underlined link</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="NoUnderline" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
-            <div class="example-box">
-                <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
-                <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
-            </div>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" NoUnderline>NoUnderline link</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underlined" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Target" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
-            <div class="example-box">
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Underlined>Underlined link</BitLink>
-            </div>
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank target link</BitLink>
+            <br /><br />
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_parent">Parent target link</BitLink>
+            <br /><br />
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_self">Self target link</BitLink>
+            <br /><br />
+            <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_top">Top target link</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Target" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="OnClick" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
-            <div class="example-box">
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Blank target link</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_parent">Parent target link</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_self">Self target link</BitLink>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_top">Top target link</BitLink>
-            </div>
+            <BitLink OnClick="HandleOnClick">Click to navigate to the bit platform GitHub repo!</BitLink>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="OnClick" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <ExamplePreview>
-            <div class="example-box">
-                <BitLink OnClick="HandleOnClick">Click to navigate to the bit platform GitHub repo!</BitLink>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Navigate to elements" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Navigate to elements" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div class="example-desc">If you start the Href parameter with a # character, it'll look for the an element with that id and tries to scroll the view into that element.</div>
             <br /><br />
@@ -112,10 +95,18 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <ExamplePreview>
+            <BitLink Style="color: goldenrod; font-weight:bold" Href="https://github.com/bitfoundation/bitplatform">Link with style</BitLink>
+            <br /><br />
+            <BitLink Class="custom-class" Href="https://github.com/bitfoundation/bitplatform">Link with class</BitLink>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
     <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
-            <div class="example-box">
-                <BitLink Dir="BitDir.Rtl" Href="https://github.com/bitfoundation/bitplatform">پیوند</BitLink>
+            <div dir="rtl">
+                <BitLink Dir="BitDir.Rtl" Href="https://github.com/bitfoundation/bitplatform">پیوند راست به چپ</BitLink>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
