@@ -7,30 +7,36 @@ public partial class BitLink : BitComponentBase
 
 
     /// <summary>
-    /// URL the link points to
-    /// </summary>
-    [Parameter] public string? Href { get; set; }
-
-    /// <summary>
-    /// If Href provided, specifies how to open the link
-    /// </summary>
-    [Parameter] public string? Target { get; set; }
-
-    /// <summary>
-    /// The content of link, can be any custom tag or a text
+    /// The content of the link, can be any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Whether the link is styled with an underline or not.
+    /// URL the link points to.
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>
+    /// Styles the link to have no underline at any state.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoUnderline { get; set; }
+
+    /// <summary>
+    /// Callback for when the link clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies how to open the link.
+    /// </summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>
+    /// Styles the link with a fixed underline at all states.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
-
-    /// <summary>
-    /// Callback for when the link clicked
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
 
 
@@ -38,6 +44,8 @@ public partial class BitLink : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => NoUnderline ? "bit-lnk-nun" : string.Empty);
+
         ClassBuilder.Register(() => Underlined ? "bit-lnk-und" : string.Empty);
     }
 
