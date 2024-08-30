@@ -222,7 +222,7 @@ public partial class BitDropdownDemo
         {
             Name = "NoBorder",
             Type = "bool",
-            DefaultValue = "",
+            DefaultValue = "false",
             Description = "Removes the border from the root element.",
         },
         new()
@@ -373,7 +373,7 @@ public partial class BitDropdownDemo
         {
             Name = "Transparent",
             Type = "bool",
-            DefaultValue = "null",
+            DefaultValue = "false",
             Description = "Removes the default background color from the root element.",
         },
         new()
