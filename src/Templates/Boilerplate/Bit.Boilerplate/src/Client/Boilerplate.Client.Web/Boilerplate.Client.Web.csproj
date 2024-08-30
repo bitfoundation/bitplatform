@@ -37,6 +37,7 @@
         <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04" PrivateAssets="all" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
+        <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <!--/-:msbuild-conditional:noEmit -->
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
     </ItemGroup>
@@ -52,11 +53,11 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition="'$(offlineDb)' == 'false' OR '$(offlineDb)' == ''">
+    <ItemGroup Condition=" ('$(sample)' == 'Admin' OR '$(sample)' == '') AND ('$(offlineDb)' == 'false' OR '$(offlineDb)' == '')">
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
         <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
     </ItemGroup>
-    <ItemGroup>
+    <ItemGroup Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''">
         <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
