@@ -535,3 +535,22 @@
                      IsMultiSelect="true" />
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="NoBorder" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <ExamplePreview>
+        <div>The dropdown can be rendered without any border.</div>
+        <br /><br />
+        <div style="max-width:10rem">
+            <BitDropdown NoBorder
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select an item" />
+            <br /><br />
+            <BitDropdown NoBorder
+                         Items="GetBasicItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="Select items"
+                         IsMultiSelect="true" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

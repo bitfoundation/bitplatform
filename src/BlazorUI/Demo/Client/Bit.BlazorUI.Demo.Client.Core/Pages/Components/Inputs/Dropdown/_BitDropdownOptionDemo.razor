@@ -720,3 +720,30 @@
         </BitDropdown>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="NoBorder" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <ExamplePreview>
+        <div>The dropdown can be rendered without any border.</div>
+        <br /><br />
+        <div style="max-width:10rem">
+            <BitDropdown NoBorder
+                         Placeholder="Select an item"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in basicItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+            <br /><br />
+            <BitDropdown NoBorder
+                         Placeholder="Select items"
+                         IsMultiSelect="true"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                @foreach (var item in basicItems)
+                {
+                    <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+                }
+            </BitDropdown>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
