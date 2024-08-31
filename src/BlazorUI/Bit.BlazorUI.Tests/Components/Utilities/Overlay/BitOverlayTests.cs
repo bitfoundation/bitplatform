@@ -240,31 +240,31 @@ public class BitOverlayTests : BunitTestContext
     ]
     public void BitOverlayShouldRespectNoAutoClose(bool noAutoClose)
     {
-        var visible = true;
+        var isOpen = true;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.Visible, visible, currentValue => visible = currentValue);
+            parameters.Bind(p => p.IsOpen, isOpen, currentValue => isOpen = currentValue);
             parameters.Add(p => p.NoAutoClose, noAutoClose);
         });
 
-        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-vis"" id:ignore></div>");
+        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
-        Assert.IsTrue(visible);
+        Assert.IsTrue(isOpen);
 
         var element = component.Find(".bit-ovl");
         element.Click();
 
-        var cssClass = noAutoClose ? " bit-ovl-vis" : null;
+        var cssClass = noAutoClose ? " bit-ovl-opn" : null;
 
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
 
         if (noAutoClose)
         {
-            Assert.IsTrue(visible);
+            Assert.IsTrue(isOpen);
         }
         else
         {
-            Assert.IsFalse(visible);
+            Assert.IsFalse(isOpen);
         }
     }
 
@@ -274,10 +274,10 @@ public class BitOverlayTests : BunitTestContext
     ]
     public void BitOverlayShouldRespectAutoToggleScroll(bool autoToggleScroll)
     {
-        var visible = true;
+        var isOpen = true;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.Visible, visible, value => visible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
             parameters.Add(p => p.AutoToggleScroll, autoToggleScroll);
         });
 
@@ -330,45 +330,45 @@ public class BitOverlayTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitOverlayShouldRespectVisible(bool visible)
+    public void BitOverlayShouldRespectIsOpen(bool IsOpen)
     {
-        var visibleBind = visible;
+        var isOpenBind = IsOpen;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.Visible, visibleBind, value => visibleBind = value);
+            parameters.Bind(p => p.IsOpen, isOpenBind, value => isOpenBind = value);
         });
 
-        var cssClass = visible ? " bit-ovl-vis" : null;
+        var cssClass = IsOpen ? " bit-ovl-opn" : null;
 
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
 
-        Assert.AreEqual(visible, visibleBind);
+        Assert.AreEqual(IsOpen, isOpenBind);
 
         var element = component.Find(".bit-ovl");
         element.Click();
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        Assert.IsFalse(visibleBind);
+        Assert.IsFalse(isOpenBind);
     }
 
     [DataTestMethod]
-    public void BitOverlayShouldRespectVisibleChangingAfterRender()
+    public void BitOverlayShouldRespectIsOpenChangingAfterRender()
     {
-        var visible = false;
+        var isOpen = false;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.Visible, visible, value => visible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        visible = true;
+        isOpen = true;
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Bind(p => p.Visible, visible, value => visible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-vis"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
 }

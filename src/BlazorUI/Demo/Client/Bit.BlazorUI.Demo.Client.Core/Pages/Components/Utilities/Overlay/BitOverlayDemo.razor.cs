@@ -27,6 +27,13 @@ public partial class BitOverlayDemo
         },
         new()
         {
+            Name = "IsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "When true, the Overlay and its content will be shown.",
+        },
+        new()
+        {
             Name = "NoAutoClose",
             Type = "bool",
             DefaultValue = "false",
@@ -44,25 +51,18 @@ public partial class BitOverlayDemo
             Type = "string",
             DefaultValue = "body",
             Description = "Set the selector of the Selector element for the Overlay to disable its scroll if applicable.",
-        },
-        new()
-        {
-            Name = "Visible",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "When true, the Overlay and its content will be shown.",
         }
     ];
 
 
 
-    private bool BasicVisible;
-    private bool AutoCloseVisible;
-    private bool AbsoluteVisible;
-    private bool AutoToggleVisible;
-    private bool EventOnCloseVisible;
-    private bool EnabledScrollerVisible;
-    private bool DisabledScrollerVisible;
+    private bool BasicIsOpen;
+    private bool AutoCloseIsOpen;
+    private bool AbsoluteIsOpen;
+    private bool AutoToggleIsOpen;
+    private bool EventOnCloseIsOpen;
+    private bool EnabledScrollerIsOpen;
+    private bool DisabledScrollerIsOpen;
 
 
 
@@ -77,13 +77,13 @@ public partial class BitOverlayDemo
 </style>
 
 
-<BitButton OnClick=""() => BasicVisible = true"">Show Overlay</BitButton>
+<BitButton OnClick=""() => BasicIsOpen = true"">Show Overlay</BitButton>
 
-<BitOverlay @bind-Visible=""BasicVisible"" Class=""overlay"">
+<BitOverlay @bind-IsOpen=""BasicIsOpen"" Class=""overlay"">
     <BitProgress Circular Indeterminate Thickness=""10"" />
 </BitOverlay>";
     private readonly string example1CsharpCode = @"
-private bool BasicVisible;";
+private bool BasicIsOpen;";
 
     private readonly string example2RazorCode = @"
 <style>
@@ -112,11 +112,11 @@ private bool BasicVisible;";
 </style>
 
 
-<BitButton OnClick=""() => AutoCloseVisible = true"">Show Overlay</BitButton>
+<BitButton OnClick=""() => AutoCloseIsOpen = true"">Show Overlay</BitButton>
 
-<BitOverlay @bind-Visible=""AutoCloseVisible"" Class=""overlay"" NoAutoClose>
+<BitOverlay @bind-IsOpen=""AutoCloseIsOpen"" Class=""overlay"" NoAutoClose>
     <div class=""content"">
-        <BitButton Class=""close-button"" Variant=""BitVariant.Text"" OnClick=@(() => AutoCloseVisible = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
+        <BitButton Class=""close-button"" Variant=""BitVariant.Text"" OnClick=@(() => AutoCloseIsOpen = false) IconName=""@BitIconName.ChromeClose"" Title=""Close"" />
         <h3>Lorem Ipsum</h3>
         <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -127,7 +127,7 @@ private bool BasicVisible;";
     </div>
 </BitOverlay>";
     private readonly string example2CsharpCode = @"
-private bool AutoCloseVisible;";
+private bool AutoCloseIsOpen;";
 
     private readonly string example3RazorCode = @"
 <style>
@@ -150,9 +150,9 @@ private bool AutoCloseVisible;";
 </style>
 
 
-<BitButton Class=""show-button"" OnClick=""() => AbsoluteVisible = true"">Show Overlay</BitButton>
+<BitButton Class=""show-button"" OnClick=""() => AbsoluteIsOpen = true"">Show Overlay</BitButton>
 
-<BitOverlay @bind-Visible=""AbsoluteVisible""
+<BitOverlay @bind-IsOpen=""AbsoluteIsOpen""
             Class=""overlay""
             AbsolutePosition>
     <BitProgress Circular Indeterminate Thickness=""10"" />
@@ -160,7 +160,7 @@ private bool AutoCloseVisible;";
 
 <h3>This is Container</h3>";
     private readonly string example3CsharpCode = @"
-private bool AbsoluteVisible;
+private bool AbsoluteIsOpen;
 ";
 
     private readonly string example4RazorCode = @"
@@ -174,16 +174,16 @@ private bool AbsoluteVisible;
 </style>
 
 
-<BitButton OnClick=""() => AutoToggleVisible = true"">Show Overlay</BitButton>
+<BitButton OnClick=""() => AutoToggleIsOpen = true"">Show Overlay</BitButton>
 
-<BitOverlay @bind-Visible=""AutoToggleVisible"" Class=""overlay"" AutoToggleScroll>
+<BitOverlay @bind-IsOpen=""AutoToggleIsOpen"" Class=""overlay"" AutoToggleScroll>
     <BitStack HorizontalAlign=""BitStackAlignment.Stretch"">
         <BitTypography Style=""color: dodgerblue;"" Variant=""BitTypographyVariant.H3"">Please wait...</BitTypography>
         <BitProgress Indeterminate Thickness=""10""/>
     </BitStack>
 </BitOverlay>";
     private readonly string example4CsharpCode = @"
-private bool AutoToggleVisible;";
+private bool AutoToggleIsOpen;";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -220,11 +220,11 @@ private bool AutoToggleVisible;";
 </style>
 
 
-<BitButton OnClick=""() => EnabledScrollerVisible = true"">Show with Enabled scrolling</BitButton>
-<BitButton OnClick=""() => DisabledScrollerVisible = true"">Show with Disabled scrolling</BitButton>
+<BitButton OnClick=""() => EnabledScrollerIsOpen = true"">Show with Enabled scrolling</BitButton>
+<BitButton OnClick=""() => DisabledScrollerIsOpen = true"">Show with Disabled scrolling</BitButton>
 
 <div class=""scroller"">
-    <BitOverlay @bind-Visible=""EnabledScrollerVisible""
+    <BitOverlay @bind-IsOpen=""EnabledScrollerIsOpen""
                 Class=""overlay""
                 Style=""background-color:unset""
                 ScrollerSelector="".scroller""
@@ -240,7 +240,7 @@ private bool AutoToggleVisible;";
         </div>
     </BitOverlay>
 
-    <BitOverlay @bind-Visible=""DisabledScrollerVisible""
+    <BitOverlay @bind-IsOpen=""DisabledScrollerIsOpen""
                 Class=""overlay""
                 ScrollerSelector="".scroller""
                 AbsolutePosition
@@ -282,8 +282,8 @@ private bool AutoToggleVisible;";
     </p>
 </div>";
     private readonly string example5CsharpCode = @"
-private bool EnabledScrollerVisible;
-private bool DisabledScrollerVisible;";
+private bool EnabledScrollerIsOpen;
+private bool DisabledScrollerIsOpen;";
 
 
 
@@ -309,8 +309,8 @@ private bool DisabledScrollerVisible;";
 </style>
 
 
-<BitButton OnClick=""() => EventOnCloseVisible = true"">Show Overlay</BitButton>
-<BitOverlay @bind-Visible=""EventOnCloseVisible"" Class=""overlay"" OnClick=@(() => EventOnCloseVisible = false) NoAutoClose>
+<BitButton OnClick=""() => EventOnCloseIsOpen = true"">Show Overlay</BitButton>
+<BitOverlay @bind-IsOpen=""EventOnCloseIsOpen"" Class=""overlay"" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
     <div class=""content"">
         <h3>Lorem Ipsum</h3>
         <p>
@@ -322,5 +322,5 @@ private bool DisabledScrollerVisible;";
     </div>
 </BitOverlay>";
     private readonly string example6CsharpCode = @"
-private bool EventOnCloseVisible;";
+private bool EventOnCloseIsOpen;";
 }

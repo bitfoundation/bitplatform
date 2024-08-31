@@ -1,11 +1,11 @@
 ﻿namespace BitBlazorUI {
     export class Overlay {
-        public static toggleScroll(selector: string, visible: boolean) {
+        public static toggleScroll(selector: string, isOpen: boolean) {
             const element = document.querySelector(selector) as HTMLElement;
 
             if (!element) return 0;
 
-            element.style.overflow = visible ? "hidden" : "auto";
+            element.style.overflow = isOpen ? "hidden" : "auto";
 
             return element.scrollTop;
         }
