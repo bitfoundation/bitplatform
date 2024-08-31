@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
+﻿namespace Boilerplate.Client.Core.Components.Pages.Profile;
 
 public partial class DeleteAccountSection
 {

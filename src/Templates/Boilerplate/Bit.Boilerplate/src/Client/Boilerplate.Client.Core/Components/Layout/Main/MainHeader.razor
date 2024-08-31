@@ -1,0 +1,17 @@
+@inherits AppComponentBase
+
+<header>
+    <BitStack Horizontal Grows>
+        <BitStack>
+            <BitTypography Variant="BitTypographyVariant.H5">Title</BitTypography>
+            <BitTypography Variant="BitTypographyVariant.Body1">Subtitle</BitTypography>
+        </BitStack>
+
+        <BitSpacer />
+
+        <BitDropdown @bind-Value="SelectedCulture"
+                     Class="culture-drp"
+                     Items="cultures"
+                     OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
+    </BitStack>
+</header>

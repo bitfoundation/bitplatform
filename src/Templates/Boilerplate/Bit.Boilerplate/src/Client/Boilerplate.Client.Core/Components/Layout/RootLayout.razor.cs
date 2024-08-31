@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class MainLayout : IDisposable
+public partial class RootLayout : IDisposable
 {
     private bool disposed;
     private bool isMenuOpen;

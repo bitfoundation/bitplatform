@@ -1,7 +1,7 @@
 ﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Profile;
 
 public partial class UserSessionsSection
 {

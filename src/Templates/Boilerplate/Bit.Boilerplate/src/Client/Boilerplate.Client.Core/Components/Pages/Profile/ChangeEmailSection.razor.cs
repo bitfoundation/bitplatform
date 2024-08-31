@@ -1,7 +1,7 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Profile;
 
 public partial class ChangeEmailSection
 {
