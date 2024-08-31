@@ -244,6 +244,7 @@
 
 .bit-ctp-hmc {
     display: flex;
+    direction: ltr;
     gap: spacing(0.5);
     align-items: baseline;
     justify-content: flex-end;
@@ -251,8 +252,8 @@
 
 .bit-ctp-apc {
     display: flex;
-    margin-left: spacing(2.5);
     flex-direction: column;
+    margin-inline-start: spacing(2.5);
 }
 
 .bit-ctp-apb {
