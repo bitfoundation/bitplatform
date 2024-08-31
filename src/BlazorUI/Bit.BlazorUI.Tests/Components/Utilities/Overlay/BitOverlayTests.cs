@@ -353,7 +353,7 @@ public class BitOverlayTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitOverlayShouldRespectIsVisibleChangingAfterRender()
+    public void BitOverlayShouldRespectVisibleChangingAfterRender()
     {
         var visible = false;
         var component = RenderComponent<BitOverlay>(parameters =>
