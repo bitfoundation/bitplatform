@@ -3,7 +3,7 @@
 public partial class BitOverlay : BitComponentBase
 {
     private int _offsetTop;
-    private bool _internalIsVisible;
+    private bool _internalVisible;
 
 
 
@@ -28,12 +28,6 @@ public partial class BitOverlay : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// When true, the Overlay and its content will be shown.
-    /// </summary>
-    [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsVisible { get; set; }
-
-    /// <summary>
     /// When true, the Overlay will be closed by clicking on it.
     /// </summary>
     [Parameter] public bool NoAutoClose { get; set; }
@@ -48,6 +42,12 @@ public partial class BitOverlay : BitComponentBase
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
 
+    /// <summary>
+    /// When true, the Overlay and its content will be shown.
+    /// </summary>
+    [Parameter, ResetClassBuilder, TwoWayBound]
+    public bool Visible { get; set; }
+
 
 
     protected override string RootElementClass => "bit-ovl";
@@ -59,7 +59,7 @@ public partial class BitOverlay : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? "bit-ovl-vis" : string.Empty);
+        ClassBuilder.Register(() => Visible ? "bit-ovl-vis" : string.Empty);
         ClassBuilder.Register(() => AbsolutePosition ? "bit-ovl-abs" : string.Empty);
     }
 
@@ -67,9 +67,9 @@ public partial class BitOverlay : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsVisible == IsVisible) return;
+        if (_internalVisible == Visible) return;
 
-        _internalIsVisible = IsVisible;
+        _internalVisible = Visible;
 
         _offsetTop = 0;
 
@@ -77,7 +77,7 @@ public partial class BitOverlay : BitComponentBase
 
         var scrollerSelector = ScrollerSelector.HasValue() ? ScrollerSelector! : "body";
 
-        _offsetTop = await _js.BitOverlayToggleScroll(scrollerSelector, IsVisible);
+        _offsetTop = await _js.BitOverlayToggleScroll(scrollerSelector, Visible);
 
         if (AbsolutePosition is false) return;
 
@@ -96,6 +96,6 @@ public partial class BitOverlay : BitComponentBase
 
         if (NoAutoClose) return;
 
-        await AssignIsVisible(false);
+        await AssignVisible(false);
     }
 }
