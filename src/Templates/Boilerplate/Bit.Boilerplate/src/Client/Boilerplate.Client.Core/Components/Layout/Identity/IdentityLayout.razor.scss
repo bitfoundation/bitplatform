@@ -8,11 +8,3 @@ main {
     width: rem2(560px);
     background-color: $bit-color-background-secondary;
 }
-
-aside {
-    height: 100%;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
