@@ -109,7 +109,7 @@
     --bit-tpg-overline-text-transform: inherit;
     --bit-tpg-overline-display: inherit;
     // media
-    @include lt-md {
+    @include lt-sm {
         // h1
         --bit-tpg-h1-margin: 0;
         --bit-tpg-h1-font-weight: 300;
