@@ -1,4 +1,4 @@
-﻿@page "/templates/run"
+﻿@page "/templates/launch-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/launch-project"
@@ -15,10 +15,10 @@
         <br />
         <ul>
             <li>
-                <b>Integrated Mode:</b> Run the Server.Web project.
+                <b>--api Integrated:</b> Simply run the Server.Web project.
             </li>
             <li>
-                <b>Standalone Mode:</b> Run both the Server.Api and Server.Web projects.
+                <b>--api Standalone:</b> Run both the Server.Api and Server.Web projects.
             </li>
         </ul>
     </BitTypography>
@@ -28,11 +28,9 @@
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
         The database will be automatically created upon running the project. However, if you need to utilize Entity
         Framework Core Migrations, execute the following commands within the Api project:
-        <CodeBox>
-dotnet ef database drop --force
+        <CodeBox>dotnet ef database drop --force
 dotnet ef migrations add InitialMigration -o Data/Migrations
-dotnet ef database update
-        </CodeBox>
+dotnet ef database update</CodeBox>
     </BitTypography>
     <BitTypography Variant="BitTypographyVariant.H5" Gutter> Development Environment</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
