@@ -51,7 +51,7 @@ public partial class BitStackDemo
             Type = "BitAlignment",
             DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Stack children horizontally.",
-            Href = "#BitAlignment-enum",
+            Href = "#alignment-enum",
             LinkType = LinkType.Link
         },
         new()
@@ -88,7 +88,7 @@ public partial class BitStackDemo
             Type = "BitAlignment",
             DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Stack children vertically.",
-            Href = "#BitAlignment-enum",
+            Href = "#alignment-enum",
             LinkType = LinkType.Link
         },
         new()
@@ -104,11 +104,11 @@ public partial class BitStackDemo
     [
         new()
         {
-            Id = "BitAlignment-enum",
+            Id = "alignment-enum",
             Name = "BitAlignment",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Start",
@@ -149,7 +149,7 @@ public partial class BitStackDemo
                     Name = "Stretch",
                     Value = "7",
                 }
-            }
+            ]
         }
     ];
 

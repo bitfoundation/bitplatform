@@ -66,8 +66,8 @@ public partial class BitGridDemo
             Type = "BitAlignment",
             DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Grid children horizontally.",
-            Href = "#BitAlignment-enum",
-            LinkType = LinkType.Link
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
         },
         new()
         {
@@ -105,8 +105,8 @@ public partial class BitGridDemo
         {
             Id = "bit-grid-item",
             Title = "BitGridItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "ChildContent",
@@ -163,7 +163,7 @@ public partial class BitGridDemo
                    DefaultValue = "null",
                    Description = "Number of columns in the extra extra large breakpoint.",
                },
-            }
+            ]
         }
     ];
 
@@ -171,11 +171,11 @@ public partial class BitGridDemo
     [
         new()
         {
-            Id = "BitAlignment-enum",
+            Id = "alignment-enum",
             Name = "BitAlignment",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Start",
@@ -216,7 +216,7 @@ public partial class BitGridDemo
                     Name = "Stretch",
                     Value = "7",
                 }
-            }
+            ]
         }
     ];
 
