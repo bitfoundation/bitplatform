@@ -47,7 +47,7 @@ public partial class BitGrid : BitComponentBase
     /// Defines whether to render Grid children horizontally.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitGridAlignment HorizontalAlign { get; set; }
+    public BitAlignment HorizontalAlign { get; set; }
 
     /// <summary>
     /// Defines the horizontal spacing between Grid children.
@@ -91,15 +91,15 @@ public partial class BitGrid : BitComponentBase
 
 
 
-    private static readonly Dictionary<BitGridAlignment, string> _AlignmentMap = new()
+    private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
-        { BitGridAlignment.Start, "flex-start" },
-        { BitGridAlignment.End, "flex-end" },
-        { BitGridAlignment.Center, "center" },
-        { BitGridAlignment.SpaceBetween, "space-between" },
-        { BitGridAlignment.SpaceAround, "space-around" },
-        { BitGridAlignment.SpaceEvenly, "space-evenly" },
-        { BitGridAlignment.Baseline, "baseline" },
-        { BitGridAlignment.Stretch, "stretch" },
+        { BitAlignment.Start, "flex-start" },
+        { BitAlignment.End, "flex-end" },
+        { BitAlignment.Center, "center" },
+        { BitAlignment.SpaceBetween, "space-between" },
+        { BitAlignment.SpaceAround, "space-around" },
+        { BitAlignment.SpaceEvenly, "space-evenly" },
+        { BitAlignment.Baseline, "baseline" },
+        { BitAlignment.Stretch, "stretch" },
     };
 }

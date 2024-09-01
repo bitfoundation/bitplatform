@@ -48,10 +48,10 @@ public partial class BitStackDemo
         new()
         {
             Name = "HorizontalAlign",
-            Type = "BitStackAlignment",
-            DefaultValue = "BitStackAlignment.Start",
+            Type = "BitAlignment",
+            DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Stack children horizontally.",
-            Href = "#bitStackAlignment-enum",
+            Href = "#alignment-enum",
             LinkType = LinkType.Link
         },
         new()
@@ -85,10 +85,10 @@ public partial class BitStackDemo
         new()
         {
             Name = "VerticalAlign",
-            Type = "BitStackAlignment",
-            DefaultValue = "BitStackAlignment.Start",
+            Type = "BitAlignment",
+            DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Stack children vertically.",
-            Href = "#bitStackAlignment-enum",
+            Href = "#alignment-enum",
             LinkType = LinkType.Link
         },
         new()
@@ -104,11 +104,11 @@ public partial class BitStackDemo
     [
         new()
         {
-            Id = "bitStackAlignment-enum",
-            Name = "BitStackAlignment",
+            Id = "alignment-enum",
+            Name = "BitAlignment",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Start",
@@ -149,7 +149,7 @@ public partial class BitStackDemo
                     Name = "Stretch",
                     Value = "7",
                 }
-            }
+            ]
         }
     ];
 
@@ -160,8 +160,8 @@ public partial class BitStackDemo
     private bool isReversed;
     private bool isHorizontal;
     private BitDir direction;
-    private BitStackAlignment verticalAlign;
-    private BitStackAlignment horizontalAlign;
+    private BitAlignment verticalAlign;
+    private BitAlignment horizontalAlign;
     private double stackHeight = 15;
 
 
@@ -220,7 +220,7 @@ private double gap = 1;
     }
 </style>
 
-<BitStack Horizontal HorizontalAlign=""BitStackAlignment.SpaceAround"" Style=""background:#71afe5"">
+<BitStack Horizontal HorizontalAlign=""BitAlignment.SpaceAround"" Style=""background:#71afe5"">
     <div class=""item"">Item 1</div>
     <BitStack>
         <div class=""item"">Item 2-1</div>
@@ -260,29 +260,29 @@ private double gap = 1;
 <BitChoiceGroup Label=""Horizontal Align""
                 @bind-Value=""horizontalAlign""
                 LayoutFlow=""@BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<BitStackAlignment>"" TValue=""BitStackAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitStackAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitStackAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitStackAlignment.End"" />
-    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitStackAlignment.SpaceBetween"" />
-    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitStackAlignment.SpaceAround"" />
-    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitStackAlignment.SpaceEvenly"" />
-    <BitChoiceGroupOption Text=""Baseline"" Value=""BitStackAlignment.Baseline"" />
-    <BitChoiceGroupOption Text=""Stretch"" Value=""BitStackAlignment.Stretch"" />
+                TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitAlignment.End"" />
+    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitAlignment.SpaceBetween"" />
+    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitAlignment.SpaceAround"" />
+    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitAlignment.SpaceEvenly"" />
+    <BitChoiceGroupOption Text=""Baseline"" Value=""BitAlignment.Baseline"" />
+    <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Vertical Align""
                 @bind-Value=""verticalAlign""
                 LayoutFlow=""@BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<BitStackAlignment>"" TValue=""BitStackAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitStackAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitStackAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitStackAlignment.End"" />
-    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitStackAlignment.SpaceBetween"" />
-    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitStackAlignment.SpaceAround"" />
-    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitStackAlignment.SpaceEvenly"" />
-    <BitChoiceGroupOption Text=""Baseline"" Value=""BitStackAlignment.Baseline"" />
-    <BitChoiceGroupOption Text=""Stretch"" Value=""BitStackAlignment.Stretch"" />
+                TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitAlignment.End"" />
+    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitAlignment.SpaceBetween"" />
+    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitAlignment.SpaceAround"" />
+    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitAlignment.SpaceEvenly"" />
+    <BitChoiceGroupOption Text=""Baseline"" Value=""BitAlignment.Baseline"" />
+    <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
 <BitStack Style=""background:#71afe5;height:15rem""
@@ -299,8 +299,8 @@ private double gap = 1;
 private bool isReversed;
 private bool isHorizontal;
 private BitDir direction;
-private BitStackAlignment verticalAlign;
-private BitStackAlignment horizontalAlign;
+private BitAlignment verticalAlign;
+private BitAlignment horizontalAlign;
 ";
 
     private readonly string example5RazorCode = @"
@@ -332,20 +332,20 @@ private double stackHeight = 15;
 <BitStack Gap=""0.5rem"" Style=""background:#71afe5;height:15rem"">
     <BitStack Grow=""3""
               Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Grow is 3
     </BitStack>
     <BitStack Grow=""2""
               Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Grow is 2
     </BitStack>
     <BitStack Grow=""1""
               Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Grow is 1
     </BitStack>
 </BitStack>
@@ -354,19 +354,19 @@ private double stackHeight = 15;
 
 <BitStack Gap=""0.5rem"" Style=""background:#71afe5;height:15rem"">
     <BitStack Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
     <BitStack Grows
               Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Grows
     </BitStack>
     <BitStack Class=""item"" Style=""width:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
 </BitStack>
@@ -377,19 +377,19 @@ private double stackHeight = 15;
           Gap=""0.5rem""
           Style=""background:#71afe5;height:15rem"">
     <BitStack Class=""item"" Style=""height:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
     <BitStack Grows
               Class=""item"" Style=""height:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Grows
     </BitStack>
     <BitStack Class=""item"" Style=""height:100%""
-              VerticalAlign=""BitStackAlignment.Center""
-              HorizontalAlign=""BitStackAlignment.Center"">
+              VerticalAlign=""BitAlignment.Center""
+              HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
 </BitStack>";
