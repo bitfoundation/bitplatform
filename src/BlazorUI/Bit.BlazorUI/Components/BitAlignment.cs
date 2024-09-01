@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitGridAlignment
+public enum BitAlignment
 {
     Start,
     End,
