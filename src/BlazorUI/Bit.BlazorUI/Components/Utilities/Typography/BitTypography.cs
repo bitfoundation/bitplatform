@@ -70,19 +70,20 @@ public partial class BitTypography : BitComponentBase
 
     protected static readonly Dictionary<BitTypographyVariant, string> _VariantMapping = new()
     {
-        { BitTypographyVariant.Body1, "p" },
-        { BitTypographyVariant.Body2, "p" },
-        { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
         { BitTypographyVariant.H1, "h1" },
         { BitTypographyVariant.H2, "h2" },
         { BitTypographyVariant.H3, "h3" },
         { BitTypographyVariant.H4, "h4" },
         { BitTypographyVariant.H5, "h5" },
         { BitTypographyVariant.H6, "h6" },
-        { BitTypographyVariant.Inherit, "p" },
-        { BitTypographyVariant.Overline, "span" },
         { BitTypographyVariant.Subtitle1, "h6" },
         { BitTypographyVariant.Subtitle2, "h6" },
+        { BitTypographyVariant.Body1, "p" },
+        { BitTypographyVariant.Body2, "p" },
+        { BitTypographyVariant.Button, "span" },
+        { BitTypographyVariant.Caption1, "span" },
+        { BitTypographyVariant.Caption2, "span" },
+        { BitTypographyVariant.Overline, "span" },
+        { BitTypographyVariant.Inherit, "p" },
     };
 }

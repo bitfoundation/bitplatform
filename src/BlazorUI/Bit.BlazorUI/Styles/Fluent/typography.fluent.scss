@@ -1,4 +1,6 @@
-﻿:root,
+﻿@import '../media-queries.scss';
+
+:root,
 :root[bit-theme="light"],
 :root[bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
@@ -9,32 +11,6 @@
     --bit-tpg-font-weight: 600;
     --bit-tpg-line-height: 1.75rem;
     --bit-tpg-gutter-size: 0.35em;
-    // body1
-    --bit-tpg-body1-margin: 0;
-    --bit-tpg-body1-font-weight: 400;
-    --bit-tpg-body1-font-size: 1rem;
-    --bit-tpg-body1-line-height: 1.5;
-    --bit-tpg-body1-letter-spacing: 0.00938em;
-    // body2
-    --bit-tpg-body2-margin: 0;
-    --bit-tpg-body2-font-weight: 400;
-    --bit-tpg-body2-font-size: 0.875rem;
-    --bit-tpg-body2-line-height: 1.43;
-    --bit-tpg-body2-letter-spacing: 0.01071em;
-    // button
-    --bit-tpg-button-margin: 0;
-    --bit-tpg-button-font-weight: 500;
-    --bit-tpg-button-font-size: 0.875rem;
-    --bit-tpg-button-line-height: 1.75;
-    --bit-tpg-button-letter-spacing: 0.02857em;
-    --bit-tpg-button-text-transform: uppercase;
-    --bit-tpg-button-display: block;
-    // caption
-    --bit-tpg-caption-margin: 0;
-    --bit-tpg-caption-font-weight: 400;
-    --bit-tpg-caption-font-size: 0.75rem;
-    --bit-tpg-caption-line-height: 1.66;
-    --bit-tpg-caption-letter-spacing: 0.03333em;
     // h1
     --bit-tpg-h1-margin: 0;
     --bit-tpg-h1-font-weight: 300;
@@ -51,26 +27,78 @@
     --bit-tpg-h3-margin: 0;
     --bit-tpg-h3-font-weight: 400;
     --bit-tpg-h3-font-size: 3rem;
-    --bit-tpg-h3-line-height: 1.167;
+    --bit-tpg-h3-line-height: 1.333;
     --bit-tpg-h3-letter-spacing: 0;
     // h4
     --bit-tpg-h4-margin: 0;
     --bit-tpg-h4-font-weight: 400;
     --bit-tpg-h4-font-size: 2.125rem;
-    --bit-tpg-h4-line-height: 1.235;
+    --bit-tpg-h4-line-height: 1.412;
     --bit-tpg-h4-letter-spacing: 0.00735em;
     // h5
     --bit-tpg-h5-margin: 0;
     --bit-tpg-h5-font-weight: 400;
     --bit-tpg-h5-font-size: 1.5rem;
-    --bit-tpg-h5-line-height: 1.334;
+    --bit-tpg-h5-line-height: 1.333;
     --bit-tpg-h5-letter-spacing: 0;
     // h6
     --bit-tpg-h6-margin: 0;
     --bit-tpg-h6-font-weight: 500;
-    --bit-tpg-h6-font-size: 1.125rem;
-    --bit-tpg-h6-line-height: 1.6;
+    --bit-tpg-h6-font-size: 1.25rem;
+    --bit-tpg-h6-line-height: 1.4;
     --bit-tpg-h6-letter-spacing: 0.0075em;
+    // subtitle1
+    --bit-tpg-subtitle1-margin: 0;
+    --bit-tpg-subtitle1-font-weight: 400;
+    --bit-tpg-subtitle1-font-size: 1rem;
+    --bit-tpg-subtitle1-line-height: 1.5;
+    --bit-tpg-subtitle1-letter-spacing: 0.00938em;
+    // subtitle2
+    --bit-tpg-subtitle2-margin: 0;
+    --bit-tpg-subtitle2-font-weight: 500;
+    --bit-tpg-subtitle2-font-size: 0.875rem;
+    --bit-tpg-subtitle2-line-height: 1.714;
+    --bit-tpg-subtitle2-letter-spacing: 0.00714em;
+    // body1
+    --bit-tpg-body1-margin: 0;
+    --bit-tpg-body1-font-weight: 400;
+    --bit-tpg-body1-font-size: 1rem;
+    --bit-tpg-body1-line-height: 1.5;
+    --bit-tpg-body1-letter-spacing: 0.00938em;
+    // body2
+    --bit-tpg-body2-margin: 0;
+    --bit-tpg-body2-font-weight: 400;
+    --bit-tpg-body2-font-size: 0.875rem;
+    --bit-tpg-body2-line-height: 1.714;
+    --bit-tpg-body2-letter-spacing: 0.01071em;
+    // button
+    --bit-tpg-button-margin: 0;
+    --bit-tpg-button-font-weight: 500;
+    --bit-tpg-button-font-size: 0.875rem;
+    --bit-tpg-button-line-height: 1.714;
+    --bit-tpg-button-letter-spacing: 0.02857em;
+    --bit-tpg-button-text-transform: uppercase;
+    --bit-tpg-button-display: block;
+    // caption1
+    --bit-tpg-caption1-margin: 0;
+    --bit-tpg-caption1-font-weight: 400;
+    --bit-tpg-caption1-font-size: 0.75rem;
+    --bit-tpg-caption1-line-height: 1.333;
+    --bit-tpg-caption1-letter-spacing: 0.03333em;
+    // caption2
+    --bit-tpg-caption2-margin: 0;
+    --bit-tpg-caption2-font-weight: 400;
+    --bit-tpg-caption2-font-size: 0.625rem;
+    --bit-tpg-caption2-line-height: 1.4;
+    --bit-tpg-caption2-letter-spacing: 0.03333em;
+    // overline
+    --bit-tpg-overline-margin: 0;
+    --bit-tpg-overline-font-weight: 400;
+    --bit-tpg-overline-font-size: 0.625rem;
+    --bit-tpg-overline-line-height: 1.66;
+    --bit-tpg-overline-letter-spacing: 0.08333em;
+    --bit-tpg-overline-text-transform: uppercase;
+    --bit-tpg-overline-display: block;
     // inherit
     --bit-tpg-inherit-margin: 0;
     --bit-tpg-inherit-font-family: inherit;
@@ -78,24 +106,45 @@
     --bit-tpg-inherit-font-size: inherit;
     --bit-tpg-inherit-line-height: inherit;
     --bit-tpg-inherit-letter-spacing: inherit;
-    // overline
-    --bit-tpg-overline-margin: 0;
-    --bit-tpg-overline-font-weight: 400;
-    --bit-tpg-overline-font-size: 0.75rem;
-    --bit-tpg-overline-line-height: 2.66;
-    --bit-tpg-overline-letter-spacing: 0.08333em;
-    --bit-tpg-overline-text-transform: uppercase;
-    --bit-tpg-overline-display: block;
-    // subtitle1
-    --bit-tpg-subtitle1-margin: 0;
-    --bit-tpg-subtitle1-font-weight: 400;
-    --bit-tpg-subtitle1-font-size: 1rem;
-    --bit-tpg-subtitle1-line-height: 1.75;
-    --bit-tpg-subtitle1-letter-spacing: 0.00938em;
-    // subtitle2
-    --bit-tpg-subtitle2-margin: 0;
-    --bit-tpg-subtitle2-font-weight: 500;
-    --bit-tpg-subtitle2-font-size: 0.875rem;
-    --bit-tpg-subtitle2-line-height: 1.57;
-    --bit-tpg-subtitle2-letter-spacing: 0.00714em;
+    --bit-tpg-overline-text-transform: inherit;
+    --bit-tpg-overline-display: inherit;
+    // media
+    @include lt-md {
+        // h1
+        --bit-tpg-h1-margin: 0;
+        --bit-tpg-h1-font-weight: 300;
+        --bit-tpg-h1-font-size: 3.75rem;
+        --bit-tpg-h1-line-height: 1.2;
+        --bit-tpg-h1-letter-spacing: -0.00833em;
+        // h2
+        --bit-tpg-h2-margin: 0;
+        --bit-tpg-h2-font-weight: 400;
+        --bit-tpg-h2-font-size: 3rem;
+        --bit-tpg-h2-line-height: 1.333;
+        --bit-tpg-h2-letter-spacing: 0;
+        // h3
+        --bit-tpg-h3-margin: 0;
+        --bit-tpg-h3-font-weight: 400;
+        --bit-tpg-h3-font-size: 2.125rem;
+        --bit-tpg-h3-line-height: 1.412;
+        --bit-tpg-h3-letter-spacing: 0.00735em;
+        // h4
+        --bit-tpg-h4-margin: 0;
+        --bit-tpg-h4-font-weight: 400;
+        --bit-tpg-h4-font-size: 1.5rem;
+        --bit-tpg-h4-line-height: 1.333;
+        --bit-tpg-h4-letter-spacing: 0;
+        // h5
+        --bit-tpg-h5-margin: 0;
+        --bit-tpg-h5-font-weight: 500;
+        --bit-tpg-h5-font-size: 1.25rem;
+        --bit-tpg-h5-line-height: 1.4;
+        --bit-tpg-h5-letter-spacing: 0.0075em;
+        // h6
+        --bit-tpg-h6-margin: 0;
+        --bit-tpg-h6-font-weight: 500;
+        --bit-tpg-h6-font-size: 1.125rem;
+        --bit-tpg-h6-line-height: 1.556;
+        --bit-tpg-h6-letter-spacing: 0.0075em;
+    }
 }

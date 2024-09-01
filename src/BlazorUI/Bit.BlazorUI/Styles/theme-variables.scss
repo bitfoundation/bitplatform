@@ -202,36 +202,6 @@ $tg-font-weight: var(--bit-tpg-font-weight);
 $tg-line-height: var(--bit-tpg-line-height);
 $tg-gutter-size: var(--bit-tpg-gutter-size);
 
-// body1
-$tg-body1-margin: var(--bit-tpg-body1-margin);
-$tg-body1-font-weight: var(--bit-tpg-body1-font-weight);
-$tg-body1-font-size: var(--bit-tpg-body1-font-size);
-$tg-body1-line-height: var(--bit-tpg-body1-line-height);
-$tg-body1-letter-spacing: var(--bit-tpg-body1-letter-spacing);
-
-// body2
-$tg-body2-margin: var(--bit-tpg-body2-margin);
-$tg-body2-font-weight: var(--bit-tpg-body2-font-weight);
-$tg-body2-font-size: var(--bit-tpg-body2-font-size);
-$tg-body2-line-height: var(--bit-tpg-body2-line-height);
-$tg-body2-letter-spacing: var(--bit-tpg-body2-letter-spacing);
-
-// button
-$tg-button-margin: var(--bit-tpg-button-margin);
-$tg-button-font-weight: var(--bit-tpg-button-font-weight);
-$tg-button-font-size: var(--bit-tpg-button-font-size);
-$tg-button-line-height: var(--bit-tpg-button-line-height);
-$tg-button-letter-spacing: var(--bit-tpg-button-letter-spacing);
-$tg-button-text-transform: var(--bit-tpg-button-text-transform);
-$tg-button-display: var(--bit-tpg-button-display);
-
-// caption
-$tg-caption-margin: var(--bit-tpg-caption-margin);
-$tg-caption-font-weight: var(--bit-tpg-caption-font-weight);
-$tg-caption-font-size: var(--bit-tpg-caption-font-size);
-$tg-caption-line-height: var(--bit-tpg-caption-line-height);
-$tg-caption-letter-spacing: var(--bit-tpg-caption-letter-spacing);
-
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);
 $tg-h1-font-weight: var(--bit-tpg-h1-font-weight);
@@ -274,23 +244,6 @@ $tg-h6-font-size: var(--bit-tpg-h6-font-size);
 $tg-h6-line-height: var(--bit-tpg-h6-line-height);
 $tg-h6-letter-spacing: var(--bit-tpg-h6-letter-spacing);
 
-// inherit
-$tg-inherit-margin: var(--bit-tpg-inherit-margin);
-$tg-inherit-font-family: var(--bit-tpg-inherit-font-family);
-$tg-inherit-font-weight: var(--bit-tpg-inherit-font-weight);
-$tg-inherit-font-size: var(--bit-tpg-inherit-font-size);
-$tg-inherit-line-height: var(--bit-tpg-inherit-line-height);
-$tg-inherit-letter-spacing: var(--bit-tpg-inherit-letter-spacing);
-
-// overline
-$tg-overline-margin: var(--bit-tpg-overline-margin);
-$tg-overline-font-weight: var(--bit-tpg-overline-font-weight);
-$tg-overline-font-size: var(--bit-tpg-overline-font-size);
-$tg-overline-line-height: var(--bit-tpg-overline-line-height);
-$tg-overline-letter-spacing: var(--bit-tpg-overline-letter-spacing);
-$tg-overline-text-transform: var(--bit-tpg-overline-text-transform);
-$tg-overline-display: var(--bit-tpg-overline-display);
-
 // subtitle1
 $tg-subtitle1-margin: var(--bit-tpg-subtitle1-margin);
 $tg-subtitle1-font-weight: var(--bit-tpg-subtitle1-font-weight);
@@ -304,3 +257,57 @@ $tg-subtitle2-font-weight: var(--bit-tpg-subtitle2-font-weight);
 $tg-subtitle2-font-size: var(--bit-tpg-subtitle2-font-size);
 $tg-subtitle2-line-height: var(--bit-tpg-subtitle2-line-height);
 $tg-subtitle2-letter-spacing: var(--bit-tpg-subtitle2-letter-spacing);
+
+// body1
+$tg-body1-margin: var(--bit-tpg-body1-margin);
+$tg-body1-font-weight: var(--bit-tpg-body1-font-weight);
+$tg-body1-font-size: var(--bit-tpg-body1-font-size);
+$tg-body1-line-height: var(--bit-tpg-body1-line-height);
+$tg-body1-letter-spacing: var(--bit-tpg-body1-letter-spacing);
+
+// body2
+$tg-body2-margin: var(--bit-tpg-body2-margin);
+$tg-body2-font-weight: var(--bit-tpg-body2-font-weight);
+$tg-body2-font-size: var(--bit-tpg-body2-font-size);
+$tg-body2-line-height: var(--bit-tpg-body2-line-height);
+$tg-body2-letter-spacing: var(--bit-tpg-body2-letter-spacing);
+
+// button
+$tg-button-margin: var(--bit-tpg-button-margin);
+$tg-button-font-weight: var(--bit-tpg-button-font-weight);
+$tg-button-font-size: var(--bit-tpg-button-font-size);
+$tg-button-line-height: var(--bit-tpg-button-line-height);
+$tg-button-letter-spacing: var(--bit-tpg-button-letter-spacing);
+$tg-button-text-transform: var(--bit-tpg-button-text-transform);
+$tg-button-display: var(--bit-tpg-button-display);
+
+// caption1
+$tg-caption1-margin: var(--bit-tpg-caption1-margin);
+$tg-caption1-font-weight: var(--bit-tpg-caption1-font-weight);
+$tg-caption1-font-size: var(--bit-tpg-caption1-font-size);
+$tg-caption1-line-height: var(--bit-tpg-caption1-line-height);
+$tg-caption1-letter-spacing: var(--bit-tpg-caption1-letter-spacing);
+
+// caption2
+$tg-caption2-margin: var(--bit-tpg-caption2-margin);
+$tg-caption2-font-weight: var(--bit-tpg-caption2-font-weight);
+$tg-caption2-font-size: var(--bit-tpg-caption2-font-size);
+$tg-caption2-line-height: var(--bit-tpg-caption2-line-height);
+$tg-caption2-letter-spacing: var(--bit-tpg-caption2-letter-spacing);
+
+// overline
+$tg-overline-margin: var(--bit-tpg-overline-margin);
+$tg-overline-font-weight: var(--bit-tpg-overline-font-weight);
+$tg-overline-font-size: var(--bit-tpg-overline-font-size);
+$tg-overline-line-height: var(--bit-tpg-overline-line-height);
+$tg-overline-letter-spacing: var(--bit-tpg-overline-letter-spacing);
+$tg-overline-text-transform: var(--bit-tpg-overline-text-transform);
+$tg-overline-display: var(--bit-tpg-overline-display);
+
+// inherit
+$tg-inherit-margin: var(--bit-tpg-inherit-margin);
+$tg-inherit-font-family: var(--bit-tpg-inherit-font-family);
+$tg-inherit-font-weight: var(--bit-tpg-inherit-font-weight);
+$tg-inherit-font-size: var(--bit-tpg-inherit-font-size);
+$tg-inherit-line-height: var(--bit-tpg-inherit-line-height);
+$tg-inherit-letter-spacing: var(--bit-tpg-inherit-letter-spacing);
