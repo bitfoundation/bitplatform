@@ -9,21 +9,21 @@
     @foreach (var param in Parameters)
     {
         <tr class="tdata-row">
-            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.Name</BitTypography></td>
+            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@param.Name</BitTypography></td>
             <td class="td-cell">
                 @if (param.LinkType == LinkType.Link)
                 {
                     <BitLink Href="@param.Href">
-                        <BitTypography Variant="BitTypographyVariant.Caption">@param.Type</BitTypography>
+                        <BitTypography Variant="BitTypographyVariant.Caption1">@param.Type</BitTypography>
                     </BitLink>
                 }
                 else
                 {
-                    <BitTypography Variant="BitTypographyVariant.Caption">@param.Type</BitTypography>
+                    <BitTypography Variant="BitTypographyVariant.Caption1">@param.Type</BitTypography>
                 }
             </td>
-            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.DefaultValue</BitTypography></td>
-            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@param.Description</BitTypography></td>
+            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@param.DefaultValue</BitTypography></td>
+            <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@param.Description</BitTypography></td>
         </tr>
     }
 </table>

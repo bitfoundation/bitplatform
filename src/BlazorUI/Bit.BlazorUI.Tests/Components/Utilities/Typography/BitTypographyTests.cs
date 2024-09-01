@@ -13,7 +13,8 @@ public class BitTypographyTests : BunitTestContext
         { BitTypographyVariant.Body1, "p" },
         { BitTypographyVariant.Body2, "p" },
         { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
+        { BitTypographyVariant.Caption1, "span" },
+        { BitTypographyVariant.Caption2, "span" },
         { BitTypographyVariant.H1, "h1" },
         { BitTypographyVariant.H2, "h2" },
         { BitTypographyVariant.H3, "h3" },
@@ -35,20 +36,21 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod,
-         DataRow(BitTypographyVariant.Body1),
-         DataRow(BitTypographyVariant.Body2),
-         DataRow(BitTypographyVariant.Button),
-         DataRow(BitTypographyVariant.Caption),
          DataRow(BitTypographyVariant.H1),
          DataRow(BitTypographyVariant.H2),
          DataRow(BitTypographyVariant.H3),
          DataRow(BitTypographyVariant.H4),
          DataRow(BitTypographyVariant.H5),
          DataRow(BitTypographyVariant.H6),
-         DataRow(BitTypographyVariant.Inherit),
-         DataRow(BitTypographyVariant.Overline),
          DataRow(BitTypographyVariant.Subtitle1),
          DataRow(BitTypographyVariant.Subtitle2),
+         DataRow(BitTypographyVariant.Body1),
+         DataRow(BitTypographyVariant.Body2),
+         DataRow(BitTypographyVariant.Button),
+         DataRow(BitTypographyVariant.Caption1),
+         DataRow(BitTypographyVariant.Caption2),
+         DataRow(BitTypographyVariant.Overline),
+         DataRow(BitTypographyVariant.Inherit),
     ]
     public void BitTypographyShouldRespectVariant(BitTypographyVariant variant)
     {

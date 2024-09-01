@@ -13,21 +13,21 @@
          @foreach (var subParam in subClass.Parameters)
             {
                 <tr class="tdata-row">
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@subParam.Name</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@subParam.Name</BitTypography></td>
                     <td class="td-cell">
                         @if (subParam.LinkType == LinkType.Link)
                         {
                             <BitLink Href="@subParam.Href">
-                                <BitTypography Variant="BitTypographyVariant.Caption">@subParam.Type</BitTypography>
+                                <BitTypography Variant="BitTypographyVariant.Caption1">@subParam.Type</BitTypography>
                             </BitLink>
                         }
                         else
                         {
-                            <BitTypography Variant="BitTypographyVariant.Caption">@subParam.Type</BitTypography>
+                            <BitTypography Variant="BitTypographyVariant.Caption1">@subParam.Type</BitTypography>
                         }
                     </td>
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@subParam.DefaultValue</BitTypography></td>
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@subParam.Description</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@subParam.DefaultValue</BitTypography></td>
+                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption1">@subParam.Description</BitTypography></td>
                 </tr>
             }
         </table>

@@ -211,11 +211,17 @@ internal static class BitThemeMapper
         addCssVar("--bit-tpg-button-text-transform", bitTheme.Typography.Button.TextTransform);
         addCssVar("--bit-tpg-button-display", bitTheme.Typography.Button.Display);
 
-        addCssVar("--bit-tpg-caption-margin", bitTheme.Typography.Caption.Margin);
-        addCssVar("--bit-tpg-caption-font-weight", bitTheme.Typography.Caption.FontWeight);
-        addCssVar("--bit-tpg-caption-font-size", bitTheme.Typography.Caption.FontSize);
-        addCssVar("--bit-tpg-caption-line-height", bitTheme.Typography.Caption.LineHeight);
-        addCssVar("--bit-tpg-caption-letter-spacing", bitTheme.Typography.Caption.LetterSpacing);
+        addCssVar("--bit-tpg-caption1-margin", bitTheme.Typography.Caption1.Margin);
+        addCssVar("--bit-tpg-caption1-font-weight", bitTheme.Typography.Caption1.FontWeight);
+        addCssVar("--bit-tpg-caption1-font-size", bitTheme.Typography.Caption1.FontSize);
+        addCssVar("--bit-tpg-caption1-line-height", bitTheme.Typography.Caption1.LineHeight);
+        addCssVar("--bit-tpg-caption1-letter-spacing", bitTheme.Typography.Caption1.LetterSpacing);
+
+        addCssVar("--bit-tpg-caption2-margin", bitTheme.Typography.Caption2.Margin);
+        addCssVar("--bit-tpg-caption2-font-weight", bitTheme.Typography.Caption2.FontWeight);
+        addCssVar("--bit-tpg-caption2-font-size", bitTheme.Typography.Caption2.FontSize);
+        addCssVar("--bit-tpg-caption2-line-height", bitTheme.Typography.Caption2.LineHeight);
+        addCssVar("--bit-tpg-caption2-letter-spacing", bitTheme.Typography.Caption2.LetterSpacing);
 
         addCssVar("--bit-tpg-h1-margin", bitTheme.Typography.H1.Margin);
         addCssVar("--bit-tpg-h1-font-weight", bitTheme.Typography.H1.FontWeight);
@@ -498,11 +504,17 @@ internal static class BitThemeMapper
         result.Typography.Button.TextTransform = bitTheme.Typography.Button.TextTransform ?? other.Typography.Button.TextTransform;
         result.Typography.Button.Display = bitTheme.Typography.Button.Display ?? other.Typography.Button.Display;
 
-        result.Typography.Caption.Margin = bitTheme.Typography.Caption.Margin ?? other.Typography.Caption.Margin;
-        result.Typography.Caption.FontWeight = bitTheme.Typography.Caption.FontWeight ?? other.Typography.Caption.FontWeight;
-        result.Typography.Caption.FontSize = bitTheme.Typography.Caption.FontSize ?? other.Typography.Caption.FontSize;
-        result.Typography.Caption.LineHeight = bitTheme.Typography.Caption.LineHeight ?? other.Typography.Caption.LineHeight;
-        result.Typography.Caption.LetterSpacing = bitTheme.Typography.Caption.LetterSpacing ?? other.Typography.Caption.LetterSpacing;
+        result.Typography.Caption1.Margin = bitTheme.Typography.Caption1.Margin ?? other.Typography.Caption1.Margin;
+        result.Typography.Caption1.FontWeight = bitTheme.Typography.Caption1.FontWeight ?? other.Typography.Caption1.FontWeight;
+        result.Typography.Caption1.FontSize = bitTheme.Typography.Caption1.FontSize ?? other.Typography.Caption1.FontSize;
+        result.Typography.Caption1.LineHeight = bitTheme.Typography.Caption1.LineHeight ?? other.Typography.Caption1.LineHeight;
+        result.Typography.Caption1.LetterSpacing = bitTheme.Typography.Caption1.LetterSpacing ?? other.Typography.Caption1.LetterSpacing;
+
+        result.Typography.Caption2.Margin = bitTheme.Typography.Caption2.Margin ?? other.Typography.Caption2.Margin;
+        result.Typography.Caption2.FontWeight = bitTheme.Typography.Caption2.FontWeight ?? other.Typography.Caption2.FontWeight;
+        result.Typography.Caption2.FontSize = bitTheme.Typography.Caption2.FontSize ?? other.Typography.Caption2.FontSize;
+        result.Typography.Caption2.LineHeight = bitTheme.Typography.Caption2.LineHeight ?? other.Typography.Caption2.LineHeight;
+        result.Typography.Caption2.LetterSpacing = bitTheme.Typography.Caption2.LetterSpacing ?? other.Typography.Caption2.LetterSpacing;
 
         result.Typography.H1.Margin = bitTheme.Typography.H1.Margin ?? other.Typography.H1.Margin;
         result.Typography.H1.FontWeight = bitTheme.Typography.H1.FontWeight ?? other.Typography.H1.FontWeight;
