@@ -438,7 +438,23 @@ public partial class BitButtonDemo
         }
     ];
 
-
+    private readonly List<SideRailItem> sideRailItems =
+    [
+        new() { Id="example1", Title="Basic" },
+        new() { Id="example2", Title="Primary & Secondary" },
+        new() { Id="example3", Title="Variant" },
+        new() { Id="example4", Title="Icon" },
+        new() { Id="example5", Title="Loading" },
+        new() { Id="example6", Title="Loading Label" },
+        new() { Id="example7", Title="Href" },
+        new() { Id="example8", Title="Button Type" },
+        new() { Id="example9", Title="Templates" },
+        new() { Id="example10", Title="Events" },
+        new() { Id="example11", Title="Size" },
+        new() { Id="example12", Title="Color" },
+        new() { Id="example13", Title="Style & Class" },
+        new() { Id="example14", Title="RTL" },
+    ];
 
     private bool fillIsLoading;
     private bool outlineIsLoading;
