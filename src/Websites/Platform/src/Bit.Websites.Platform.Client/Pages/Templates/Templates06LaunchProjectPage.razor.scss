@@ -1,0 +1,31 @@
+@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_functions.scss';
+
+.page-container {
+    @include PageContainer;
+}
+
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
+}
+
+.image-container {
+    @include ImageContainer;
+}
+
+.image {
+    @include Image;
+    width: rem2(600px);
+}
+
+::deep a {
+    color: $bit-color-primary;
+}
+
+::deep .image-container {
+    @include ImageContainer;
+}

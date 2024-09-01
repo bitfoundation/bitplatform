@@ -1,0 +1,99 @@
+﻿@page "/templates/run"
+@inherits AppComponentBase
+
+<PageOutlet Url="templates/launch-project"
+            Title="Launch project - Templates"
+            Description="launch project of the project templates of the bit platform" />
+
+<div class="page-container">
+    <BitTypography Variant="BitTypographyVariant.H3" Gutter> Project Launch Guidelines</BitTypography>
+    <br />
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        The process for launching the project varies based on the Api parameter set during project initiation:
+        <br />
+        <ul>
+            <li>
+                <b>Integrated Mode:</b> Run the Server.Web project.
+            </li>
+            <li>
+                <b>Standalone Mode:</b> Run both the Server.Api and Server.Web projects.
+            </li>
+        </ul>
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter> Database Configuration</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        The database will be automatically created upon running the project. However, if you need to utilize Entity
+        Framework Core Migrations, execute the following commands within the Api project:
+        <CodeBox>
+dotnet ef database drop --force
+dotnet ef migrations add InitialMigration -o Data/Migrations
+dotnet ef database update
+        </CodeBox>
+    </BitTypography>
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter> Development Environment</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        The project is configured to use Blazor Server as the default mode to enhance the development experience,
+        enabling features such as <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload?view=vs-2022" target="_blank">Visual Studio .NET Hot Reload</a>
+        and <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch" target="_blank">dotnet watch</a>. To utilize the Hot Reload feature,
+        ensure that you have the latest versions of Visual Studio, the .NET SDK, <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+</a> for Visual Studio,
+        and <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler</a>  for VS Code installed. This setup allows for automatic application of changes made to .razor,
+        .scss, or .cs files without the need to rebuild the project.
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Mode Selection</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To choose between Blazor modes, refer to the Client.Core/Services/AppRenderMode.cs file. By default:
+        <br />
+        <ul>
+            <li>
+                <b>Development:</b> Blazor Server
+            </li>
+            <li>
+                <b>Production:</b> Blazor Auto
+            </li>
+        </ul>
+        <br />
+        <b>Why Blazor Auto?</b>
+        <br />
+        Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
+        in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
+        WebAssembly, enhancing performance.
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Debugging in Blazor WebAssembly</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
+        utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
+        <br />
+        <br />
+    </BitTypography>
+    <div class="image-container">
+        <img class="image" src="images/templates/render-mode.webp" />
+    </div>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To run the project in Blazor WebAssembly Standalone mode, set BlazorWebAssemblyStandalone to true in the Directory.Build.props file.
+        Additionally, run both the Client.Web and Server projects.
+        <br />
+        <br />
+    </BitTypography>
+    <div class="image-container">
+        <img class="image" src="images/templates/launch-options.webp" />
+    </div>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Additional Launch Options</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
+        for developers to test the project according to their specific requirements.
+    </BitTypography>
+</div> 
+<NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" />
