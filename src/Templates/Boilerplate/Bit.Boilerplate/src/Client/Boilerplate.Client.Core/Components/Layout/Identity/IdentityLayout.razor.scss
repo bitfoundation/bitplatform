@@ -4,10 +4,15 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
+    padding-top: 3rem;
     width: rem2(560px);
     background-color: $bit-color-background-secondary;
 }
 
 aside {
+    height: 100%;
     flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

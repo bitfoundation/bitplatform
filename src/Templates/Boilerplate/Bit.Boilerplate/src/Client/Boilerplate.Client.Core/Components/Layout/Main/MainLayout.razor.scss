@@ -4,5 +4,6 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
-    background-color: $bit-color-background-secondary;
+    width: 100%;
+    padding-top: 3rem;
 }
