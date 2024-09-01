@@ -2,8 +2,8 @@
 
 internal static class BitOverlayJsRuntimeExtensions
 {
-    internal static ValueTask<int> BitOverlayToggleScroll(this IJSRuntime jsRuntime, string scrollerSelector, bool visible)
+    internal static ValueTask<int> BitOverlayToggleScroll(this IJSRuntime jsRuntime, string scrollerSelector, bool isOpen)
     {
-        return jsRuntime.InvokeAsync<int>("BitBlazorUI.Overlay.toggleScroll", scrollerSelector, visible);
+        return jsRuntime.InvokeAsync<int>("BitBlazorUI.Overlay.toggleScroll", scrollerSelector, isOpen);
     }
 }
