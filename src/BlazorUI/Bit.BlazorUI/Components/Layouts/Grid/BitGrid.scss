@@ -13,7 +13,7 @@
 .bit-grd-itm {
     flex-basis: calc((100% / var(--columns) * var(--span)) - var(--spacing));
 
-    $breakpoints: ( 'xs': $brk-xs, 'sm': $brk-sm, 'md': $brk-md, 'lg': $brk-lg, 'xl': $brk-xl, 'xxl': $brk-xxl );
+    $breakpoints: ( 'xs': $brk-xs, 'sm': $brk-sm, 'md': $brk-md, 'lg': $brk-lg, 'xl': $brk-xl );
 
     @each $name, $breakpoint in $breakpoints {
         @media (min-width: $breakpoint) {

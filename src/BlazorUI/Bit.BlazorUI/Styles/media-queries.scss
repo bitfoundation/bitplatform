@@ -1,102 +1,108 @@
-$brk-xs: 600px;
-$brk-xs1: 601px;
-$brk-sm: 960px;
-$brk-sm1: 961px;
-$brk-md: 1280px;
-$brk-md1: 1281px;
-$brk-lg: 1920px;
-$brk-lg1: 1921px;
-$brk-xl: 2560px;
-$brk-xl1: 2561px;
+$brk-xs-max: 600px;
+$brk-sm-min: 601px;
+$brk-sm-max: 960px;
+$brk-md-min: 961px;
+$brk-md-max: 1280px;
+$brk-lg-min: 1281px;
+$brk-lg-max: 1920px;
+$brk-xl-min: 1921px;
+$brk-xl-max: 2560px;
+$brk-xxl-min: 2561px;
 
 // media devices
 @mixin xs {
-    @media screen and (min-width: 0) and (max-width: #{$brk-xs}) {
+    @media screen and (max-width: #{$brk-xs-max}) {
         @content;
     }
 }
 @mixin sm {
-    @media screen and (min-width: #{$brk-xs1}) and (max-width: #{$brk-sm}) {
+    @media screen and (min-width: #{$brk-sm-min}) and (max-width: #{$brk-sm-max}) {
         @content;
     }
 }
 
 @mixin md {
-    @media screen and (min-width: #{$brk-sm1}) and (max-width: #{$brk-md}) {
+    @media screen and (min-width: #{$brk-md-min}) and (max-width: #{$brk-md-max}) {
         @content;
     }
 }
 
 @mixin lg {
-    @media screen and (min-width: #{$brk-md1}) and (max-width: #{$brk-lg}) {
+    @media screen and (min-width: #{$brk-lg-min}) and (max-width: #{$brk-lg-max}) {
         @content;
     }
 }
 
 @mixin xl {
-    @media screen and (min-width: #{$brk-lg1}) and (max-width: #{$brk-xl}) {
+    @media screen and (min-width: #{$brk-xl-min}) and (max-width: #{$brk-xl-max}) {
         @content;
     }
 }
 
 @mixin xxl {
-    @media screen and (min-width: #{$brk-xl1}) {
+    @media screen and (min-width: #{$brk-xxl-min}) {
         @content;
     }
 }
 
 // media lt queries
 @mixin lt-sm {
-    @media screen and (max-width: #{$brk-sm}) {
+    @media screen and (max-width: #{$brk-xs-max}) {
         @content;
     }
 }
 
 @mixin lt-md {
-    @media screen and (max-width: #{$brk-md}) {
+    @media screen and (max-width: #{$brk-sm-max}) {
         @content;
     }
 }
 
 @mixin lt-lg {
-    @media screen and (max-width: #{$brk-lg}) {
+    @media screen and (max-width: #{$brk-md-max}) {
         @content;
     }
 }
 
 @mixin lt-xl {
-    @media screen and (max-width: #{$brk-xl}) {
+    @media screen and (max-width: #{$brk-lg-max}) {
+        @content;
+    }
+}
+
+@mixin lt-xxl {
+    @media screen and (max-width: #{$brk-xl-max}) {
         @content;
     }
 }
 
 // media gt queries
 @mixin gt-xs {
-    @media screen and (min-width: #{$brk-xs1}) {
+    @media screen and (min-width: #{$brk-sm-min}) {
         @content;
     }
 }
 
 @mixin gt-sm {
-    @media screen and (min-width: #{$brk-sm1}) {
+    @media screen and (min-width: #{$brk-md-min}) {
         @content;
     }
 }
 
 @mixin gt-md {
-    @media screen and (min-width: #{$brk-md1}) {
+    @media screen and (min-width: #{$brk-lg-min}) {
         @content;
     }
 }
 
 @mixin gt-lg {
-    @media screen and (min-width: #{$brk-lg1}) {
+    @media screen and (min-width: #{$brk-xl-min}) {
         @content;
     }
 }
 
 @mixin gt-xl {
-    @media screen and (min-width: #{$brk-xl1}) {
+    @media screen and (min-width: #{$brk-xxl-min}) {
         @content;
     }
 }
