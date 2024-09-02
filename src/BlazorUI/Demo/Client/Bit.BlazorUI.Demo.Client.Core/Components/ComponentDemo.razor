@@ -2,50 +2,50 @@
 
 <div class="example-page">
     <div class="page-container example">
-        <BitTypography Variant="BitTypographyVariant.H3" Class="title">@ComponentName</BitTypography>
+        <BitText Typography="BitTypography.H3" Class="title">@ComponentName</BitText>
         <section id="overview-section" class="page-section">
-            <BitTypography Variant="BitTypographyVariant.Subtitle1">
+            <BitText Typography="BitTypography.Subtitle1">
                 @ComponentDescription
-            </BitTypography>
+            </BitText>
         </section>
         @if (Notes.HasValue())
         {
-                <section id="notes-section" class="page-section">
-                    <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Notes</BitTypography>
+            <section id="notes-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
                 @Notes
-                </section>
+            </section>
         }
         <section id="usage-section" class="page-section">
-            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Usage</BitTypography>
+            <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
             @ChildContent
         </section>
         <section id="implementation-section" class="page-section">
-            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
+            <BitText Typography="BitTypography.H4" Class="subtitle">Implementation</BitText>
 
             <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
 
             @if (ComponentPublicMembers.Any())
             {
-                    <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+                <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
             }
 
             @if (_textInputComponents.Contains(ComponentName))
             {
-                    <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+                <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
             }
 
             @if (_inputComponents.Contains(ComponentName))
             {
-                    <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+                <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
 
-                    <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+                <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
             }
 
             @if (_extraComponents.Contains(ComponentName) is false)
             {
-                    <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+                <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-                    <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+                <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
             }
 
             <ComponentClassesTable Classes="ComponentSubClasses" />
@@ -55,5 +55,5 @@
             <ComponentEnumsTable Enums="_componentBaseSubEnums" />
         </section>
     </div>
-    <SideRail Items="SideRailItems"/>
+    <SideRail Items="SideRailItems" />
 </div>
