@@ -45,22 +45,16 @@ dotnet ef database update</CodeBox>
     <br />
     <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Mode Selection</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
-        To choose between Blazor modes, refer to the Client.Core/Services/AppRenderMode.cs file. By default:
-        <br />
-        <ul>
-            <li>
-                <b>Development:</b> Blazor Server
-            </li>
-            <li>
-                <b>Production:</b> Blazor Auto
-            </li>
-        </ul>
-        <br />
-        <b>Why Blazor Auto?</b>
+        To choose between Blazor modes, refer to the Client.Core/Services/AppRenderMode.cs file. By default, for development it
+        is Blazor Server and for Production it is Blazor Auto.
         <br />
         Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
         in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
         WebAssembly, enhancing performance.
+        <CodeBox>public static IComponentRenderMode? Current =&gt;
+    AppEnvironment.IsDev()
+    ? BlazorServer
+    : Auto</CodeBox>
     </BitTypography>
     <br />
     <br />
@@ -68,21 +62,16 @@ dotnet ef database update</CodeBox>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
         To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
         utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
-        <br />
-        <br />
     </BitTypography>
-    <div class="image-container">
-        <img class="image" src="images/templates/render-mode.webp" />
-    </div>
     <br />
     <br />
     <BitTypography Variant="BitTypographyVariant.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
         To run the project in Blazor WebAssembly Standalone mode, set BlazorWebAssemblyStandalone to true in the Directory.Build.props file.
         Additionally, run both the Client.Web and Server projects.
-        <br />
-        <br />
     </BitTypography>
+    <br />
+    <br />
     <div class="image-container">
         <img class="image" src="images/templates/launch-options.webp" />
     </div>
@@ -93,5 +82,5 @@ dotnet ef database update</CodeBox>
         The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
         for developers to test the project according to their specific requirements.
     </BitTypography>
-</div> 
+</div>
 <NavigationButtons Prev="Create project" PrevUrl="/templates/create-project" />
