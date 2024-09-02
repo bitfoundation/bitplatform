@@ -1,11 +1,8 @@
-﻿using System.Drawing;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitDropMenu : BitComponentBase
 {
     private bool _disposed;
-    private BitButtonType _buttonType;
     private string _calloutId = default!;
     private DotNetObjectReference<BitDropMenu> _dotnetObj = default!;
 
@@ -16,32 +13,32 @@ public partial class BitDropMenu : BitComponentBase
 
 
     /// <summary>
-    ///  The value of the type attribute of the menu button.
+    /// Alias of the ChildContent.
     /// </summary>
-    [Parameter] public BitButtonType? ButtonType { get; set; }
+    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
-    /// The icon name of the chevron down part of the menu button.
+    /// The icon name of the chevron down part of the drop menu.
     /// </summary>
-    [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
+    [Parameter] public string? ChevronDownIcon { get; set; }
 
     /// <summary>
-    /// The content of the menu button, that are BitMenuButtonOption components.
+    /// The content of the callout of the drop menu.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the menu button.
+    /// Custom CSS classes for different parts of the drop menu.
     /// </summary>
     [Parameter] public BitDropMenuClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The icon to show inside the header of menu button.
+    /// The icon to show inside the header of the drop menu.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Determines the opening state of the callout.
+    /// Determines the opening state of the callout of the drop menu.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(ToggleCallout))]
@@ -49,34 +46,30 @@ public partial class BitDropMenu : BitComponentBase
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// The callback is called when the menu button header is clicked.
+    /// The callback is called when the drop menu is clicked.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
-    /// Alias of the ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Body { get; set; }
-
-    /// <summary>
-    /// Custom CSS styles for different parts of the menu button.
+    /// Custom CSS styles for different parts of the drop menu.
     /// </summary>
     [Parameter] public BitDropMenuClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The content inside the header of menu button can be customized.
+    /// The custom content to render inside the header of the drop menu.
     /// </summary>
     [Parameter] public RenderFragment? Template { get; set; }
 
     /// <summary>
-    /// The text to show inside the header of menu button.
+    /// The text to show inside the header of the drop menu.
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The text to show inside the header of menu button.
+    /// Makes the background of the header of the drop menu transparent.
     /// </summary>
-    [Parameter] public string? Transparent { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Transparent { get; set; }
 
 
 
@@ -87,6 +80,8 @@ public partial class BitDropMenu : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsOpen ? Classes?.Opened : string.Empty);
+
+        ClassBuilder.Register(() => Transparent ? "bit-drm-trn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

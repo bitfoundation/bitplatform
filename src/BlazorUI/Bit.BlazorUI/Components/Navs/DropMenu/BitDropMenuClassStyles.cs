@@ -13,11 +13,6 @@ public class BitDropMenuClassStyles
     public string? Opened { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the button of the BitDropMenu.
-    /// </summary>
-    public string? Button { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the icon of the BitDropMenu.
     /// </summary>
     public string? Icon { get; set; }

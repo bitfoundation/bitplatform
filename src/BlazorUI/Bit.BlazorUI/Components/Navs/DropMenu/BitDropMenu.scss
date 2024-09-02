@@ -1,33 +1,21 @@
 @import "../../../Styles/functions.scss";
 
 .bit-drm {
+    display: flex;
+    gap: spacing(1);
+    cursor: pointer;
     width: fit-content;
+    align-items: center;
     outline: transparent;
+    text-decoration: none;
     box-sizing: border-box;
+    box-sizing: border-box;
+    justify-content: center;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-
-    &.bit-dis {
-        cursor: default;
-        color: $clr-fg-dis;
-        pointer-events: none;
-    }
-}
-
-.bit-drm-btn {
-    width: 100%;
-    display: flex;
-    color: inherit;
-    gap: spacing(1);
-    cursor: pointer;
-    font-size: inherit;
-    align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    justify-content: center;
-    background-color: inherit;
+    padding: spacing(0.75) spacing(1.5);
 
     @media (hover: hover) {
         &:hover {
@@ -37,6 +25,21 @@
 
     &:active {
         background-color: $clr-bg-pri-active;
+    }
+
+    &.bit-dis {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+}
+
+.bit-drm-trn {
+    background-color: transparent;
+
+    &:hover,
+    &:active {
+        background-color: transparent;
     }
 }
 
@@ -54,16 +57,13 @@
 .bit-drm-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
-    overflow: hidden;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
     animation-fill-mode: both;
     animation-duration: 0.367s;
+    background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
-    background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }

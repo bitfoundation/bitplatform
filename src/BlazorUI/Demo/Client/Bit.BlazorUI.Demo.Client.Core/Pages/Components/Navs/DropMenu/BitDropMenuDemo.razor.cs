@@ -6,261 +6,84 @@ public partial class BitDropMenuDemo
     [
         new()
         {
-            Name = "BoundaryCount",
-            Type = "int",
-            DefaultValue = "2",
-            Description = "The number of items at the start and end of the pagination."
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of the ChildContent."
+        },
+        new()
+        {
+            Name = "ChevronDownIcon",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the chevron down part of the drop menu."
+        },
+        new()
+        {
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the callout of the drop menu."
         },
         new()
         {
             Name = "Classes",
-            Type = "BitPaginationClassStyles?",
+            Type = "BitDropMenuClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the pagination.",
+            Description = "Custom CSS classes for different parts of the drop menu.",
             LinkType = LinkType.Link,
-            Href = "#pagination-class-styles"
+            Href = "#class-styles"
         },
         new()
         {
-            Name = "Color",
-            Type = "BitColor?",
+            Name = "IconName",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "The general color of the pagination.",
-            LinkType = LinkType.Link,
-            Href = "#color-enum"
+            Description = "The icon to show inside the header of the drop menu."
         },
         new()
         {
-            Name = "Count",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "The total number of pages."
-        },
-        new()
-        {
-            Name = "DefaultSelectedPage",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The default selected page number."
-        },
-        new()
-        {
-            Name = "FirstIcon",
-            Type = "string",
-            DefaultValue = "ChevronLeftEnd6",
-            Description = "The icon name of the first button."
-        },
-        new()
-        {
-            Name = "LastIcon",
-            Type = "string",
-            DefaultValue = "ChevronRightEnd6",
-            Description = "The icon name of the last button."
-        },
-        new()
-        {
-            Name = "MiddleCount",
-            Type = "int",
-            DefaultValue = "3",
-            Description = "The number of items to render in the middle of the pagination."
-        },
-        new()
-        {
-            Name = "NextIcon",
-            Type = "string",
-            DefaultValue = "ChevronRight",
-            Description = "The icon name of the next button."
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<int>",
-            DefaultValue = "null",
-            Description = "The event callback for when selected page changes."
-        },
-        new()
-        {
-            Name = "PreviousIcon",
-            Type = "string",
-            DefaultValue = "ChevronLeft",
-            Description = "The icon name of the previous button."
-        },
-        new()
-        {
-            Name = "SelectedPage",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The selected page number."
-        },
-        new()
-        {
-            Name = "ShowFirstButton",
+            Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether to show the first button."
+            Description = "Determines the opening state of the callout of the drop menu."
         },
         new()
         {
-            Name = "ShowLastButton",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines whether to show the last button."
-        },
-        new()
-        {
-            Name = "ShowNextButton",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Determines whether to show the next button."
-        },
-        new()
-        {
-            Name = "ShowPreviousButton",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Determines whether to show the previous button."
-        },
-        new()
-        {
-            Name = "Size",
-            Type = "BitSize?",
-            DefaultValue = "null",
-            Description = "The size of the buttons.",
-            LinkType = LinkType.Link,
-            Href = "#size-enum",
+            Name = "OnClick",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback is called when the drop menu is clicked."
         },
         new()
         {
             Name = "Styles",
-            Type = "BitPaginationClassStyles?",
+            Type = "BitDropMenuClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitPagination.",
+            Description = "Custom CSS styles for different parts of the drop menu.",
             LinkType = LinkType.Link,
-            Href = "#pagination-class-styles"
+            Href = "#class-styles"
         },
         new()
         {
-            Name = "Variant",
-            Type = "BitVariant?",
+            Name = "Template",
+            Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The visual variant of the pagination.",
-            LinkType = LinkType.Link,
-            Href = "#variant-enum"
-        },
-    ];
-
-    private readonly List<ComponentSubEnum> componentSubEnums =
-    [
-        new()
-        {
-            Id = "color-enum",
-            Name = "BitColor",
-            Description = "Defines the general colors available in the bit BlazorUI.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
-                }
-            ]
+            Description = "The custom content to render inside the header of the drop menu."
         },
         new()
         {
-            Id = "size-enum",
-            Name = "BitSize",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Small",
-                    Description="The small size.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Medium",
-                    Description="The medium size.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Large",
-                    Description="The large size.",
-                    Value="2",
-                }
-            ]
+            Name = "Text",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text to show inside the header of the drop menu."
         },
         new()
         {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Standard",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
+            Name = "Transparent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the background of the header of the drop menu transparent."
         },
     ];
 
@@ -268,8 +91,8 @@ public partial class BitDropMenuDemo
     [
         new()
         {
-            Id = "pagination-class-styles",
-            Title = "BitPaginationClassStyles",
+            Id = "class-styles",
+            Title = "BitDropMenuClassStyles",
             Parameters =
             [
                 new()
@@ -277,92 +100,51 @@ public partial class BitDropMenuDemo
                     Name = "Root",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the root element of the BitPagination."
+                    Description = "Custom CSS classes/styles for the root element of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "Button",
+                    Name = "Opened",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the button of the BitPagination."
+                    Description = "Custom CSS classes/styles for the opened callout state of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "Ellipsis",
+                    Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the ellipsis of the BitPagination."
+                    Description = "Custom CSS classes/styles for the icon of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "SelectedButton",
+                    Name = "Text",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the selected button of the BitPagination."
+                    Description = "Custom CSS classes/styles for the text of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "FirstButton",
+                    Name = "ChevronDown",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the first button of the BitPagination."
+                    Description = "Custom CSS classes/styles for the chevron-down icon of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "FirstButtonIcon",
+                    Name = "Overlay",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the icon of the first button of the BitPagination."
+                    Description = "Custom CSS classes/styles for the overlay of the BitDropMenu."
                 },
                 new()
                 {
-                    Name = "PreviousButton",
+                    Name = "Callout",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the previous button of the BitPagination."
+                    Description = "Custom CSS classes/styles for the callout of the BitDropMenu."
                 },
-                new()
-                {
-                    Name = "PreviousButtonIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the icon of the previous button of the BitPagination."
-                },
-                new()
-                {
-                    Name = "NextButton",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the next button of the BitPagination."
-                },
-                new()
-                {
-                    Name = "NextButtonIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the icon of the next button of the BitPagination."
-                },
-                new()
-                {
-                    Name = "LastButton",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the last button of the BitPagination."
-                },
-                new()
-                {
-                    Name = "LastButtonIcon",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the icon of the last button of the BitPagination."
-                }
             ]
         }
     ];
-
-
-
-    private int oneWaySelectedPage = 1;
-    private int twoWaySelectedPage = 2;
-    private int onChangeSelectedPage = 3;
 }
