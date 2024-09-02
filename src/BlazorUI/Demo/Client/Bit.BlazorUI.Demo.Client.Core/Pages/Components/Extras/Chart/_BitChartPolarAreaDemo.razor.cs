@@ -1,36 +1,43 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
-public partial class _BitChartPieDemo
+public partial class _BitChartPolarAreaDemo
 {
     private const int INITAL_COUNT = 5;
 
     private BitChart _chart = default!;
-    private BitChartPieConfig _config = default!;
+    private BitChartPolarAreaConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartPieConfig
+        _config = new BitChartPolarAreaConfig
         {
-            Options = new BitChartPieOptions
+            Options = new BitChartPolarAreaOptions()
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Pie Chart"
+                    Text = "BitChart PolarArea Chart"
+                },
+                Scale = new BitChartLinearRadialAxis
+                {
+                    GridLines = new BitChartGridLines
+                    {
+                        Color = "gray"
+                    }
                 }
             }
         };
 
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
     }
 
-    private void RandomizePieData()
+    private void RandomizePolarAreaData()
     {
         foreach (IDataset<int> dataset in _config.Data.Datasets)
         {
@@ -52,10 +59,10 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void AddPieDataset()
+    private void AddPolarAreaDataset()
     {
         int count = _config.Data.Labels.Count;
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
             BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
         };
@@ -64,17 +71,17 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void RemovePieDataset()
+    private void RemovePolarAreaDataset()
     {
         IList<IBitChartDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
-        datasets.RemoveAt(0);
+        datasets.RemoveAt(datasets.Count - 1);
         _chart.Update();
     }
 
-    private void AddPieData()
+    private void AddPolarAreaData()
     {
         if (_config.Data.Datasets.Count == 0)
             return;
@@ -90,7 +97,7 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void RemovePieData()
+    private void RemovePolarAreaData()
     {
         if (_config.Data.Datasets.Count == 0 ||
             _config.Data.Labels.Count == 0)
@@ -113,41 +120,48 @@ public partial class _BitChartPieDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
-<BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
-<BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>
-<BitButton OnClick=""AddPieData"">Add Data</BitButton>
-<BitButton OnClick=""RemovePieData"">Remove Data</BitButton>";
+<BitButton OnClick=""RandomizePolarAreaData"">Randomize Data</BitButton>
+<BitButton OnClick= ""AddPolarAreaDataset"" > Add Dataset</BitButton>
+<BitButton OnClick= ""RemovePolarAreaDataset"" > Remove Dataset</BitButton>
+<BitButton OnClick= ""AddPolarAreaData"" > Add Data</BitButton>
+<BitButton OnClick= ""RemovePolarAreaData"" > Remove Data</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
 private BitChart _chart = default!;
-private BitChartPieConfig _config = default!;
+private BitChartPolarAreaConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartPieConfig
+    _config = new BitChartPolarAreaConfig
     {
-        Options = new BitChartPieOptions
+        Options = new BitChartPolarAreaOptions()
         {
             Responsive = true,
             Title = new BitChartOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Pie Chart""
+                Text = ""BitChart PolarArea Chart""
+            },
+            Scale = new BitChartLinearRadialAxis
+            {
+                GridLines = new BitChartGridLines
+                {
+                    Color = ""gray""
+                }
             }
         }
     };
 
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
 }
 
-private void RandomizePieData()
+private void RandomizePolarAreaData()
 {
     foreach (IDataset<int> dataset in _config.Data.Datasets)
     {
@@ -169,10 +183,10 @@ private void RandomizePieData()
     _chart.Update();
 }
 
-private void AddPieDataset()
+private void AddPolarAreaDataset()
 {
     int count = _config.Data.Labels.Count;
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
         BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
     };
@@ -181,17 +195,17 @@ private void AddPieDataset()
     _chart.Update();
 }
 
-private void RemovePieDataset()
+private void RemovePolarAreaDataset()
 {
     IList<IBitChartDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 
-    datasets.RemoveAt(0);
+    datasets.RemoveAt(datasets.Count - 1);
     _chart.Update();
 }
 
-private void AddPieData()
+private void AddPolarAreaData()
 {
     if (_config.Data.Datasets.Count == 0)
         return;
@@ -207,7 +221,7 @@ private void AddPieData()
     _chart.Update();
 }
 
-private void RemovePieData()
+private void RemovePolarAreaData()
 {
     if (_config.Data.Datasets.Count == 0 ||
         _config.Data.Labels.Count == 0)

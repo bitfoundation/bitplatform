@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the config for a bubble chart.
 /// </summary>
-public class BitChartBubbleConfig : BitChartConfigBase<BitChartBubbleOptions>
+public class BitChartBubbleConfig : BitChartConfigBase<BitChartLineOptions>
 {
     /// <summary>
     /// Creates a new instance of <see cref="BitChartBubbleConfig"/>.

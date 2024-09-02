@@ -1,36 +1,60 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
-public partial class _BitChartPieDemo
+public partial class _BitChartRadarDemo
 {
-    private const int INITAL_COUNT = 5;
+    private const int INITAL_COUNT = 8;
 
     private BitChart _chart = default!;
-    private BitChartPieConfig _config = default!;
+    private BitChartRadarConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartPieConfig
+        _config = new BitChartRadarConfig
         {
-            Options = new BitChartPieOptions
+            Options = new BitChartRadarOptions()
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart Pie Chart"
+                    Text = "BitChart Radar Chart"
+                },
+                Scale = new BitChartLinearRadialAxis
+                {
+                    GridLines = new BitChartGridLines
+                    {
+                        Color = "gray"
+                    }
                 }
             }
         };
 
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset1 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+            Label = "Dataset 1",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red))
         };
+
+        IDataset<int> dataset2 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        {
+            Label = "Dataset 2",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue))
+        };
+
+        IDataset<int> dataset3 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        {
+            Label = "Dataset 3",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Orange))
+        };
+
+
+        _config.Data.Datasets.Add(dataset1);
+        _config.Data.Datasets.Add(dataset2);
+        _config.Data.Datasets.Add(dataset3);
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-        _config.Data.Datasets.Add(dataset);
     }
 
-    private void RandomizePieData()
+    private void RandomizeRadarData()
     {
         foreach (IDataset<int> dataset in _config.Data.Datasets)
         {
@@ -52,29 +76,32 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void AddPieDataset()
+    private void AddRadarDataset()
     {
-        int count = _config.Data.Labels.Count;
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
+        IDataset<int> dataset = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+            Label = $"Dataset {_config.Data.Datasets.Count + 1}",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+            BorderColor = BitChartColorUtil.FromDrawingColor(color),
+            BorderWidth = 1
         };
 
         _config.Data.Datasets.Add(dataset);
         _chart.Update();
     }
 
-    private void RemovePieDataset()
+    private void RemoveRadarDataset()
     {
         IList<IBitChartDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
             return;
 
-        datasets.RemoveAt(0);
+        datasets.RemoveAt(datasets.Count - 1);
         _chart.Update();
     }
 
-    private void AddPieData()
+    private void AddRadarData()
     {
         if (_config.Data.Datasets.Count == 0)
             return;
@@ -90,7 +117,7 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void RemovePieData()
+    private void RemoveRadarData()
     {
         if (_config.Data.Datasets.Count == 0 ||
             _config.Data.Labels.Count == 0)
@@ -113,41 +140,64 @@ public partial class _BitChartPieDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
-<BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
-<BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>
-<BitButton OnClick=""AddPieData"">Add Data</BitButton>
-<BitButton OnClick=""RemovePieData"">Remove Data</BitButton>";
+<BitButton OnClick=""RandomizeRadarData"">Randomize Data</BitButton>
+<BitButton OnClick= ""AddRadarDataset"" > Add Dataset</BitButton>
+<BitButton OnClick= ""RemoveRadarDataset"" > Remove Dataset</BitButton>
+<BitButton OnClick= ""AddRadarData"" > Add Data</BitButton>
+<BitButton OnClick= ""RemoveRadarData"" > Remove Data</BitButton>";
     private readonly string csharpCode = @"
-private const int INITAL_COUNT = 5;
+private const int INITAL_COUNT = 8;
 
 private BitChart _chart = default!;
-private BitChartPieConfig _config = default!;
+private BitChartRadarConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartPieConfig
+    _config = new BitChartRadarConfig
     {
-        Options = new BitChartPieOptions
+        Options = new BitChartRadarOptions()
         {
             Responsive = true,
             Title = new BitChartOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart Pie Chart""
+                Text = ""BitChart Radar Chart""
+            },
+            Scale = new BitChartLinearRadialAxis
+            {
+                GridLines = new BitChartGridLines
+                {
+                    Color = ""gray""
+                }
             }
         }
     };
 
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset1 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+        Label = ""Dataset 1"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red))
     };
-    _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-    _config.Data.Datasets.Add(dataset);
+
+    IDataset<int> dataset2 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    {
+        Label = ""Dataset 2"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue))
+    };
+
+    IDataset<int> dataset3 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    {
+        Label = ""Dataset 3"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Orange))
+    };
+
+
+    _config.Data.Datasets.Add(dataset1);
+    _config.Data.Datasets.Add(dataset2);
+    _config.Data.Datasets.Add(dataset3);
 }
 
-private void RandomizePieData()
+private void RandomizeRadarData()
 {
     foreach (IDataset<int> dataset in _config.Data.Datasets)
     {
@@ -169,29 +219,32 @@ private void RandomizePieData()
     _chart.Update();
 }
 
-private void AddPieDataset()
+private void AddRadarDataset()
 {
-    int count = _config.Data.Labels.Count;
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
+    IDataset<int> dataset = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+        Label = $""Dataset {_config.Data.Datasets.Count + 1}"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+        BorderColor = BitChartColorUtil.FromDrawingColor(color),
+        BorderWidth = 1
     };
 
     _config.Data.Datasets.Add(dataset);
     _chart.Update();
 }
 
-private void RemovePieDataset()
+private void RemoveRadarDataset()
 {
     IList<IBitChartDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
         return;
 
-    datasets.RemoveAt(0);
+    datasets.RemoveAt(datasets.Count - 1);
     _chart.Update();
 }
 
-private void AddPieData()
+private void AddRadarData()
 {
     if (_config.Data.Datasets.Count == 0)
         return;
@@ -207,7 +260,7 @@ private void AddPieData()
     _chart.Update();
 }
 
-private void RemovePieData()
+private void RemoveRadarData()
 {
     if (_config.Data.Datasets.Count == 0 ||
         _config.Data.Labels.Count == 0)

@@ -18,6 +18,29 @@ public partial class _BitChartBarDemo
                 {
                     Display = true,
                     Text = "BitChart bar Chart"
+                },
+                Scales = new BitChartBarScales
+                {
+                    XAxes =
+                    [
+                        new BitChartBarCategoryAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ],
+                    YAxes =
+                    [
+                        new BitChartLinearCartesianAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ]
                 }
             }
         };
@@ -117,13 +140,11 @@ public partial class _BitChartBarDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<div>
-    <BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
-    <BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
-    <BitButton OnClick= ""RemoveBarDataset"" > Remove Dataset</BitButton>
-    <BitButton OnClick= ""AddBarData"" > Add Data</BitButton>
-    <BitButton OnClick= ""RemoveBarData"" > Remove Data</BitButton>
-</div>";
+<BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
+<BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
+<BitButton OnClick= ""RemoveBarDataset"" > Remove Dataset</BitButton>
+<BitButton OnClick= ""AddBarData"" > Add Data</BitButton>
+<BitButton OnClick= ""RemoveBarData"" > Remove Data</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -141,6 +162,29 @@ protected override void OnInitialized()
             {
                 Display = true,
                 Text = ""BitChart bar Chart""
+            },
+            Scales = new BitChartBarScales
+            {
+                XAxes =
+                [
+                    new BitChartBarCategoryAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ],
+                YAxes =
+                [
+                    new BitChartLinearCartesianAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ]
             }
         }
     };
@@ -237,10 +281,10 @@ private void RemoveBarData()
 
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 
@@ -255,12 +299,12 @@ public static class BitChartDemoColors
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 

@@ -1,43 +1,27 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
-public partial class _BitChartLineDemo
+public partial class _BitChartScatterDemo
 {
     private const int INITAL_COUNT = 5;
 
     private BitChart _chart = default!;
-    private BitChartLineConfig _config = default!;
+    private BitChartScatterConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartLineConfig
-        {
+        _config = new BitChartScatterConfig() 
+        { 
             Options = new BitChartLineOptions
             {
-                Responsive = true,
-                Title = new BitChartOptionsTitle
-                {
-                    Display = true,
-                    Text = "BitChart Line Chart"
-                },
-                Tooltips = new BitChartTooltips
-                {
-                    Mode = BitChartInteractionMode.Nearest,
-                    Intersect = true
-                },
-                Hover = new BitChartHover
-                {
-                    Mode = BitChartInteractionMode.Nearest,
-                    Intersect = true
-                },
                 Scales = new BitChartScales
                 {
                     XAxes =
                     [
-                        new BitChartCategoryAxis
+                        new BitChartLinearCartesianAxis
                         {
                             ScaleLabel = new BitChartScaleLabel
                             {
-                                LabelString = "Month"
+                                LabelString = "Value"
                             },
                             GridLines = new BitChartGridLines
                             {
@@ -63,68 +47,102 @@ public partial class _BitChartLineDemo
             }
         };
 
-        IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString("o")));
+
+        var dataset1 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
         {
             Label = "My first dataset",
             BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
             BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-            Fill = BitChartFillingMode.Disabled
         };
 
-        IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset2 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
         {
             Label = "My second dataset",
             BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
             BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-            Fill = BitChartFillingMode.Disabled
         };
 
-        _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
+        var dataset3 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
+        {
+            Label = "Dataset with point data",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+            BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        };
+
         _config.Data.Datasets.Add(dataset1);
         _config.Data.Datasets.Add(dataset2);
+        _config.Data.Datasets.Add(dataset3);
+    }
+
+    private void RandomizeData()
+    {
+        foreach (IBitChartDataset dataset in _config.Data.Datasets)
+        {
+            if (dataset is BitChartScatterDataset scatterDataset)
+            {
+                int count = scatterDataset.Count;
+                scatterDataset.Clear();
+                scatterDataset.AddRange(BitChartDemoUtils.CreateRandomPoints(count));
+            }
+        }
+
+        _chart.Update();
+    }
+
+    private void AddDataset()
+    {
+        string color = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
+        var newDataset = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(_config.Data.Labels.Count))
+        {
+            Label = $"Dataset {_config.Data.Datasets.Count + 1}",
+            BackgroundColor = color,
+            BorderColor = color,
+        };
+
+        _config.Data.Datasets.Add(newDataset);
+        _chart.Update();
+    }
+
+    private void RemoveDataset()
+    {
+        IList<IBitChartDataset> datasets = _config.Data.Datasets;
+
+        if (datasets.Count == 0) return;
+
+        datasets.RemoveAt(datasets.Count - 1);
+        _chart.Update();
     }
 
 
 
     private readonly string razorCode = @"
-<BitChart Config=""_config"" @ref=""_chart"" />";
+<BitChart Config=""_config"" IsDateAdapterRequired=""true"" @ref=""_chart"" />
+
+<BitButton OnClick=""RandomizeData"">Randomize Data</BitButton>
+<BitButton OnClick=""AddDataset"">Add Dataset</BitButton>
+<BitButton OnClick=""RemoveDataset"">Remove Dataset</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
 private BitChart _chart = default!;
-private BitChartLineConfig _config = default!;
+private BitChartScatterConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartLineConfig
-    {
+    _config = new BitChartScatterConfig() 
+    { 
         Options = new BitChartLineOptions
         {
-            Responsive = true,
-            Title = new BitChartOptionsTitle
-            {
-                Display = true,
-                Text = ""BitChart Line Chart""
-            },
-            Tooltips = new BitChartTooltips
-            {
-                Mode = BitChartInteractionMode.Nearest,
-                Intersect = true
-            },
-            Hover = new BitChartHover
-            {
-                Mode = BitChartInteractionMode.Nearest,
-                Intersect = true
-            },
             Scales = new BitChartScales
             {
                 XAxes =
                 [
-                    new BitChartCategoryAxis
+                    new BitChartLinearCartesianAxis
                     {
                         ScaleLabel = new BitChartScaleLabel
                         {
-                            LabelString = ""Month""
+                            LabelString = ""Value""
                         },
                         GridLines = new BitChartGridLines
                         {
@@ -150,25 +168,71 @@ protected override void OnInitialized()
         }
     };
 
-    IDataset<int> dataset1 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    _config.Data.Labels.AddRange(BitChartDemoUtils.GetNextDays(INITAL_COUNT).Select(d => d.ToString(""o"")));
+
+    var dataset1 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
     {
         Label = ""My first dataset"",
         BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
         BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Red),
-        Fill = BitChartFillingMode.Disabled
     };
 
-    IDataset<int> dataset2 = new BitChartLineDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    var dataset2 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
     {
         Label = ""My second dataset"",
         BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
         BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Blue),
-        Fill = BitChartFillingMode.Disabled
     };
 
-    _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
+    var dataset3 = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(10))
+    {
+        Label = ""Dataset with point data"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+        BorderColor = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.Green),
+    };
+
     _config.Data.Datasets.Add(dataset1);
     _config.Data.Datasets.Add(dataset2);
+    _config.Data.Datasets.Add(dataset3);
+}
+
+private void RandomizeData()
+{
+    foreach (IBitChartDataset dataset in _config.Data.Datasets)
+    {
+        if (dataset is BitChartScatterDataset scatterDataset)
+        {
+            int count = scatterDataset.Count;
+            scatterDataset.Clear();
+            scatterDataset.AddRange(BitChartDemoUtils.CreateRandomPoints(count));
+        }
+    }
+
+    _chart.Update();
+}
+
+private void AddDataset()
+{
+    string color = BitChartColorUtil.FromDrawingColor(BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count]);
+    var newDataset = new BitChartScatterDataset(BitChartDemoUtils.CreateRandomPoints(_config.Data.Labels.Count))
+    {
+        Label = $""Dataset {_config.Data.Datasets.Count + 1}"",
+        BackgroundColor = color,
+        BorderColor = color,
+    };
+
+    _config.Data.Datasets.Add(newDataset);
+    _chart.Update();
+}
+
+private void RemoveDataset()
+{
+    IList<IBitChartDataset> datasets = _config.Data.Datasets;
+
+    if (datasets.Count == 0) return;
+
+    datasets.RemoveAt(datasets.Count - 1);
+    _chart.Update();
 }
 
 public static class BitChartDemoColors
@@ -232,6 +296,21 @@ public static class BitChartDemoUtils
         }
 
         return factors;
+    }
+
+    public static List<BitChartPoint> CreateRandomPoints(int count)
+    {
+        List<BitChartPoint> points = new();
+
+        for (int i = 0; i < count; i++)
+        {
+            double x = RandomScalingFactor();
+            double y = RandomScalingFactor();
+
+            points.Add(new BitChartPoint(x, y));
+        }
+
+        return points;
     }
 }
 
