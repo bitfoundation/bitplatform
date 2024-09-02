@@ -10,8 +10,8 @@
     <ComponentExampleBox Title="Basic Overlay" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div>
-                <BitButton OnClick="() => BasicIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="BasicIsVisible" Class="overlay">
+                <BitButton OnClick="() => BasicIsOpen = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsOpen="BasicIsOpen" Class="overlay">
                     <BitProgress Circular Indeterminate Thickness="10" />
                 </BitOverlay>
             </div>
@@ -21,10 +21,10 @@
     <ComponentExampleBox Title="Disabled AutoClose" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div>
-                <BitButton OnClick="() => AutoCloseIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AutoCloseIsVisible" Class="overlay" NoAutoClose>
+                <BitButton OnClick="() => AutoCloseIsOpen = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsOpen="AutoCloseIsOpen" Class="overlay" NoAutoClose>
                     <div class="content">
-                        <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsVisible = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                        <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
                         <h3>Lorem Ipsum</h3>
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -42,8 +42,8 @@
         <ExamplePreview>
             <div class="example-desc">Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
             <div class="container">
-                <BitButton Class="show-button" OnClick="() => AbsoluteIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AbsoluteIsVisible"
+                <BitButton Class="show-button" OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsOpen="AbsoluteIsOpen"
                             Class="overlay"
                             AbsolutePosition>
                     <BitProgress Circular Indeterminate Thickness="10" />
@@ -57,8 +57,8 @@
         <ExamplePreview>
             <div class="example-desc">Scrolling cannot be left enabled behind the Overlay</div>
             <div>
-                <BitButton OnClick="() => AutoToggleIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="AutoToggleIsVisible"
+                <BitButton OnClick="() => AutoToggleIsOpen = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsOpen="AutoToggleIsOpen"
                             Class="overlay"
                             AutoToggleScroll>
                     <BitStack HorizontalAlign="BitAlignment.Stretch">
@@ -76,12 +76,12 @@
 
             <div class="btn-container">
 
-                <BitButton OnClick="() => EnabledScrollerIsVisible = true">Show with Enabled scrolling</BitButton>
-                <BitButton OnClick="() => DisabledScrollerIsVisible = true">Show with Disabled scrolling</BitButton>
+                <BitButton OnClick="() => EnabledScrollerIsOpen = true">Show with Enabled scrolling</BitButton>
+                <BitButton OnClick="() => DisabledScrollerIsOpen = true">Show with Disabled scrolling</BitButton>
             </div>
 
             <div class="scroller">
-                <BitOverlay @bind-IsVisible="EnabledScrollerIsVisible"
+                <BitOverlay @bind-IsOpen="EnabledScrollerIsOpen"
                             Class="overlay"
                             Style="background-color:unset"
                             ScrollerSelector=".scroller"
@@ -97,7 +97,7 @@
                     </div>
                 </BitOverlay>
 
-                <BitOverlay @bind-IsVisible="DisabledScrollerIsVisible"
+                <BitOverlay @bind-IsOpen="DisabledScrollerIsOpen"
                             Class="overlay"
                             ScrollerSelector=".scroller"
                             AbsolutePosition
@@ -144,8 +144,8 @@
     <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>
-                <BitButton OnClick="() => EventOnCloseIsVisible = true">Show Overlay</BitButton>
-                <BitOverlay @bind-IsVisible="EventOnCloseIsVisible" Class="overlay" OnClick=@(() => EventOnCloseIsVisible = false) NoAutoClose>
+                <BitButton OnClick="() => EventOnCloseIsOpen = true">Show Overlay</BitButton>
+                <BitOverlay @bind-IsOpen="EventOnCloseIsOpen" Class="overlay" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
                     <div class="content">
                         <h3>Lorem Ipsum</h3>
                         <p>
