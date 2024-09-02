@@ -19,7 +19,7 @@ public partial class BitSpacerDemo
 <div style=""display: flex; width: 100%;"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" />
     <BitSpacer />
-    <BitText Variant=""BitTextVariant.H6"">Title</BitText>
+    <BitText Typography=""BitTypography.H6"">Title</BitText>
     <BitSpacer />
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Contact"" />
 </div>";

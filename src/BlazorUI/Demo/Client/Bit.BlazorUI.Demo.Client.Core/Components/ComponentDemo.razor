@@ -2,25 +2,25 @@
 
 <div class="example-page">
     <div class="page-container example">
-        <BitText Variant="BitTextVariant.H3" Class="title">@ComponentName</BitText>
+        <BitText Typography="BitTypography.H3" Class="title">@ComponentName</BitText>
         <section id="overview-section" class="page-section">
-            <BitText Variant="BitTextVariant.Subtitle1">
+            <BitText Typography="BitTypography.Subtitle1">
                 @ComponentDescription
             </BitText>
         </section>
         @if (Notes.HasValue())
         {
             <section id="notes-section" class="page-section">
-                <BitText Variant="BitTextVariant.H4" Class="subtitle">Notes</BitText>
+                <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
                 @Notes
             </section>
         }
         <section id="usage-section" class="page-section">
-            <BitText Variant="BitTextVariant.H4" Class="subtitle">Usage</BitText>
+            <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
             @ChildContent
         </section>
         <section id="implementation-section" class="page-section">
-            <BitText Variant="BitTextVariant.H4" Class="subtitle">Implementation</BitText>
+            <BitText Typography="BitTypography.H4" Class="subtitle">Implementation</BitText>
 
             <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
 
