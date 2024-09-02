@@ -110,6 +110,9 @@ public partial class Templates03GettingStartedPage
             (text:@"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
             command:"code --install-extension ms-dotnettools.csdevkit;"),
 
+            (text:@"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
+            command:"code --install-extension ms-vscode-remote.remote-containers;"),
+
             (text:@"echo 'Install the Blazor WASM Companion extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
             command:"code --install-extension ms-dotnettools.blazorwasm-companion;"),
 
