@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
-    /// The content of the Typography.
+    /// The content of the stack.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -42,7 +42,7 @@ public partial class BitStack : BitComponentBase
     /// Defines whether to render Stack children horizontally.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitStackAlignment HorizontalAlign { get; set; }
+    public BitAlignment HorizontalAlign { get; set; }
 
     /// <summary>
     /// Make the width and height of the stack 100%.
@@ -72,7 +72,7 @@ public partial class BitStack : BitComponentBase
     /// Defines whether to render Stack children vertically.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitStackAlignment VerticalAlign { get; set; }
+    public BitAlignment VerticalAlign { get; set; }
 
     /// <summary>
     /// Defines whether Stack children should wrap onto multiple rows or columns when they are about to overflow the size of the Stack.
@@ -117,15 +117,15 @@ public partial class BitStack : BitComponentBase
         base.BuildRenderTree(builder);
     }
 
-    private static readonly Dictionary<BitStackAlignment, string> _AlignmentMap = new()
+    private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
-        { BitStackAlignment.Start, "flex-start" },
-        { BitStackAlignment.End, "flex-end" },
-        { BitStackAlignment.Center, "center" },
-        { BitStackAlignment.SpaceBetween, "space-between" },
-        { BitStackAlignment.SpaceAround, "space-around" },
-        { BitStackAlignment.SpaceEvenly, "space-evenly" },
-        { BitStackAlignment.Baseline, "baseline" },
-        { BitStackAlignment.Stretch, "stretch" },
+        { BitAlignment.Start, "flex-start" },
+        { BitAlignment.End, "flex-end" },
+        { BitAlignment.Center, "center" },
+        { BitAlignment.SpaceBetween, "space-between" },
+        { BitAlignment.SpaceAround, "space-around" },
+        { BitAlignment.SpaceEvenly, "space-evenly" },
+        { BitAlignment.Baseline, "baseline" },
+        { BitAlignment.Stretch, "stretch" },
     };
 }

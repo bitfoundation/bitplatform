@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTypography : BitComponentBase
+public partial class BitText : BitComponentBase
 {
     /// <summary>
-    /// The content of the Typography.
+    /// The content of the Text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -29,10 +29,10 @@ public partial class BitTypography : BitComponentBase
     public bool NoWrap { get; set; }
 
     /// <summary>
-    /// The variant of the Typography.
+    /// The variant of the Text.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitTypographyVariant Variant { get; set; } = BitTypographyVariant.Subtitle1;
+    public BitTextVariant Variant { get; set; } = BitTextVariant.Subtitle1;
 
 
 
@@ -68,21 +68,22 @@ public partial class BitTypography : BitComponentBase
 
 
 
-    protected static readonly Dictionary<BitTypographyVariant, string> _VariantMapping = new()
+    protected static readonly Dictionary<BitTextVariant, string> _VariantMapping = new()
     {
-        { BitTypographyVariant.Body1, "p" },
-        { BitTypographyVariant.Body2, "p" },
-        { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
-        { BitTypographyVariant.H1, "h1" },
-        { BitTypographyVariant.H2, "h2" },
-        { BitTypographyVariant.H3, "h3" },
-        { BitTypographyVariant.H4, "h4" },
-        { BitTypographyVariant.H5, "h5" },
-        { BitTypographyVariant.H6, "h6" },
-        { BitTypographyVariant.Inherit, "p" },
-        { BitTypographyVariant.Overline, "span" },
-        { BitTypographyVariant.Subtitle1, "h6" },
-        { BitTypographyVariant.Subtitle2, "h6" },
+        { BitTextVariant.H1, "h1" },
+        { BitTextVariant.H2, "h2" },
+        { BitTextVariant.H3, "h3" },
+        { BitTextVariant.H4, "h4" },
+        { BitTextVariant.H5, "h5" },
+        { BitTextVariant.H6, "h6" },
+        { BitTextVariant.Subtitle1, "h6" },
+        { BitTextVariant.Subtitle2, "h6" },
+        { BitTextVariant.Body1, "p" },
+        { BitTextVariant.Body2, "p" },
+        { BitTextVariant.Button, "span" },
+        { BitTextVariant.Caption1, "span" },
+        { BitTextVariant.Caption2, "span" },
+        { BitTextVariant.Overline, "span" },
+        { BitTextVariant.Inherit, "p" },
     };
 }

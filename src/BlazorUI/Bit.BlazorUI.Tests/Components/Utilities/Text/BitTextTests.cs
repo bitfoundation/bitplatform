@@ -3,56 +3,58 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
-namespace Bit.BlazorUI.Tests.Components.Utilities.Typography;
+namespace Bit.BlazorUI.Tests.Components.Utilities.Text;
 
 [TestClass]
-public class BitTypographyTests : BunitTestContext
+public class BitTextTests : BunitTestContext
 {
-    private static readonly Dictionary<BitTypographyVariant, string> VariantMapping = new()
+    private static readonly Dictionary<BitTextVariant, string> VariantMapping = new()
     {
-        { BitTypographyVariant.Body1, "p" },
-        { BitTypographyVariant.Body2, "p" },
-        { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
-        { BitTypographyVariant.H1, "h1" },
-        { BitTypographyVariant.H2, "h2" },
-        { BitTypographyVariant.H3, "h3" },
-        { BitTypographyVariant.H4, "h4" },
-        { BitTypographyVariant.H5, "h5" },
-        { BitTypographyVariant.H6, "h6" },
-        { BitTypographyVariant.Inherit, "p" },
-        { BitTypographyVariant.Overline, "span" },
-        { BitTypographyVariant.Subtitle1, "h6" },
-        { BitTypographyVariant.Subtitle2, "h6" }
+        { BitTextVariant.Body1, "p" },
+        { BitTextVariant.Body2, "p" },
+        { BitTextVariant.Button, "span" },
+        { BitTextVariant.Caption1, "span" },
+        { BitTextVariant.Caption2, "span" },
+        { BitTextVariant.H1, "h1" },
+        { BitTextVariant.H2, "h2" },
+        { BitTextVariant.H3, "h3" },
+        { BitTextVariant.H4, "h4" },
+        { BitTextVariant.H5, "h5" },
+        { BitTextVariant.H6, "h6" },
+        { BitTextVariant.Inherit, "p" },
+        { BitTextVariant.Overline, "span" },
+        { BitTextVariant.Subtitle1, "h6" },
+        { BitTextVariant.Subtitle2, "h6" }
     };
 
     [DataTestMethod]
-    public void BitTypographyShouldRenderExpectedElement()
+    public void BitTextShouldRenderExpectedElement()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
     }
 
     [DataTestMethod,
-         DataRow(BitTypographyVariant.Body1),
-         DataRow(BitTypographyVariant.Body2),
-         DataRow(BitTypographyVariant.Button),
-         DataRow(BitTypographyVariant.Caption),
-         DataRow(BitTypographyVariant.H1),
-         DataRow(BitTypographyVariant.H2),
-         DataRow(BitTypographyVariant.H3),
-         DataRow(BitTypographyVariant.H4),
-         DataRow(BitTypographyVariant.H5),
-         DataRow(BitTypographyVariant.H6),
-         DataRow(BitTypographyVariant.Inherit),
-         DataRow(BitTypographyVariant.Overline),
-         DataRow(BitTypographyVariant.Subtitle1),
-         DataRow(BitTypographyVariant.Subtitle2),
+         DataRow(BitTextVariant.H1),
+         DataRow(BitTextVariant.H2),
+         DataRow(BitTextVariant.H3),
+         DataRow(BitTextVariant.H4),
+         DataRow(BitTextVariant.H5),
+         DataRow(BitTextVariant.H6),
+         DataRow(BitTextVariant.Subtitle1),
+         DataRow(BitTextVariant.Subtitle2),
+         DataRow(BitTextVariant.Body1),
+         DataRow(BitTextVariant.Body2),
+         DataRow(BitTextVariant.Button),
+         DataRow(BitTextVariant.Caption1),
+         DataRow(BitTextVariant.Caption2),
+         DataRow(BitTextVariant.Overline),
+         DataRow(BitTextVariant.Inherit),
     ]
-    public void BitTypographyShouldRespectVariant(BitTypographyVariant variant)
+    public void BitTextShouldRespectVariant(BitTextVariant variant)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Variant, variant);
         });
@@ -68,14 +70,14 @@ public class BitTypographyTests : BunitTestContext
         DataRow("div"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectElement(string element)
+    public void BitTextShouldRespectElement(string element)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Element, element);
         });
 
-        var defaultVariant = BitTypographyVariant.Subtitle1;
+        var defaultVariant = BitTextVariant.Subtitle1;
         var el = element is null ? VariantMapping[defaultVariant] : element;
 
         component.MarkupMatches(@$"<{el} class=""bit-tpg bit-tpg-subtitle1"" id:ignore></{el}>");
@@ -86,9 +88,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitTypographyShouldRespectNoWrap(bool noWrap)
+    public void BitTextShouldRespectNoWrap(bool noWrap)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.NoWrap, noWrap);
         });
@@ -99,9 +101,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectNoWrapChangingAfterRender()
+    public void BitTextShouldRespectNoWrapChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -117,9 +119,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitTypographyShouldRespectGutter(bool gutter)
+    public void BitTextShouldRespectGutter(bool gutter)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Gutter, gutter);
         });
@@ -130,9 +132,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectGutterChangingAfterRender()
+    public void BitTextShouldRespectGutterChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -148,9 +150,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitTypographyShouldRespectIsEnabled(bool isEnabled)
+    public void BitTextShouldRespectIsEnabled(bool isEnabled)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
         });
@@ -161,9 +163,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectIsEnabledChangingAfterRender()
+    public void BitTextShouldRespectIsEnabledChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -180,9 +182,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow("padding: 1rem;"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectStyle(string style)
+    public void BitTextShouldRespectStyle(string style)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Style, style);
         });
@@ -198,9 +200,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectStyleChangingAfterRender()
+    public void BitTextShouldRespectStyleChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -217,9 +219,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow("test-class"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectClass(string @class)
+    public void BitTextShouldRespectClass(string @class)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Class, @class);
         });
@@ -230,9 +232,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectClassChangingAfterRender()
+    public void BitTextShouldRespectClassChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -248,9 +250,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow("test-id"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectId(string id)
+    public void BitTextShouldRespectId(string id)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Id, id);
         });
@@ -266,9 +268,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow(BitDir.Auto),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectDir(BitDir? dir)
+    public void BitTextShouldRespectDir(BitDir? dir)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Dir, dir);
         });
@@ -285,9 +287,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectDirChangingAfterRender()
+    public void BitTextShouldRespectDirChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -304,9 +306,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow(BitVisibility.Collapsed),
         DataRow(BitVisibility.Hidden)
     ]
-    public void BitTypographyShouldRespectVisibility(BitVisibility visibility)
+    public void BitTextShouldRespectVisibility(BitVisibility visibility)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.Visibility, visibility);
         });
@@ -326,9 +328,9 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectVisibilityChangingAfterRender()
+    public void BitTextShouldRespectVisibilityChangingAfterRender()
     {
-        var component = RenderComponent<BitTypography>();
+        var component = RenderComponent<BitText>();
 
         component.MarkupMatches(@"<h6 class=""bit-tpg bit-tpg-subtitle1"" id:ignore></h6>");
 
@@ -344,9 +346,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow("Bit Blazor UI"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectAriaLabel(string ariaLabel)
+    public void BitTextShouldRespectAriaLabel(string ariaLabel)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
         });
@@ -366,9 +368,9 @@ public class BitTypographyTests : BunitTestContext
         DataRow("<span>Bit Blazor UI</span>"),
         DataRow(null)
     ]
-    public void BitTypographyShouldRespectChildContent(string childContent)
+    public void BitTextShouldRespectChildContent(string childContent)
     {
-        var component = RenderComponent<BitTypography>(parameters =>
+        var component = RenderComponent<BitText>(parameters =>
         {
             parameters.AddChildContent(childContent);
         });
@@ -377,10 +379,10 @@ public class BitTypographyTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitTypographyShouldRespectHtmlAttributes()
+    public void BitTextShouldRespectHtmlAttributes()
     {
-        var component = RenderComponent<BitTypographyHtmlAttributesTest>();
+        var component = RenderComponent<BitTextHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore>I'm a typography</h6>");
+        component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore>I'm a text</h6>");
     }
 }

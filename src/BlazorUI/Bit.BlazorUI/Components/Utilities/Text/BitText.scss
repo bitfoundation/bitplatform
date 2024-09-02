@@ -4,40 +4,6 @@
     font-family: $tg-font-family;
 }
 
-.bit-tpg-body1 {
-    margin: $tg-body1-margin;
-    font-size: $tg-body1-font-size;
-    font-weight: $tg-body1-font-weight;
-    line-height: $tg-body1-line-height;
-    letter-spacing: $tg-body1-letter-spacing;
-}
-
-.bit-tpg-body2 {
-    margin: $tg-body2-margin;
-    font-size: $tg-body2-font-size;
-    font-weight: $tg-body2-font-weight;
-    line-height: $tg-body2-line-height;
-    letter-spacing: $tg-body2-letter-spacing;
-}
-
-.bit-tpg-button {
-    margin: $tg-button-margin;
-    display: $tg-button-display;
-    font-size: $tg-button-font-size;
-    font-weight: $tg-button-font-weight;
-    line-height: $tg-button-line-height;
-    letter-spacing: $tg-button-letter-spacing;
-    text-transform: $tg-button-text-transform;
-}
-
-.bit-tpg-caption {
-    margin: $tg-caption-margin;
-    font-size: $tg-caption-font-size;
-    font-weight: $tg-caption-font-weight;
-    line-height: $tg-caption-line-height;
-    letter-spacing: $tg-caption-letter-spacing;
-}
-
 .bit-tpg-h1 {
     margin: $tg-h1-margin;
     font-size: $tg-h1-font-size;
@@ -86,25 +52,6 @@
     letter-spacing: $tg-h6-letter-spacing;
 }
 
-.bit-tpg-inherit {
-    margin: $tg-inherit-margin;
-    font-size: $tg-inherit-font-size;
-    font-family: $tg-inherit-font-family;
-    font-weight: $tg-inherit-font-weight;
-    line-height: $tg-inherit-line-height;
-    letter-spacing: $tg-inherit-letter-spacing;
-}
-
-.bit-tpg-overline {
-    margin: $tg-overline-margin;
-    display: $tg-overline-display;
-    font-size: $tg-overline-font-size;
-    font-weight: $tg-overline-font-weight;
-    line-height: $tg-overline-line-height;
-    letter-spacing: $tg-overline-letter-spacing;
-    text-transform: $tg-overline-text-transform;
-}
-
 .bit-tpg-subtitle1 {
     margin: $tg-subtitle1-margin;
     font-size: $tg-subtitle1-font-size;
@@ -119,6 +66,67 @@
     font-weight: $tg-subtitle2-font-weight;
     line-height: $tg-subtitle2-line-height;
     letter-spacing: $tg-subtitle2-letter-spacing;
+}
+
+.bit-tpg-body1 {
+    margin: $tg-body1-margin;
+    font-size: $tg-body1-font-size;
+    font-weight: $tg-body1-font-weight;
+    line-height: $tg-body1-line-height;
+    letter-spacing: $tg-body1-letter-spacing;
+}
+
+.bit-tpg-body2 {
+    margin: $tg-body2-margin;
+    font-size: $tg-body2-font-size;
+    font-weight: $tg-body2-font-weight;
+    line-height: $tg-body2-line-height;
+    letter-spacing: $tg-body2-letter-spacing;
+}
+
+.bit-tpg-button {
+    margin: $tg-button-margin;
+    display: $tg-button-display;
+    font-size: $tg-button-font-size;
+    font-weight: $tg-button-font-weight;
+    line-height: $tg-button-line-height;
+    letter-spacing: $tg-button-letter-spacing;
+    text-transform: $tg-button-text-transform;
+}
+
+.bit-tpg-caption1 {
+    margin: $tg-caption1-margin;
+    font-size: $tg-caption1-font-size;
+    font-weight: $tg-caption1-font-weight;
+    line-height: $tg-caption1-line-height;
+    letter-spacing: $tg-caption1-letter-spacing;
+}
+
+.bit-tpg-caption2 {
+    margin: $tg-caption2-margin;
+    font-size: $tg-caption2-font-size;
+    font-weight: $tg-caption2-font-weight;
+    line-height: $tg-caption2-line-height;
+    letter-spacing: $tg-caption2-letter-spacing;
+}
+
+.bit-tpg-overline {
+    margin: $tg-overline-margin;
+    display: $tg-overline-display;
+    font-size: $tg-overline-font-size;
+    font-weight: $tg-overline-font-weight;
+    line-height: $tg-overline-line-height;
+    letter-spacing: $tg-overline-letter-spacing;
+    text-transform: $tg-overline-text-transform;
+}
+
+.bit-tpg-inherit {
+    margin: $tg-inherit-margin;
+    font-size: $tg-inherit-font-size;
+    font-family: $tg-inherit-font-family;
+    font-weight: $tg-inherit-font-weight;
+    line-height: $tg-inherit-line-height;
+    letter-spacing: $tg-inherit-letter-spacing;
 }
 
 
