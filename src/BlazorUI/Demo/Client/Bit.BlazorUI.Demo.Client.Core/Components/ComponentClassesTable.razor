@@ -1,33 +1,33 @@
 @foreach (var subClass in Classes)
 {
     <div id="@subClass.Id" class="sec-con">
-        <BitText Variant="BitTextVariant.H6" Gutter Class="subclass-title"><b>@subClass.Title</b> properties</BitText>
-        <BitText Variant="BitTextVariant.Subtitle2" Gutter>@subClass.Description</BitText>
+        <BitText Typography="BitTypography.H6" Gutter Class="subclass-title"><b>@subClass.Title</b> properties</BitText>
+        <BitText Typography="BitTypography.Subtitle2" Gutter>@subClass.Description</BitText>
         <table class="table-view params-table">
             <tr class="th-row">
-                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Name</BitText></th>
-                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Type</BitText></th>
-                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Default value</BitText></th>
-                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Description</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Name</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Type</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Default value</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Description</BitText></th>
             </tr>
             @foreach (var subParam in subClass.Parameters)
             {
                 <tr class="tdata-row">
-                    <td class="td-cell"><BitText Variant="BitTextVariant.Caption1">@subParam.Name</BitText></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@subParam.Name</BitText></td>
                     <td class="td-cell">
                         @if (subParam.LinkType == LinkType.Link)
                         {
                             <BitLink Href="@subParam.Href">
-                                <BitText Variant="BitTextVariant.Caption1">@subParam.Type</BitText>
+                                <BitText Typography="BitTypography.Caption1">@subParam.Type</BitText>
                             </BitLink>
                         }
                         else
                         {
-                            <BitText Variant="BitTextVariant.Caption1">@subParam.Type</BitText>
+                            <BitText Typography="BitTypography.Caption1">@subParam.Type</BitText>
                         }
                     </td>
-                    <td class="td-cell"><BitText Variant="BitTextVariant.Caption1">@subParam.DefaultValue</BitText></td>
-                    <td class="td-cell"><BitText Variant="BitTextVariant.Caption1">@subParam.Description</BitText></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@subParam.DefaultValue</BitText></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@subParam.Description</BitText></td>
                 </tr>
             }
         </table>
