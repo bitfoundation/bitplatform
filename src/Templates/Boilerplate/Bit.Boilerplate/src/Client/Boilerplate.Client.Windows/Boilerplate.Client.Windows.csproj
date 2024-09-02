@@ -54,10 +54,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <IsolatedScssFiles Include="**\*.razor.scss" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Resource Include="Resources\**\*.*" />
     </ItemGroup>
 

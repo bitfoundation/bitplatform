@@ -54,8 +54,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <IsolatedScssFiles Include="**\*.razor.scss" />
-        <GlobalScssFiles Include="Styles\**\*.scss" />
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
