@@ -85,7 +85,7 @@ public partial class BitColorPickerDemo
 <BitColorPicker />";
 
     private readonly string example2RazorCode = @"
-<BitColorPicker ShowAlphaSlider=""true"" ShowPreview=""true"" />";
+<BitColorPicker ShowAlphaSlider ShowPreview />";
 
     private readonly string example3RazorCode = @"
 <BitColorPicker @bind-Color=""rgbColor"" />
@@ -94,7 +94,7 @@ public partial class BitColorPickerDemo
 <BitColorPicker @bind-Color=""hexColor"" />
 <div>Color: @hexColor</div>
 
-<BitColorPicker @bind-Color=""twoWayColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<BitColorPicker @bind-Color=""twoWayColor"" ShowAlphaSlider ShowPreview />
 <BitTextField Label=""Enter Color (Hex or Rgb)"" @bind-Value=""twoWayColor"" Style=""width: 200px;"" />";
     private readonly string example3CsharpCode = @"
 private string rgbColor = ""rgb(255,255,255)"";
@@ -102,7 +102,7 @@ private string hexColor = ""#FFFFFF"";
 private string twoWayColor = ""#FFFFFF"";";
 
     private readonly string example4RazorCode = @"
-<BitColorPicker OnChange=""v => (changedColor, changedAlpha) = v"" ShowAlphaSlider=""true"" />
+<BitColorPicker OnChange=""v => (changedColor, changedAlpha) = v"" ShowAlphaSlider />
 <div>Color: @changedColor</div>
 <div>Alpha: @changedAlpha</div>";
     private readonly string example4CsharpCode = @"
@@ -110,7 +110,7 @@ private string? changedColor;
 private double changedAlpha;";
 
     private readonly string example5RazorCode = @"
-<BitColorPicker @ref=""colorPickerRef"" @bind-Color=""boundColor"" ShowAlphaSlider=""true"" ShowPreview=""true"" />
+<BitColorPicker @ref=""colorPickerRef"" @bind-Color=""boundColor"" ShowAlphaSlider ShowPreview />
 <div>Color: @boundColor</div>
 <div>Hex: @colorPickerRef?.Hex</div>
 <div>Rgb: @colorPickerRef?.Rgb</div>
@@ -122,13 +122,13 @@ private BitColorPicker colorPickerRef = default!;";
 
     private readonly string example6RazorCode = @"
 <style>
-    .custom-color-picker {
+    .custom-class {
         width: 100px;
         height: 250px;
     }
 </style>
 
-<BitColorPicker ShowAlphaSlider=""true"" Class=""custom-color-picker"" />
+<BitColorPicker ShowAlphaSlider Class=""custom-class"" />
 
-<BitColorPicker ShowAlphaSlider=""true"" Style=""width: 250px; height: 150px;"" />";
+<BitColorPicker ShowAlphaSlider Style=""width: 250px; height: 150px;"" />";
 }

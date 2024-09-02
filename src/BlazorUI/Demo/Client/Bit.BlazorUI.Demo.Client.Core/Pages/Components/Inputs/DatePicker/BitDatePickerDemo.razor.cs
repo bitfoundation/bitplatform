@@ -1027,16 +1027,14 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
         transition: width 0.3s ease, left 0.3s ease;
     }
 
-    .custom-focus {
-        .custom-input-container::after {
-            left: 0;
-            width: 100%;
-        }
+    .custom-focus .custom-input-container::after {
+        left: 0;
+        width: 100%;
+    }
 
-        .custom-label {
-            color: blueviolet;
-            transform: translate(0, 1.5px) scale(0.75);
-        }
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-day-picker {
