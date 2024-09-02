@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
-    /// The content of the Typography.
+    /// The content of the stack.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
