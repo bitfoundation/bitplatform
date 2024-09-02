@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Typography;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Text;
 
-public partial class BitTypographyDemo
+public partial class BitTextDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
@@ -35,8 +35,8 @@ public partial class BitTypographyDemo
         new()
         {
             Name = "Variant",
-            Type = "BitTypographyVariant",
-            DefaultValue = "BitTypographyVariant.Subtitle1",
+            Type = "BitTextVariant",
+            DefaultValue = "BitTextVariant.Subtitle1",
             Description = "The variant of the Typography.",
             LinkType = LinkType.Link,
             Href = "#typography-variant-enum"
@@ -48,7 +48,7 @@ public partial class BitTypographyDemo
         new()
         {
             Id = "typography-variant-enum",
-            Name = "BitTypographyVariant",
+            Name = "BitTextVariant",
             Items =
             [
                 new() { Name = "H1", Value = "0" },
@@ -73,22 +73,22 @@ public partial class BitTypographyDemo
 
 
     private string example1RazorCode = @"
-<BitTypography>This is default (Subtitle1)</BitTypography>
+<BitText>This is default (Subtitle1)</BitText>
 
-<BitTypography Variant=""BitTypographyVariant.H1"">H1. Heading</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.H2"">H2. Heading</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.H3"">H3. Heading</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.H4"">H4. Heading</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.H5"">H5. Heading</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.H6"">H6. Heading</BitTypography>
+<BitText Variant=""BitTextVariant.H1"">H1. Heading</BitText>
+<BitText Variant=""BitTextVariant.H2"">H2. Heading</BitText>
+<BitText Variant=""BitTextVariant.H3"">H3. Heading</BitText>
+<BitText Variant=""BitTextVariant.H4"">H4. Heading</BitText>
+<BitText Variant=""BitTextVariant.H5"">H5. Heading</BitText>
+<BitText Variant=""BitTextVariant.H6"">H6. Heading</BitText>
 
-<BitTypography Variant=""BitTypographyVariant.Subtitle1"">Subtitle1. Lorem ipsum dolor sit amet</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.Subtitle2"">Subtitle2. Lorem ipsum dolor sit amet</BitTypography>
+<BitText Variant=""BitTextVariant.Subtitle1"">Subtitle1. Lorem ipsum dolor sit amet</BitText>
+<BitText Variant=""BitTextVariant.Subtitle2"">Subtitle2. Lorem ipsum dolor sit amet</BitText>
 
-<BitTypography Variant=""BitTypographyVariant.Body1"">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.Body2"">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitTypography>
+<BitText Variant=""BitTextVariant.Body1"">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+<BitText Variant=""BitTextVariant.Body2"">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
 
-<BitTypography Variant=""BitTypographyVariant.Button"">Button. Click Me</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.Caption"">Caption. Hello World!</BitTypography>
-<BitTypography Variant=""BitTypographyVariant.Overline"">Overline. this is overline text.</BitTypography>";
+<BitText Variant=""BitTextVariant.Button"">Button. Click Me</BitText>
+<BitText Variant=""BitTextVariant.Caption"">Caption. Hello World!</BitText>
+<BitText Variant=""BitTextVariant.Overline"">Overline. this is overline text.</BitText>";
 }

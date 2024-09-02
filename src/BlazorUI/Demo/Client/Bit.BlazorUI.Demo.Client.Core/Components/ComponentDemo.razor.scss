@@ -3,7 +3,19 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
+
+.example-page {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
 ::deep {
+    .page-container.example {
+        width: 80%;
+        flex-grow: 1;
+    }
+
     .sec-con {
         scroll-margin: 80px;
     }
