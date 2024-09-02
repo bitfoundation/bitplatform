@@ -1,0 +1,35 @@
+@page "/components/dropmenu"
+
+<PageOutlet Url="components/dropmenu"
+            Title="DropMenu"
+            Description="DropMenu component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="DropMenu"
+               ComponentDescription="DropMenu is ..."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitDropMenu Text="Drop me">
+                <BitTypography Variant="BitTypographyVariant.Subtitle1">This is the content</BitTypography>
+                <BitStack Gap="1rem">
+                    <BitButton>Click me</BitButton>
+                    <BitToggle>Toggle me</BitToggle>
+                </BitStack>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+        <ExamplePreview>
+            <div dir="rtl">
+                <BitPagination Dir="BitDir.Rtl" Count="5" Variant="BitVariant.Fill" />
+                <br /><br />
+                <BitPagination Dir="BitDir.Rtl" Count="5" Variant="BitVariant.Outline" />
+                <br /><br />
+                <BitPagination Dir="BitDir.Rtl" Count="5" Variant="BitVariant.Text" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

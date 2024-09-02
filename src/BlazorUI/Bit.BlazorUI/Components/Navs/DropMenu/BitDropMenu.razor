@@ -1,0 +1,47 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    <button @onclick="HandleOnClick"
+            type="button"
+            tabindex="@(IsEnabled ? 0 : -1)"
+            aria-label="@AriaLabel"
+            style="@Styles?.Button"
+            class="bit-drm-btn @Classes?.Button">
+        @if (Template is not null)
+        {
+            @Template
+        }
+        else
+        {
+            @if (IconName.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-drm-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
+
+            @if (Text.HasValue())
+            {
+                <div style="@Styles?.Text" class="bit-drm-txt @Classes?.Text">
+                    @Text
+                </div>
+            }
+
+            <i style="@Styles?.ChevronDown" class="bit-drm-cdi bit-icon bit-icon--@ChevronDownIcon @Classes?.ChevronDown" />
+        }
+    </button>
+
+    <div @onclick="CloseCallout" @onclick:stopPropagation
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-drm-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="bit-drm-cal @Classes?.Callout">
+        @(Body ?? ChildContent)
+    </div>
+</div>
