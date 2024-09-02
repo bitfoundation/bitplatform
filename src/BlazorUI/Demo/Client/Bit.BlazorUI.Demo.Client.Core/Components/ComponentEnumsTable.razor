@@ -2,13 +2,13 @@
 {
     <div id="@subEnum.Id" class="sec-con">
         <BitText Variant="BitTextVariant.H6" Gutter Class="subenum-title"><b>@subEnum.Name</b> enum</BitText>
-         <table class="table-view enum-table">
-             <tr class="th-row">
-                 <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Name</BitText></th>
-                 <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Value</BitText></th>
-                 <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Description</BitText></th>
-             </tr>
-             @foreach (var item in subEnum.Items)
+        <table class="table-view enum-table">
+            <tr class="th-row">
+                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Name</BitText></th>
+                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Value</BitText></th>
+                <th class="th-cell"><BitText Variant="BitTextVariant.Subtitle1">Description</BitText></th>
+            </tr>
+            @foreach (var item in subEnum.Items)
             {
                 <tr class="tdata-row">
                     <td class="td-cell"><BitText Variant="BitTextVariant.Caption1">@item.Name</BitText></td>
