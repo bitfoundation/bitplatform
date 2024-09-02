@@ -9,7 +9,7 @@ public partial class BitTextDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the Typography.",
+            Description = "The content of the text.",
         },
         new()
         {
@@ -37,9 +37,9 @@ public partial class BitTextDemo
             Name = "Variant",
             Type = "BitTextVariant",
             DefaultValue = "BitTextVariant.Subtitle1",
-            Description = "The variant of the Typography.",
+            Description = "The variant of the text.",
             LinkType = LinkType.Link,
-            Href = "#typography-variant-enum"
+            Href = "#variant-enum"
         }
     ];
 
@@ -47,7 +47,7 @@ public partial class BitTextDemo
     [
         new()
         {
-            Id = "typography-variant-enum",
+            Id = "variant-enum",
             Name = "BitTextVariant",
             Items =
             [

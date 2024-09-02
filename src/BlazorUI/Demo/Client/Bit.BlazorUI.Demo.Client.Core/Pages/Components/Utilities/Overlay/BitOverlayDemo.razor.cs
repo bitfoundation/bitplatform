@@ -178,7 +178,7 @@ private bool AbsoluteIsVisible;
 
 <BitOverlay @bind-IsVisible=""AutoToggleIsVisible"" Class=""overlay"" AutoToggleScroll>
     <BitStack HorizontalAlign=""BitAlignment.Stretch"">
-        <BitTypography Style=""color: dodgerblue;"" Variant=""BitTypographyVariant.H3"">Please wait...</BitTypography>
+        <BitText Style=""color: dodgerblue;"" Variant=""BitTextVariant.H3"">Please wait...</BitText>
         <BitProgress Indeterminate Thickness=""10""/>
     </BitStack>
 </BitOverlay>";

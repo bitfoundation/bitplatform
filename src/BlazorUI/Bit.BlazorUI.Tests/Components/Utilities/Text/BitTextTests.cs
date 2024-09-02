@@ -383,6 +383,6 @@ public class BitTextTests : BunitTestContext
     {
         var component = RenderComponent<BitTextHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore>I'm a typography</h6>");
+        component.MarkupMatches(@"<h6 data-val-test=""bit"" class=""bit-tpg bit-tpg-subtitle1"" id:ignore>I'm a text</h6>");
     }
 }
