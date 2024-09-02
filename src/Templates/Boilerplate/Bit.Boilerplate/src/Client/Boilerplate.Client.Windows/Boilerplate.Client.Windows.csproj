@@ -54,18 +54,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <IsolatedScssFiles Include="**\*.razor.scss" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Resource Include="Resources\**\*.*" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
-        <CallTarget Targets="BuildIsolatedScssFiles" />
+        <CallTarget Targets="BuildCssFiles" />
     </Target>
 
-    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+    <Target Name="BuildCssFiles">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
