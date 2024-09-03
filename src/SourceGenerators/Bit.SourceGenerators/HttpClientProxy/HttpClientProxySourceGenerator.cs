@@ -105,40 +105,40 @@ public static class IHttpClientServiceCollectionExtensions
 {string.Join(Environment.NewLine, receiver.IControllers.Select(i => $"        services.TryAddTransient<{i.Symbol.ToDisplayString()}, {i.ClassName}>();"))}
     }}
 
-    internal class AppControllerBase
+internal class AppControllerBase
+{{
+    NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
+
+    public void AddQueryString(string key, object? value)
     {{
-        Dictionary<string, object?> queryString = [];
+        queryString.Add(key, value?.ToString());
+    }}
 
-        public void AddQueryString(string key, object? value)
+    public void AddQueryStrings(Dictionary<string, object?> queryString)
+    {{
+        foreach (var key in queryString.Keys)
         {{
-            queryString.Add(key, value);    
-        }}
-
-        public void AddQueryStrings(Dictionary<string, object?> queryString)
-        {{
-            foreach (var key in queryString.Keys)
-            {{
-                AddQueryString(key, queryString[key]);
-            }}
-        }}
-
-        protected string? GetDynamicQueryString()
-        {{
-            if (queryString is not {{ Count: > 0 }})
-                return null;
-
-            var collection = HttpUtility.ParseQueryString(string.Empty);
-
-            foreach (var key in queryString.Keys)
-            {{
-                collection.Add(key, queryString[key]?.ToString());
-            }}
-
-            queryString.Clear();
-
-            return collection.ToString();
+            AddQueryString(key, queryString[key]);
         }}
     }}
+
+    protected string? GetDynamicQueryString()
+    {{
+        if (queryString is not {{ Count: > 0 }})
+            return null;
+
+        var collection = HttpUtility.ParseQueryString(string.Empty);
+
+        foreach (string key in queryString)
+        {{
+            collection.Add(key, queryString[key]);
+        }}
+
+        queryString.Clear();
+
+        return collection.ToString();
+    }}
+}}
 
 {generatedClasses}
 
