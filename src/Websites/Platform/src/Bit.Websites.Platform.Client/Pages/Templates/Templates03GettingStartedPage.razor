@@ -83,7 +83,7 @@ tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 dotnet dev-certs https --trust
-rm dotnet.tar.gz</CodeBox>
+rm $HOME/dotnet.tar.gz</CodeBox>
                                 </BitAccordion>
                             }
                         </li>
@@ -149,7 +149,7 @@ rm dotnet.tar.gz</CodeBox>
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
-                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
+                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.11 or higher
                                         <ul dir="auto">
                                             <li>
                                                 Workloads:
@@ -172,7 +172,10 @@ rm dotnet.tar.gz</CodeBox>
                                     </li>
                                 </ul>
                             </div>
-                            <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
+                            @if (showCrossPlatform)
+                            {
+                                <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
+                            }
                         </BitStack>
                     }
                     <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
@@ -182,6 +185,7 @@ rm dotnet.tar.gz</CodeBox>
                                 <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
                                 <ul dir="auto">
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit" title="C# Dev Kit" rel="nofollow">C# Dev Kit</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" title="Dev Containers" rel="nofollow">Dev Containers</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion" title="Razor/Blazor CSS IntelliSense" rel="nofollow">Razor/Blazor CSS IntelliSense</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion" title="BlazorWasmDebugging" rel="nofollow">BlazorWasmDebugging</a></li>
@@ -197,6 +201,7 @@ rm dotnet.tar.gz</CodeBox>
                             @if (showCrossPlatform)
                             {
                                 <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
@@ -206,6 +211,7 @@ code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             else
                             {
                                 <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion

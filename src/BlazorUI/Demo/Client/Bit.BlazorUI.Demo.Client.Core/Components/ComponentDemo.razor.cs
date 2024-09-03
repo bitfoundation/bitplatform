@@ -10,6 +10,7 @@ public partial class ComponentDemo
     [Parameter] public List<ComponentSubClass> ComponentSubClasses { get; set; } = [];
     [Parameter] public List<ComponentSubEnum> ComponentSubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> ComponentPublicMembers { get; set; } = [];
+    [Parameter] public List<SideRailItem> SideRailItems { get; set; } = [];
 
 
 

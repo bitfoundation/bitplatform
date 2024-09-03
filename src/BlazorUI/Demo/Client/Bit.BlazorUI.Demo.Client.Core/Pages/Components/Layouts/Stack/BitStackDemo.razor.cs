@@ -8,7 +8,7 @@ public partial class BitStackDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the Typography."
+            Description = "The content of the stack."
         },
         new()
         {

@@ -2,26 +2,19 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_functions.scss';
 
-.component-container .component-siderail {
-    position: relative;
-    width: 30%;
-    margin-top: rem2(127px);
+.side-rail {
+    top: 5rem;
+    width: 20%;
+    position: sticky;
+    height: fit-content;
+    list-style-type: none;
+    padding-inline-start: 2rem;
 
-    @include lt-lg {
+    @include lt-xl {
         display: none;
     }
 
-    ul.link-container:before {
-        position: absolute;
-        content: "";
-        width: 1px;
-        height: rem2(370px);
-        background-color: $Gray2;
-        top: rem2(-20px);
-        left: 0;
-    }
-
-    .link-container {
-        padding-left: rem2(15px);
+    li {
+        margin-bottom: 0.5rem;
     }
 }

@@ -240,31 +240,31 @@ public class BitOverlayTests : BunitTestContext
     ]
     public void BitOverlayShouldRespectNoAutoClose(bool noAutoClose)
     {
-        var isVisible = true;
+        var isOpen = true;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.IsVisible, isVisible, currentValue => isVisible = currentValue);
+            parameters.Bind(p => p.IsOpen, isOpen, currentValue => isOpen = currentValue);
             parameters.Add(p => p.NoAutoClose, noAutoClose);
         });
 
-        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-vis"" id:ignore></div>");
+        component.MarkupMatches(@"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
 
-        Assert.IsTrue(isVisible);
+        Assert.IsTrue(isOpen);
 
         var element = component.Find(".bit-ovl");
         element.Click();
 
-        var cssClass = noAutoClose ? " bit-ovl-vis" : null;
+        var cssClass = noAutoClose ? " bit-ovl-opn" : null;
 
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
 
         if (noAutoClose)
         {
-            Assert.IsTrue(isVisible);
+            Assert.IsTrue(isOpen);
         }
         else
         {
-            Assert.IsFalse(isVisible);
+            Assert.IsFalse(isOpen);
         }
     }
 
@@ -274,10 +274,10 @@ public class BitOverlayTests : BunitTestContext
     ]
     public void BitOverlayShouldRespectAutoToggleScroll(bool autoToggleScroll)
     {
-        var isVisible = true;
+        var isOpen = true;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
             parameters.Add(p => p.AutoToggleScroll, autoToggleScroll);
         });
 
@@ -330,45 +330,45 @@ public class BitOverlayTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitOverlayShouldRespectIsVisible(bool isVisible)
+    public void BitOverlayShouldRespectIsOpen(bool IsOpen)
     {
-        var isVisibleBind = isVisible;
+        var isOpenBind = IsOpen;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.IsVisible, isVisibleBind, value => isVisibleBind = value);
+            parameters.Bind(p => p.IsOpen, isOpenBind, value => isOpenBind = value);
         });
 
-        var cssClass = isVisible ? " bit-ovl-vis" : null;
+        var cssClass = IsOpen ? " bit-ovl-opn" : null;
 
         component.MarkupMatches(@$"<div class=""bit-ovl{cssClass}"" id:ignore></div>");
 
-        Assert.AreEqual(isVisible, isVisibleBind);
+        Assert.AreEqual(IsOpen, isOpenBind);
 
         var element = component.Find(".bit-ovl");
         element.Click();
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        Assert.IsFalse(isVisibleBind);
+        Assert.IsFalse(isOpenBind);
     }
 
     [DataTestMethod]
-    public void BitOverlayShouldRespectIsVisibleChangingAfterRender()
+    public void BitOverlayShouldRespectIsOpenChangingAfterRender()
     {
-        var isVisible = false;
+        var isOpen = false;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
-            parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
         component.MarkupMatches(@"<div class=""bit-ovl"" id:ignore></div>");
 
-        isVisible = true;
+        isOpen = true;
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Bind(p => p.IsVisible, isVisible, value => isVisible = value);
+            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-vis"" id:ignore></div>");
+        component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
 }
