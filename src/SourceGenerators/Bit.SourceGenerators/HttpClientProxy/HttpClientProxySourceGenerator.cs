@@ -109,6 +109,11 @@ internal class AppControllerBase
 {{
     NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
 
+    public void AddQueryString(string existingQueryString)
+    {{
+        queryString.Add(HttpUtility.ParseQueryString(existingQueryString));
+    }}
+
     public void AddQueryString(string key, object? value)
     {{
         queryString.Add(key, value?.ToString());
