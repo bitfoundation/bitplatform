@@ -30,7 +30,22 @@
                         </BitStack>
                     </ColumnOptions>
                 </BitDataGridPropertyColumn>
-                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left" />
+                <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left">
+                    <ColumnOptions>
+                        <BitStack Horizontal Gap="8px">
+                            <BitSearchBox @bind-Value="CategoryNameFilter"
+                                          Immediate DebounceTime="500"
+                                          Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
+                                          InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                            @if (isLoading)
+                            {
+                                <div class="loading-container">
+                                    <BitEllipsisLoading CustomSize="32" />
+                                </div>
+                            }
+                        </BitStack>
+                    </ColumnOptions>
+                </BitDataGridPropertyColumn>
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]" Property="p => p!.Price" Sortable="true" Align="BitDataGridAlign.Left" Format="C2" />
                 <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]" Align="BitDataGridAlign.Center" Context="product">
                     <BitButton IconName="@BitIconName.Edit"

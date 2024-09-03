@@ -12,20 +12,20 @@
 <div class="page">
     <div class="hero @BitCss.Class.Color.Border.Disabled">
         <div class="container">
-            <BitTypography Variant="BitTypographyVariant.H1" Gutter>
+            <BitText Typography="BitTypography.H1" Gutter>
                 Hello World
-            </BitTypography>
+            </BitText>
 
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+            <BitText Typography="BitTypography.Subtitle1" Gutter>
                 Welcome to your bit Blazor Empty app
-            </BitTypography>
+            </BitText>
         </div>
     </div>
 
     <div class="section @BitCss.Class.Color.Border.Disabled">
-        <BitTypography Variant="BitTypographyVariant.H3" Gutter>
+        <BitText Typography="BitTypography.H3" Gutter>
             Counter
-        </BitTypography>
+        </BitText>
         <BitButton OnClick="() => _counter = 0" ButtonStyle="BitButtonStyle.Standard">Reset</BitButton>
         <BitButton OnClick="() => _counter++">Increase [@_counter]</BitButton>
     </div>
