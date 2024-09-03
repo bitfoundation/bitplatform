@@ -107,7 +107,7 @@ public static class IHttpClientServiceCollectionExtensions
 
 internal class AppControllerBase
 {{
-    NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
+    System.Collections.Specialized.NameValueCollection queryString = HttpUtility.ParseQueryString(string.Empty);
 
     public void AddQueryString(string existingQueryString)
     {{
