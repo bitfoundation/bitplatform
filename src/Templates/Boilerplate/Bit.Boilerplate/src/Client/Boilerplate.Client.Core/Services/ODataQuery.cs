@@ -36,26 +36,32 @@ public class ODataQuery
         {
             qs.Add("$top", Top.ToString());
         }
+
         if (Skip is not null)
         {
             qs.Add("$skip", Skip.ToString());
         }
+
         if (string.IsNullOrEmpty(Filter) is false)
         {
             qs.Add("$filter", Filter);
         }
+
         if (string.IsNullOrEmpty(OrderBy) is false)
         {
             qs.Add("$orderby", OrderBy);
         }
+
         if (string.IsNullOrEmpty(Select) is false)
         {
             qs.Add("$select", Select);
         }
+
         if (string.IsNullOrEmpty(Expand) is false)
         {
             qs.Add("$expand", Expand);
         }
+
         if (string.IsNullOrEmpty(Search) is false)
         {
             qs.Add("$search", Search);
