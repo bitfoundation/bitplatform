@@ -7,21 +7,21 @@
             Description="Getting started with the project templates on the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Getting started</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Getting started</BitText>
     <br />
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Setup your development environment</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
             <br />
             <BitPivot>
                 <BitPivotItem HeaderText="One-step setup">
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>
+                    <BitText Typography="BitTypography.H6" Gutter>
                         Windows - Visual Studio & Visual Studio Code
-                    </BitTypography>
+                    </BitText>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                    <BitText Typography="BitTypography.Body1" Gutter>
                         To enhance the developer experience, we’ve consolidated the installation process into a single,
                         easy-to-use chain of commands.
                         <br />
@@ -32,7 +32,7 @@
                         The default commands listed below are required for Web & API development, however,
                         you can choose other options too, then click the Copy button and paste them into
                         the Windows PowerShell as an Administrator to run.
-                    </BitTypography>
+                    </BitText>
                     <br />
                     <BitStack Gap="1rem">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
@@ -61,10 +61,10 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitStack Horizontal VerticalAlign="BitStackAlignment.End" Gap="1rem">
-                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="1rem">
+                        <BitText Typography="BitTypography.H6" Gutter>
                             Step-by-step instructions for
-                        </BitTypography>
+                        </BitText>
                         <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
@@ -144,12 +144,12 @@ rm dotnet.tar.gz</CodeBox>
                         }
                     </ol>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
+                    <BitText Typography="BitTypography.H5" Gutter>IDE specific requirements</BitText>
                     <br />
                     @if (devOS is "Windows")
                     {
-                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
-                        <BitStack Horizontal VerticalAlign="BitStackAlignment.Center" Gap="2rem" Style="overflow-x:auto">
+                        <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="2rem" Style="overflow-x:auto">
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
@@ -179,7 +179,7 @@ rm dotnet.tar.gz</CodeBox>
                             <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
                         </BitStack>
                     }
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
+                    <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
                     <div class="section-card-txt">
                         <ul>
                             <li>

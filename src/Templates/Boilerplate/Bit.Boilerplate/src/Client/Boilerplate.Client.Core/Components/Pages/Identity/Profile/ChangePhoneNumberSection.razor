@@ -8,9 +8,9 @@
         }
     </div>
 
-    <BitTypography Variant="BitTypographyVariant.H2">
+    <BitText Typography="BitTypography.H2">
         @Localizer[nameof(AppStrings.ChangePhoneNumberTitle)]
-    </BitTypography>
+    </BitText>
 
     <br />
 
@@ -56,11 +56,11 @@
         }
         else
         {
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+            <BitText Typography="BitTypography.Subtitle1" Gutter>
                 @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
                 <br />
                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
-            </BitTypography>
+            </BitText>
             <br />
             <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" class="change-phone-form">
                 <AppDataAnnotationsValidator />
@@ -97,9 +97,9 @@
             {
                 <br />
                 <br />
-                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                <BitText Typography="BitTypography.Body1" Gutter>
                     @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
-                </BitTypography>
+                </BitText>
                 <br />
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"
