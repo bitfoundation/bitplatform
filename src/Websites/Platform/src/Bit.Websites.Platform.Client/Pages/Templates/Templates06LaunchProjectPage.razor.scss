@@ -11,9 +11,15 @@
 
 .image {
     @include Image;
-    width: rem2(600px);
+    width: rem2(400px);
 }
 
 ::deep a {
     color: $bit-color-primary;
+}
+
+.video-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
