@@ -68,7 +68,7 @@ public partial class ProductsPage
 
                 if (string.IsNullOrEmpty(CategoryNameFilter) is false)
                 {
-                    odataQ.FilterAnd = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
+                    odataQ.AndFilter = $"contains(tolower({nameof(ProductDto.CategoryName)}),'{CategoryNameFilter.ToLower()}')";
                 }
 
                 productController.AddQueryString(odataQ.ToString());

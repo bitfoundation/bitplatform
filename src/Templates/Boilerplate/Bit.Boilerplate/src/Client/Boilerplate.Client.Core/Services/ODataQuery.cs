@@ -13,12 +13,12 @@ public class ODataQuery
 
     public string? Filter { get; set; }
 
-    public string FilterAnd
+    public string AndFilter
     {
         set => Filter = Filter != null ? $"{Filter} and {value}" : value;
     }
 
-    public string FilterOr
+    public string OrFilter
     {
         set => Filter = Filter != null ? $"{Filter} or {value}" : value;
     }
