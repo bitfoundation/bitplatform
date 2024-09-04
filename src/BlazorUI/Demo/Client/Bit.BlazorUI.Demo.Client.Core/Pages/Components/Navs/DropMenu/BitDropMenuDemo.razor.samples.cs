@@ -67,38 +67,38 @@ private int clickCounter;";
 
     private readonly string example5RazorCode = @"
 <style>
-.custom-class {
-    border-radius: 1rem;
-    border-color: blueviolet;
-    transition: background-color 1s;
-    background: linear-gradient(90deg, magenta, transparent) blue;
-}
+    .custom-class {
+        border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+    }
 
-.custom-class:hover {
-    border-color: magenta;
-    background-color: magenta;
-}
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
+    }
 
-.custom-root {
-    color: aqua;
-    min-width: 7.2rem;
-    font-weight: bold;
-    border-radius: 1rem;
-    border-color: aqua;
-    box-shadow: aqua 0 0 0.5rem;
-}
+    .custom-root {
+        color: aqua;
+        min-width: 7.2rem;
+        font-weight: bold;
+        border-color: aqua;
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 0.5rem;
+    }
 
-.custom-root:hover {
-    background-color: gray;
-}
+    .custom-root:hover {
+        background-color: gray;
+    }
 
-.custom-text {
-    text-shadow: tomato 0 0 0.5rem;
-}
+    .custom-text {
+        text-shadow: tomato 0 0 0.5rem;
+    }
 
-.custom-opened {
-    color: green;
-}
+    .custom-opened {
+        color: green;
+    }
 </style>
 
 <BitDropMenu Text=""Styled Drop menu"" Style=""background-color: transparent; border-color: blueviolet; color: blueviolet;"">
