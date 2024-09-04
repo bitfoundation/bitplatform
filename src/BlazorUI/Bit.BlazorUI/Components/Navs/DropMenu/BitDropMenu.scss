@@ -1,11 +1,11 @@
 @import "../../../Styles/functions.scss";
 
 .bit-drm {
-    display: flex;
     gap: spacing(1);
     cursor: pointer;
     width: fit-content;
     align-items: center;
+    display: inline-flex;
     outline: transparent;
     text-decoration: none;
     box-sizing: border-box;
