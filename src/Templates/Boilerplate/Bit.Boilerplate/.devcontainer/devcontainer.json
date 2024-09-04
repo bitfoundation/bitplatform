@@ -29,7 +29,8 @@
         5031
     ],
     "features": {
-        "ghcr.io/devcontainers/features/node": {}
+        "ghcr.io/devcontainers/features/node": {},
+        "ghcr.io/devcontainers/features/python": {}
     },
     "remoteEnv": {
         "ASPNETCORE_ENVIRONMENT": "Development"

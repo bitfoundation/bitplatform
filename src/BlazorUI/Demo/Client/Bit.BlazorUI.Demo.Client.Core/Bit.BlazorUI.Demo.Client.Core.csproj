@@ -16,11 +16,11 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-04">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

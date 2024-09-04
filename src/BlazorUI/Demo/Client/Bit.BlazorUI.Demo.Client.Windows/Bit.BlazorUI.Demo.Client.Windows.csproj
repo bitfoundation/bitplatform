@@ -17,17 +17,17 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-04">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-06">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.80" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2651.64" />
-        <PackageReference Include="Velopack" Version="0.0.583" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
+        <PackageReference Include="Velopack" Version="0.0.594" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">

@@ -7,11 +7,11 @@
 
 <div class="page-container">
 
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Create Project</BitText>
     <br />
-    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
         Let's make our next cross platform project a success with Bit.Boilerplate.
-    </BitTypography>
+    </BitText>
     <br />
     <CodeBox>
         @GetFinalCommand()
@@ -23,7 +23,7 @@
              HorizontalSpacing="1rem">
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Name</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
                 <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
             </div>
             <br />
@@ -36,7 +36,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Captcha</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
             </div>
             <br />
@@ -63,7 +63,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Pipeline</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
             </div>
             <br />
@@ -94,7 +94,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Sample</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
             </div>
             <br />
@@ -107,7 +107,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Windows</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
                 <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -120,7 +120,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>App Center</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
                 <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -133,7 +133,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>AppInsights</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -147,7 +147,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>SignalR</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
                 <BitToggle @bind-Value="signalr.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -159,7 +159,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
             </div>
             <CodeBox>
@@ -196,7 +196,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Offline Database</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -212,7 +212,7 @@
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Server Database</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
             </div>
             <br />
@@ -273,7 +273,7 @@
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>API</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
                 <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
             </div>
             <br />
@@ -309,7 +309,7 @@
     <br />
     <br />
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <BitText Typography="BitTypography.H5" Gutter>Visual Studio</BitText>
         <br />
         <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
             <BitCarouselItem>

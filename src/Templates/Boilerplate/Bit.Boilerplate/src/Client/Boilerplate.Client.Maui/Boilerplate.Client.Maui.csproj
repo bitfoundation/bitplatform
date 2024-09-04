@@ -117,8 +117,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-04" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-06" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-06" PrivateAssets="all" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Remove="Properties\launchSettings.json" />
@@ -130,9 +130,9 @@
 
     <ItemGroup>
         <PackageReference Include="EmbedIO" Version="3.5.2" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.80" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.80" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.80" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.82" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.82" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.80" />
         <PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
