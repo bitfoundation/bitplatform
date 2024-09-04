@@ -6,11 +6,11 @@
             Description="launch project of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter> Project Launch Guidelines</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter> Project Launch Guidelines</BitText>
     <br />
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.Subtitle1">
         The process for launching the project varies based on the Api parameter set during project initiation:
         <br />
         <ul>
@@ -21,11 +21,11 @@
                 <b>--api Standalone:</b> Run both the Server.Api and Server.Web projects.
             </li>
         </ul>
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter> Database Configuration</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter> Database Configuration</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         The database will be automatically created upon running the project. However, if you need to utilize Entity
         Framework Core Migrations, execute the following commands within the Api project:
         <CodeBox>
@@ -33,20 +33,20 @@ dotnet ef database drop --force
 dotnet ef migrations add InitialMigration -o Data/Migrations
 dotnet ef database update
         </CodeBox>
-    </BitTypography>
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter> Development Environment</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    </BitText>
+    <BitText Typography="BitTypography.H5" Gutter> Development Environment</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         The project is configured to use Blazor Server as the default mode to enhance the development experience,
         enabling features such as <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload?view=vs-2022" target="_blank">Visual Studio .NET Hot Reload</a>
         and <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch" target="_blank">dotnet watch</a>. To utilize the Hot Reload feature,
         ensure that you have the latest versions of Visual Studio, the .NET SDK, <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+</a> for Visual Studio,
         and <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler</a>  for VS Code installed. This setup allows for automatic application of changes made to .razor,
         .scss, or .cs files without the need to rebuild the project. If any changes to these files do not take effect without a rebuild, please feel free to create an issue <a href="https://github.com/bitfoundation/bitplatform/issues/new/choose" target="_blank">here</a>.
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Blazor Mode Selection</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Blazor Mode Selection</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To choose between Blazor modes, refer to the Client.Core/Services/AppRenderMode.cs file. By default, for development it
         is Blazor Server and for Production it is Blazor Auto.
         <br />
@@ -59,27 +59,27 @@ public static IComponentRenderMode? Current =&gt;
     ? BlazorServer
     : Auto
         </CodeBox>
-    </BitTypography>
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Debugging in Blazor WebAssembly</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    </BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
         utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To run the project in Blazor WebAssembly Standalone mode, set <i>BlazorWebAssemblyStandalone</i> to true in the Directory.Build.props file.
         Additionally, run Client.Web in addition to server project.
-    </BitTypography>
+    </BitText>
     <br />
     <div class="image-container">
         <img class="image" src="images/templates/launch-options.webp" />
     </div>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Additional Launch Options</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Additional Launch Options</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
         for developers to test the project according to their specific requirements.
         <br />
@@ -92,21 +92,21 @@ public static IComponentRenderMode? Current =&gt;
         By clicking on <b>Open a Remote Window</b> and selecting <b>Reopen in Container</b> from the dropdown, you can run the project in Docker in the background.
         This approach allows Visual Studio Code to operate within Docker, along with all its extensions and SDKs, leading to a much faster development experience.
         <br />
-    </BitTypography>
+    </BitText>
     <div class="image-container">
         <img class="image" src="images/templates/vs-code-docker.webp" />
     </div>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch Windows App</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Launch Windows App</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To launch the project on the Windows platform, set Client.Maui and Client.Windows as the startup projects. If you need to access the Developer Tools, simply use
         Ctrl + Shift + I on the opened Windows and Web applications.
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Connecting Client to Server</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Connecting Client to Server</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To connect the client to the server, set the ServerAddress inside Client.Core/appsettings.json to the appropriate IP address. The default value does not need
         to be changed for Web, Windows app, or Android Emulator.
         <br />
@@ -133,11 +133,11 @@ public static IComponentRenderMode? Current =&gt;
                 <br />
             </li>
         </ol>
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Enable Virtualization</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         This enables faster launch times with WSL, Docker, or even the Android Emulator.
         <br />
         <div class="image-container">
@@ -165,11 +165,11 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
         </CodeBox>
         Then we can go ahead with installation of <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a> 
         and <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Inspect on Android, iOS</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Inspect on Android, iOS</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         Inspecting on Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows 
         and Linux, please refer to the following video:
         <br />
@@ -180,11 +180,11 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
             </iframe>
         </div>
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         To launch MAUI in VS Code for iOS, Android and macOS see the following video:
         <br />
         <br />
@@ -218,11 +218,11 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
         </div>
         <br />
         <br />
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch MAUI in VS for iOS, Android</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS for iOS, Android</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         Set the MAUI project as the startup project. If you have followed the previous video for macOS, you only need to connect 
         Visual Studio to macOS.To run the project on an iOS device, see this <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">reference</a>.
         And in order to run on an iOS device see this video:
@@ -233,11 +233,11 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
             </iframe>
         </div>
-    </BitTypography>
+    </BitText>
     <br />
     <br />
-    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Login Credentials</BitTypography>
-    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+    <BitText Typography="BitTypography.H5" Gutter>Login Credentials</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
         Upon project launch, please use the following credentials to sign in:
         <ul>
             <li>
@@ -247,7 +247,7 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
                 <b>Password:</b> 123456
             </li>
         </ul>
-    </BitTypography>
+    </BitText>
     <br />
     <br />
 </div>

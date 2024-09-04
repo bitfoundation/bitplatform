@@ -7,21 +7,21 @@
             Description="Getting started with the project templates on the bit platform" />
 
 <div class="page-container">
-    <BitText Variant="BitTypographyVariant.H3" Gutter>Getting started</BitText>
+    <BitText Typography="BitTypography.H3" Gutter>Getting started</BitText>
     <br />
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitText Variant="BitTypographyVariant.H5" Gutter>Setting Up Your Development Environment</BitText>
+            <BitText Typography="BitTypography.H5" Gutter>Setting Up Your Development Environment</BitText>
             <br />
             <BitPivot>
                 <BitPivotItem HeaderText="One-step setup">
                     <br />
-                    <BitText Variant="BitTypographyVariant.H6" Gutter>
+                    <BitText Typography="BitTypography.H6" Gutter>
                         For Windows: Visual Studio & Visual Studio Code
                     </BitText>
                     <br />
-                    <BitText Variant="BitTypographyVariant.Body1" Gutter>
+                    <BitText Typography="BitTypography.Body1" Gutter>
                         To streamline your development setup, we’ve simplified the installation process into a straightforward sequence of commands.
                         These components are installed via the <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>, which comes pre-installed on Windows 11.
                         <br /><br />
@@ -58,7 +58,7 @@
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
                     <BitStack Horizontal VerticalAlign="BitStackAlignment.End" Gap="1rem">
-                        <BitText Variant="BitTypographyVariant.H6" Gutter>
+                        <BitText Typography="BitTypography.H6" Gutter>
                             Step-by-step instructions for
                         </BitText>
                         <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
@@ -140,11 +140,11 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                         }
                     </ol>
                     <br />
-                    <BitText Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitText>
+                    <BitText Typography="BitTypography.H5" Gutter>IDE specific requirements</BitText>
                     <br />
                     @if (devOS is "Windows")
                     {
-                        <BitText Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitText>
+                        <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
                         <BitStack Horizontal VerticalAlign="BitStackAlignment.Center" Gap="2rem" Style="overflow-x:auto">
                             <div class="section-card-txt">
                                 <ul>
@@ -178,7 +178,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </BitStack>
                     }
-                    <BitText Variant="BitTypographyVariant.H6" Gutter>VS Code</BitText>
+                    <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
                     <div class="section-card-txt">
                         <ul>
                             <li>
