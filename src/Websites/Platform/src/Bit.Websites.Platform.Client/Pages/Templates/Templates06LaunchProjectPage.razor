@@ -15,7 +15,7 @@
         <br />
         <ul>
             <li>
-                <b>--api Integrated:</b> Simply run the Server.Web project (running Server.Api is optional but not required).
+                <b>--api Integrated:</b> Simply run the Server.Web project (Running Server.Api is optional but not required).
             </li>
             <li>
                 <b>--api Standalone:</b> Run both the Server.Api and Server.Web projects.
@@ -23,16 +23,26 @@
         </ul>
     </BitText>
     <br />
+    <BitText Typography="BitTypography.H5" Gutter>Login Credentials</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
+        Upon project launch, please use the following credentials to sign in:
+        <ul>
+            <li>
+                <b>Email:</b> test@bitplatform.dev
+            </li>
+            <li>
+                <b>Password:</b> 123456
+            </li>
+        </ul>
+    </BitText>
     <br />
     <BitText Typography="BitTypography.H5" Gutter> Database Configuration</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         The database will be automatically created upon running the project. However, if you need to utilize Entity
         Framework Core Migrations, execute the following commands within the Api project:
-        <CodeBox>
-dotnet ef database drop --force
+        <CodeBox>dotnet ef database drop --force
 dotnet ef migrations add InitialMigration -o Data/Migrations
-dotnet ef database update
-        </CodeBox>
+dotnet ef database update</CodeBox>
     </BitText>
     <BitText Typography="BitTypography.H5" Gutter> Development Environment</BitText>
     <BitText Typography="BitTypography.Subtitle1">
@@ -53,12 +63,10 @@ dotnet ef database update
         Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
         in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
         WebAssembly, enhancing performance.
-        <CodeBox>
-public static IComponentRenderMode? Current =&gt;
+        <CodeBox>public static IComponentRenderMode? Current =&gt;
     AppEnvironment.IsDev()
     ? BlazorServer
-    : Auto
-        </CodeBox>
+    : Auto</CodeBox>
     </BitText>
     <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
     <BitText Typography="BitTypography.Subtitle1">
@@ -78,7 +86,7 @@ public static IComponentRenderMode? Current =&gt;
     </div>
     <br />
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Additional Launch Options</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Visual Studio Additional Launch Options</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
         for developers to test the project according to their specific requirements.
@@ -98,17 +106,18 @@ public static IComponentRenderMode? Current =&gt;
     </div>
     <br />
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Launch Windows App</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Launch Windows Apps</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        To launch the project on the Windows platform, set Client.Maui and Client.Windows as the startup projects. If you need to access the Developer Tools, simply use
-        Ctrl + Shift + I on the opened Windows and Web applications.
+        To launch the project on the Windows platform, either set Client.Maui or Client.Windows as the startup project. If you need to access the Developer Tools, simply use
+        <i>Ctrl + Shift + I</i> on the opened windows application.
     </BitText>
     <br />
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Connecting Client to Server</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        To connect the client to the server, set the ServerAddress inside Client.Core/appsettings.json to the appropriate IP address. The default value does not need
+        To connect the client to the server, set the <i>ServerAddress</i> inside Client.Core/appsettings.json to the appropriate IP address. The default value does not need
         to be changed for Web, Windows app, or Android Emulator.
+        <br />
         <br />
         For iOS and Android devices, there are two solutions:
         <ol>
@@ -119,6 +128,7 @@ public static IComponentRenderMode? Current =&gt;
             </li>
             <li>
                 <b>Dev Tunnels:</b> Alternatively, you can use dev tunnels. Below is a sample value for dev tunnels:
+                <br />
                 <code>"ServerAddress": "https://r3c136gg-5030.euw.devtunnels.ms"</code>
                 <br />
                 For additional details about dev tunnels, please refer to the following video.
@@ -135,17 +145,14 @@ public static IComponentRenderMode? Current =&gt;
         </ol>
     </BitText>
     <br />
-    <br />
-    <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization | Docker | WSL | Fast Android Emulators On Windows</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         This enables faster launch times with WSL, Docker, or even the Android Emulator.
         <br />
         <div class="image-container">
             <img class="image" src="images/templates/virtualization.webp" />
         </div>
-        <br />
-        <br />
-        If this feature is not enabled on your system, please refer to the following video:
+        If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
         <br />
         <br />
         <div class="video-container">
@@ -156,21 +163,19 @@ public static IComponentRenderMode? Current =&gt;
         </div>
         <br />
         Then, run the following commands as an administrator in PowerShell:
-        <CodeBox>
-Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
+        <CodeBox>Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart
-Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
-        </CodeBox>
+Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBox>
         Then we can go ahead with installation of <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a> 
         and <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
     </BitText>
     <br />
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Inspect on Android, iOS</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Android, iOS Browser Dev Tools</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        Inspecting on Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows 
+        Opening Browser Dev Tools for Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows 
         and Linux, please refer to the following video:
         <br />
         <br />
@@ -185,19 +190,17 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        To launch MAUI in VS Code for iOS, Android and macOS see the following video:
+        To launch MAUI in VS Code for iOS, Android and macOS, assuming all the requirements are installed based on our documentation, see the following video:
         <br />
         <br />
         <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/rumfIg9qJ_Y?si=ZotsVXf4r3A6FUyi"
+            <iframe src="https://www.youtube.com/embed/rumfIg9qJ_Y?start=1700"
                     width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
             </iframe>
         </div>
         <br />
-        <br />
-        Next assuming all the requirements are installed based on our documentation, in order to run on an Android Device follow the instructions 
-        in this video: 
+        Next in order to run on an Android Device follow the instructions in this video: 
         <br />
         <br />
         <div class="video-container">
@@ -207,8 +210,8 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
             </iframe>
         </div>
         <br />
-        <br />
         And in order to run on an iOS device see this video: 
+        <br />
         <br />
         <div class="video-container">
             <iframe src="https://www.youtube.com/embed/B-kZ-AgEeO8"
@@ -217,15 +220,13 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
             </iframe>
         </div>
         <br />
-        <br />
     </BitText>
-    <br />
-    <br />
     <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS for iOS, Android</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         Set the MAUI project as the startup project. If you have followed the previous video for macOS, you only need to connect 
-        Visual Studio to macOS.To run the project on an iOS device, see this <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">reference</a>.
+        Visual Studio to macOS. To run the project on an iOS device, see this <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">reference</a>.
         And in order to run on an iOS device see this video:
+        <br />
         <br />
         <div class="video-container"> 
             <iframe src="https://www.youtube.com/embed/snQ1C6Cppr8"
@@ -233,20 +234,6 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
             </iframe>
         </div>
-    </BitText>
-    <br />
-    <br />
-    <BitText Typography="BitTypography.H5" Gutter>Login Credentials</BitText>
-    <BitText Typography="BitTypography.Subtitle1">
-        Upon project launch, please use the following credentials to sign in:
-        <ul>
-            <li>
-                <b>Username:</b> test@bitplatform.dev
-            </li>
-            <li>
-                <b>Password:</b> 123456
-            </li>
-        </ul>
     </BitText>
     <br />
     <br />
