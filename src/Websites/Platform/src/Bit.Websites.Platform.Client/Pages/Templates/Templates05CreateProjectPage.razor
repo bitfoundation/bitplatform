@@ -13,9 +13,11 @@
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
     <br />
-    <CodeBox>
-        @GetFinalCommand()
-    </CodeBox>
+    <BitSticky Class="sticky">
+        <CodeBox>
+            @GetFinalCommand()
+        </CodeBox>
+    </BitSticky>
     <br />
 
     <BitGrid Columns="2"
@@ -127,8 +129,8 @@
             <CodeBox>
                 @GetAppCenterCommand()
             </CodeBox>
-            By adding the --appCenter true parameter to the dotnet new command, App Center will be integrated for macOS,
-            Windows, iOS, and Android platforms.
+            Adding --appCenter true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            seamlessly across all supported platforms.
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
@@ -154,7 +156,8 @@
             <CodeBox>
                 @GetSignalRCommand()
             </CodeBox>
-            Enabling this parameter will provide you with sample code for SignalR.
+            Enabling this parameter will provide you with sample code for SignalR to implement functionalities like chat.
+            This has nothing to do with disabling/enabling blazor server.
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
