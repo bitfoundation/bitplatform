@@ -29,9 +29,10 @@ public partial class _BitChartPolarAreaDemo
             }
         };
 
+        System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
         var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -61,10 +62,10 @@ public partial class _BitChartPolarAreaDemo
 
     private void AddPolarAreaDataset()
     {
-        int count = _config.Data.Labels.Count;
-        BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
+        var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -153,9 +154,10 @@ protected override void OnInitialized()
         }
     };
 
+    System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
     var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -185,10 +187,10 @@ private void RandomizePolarAreaData()
 
 private void AddPolarAreaDataset()
 {
-    int count = _config.Data.Labels.Count;
-    BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
+    var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
     };
 
     _config.Data.Datasets.Add(dataset);
