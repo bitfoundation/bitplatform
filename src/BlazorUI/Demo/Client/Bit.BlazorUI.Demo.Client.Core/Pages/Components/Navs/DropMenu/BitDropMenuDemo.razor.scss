@@ -1,17 +1,34 @@
 ﻿::deep {
     .custom-class {
-        margin-left: 1rem;
-        border-radius: 0.125rem;
-        box-shadow: aqua 0 0 0.5rem;
-        background-color: #00ffff7d;
+        border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+    }
+
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
     }
 
     .custom-root {
         color: aqua;
-        margin-left: 1rem;
+        min-width: 7.2rem;
+        font-weight: bold;
+        border-radius: 1rem;
+        border-color: aqua;
+        box-shadow: aqua 0 0 0.5rem;
     }
 
-    .custom-button {
-        border-radius: 50%;
+    .custom-root:hover {
+        background-color: gray;
+    }
+
+    .custom-text {
+        text-shadow: tomato 0 0 0.5rem;
+    }
+
+    .custom-opened {
+        color: green;
     }
 }
