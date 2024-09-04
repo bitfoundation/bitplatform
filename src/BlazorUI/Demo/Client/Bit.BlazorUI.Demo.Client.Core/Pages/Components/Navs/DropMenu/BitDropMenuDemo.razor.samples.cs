@@ -28,13 +28,13 @@ public partial class BitDropMenuDemo
 </BitDropMenu>";
 
     private readonly string example2RazorCode = @"
-<BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
+<BitDropMenu Text=""IconName"" IconName=""@BitIconName.Emoji2"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""Custom ChevronDownIcon"" ChevronDownIcon=""@BitIconName.OpenInNewTab"">
+<BitDropMenu Text=""ChevronDownIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
@@ -43,7 +43,7 @@ public partial class BitDropMenuDemo
     private readonly string example3RazorCode = @"
 <BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
     <Template>
-        <div style=""display:flex;gap:10px;""
+        <div style=""display:flex;gap:10px;"">
             <BitIcon IconName=""@BitIconName.Airplane"" Color=""BitColor.Tertiary"" />
             <span>A template</span>
             <BitRippleLoading CustomSize=""20"" Color=""BitColor.Tertiary"" />
