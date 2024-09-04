@@ -1,16 +1,16 @@
-﻿@page "/templates/launch-project"
+﻿@page "/templates/run-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/launch-project"
-            Title="Launch project - Templates"
-            Description="launch project of the project templates of the bit platform" />
+            Title="Run project - Templates"
+            Description="Run project of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter> Project Launch Guidelines</BitText>
+    <BitText Typography="BitTypography.H3" Gutter>Project Run Guidelines</BitText>
     <br />
     <br />
     <BitText Typography="BitTypography.Subtitle1">
-        The process for launching the project varies based on the Api parameter set during project initiation:
+        The process for running the project varies based on the Api parameter set during project initiation:
         <br />
         <ul>
             <li>
@@ -24,7 +24,7 @@
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Login Credentials</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        Upon project launch, please use the following credentials to sign in:
+        Upon project run, please use the following credentials to sign in:
         <ul>
             <li>
                 <b>Email:</b> test@bitplatform.dev
@@ -35,7 +35,7 @@
         </ul>
     </BitText>
     <br />
-    <BitText Typography="BitTypography.H5" Gutter> Development Environment</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Development Environment</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         The project is configured to use Blazor Server as the default mode to enhance the development experience,
         enabling features such as <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload?view=vs-2022" target="_blank">Visual Studio .NET Hot Reload</a>
@@ -79,7 +79,7 @@ AppEnvironment.IsDev()
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Visual Studio Additional Launch Options</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
+        The project also supports additional launch profiles, including Docker, IIS Express, and WSL. These options provide flexibility
         for developers to test the project according to their specific requirements.
         <br />
         <br />
@@ -166,9 +166,9 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
         </ol>
     </BitText>
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Launch Windows Apps</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Run Windows Apps</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        To launch the project on the Windows platform, either set Client.Maui or Client.Windows as the startup project. If you need to access the Developer Tools, simply use
+        To run the project on the Windows platform, either set Client.Maui or Client.Windows as the startup project. If you need to access the Developer Tools, simply use
         <i>Ctrl + Shift + I</i> on the opened windows application.
     </BitText>
     <br />
@@ -189,9 +189,9 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
         You can use the same techinque to inspect web apps running inside Android/iOS devices and simulators.
     </BitText>
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Run MAUI in VS Code for iOS, Android and macOS</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        To launch MAUI in VS Code for iOS, Android and macOS, assuming all the requirements are installed based on our documentation, see the following video:
+        To run MAUI in VS Code for iOS, Android and macOS, assuming all the requirements are installed based on our documentation, see the following video:
         <br />
         <br />
         <div class="video-container">
@@ -222,7 +222,7 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
         </div>
         <br />
     </BitText>
-    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in Visual Studio for iOS, Android</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Run MAUI in Visual Studio for iOS, Android</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         Running your project on Android, Windows, and Web using Visual Studio is straightforward. However, testing a macOS version with Visual Studio isn't possible.
         For iOS, if you have a Mac connected to the same network as your Windows PC, you can follow <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">this documentation</a> to connect your Visual Studio to the mac device

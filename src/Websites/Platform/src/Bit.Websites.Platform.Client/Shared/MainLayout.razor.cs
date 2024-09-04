@@ -34,7 +34,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Getting started", Url = "/templates/getting-started" },
         new BitNavItem { Text = "Project structure", Url = "/templates/project-structure" },
         new BitNavItem { Text = "Create project", Url = "/templates/create-project" },
-        new BitNavItem { Text = "Launch project", Url = "/templates/launch-project" }
+        new BitNavItem { Text = "Run project", Url = "/templates/run-project" }
     ];
 
     private readonly List<BitNavItem> bswupNavItems =
