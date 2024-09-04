@@ -15,7 +15,7 @@
         <br />
         <ul>
             <li>
-                <b>--api Integrated:</b> Simply run the Server.Web project.
+                <b>--api Integrated:</b> Simply run the Server.Web project (running Server.Api is optional but not required).
             </li>
             <li>
                 <b>--api Standalone:</b> Run both the Server.Api and Server.Web projects.
@@ -28,9 +28,11 @@
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
         The database will be automatically created upon running the project. However, if you need to utilize Entity
         Framework Core Migrations, execute the following commands within the Api project:
-        <CodeBox>dotnet ef database drop --force
+        <CodeBox>
+dotnet ef database drop --force
 dotnet ef migrations add InitialMigration -o Data/Migrations
-dotnet ef database update</CodeBox>
+dotnet ef database update
+        </CodeBox>
     </BitTypography>
     <BitTypography Variant="BitTypographyVariant.H5" Gutter> Development Environment</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
@@ -39,7 +41,7 @@ dotnet ef database update</CodeBox>
         and <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch" target="_blank">dotnet watch</a>. To utilize the Hot Reload feature,
         ensure that you have the latest versions of Visual Studio, the .NET SDK, <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+</a> for Visual Studio,
         and <a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" target="_blank">Live Sass Compiler</a>  for VS Code installed. This setup allows for automatic application of changes made to .razor,
-        .scss, or .cs files without the need to rebuild the project.
+        .scss, or .cs files without the need to rebuild the project. If any changes to these files do not take effect without a rebuild, please feel free to create an issue <a href="https://github.com/bitfoundation/bitplatform/issues/new/choose" target="_blank">here</a>.
     </BitTypography>
     <br />
     <br />
@@ -51,10 +53,12 @@ dotnet ef database update</CodeBox>
         Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
         in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
         WebAssembly, enhancing performance.
-        <CodeBox>public static IComponentRenderMode? Current =&gt;
+        <CodeBox>
+public static IComponentRenderMode? Current =&gt;
     AppEnvironment.IsDev()
     ? BlazorServer
-    : Auto</CodeBox>
+    : Auto
+        </CodeBox>
     </BitTypography>
     <BitTypography Variant="BitTypographyVariant.H5" Gutter>Debugging in Blazor WebAssembly</BitTypography>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
@@ -69,7 +73,6 @@ dotnet ef database update</CodeBox>
         Additionally, run Client.Web in addition to server project.
     </BitTypography>
     <br />
-    <br />
     <div class="image-container">
         <img class="image" src="images/templates/launch-options.webp" />
     </div>
@@ -79,6 +82,171 @@ dotnet ef database update</CodeBox>
     <BitTypography Variant="BitTypographyVariant.Subtitle1">
         The project also supports additional launch configurations, including Docker, IIS Express, and WSL. These options provide flexibility
         for developers to test the project according to their specific requirements.
+        <br />
+        <br />
+        Although the Docker option is available in Visual Studio, we recommend using it in Visual Studio Code. This is because, in Visual Studio,
+        selecting Docker as the launch profile causes code changes to take a significant amount of time to apply. In contrast, Visual Studio Code
+        offers a more efficient workflow.
+        <br />
+        <br />
+        By clicking on <b>Open a Remote Window</b> and selecting <b>Reopen in Container</b> from the dropdown, you can run the project in Docker in the background.
+        This approach allows Visual Studio Code to operate within Docker, along with all its extensions and SDKs, leading to a much faster development experience.
+        <br />
+    </BitTypography>
+    <div class="image-container">
+        <img class="image" src="images/templates/vs-code-docker.webp" />
+    </div>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch Windows App</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To launch the project on the Windows platform, set Client.Maui and Client.Windows as the startup projects. If you need to access the Developer Tools, simply use
+        Ctrl + Shift + I on the opened Windows and Web applications.
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Connecting Client to Server</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To connect the client to the server, set the ServerAddress inside Client.Core/appsettings.json to the appropriate IP address. The default value does not need
+        to be changed for Web, Windows app, or Android Emulator.
+        <br />
+        For iOS and Android devices, there are two solutions:
+        <ol>
+            <li>
+                <b>Same Network Connection:</b> Ensure that your Android/iOS device and PC are on the same network, and make sure the firewall does not interfere.
+                A sample configuration would look like this:
+                <code>"ServerAddress": "http://192.168.1.17:5000/"</code>
+            </li>
+            <li>
+                <b>Dev Tunnels:</b> Alternatively, you can use dev tunnels. Below is a sample value for dev tunnels:
+                <code>"ServerAddress": "https://r3c136gg-5030.euw.devtunnels.ms"</code>
+                <br />
+                For additional details about dev tunnels, please refer to the following video.
+                <br />
+                <br />
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/72hs_IlE-GY"
+                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                    </iframe>
+                </div>
+                <br />
+            </li>
+        </ol>
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Enable Virtualization</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        This enables faster launch times with WSL, Docker, or even the Android Emulator.
+        <br />
+        <div class="image-container">
+            <img class="image" src="images/templates/virtualization.webp" />
+        </div>
+        <br />
+        <br />
+        If this feature is not enabled on your system, please refer to the following video:
+        <br />
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        <br />
+        Then, run the following commands as an administrator in PowerShell:
+        <CodeBox>
+Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
+Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
+Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart
+Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online
+        </CodeBox>
+        Then we can go ahead with installation of <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a> 
+        and <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Inspect on Android, iOS</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        Inspecting on Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows 
+        and Linux, please refer to the following video:
+        <br />
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/iIa0HhV1ZsY"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        To launch MAUI in VS Code for iOS, Android and macOS see the following video:
+        <br />
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/rumfIg9qJ_Y?si=ZotsVXf4r3A6FUyi"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        <br />
+        <br />
+        Next assuming all the requirements are installed based on our documentation, in order to run on an Android Device follow the instructions 
+        in this video: 
+        <br />
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/ZkrUR3A9aM4"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        <br />
+        <br />
+        And in order to run on an iOS device see this video: 
+        <br />
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/B-kZ-AgEeO8"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+        <br />
+        <br />
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Launch MAUI in VS for iOS, Android</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        Set the MAUI project as the startup project. If you have followed the previous video for macOS, you only need to connect 
+        Visual Studio to macOS.To run the project on an iOS device, see this <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">reference</a>.
+        And in order to run on an iOS device see this video:
+        <br />
+        <div class="video-container"> 
+            <iframe src="https://www.youtube.com/embed/snQ1C6Cppr8"
+                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+        </div>
+    </BitTypography>
+    <br />
+    <br />
+    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Login Credentials</BitTypography>
+    <BitTypography Variant="BitTypographyVariant.Subtitle1">
+        Upon project launch, please use the following credentials to sign in:
+        <ul>
+            <li>
+                <b>Username:</b> test@bitplatform.dev
+            </li>
+            <li>
+                <b>Password:</b> 123456
+            </li>
+        </ul>
     </BitTypography>
     <br />
     <br />
