@@ -2,10 +2,10 @@
 
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 

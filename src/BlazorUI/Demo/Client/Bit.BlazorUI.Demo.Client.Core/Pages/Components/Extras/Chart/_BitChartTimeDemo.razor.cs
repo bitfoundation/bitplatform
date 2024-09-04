@@ -31,8 +31,8 @@ public partial class _BitChartTimeDemo
                 },
                 Scales = new BitChartScales
                 {
-                    XAxes = new List<BitChartCartesianAxis>
-                    {
+                    XAxes =
+                    [
                         new BitChartTimeAxis
                         {
                             ScaleLabel = new BitChartScaleLabel
@@ -43,18 +43,26 @@ public partial class _BitChartTimeDemo
                             {
                                 TooltipFormat = "dd MMM HH:mm"
                             },
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
                         }
-                    },
-                    YAxes = new List<BitChartCartesianAxis>
-                    {
+                    ],
+                    YAxes =
+                    [
                         new BitChartLinearCartesianAxis
                         {
                             ScaleLabel = new BitChartScaleLabel
                             {
                                 LabelString = "Value"
+                            },
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
                             }
                         }
-                    }
+                    ]
                 }
             }
         };
@@ -197,13 +205,11 @@ public partial class _BitChartTimeDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" IsDateAdapterRequired=""true"" @ref=""_chart"" />
 
-<div>
-    <BitButton OnClick=""RandomizeData"">Randomize Data</BitButton>
-    <BitButton OnClick=""AddDataset"">Add Dataset</BitButton>
-    <BitButton OnClick=""RemoveDataset"">Remove Dataset</BitButton>
-    <BitButton OnClick=""AddData"">Add Data</BitButton>
-    <BitButton OnClick=""RemoveData"">Remove Data</BitButton>
-</div>";
+<BitButton OnClick=""RandomizeData"">Randomize Data</BitButton>
+<BitButton OnClick=""AddDataset"">Add Dataset</BitButton>
+<BitButton OnClick=""RemoveDataset"">Remove Dataset</BitButton>
+<BitButton OnClick=""AddData"">Add Data</BitButton>
+<BitButton OnClick=""RemoveData"">Remove Data</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -221,7 +227,7 @@ protected override void OnInitialized()
             Title = new BitChartOptionsTitle
             {
                 Display = true,
-                Text = ""ChartJs.Blazor Time Scale Chart""
+                Text = ""BitChart Time Scale Chart""
             },
             Tooltips = new BitChartTooltips
             {
@@ -235,8 +241,8 @@ protected override void OnInitialized()
             },
             Scales = new BitChartScales
             {
-                XAxes = new List<BitChartCartesianAxis>
-                {
+                XAxes =
+                [
                     new BitChartTimeAxis
                     {
                         ScaleLabel = new BitChartScaleLabel
@@ -245,20 +251,28 @@ protected override void OnInitialized()
                         },
                         Time = new BitChartTimeOptions
                         {
-                            TooltipFormat = ""ll HH:mm""
+                            TooltipFormat = ""dd MMM HH:mm""
                         },
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
                     }
-                },
-                YAxes = new List<BitChartCartesianAxis>
-                {
+                ],
+                YAxes =
+                [
                     new BitChartLinearCartesianAxis
                     {
                         ScaleLabel = new BitChartScaleLabel
                         {
                             LabelString = ""Value""
+                        },
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
                         }
                     }
-                }
+                ]
             }
         }
     };
@@ -398,10 +412,10 @@ private void RemoveData()
 
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 
@@ -416,12 +430,12 @@ public static class BitChartDemoColors
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 
