@@ -1,7 +1,7 @@
 ﻿@page "/templates/run-project"
 @inherits AppComponentBase
 
-<PageOutlet Url="templates/launch-project"
+<PageOutlet Url="templates/run-project"
             Title="Run project - Templates"
             Description="Run project of the project templates of the bit platform" />
 
@@ -55,9 +55,9 @@
         in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
         WebAssembly, enhancing performance.
         <CodeBox>public static IComponentRenderMode? Current =&gt;
-AppEnvironment.IsDev()
-? BlazorServer
-: Auto</CodeBox>
+    AppEnvironment.IsDev()
+    ? BlazorServer // For better development experience.
+    : BlazorAuto;  // For better production experience.</CodeBox>
     </BitText>
     <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
     <BitText Typography="BitTypography.Subtitle1">
