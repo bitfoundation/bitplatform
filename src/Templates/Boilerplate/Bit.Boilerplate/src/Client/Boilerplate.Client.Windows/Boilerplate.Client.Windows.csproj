@@ -32,8 +32,8 @@
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.80" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2651.64" />
-        <PackageReference Include="Velopack" Version="0.0.583" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
+        <PackageReference Include="Velopack" Version="0.0.594" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
