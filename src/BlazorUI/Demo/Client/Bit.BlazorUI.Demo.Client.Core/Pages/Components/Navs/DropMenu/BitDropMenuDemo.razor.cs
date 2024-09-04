@@ -147,4 +147,6 @@ public partial class BitDropMenuDemo
             ]
         }
     ];
+
+    private int clickCounter;
 }
