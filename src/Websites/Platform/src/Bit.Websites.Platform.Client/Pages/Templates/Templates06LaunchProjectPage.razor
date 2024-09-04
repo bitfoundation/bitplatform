@@ -9,7 +9,6 @@
     <BitText Typography="BitTypography.H3" Gutter> Project Launch Guidelines</BitText>
     <br />
     <br />
-    <br />
     <BitText Typography="BitTypography.Subtitle1">
         The process for launching the project varies based on the Api parameter set during project initiation:
         <br />
@@ -64,9 +63,9 @@ dotnet ef database update</CodeBox>
         in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
         WebAssembly, enhancing performance.
         <CodeBox>public static IComponentRenderMode? Current =&gt;
-    AppEnvironment.IsDev()
-    ? BlazorServer
-    : Auto</CodeBox>
+AppEnvironment.IsDev()
+? BlazorServer
+: Auto</CodeBox>
     </BitText>
     <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
     <BitText Typography="BitTypography.Subtitle1">
@@ -106,13 +105,6 @@ dotnet ef database update</CodeBox>
     </div>
     <br />
     <br />
-    <BitText Typography="BitTypography.H5" Gutter>Launch Windows Apps</BitText>
-    <BitText Typography="BitTypography.Subtitle1">
-        To launch the project on the Windows platform, either set Client.Maui or Client.Windows as the startup project. If you need to access the Developer Tools, simply use
-        <i>Ctrl + Shift + I</i> on the opened windows application.
-    </BitText>
-    <br />
-    <br />
     <BitText Typography="BitTypography.H5" Gutter>Connecting Client to Server</BitText>
     <BitText Typography="BitTypography.Subtitle1">
         To connect the client to the server, set the <i>ServerAddress</i> inside Client.Core/appsettings.json to the appropriate IP address. The default value does not need
@@ -147,35 +139,51 @@ dotnet ef database update</CodeBox>
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization | Docker | WSL | Fast Android Emulators On Windows</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        This enables faster launch times with WSL, Docker, or even the Android Emulator.
-        <br />
-        <div class="image-container">
-            <img class="image" src="images/templates/virtualization.webp" />
-        </div>
-        If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
-        <br />
-        <br />
-        <div class="video-container">
-            <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
-                    width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-            </iframe>
-        </div>
-        <br />
-        Then, run the following commands as an administrator in PowerShell:
-        <CodeBox>Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
+        <ol>
+            <li>
+                Make sure Virtualization is enabled on your system:
+                <br />
+                <div class="image-container">
+                    <img class="image" src="images/templates/virtualization.webp" />
+                </div>
+                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                <br />
+                <br />
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                    </iframe>
+                </div>
+                <br />
+            </li>
+            <li>
+                Run the following commands as an administrator in PowerShell:
+                <CodeBox>Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart
 Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBox>
-        Then we can go ahead with installation of <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a> 
-        and <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
+            </li>
+            <li>
+                Instal <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a>.
+            </li>
+            <li>
+                Install <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
+            </li>
+        </ol>
+    </BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>Launch Windows Apps</BitText>
+    <BitText Typography="BitTypography.Subtitle1">
+        To launch the project on the Windows platform, either set Client.Maui or Client.Windows as the startup project. If you need to access the Developer Tools, simply use
+        <i>Ctrl + Shift + I</i> on the opened windows application.
     </BitText>
     <br />
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Android, iOS Browser Dev Tools</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        Opening Browser Dev Tools for Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows 
+        Opening Browser Dev Tools for Android and iOS can be somewhat complex. For more detailed instructions applicable to macOS, which also apply to Windows
         and Linux, please refer to the following video:
         <br />
         <br />
@@ -185,8 +193,9 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
             </iframe>
         </div>
+        <br />
+        You can use the same techinque to inspect web apps running inside Android/iOS devices and simulators.
     </BitText>
-    <br />
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS Code for iOS, Android and macOS</BitText>
     <BitText Typography="BitTypography.Subtitle1">
@@ -200,7 +209,7 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
             </iframe>
         </div>
         <br />
-        Next in order to run on an Android Device follow the instructions in this video: 
+        Next in order to run on an Android Device follow the instructions in this video:
         <br />
         <br />
         <div class="video-container">
@@ -210,7 +219,7 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
             </iframe>
         </div>
         <br />
-        And in order to run on an iOS device see this video: 
+        And in order to run on an iOS device see this video:
         <br />
         <br />
         <div class="video-container">
@@ -221,14 +230,19 @@ Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBo
         </div>
         <br />
     </BitText>
-    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in VS for iOS, Android</BitText>
+    <BitText Typography="BitTypography.H5" Gutter>Launch MAUI in Visual Studio for iOS, Android</BitText>
     <BitText Typography="BitTypography.Subtitle1">
-        Set the MAUI project as the startup project. If you have followed the previous video for macOS, you only need to connect 
-        Visual Studio to macOS. To run the project on an iOS device, see this <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">reference</a>.
-        And in order to run on an iOS device see this video:
+        Running your project on Android, Windows, and Web using Visual Studio is straightforward. However, testing a macOS version with Visual Studio isn't possible.
+        For iOS, if you have a Mac connected to the same network as your Windows PC, you can follow <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-8.0" target="_blank">this documentation</a> to connect your Visual Studio to the mac device
+        and run the iOS project using Visual Studio while coding on Windows.
         <br />
         <br />
-        <div class="video-container"> 
+        If you don't have a Mac but do have an Apple Developer Account and an iOS device,
+        you can follow the guide below to test the iOS version on Windows and Visual Studio without needing a Mac.
+        Set the MAUI project as the startup project.
+        <br />
+        <br />
+        <div class="video-container">
             <iframe src="https://www.youtube.com/embed/snQ1C6Cppr8"
                     width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
