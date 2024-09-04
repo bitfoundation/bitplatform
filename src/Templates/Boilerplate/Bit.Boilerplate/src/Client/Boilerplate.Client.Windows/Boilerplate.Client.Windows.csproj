@@ -24,8 +24,8 @@
         <Using Include="Boilerplate.Shared" />
         <Watch Remove="*.scss" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-05" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-05" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-06" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-06" PrivateAssets="all" />
         <PackageReference Include="EmbedIO" Version="3.5.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
