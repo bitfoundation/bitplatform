@@ -56,12 +56,6 @@ public partial class Templates03GettingStartedPage
             (text:"echo 'Set execution policy';",
             command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
 
-            (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
-            command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
-
-            (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
-            command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;"),
-
             (text:"echo 'Install - Update winget';",
             command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
 
@@ -84,7 +78,13 @@ public partial class Templates03GettingStartedPage
         [CommandGroup.Additional] =
         [
             (text:@"echo 'Install MAUI workloads https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=visual-studio-code#install-net-and-net-maui-workloads';",
-            command:"dotnet workload install maui;")
+            command:"dotnet workload install maui;"),
+
+            (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
+            command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
+
+            (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
+            command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;"),
         ],
 
         [CommandGroup.VS] =
