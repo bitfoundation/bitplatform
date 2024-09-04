@@ -2,7 +2,7 @@
 
 public partial class _BitChartPolarAreaDemo
 {
-    private const int INITAL_COUNT = 5;
+    private const int INITAL_COUNT = 6;
 
     private BitChart _chart = default!;
     private BitChartPolarAreaConfig _config = default!;
@@ -11,7 +11,7 @@ public partial class _BitChartPolarAreaDemo
     {
         _config = new BitChartPolarAreaConfig
         {
-            Options = new BitChartPolarAreaOptions()
+            Options = new BitChartPolarAreaOptions
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
@@ -29,10 +29,9 @@ public partial class _BitChartPolarAreaDemo
             }
         };
 
-        System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
         var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -62,10 +61,10 @@ public partial class _BitChartPolarAreaDemo
 
     private void AddPolarAreaDataset()
     {
-        System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-        var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        int count = _config.Data.Labels.Count;
+        BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -82,40 +81,6 @@ public partial class _BitChartPolarAreaDemo
         _chart.Update();
     }
 
-    private void AddPolarAreaData()
-    {
-        if (_config.Data.Datasets.Count == 0)
-            return;
-
-        string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-        _config.Data.Labels.Add(month);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-        }
-
-        _chart.Update();
-    }
-
-    private void RemovePolarAreaData()
-    {
-        if (_config.Data.Datasets.Count == 0 ||
-            _config.Data.Labels.Count == 0)
-        {
-            return;
-        }
-
-        _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.RemoveAt(dataset.Count - 1);
-        }
-
-        _chart.Update();
-    }
-
 
 
     private readonly string razorCode = @"
@@ -123,9 +88,7 @@ public partial class _BitChartPolarAreaDemo
 
 <BitButton OnClick=""RandomizePolarAreaData"">Randomize Data</BitButton>
 <BitButton OnClick= ""AddPolarAreaDataset"" > Add Dataset</BitButton>
-<BitButton OnClick= ""RemovePolarAreaDataset"" > Remove Dataset</BitButton>
-<BitButton OnClick= ""AddPolarAreaData"" > Add Data</BitButton>
-<BitButton OnClick= ""RemovePolarAreaData"" > Remove Data</BitButton>";
+<BitButton OnClick= ""RemovePolarAreaDataset"" > Remove Dataset</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -136,7 +99,7 @@ protected override void OnInitialized()
 {
     _config = new BitChartPolarAreaConfig
     {
-        Options = new BitChartPolarAreaOptions()
+        Options = new BitChartPolarAreaOptions
         {
             Responsive = true,
             Title = new BitChartOptionsTitle
@@ -154,10 +117,9 @@ protected override void OnInitialized()
         }
     };
 
-    System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
     var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -187,10 +149,10 @@ private void RandomizePolarAreaData()
 
 private void AddPolarAreaDataset()
 {
-    System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-    var dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    int count = _config.Data.Labels.Count;
+    BitChartPolarAreaDataset<int> dataset = new BitChartPolarAreaDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -204,40 +166,6 @@ private void RemovePolarAreaDataset()
         return;
 
     datasets.RemoveAt(datasets.Count - 1);
-    _chart.Update();
-}
-
-private void AddPolarAreaData()
-{
-    if (_config.Data.Datasets.Count == 0)
-        return;
-
-    string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-    _config.Data.Labels.Add(month);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-    }
-
-    _chart.Update();
-}
-
-private void RemovePolarAreaData()
-{
-    if (_config.Data.Datasets.Count == 0 ||
-        _config.Data.Labels.Count == 0)
-    {
-        return;
-    }
-
-    _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.RemoveAt(dataset.Count - 1);
-    }
-
     _chart.Update();
 }
 

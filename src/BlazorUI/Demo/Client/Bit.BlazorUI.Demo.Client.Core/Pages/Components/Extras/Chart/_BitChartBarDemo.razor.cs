@@ -11,7 +11,7 @@ public partial class _BitChartBarDemo
     {
         _config = new BitChartBarConfig
         {
-            Options = new BitChartBarOptions()
+            Options = new BitChartBarOptions
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
@@ -156,7 +156,7 @@ protected override void OnInitialized()
 {
     _config = new BitChartBarConfig
     {
-        Options = new BitChartBarOptions()
+        Options = new BitChartBarOptions
         {
             Responsive = true,
             Title = new BitChartOptionsTitle

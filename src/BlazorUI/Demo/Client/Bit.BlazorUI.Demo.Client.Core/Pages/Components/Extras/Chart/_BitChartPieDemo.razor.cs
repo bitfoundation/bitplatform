@@ -22,10 +22,9 @@ public partial class _BitChartPieDemo
             }
         };
 
-        System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -55,10 +54,10 @@ public partial class _BitChartPieDemo
 
     private void AddPieDataset()
     {
-        System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        int count = _config.Data.Labels.Count;
+        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -75,40 +74,6 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void AddPieData()
-    {
-        if (_config.Data.Datasets.Count == 0)
-            return;
-
-        string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-        _config.Data.Labels.Add(month);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-        }
-
-        _chart.Update();
-    }
-
-    private void RemovePieData()
-    {
-        if (_config.Data.Datasets.Count == 0 ||
-            _config.Data.Labels.Count == 0)
-        {
-            return;
-        }
-
-        _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.RemoveAt(dataset.Count - 1);
-        }
-
-        _chart.Update();
-    }
-
 
 
     private readonly string razorCode = @"
@@ -116,9 +81,7 @@ public partial class _BitChartPieDemo
 
 <BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
 <BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
-<BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>
-<BitButton OnClick=""AddPieData"">Add Data</BitButton>
-<BitButton OnClick=""RemovePieData"">Remove Data</BitButton>";
+<BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -140,10 +103,10 @@ protected override void OnInitialized()
         }
     };
 
-    System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    
+    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -173,10 +136,10 @@ private void RandomizePieData()
 
 private void AddPieDataset()
 {
-    System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    int count = _config.Data.Labels.Count;
+    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(color),
+        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -190,40 +153,6 @@ private void RemovePieDataset()
         return;
 
     datasets.RemoveAt(0);
-    _chart.Update();
-}
-
-private void AddPieData()
-{
-    if (_config.Data.Datasets.Count == 0)
-        return;
-
-    string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-    _config.Data.Labels.Add(month);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-    }
-
-    _chart.Update();
-}
-
-private void RemovePieData()
-{
-    if (_config.Data.Datasets.Count == 0 ||
-        _config.Data.Labels.Count == 0)
-    {
-        return;
-    }
-
-    _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.RemoveAt(dataset.Count - 1);
-    }
-
     _chart.Update();
 }
 
