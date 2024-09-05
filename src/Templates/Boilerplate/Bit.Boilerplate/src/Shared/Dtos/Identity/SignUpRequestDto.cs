@@ -16,9 +16,9 @@ public class SignUpRequestDto : IdentityRequestDto
     public string? Password { get; set; }
 
     /// <example>true</example>
-    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
-    [Display(Name = nameof(AppStrings.TermsAccepted))]
-    public bool TermsAccepted { get; set; }
+    //[Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
+    //[Display(Name = nameof(AppStrings.TermsAccepted))]
+    //public bool TermsAccepted { get; set; }
 
     //#if (captcha == "reCaptcha")
     /// <example>null</example>
