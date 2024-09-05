@@ -9,6 +9,14 @@
     @include ImageContainer;
 }
 
+.section-card {
+    @include SectionCard;
+}
+
+.section-card-txt {
+    @include SectionCardText;
+}
+
 .image {
     @include Image;
     width: rem2(400px);

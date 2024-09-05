@@ -15,7 +15,7 @@
             <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
             <br />
             <BitPivot>
-                <BitPivotItem HeaderText="One-step setup">
+                <BitPivotItem HeaderText="Easy setup">
                     <br />
                     <BitText Typography="BitTypography.H6" Gutter>
                         For Windows: Visual Studio & Visual Studio Code
@@ -28,10 +28,33 @@
                         The default commands listed below are required for Web & API development, however,
                         you can choose other options too, then click the Copy button and paste them into
                         the Windows PowerShell as an Administrator to run.
+                        <br /><br />
+                        @if (enableVirtualization)
+                        {
+                            <div>
+                                Make sure Virtualization is enabled on your system:
+                                <br />
+                                <br />
+                                <div class="image-container">
+                                    <img class="image" src="images/templates/virtualization.webp" />
+                                </div>
+                                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                                <br />
+                                <br />
+                                <div class="video-container">
+                                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                    </iframe>
+                                </div>
+                                <br />
+                            </div>
+                        }
                     </BitText>
                     <br />
                     <BitStack Gap="1rem">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
+                        <BitCheckbox Label="Virtualization" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
                         <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
@@ -77,13 +100,15 @@
                             {
                                 <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-mkdir -p $HOME/.dotnet
-tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-dotnet dev-certs https --trust
-rm $HOME/dotnet.tar.gz</CodeBox>
+                                    <CodeBox>
+                                        wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                        mkdir -p $HOME/.dotnet
+                                        tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+                                        echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+                                        export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+                                        dotnet dev-certs https --trust
+                                        rm $HOME/dotnet.tar.gz
+                                    </CodeBox>
                                 </BitAccordion>
                             }
                         </li>
@@ -140,6 +165,31 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                         }
                     </ol>
                     <br />
+                    @if (devOS is "Windows")
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization</BitText>
+                        <ol>
+                            <li>
+                                Make sure Virtualization is enabled on your system:
+                                <br />
+                                <div class="image-container">
+                                    <img class="image" src="images/templates/virtualization.webp" />
+                                </div>
+                            </li>
+                            <li>
+                                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                                <br />
+                                <br />
+                                <div class="video-container">
+                                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                    </iframe>
+                                </div>
+                                <br />
+                            </li>
+                        </ol>
+                    }
                     <BitText Typography="BitTypography.H5" Gutter>IDE specific requirements</BitText>
                     <br />
                     @if (devOS is "Windows")
@@ -200,22 +250,26 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>
+code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
 code --install-extension ms-dotnettools.dotnet-maui
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                             else
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>
+code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                         </BitAccordion>
                     </div>

@@ -9,6 +9,7 @@ public partial class Templates03GettingStartedPage
     private bool installVs;
     private bool installVsCode;
     private bool enableCrossPlatform;
+    private bool enableVirtualization;
     private string devOS = "Windows";
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
@@ -16,7 +17,8 @@ public partial class Templates03GettingStartedPage
     private List<(string text, string command)> GetSelectedComands()
     {
         List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
-
+        if (enableVirtualization)
+            selectedCommandGroups.AddRange(commandGroups[CommandGroup.Virtualization]);
         if (enableCrossPlatform)
             selectedCommandGroups.AddRange(commandGroups[CommandGroup.Additional]);
         if (installVsCode)
@@ -127,6 +129,23 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
             command:"code --install-extension DominicVonk.vscode-resx-editor;"),
+        ],
+        [CommandGroup.Virtualization] =
+        [
+            (text:@"echo 'Install WSL';",
+            command:"wsl --install;"),
+
+            (text:@"echo 'Install HyperV';",
+            command:"Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart;"),
+
+            (text:@"echo 'Install HyperVisior Platform';",
+            command:"Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart;"),
+
+            (text:@"echo 'Install Virtual Machine Platform';",
+            command:"Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart;"),
+
+            (text:@"echo 'Install Docker Desktop';",
+            command:"winget install Docker.DockerDesktop --accept-source-agreements --accept-package-agreements;"),
         ]
     };
 
@@ -137,5 +156,6 @@ public partial class Templates03GettingStartedPage
         AdditionalVS,
         VS,
         VSCode,
+        Virtualization
     }
 }
