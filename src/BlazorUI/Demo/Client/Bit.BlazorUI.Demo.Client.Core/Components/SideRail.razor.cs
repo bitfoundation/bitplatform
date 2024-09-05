@@ -2,7 +2,7 @@
 
 public partial class SideRail
 {
-    [Parameter] public List<SideRailItem> Items { get; set; } = [];
+    public List<SideRailItem> Items { get; set; } = [];
 
     private async Task ScrollToItem(SideRailItem targetItem)
     {
