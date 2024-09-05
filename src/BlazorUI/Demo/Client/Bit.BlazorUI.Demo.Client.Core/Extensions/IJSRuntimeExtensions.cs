@@ -12,6 +12,11 @@ public static class IJSRuntimeExtensions
         await jsRuntime.InvokeVoidAsync("scrollToElement", targetElementId);
     }
 
+    public static async ValueTask<SideRailItem[]> GetSideRailItems(this IJSRuntime jsRuntime, string targetElement)
+    {
+        return await jsRuntime.InvokeAsync<SideRailItem[]>("getSideRailItems", targetElement);
+    }
+
     public static async Task CopyToClipboard(this IJSRuntime jsRuntime, string codeSampleContentForCopy)
     {
         await jsRuntime.InvokeVoidAsync("copyToClipboard", codeSampleContentForCopy);
