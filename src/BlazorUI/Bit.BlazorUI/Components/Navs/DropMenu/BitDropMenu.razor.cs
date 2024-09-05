@@ -141,7 +141,7 @@ public partial class BitDropMenu : BitComponentBase
                                 0,
                                 "",
                                 "",
-                                true,
+                                false,
                                 RootElementClass);
     }
 }

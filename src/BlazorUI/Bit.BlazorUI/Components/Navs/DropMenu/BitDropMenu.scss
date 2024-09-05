@@ -15,7 +15,7 @@
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-    padding: spacing(0.75) spacing(1.5);
+    padding: spacing(1.0) spacing(1.5);
 
     @media (hover: hover) {
         &:hover {
