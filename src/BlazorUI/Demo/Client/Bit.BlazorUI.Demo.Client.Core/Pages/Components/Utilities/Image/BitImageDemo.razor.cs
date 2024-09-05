@@ -135,8 +135,8 @@ public partial class BitImageDemo
             Id = "image-class-style",
             Title = "BitImageClassStyles",
             Description = "",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -151,7 +151,7 @@ public partial class BitImageDemo
                     DefaultValue = "null",
                     Description="Custom CSS classes/styles for the image element."
                 }
-            }
+            ]
         }
     ];
 
@@ -262,15 +262,18 @@ public partial class BitImageDemo
     private readonly string example2RazorCode = @"
 <BitImage Width=""9rem""
           Alt=""BitImage with width""
+          Style=""background-color: #00ffff17""
           Src=""images/bit-logo-blue.png"" />
                 
 <BitImage Height=""5rem""
           Alt=""BitImage with height""
+          Style=""background-color: #00ffff17""
           Src=""images/bit-logo-blue.png"" />
              
 <BitImage Width=""256px""
           Height=""128px""
           Alt=""BitImage with width and height""
+          Style=""background-color: #00ffff17""
           Src=""images/bit-logo-blue.png"" />";
 
     private readonly string example3RazorCode = @"
