@@ -311,6 +311,9 @@
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>شما باید با شرایط ما موافقت کنید.</value>
   </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>با ثبت نام، شما موافقت کردید با</value>
+  </data>
     <data name="Gender" xml:space="preserve">
     <value>جنسیت</value>
   </data>
