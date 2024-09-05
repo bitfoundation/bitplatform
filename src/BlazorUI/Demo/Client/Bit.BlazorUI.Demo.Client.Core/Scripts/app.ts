@@ -22,10 +22,10 @@ function scrollToElement(targetElementId: string) {
     }
 }
 
-function getSideRailItems(targetElement: string) {
-    return Array.from(document.querySelectorAll<HTMLElement>(targetElement)).map((element) => ({
-        id: (element).id,
-        title: (element).innerText
+function getSideRailItems() {
+    return Array.from(document.querySelectorAll<HTMLElement>('[example-section-title]')).map((element) => ({
+        id: element.id,
+        title: element.innerText
     }));
 }
 

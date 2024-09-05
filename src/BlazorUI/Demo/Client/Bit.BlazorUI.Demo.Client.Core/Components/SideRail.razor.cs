@@ -13,7 +13,7 @@ public partial class SideRail
 
     protected override async Task OnAfterFirstRenderAsync()
     {
-        var sideRailItems = await JSRuntime.GetSideRailItems("[example-section-title]");
+        var sideRailItems = await JSRuntime.GetSideRailItems();
 
         Items = sideRailItems.ToList();
 
