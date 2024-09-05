@@ -151,17 +151,12 @@
             </li>
             <li>
                 Run the following commands as an administrator in PowerShell:
-                <CodeBox>Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
-Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
-Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
-Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart
-Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online</CodeBox>
-            </li>
-            <li>
-                Instal <a href="https://learn.microsoft.com/en-us/windows/wsl/install" target="_blank">WSL</a>.
-            </li>
-            <li>
-                Install <a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker Desktop</a>.
+                <CodeBox>wsl --install;
+Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart;
+Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart;
+Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart;
+winget install Docker.DockerDesktop --accept-source-agreements --accept-package-agreements;
+</CodeBox>
             </li>
         </ol>
     </BitText>
