@@ -28,13 +28,13 @@ public partial class BitDropMenuDemo
 </BitDropMenu>";
 
     private readonly string example2RazorCode = @"
-<BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
+<BitDropMenu Text=""IconName"" IconName=""@BitIconName.Emoji2"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>
 
-<BitDropMenu Text=""Custom ChevronDownIcon"" ChevronDownIcon=""@BitIconName.OpenInNewTab"">
+<BitDropMenu Text=""ChevronDownIcon"" ChevronDownIcon=""@BitIconName.DoubleChevronDown"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
@@ -43,7 +43,7 @@ public partial class BitDropMenuDemo
     private readonly string example3RazorCode = @"
 <BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
     <Template>
-        <div style=""display:flex;gap:10px;""
+        <div style=""display:flex;gap:10px;"">
             <BitIcon IconName=""@BitIconName.Airplane"" Color=""BitColor.Tertiary"" />
             <span>A template</span>
             <BitRippleLoading CustomSize=""20"" Color=""BitColor.Tertiary"" />
@@ -67,38 +67,38 @@ private int clickCounter;";
 
     private readonly string example5RazorCode = @"
 <style>
-.custom-class {
-    border-radius: 1rem;
-    border-color: blueviolet;
-    transition: background-color 1s;
-    background: linear-gradient(90deg, magenta, transparent) blue;
-}
+    .custom-class {
+        border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+    }
 
-.custom-class:hover {
-    border-color: magenta;
-    background-color: magenta;
-}
+    .custom-class:hover {
+        border-color: magenta;
+        background-color: magenta;
+    }
 
-.custom-root {
-    color: aqua;
-    min-width: 7.2rem;
-    font-weight: bold;
-    border-radius: 1rem;
-    border-color: aqua;
-    box-shadow: aqua 0 0 0.5rem;
-}
+    .custom-root {
+        color: aqua;
+        min-width: 7.2rem;
+        font-weight: bold;
+        border-color: aqua;
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 0.5rem;
+    }
 
-.custom-root:hover {
-    background-color: gray;
-}
+    .custom-root:hover {
+        background-color: gray;
+    }
 
-.custom-text {
-    text-shadow: tomato 0 0 0.5rem;
-}
+    .custom-text {
+        text-shadow: tomato 0 0 0.5rem;
+    }
 
-.custom-opened {
-    color: green;
-}
+    .custom-opened {
+        color: green;
+    }
 </style>
 
 <BitDropMenu Text=""Styled Drop menu"" Style=""background-color: transparent; border-color: blueviolet; color: blueviolet;"">

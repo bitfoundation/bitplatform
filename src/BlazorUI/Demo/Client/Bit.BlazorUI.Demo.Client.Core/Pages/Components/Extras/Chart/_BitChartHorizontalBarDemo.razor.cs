@@ -22,6 +22,29 @@ public partial class _BitChartHorizontalBarDemo
                 {
                     Display = true,
                     Text = "BitChart Horizontal Bar Chart"
+                },
+                Scales = new BitChartBarScales
+                {
+                    XAxes =
+                    [
+                        new BitChartLinearCartesianAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ],
+                    YAxes =
+                    [
+                        new BitChartBarCategoryAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ]
                 }
             }
         };
@@ -72,6 +95,29 @@ protected override void OnInitialized()
             {
                 Display = true,
                 Text = ""BitChart Horizontal Bar Chart""
+            },
+            Scales = new BitChartBarScales
+            {
+                XAxes =
+                [
+                    new BitChartLinearCartesianAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ],
+                YAxes =
+                [
+                    new BitChartBarCategoryAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ]
             }
         }
     };
@@ -99,10 +145,10 @@ protected override void OnInitialized()
 
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 
@@ -117,12 +163,12 @@ public static class BitChartDemoColors
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 

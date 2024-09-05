@@ -1,61 +1,60 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
-public partial class _BitChartBarDemo
+public partial class _BitChartRadarDemo
 {
-    private const int INITAL_COUNT = 5;
+    private const int INITAL_COUNT = 8;
 
     private BitChart _chart = default!;
-    private BitChartBarConfig _config = default!;
+    private BitChartRadarConfig _config = default!;
 
     protected override void OnInitialized()
     {
-        _config = new BitChartBarConfig
+        _config = new BitChartRadarConfig
         {
-            Options = new BitChartBarOptions
+            Options = new BitChartRadarOptions()
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
                 {
                     Display = true,
-                    Text = "BitChart bar Chart"
+                    Text = "BitChart Radar Chart"
                 },
-                Scales = new BitChartBarScales
+                Scale = new BitChartLinearRadialAxis
                 {
-                    XAxes =
-                    [
-                        new BitChartBarCategoryAxis
-                        {
-                            GridLines = new BitChartGridLines
-                            {
-                                Color = "gray"
-                            }
-                        }
-                    ],
-                    YAxes =
-                    [
-                        new BitChartLinearCartesianAxis
-                        {
-                            GridLines = new BitChartGridLines
-                            {
-                                Color = "gray"
-                            }
-                        }
-                    ]
+                    GridLines = new BitChartGridLines
+                    {
+                        Color = "gray"
+                    }
                 }
             }
         };
 
-        System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-        var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        IDataset<int> dataset1 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "Dataset 1",
-            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red))
         };
+
+        IDataset<int> dataset2 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        {
+            Label = "Dataset 2",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue))
+        };
+
+        IDataset<int> dataset3 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        {
+            Label = "Dataset 3",
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Orange))
+        };
+
+
+        _config.Data.Datasets.Add(dataset1);
+        _config.Data.Datasets.Add(dataset2);
+        _config.Data.Datasets.Add(dataset3);
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-        _config.Data.Datasets.Add(dataset);
     }
 
-    private void RandomizeBarData()
+    private void RandomizeRadarData()
     {
         foreach (IDataset<int> dataset in _config.Data.Datasets)
         {
@@ -77,10 +76,10 @@ public partial class _BitChartBarDemo
         _chart.Update();
     }
 
-    private void AddBarDataset()
+    private void AddRadarDataset()
     {
         System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-        IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+        IDataset<int> dataset = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
         {
             Label = $"Dataset {_config.Data.Datasets.Count + 1}",
             BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
@@ -92,7 +91,7 @@ public partial class _BitChartBarDemo
         _chart.Update();
     }
 
-    private void RemoveBarDataset()
+    private void RemoveRadarDataset()
     {
         IList<IBitChartDataset> datasets = _config.Data.Datasets;
         if (datasets.Count == 0)
@@ -102,7 +101,7 @@ public partial class _BitChartBarDemo
         _chart.Update();
     }
 
-    private void AddBarData()
+    private void AddRadarData()
     {
         if (_config.Data.Datasets.Count == 0)
             return;
@@ -118,7 +117,7 @@ public partial class _BitChartBarDemo
         _chart.Update();
     }
 
-    private void RemoveBarData()
+    private void RemoveRadarData()
     {
         if (_config.Data.Datasets.Count == 0 ||
             _config.Data.Labels.Count == 0)
@@ -141,66 +140,64 @@ public partial class _BitChartBarDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
-<BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
-<BitButton OnClick= ""RemoveBarDataset"" > Remove Dataset</BitButton>
-<BitButton OnClick= ""AddBarData"" > Add Data</BitButton>
-<BitButton OnClick= ""RemoveBarData"" > Remove Data</BitButton>";
+<BitButton OnClick=""RandomizeRadarData"">Randomize Data</BitButton>
+<BitButton OnClick= ""AddRadarDataset"" > Add Dataset</BitButton>
+<BitButton OnClick= ""RemoveRadarDataset"" > Remove Dataset</BitButton>
+<BitButton OnClick= ""AddRadarData"" > Add Data</BitButton>
+<BitButton OnClick= ""RemoveRadarData"" > Remove Data</BitButton>";
     private readonly string csharpCode = @"
-private const int INITAL_COUNT = 5;
+private const int INITAL_COUNT = 8;
 
 private BitChart _chart = default!;
-private BitChartBarConfig _config = default!;
+private BitChartRadarConfig _config = default!;
 
 protected override void OnInitialized()
 {
-    _config = new BitChartBarConfig
+    _config = new BitChartRadarConfig
     {
-        Options = new BitChartBarOptions
+        Options = new BitChartRadarOptions()
         {
             Responsive = true,
             Title = new BitChartOptionsTitle
             {
                 Display = true,
-                Text = ""BitChart bar Chart""
+                Text = ""BitChart Radar Chart""
             },
-            Scales = new BitChartBarScales
+            Scale = new BitChartLinearRadialAxis
             {
-                XAxes =
-                [
-                    new BitChartBarCategoryAxis
-                    {
-                        GridLines = new BitChartGridLines
-                        {
-                            Color = ""gray""
-                        }
-                    }
-                ],
-                YAxes =
-                [
-                    new BitChartLinearCartesianAxis
-                    {
-                        GridLines = new BitChartGridLines
-                        {
-                            Color = ""gray""
-                        }
-                    }
-                ]
+                GridLines = new BitChartGridLines
+                {
+                    Color = ""gray""
+                }
             }
         }
     };
 
-    System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
-    var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    IDataset<int> dataset1 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""Dataset 1"",
-        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Red))
     };
-    _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
-    _config.Data.Datasets.Add(dataset);
+
+    IDataset<int> dataset2 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    {
+        Label = ""Dataset 2"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Blue))
+    };
+
+    IDataset<int> dataset3 = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    {
+        Label = ""Dataset 3"",
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, BitChartDemoColors.Orange))
+    };
+
+
+    _config.Data.Datasets.Add(dataset1);
+    _config.Data.Datasets.Add(dataset2);
+    _config.Data.Datasets.Add(dataset3);
 }
 
-private void RandomizeBarData()
+private void RandomizeRadarData()
 {
     foreach (IDataset<int> dataset in _config.Data.Datasets)
     {
@@ -222,10 +219,10 @@ private void RandomizeBarData()
     _chart.Update();
 }
 
-private void AddBarDataset()
+private void AddRadarDataset()
 {
     System.Drawing.Color color = BitChartDemoColors.All[_config.Data.Datasets.Count % BitChartDemoColors.All.Count];
-    IDataset<int> dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
+    IDataset<int> dataset = new BitChartRadarDataset<int>(BitChartDemoUtils.RandomScalingFactor(_config.Data.Labels.Count))
     {
         Label = $""Dataset {_config.Data.Datasets.Count + 1}"",
         BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
@@ -237,7 +234,7 @@ private void AddBarDataset()
     _chart.Update();
 }
 
-private void RemoveBarDataset()
+private void RemoveRadarDataset()
 {
     IList<IBitChartDataset> datasets = _config.Data.Datasets;
     if (datasets.Count == 0)
@@ -247,7 +244,7 @@ private void RemoveBarDataset()
     _chart.Update();
 }
 
-private void AddBarData()
+private void AddRadarData()
 {
     if (_config.Data.Datasets.Count == 0)
         return;
@@ -263,7 +260,7 @@ private void AddBarData()
     _chart.Update();
 }
 
-private void RemoveBarData()
+private void RemoveRadarData()
 {
     if (_config.Data.Datasets.Count == 0 ||
         _config.Data.Labels.Count == 0)

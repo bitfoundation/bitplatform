@@ -1,11 +1,11 @@
 @import "../../../Styles/functions.scss";
 
 .bit-drm {
-    display: flex;
     gap: spacing(1);
     cursor: pointer;
     width: fit-content;
     align-items: center;
+    display: inline-flex;
     outline: transparent;
     text-decoration: none;
     box-sizing: border-box;
@@ -15,7 +15,7 @@
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-    padding: spacing(0.75) spacing(1.5);
+    padding: spacing(1.0) spacing(1.5);
 
     @media (hover: hover) {
         &:hover {
