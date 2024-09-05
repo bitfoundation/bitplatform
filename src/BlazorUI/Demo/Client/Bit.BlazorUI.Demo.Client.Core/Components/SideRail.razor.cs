@@ -2,7 +2,7 @@
 
 public partial class SideRail
 {
-    private List<SideRailItem> Items { get; set; } = [];
+    private List<SideRailItem> _items { get; set; } = [];
 
     private async Task ScrollToItem(SideRailItem targetItem)
     {
@@ -15,7 +15,7 @@ public partial class SideRail
     {
         var sideRailItems = await JSRuntime.GetSideRailItems();
 
-        Items = sideRailItems.ToList();
+        _items = sideRailItems.ToList();
 
         StateHasChanged();
 

@@ -2,7 +2,7 @@
 
 <ul class="side-rail">
     <li><b>On this page</b></li>
-    @foreach (var item in Items)
+    @foreach (var item in _items)
     {
         <li>
             <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
