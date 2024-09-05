@@ -55,7 +55,7 @@ jobs:
 
     - name: Configure app render mode
       run: |
-          sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
+          sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
