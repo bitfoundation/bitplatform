@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout.Main;
+﻿using Boilerplate.Shared.Dtos.Identity;
+
+namespace Boilerplate.Client.Core.Components.Layout.Main;
 
 public partial class MainHeader : AppComponentBase
 {
@@ -8,7 +10,10 @@ public partial class MainHeader : AppComponentBase
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
+    private UserDto user = new();
     private string? SelectedCulture;
+    private string? profileImageUrl;
+    private Action unsubscribe = default!;
     private BitDropdownItem<string>[] cultures = default!;
 
     protected override async Task OnInitAsync()
@@ -21,6 +26,21 @@ public partial class MainHeader : AppComponentBase
 
             SelectedCulture = CultureInfo.CurrentUICulture.Name;
         }
+
+        unsubscribe = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
+        {
+            if (payload is null) return;
+
+            user = (UserDto)payload;
+
+            await InvokeAsync(StateHasChanged);
+        });
+
+        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
+
+        var serverAddress = Configuration.GetServerAddress();
+        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
+        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
 
         await base.OnInitAsync();
     }
@@ -50,5 +70,11 @@ public partial class MainHeader : AppComponentBase
     private async Task ToggleTheme()
     {
         await bitDeviceCoordinator.ApplyTheme(await bitThemeManager.ToggleDarkLightAsync() == "dark");
+    }
+
+    private async Task GoToProfile()
+    {
+        //await CloseMenu();
+        NavigationManager.NavigateTo(Urls.ProfilePage);
     }
 }

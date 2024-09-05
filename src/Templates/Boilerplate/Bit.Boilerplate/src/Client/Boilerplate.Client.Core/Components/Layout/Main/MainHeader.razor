@@ -3,15 +3,39 @@
 <header>
     <BitStack Horizontal Grows>
         <BitStack>
-            <BitTypography Variant="BitTypographyVariant.H5">Title</BitTypography>
-            <BitTypography Variant="BitTypographyVariant.Body1">Subtitle</BitTypography>
+            <BitText Typography="BitTypography.H5">Title</BitText>
+            <BitText Typography="BitTypography.Body1">Subtitle</BitText>
         </BitStack>
 
         <BitSpacer />
 
-        <BitDropdown @bind-Value="SelectedCulture"
-                     Class="culture-drp"
-                     Items="cultures"
-                     OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
+        @{
+            var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+        }
+
+        <BitDropMenu Transparent>
+            <Template>
+                <BitPersona Size=@BitPersonaSize.Size32
+                            PrimaryText="@user.FullName"
+                            ImageUrl="@imageUrl" />
+                <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" />
+            </Template>
+            <Body>
+                <BitStack Gap="1rem" Style="padding:0.75rem">
+                    <BitPersona OnImageClick=GoToProfile
+                                PrimaryText="@user.FullName"
+                                Size=@BitPersonaSize.Size48
+                                SecondaryText="@user.DisplayName"
+                                Presence="BitPersonaPresence.Online"
+                                ImageUrl="@imageUrl" />
+                    <BitSeparator />
+                    <BitLink>Profile</BitLink>
+                    <BitText>Language</BitText>
+                    <BitToggle>Language</BitToggle>
+                    <BitLink>Setting</BitLink>
+                    <BitText>Sign out</BitText>
+                </BitStack>
+            </Body>
+        </BitDropMenu>
     </BitStack>
 </header>
