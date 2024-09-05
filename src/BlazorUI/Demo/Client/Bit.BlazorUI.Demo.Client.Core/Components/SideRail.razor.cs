@@ -10,4 +10,15 @@ public partial class SideRail
 
         await JSRuntime.ScrollToElement(targetItem.Id);
     }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        var sideRailItems = await JSRuntime.GetSideRailItems();
+
+        Items = sideRailItems.ToList();
+
+        StateHasChanged();
+
+        await base.OnAfterFirstRenderAsync();
+    }
 }
