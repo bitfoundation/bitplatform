@@ -28,45 +28,46 @@
                         The default commands listed below are required for Web & API development, however,
                         you can choose other options too, then click the Copy button and paste them into
                         the Windows PowerShell as an Administrator to run.
-                        <br /><br />
-                        @if (enableVirtualization)
-                        {
-                            <div>
-                                Make sure Virtualization is enabled on your system:
-                                <br />
-                                <br />
-                                <div class="image-container">
-                                    <img class="image" src="images/templates/virtualization.webp" />
-                                </div>
-                                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
-                                <br />
-                                <br />
-                                <div class="video-container">
-                                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
-                                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
-                                    </iframe>
-                                </div>
-                                <br />
-                            </div>
-                        }
                     </BitText>
                     <br />
                     <BitStack Gap="1rem">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
-                        <BitCheckbox Label="Virtualization" @bind-Value="enableVirtualization" />
+                        <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
                         <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     </BitStack>
-                    <br />
-                    List of commands:
+                    <br /><br />
+                    @if (enableVirtualization)
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions</BitText>
+                        <div>
+                            Make sure Virtualization is enabled on your system:
+                            <br />
+                            <br />
+                            <div class="image-container">
+                                <img class="image" src="images/templates/virtualization.webp" />
+                            </div>
+                            If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                            <br />
+                            <br />
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                        width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                </iframe>
+                            </div>
+                            <br />
+                        </div>
+                    }
+                    <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
                     <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
                     @if (installVs)
                     {
                         <br />
+                        <BitText Typography="BitTypography.H5" Gutter>Visual Studio Extensions</BitText>
                         <div class="section-card-txt">
-                            <b>Note</b>: you can install the following extensions for Visual Studio to have a better development experience:
+                            Install the following extensions for Visual Studio to have a better development experience:
                             <ol>
                                 <li>
                                     <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
@@ -100,15 +101,13 @@
                             {
                                 <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                    <CodeBox>
-wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 dotnet dev-certs https --trust
-rm $HOME/dotnet.tar.gz
-                                    </CodeBox>
+rm $HOME/dotnet.tar.gz</CodeBox>
                                 </BitAccordion>
                             }
                         </li>
@@ -167,7 +166,7 @@ rm $HOME/dotnet.tar.gz
                     <br />
                     @if (devOS is "Windows")
                     {
-                        <BitText Typography="BitTypography.H5" Gutter>Enable Virtualization</BitText>
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions (Docker, WSL, Android Emulators)</BitText>
                         <ol>
                             <li>
                                 Make sure Virtualization is enabled on your system:
@@ -250,15 +249,13 @@ rm $HOME/dotnet.tar.gz
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>
-code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
 code --install-extension ms-dotnettools.dotnet-maui
-code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {

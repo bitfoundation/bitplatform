@@ -63,12 +63,10 @@
             Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
             in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
             WebAssembly, enhancing performance.
-            <CodeBox>
-public static IComponentRenderMode? Current =&gt;
+            <CodeBox>public static IComponentRenderMode? Current =&gt;
     AppEnvironment.IsDev()
     ? BlazorServer // For better development experience.
-    : BlazorAuto;  // For better production experience.
-            </CodeBox>
+    : BlazorAuto;  // For better production experience.</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
             To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
             utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
@@ -86,7 +84,7 @@ public static IComponentRenderMode? Current =&gt;
     <br />
     <section class="section-card">
         <div class="section-card-txt">
-            <BitText Typography="BitTypography.H5" Gutter>Visual Studio Additional Launch Options</BitText>
+            <BitText Typography="BitTypography.H5" Gutter>Visual Studio / Visual Studio Code Additional Launch Options</BitText>
             The project also supports additional launch profiles, including Docker, IIS Express, and WSL. These options provide flexibility
             for developers to test the project according to their specific requirements.
             <br />
