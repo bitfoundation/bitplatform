@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTypography : BitComponentBase
+public partial class BitText : BitComponentBase
 {
     /// <summary>
-    /// The content of the Typography.
+    /// The content of the Text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -29,30 +29,25 @@ public partial class BitTypography : BitComponentBase
     public bool NoWrap { get; set; }
 
     /// <summary>
-    /// The variant of the Typography.
+    /// The typography of the Text.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitTypographyVariant Variant { get; set; } = BitTypographyVariant.Subtitle1;
+    public BitTypography? Typography { get; set; }
 
 
 
-    protected override string RootElementClass => "bit-tpg";
+    protected override string RootElementClass => "bit-txt";
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => $"bit-tpg-{Variant.ToString().ToLower(CultureInfo.InvariantCulture)}")
-                    .Register(() => NoWrap ? "bit-tpg-nowrap" : string.Empty)
-                    .Register(() => Gutter ? "bit-tpg-gutter" : string.Empty);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
+        ClassBuilder.Register(() => $"bit-txt-{(Typography ?? BitTypography.Subtitle1).ToString().ToLower(CultureInfo.InvariantCulture)}")
+                    .Register(() => NoWrap ? "bit-txt-nowrap" : string.Empty)
+                    .Register(() => Gutter ? "bit-txt-gutter" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Element ?? _VariantMapping[Variant]);
+        builder.OpenElement(0, Element ?? _VariantMapping[Typography ?? BitTypography.Subtitle1]);
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         builder.AddAttribute(3, "style", StyleBuilder.Value);
@@ -68,21 +63,22 @@ public partial class BitTypography : BitComponentBase
 
 
 
-    protected static readonly Dictionary<BitTypographyVariant, string> _VariantMapping = new()
+    protected static readonly Dictionary<BitTypography, string> _VariantMapping = new()
     {
-        { BitTypographyVariant.Body1, "p" },
-        { BitTypographyVariant.Body2, "p" },
-        { BitTypographyVariant.Button, "span" },
-        { BitTypographyVariant.Caption, "span" },
-        { BitTypographyVariant.H1, "h1" },
-        { BitTypographyVariant.H2, "h2" },
-        { BitTypographyVariant.H3, "h3" },
-        { BitTypographyVariant.H4, "h4" },
-        { BitTypographyVariant.H5, "h5" },
-        { BitTypographyVariant.H6, "h6" },
-        { BitTypographyVariant.Inherit, "p" },
-        { BitTypographyVariant.Overline, "span" },
-        { BitTypographyVariant.Subtitle1, "h6" },
-        { BitTypographyVariant.Subtitle2, "h6" },
+        { BitTypography.H1, "h1" },
+        { BitTypography.H2, "h2" },
+        { BitTypography.H3, "h3" },
+        { BitTypography.H4, "h4" },
+        { BitTypography.H5, "h5" },
+        { BitTypography.H6, "h6" },
+        { BitTypography.Subtitle1, "h6" },
+        { BitTypography.Subtitle2, "h6" },
+        { BitTypography.Body1, "p" },
+        { BitTypography.Body2, "p" },
+        { BitTypography.Button, "span" },
+        { BitTypography.Caption1, "span" },
+        { BitTypography.Caption2, "span" },
+        { BitTypography.Overline, "span" },
+        { BitTypography.Inherit, "p" },
     };
 }

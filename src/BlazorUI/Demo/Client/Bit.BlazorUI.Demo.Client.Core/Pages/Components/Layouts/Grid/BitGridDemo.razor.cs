@@ -63,11 +63,11 @@ public partial class BitGridDemo
         new()
         {
             Name = "HorizontalAlign",
-            Type = "BitGridAlignment",
-            DefaultValue = "BitGridAlignment.Start",
+            Type = "BitAlignment",
+            DefaultValue = "BitAlignment.Start",
             Description = "Defines whether to render Grid children horizontally.",
-            Href = "#bitGridAlignment-enum",
-            LinkType = LinkType.Link
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
         },
         new()
         {
@@ -105,8 +105,8 @@ public partial class BitGridDemo
         {
             Id = "bit-grid-item",
             Title = "BitGridItem",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "ChildContent",
@@ -163,7 +163,7 @@ public partial class BitGridDemo
                    DefaultValue = "null",
                    Description = "Number of columns in the extra extra large breakpoint.",
                },
-            }
+            ]
         }
     ];
 
@@ -171,11 +171,11 @@ public partial class BitGridDemo
     [
         new()
         {
-            Id = "bitGridAlignment-enum",
-            Name = "BitGridAlignment",
+            Id = "alignment-enum",
+            Name = "BitAlignment",
             Description = "",
-            Items = new List<ComponentEnumItem>()
-            {
+            Items =
+            [
                 new()
                 {
                     Name = "Start",
@@ -216,7 +216,7 @@ public partial class BitGridDemo
                     Name = "Stretch",
                     Value = "7",
                 }
-            }
+            ]
         }
     ];
 
@@ -225,7 +225,7 @@ public partial class BitGridDemo
     private double verticalSpacing = 0.5;
     private double horizontalSpacing = 0.5;
 
-    private BitGridAlignment horizontalAlign;
+    private BitAlignment horizontalAlign;
 
 
 
@@ -309,15 +309,15 @@ public partial class BitGridDemo
 <BitChoiceGroup Label=""Horizontal Align""
                 @bind-Value=""horizontalAlign""
                 LayoutFlow=""@BitLayoutFlow.Horizontal""
-                TItem=""BitChoiceGroupOption<BitGridAlignment>"" TValue=""BitGridAlignment"">
-    <BitChoiceGroupOption Text=""Start"" Value=""BitGridAlignment.Start"" />
-    <BitChoiceGroupOption Text=""Center"" Value=""BitGridAlignment.Center"" />
-    <BitChoiceGroupOption Text=""End"" Value=""BitGridAlignment.End"" />
-    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitGridAlignment.SpaceBetween"" />
-    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitGridAlignment.SpaceAround"" />
-    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitGridAlignment.SpaceEvenly"" />
-    <BitChoiceGroupOption Text=""Baseline"" Value=""BitGridAlignment.Baseline"" />
-    <BitChoiceGroupOption Text=""Stretch"" Value=""BitGridAlignment.Stretch"" />
+                TItem=""BitChoiceGroupOption<BitAlignment>"" TValue=""BitAlignment"">
+    <BitChoiceGroupOption Text=""Start"" Value=""BitAlignment.Start"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitAlignment.Center"" />
+    <BitChoiceGroupOption Text=""End"" Value=""BitAlignment.End"" />
+    <BitChoiceGroupOption Text=""SpaceBetween"" Value=""BitAlignment.SpaceBetween"" />
+    <BitChoiceGroupOption Text=""SpaceAround"" Value=""BitAlignment.SpaceAround"" />
+    <BitChoiceGroupOption Text=""SpaceEvenly"" Value=""BitAlignment.SpaceEvenly"" />
+    <BitChoiceGroupOption Text=""Baseline"" Value=""BitAlignment.Baseline"" />
+    <BitChoiceGroupOption Text=""Stretch"" Value=""BitAlignment.Stretch"" />
 </BitChoiceGroup>
 
 <BitGrid Columns=""4"" HorizontalAlign=""horizontalAlign"">
@@ -330,7 +330,7 @@ public partial class BitGridDemo
     }
 </BitGrid>";
     private readonly string example3CsharpCode = @"
-private BitGridAlignment horizontalAlign;
+private BitAlignment horizontalAlign;
 ";
 
     private readonly string example4RazorCode = @"
@@ -352,7 +352,7 @@ private BitGridAlignment horizontalAlign;
 <BitSlider Label=""Horizontal spacing between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@horizontalSpacing"" />
 
 <BitGrid Columns=""4""
-         HorizontalAlign=""BitGridAlignment.Center""
+         HorizontalAlign=""BitAlignment.Center""
          VerticalSpacing=""@($""{verticalSpacing}rem"")""
          HorizontalSpacing=""@($""{horizontalSpacing}rem"")"">
     @for (int i = 0; i < 16; i++)

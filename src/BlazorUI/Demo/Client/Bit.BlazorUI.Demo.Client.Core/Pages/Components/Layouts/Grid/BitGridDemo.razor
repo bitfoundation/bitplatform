@@ -55,15 +55,15 @@
             <ExamplePreview>
                 <BitChoiceGroup Label="Horizontal Align" Horizontal
                                 @bind-Value="horizontalAlign"
-                                TItem="BitChoiceGroupOption<BitGridAlignment>" TValue="BitGridAlignment">
-                    <BitChoiceGroupOption Text="Start" Value="BitGridAlignment.Start" />
-                    <BitChoiceGroupOption Text="Center" Value="BitGridAlignment.Center" />
-                    <BitChoiceGroupOption Text="End" Value="BitGridAlignment.End" />
-                    <BitChoiceGroupOption Text="SpaceBetween" Value="BitGridAlignment.SpaceBetween" />
-                    <BitChoiceGroupOption Text="SpaceAround" Value="BitGridAlignment.SpaceAround" />
-                    <BitChoiceGroupOption Text="SpaceEvenly" Value="BitGridAlignment.SpaceEvenly" />
-                    <BitChoiceGroupOption Text="Baseline" Value="BitGridAlignment.Baseline" />
-                    <BitChoiceGroupOption Text="Stretch" Value="BitGridAlignment.Stretch" />
+                                TItem="BitChoiceGroupOption<BitAlignment>" TValue="BitAlignment">
+                    <BitChoiceGroupOption Text="Start" Value="BitAlignment.Start" />
+                    <BitChoiceGroupOption Text="Center" Value="BitAlignment.Center" />
+                    <BitChoiceGroupOption Text="End" Value="BitAlignment.End" />
+                    <BitChoiceGroupOption Text="SpaceBetween" Value="BitAlignment.SpaceBetween" />
+                    <BitChoiceGroupOption Text="SpaceAround" Value="BitAlignment.SpaceAround" />
+                    <BitChoiceGroupOption Text="SpaceEvenly" Value="BitAlignment.SpaceEvenly" />
+                    <BitChoiceGroupOption Text="Baseline" Value="BitAlignment.Baseline" />
+                    <BitChoiceGroupOption Text="Stretch" Value="BitAlignment.Stretch" />
                 </BitChoiceGroup>
                 <br />
                 <br />
@@ -87,7 +87,7 @@
                 <br />
                 <br />
                 <BitGrid Columns="4"
-                         HorizontalAlign="BitGridAlignment.Center"
+                         HorizontalAlign="BitAlignment.Center"
                          VerticalSpacing="@($"{verticalSpacing}rem")"
                          HorizontalSpacing="@($"{horizontalSpacing}rem")">
                     @for (int i = 0; i < 16; i++)

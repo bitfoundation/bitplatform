@@ -11,21 +11,45 @@ public partial class _BitChartBarDemo
     {
         _config = new BitChartBarConfig
         {
-            Options = new BitChartBarOptions()
+            Options = new BitChartBarOptions
             {
                 Responsive = true,
                 Title = new BitChartOptionsTitle
                 {
                     Display = true,
                     Text = "BitChart bar Chart"
+                },
+                Scales = new BitChartBarScales
+                {
+                    XAxes =
+                    [
+                        new BitChartBarCategoryAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ],
+                    YAxes =
+                    [
+                        new BitChartLinearCartesianAxis
+                        {
+                            GridLines = new BitChartGridLines
+                            {
+                                Color = "gray"
+                            }
+                        }
+                    ]
                 }
             }
         };
 
+        System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
         var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
             Label = "Dataset 1",
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, c))).ToArray()
+            BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -117,13 +141,11 @@ public partial class _BitChartBarDemo
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<div>
-    <BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
-    <BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
-    <BitButton OnClick= ""RemoveBarDataset"" > Remove Dataset</BitButton>
-    <BitButton OnClick= ""AddBarData"" > Add Data</BitButton>
-    <BitButton OnClick= ""RemoveBarData"" > Remove Data</BitButton>
-</div>";
+<BitButton OnClick=""RandomizeBarData"">Randomize Data</BitButton>
+<BitButton OnClick= ""AddBarDataset"" > Add Dataset</BitButton>
+<BitButton OnClick= ""RemoveBarDataset"" > Remove Dataset</BitButton>
+<BitButton OnClick= ""AddBarData"" > Add Data</BitButton>
+<BitButton OnClick= ""RemoveBarData"" > Remove Data</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -134,21 +156,45 @@ protected override void OnInitialized()
 {
     _config = new BitChartBarConfig
     {
-        Options = new BitChartBarOptions()
+        Options = new BitChartBarOptions
         {
             Responsive = true,
             Title = new BitChartOptionsTitle
             {
                 Display = true,
                 Text = ""BitChart bar Chart""
+            },
+            Scales = new BitChartBarScales
+            {
+                XAxes =
+                [
+                    new BitChartBarCategoryAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ],
+                YAxes =
+                [
+                    new BitChartLinearCartesianAxis
+                    {
+                        GridLines = new BitChartGridLines
+                        {
+                            Color = ""gray""
+                        }
+                    }
+                ]
             }
         }
     };
 
+    System.Drawing.Color color = BitChartDemoColors.All[new Random().Next(0, BitChartDemoColors.All.Count - 1)];
     var dataset = new BitChartBarDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
         Label = ""Dataset 1"",
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, c))).ToArray()
+        BackgroundColor = BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(128, color)),
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -237,10 +283,10 @@ private void RemoveBarData()
 
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 
@@ -255,12 +301,12 @@ public static class BitChartDemoColors
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 

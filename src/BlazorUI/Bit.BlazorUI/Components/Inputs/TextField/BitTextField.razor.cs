@@ -187,25 +187,25 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
-    protected override string RootElementClass => "bit-txt";
+    protected override string RootElementClass => "bit-tfl";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"bit-txt-{(IsResizable ? "mln" : "mlf")}"
+                                    ? $"bit-tfl-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-txt-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-txt-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-tfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "bit-txt-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-tfl-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _hasFocus ? $"bit-txt-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => Required && Label is null ? "bit-txt-rnl" : string.Empty);
+        ClassBuilder.Register(() => Required && Label is null ? "bit-tfl-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

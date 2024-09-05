@@ -22,9 +22,9 @@ public partial class _BitChartPieDemo
             }
         };
 
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
         _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
         _config.Data.Datasets.Add(dataset);
@@ -55,9 +55,9 @@ public partial class _BitChartPieDemo
     private void AddPieDataset()
     {
         int count = _config.Data.Labels.Count;
-        BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+        var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
         {
-            BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+            BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
         };
 
         _config.Data.Datasets.Add(dataset);
@@ -74,52 +74,14 @@ public partial class _BitChartPieDemo
         _chart.Update();
     }
 
-    private void AddPieData()
-    {
-        if (_config.Data.Datasets.Count == 0)
-            return;
-
-        string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-        _config.Data.Labels.Add(month);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-        }
-
-        _chart.Update();
-    }
-
-    private void RemovePieData()
-    {
-        if (_config.Data.Datasets.Count == 0 ||
-            _config.Data.Labels.Count == 0)
-        {
-            return;
-        }
-
-        _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-        foreach (IDataset<int> dataset in _config.Data.Datasets)
-        {
-            dataset.RemoveAt(dataset.Count - 1);
-        }
-
-        _chart.Update();
-    }
-
 
 
     private readonly string razorCode = @"
 <BitChart Config=""_config"" @ref=""_chart"" />
 
-<div>
-    <BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
-    <BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
-    <BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>
-    <BitButton OnClick=""AddPieData"">Add Data</BitButton>
-    <BitButton OnClick=""RemovePieData"">Remove Data</BitButton>
-</div>";
+<BitButton OnClick=""RandomizePieData"">Randomize Data</BitButton>
+<BitButton OnClick=""AddPieDataset"">Add Dataset</BitButton>
+<BitButton OnClick=""RemovePieDataset"">Remove Dataset</BitButton>";
     private readonly string csharpCode = @"
 private const int INITAL_COUNT = 5;
 
@@ -141,9 +103,10 @@ protected override void OnInitialized()
         }
     };
 
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
+    
+    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(INITAL_COUNT))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(c => BitChartColorUtil.FromDrawingColor(System.Drawing.Color.FromArgb(220, c))).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(INITAL_COUNT).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
     _config.Data.Labels.AddRange(BitChartDemoUtils.Months.Take(INITAL_COUNT));
     _config.Data.Datasets.Add(dataset);
@@ -174,9 +137,9 @@ private void RandomizePieData()
 private void AddPieDataset()
 {
     int count = _config.Data.Labels.Count;
-    BitChartPieDataset<int> dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
+    var dataset = new BitChartPieDataset<int>(BitChartDemoUtils.RandomScalingFactor(count, -100, 100))
     {
-        BackgroundColor = BitChartDemoColors.All.Take(count).Select(BitChartColorUtil.FromDrawingColor).ToArray()
+        BackgroundColor = BitChartDemoColors.All.Take(count).Select(color => BitChartColorUtil.FromDrawingColor(color)).ToArray()
     };
 
     _config.Data.Datasets.Add(dataset);
@@ -193,46 +156,12 @@ private void RemovePieDataset()
     _chart.Update();
 }
 
-private void AddPieData()
-{
-    if (_config.Data.Datasets.Count == 0)
-        return;
-
-    string month = BitChartDemoUtils.Months[_config.Data.Labels.Count % BitChartDemoUtils.Months.Count];
-    _config.Data.Labels.Add(month);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.Add(BitChartDemoUtils.RandomScalingFactor());
-    }
-
-    _chart.Update();
-}
-
-private void RemovePieData()
-{
-    if (_config.Data.Datasets.Count == 0 ||
-        _config.Data.Labels.Count == 0)
-    {
-        return;
-    }
-
-    _config.Data.Labels.RemoveAt(_config.Data.Labels.Count - 1);
-
-    foreach (IDataset<int> dataset in _config.Data.Datasets)
-    {
-        dataset.RemoveAt(dataset.Count - 1);
-    }
-
-    _chart.Update();
-}
-
 public static class BitChartDemoColors
 {
-    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new Lazy<IReadOnlyList<System.Drawing.Color>>(() => new System.Drawing.Color[7]
-    {
-                Red, Orange, Yellow, Green, Blue, Purple, Grey
-    });
+    private static readonly Lazy<IReadOnlyList<System.Drawing.Color>> _all = new(() =>
+    [
+        Red, Orange, Yellow, Green, Blue, Purple, Grey
+    ]);
 
     public static IReadOnlyList<System.Drawing.Color> All => _all.Value;
 
@@ -247,12 +176,12 @@ public static class BitChartDemoColors
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        ""January"", ""February"", ""March"", ""April"", ""May"", ""June"", ""July"", ""August"", ""September"", ""October"", ""November"", ""December""
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 

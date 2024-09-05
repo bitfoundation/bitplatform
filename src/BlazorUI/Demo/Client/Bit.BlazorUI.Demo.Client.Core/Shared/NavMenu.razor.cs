@@ -85,6 +85,7 @@ public partial class NavMenu : IDisposable
             ChildItems =
             [
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
+                new() { Text = "DropMenu", Url = "/components/dropmenu" },
                 new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
@@ -140,7 +141,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Overlay", Url = "/components/overlay" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
-                new() { Text = "Typography", Url = "/components/typography" },
+                new() { Text = "Text", Url = "/components/text" },
             ],
         },
         new()

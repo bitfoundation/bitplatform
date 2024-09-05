@@ -4,12 +4,12 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public static class BitChartDemoUtils
 {
-    public static readonly Random _rng = new Random();
+    public static readonly Random _rng = new();
 
-    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(new[]
-    {
-            "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
-    });
+    public static IReadOnlyList<string> Months { get; } = new ReadOnlyCollection<string>(
+    [
+        "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+    ]);
 
     private static int RandomScalingFactorThreadUnsafe(int min, int max) => _rng.Next(min, max);
 
@@ -46,5 +46,36 @@ public static class BitChartDemoUtils
         }
 
         return factors;
+    }
+
+    public static List<BitChartPoint> CreateRandomPoints(int count)
+    {
+        List<BitChartPoint> points = [];
+
+        for (int i = 0; i < count; i++)
+        {
+            double x = RandomScalingFactor();
+            double y = RandomScalingFactor();
+
+            points.Add(new BitChartPoint(x, y));
+        }
+
+        return points;
+    }
+
+    public static List<BitChartBubblePoint> CreateRandomBubblePoints(int count)
+    {
+        List<BitChartBubblePoint> points = [];
+
+        for (int i = 0; i < count; i++)
+        {
+            double x = RandomScalingFactor();
+            double y = RandomScalingFactor();
+            double radius = RandomScalingFactor() % 20 + 5;
+
+            points.Add(new BitChartBubblePoint(x, y, radius));
+        }
+
+        return points;
     }
 }

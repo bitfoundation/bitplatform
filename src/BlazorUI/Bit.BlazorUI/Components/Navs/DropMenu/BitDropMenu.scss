@@ -1,0 +1,69 @@
+@import "../../../Styles/functions.scss";
+
+.bit-drm {
+    gap: spacing(1);
+    cursor: pointer;
+    width: fit-content;
+    align-items: center;
+    display: inline-flex;
+    outline: transparent;
+    text-decoration: none;
+    box-sizing: border-box;
+    box-sizing: border-box;
+    justify-content: center;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    background-color: $clr-bg-pri;
+    border-radius: $shp-border-radius;
+    padding: spacing(0.75) spacing(1.5);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active {
+        background-color: $clr-bg-pri-active;
+    }
+
+    &.bit-dis {
+        cursor: default;
+        color: $clr-fg-dis;
+        pointer-events: none;
+    }
+}
+
+.bit-drm-trn {
+    background-color: transparent;
+
+    &:hover,
+    &:active {
+        background-color: transparent;
+    }
+}
+
+.bit-drm-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: transparent;
+}
+
+.bit-drm-cal {
+    display: none;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    background-color: $clr-bg-pri;
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}

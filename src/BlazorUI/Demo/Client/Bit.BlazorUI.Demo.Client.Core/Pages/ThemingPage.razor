@@ -6,10 +6,10 @@
             Description="theming of the bit blazorui components" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Class="title">Theming</BitTypography>
+    <BitText Typography="BitTypography.H3" Class="title">Theming</BitText>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             In bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
             the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br />
@@ -20,35 +20,35 @@
             <br />
             The default theme is based on the Microsoft Fluent design system with light and dark theme types available to choose from.
             By default, components use the light theme type.
-        </BitTypography>
+        </BitText>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Quick setup</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">Quick setup</BitText>
+        <BitText Typography="BitTypography.Body1">
             To get started with bit BlazorUI Theme as fast as possible, you can try the system theme feature of it.
             <br />
             First you need to register the bit BlazorUI services as follows:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             And then add a specific attribute named <code>use-system-theme</code> to the <code>html</code> tag:
-        </BitTypography>
+        </BitText>
         <br />
         <pre><code class="language-cshtml">&lthtml use-system-theme&gt...&lt/html&gt</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Now with this setup, the app will follow the system theme (dark or light) automatically.
-        </BitTypography>
+        </BitText>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS variables</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">CSS variables</BitText>
+        <BitText Typography="BitTypography.Body1">
             All CSS variables defined in the Theme system of the bit BlazorUI are attached to the root element like this:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-css">:root,
 :root[bit-theme="light"],
@@ -73,7 +73,7 @@
 }
         </code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             The source code of these CSS variables is available in the
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/Fluent" Target="_blank">
                 bit BlazorUI GitHub repo
@@ -87,28 +87,28 @@
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Styles/abstracts/_bit-css-variables.scss" Target="_blank">
                 here
             </BitLink>.
-        </BitTypography>
+        </BitText>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeManager</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">ThemeManager</BitText>
+        <BitText Typography="BitTypography.Body1">
             In bit BlazorUI the <code>BitThemeManager</code> class is available to customize the Theme.
             <br />
             To start using the BitThemeManager, you first need to register bit BlazorUI services like this:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">builder.Services.AddBitBlazorUIServices();</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Now you can call methods of an injected instance of the <code>BitThemeManager</code>
             class to customize the UI:
             <br />
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">[Inject] private BitThemeManager _bitThemeManager { get; set; }</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             For example using <code>ApplyBitThemeAsync</code> method and an instance of the
             <code>BitTheme</code> class, which contains the desired theme values,
             you can change the current theme styles.
@@ -118,56 +118,56 @@
             <br />
             Here's an example of how to apply custom theme values to the entire body:
             <br />
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">var myTheme = new BitTheme();
 myTheme.Color.Foreground.Primary = "#111";
 myTheme.Color.Background.Primary = "#777";
 _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             You can set the current theme using the <code>SetThemeAsync</code> method:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">await _bitThemeManager.SetThemeAsync("fluent-dark");</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             You can also toggle current theme between dark/light using the
             <code>ToggleDarkLightAsync</code> method:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">await _bitThemeManager.ToggleDarkLightAsync();</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             This method returns the name of the new toggled theme.
             <br />
             The <code>BitThemeManager</code> has a method named <code>GetCurrentThemeAsync</code>
             which returns the name of the current theme:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">var currentTheme = await _bitThemeManager.GetCurrentThemeAsync();</code></pre>
         <br />
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">System Theme</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">System Theme</BitText>
+        <BitText Typography="BitTypography.Body1">
             In bit BlazorUI you can use the system theme as the default theme when the app starts up.
             <br />
             In order to enable this feature a specific attribute named
             <code>use-system-theme</code> should be added to the <code>html</code> tag:
-        </BitTypography>
+        </BitText>
         <br />
         <pre><code class="language-cshtml">&lthtml use-system-theme&gt...&lt/html&gt</code></pre>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">CSS in C#</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">CSS in C#</BitText>
+        <BitText Typography="BitTypography.Body1">
             In bit BlazorUI the <code>BitCss</code> class is available to access theme related CSS classes & variables in C#.
             <br />
             You can use different properties of this class to further customize your UI:
-        </BitTypography>
+        </BitText>
         <br />
         <pre><code class="language-cshtml">&lthtml&gt
     &lthead&gt...&lt/head&gt
@@ -176,9 +176,9 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     &lt/body&gt
 &lt/html&gt</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             This class contians two main property for accessing CSS classes (<code>BitCss.Class</code>) and CSS variables (<code>BitCss.Var</code>).
-        </BitTypography>
+        </BitText>
         <br />
         <pre><code class="language-cshtml">&ltdiv style="border-color:var(@@BitCss.Var.Color.Border.Secondary)"&gt
     hello world!
@@ -186,12 +186,12 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">ThemeProvider</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">ThemeProvider</BitText>
+        <BitText Typography="BitTypography.Body1">
             In bit BlazorUI the <code>BitThemeProvider</code> component is available to further customize the Theme.
             <br />
             You can wrap any elements with the <code>BitThemeProvider</code> component and assign an instance of <code>BitTheme</code> to it:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-cshtml">&ltBitThemeProvider Theme="myTheme"&gt
     &ltBitCheckbox Label="Check me!" /&gt
@@ -204,15 +204,15 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     };
 }</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             The applied theme provided by the <code>BitThemeProvider</code> can be accessed directly using a CascadingParameter in the child components:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-csharp">[CascadingParameter] public BitTheme? Theme { get; set; }</code></pre>
         <br />
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             You can also nest <code>BitThemeProvider</code> components to achieve the desired style:
-        </BitTypography>
+        </BitText>
         <br />
         <pre class="code"><code class="language-cshtml">&ltBitThemeProvider Theme="myTheme"&gt
     &ltBitCheckbox Label="Check me!" /&gt
@@ -235,36 +235,36 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
     </section>
 
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">JavaScript API</BitTypography>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.H4" Class="subtitle">JavaScript API</BitText>
+        <BitText Typography="BitTypography.Body1">
             bit BlazorUI also has a JavaScript API through <code>BitTheme</code> javascript object
             to customize the UI of the app even further.
             <br />
             The differnet functions available in this object are as follows:
-        </BitTypography>
+        </BitText>
         <br />
         <pre><code class="language-js">BitTheme.get()</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Gets the current theme.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.set('dark')</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Sets the current theme.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.toggleDarkLight()</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Toggles the current theme between dark & light.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.useSystem()</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Uses the current theme of the system (dark or light) as the app theme.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.onChange((newTheme, oldTheme) => {
@@ -276,22 +276,22 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         document.body.classList.remove('bit-theme-dark');
     }
 });</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             An event that fires when the current theme changes.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.applyBitTheme({...}, el)</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Applies an instance of BitTheme to the specified or body element just like the
             <code>ApplyBitThemeAsync</code> method of the <code>BitThemeManager</code>.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.isSystemDark()</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Checks if the current theme of the system is dark.
-        </BitTypography>
+        </BitText>
         <br />
         <br />
         <pre><code class="language-js">BitTheme.init({
@@ -306,8 +306,8 @@ _bitThemeManager.ApplyBitThemeAsync(myTheme);</code></pre>
         }
     }
 });</code></pre>
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             Initializes the BitTheme object using the provided options.
-        </BitTypography>
+        </BitText>
     </section>
 </div>
