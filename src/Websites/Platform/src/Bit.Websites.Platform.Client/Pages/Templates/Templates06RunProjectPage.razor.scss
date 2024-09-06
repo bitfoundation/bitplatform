@@ -1,4 +1,4 @@
-﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_mixins.scss';
@@ -42,7 +42,7 @@
     justify-content: center;
 }
 
-::deep .plt-drp{
+::deep .plt-drp {
     width: rem2(150px);
     margin-left: rem2(20px);
 }
