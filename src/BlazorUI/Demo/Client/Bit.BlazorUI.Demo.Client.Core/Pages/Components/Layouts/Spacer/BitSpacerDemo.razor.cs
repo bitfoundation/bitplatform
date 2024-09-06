@@ -26,11 +26,11 @@ public partial class BitSpacerDemo
 
     private readonly string example2RazorCode = @"
 <div style=""display: flex; width: 100%;"">
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
     <BitSpacer Width=""64"" />
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
     <BitSpacer Width=""64"" />
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
 </div>";
 
 }
