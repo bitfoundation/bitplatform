@@ -7,11 +7,22 @@
     }
 
     .custom-root {
-        color: aqua;
         margin-left: 1rem;
     }
 
     .custom-button {
+        color: seagreen;
         border-radius: 50%;
+        border-color: seagreen;
+    }
+
+    .custom-button:hover {
+        color: white;
+        background-color: mediumseagreen;
+    }
+
+    .custom-selected-button {
+        color: white;
+        background-color: seagreen;
     }
 }
