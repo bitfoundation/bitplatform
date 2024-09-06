@@ -35,9 +35,27 @@
                         <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
-                        <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     </BitStack>
                     <br /><br />
+                    <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
+                    <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
+                    <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
+                    @if (installVs)
+                    {
+                        <br />
+                        <BitText Typography="BitTypography.H5" Gutter>Visual Studio Extensions</BitText>
+                        <div class="section-card-txt">
+                            Install the following extensions for Visual Studio to have a better development experience:
+                            <ol>
+                                <li>
+                                    <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
+                                </li>
+                                <li>
+                                    <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResXManager</a>
+                                </li>
+                            </ol>
+                        </div>
+                    }
                     @if (enableVirtualization)
                     {
                         <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions</BitText>
@@ -58,24 +76,6 @@
                                 </iframe>
                             </div>
                             <br />
-                        </div>
-                    }
-                    <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
-                    <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
-                    @if (installVs)
-                    {
-                        <br />
-                        <BitText Typography="BitTypography.H5" Gutter>Visual Studio Extensions</BitText>
-                        <div class="section-card-txt">
-                            Install the following extensions for Visual Studio to have a better development experience:
-                            <ol>
-                                <li>
-                                    <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
-                                </li>
-                                <li>
-                                    <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResXManager</a>
-                                </li>
-                            </ol>
                         </div>
                     }
                 </BitPivotItem>
