@@ -1,12 +1,18 @@
-@import '../../Styles/abstracts/_mixins.scss';
+@import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_functions.scss';
+@import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
 
 .page-container {
     @include PageContainer;
 }
 
-.image-container {
-    @include ImageContainer;
+.page-main-title {
+    @include PageMainTitle;
+}
+
+.page-desc {
+    @include PageDescription;
 }
 
 .section-card {
@@ -17,17 +23,39 @@
     @include SectionCardText;
 }
 
-.image {
-    @include Image;
-    width: rem2(400px);
+.image-container {
+    @include ImageContainer;
 }
 
-::deep a {
-    color: $bit-color-primary;
+.row {
+    display: flex;
+}
+
+.image {
+    @include Image;
+    width: rem2(500px);
 }
 
 .video-container {
     width: 100%;
     display: flex;
     justify-content: center;
+}
+
+::deep .plt-drp {
+    width: rem2(150px);
+    margin-left: rem2(20px);
+}
+
+::deep {
+    a {
+        color: $bit-color-primary;
+    }
+
+    .link-btn {
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        padding-top: 2px;
+    }
 }
