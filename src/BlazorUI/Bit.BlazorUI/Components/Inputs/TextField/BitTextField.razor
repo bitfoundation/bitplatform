@@ -37,7 +37,7 @@
                 </div>
             }
 
-            @if (IsMultiline && Type == BitTextFieldType.Text)
+            @if (IsMultiline && Type == BitInputType.Text)
             {
                 <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
                           @onclick="@HandleOnClick"
@@ -93,18 +93,18 @@
                        aria-describedby="@(Description.HasValue() || DescriptionTemplate is not null ? _descriptionId : null)" />
             }
 
-            @if (CanRevealPassword && Type == BitTextFieldType.Password)
+            @if (CanRevealPassword && Type == BitInputType.Password)
             {
                 <button @onclick="ToggleRevealPassword"
                         style="@Styles?.RevealPassword"
                         class="bit-tfl-prb @Classes?.RevealPassword"
                         type="button"
                         aria-label="@RevealPasswordAriaLabel"
-                        aria-pressed="@(_elementType == BitTextFieldType.Text ? "true" : "false")">
+                        aria-pressed="@(_elementType == BitInputType.Text ? "true" : "false")">
                     <span style="@Styles?.RevealPasswordIconContainer"
                           class="bit-tfl-rin @Classes?.RevealPasswordIconContainer">
                         <i style="@Styles?.RevealPasswordIcon"
-                           class="bit-tfl-ric bit-icon bit-icon--@(_elementType == BitTextFieldType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
+                           class="bit-tfl-ric bit-icon bit-icon--@(_elementType == BitInputType.Text ? "Hide3" : "View") @Classes?.RevealPasswordIcon"
                            aria-hidden="true" />
                     </span>
                 </button>

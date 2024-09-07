@@ -119,7 +119,7 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
-            parameters.Add(p => p.Type, BitTextFieldType.Password);
+            parameters.Add(p => p.Type, BitInputType.Password);
             parameters.Add(p => p.CanRevealPassword, true);
         });
 
@@ -137,11 +137,11 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitTextFieldType.Password),
-        DataRow(BitTextFieldType.Number),
-        DataRow(BitTextFieldType.Tel)
+        DataRow(BitInputType.Password),
+        DataRow(BitInputType.Number),
+        DataRow(BitInputType.Tel)
     ]
-    public void BitTextFieldTypeTest(BitTextFieldType type)
+    public void BitInputTypeTest(BitInputType type)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
