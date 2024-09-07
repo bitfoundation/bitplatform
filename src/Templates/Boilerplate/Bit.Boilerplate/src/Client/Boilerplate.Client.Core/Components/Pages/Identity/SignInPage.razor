@@ -22,121 +22,180 @@
         @if (requiresTwoFactor is false)
         {
             <br /><br />
-            <BitButton Style="width:300px"
-                       IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
-                       Variant="BitVariant.Outline"
-                       ButtonType="BitButtonType.Button"
-                       OnClick="WrapHandled(GoogleSignIn)">
-                @Localizer[AppStrings.GoogleSignInButtonText]
-            </BitButton>
-            <br />
-            <BitButton Style="width:300px"
-                       IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
-                       Variant="BitVariant.Outline"
-                       ButtonType="BitButtonType.Button"
-                       OnClick="WrapHandled(GitHubSignIn)">
-                @Localizer[AppStrings.GitHubSignInButtonText]
-            </BitButton>
-            <br />
-            <BitButton Style="width:300px"
-                       IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
-                       Variant="BitVariant.Outline"
-                       ButtonType="BitButtonType.Button"
-                       OnClick="WrapHandled(TwitterSignIn)">
-                @Localizer[AppStrings.TwitterSignInButtonText]
-            </BitButton>
-            <br /><br />
-            <BitSeparator Style="width:100%">Or</BitSeparator>
-            <br />
-            <div class="form-input-container">
-                <BitTextField @bind-Value="model.Email"
-                              Type="BitTextFieldType.Email"
-                              Label="@Localizer[nameof(AppStrings.Email)]"
-                              Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                <ValidationMessage For="@(() => model.Email)" />
-
-                <BitTextField @bind-Value="model.PhoneNumber"
-                              Type="BitTextFieldType.Tel"
-                              Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                              Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
-                <ValidationMessage For="@(() => model.PhoneNumber)" />
-            </div>
-            <div class="form-input-container">
-                <BitTextField @bind-Value="model.Password"
-                              CanRevealPassword="true"
-                              Type="BitTextFieldType.Password"
-                              Label="@Localizer[nameof(AppStrings.Password)]"
-                              AutoComplete="@BitAutoCompleteValue.CurrentPassword"
-                              Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
-                <ValidationMessage For="@(() => model.Password)" />
-
-                <BitTextField @bind-Value="model.Otp"
-                              CanRevealPassword="true"
-                              Type="BitTextFieldType.Password"
-                              Label="@Localizer[nameof(AppStrings.Otp)]"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
-                <ValidationMessage For="@(() => model.Otp)" />
-                <BitButton IsLoading="isSendingOtp"
-                           OnClick="WrapHandled(SendOtp)"
-                           Style="margin-top:4px"
+            <BitStack Horizontal Gap="1.5rem">
+                <BitButton IsLoading="isWaiting"
+                           Size="BitSize.Small"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
                            ButtonType="BitButtonType.Button"
-                           Variant="BitVariant.Outline">
-                    @Localizer[nameof(AppStrings.SendOtpButtonText)]
+                           OnClick="WrapHandled(GoogleSignIn)"
+                           Title="@Localizer[AppStrings.GoogleSignUpButtonText]">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/icons/google-icon.svg" />
                 </BitButton>
-            </div>
+
+                <BitButton IsLoading="isWaiting"
+                           Size="BitSize.Small"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="WrapHandled(GitHubSignIn)"
+                           Title="@Localizer[AppStrings.GitHubSignUpButtonText]">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/icons/github-icon.svg" />
+                </BitButton>
+
+                <BitButton IsLoading="isWaiting"
+                           Size="BitSize.Small"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="WrapHandled(TwitterSignIn)"
+                           Title="@Localizer[AppStrings.TwitterSignUpButtonText]">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/icons/x-icon.svg" />
+                </BitButton>
+            </BitStack>
+            <br />
+            <BitSeparator Style="width:100%">@Localizer[AppStrings.Or]</BitSeparator>
+            <br />
+            <BitPivot Style="width:100%;max-width:300px">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                    <br />
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="model.Email"
+                                      Type="BitTextFieldType.Email"
+                                      Label="@Localizer[nameof(AppStrings.Email)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                        <ValidationMessage For="@(() => model.Email)" />
+                    </div>
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="model.Password"
+                                      CanRevealPassword="true"
+                                      Type="BitTextFieldType.Password"
+                                      AutoComplete="@BitAutoCompleteValue.CurrentPassword"
+                                      Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
+                            <LabelTemplate>
+                                <BitStack Horizontal>
+                                    <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                    <BitSpacer />
+                                    <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                                </BitStack>
+                            </LabelTemplate>
+                        </BitTextField>
+                        <ValidationMessage For="@(() => model.Password)" />
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
+                    <br />
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="model.PhoneNumber"
+                                      Type="BitTextFieldType.Tel"
+                                      Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                        <ValidationMessage For="@(() => model.PhoneNumber)" />
+                    </div>
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="model.Password"
+                                      CanRevealPassword="true"
+                                      Type="BitTextFieldType.Password"
+                                      Label="@Localizer[nameof(AppStrings.Password)]"
+                                      AutoComplete="@BitAutoCompleteValue.CurrentPassword"
+                                      Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
+                            <LabelTemplate>
+                                <BitStack Horizontal>
+                                    <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                    <BitSpacer />
+                                    <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                                </BitStack>
+                            </LabelTemplate>
+                        </BitTextField>
+                        <ValidationMessage For="@(() => model.Password)" />
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Otp)]">
+                    <br />
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="model.Otp"
+                                      CanRevealPassword="true"
+                                      Type="BitTextFieldType.Password"
+                                      Label="@Localizer[nameof(AppStrings.Otp)]"
+                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                      Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
+                        <ValidationMessage For="@(() => model.Otp)" />
+                    </div>
+                    <div class="form-input-container">
+                        <BitButton IsLoading="isSendingOtp"
+                                   OnClick="WrapHandled(SendOtp)"
+                                   Style="margin-top:4px"
+                                   ButtonType="BitButtonType.Button"
+                                   Variant="BitVariant.Outline">
+                            @Localizer[nameof(AppStrings.SendOtpButtonText)]
+                        </BitButton>
+                    </div>
+                    <br />
+                </BitPivotItem>
+            </BitPivot>
             <div class="form-input-container form-input-container--no-margin">
                 <BitCheckbox Class="form-checkbox" @bind-Value="model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
             </div>
         }
         else
         {
-            <h3 class="form-title">@Localizer[nameof(AppStrings.TwoFactorAuthTitle)]</h3>
-            <div>@Localizer[nameof(AppStrings.TfaProtectedSignInSubtitle)]</div>
+            <BitText Typography="BitTypography.H4" Gutter>@Localizer[nameof(AppStrings.TwoFactorAuthTitle)]</BitText>
+            <BitText Gutter>@Localizer[nameof(AppStrings.TfaProtectedSignInSubtitle)]</BitText>
             <br />
-            <div class="form-input-container">
-                <div>@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]</div>
-                <BitTextField @bind-Value="model.TwoFactorCode"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
-            </div>
-            <div class="form-input-container">
-                <div>@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]</div>
-                <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
-            </div>
-            <br />
-            <div class="form-input-container tfa-token-container">
-                <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
-                <BitButton Style="padding:0"
-                           IsLoading="isSendingTfaToken"
-                           ButtonType="BitButtonType.Button"
-                           OnClick="WrapHandled(SendTfaToken)">
-                    @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
-                </BitButton>
-                <BitTextField @bind-Value="model.TwoFactorToken" Style="flex-grow:1"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
-            </div>
+            <BitPivot>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorCode)]">
+                    <br />
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <div class="form-input-container tfa-pivot-item">
+                            <BitTextField @bind-Value="model.TwoFactorCode"
+                                          Label="@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]"
+                                          AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                          Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
+                        </div>
+                    </BitStack>
+                    <br /><br />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]">
+                    <br />
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <div class="form-input-container tfa-pivot-item">
+                            <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
+                                          Label="@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]"
+                                          AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                          Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
+                        </div>
+                    </BitStack>
+                    <br /><br />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorToken)]">
+                    <br />
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        <div class="form-input-container tfa-pivot-item">
+                            <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
+                            <BitButton IsLoading="isSendingTfaToken"
+                                       ButtonType="BitButtonType.Button"
+                                       OnClick="WrapHandled(SendTfaToken)">
+                                @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
+                            </BitButton>
+                            <BitTextField @bind-Value="model.TwoFactorToken" Style="flex-grow:1"
+                                          AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                          Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
+                        </div>
+                    </BitStack>
+                </BitPivotItem>
+            </BitPivot>
         }
         <br />
-        <BitButton IsLoading="isWaiting" Title="@Localizer[nameof(AppStrings.SignIn)]" ButtonType="BitButtonType.Submit">
+        <BitButton IsLoading="isWaiting"
+                   Class="form-submit-button"
+                   ButtonType="BitButtonType.Submit"
+                   Title="@Localizer[nameof(AppStrings.SignIn)]">
             @Localizer[nameof(AppStrings.SignIn)]
         </BitButton>
-        <br />
-        <div>
-            <BitLink Href="@Urls.ForgotPasswordPage">
-                @Localizer[nameof(AppStrings.ForgotPasswordLink)]
-            </BitLink>
-        </div>
-        <br />
-        <div>
+        <br /><br />
+        <BitText Typography="BitTypography.Body2">
             @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
             <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
-        </div>
+        </BitText>
     </EditForm>
 </div>

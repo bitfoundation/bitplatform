@@ -123,6 +123,7 @@ main {
 
     .form-submit-button {
         width: 100%;
+        max-width: rem2(300px);
         margin-bottom: rem2(10px);
     }
 
