@@ -25,6 +25,7 @@
 .bit-pvt-hct {
     display: flex;
     white-space: nowrap;
+    justify-content: var(--bit-pvt-hal);
 
     * {
         font-size: spacing(2);

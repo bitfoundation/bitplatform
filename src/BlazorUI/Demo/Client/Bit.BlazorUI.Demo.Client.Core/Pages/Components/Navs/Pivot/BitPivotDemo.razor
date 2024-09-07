@@ -340,7 +340,32 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Position" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="Alignment" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <BitPivot Alignment="BitAlignment.Center">
+                <BitPivotItem HeaderText="File">
+                    <div style="margin-top:10px">
+                        <h1>Pivot #1</h1>
+                        <p style="white-space:pre-wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Shared with me">
+                    <div style="margin-top:15px">
+                        <h2>Pivot #2</h2>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Recent">
+                    <div style="margin-top:10px">
+                        <h3>Pivot #3</h3>
+                        <p style="white-space:pre-wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                    </div>
+                </BitPivotItem>
+            </BitPivot>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Position" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div class="subtitle">Pivot Position: <strong>Top</strong></div>
             <div class="box">
@@ -440,7 +465,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Disabled state" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <ComponentExampleBox Title="Disabled state" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <ExamplePreview>
             <BitButton OnClick="() => PivotEnabled = !PivotEnabled">Toggle Pivot's IsEnabled</BitButton>
             <BitButton OnClick="() => PivotItemEnabled = !PivotItemEnabled">Toggle Pivot Item's IsEnabled</BitButton>
@@ -467,7 +492,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <div>
                 <div>Component's Style & Class:</div>
@@ -561,7 +586,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <ExamplePreview>
             <BitPivot Dir="BitDir.Rtl" OverflowBehavior="@BitPivotOverflowBehavior.Scroll">
                 <BitPivotItem HeaderText="اسناد" IconName="@BitIconName.Info">
