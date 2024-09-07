@@ -114,28 +114,30 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Otp)]">
                     <br />
-                    <div class="form-input-container">
-                        @* <BitTextField @bind-Value="model.Otp"
-                    CanRevealPassword="true"
-                    Type="BitTextFieldType.Password"
-                    Label="@Localizer[nameof(AppStrings.Otp)]"
-                    AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                    Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" /> *@
-                        <BitText>@Localizer[nameof(AppStrings.Otp)]</BitText>
-                        <BitOtpInput @ref="otpInputRef"
-                                     @bind-Value="model.Otp" Length="6"
-                                     InputType="BitOtpInputType.Number" />
-                        <ValidationMessage For="@(() => model.Otp)" />
-                    </div>
-                    <div class="form-input-container">
+                    <div class="form-input-container tfa-otp-container">
+                        <BitText>@Localizer[nameof(AppStrings.OtpEmailOrPhoneNumberSubtitle)]</BitText>
+                        <BitTextField @bind-Value="model.Email"
+                                      Type="BitTextFieldType.Email"
+                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                        <BitTextField @bind-Value="model.PhoneNumber"
+                                      Type="BitTextFieldType.Tel"
+                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <BitButton IsLoading="isSendingOtp"
                                    Variant="BitVariant.Outline"
                                    OnClick="WrapHandled(SendOtp)"
                                    ButtonType="BitButtonType.Button">
                             @Localizer[nameof(AppStrings.SendOtpButtonText)]
                         </BitButton>
+                        <br />
+                        <BitOtpInput Length="6"
+                                     @ref="otpInputRef"
+                                     @bind-Value="model.Otp"
+                                     Style="justify-content:center"
+                                     OnFill="WrapHandled(DoSignIn)"
+                                     InputType="BitOtpInputType.Number" />
+                        <ValidationMessage For="@(() => model.Otp)" />
+                        <br />
                     </div>
-                    <br />
                 </BitPivotItem>
             </BitPivot>
             <div class="form-input-container form-input-container--no-margin">

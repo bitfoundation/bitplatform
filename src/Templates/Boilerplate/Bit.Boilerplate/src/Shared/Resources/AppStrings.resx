@@ -815,6 +815,9 @@
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>Send OTP and Magic link</value>
   </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>Enter your email or phone number:</value>
+  </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Either provide password or OTP</value>
   </data>

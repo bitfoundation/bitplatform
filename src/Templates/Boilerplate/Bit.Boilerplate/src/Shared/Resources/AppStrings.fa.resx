@@ -815,6 +815,9 @@
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
   </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن خود را وارد کنید:</value>
+  </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>
   </data>
