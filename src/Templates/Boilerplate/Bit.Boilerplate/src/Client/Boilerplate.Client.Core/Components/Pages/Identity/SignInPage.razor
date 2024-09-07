@@ -124,7 +124,7 @@
                         <BitText>@Localizer[nameof(AppStrings.Otp)]</BitText>
                         <BitOtpInput @ref="otpInputRef"
                                      @bind-Value="model.Otp" Length="6"
-                                     InputType="BitOtpInputType.Password" />
+                                     InputType="BitOtpInputType.Number" />
                         <ValidationMessage For="@(() => model.Otp)" />
                     </div>
                     <div class="form-input-container">
