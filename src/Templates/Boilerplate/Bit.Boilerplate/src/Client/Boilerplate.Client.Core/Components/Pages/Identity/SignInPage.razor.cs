@@ -14,6 +14,7 @@ public partial class SignInPage
 
     private string? message;
     private BitColor messageColor;
+    private BitOtpInput otpInputRef = default!;
     private ElementReference messageRef = default!;
 
 
@@ -128,6 +129,7 @@ public partial class SignInPage
         finally
         {
             isSendingOtp = false;
+            await otpInputRef.FocusAsync();
         }
     }
 

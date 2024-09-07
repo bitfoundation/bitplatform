@@ -21,7 +21,9 @@
 
         @if (requiresTwoFactor is false)
         {
-            <br /><br />
+            <br />
+
+            <br />
             <BitStack Horizontal Gap="1.5rem">
                 <BitButton IsLoading="isWaiting"
                            Size="BitSize.Small"
@@ -113,20 +115,23 @@
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Otp)]">
                     <br />
                     <div class="form-input-container">
-                        <BitTextField @bind-Value="model.Otp"
-                                      CanRevealPassword="true"
-                                      Type="BitTextFieldType.Password"
-                                      Label="@Localizer[nameof(AppStrings.Otp)]"
-                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                                      Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" />
+                        @* <BitTextField @bind-Value="model.Otp"
+                    CanRevealPassword="true"
+                    Type="BitTextFieldType.Password"
+                    Label="@Localizer[nameof(AppStrings.Otp)]"
+                    AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                    Placeholder="@Localizer[nameof(AppStrings.OtpPlaceholder)]" /> *@
+                        <BitText>@Localizer[nameof(AppStrings.Otp)]</BitText>
+                        <BitOtpInput @ref="otpInputRef"
+                                     @bind-Value="model.Otp" Length="6"
+                                     InputType="BitOtpInputType.Password" />
                         <ValidationMessage For="@(() => model.Otp)" />
                     </div>
                     <div class="form-input-container">
                         <BitButton IsLoading="isSendingOtp"
+                                   Variant="BitVariant.Outline"
                                    OnClick="WrapHandled(SendOtp)"
-                                   Style="margin-top:4px"
-                                   ButtonType="BitButtonType.Button"
-                                   Variant="BitVariant.Outline">
+                                   ButtonType="BitButtonType.Button">
                             @Localizer[nameof(AppStrings.SendOtpButtonText)]
                         </BitButton>
                     </div>
