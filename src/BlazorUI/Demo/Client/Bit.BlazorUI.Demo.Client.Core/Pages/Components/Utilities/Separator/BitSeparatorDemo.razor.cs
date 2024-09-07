@@ -97,6 +97,12 @@ public partial class BitSeparatorDemo
 <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
 <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
 <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>";
+
+    private readonly string example4RazorCode = @"
+<div style=""display:flex;flex-direction:column;align-items:center"">
+    <BitSeparator>Normal</BitSeparator>
+    <BitSeparator FullWidth>FullWidth</BitSeparator>
+</div>";
 }
 
 

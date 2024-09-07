@@ -12,13 +12,13 @@
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <ExamplePreview>
                 <div>
-                    <BitLabel>Empty separator</BitLabel>
+                    <div>Empty separator</div>
                     <BitSeparator />
                     <br />
-                    <BitLabel>Separator with text</BitLabel>
+                    <div>Separator with text</div>
                     <BitSeparator>Text</BitSeparator>
                     <br />
-                    <BitLabel>Separator with icon</BitLabel>
+                    <div>Separator with icon</div>
                     <BitSeparator><BitIcon IconName="Clock" /></BitSeparator>
                 </div>
             </ExamplePreview>
@@ -42,7 +42,7 @@
             <ExamplePreview>
                 <div style="height: 28rem">
                     <div>
-                        <BitLabel>Horizontal separator with text</BitLabel>
+                        <div>Horizontal separator with text</div>
                         <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
                         <br />
                         <BitSeparator AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
@@ -51,12 +51,22 @@
                     </div>
                     <br /><br />
                     <div style="height: 13rem">
-                        <BitLabel>Vertical separator with text</BitLabel>
-                        <br />
+                        <div>Vertical separator with text</div><br />
                         <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
                         <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
                         <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
                     </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="FullWidth" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <div>While using inside a flex container with align-items css style:</div>
+                <br /><br />
+                <div style="display:flex;flex-direction:column;align-items:center">
+                    <BitSeparator>Normal</BitSeparator>
+                    <br />
+                    <BitSeparator FullWidth>FullWidth</BitSeparator>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
