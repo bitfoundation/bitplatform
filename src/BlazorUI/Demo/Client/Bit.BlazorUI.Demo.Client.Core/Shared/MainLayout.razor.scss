@@ -84,7 +84,6 @@ main {
         bottom: rem2(8px);
         position: absolute;
         margin-right: rem2(175px);
-        scroll-margin: rem2(80px);
         color: $bit-color-foreground-primary;
 
         @include lt-lg {

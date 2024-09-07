@@ -15,7 +15,7 @@ public partial class SideRail
     {
         var sideRailItems = await JSRuntime.GetSideRailItems();
 
-        _items = sideRailItems.ToList();
+        _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }];
 
         StateHasChanged();
 
