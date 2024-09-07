@@ -10,8 +10,8 @@ public partial class BitSeparatorDemo
             Type = "BitSeparatorAlignContent",
             DefaultValue = "BitSeparatorAlignContent.Center",
             Description = "Where the content should be aligned in the separator.",
+            LinkType = LinkType.Link,
             Href = "#separator-align-enum",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -19,6 +19,13 @@ public partial class BitSeparatorDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the Separator, it can be any custom tag or text."
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the separator in full width of its container."
         },
         new()
         {
