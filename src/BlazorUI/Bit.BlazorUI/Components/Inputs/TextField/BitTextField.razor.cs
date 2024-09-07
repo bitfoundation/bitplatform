@@ -264,7 +264,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             BitInputType.Email => "email",
             BitInputType.Tel => "tel",
             BitInputType.Url => "url",
-            _ => string.Empty,
+            _ => "text",
         };
     }
 
