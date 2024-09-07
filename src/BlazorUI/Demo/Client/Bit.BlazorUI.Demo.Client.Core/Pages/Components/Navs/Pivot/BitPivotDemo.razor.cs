@@ -6,6 +6,15 @@ public partial class BitPivotDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Determines the alignment of the header section of the pivot.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -17,8 +26,8 @@ public partial class BitPivotDemo
             Type = "BitPivotClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitPivot component.",
+            LinkType = LinkType.Link,
             Href = "#pivot-class-styles",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -237,6 +246,55 @@ public partial class BitPivotDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "alignment-enum",
+            Name = "BitAlignment",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "SpaceBetween",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "SpaceAround",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "SpaceEvenly",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Baseline",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Stretch",
+                    Value = "7",
+                }
+            ]
+        },
         new()
         {
             Id = "linkFormat-enum",
@@ -667,6 +725,28 @@ private void TogglePivotItemVisibility()
 </BitPivot>";
 
     private readonly string example11RazorCode = @"
+<BitPivot Alignment=""BitAlignment.Center"">
+    <BitPivotItem HeaderText=""File"">
+        <div style=""margin-top:10px"">
+            <h1>Pivot #1</h1>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Shared with me"">
+        <div style=""margin-top:15px"">
+            <h2>Pivot #2</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra.</p>
+        </div>
+    </BitPivotItem>
+    <BitPivotItem HeaderText=""Recent"">
+        <div style=""margin-top:10px"">
+            <h3>Pivot #3</h3>
+            <p style=""white-space:pre-wrap"">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        </div>
+    </BitPivotItem>
+</BitPivot>";
+
+    private readonly string example12RazorCode = @"
 <style>
     .subtitle {
         padding: 20px 0 10px 0;
@@ -774,7 +854,7 @@ private void TogglePivotItemVisibility()
     </BitPivot>
 </div>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitButton OnClick=""() => PivotEnabled = !PivotEnabled"">Toggle Pivot's IsEnabled</BitButton>
 <BitButton OnClick=""() => PivotItemEnabled = !PivotItemEnabled"">Toggle Pivot Item's IsEnabled</BitButton>
 
@@ -798,11 +878,11 @@ private void TogglePivotItemVisibility()
         </div>
     </BitPivotItem>
 </BitPivot>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool PivotEnabled = true;
 private bool PivotItemEnabled = true;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -911,7 +991,7 @@ private bool PivotItemEnabled = true;";
     </BitPivotItem>
 </BitPivot>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitPivot Dir=""BitDir.Rtl"" OverflowBehavior=""@BitPivotOverflowBehavior.Scroll"">
     <BitPivotItem HeaderText=""اسناد"" IconName=""@BitIconName.Info"">
         <br />
