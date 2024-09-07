@@ -92,31 +92,31 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitOtpInputType.Text),
-        DataRow(BitOtpInputType.Number),
-        DataRow(BitOtpInputType.Password)
+        DataRow(BitInputType.Text),
+        DataRow(BitInputType.Number),
+        DataRow(BitInputType.Password)
     ]
-    public void BitOtpInputTypeTest(BitOtpInputType inputType)
+    public void BitInputTypeTest(BitInputType inputType)
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
             parameters.Add(p => p.Length, 1);
-            parameters.Add(p => p.InputType, inputType);
+            parameters.Add(p => p.Type, inputType);
         });
 
         string inputTypeAttribute = inputType switch
         {
-            BitOtpInputType.Text => "text",
-            BitOtpInputType.Number => "number",
-            BitOtpInputType.Password => "password",
+            BitInputType.Text => "text",
+            BitInputType.Number => "number",
+            BitInputType.Password => "password",
             _ => string.Empty
         };
 
         string inputModeAttribute = inputType switch
         {
-            BitOtpInputType.Text => "text",
-            BitOtpInputType.Number => "numeric",
-            BitOtpInputType.Password => "text",
+            BitInputType.Text => "text",
+            BitInputType.Number => "numeric",
+            BitInputType.Password => "text",
             _ => string.Empty
         };
 

@@ -215,8 +215,8 @@ public partial class BitTextFieldDemo
         new()
         {
             Name = "Type",
-            Type = "BitTextFieldType",
-            DefaultValue = "BitTextFieldType.Text",
+            Type = "BitInputType",
+            DefaultValue = "BitInputType.Text",
             Description = "Input type.",
             LinkType = LinkType.Link,
             Href = "#text-field-type-enum"
@@ -353,7 +353,7 @@ public partial class BitTextFieldDemo
         new()
         {
             Id = "text-field-type-enum",
-            Name = "BitTextFieldType",
+            Name = "BitInputType",
             Description = "",
             Items = new()
             {
@@ -511,8 +511,8 @@ public partial class BitTextFieldDemo
 </BitTextField>";
 
     private readonly string example8RazorCode = @"
-<BitTextField Label=""Password"" Type=""BitTextFieldType.Password"" />
-<BitTextField Label=""Reveal Password"" Type=""BitTextFieldType.Password"" CanRevealPassword=""true"" />";
+<BitTextField Label=""Password"" Type=""BitInputType.Password"" />
+<BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword=""true"" />";
 
     private readonly string example9RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />

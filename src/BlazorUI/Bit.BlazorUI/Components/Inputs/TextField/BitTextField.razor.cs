@@ -6,7 +6,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
     private bool _isPasswordRevealed;
-    private BitTextFieldType _elementType;
+    private BitInputType _elementType;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
@@ -175,7 +175,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(SetElementType))]
-    public BitTextFieldType Type { get; set; }
+    public BitInputType Type { get; set; } = BitInputType.Text;
 
 
 
@@ -193,7 +193,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
+        ClassBuilder.Register(() => IsMultiline && Type == BitInputType.Text
                                     ? $"bit-tfl-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
@@ -252,18 +252,18 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private void SetElementType()
     {
-        _elementType = Type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
-                         ? BitTextFieldType.Text
+        _elementType = Type is BitInputType.Password && CanRevealPassword && _isPasswordRevealed
+                         ? BitInputType.Text
                          : Type;
 
         _inputType = _elementType switch
         {
-            BitTextFieldType.Text => "text",
-            BitTextFieldType.Password => "password",
-            BitTextFieldType.Number => "number",
-            BitTextFieldType.Email => "email",
-            BitTextFieldType.Tel => "tel",
-            BitTextFieldType.Url => "url",
+            BitInputType.Text => "text",
+            BitInputType.Number => "number",
+            BitInputType.Password => "password",
+            BitInputType.Email => "email",
+            BitInputType.Tel => "tel",
+            BitInputType.Url => "url",
             _ => string.Empty,
         };
     }

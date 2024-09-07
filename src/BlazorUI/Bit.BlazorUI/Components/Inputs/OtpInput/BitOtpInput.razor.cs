@@ -27,11 +27,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Type of the inputs.
-    /// </summary>
-    [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
-
-    /// <summary>
     /// Length of the OTP or number of the inputs.
     /// </summary>
     [Parameter] public int Length { get; set; } = 5;
@@ -77,6 +72,11 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Type of the inputs.
+    /// </summary>
+    [Parameter] public BitInputType? Type { get; set; }
+
+    /// <summary>
     /// Defines whether to render inputs vertically.
     /// </summary>
     [Parameter] public bool Vertical { get; set; }
@@ -99,7 +99,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (pastedValue.HasNoValue()) return;
-        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+        if (Type is BitInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
         SetInputsValue(pastedValue);
 
@@ -111,6 +111,20 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
 
     protected override string RootElementClass => "bit-otp";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnInitialized()
     {
@@ -152,20 +166,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         }
     }
 
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => Reversed ? $"{RootElementClass}-rvs" : string.Empty);
-
-        ClassBuilder.Register(() => Vertical ? $"{RootElementClass}-vrt" : string.Empty);
-    }
-
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
-    }
-
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = value;
@@ -185,20 +185,22 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
 
 
-    private string GetInputType() => InputType switch
+    private string GetInputType() => Type switch
     {
-        BitOtpInputType.Text => "text",
-        BitOtpInputType.Number => "number",
-        BitOtpInputType.Password => "password",
-        _ => string.Empty
+        BitInputType.Text => "text",
+        BitInputType.Number => "number",
+        BitInputType.Password => "password",
+        BitInputType.Email => "email",
+        BitInputType.Tel => "tel",
+        BitInputType.Url => "url",
+        _ => "text"
     };
 
-    private string GetInputMode() => InputType switch
+    private string GetInputMode() => Type switch
     {
-        BitOtpInputType.Text => "text",
-        BitOtpInputType.Number => "numeric",
-        BitOtpInputType.Password => "text",
-        _ => string.Empty
+        BitInputType.Text => "text",
+        BitInputType.Number => "numeric",
+        _ => "text"
     };
 
     private string GetInputStyles(int index)
@@ -273,7 +275,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         {
             var diff = DiffValues(oldValue ?? string.Empty, newValue);
 
-            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            if (Type is BitInputType.Number && int.TryParse(diff, out _) is false)
             {
                 _inputValues[index] = oldValue;
             }

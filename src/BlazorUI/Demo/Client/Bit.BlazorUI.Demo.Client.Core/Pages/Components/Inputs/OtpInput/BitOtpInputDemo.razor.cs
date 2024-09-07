@@ -24,15 +24,6 @@ public partial class BitOtpInputDemo
         },
         new()
         {
-            Name = "InputType",
-            Type = "BitOtpInputType",
-            DefaultValue = "BitOtpInputType.Text",
-            Description = "Type of the inputs.",
-            LinkType = LinkType.Link,
-            Href = "#inputType-enum",
-        },
-        new()
-        {
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
@@ -92,6 +83,15 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Type",
+            Type = "BitInputType?",
+            DefaultValue = "null",
+            Description = "Type of the inputs.",
+            LinkType = LinkType.Link,
+            Href = "#inputType-enum",
+        },
+        new()
+        {
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
@@ -136,7 +136,7 @@ public partial class BitOtpInputDemo
         new()
         {
             Id = "inputType-enum",
-            Name = "BitOtpInputType",
+            Name = "BitInputType",
             Items = new()
             {
                 new()
@@ -215,9 +215,9 @@ public partial class BitOtpInputDemo
 <BitOtpInput AutoFocus=""true"" />";
 
     private readonly string example2RazorCode = @"
-<BitOtpInput InputType=""BitOtpInputType.Text"" />
-<BitOtpInput InputType=""BitOtpInputType.Number"" />
-<BitOtpInput InputType=""BitOtpInputType.Password"" />";
+<BitOtpInput Type=""BitInputType.Text"" />
+<BitOtpInput Type=""BitInputType.Number"" />
+<BitOtpInput Type=""BitInputType.Password"" />";
 
     private readonly string example3RazorCode = @"
 <BitOtpInput />
