@@ -219,7 +219,7 @@ public partial class BitTextFieldDemo
             DefaultValue = "BitInputType.Text",
             Description = "Input type.",
             LinkType = LinkType.Link,
-            Href = "#text-field-type-enum"
+            Href = "#input-type-enum"
         }
     ];
 
@@ -352,48 +352,48 @@ public partial class BitTextFieldDemo
     [
         new()
         {
-            Id = "text-field-type-enum",
+            Id = "input-type-enum",
             Name = "BitInputType",
             Description = "",
-            Items = new()
-            {
+            Items =
+            [
                 new()
                 {
                     Name= "Text",
-                    Description="The TextField characters are shown as text.",
+                    Description="The input expects text characters.",
                     Value="0",
                 },
                 new()
                 {
                     Name= "Password",
-                    Description="The TextField characters are masked.",
+                    Description="The input expects password characters.",
                     Value="1",
                 },
                 new()
                 {
                     Name= "Number",
-                    Description="The TextField characters are number.",
+                    Description="The input expects number characters.",
                     Value="2",
                 },
                 new()
                 {
                     Name= "Email",
-                    Description="The TextField act as an email input.",
+                    Description="The input expects email characters.",
                     Value="3",
                 },
                 new()
                 {
                     Name= "Tel",
-                    Description="The TextField act as a tel input.",
+                    Description="The input expects tel characters.",
                     Value="4",
                 },
                 new()
                 {
                     Name= "Url",
-                    Description="The TextField act as a url input.",
+                    Description="The input expects url characters.",
                     Value="5",
                 }
-            }
+            ]
         }
     ];
 
