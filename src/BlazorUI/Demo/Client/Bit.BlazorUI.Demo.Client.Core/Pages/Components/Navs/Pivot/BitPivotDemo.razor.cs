@@ -122,6 +122,20 @@ public partial class BitPivotDemo
                 },
                 new()
                 {
+                    Name = "BodyClass",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The custom css class of the content of the pivot item.",
+                },
+                new()
+                {
+                    Name = "BodyStyle",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The custom css style of the content of the pivot item.",
+                },
+                new()
+                {
                     Name = "ChildContent",
                     Type = "RenderFragment?",
                     DefaultValue = "null",
@@ -186,10 +200,10 @@ public partial class BitPivotDemo
                },
                new()
                {
-                   Name = "ContentView",
+                   Name = "Body",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the content view of the BitPivot."
+                   Description = "Custom CSS classes/styles for the items body of the BitPivot."
                },
                new()
                {
@@ -900,7 +914,7 @@ private bool PivotItemEnabled = true;";
         border: 1px solid gray;
     }
 
-    .custom-content-view {
+    .custom-body {
         margin-top: 1rem;
         background-color: deepskyblue;
     }
@@ -970,7 +984,7 @@ private bool PivotItemEnabled = true;";
     </BitPivotItem>
 </BitPivot>
 
-<BitPivot Classes=""@(new() { ContentView = ""custom-content-view"", SelectedItem = ""custom-selected-item"", Header = ""custom-header"" })"">
+<BitPivot Classes=""@(new() { Body = ""custom-body"", SelectedItem = ""custom-selected-item"", Header = ""custom-header"" })"">
     <BitPivotItem HeaderText=""File"">
         <div style=""margin-top:10px"">
             <h1>Pivot #1</h1>
