@@ -63,7 +63,7 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
@@ -76,7 +76,7 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
@@ -117,7 +117,7 @@
                                 class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                 aria-expanded="@(isExpanded ? "true" : "false")"
                                 aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                            <i class="bit-icon bit-icon--ChevronDown @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                         </button>
                     }
 
