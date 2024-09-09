@@ -114,6 +114,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Templates/Templates06RunProjectPage.razor.css",
+        "inputFile": "Pages/Templates/Templates06RunProjectPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Bswup/Bswup01OverviewPage.razor.css",
         "inputFile": "Pages/Bswup/Bswup01OverviewPage.razor.scss",
         "minify": { "enabled": false },

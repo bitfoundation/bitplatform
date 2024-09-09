@@ -16,8 +16,12 @@
         flex-grow: 1;
     }
 
+    .page-section {
+        scroll-margin: rem2(80px);
+    }
+
     .sec-con {
-        scroll-margin: 80px;
+        scroll-margin: rem2(80px);
     }
 
     .table-view {

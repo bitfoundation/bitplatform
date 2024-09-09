@@ -1,6 +1,6 @@
 ﻿@import "../../../Styles/functions.scss";
 
-.bit-txt {
+.bit-tfl {
     margin: 0;
     padding: 0;
     box-shadow: none;
@@ -11,11 +11,11 @@
     font-family: $tg-font-family;
 
     &.bit-dis {
-        .bit-txt-lbl {
+        .bit-tfl-lbl {
             color: $clr-fg-dis;
         }
 
-        .bit-txt-fgp {
+        .bit-tfl-fgp {
             border: none;
             cursor: default;
             color: $clr-fg-dis;
@@ -23,30 +23,30 @@
             border: $shp-border-width $shp-border-style $clr-brd-dis;
         }
 
-        .bit-txt-inp {
+        .bit-tfl-inp {
             color: $clr-fg-dis;
         }
 
-        .bit-txt-pre,
-        .bit-txt-suf {
+        .bit-tfl-pre,
+        .bit-tfl-suf {
             color: $clr-fg-dis;
         }
 
-        &.bit-txt-und {
-            .bit-txt-wrp {
+        &.bit-tfl-und {
+            .bit-tfl-wrp {
                 width: 100%;
                 display: flex;
                 border-bottom: $shp-border-width $shp-border-style $clr-brd-dis;
             }
 
-            .bit-txt-lbl {
+            .bit-tfl-lbl {
                 height: spacing(4);
                 margin: 0 spacing(1) 0 0;
                 line-height: spacing(2.75);
                 padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
             }
 
-            .bit-txt-fgp {
+            .bit-tfl-fgp {
                 flex: 1 1 0;
                 border: none;
                 text-align: left;
@@ -55,18 +55,18 @@
     }
 
     &.bit-inv {
-        .bit-txt-fgp,
-        .bit-txt-wrp {
+        .bit-tfl-fgp,
+        .bit-tfl-wrp {
             border-color: $clr-err;
         }
 
-        &.bit-txt-fcs {
-            .bit-txt-fgp::after {
+        &.bit-tfl-fcs {
+            .bit-tfl-fgp::after {
                 border-color: $clr-err;
             }
 
-            &.bit-txt-und {
-                .bit-txt-wrp::after {
+            &.bit-tfl-und {
+                .bit-tfl-wrp::after {
                     border-color: $clr-err;
                 }
             }
@@ -74,7 +74,7 @@
     }
 }
 
-.bit-txt-lbl {
+.bit-tfl-lbl {
     margin: 0;
     display: block;
     box-shadow: none;
@@ -87,7 +87,7 @@
     color: $clr-fg-pri;
 }
 
-.bit-txt-fgp {
+.bit-tfl-fgp {
     margin: 0;
     padding: 0;
     cursor: text;
@@ -103,7 +103,7 @@
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
-.bit-txt-inp {
+.bit-tfl-inp {
     margin: 0;
     outline: 0;
     width: 100%;
@@ -128,7 +128,7 @@
     }
 }
 
-.bit-txt-prb {
+.bit-tfl-prb {
     height: 100%;
     border: none;
     cursor: pointer;
@@ -147,37 +147,37 @@
     }
 }
 
-.bit-txt-rin {
+.bit-tfl-rin {
     display: flex;
     align-items: center;
     font-size: spacing(2);
     justify-content: center;
 }
 
-.bit-txt-ric {
+.bit-tfl-ric {
     color: $clr-pri;
 }
 
-.bit-txt-ico {
+.bit-tfl-ico {
     color: $clr-fg-pri;
 }
 
-.bit-txt-ric,
-.bit-txt-ico {
+.bit-tfl-ric,
+.bit-tfl-ico {
     width: spacing(4);
     text-align: center;
     font-size: spacing(2);
 }
 
-.bit-txt-des {
+.bit-tfl-des {
     span {
         font-size: spacing(1.25);
         color: $clr-fg-pri;
     }
 }
 
-.bit-txt-pre,
-.bit-txt-suf {
+.bit-tfl-pre,
+.bit-tfl-suf {
     height: 100%;
     display: flex;
     flex-shrink: 0;
@@ -194,14 +194,14 @@
     }
 }
 
-.bit-txt-mln {
-    .bit-txt-fgp {
+.bit-tfl-mln {
+    .bit-tfl-fgp {
         height: auto;
         align-items: stretch;
         min-height: spacing(7.5);
     }
 
-    textarea.bit-txt-inp {
+    textarea.bit-tfl-inp {
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
@@ -210,14 +210,14 @@
     }
 }
 
-.bit-txt-mlf {
-    .bit-txt-fgp {
+.bit-tfl-mlf {
+    .bit-tfl-fgp {
         height: auto;
         align-items: stretch;
         min-height: spacing(7.5);
     }
 
-    textarea.bit-txt-inp {
+    textarea.bit-tfl-inp {
         resize: none;
         flex-grow: 1;
         overflow: auto;
@@ -227,8 +227,8 @@
     }
 }
 
-.bit-txt-fcs {
-    .bit-txt-fgp::after {
+.bit-tfl-fcs {
+    .bit-tfl-fgp::after {
         content: "";
         position: absolute;
         pointer-events: none;
@@ -237,12 +237,12 @@
         border: spacing(0.25) $shp-border-style $clr-pri;
     }
 
-    &.bit-txt-und {
-        .bit-txt-fgp::after {
+    &.bit-tfl-und {
+        .bit-tfl-fgp::after {
             border: none;
         }
 
-        .bit-txt-wrp::after {
+        .bit-tfl-wrp::after {
             content: "";
             position: absolute;
             pointer-events: none;
@@ -252,37 +252,37 @@
     }
 }
 
-.bit-txt-und {
-    .bit-txt-wrp {
+.bit-tfl-und {
+    .bit-tfl-wrp {
         width: 100%;
         display: flex;
         border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
-    .bit-txt-lbl {
+    .bit-tfl-lbl {
         height: spacing(4);
         margin: 0 spacing(1) 0 0;
         line-height: spacing(2.75);
         padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
     }
 
-    .bit-txt-fgp {
+    .bit-tfl-fgp {
         flex: 1 1 0;
         border: none;
         text-align: left;
     }
 }
 
-.bit-txt-req {
-    .bit-txt-lbl::after {
+.bit-tfl-req {
+    .bit-tfl-lbl::after {
         content: "*";
         color: $clr-req;
         margin-left: spacing(0.625);
     }
 }
 
-.bit-txt-rnl {
-    .bit-txt-fgp::before {
+.bit-tfl-rnl {
+    .bit-tfl-fgp::before {
         content: "*";
         position: absolute;
         top: spacing(-0.625);
@@ -291,8 +291,8 @@
     }
 }
 
-.bit-txt-nbd {
-    .bit-txt-fgp {
+.bit-tfl-nbd {
+    .bit-tfl-fgp {
         border: none;
     }
 }

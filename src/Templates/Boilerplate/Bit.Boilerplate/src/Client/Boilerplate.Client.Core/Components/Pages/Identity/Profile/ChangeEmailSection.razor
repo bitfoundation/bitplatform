@@ -8,9 +8,9 @@
         }
     </div>
 
-    <BitTypography Variant="BitTypographyVariant.H2">
+    <BitText Typography="BitTypography.H2">
         @Localizer[nameof(AppStrings.ChangeEmailTitle)]
-    </BitTypography>
+    </BitText>
 
     <br />
 
@@ -56,11 +56,11 @@
         }
         else
         {
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+            <BitText Typography="BitTypography.Subtitle1" Gutter>
                 @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
                 <br />
                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
-            </BitTypography>
+            </BitText>
             <br />
             <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" class="change-email-form">
                 <AppDataAnnotationsValidator />
@@ -97,12 +97,12 @@
             {
                 <br />
                 <br />
-                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                <BitText Typography="BitTypography.Body1" Gutter>
                     @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
-                </BitTypography>
-                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                </BitText>
+                <BitText Typography="BitTypography.Body1" Gutter>
                     @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
-                </BitTypography>
+                </BitText>
                 <br />
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"

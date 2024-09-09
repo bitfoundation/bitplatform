@@ -20,16 +20,7 @@ public partial class BitOtpInputDemo
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitOtpInput.",
             LinkType = LinkType.Link,
-            Href = "#otpinput-class-styles",
-        },
-        new()
-        {
-            Name = "InputType",
-            Type = "BitOtpInputType",
-            DefaultValue = "BitOtpInputType.Text",
-            Description = "Type of the inputs.",
-            LinkType = LinkType.Link,
-            Href = "#inputType-enum",
+            Href = "#class-styles",
         },
         new()
         {
@@ -88,7 +79,16 @@ public partial class BitOtpInputDemo
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitOtpInput.",
             LinkType = LinkType.Link,
-            Href = "#otpinput-class-styles",
+            Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Type",
+            Type = "BitInputType?",
+            DefaultValue = "null",
+            Description = "Type of the inputs.",
+            LinkType = LinkType.Link,
+            Href = "#input-type-enum",
         },
         new()
         {
@@ -102,7 +102,7 @@ public partial class BitOtpInputDemo
     [
         new()
         {
-            Id = "otpinput-class-styles",
+            Id = "class-styles",
             Title = "BitOtpInputClassStyles",
             Description = "",
             Parameters = new()
@@ -135,29 +135,47 @@ public partial class BitOtpInputDemo
     [
         new()
         {
-            Id = "inputType-enum",
-            Name = "BitOtpInputType",
-            Items = new()
-            {
+            Id = "input-type-enum",
+            Name = "BitInputType",
+            Items =
+            [
                 new()
                 {
-                    Name = "Text",
-                    Description = "The OtpInput characters are shown as text.",
-                    Value = "0"
+                    Name= "Text",
+                    Description="The input expects text characters.",
+                    Value="0",
                 },
                 new()
                 {
-                    Name = "Password",
-                    Description = "The OtpInput characters are masked.",
-                    Value = "1"
+                    Name= "Password",
+                    Description="The input expects password characters.",
+                    Value="1",
                 },
                 new()
                 {
-                    Name = "Number",
-                    Description = "The OtpInput characters are number.",
-                    Value = "2"
+                    Name= "Number",
+                    Description="The input expects number characters.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Email",
+                    Description="The input expects email characters.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Tel",
+                    Description="The input expects tel characters.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Url",
+                    Description="The input expects url characters.",
+                    Value="5",
                 }
-            }
+            ]
         }
     ];
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -215,9 +233,9 @@ public partial class BitOtpInputDemo
 <BitOtpInput AutoFocus=""true"" />";
 
     private readonly string example2RazorCode = @"
-<BitOtpInput InputType=""BitOtpInputType.Text"" />
-<BitOtpInput InputType=""BitOtpInputType.Number"" />
-<BitOtpInput InputType=""BitOtpInputType.Password"" />";
+<BitOtpInput Type=""BitInputType.Text"" />
+<BitOtpInput Type=""BitInputType.Number"" />
+<BitOtpInput Type=""BitInputType.Password"" />";
 
     private readonly string example3RazorCode = @"
 <BitOtpInput />

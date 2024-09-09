@@ -9,6 +9,7 @@
                ComponentDescription="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums"
                ComponentPublicMembers="componentPublicMembers">
     <ComponentExampleBox Title="Basics" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
@@ -143,9 +144,9 @@
             <div>Shows BitTextField configured for password entry, including an option to reveal the password.</div>
             <br />
             <div class="example-box">
-                <BitTextField Label="Password" Type="BitTextFieldType.Password" />
+                <BitTextField Label="Password" Type="BitInputType.Password" />
                 <br />
-                <BitTextField Label="Reveal Password" Type="BitTextFieldType.Password" CanRevealPassword="true" />
+                <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword="true" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitTextVariant
+public enum BitTypography
 {
     H1,
     H2,

@@ -15,55 +15,66 @@
             }
         </div>
 
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>
+        <BitText Typography="BitTypography.H4" Gutter>
             @Localizer[nameof(AppStrings.SignUp)]
-        </BitTypography>
+        </BitText>
         <br /><br />
-        <BitButton Style="width:300px"
-                   IsLoading="isWaiting"
-                   Color="BitColor.Tertiary"
-                   Variant="BitVariant.Outline"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(GoogleSignUp)">
-            @Localizer[AppStrings.GoogleSignUpButtonText]
-        </BitButton>
+        <BitStack Horizontal Gap="1rem">
+            <BitButton IsLoading="isWaiting"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GoogleSignUp)"
+                       Title="@Localizer[AppStrings.GoogleSignUpButtonText]">
+                <BitImage Src="_content/Boilerplate.Client.Core/images/icons/google-icon.svg" />
+            </BitButton>
+
+            <BitButton IsLoading="isWaiting"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(GitHubSignUp)"
+                       Title="@Localizer[AppStrings.GitHubSignUpButtonText]">
+                <BitImage Src="_content/Boilerplate.Client.Core/images/icons/github-icon.svg" />
+            </BitButton>
+
+            <BitButton IsLoading="isWaiting"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       ButtonType="BitButtonType.Button"
+                       OnClick="WrapHandled(TwitterSignUp)"
+                       Title="@Localizer[AppStrings.TwitterSignUpButtonText]">
+                <BitImage Src="_content/Boilerplate.Client.Core/images/icons/x-icon.svg" />
+            </BitButton>
+        </BitStack>
         <br />
-        <BitButton Style="width:300px"
-                   IsLoading="isWaiting"
-                   Color="BitColor.Tertiary"
-                   Variant="BitVariant.Outline"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(GitHubSignUp)">
-            @Localizer[AppStrings.GitHubSignUpButtonText]
-        </BitButton>
-        <br />
-        <BitButton Style="width:300px"
-                   IsLoading="isWaiting"
-                   Color="BitColor.Tertiary"
-                   Variant="BitVariant.Outline"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(TwitterSignUp)">
-            @Localizer[AppStrings.TwitterSignUpButtonText]
-        </BitButton>
-        <br /><br />
-        <BitSeparator Style="width:100%">Or</BitSeparator>
+        <BitSeparator Style="width:100%">@Localizer[AppStrings.Or]</BitSeparator>
         <br />
         <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
             <AppDataAnnotationsValidator />
-            <div class="form-input-container">
-                <BitTextField @bind-Value="signUpModel.Email"
-                              Type="BitTextFieldType.Email"
-                              Label="@Localizer[nameof(AppStrings.Email)]"
-                              Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                <ValidationMessage For="@(() => signUpModel.Email)" />
-            </div>
-            <div class="form-input-container">
-                <BitTextField @bind-Value="signUpModel.PhoneNumber"
-                              Type="BitTextFieldType.Tel"
-                              Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                              Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
-                <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
-            </div>
+
+            <BitPivot>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                    <br />
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="signUpModel.Email"
+                                      Type="BitTextFieldType.Email"
+                                      Label="@Localizer[nameof(AppStrings.Email)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                        <ValidationMessage For="@(() => signUpModel.Email)" />
+                    </div>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
+                    <br />
+                    <div class="form-input-container">
+                        <BitTextField @bind-Value="signUpModel.PhoneNumber"
+                                      Type="BitTextFieldType.Tel"
+                                      Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                        <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
+                    </div>
+                </BitPivotItem>
+            </BitPivot>
             <div class="form-input-container">
                 <BitTextField @bind-Value="signUpModel.Password"
                               CanRevealPassword="true"
@@ -73,14 +84,14 @@
                               Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
                 <ValidationMessage For="@(() => signUpModel.Password)" />
             </div>
-            <div class="form-input-container">
-                <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
-                    <LabelTemplate>
-                        <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
-                    </LabelTemplate>
-                </BitCheckbox>
-                <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
-            </div>
+            @* <div class="form-input-container">
+            <BitCheckbox Class="form-checkbox" @bind-Value="signUpModel.TermsAccepted">
+            <LabelTemplate>
+            <span>@Localizer[nameof(AppStrings.TermsMessage)]&nbsp<BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink></span>
+            </LabelTemplate>
+            </BitCheckbox>
+            <ValidationMessage For="@(() => signUpModel.TermsAccepted)" />
+            </div> *@
 
             @*#if (captcha == "reCaptcha")*@
             <div class="form-input-container">
@@ -94,17 +105,17 @@
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitButton>
             <br /><br />
-            <div>
+            <BitText Typography="BitTypography.Body2" Gutter>
                 @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
                 <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-            </div>
-            <br />
-            <div>
-                @Localizer[nameof(AppStrings.ConfirmMessageInSignUp)]
+                @Localizer[nameof(AppStrings.Or)]
                 <BitLink Href="@($"{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
-            </div>
+            </BitText>
+            <BitText Typography="BitTypography.Body2">
+                By signing up, you agree to our <BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink>
+            </BitText>
         </EditForm>
     </div>
 </div>

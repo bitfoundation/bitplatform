@@ -19,18 +19,18 @@ public partial class BitSpacerDemo
 <div style=""display: flex; width: 100%;"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" />
     <BitSpacer />
-    <BitText Variant=""BitTextVariant.H6"">Title</BitText>
+    <BitText Typography=""BitTypography.H6"">Title</BitText>
     <BitSpacer />
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Contact"" />
 </div>";
 
     private readonly string example2RazorCode = @"
 <div style=""display: flex; width: 100%;"">
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
     <BitSpacer Width=""64"" />
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
     <BitSpacer Width=""64"" />
-    <BitSpinner />
+    <BitProgress Circular Indeterminate />
 </div>";
 
 }

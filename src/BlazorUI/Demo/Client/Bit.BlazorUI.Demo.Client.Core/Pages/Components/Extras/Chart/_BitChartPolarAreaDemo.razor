@@ -1,0 +1,18 @@
+﻿<ComponentExampleBox Title="PolarArea Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-desc">
+            Polar area charts are similar to pie charts, but each segment has the same angle - the radius of the segment differs depending on the value.
+            This type of chart is often useful when we want to show a comparison data similar to a pie chart, but also show a scale of values for context.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" @ref="_chart" />
+            </div>
+        </div>
+        <div class="buttons-container">
+            <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizePolarAreaData">Randomize Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddPolarAreaDataset">Add Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemovePolarAreaDataset">Remove Dataset</BitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

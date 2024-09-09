@@ -1,34 +1,34 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitTextFieldType
+public enum BitInputType
 {
     /// <summary>
-    /// The TextField characters are shown as text.
+    /// The input expects text characters.
     /// </summary>
     Text,
 
     /// <summary>
-    /// The TextField characters are masked.
+    /// The input expects password characters.
     /// </summary>
     Password,
 
     /// <summary>
-    /// The TextField characters are number.
+    /// The input expects number characters.
     /// </summary>
     Number,
 
     /// <summary>
-    /// The TextField act as an email input.
+    /// The input expects email characters.
     /// </summary>
     Email,
 
     /// <summary>
-    /// The TextField act as a tel input.
+    /// The input expects tel characters.
     /// </summary>
     Tel,
 
     /// <summary>
-    /// The TextField act as a url input.
+    /// The input expects url characters.
     /// </summary>
     Url
 }

@@ -1,18 +1,15 @@
 ﻿@inherits AppComponentBase
 
-@if (Items is not null && Items.Count > 0)
-{
-    <ul class="side-rail">
-        <li><b>Content</b></li>
-        @foreach (var item in Items)
-        {
-            <li>
-                <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
-                    <BitText Variant="BitTextVariant.Body2">
-                        @item.Title
-                    </BitText>
-                </BitLink>
-            </li>
-        }
-    </ul>
-}
+<ul class="side-rail">
+    <li><b>On this page</b></li>
+    @foreach (var item in _items)
+    {
+        <li>
+            <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline>
+                <BitText Typography="BitTypography.Body2" Style="text-align: start;">
+                    @item.Title
+                </BitText>
+            </BitLink>
+        </li>
+    }
+</ul>

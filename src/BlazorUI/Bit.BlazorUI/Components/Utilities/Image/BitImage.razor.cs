@@ -21,7 +21,7 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// Specifies the cover style to be used for this image.
     /// </summary>
-    [Parameter] public BitImageCoverStyle CoverStyle { get; set; }
+    [Parameter] public BitImageCoverStyle? CoverStyle { get; set; }
 
     /// <summary>
     /// The image height value.
@@ -37,7 +37,7 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// Used to determine how the image is scaled and cropped to fit the frame.
     /// </summary>
-    [Parameter] public BitImageFit ImageFit { get; set; }
+    [Parameter] public BitImageFit? ImageFit { get; set; }
 
     /// <summary>
     /// Allows for browser-level image loading (lazy or eager).
@@ -110,12 +110,22 @@ public partial class BitImage : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Width.HasValue() ? $"width:{Width}" : string.Empty);
+        StyleBuilder.Register(() => Width.HasValue() ? $"width:{GetValueWithUnit(Width)}" : string.Empty);
 
-        StyleBuilder.Register(() => Height.HasValue() ? $"height:{Height}" : string.Empty);
+        StyleBuilder.Register(() => Height.HasValue() ? $"height:{GetValueWithUnit(Height)}" : string.Empty);
     }
 
 
+
+    private string GetValueWithUnit(string? val)
+    {
+        if (double.TryParse(val, out double result))
+        {
+            return FormattableString.Invariant($"{result}px");
+        }
+
+        return val!;
+    }
 
     private string GetImageClasses()
     {
@@ -123,20 +133,33 @@ public partial class BitImage : BitComponentBase
 
         className.Append("bit-img-img");
 
-        className.Append(' ').Append(ImageFit switch
+        className.Append(ImageFit switch
         {
-            BitImageFit.Center => "bit-img-ctr",
-            BitImageFit.Contain => "bit-img-cnt",
-            BitImageFit.Cover => "bit-img-cvr",
-            BitImageFit.CenterCover => "bit-img-ccv",
-            BitImageFit.CenterContain => "bit-img-cct",
-            _ => "bit-img-non"
+            BitImageFit.None => " bit-img-non",
+            BitImageFit.Center => " bit-img-ctr",
+            BitImageFit.Contain => " bit-img-cnt",
+            BitImageFit.Cover => " bit-img-cvr",
+            BitImageFit.CenterCover => " bit-img-ccv",
+            BitImageFit.CenterContain => " bit-img-cct",
+            _ => null
         });
 
-        className.Append(' ').Append(CoverStyle switch
+        if (ImageFit.HasValue is false && (Width.HasValue() ^ Height.HasValue()))
         {
-            BitImageCoverStyle.Portrait => "bit-img-por",
-            _ => "bit-img-lan"
+            if (Width.HasValue())
+            {
+                className.Append(" bit-img-ihw");
+            }
+            else
+            {
+                className.Append(" bit-img-ihh");
+            }
+        }
+
+        className.Append(CoverStyle switch
+        {
+            BitImageCoverStyle.Landscape => " bit-img-lan",
+            _ => " bit-img-por"
         });
 
         if (_loadingState == BitImageLoadingState.Loaded || (_loadingState == BitImageLoadingState.NotLoaded && ShouldStartVisible))

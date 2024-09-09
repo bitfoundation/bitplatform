@@ -13,9 +13,9 @@ public class BitPivotClassStyles
     public string? Header { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content view of the BitPivot.
+    /// Custom CSS classes/styles for the items body of the BitPivot.
     /// </summary>
-    public string? ContentView { get; set; }
+    public string? Body { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the header item of the BitPivot.
