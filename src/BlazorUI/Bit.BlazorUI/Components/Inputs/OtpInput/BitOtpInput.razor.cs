@@ -22,6 +22,11 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Enables auto shifting the indexes while clearing the inputs using Delete or Backspace.
+    /// </summary>
+    [Parameter] public bool AutoShift { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
@@ -330,13 +335,28 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         {
             await Task.Delay(1);
             await _inputRefs[previousIndex].FocusAsync();
+            if (AutoShift)
+            {
+                for (int i = index; i < Length; i++)
+                {
+                    _inputValues[i] = i < Length - 1 ? _inputValues[i + 1] : string.Empty;
+                }
+            }
             return;
         }
 
         if (code is "Delete" || key is "Delete")
         {
             await Task.Delay(1);
-            await _inputRefs[nextIndex].FocusAsync();
+            _inputValues[index] = string.Empty;
+            await _inputRefs[index].FocusAsync();
+            if (AutoShift)
+            {
+                for (int i = index; i < Length; i++)
+                {
+                    _inputValues[i] = i < Length - 1 ? _inputValues[i + 1] : string.Empty;
+                }
+            }
             return;
         }
 
