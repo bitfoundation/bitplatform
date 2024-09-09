@@ -66,27 +66,36 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
-    /// Number of items that is going to be changed on navigation
+    /// Number of items that is going to be changed on navigation.
     /// </summary>
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
     /// <summary>
-    /// Number of items that is visible in the carousel
+    /// Number of items that is visible in the carousel.
     /// </summary>
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
 
 
 
+    /// <summary>
+    /// Navigates to the next carousel item.
+    /// </summary>
     public async Task GoNext()
     {
         await Next();
     }
 
+    /// <summary>
+    /// Navigates to the previous carousel item.
+    /// </summary>
     public async Task GoPrev()
     {
         await Prev();
     }
 
+    /// <summary>
+    /// Navigates to the given carousel item index.
+    /// </summary>
     public async Task GoTo(int index)
     {
         await GotoPage(index - 1);

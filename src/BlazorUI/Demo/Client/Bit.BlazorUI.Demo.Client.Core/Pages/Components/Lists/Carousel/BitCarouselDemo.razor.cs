@@ -64,14 +64,36 @@ public partial class BitCarouselDemo
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is going to be changed on navigation"
+            Description = "Number of items that is going to be changed on navigation."
         },
         new()
         {
             Name = "VisibleItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is visible in the carousel"
+            Description = "Number of items that is visible in the carousel."
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "GoNext",
+            Type = "Task",
+            Description = "Navigates to the next carousel item.",
+        },
+        new()
+        {
+            Name = "GoPrev",
+            Type = "Task",
+            Description = "Navigates to the previous carousel item.",
+        },
+        new()
+        {
+            Name = "GoTo",
+            Type = "Task",
+            Description = "Navigates to the given carousel item index.",
         }
     ];
 
