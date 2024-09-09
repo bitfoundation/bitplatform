@@ -139,8 +139,6 @@ public partial class BitPivot : BitComponentBase
 
 
 
-    internal string GetPivotItemId(BitPivotItem item) => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == item)}";
-
     internal int GetPivotItemTabIndex(BitPivotItem item) => item.IsSelected ? 0 : _allItems.FindIndex(i => i == item) == 0 ? 0 : -1;
 
     internal void SelectItem(BitPivotItem item)
@@ -230,8 +228,6 @@ public partial class BitPivot : BitComponentBase
 
         return string.Join(' ', list.Where(s => s.HasValue()));
     }
-
-    private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
 
     private void OnSetSelectedKey()
     {
