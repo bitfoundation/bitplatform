@@ -6,10 +6,24 @@ public partial class BitCarouselDemo
     [
         new()
         {
-            Name = "InfiniteScrolling",
+            Name = "AnimationDuration",
+            Type = "double",
+            DefaultValue = "0.5",
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
+        },
+        new()
+        {
+            Name = "AutoPlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
+            Description = "Enables/disables the auto scrolling of the slides."
+        },
+        new()
+        {
+            Name = "AutoPlayInterval",
+            Type = "double",
+            DefaultValue = "2000",
+            Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
         },
         new()
         {
@@ -32,12 +46,18 @@ public partial class BitCarouselDemo
             DefaultValue = "false",
             Description = "Hides the Next/Prev buttons of the BitCarousel."
         },
-        new()  
+        new()
         {
-            Name = "VisibleItemsCount",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Number of items that is visible in the carousel"
+            Name = "InfiniteScrolling",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<int>",
+            Description = "The event that will be called on carousel page navigation."
         },
         new()
         {
@@ -48,30 +68,10 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "AutoPlay",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables/disables the auto scrolling of the slides."
-        },
-        new()
-        {
-            Name = "AutoPlayInterval",
-            Type = "double",
-            DefaultValue = "2000",
-            Description = "Sets the interval of the auto scrolling in milliseconds (the default value is 2000)."
-        },
-        new()
-        {
-            Name = "AnimationDuration",
-            Type = "double",
-            DefaultValue = "0.5",
-            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
-        },
-        new()
-        {
-            Name = "OnChange",
-            Type = "EventCallback<int>",
-            Description = "The event that will be called on carousel page navigation."
+            Name = "VisibleItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is visible in the carousel"
         }
     ];
 

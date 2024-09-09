@@ -26,9 +26,19 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
-    [Parameter] public bool InfiniteScrolling { get; set; }
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+
+    /// <summary>
+    /// Enables/disables the auto scrolling of the slides.
+    /// </summary>
+    [Parameter] public bool AutoPlay { get; set; }
+
+    /// <summary>
+    /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
+    /// </summary>
+    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
     /// Items of the carousel.
@@ -43,12 +53,17 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Hides the Next/Prev buttons of the BitCarousel.
     /// </summary>
-    [Parameter] public bool HideNextPrev { get; set; } = true;
+    [Parameter] public bool HideNextPrev { get; set; }
 
     /// <summary>
-    /// Number of items that is visible in the carousel
+    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
     /// </summary>
-    [Parameter] public int VisibleItemsCount { get; set; } = 1;
+    [Parameter] public bool InfiniteScrolling { get; set; }
+
+    /// <summary>
+    /// The event that will be called on carousel page navigation.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnChange { get; set; }
 
     /// <summary>
     /// Number of items that is going to be changed on navigation
@@ -56,35 +71,20 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
     /// <summary>
-    /// Enables/disables the auto scrolling of the slides.
+    /// Number of items that is visible in the carousel
     /// </summary>
-    [Parameter] public bool AutoPlay { get; set; }
-
-    /// <summary>
-    /// Sets the interval of the auto scrolling in milliseconds (the default value is 2000).
-    /// </summary>
-    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
-
-    /// <summary>
-    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
-    /// </summary>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
-
-    /// <summary>
-    /// The event that will be called on carousel page navigation.
-    /// </summary>
-    [Parameter] public EventCallback<int> OnChange { get; set; }
+    [Parameter] public int VisibleItemsCount { get; set; } = 1;
 
 
-
-    public async Task GoPrev()
-    {
-        await Prev();
-    }
 
     public async Task GoNext()
     {
         await Next();
+    }
+
+    public async Task GoPrev()
+    {
+        await Prev();
     }
 
     public async Task GoTo(int index)
