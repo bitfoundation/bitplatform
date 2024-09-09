@@ -74,7 +74,8 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     /// <summary>
     /// The size of the inputs.
     /// </summary>
-    [Parameter, ResetClassBuilder] public BitSize? Size { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
