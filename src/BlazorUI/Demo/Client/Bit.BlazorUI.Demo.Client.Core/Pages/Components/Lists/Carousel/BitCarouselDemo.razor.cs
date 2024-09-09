@@ -20,17 +20,17 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "ShowDots",
+            Name = "HideDots",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the Dots indicator at the bottom of the BitCarousel."
+            DefaultValue = "false",
+            Description = "Hides the Dots indicator at the bottom of the BitCarousel."
         },
         new()
         {
-            Name = "ShowNextPrev",
+            Name = "HideNextPrev",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
+            DefaultValue = "false",
+            Description = "Hides the Next/Prev buttons of the BitCarousel."
         },
         new()  
         {
@@ -74,6 +74,26 @@ public partial class BitCarouselDemo
             Description = "The event that will be called on carousel page navigation."
         }
     ];
+
+
+
+    private int index;
+    private BitCarousel carousel = default!;
+
+    private void GoNext()
+    {
+        carousel.GoNext();
+    }
+
+    private void GoPrev()
+    {
+        carousel.GoPrev();
+    }
+
+    private void GoTo()
+    {
+        carousel.GoTo(index);
+    }
 
 
 
@@ -138,7 +158,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel InfiniteScrolling=""true"">
+<BitCarousel InfiniteScrolling>
     <BitCarouselItem>
         <img class=""image"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
@@ -187,7 +207,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel ShowDots=""false"">
+<BitCarousel HideDots>
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""img1.jpg"" />
@@ -255,7 +275,7 @@ public partial class BitCarouselDemo
 </style>
 
 <div>
-    <BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
+    <BitCarousel HideNextPrev @ref=""carousel"">
         <BitCarouselItem>
             <div class=""numbertext"">1 / 4</div>
             <img class=""image"" src=""img1.jpg"" />
@@ -352,7 +372,7 @@ private void GoTo()
     }
 </style>
 
-<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"" InfiniteScrolling=""true"">
+<BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval=""2500"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""img1.jpg"" />
@@ -422,7 +442,7 @@ private void GoTo()
 </style>
 
 <div>
-    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling=""true"">
+    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling>
         <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>سه</div></BitCarouselItem>

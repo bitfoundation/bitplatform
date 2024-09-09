@@ -36,14 +36,14 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
+    /// Hides the Dots indicator at the bottom of the BitCarousel.
     /// </summary>
-    [Parameter] public bool ShowDots { get; set; } = true;
+    [Parameter] public bool HideDots { get; set; }
 
     /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitCarousel.
+    /// Hides the Next/Prev buttons of the BitCarousel.
     /// </summary>
-    [Parameter] public bool ShowNextPrev { get; set; } = true;
+    [Parameter] public bool HideNextPrev { get; set; } = true;
 
     /// <summary>
     /// Number of items that is visible in the carousel
