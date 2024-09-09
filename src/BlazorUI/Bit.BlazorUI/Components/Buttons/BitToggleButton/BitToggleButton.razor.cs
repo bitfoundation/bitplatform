@@ -140,6 +140,15 @@ public partial class BitToggleButton : BitComponentBase
             BitColor.Warning => "bit-tgb-wrn",
             BitColor.SevereWarning => "bit-tgb-swr",
             BitColor.Error => "bit-tgb-err",
+            BitColor.PrimaryBackground => "bit-tgb-pbg",
+            BitColor.SecondaryBackground => "bit-tgb-sbg",
+            BitColor.TertiaryBackground => "bit-tgb-tbg",
+            BitColor.PrimaryForeground => "bit-tgb-pfg",
+            BitColor.SecondaryForeground => "bit-tgb-sfg",
+            BitColor.TertiaryForeground => "bit-tgb-tfg",
+            BitColor.PrimaryBorder => "bit-tgb-pbr",
+            BitColor.SecondaryBorder => "bit-tgb-sbr",
+            BitColor.TertiaryBorder => "bit-tgb-tbr",
             _ => "bit-tgb-pri"
         });
 
