@@ -15,6 +15,13 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "AutoShift",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables auto shifting the indexes while clearing the inputs using Delete or Backspace.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitOtpInputClassStyles?",
             DefaultValue = "null",
@@ -230,7 +237,8 @@ public partial class BitOtpInputDemo
 <BitOtpInput />
 <BitOtpInput Length=""4"" />
 <BitOtpInput IsEnabled=""false"" />
-<BitOtpInput AutoFocus=""true"" />";
+<BitOtpInput AutoShift />
+<BitOtpInput AutoFocus />";
 
     private readonly string example2RazorCode = @"
 <BitOtpInput Type=""BitInputType.Text"" />
