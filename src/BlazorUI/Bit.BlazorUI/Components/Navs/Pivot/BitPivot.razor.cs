@@ -204,12 +204,31 @@ public partial class BitPivot : BitComponentBase
 
     private string GetSelectedItemStyle()
     {
-        return _selectedItem?.Visibility switch
-        {
-            BitVisibility.Collapsed => "visibility:hidden",
-            BitVisibility.Hidden => "display:none",
-            _ => string.Empty
-        };
+        List<string?> list =
+        [
+            _selectedItem?.Visibility switch
+            {
+                BitVisibility.Collapsed => "visibility:hidden",
+                BitVisibility.Hidden => "display:none",
+                _ => string.Empty
+            },
+            Styles?.Body,
+            _selectedItem?.BodyStyle
+        ];
+
+        return string.Join(';', list.Where(s => s.HasValue()));
+    }
+
+    private string GetSelectedItemClass()
+    {
+        List<string?> list =
+        [
+            (_selectedItem?.IsEnabled is false) ? "disabled" : string.Empty,
+            Classes?.Body,
+            _selectedItem?.BodyClass
+        ];
+
+        return string.Join(' ', list.Where(s => s.HasValue()));
     }
 
     private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
