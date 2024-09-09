@@ -7,11 +7,12 @@
     box-shadow: none;
     font-weight: 400;
     gap: spacing(1.25);
+    width: fit-content;
     position: relative;
     flex-direction: row;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-otp-fontsize);
 
     &.bit-dis {
         .bit-otp-inp {
@@ -31,16 +32,16 @@
 .bit-otp-inp {
     display: flex;
     cursor: pointer;
+    font-size: inherit;
     text-align: center;
     align-items: center;
-    width: spacing(3.75);
-    height: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
     -moz-appearance: textfield;
-    border-radius: $shp-border-radius;
+    width: var(--bit-otp-size);
+    height: var(--bit-otp-size);
     background-color: $clr-bg-pri;
+    border-radius: $shp-border-radius;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &::-webkit-inner-spin-button,
@@ -64,4 +65,20 @@
 
 .bit-otp-vrt.bit-otp-rvs {
     flex-direction: column-reverse;
+}
+
+
+.bit-otp-sm {
+    --bit-otp-size: #{spacing(3.0)};
+    --bit-otp-fontsize: #{spacing(1.5)};
+}
+
+.bit-otp-md {
+    --bit-otp-size: #{spacing(3.75)};
+    --bit-otp-fontsize: #{spacing(1.75)};
+}
+
+.bit-otp-lg {
+    --bit-otp-size: #{spacing(4.5)};
+    --bit-otp-fontsize: #{spacing(2.0)};
 }
