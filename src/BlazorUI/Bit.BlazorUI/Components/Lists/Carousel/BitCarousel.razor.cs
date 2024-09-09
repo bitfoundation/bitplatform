@@ -26,34 +26,9 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
-    [Parameter] public bool InfiniteScrolling { get; set; }
-
-    /// <summary>
-    /// Items of the carousel.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
-    /// </summary>
-    [Parameter] public bool ShowDots { get; set; } = true;
-
-    /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitCarousel.
-    /// </summary>
-    [Parameter] public bool ShowNextPrev { get; set; } = true;
-
-    /// <summary>
-    /// Number of items that is visible in the carousel
-    /// </summary>
-    [Parameter] public int VisibleItemsCount { get; set; } = 1;
-
-    /// <summary>
-    /// Number of items that is going to be changed on navigation
-    /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
@@ -66,27 +41,61 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     [Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
-    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// Items of the carousel.
     /// </summary>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Hides the Dots indicator at the bottom of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool HideDots { get; set; }
+
+    /// <summary>
+    /// Hides the Next/Prev buttons of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool HideNextPrev { get; set; }
+
+    /// <summary>
+    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    /// </summary>
+    [Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
     /// The event that will be called on carousel page navigation.
     /// </summary>
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
+    /// <summary>
+    /// Number of items that is going to be changed on navigation.
+    /// </summary>
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// Number of items that is visible in the carousel.
+    /// </summary>
+    [Parameter] public int VisibleItemsCount { get; set; } = 1;
 
 
-    public async Task GoPrev()
-    {
-        await Prev();
-    }
 
+    /// <summary>
+    /// Navigates to the next carousel item.
+    /// </summary>
     public async Task GoNext()
     {
         await Next();
     }
 
+    /// <summary>
+    /// Navigates to the previous carousel item.
+    /// </summary>
+    public async Task GoPrev()
+    {
+        await Prev();
+    }
+
+    /// <summary>
+    /// Navigates to the given carousel item index.
+    /// </summary>
     public async Task GoTo(int index)
     {
         await GotoPage(index - 1);
