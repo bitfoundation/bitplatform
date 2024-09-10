@@ -294,7 +294,7 @@ public class BitImageTests : BunitTestContext
 
         if (alt.HasValue())
         {
-            component.MarkupMatches(@$"<div alt=""{alt}"" class=""bit-img bit-img-fde"" id:ignore><img class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
+            component.MarkupMatches(@$"<div class=""bit-img bit-img-fde"" id:ignore><img alt=""{alt}"" class=""bit-img-img bit-img-por bit-img-vis"" /></div>");
         }
         else
         {
