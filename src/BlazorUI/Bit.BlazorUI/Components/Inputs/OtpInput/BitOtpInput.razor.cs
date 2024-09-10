@@ -72,6 +72,12 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
+    /// The size of the inputs.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
@@ -122,6 +128,14 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-otp-sm",
+            BitSize.Medium => "bit-otp-md",
+            BitSize.Large => "bit-otp-lg",
+            _ => "bit-otp-md"
+        });
 
         ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);
     }

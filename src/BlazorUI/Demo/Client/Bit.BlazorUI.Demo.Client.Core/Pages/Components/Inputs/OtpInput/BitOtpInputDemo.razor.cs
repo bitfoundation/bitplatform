@@ -81,6 +81,15 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the inputs.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitOtpInputClassStyles?",
             DefaultValue = "null",
@@ -105,6 +114,7 @@ public partial class BitOtpInputDemo
             Description = "Defines whether to render inputs vertically.",
         },
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -112,8 +122,8 @@ public partial class BitOtpInputDemo
             Id = "class-styles",
             Title = "BitOtpInputClassStyles",
             Description = "",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -135,11 +145,40 @@ public partial class BitOtpInputDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the focused input in otp input.",
                 }
-            }
+            ]
         }
     ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
+                }
+            ]
+        },
         new()
         {
             Id = "input-type-enum",
@@ -185,6 +224,7 @@ public partial class BitOtpInputDemo
             ]
         }
     ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -235,8 +275,8 @@ public partial class BitOtpInputDemo
 
     private readonly string example1RazorCode = @"
 <BitOtpInput />
-<BitOtpInput Length=""4"" />
 <BitOtpInput IsEnabled=""false"" />
+<BitOtpInput Length=""4"" />
 <BitOtpInput AutoShift />
 <BitOtpInput AutoFocus />";
 
@@ -252,6 +292,84 @@ public partial class BitOtpInputDemo
 <BitOtpInput Vertical Reversed />";
 
     private readonly string example4RazorCode = @"
+<BitOtpInput Value=""@oneWayValue"" />
+<BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+
+<BitOtpInput @bind-Value=""twoWayValue"" />
+<BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
+    private readonly string example4CsharpCode = @"
+private string? oneWayValue;
+private string? twoWayValue;";
+
+    private readonly string example5RazorCode = @"
+<BitOtpInput OnChange=""v => onChangeValue = v"" />
+<div>OnChange value: @onChangeValue</div>
+
+<BitOtpInput OnFill=""v => onFillValue = v"" />
+<div>OnFill value: @onFillValue</div>
+
+<BitOtpInput OnFocusIn=""args => onFocusInArgs = args"" />
+<div>Focus type: @onFocusInArgs?.Event.Type</div>
+<div>Input index: @onFocusInArgs?.Index</div>
+
+<BitOtpInput OnFocusOut=""args => onFocusOutArgs = args"" />
+<div>Focus type: @onFocusOutArgs?.Event.Type</div>
+<div>Input index: @onFocusOutArgs?.Index</div>
+
+<BitOtpInput OnInput=""args => onInputArgs = args"" />
+<div>Value: @onInputArgs?.Event.Value</div>
+<div>Input index: @onInputArgs?.Index</div>
+
+<BitOtpInput OnKeyDown=""args => onKeyDownArgs = args"" />
+<div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
+<div>Input index: @onKeyDownArgs?.Index</div>
+
+<BitOtpInput OnPaste=""args => onPasteArgs = args"" />
+<div>Focus type: @onPasteArgs?.Event.Type</div>
+<div>Input index: @onPasteArgs?.Index</div>";
+    private readonly string example5CsharpCode = @"
+private string? onChangeValue;
+private string? onFillValue;
+private (FocusEventArgs Event, int Index)? onFocusInArgs;
+private (FocusEventArgs Event, int Index)? onFocusOutArgs;
+private (ChangeEventArgs Event, int Index)? onInputArgs;
+private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
+private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .validation-message {
+        color: red;
+    }
+</style>
+
+<EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
+    <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
+
+    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example6CsharpCode = @"
+public class ValidationOtpInputModel
+{
+    [Required(ErrorMessage = ""The OTP value is required."")]
+    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
+    public string OtpValue { get; set; }
+}
+
+private ValidationOtpInputModel validationOtpInputModel = new();
+
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
+
+    private readonly string example7RazorCode = @"
+<BitOtpInput Size=""BitSize.Small"" />
+<BitOtpInput Size=""BitSize.Medium"" />
+<BitOtpInput Size=""BitSize.Large"" />";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -294,80 +412,7 @@ public partial class BitOtpInputDemo
                                 Input = ""custom-input"",
                                 Focused = ""custom-focused"" })"" />";
 
-    private readonly string example5RazorCode = @"
-<BitOtpInput Value=""@oneWayValue"" />
-<BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
-
-<BitOtpInput @bind-Value=""twoWayValue"" />
-<BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example5CsharpCode = @"
-private string? oneWayValue;
-private string? twoWayValue;";
-
-    private readonly string example6RazorCode = @"
-<BitOtpInput OnChange=""v => onChangeValue = v"" />
-<div>OnChange value: @onChangeValue</div>
-
-<BitOtpInput OnFill=""v => onFillValue = v"" />
-<div>OnFill value: @onFillValue</div>
-
-<BitOtpInput OnFocusIn=""args => onFocusInArgs = args"" />
-<div>Focus type: @onFocusInArgs?.Event.Type</div>
-<div>Input index: @onFocusInArgs?.Index</div>
-
-<BitOtpInput OnFocusOut=""args => onFocusOutArgs = args"" />
-<div>Focus type: @onFocusOutArgs?.Event.Type</div>
-<div>Input index: @onFocusOutArgs?.Index</div>
-
-<BitOtpInput OnInput=""args => onInputArgs = args"" />
-<div>Value: @onInputArgs?.Event.Value</div>
-<div>Input index: @onInputArgs?.Index</div>
-
-<BitOtpInput OnKeyDown=""args => onKeyDownArgs = args"" />
-<div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
-<div>Input index: @onKeyDownArgs?.Index</div>
-
-<BitOtpInput OnPaste=""args => onPasteArgs = args"" />
-<div>Focus type: @onPasteArgs?.Event.Type</div>
-<div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example6CsharpCode = @"
-private string? onChangeValue;
-private string? onFillValue;
-private (FocusEventArgs Event, int Index)? onFocusInArgs;
-private (FocusEventArgs Event, int Index)? onFocusOutArgs;
-private (ChangeEventArgs Event, int Index)? onInputArgs;
-private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
-private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
-
-    private readonly string example7RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-<EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-
-    <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
-    <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
-
-    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example7CsharpCode = @"
-public class ValidationOtpInputModel
-{
-    [Required(ErrorMessage = ""The OTP value is required."")]
-    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
-    public string OtpValue { get; set; }
-}
-
-private ValidationOtpInputModel validationOtpInputModel = new();
-
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitOtpInput Dir=""BitDir.Rtl"" />
 <BitOtpInput Reversed Dir=""BitDir.Rtl"" />
 <BitOtpInput Vertical Dir=""BitDir.Rtl"" />
