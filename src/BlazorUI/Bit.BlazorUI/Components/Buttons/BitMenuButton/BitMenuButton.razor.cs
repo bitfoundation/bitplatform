@@ -207,6 +207,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
             BitColor.Warning => "bit-mnb-wrn",
             BitColor.SevereWarning => "bit-mnb-swr",
             BitColor.Error => "bit-mnb-err",
+            BitColor.PrimaryBackground => "bit-mnb-pbg",
+            BitColor.SecondaryBackground => "bit-mnb-sbg",
+            BitColor.TertiaryBackground => "bit-mnb-tbg",
+            BitColor.PrimaryForeground => "bit-mnb-pfg",
+            BitColor.SecondaryForeground => "bit-mnb-sfg",
+            BitColor.TertiaryForeground => "bit-mnb-tfg",
+            BitColor.PrimaryBorder => "bit-mnb-pbr",
+            BitColor.SecondaryBorder => "bit-mnb-sbr",
+            BitColor.TertiaryBorder => "bit-mnb-tbr",
             _ => "bit-mnb-pri"
         });
 

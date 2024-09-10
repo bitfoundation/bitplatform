@@ -40,7 +40,34 @@ public partial class BitActionButtonDemo
 <BitActionButton Color=""BitColor.SevereWarning"">SevereWarning</BitActionButton>
 
 <BitActionButton Color=""BitColor.Error"" IconName=""@BitIconName.ColorSolid"">Error</BitActionButton>
-<BitActionButton Color=""BitColor.Error"">Error</BitActionButton>";
+<BitActionButton Color=""BitColor.Error"">Error</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryBackground"" IconName=""@BitIconName.ColorSolid"">PrimaryBackground</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryBackground"" IconName=""@BitIconName.ColorSolid"">SecondaryBackground</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.ColorSolid"">TertiaryBackground</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryForeground"" IconName=""@BitIconName.ColorSolid"">PrimaryForeground</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryForeground"" IconName=""@BitIconName.ColorSolid"">SecondaryForeground</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryForeground"" IconName=""@BitIconName.ColorSolid"">TertiaryForeground</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitActionButton>
+
+<BitActionButton Color=""BitColor.PrimaryBorder"" IconName=""@BitIconName.ColorSolid"">PrimaryBorder</BitActionButton>
+<BitActionButton Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitActionButton>
+
+<BitActionButton Color=""BitColor.SecondaryBorder"" IconName=""@BitIconName.ColorSolid"">SecondaryBorder</BitActionButton>
+<BitActionButton Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
+
+<BitActionButton Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.ColorSolid"">TertiaryBorder</BitActionButton>
+<BitActionButton Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
 
     private readonly string example4RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">Small</BitActionButton>
