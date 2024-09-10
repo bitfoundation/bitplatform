@@ -89,16 +89,16 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 </style>
 
 
-<BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
-
 <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 
+<BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
+
 
 <BitBreadcrumb Items=""BreadcrumbItems""
-               SelectedItemClass=""custom-selected-item"" />
+               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />
 
 <BitBreadcrumb Items=""BreadcrumbItems""
-               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
+               SelectedItemClass=""custom-selected-item"" />";
     private readonly string example4CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [

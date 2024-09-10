@@ -14,6 +14,8 @@
     </ComponentExampleBox>
     <ComponentExampleBox Title="Tag" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
+            <div>Render different HTML elements by setting the Element property of BitElement.</div>
+            <br />
             <BitElement Element="input" placeholder="Input" />
             <br /><br />
             <BitElement Element="a" href="https://bitplatform.dev/" target="_blank">Anchor (Link)</BitElement>
@@ -23,6 +25,8 @@
     </ComponentExampleBox>
     <ComponentExampleBox Title="Advanced" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
+            <div>Change the HTML tag dynamically using the Element property.</div>
+            <br />
             <BitElement Element="@elementTag"
                         placeholder="@elementTag"
                         target="_blank"

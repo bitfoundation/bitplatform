@@ -181,20 +181,19 @@ private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
 </style>
 
 
-<BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
-               NameSelectors=""nameSelectors"" />
-
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithStyle""
                NameSelectors=""nameSelectors"" />
 
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
+               NameSelectors=""nameSelectors"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
-               SelectedItemClass=""custom-selected-item"" />
+               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
-               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
+               SelectedItemClass=""custom-selected-item"" />";
     private readonly string example4CsharpCode = @"
 public class PageInfoModel
 {

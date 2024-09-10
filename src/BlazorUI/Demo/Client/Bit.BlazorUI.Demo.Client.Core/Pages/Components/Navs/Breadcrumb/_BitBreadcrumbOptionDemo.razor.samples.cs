@@ -107,28 +107,28 @@ public partial class _BitBreadcrumbOptionDemo
 
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Class=""custom-item"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" IsSelected />
 </BitBreadcrumb>
 
+<BitBreadcrumb TItem=""BitBreadcrumbOption"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Class=""custom-item"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Class=""custom-item"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Class=""custom-item"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Class=""custom-item"" IsSelected />
+</BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemClass=""custom-selected-item"">
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemClass=""custom-selected-item"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />

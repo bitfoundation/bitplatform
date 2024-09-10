@@ -398,6 +398,7 @@ public partial class BitDropdownDemo
             Description = "The template for items that have not yet been rendered in virtualization mode.",
         }
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()

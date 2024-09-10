@@ -98,33 +98,33 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Class & Style" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
         <br /><br />
         <div class="example-box">
             <div>
-                <div>Items Class</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
-                               NameSelectors="nameSelectors" />
-            </div>
-            <div>
                 <div>Items Style</div>
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
                                NameSelectors="nameSelectors" />
             </div>
-            <br />
             <div>
-                <div>Selected Item Class</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItems"
-                               NameSelectors="nameSelectors"
-                               SelectedItemClass="custom-selected-item" />
+                <div>Items Class</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
+                               NameSelectors="nameSelectors" />
+            </div>
+            <br />
             </div>
             <div>
                 <div>Selected Item Style</div>
                 <BitBreadcrumb Items="CustomBreadcrumbItems"
                                NameSelectors="nameSelectors"
                                SelectedItemStyle="color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" />
+            <div>
+                <div>Selected Item Class</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               SelectedItemClass="custom-selected-item" />
             </div>
         </div>
     </ExamplePreview>

@@ -128,7 +128,8 @@ private BitColorPicker colorPickerRef = default!;";
     }
 </style>
 
-<BitColorPicker ShowAlphaSlider Class=""custom-class"" />
 
-<BitColorPicker ShowAlphaSlider Style=""width: 250px; height: 150px;"" />";
+<BitColorPicker ShowAlphaSlider Style=""""width: 250px; height: 150px;"""" />
+
+<BitColorPicker ShowAlphaSlider Class=""""custom-class"""" />"";";
 }
