@@ -32,30 +32,10 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
 
 
-    ///// <summary>
-    ///// If enabled the swiper items will navigate in an infinite loop.
-    ///// </summary>
-    //[Parameter] public bool InfiniteScrolling { get; set; }
-
     /// <summary>
-    /// Items of the swiper.
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    ///// <summary>
-    ///// Shows or hides the Dots indicator at the bottom of the BitSwiper.
-    ///// </summary>
-    //[Parameter] public bool ShowDots { get; set; } = true;
-
-    /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitSwiper.
-    /// </summary>
-    [Parameter] public bool ShowNextPrev { get; set; } = true;
-
-    /// <summary>
-    /// Number of items that is going to be changed on navigation
-    /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     ///// <summary>
     ///// Enables/disables the auto scrolling of the slides.
@@ -68,16 +48,45 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     //[Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
-    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// Items of the swiper.
     /// </summary>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    ///// <summary>
+    ///// Hides the Dots indicator at the bottom of the BitSwiper.
+    ///// </summary>
+    //[Parameter] public bool HideDots { get; set; }
+
+    /// <summary>
+    /// Hides the Next/Prev buttons of the BitSwiper.
+    /// </summary>
+    [Parameter] public bool HideNextPrev { get; set; }
+
+    ///// <summary>
+    ///// If enabled the swiper items will navigate in an infinite loop.
+    ///// </summary>
+    //[Parameter] public bool InfiniteScrolling { get; set; }
+
+    /// <summary>
+    /// Number of items that is going to be changed on navigation.
+    /// </summary>
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
 
 
-    public async Task GoPrev() => await Go(false);
-
+    /// <summary>
+    /// Navigates to the next swiper item.
+    /// </summary>
     public async Task GoNext() => await Go(true);
 
+    /// <summary>
+    /// Navigates to the previous swiper item.
+    /// </summary>
+    public async Task GoPrev() => await Go(false);
+
+    /// <summary>
+    /// Navigates to the given swiper item index.
+    /// </summary>
     public async Task GoTo(int index) => await GotoPage(index - 1);
 
 
@@ -120,7 +129,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         _allItems.Add(item);
     }
 
-    internal void UnregisterItem(BitSwiperItem carouselItem) => _allItems.Remove(carouselItem);
+    internal void UnregisterItem(BitSwiperItem item) => _allItems.Remove(item);
 
 
 
