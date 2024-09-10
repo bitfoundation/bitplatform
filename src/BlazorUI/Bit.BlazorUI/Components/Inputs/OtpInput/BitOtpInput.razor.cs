@@ -278,8 +278,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = true;
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync((e, index));
     }
 
@@ -288,8 +286,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = false;
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync((e, index));
     }
 

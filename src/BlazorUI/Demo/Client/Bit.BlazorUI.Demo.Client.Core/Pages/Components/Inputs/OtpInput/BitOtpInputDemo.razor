@@ -45,7 +45,7 @@
             <BitOtpInput>
                 <LabelTemplate>
                     <BitStack Horizontal>
-                        <BitText Gutter>Custom label</BitText>
+                        <BitText Gutter><i>Custom label</i></BitText>
                         <BitSpacer />
                         <BitIcon IconName="@BitIconName.TemporaryAccessPass" />
                     </BitStack>
@@ -57,48 +57,37 @@
     <ComponentExampleBox Title="Type" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
             <div>Set different input types for the OTP input: text, number, and password.</div>
+            <br />
+            <BitOtpInput Label="Text" Type="BitInputType.Text" />
             <br /><br />
-            <div>Text</div><br />
-            <BitOtpInput Type="BitInputType.Text" />
-            <br /><br /><br />
-            <div>Number</div><br />
-            <BitOtpInput Type="BitInputType.Number" />
-            <br /><br /><br />
-            <div>Password</div><br />
-            <BitOtpInput Type="BitInputType.Password" />
+            <BitOtpInput Label="Number" Type="BitInputType.Number" />
+            <br /><br />
+            <BitOtpInput Label="Password" Type="BitInputType.Password" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Directions" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>Demonstrating various layout directions for BitOtpInput: default, reversed, vertical, and reversed vertical.</div>
+            <br />
+            <BitOtpInput Label="Default" />
             <br /><br />
-            <div>Default</div><br />
-            <BitOtpInput />
-            <br /><br /><br />
-            <div>Reversed</div><br />
-            <BitOtpInput Reversed />
-            <br /><br /><br />
-            <div>Vertical</div><br />
-            <BitOtpInput Vertical />
-            <br /><br /><br />
-            <div>Reversed Vertical</div><br />
-            <BitOtpInput Vertical Reversed />
+            <BitOtpInput Label="Reversed" Reversed />
+            <br /><br />
+            <BitOtpInput Label="Vertical" Vertical />
+            <br /><br />
+            <BitOtpInput Label="Reversed Vertical" Vertical Reversed />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div>Examples of one-way and two-way data binding with BitOtpInput.</div>
-            <br /><br />
-            <div>One-way</div><br />
-            <BitOtpInput Value="@oneWayValue" />
             <br />
+            <BitOtpInput Label="One-way" Value="@oneWayValue" />
             <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayValue" />
-            <br /><br /><br />
-            <div>Two-way</div><br />
-            <BitOtpInput @bind-Value="twoWayValue" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="Two-way" @bind-Value="twoWayValue" />
             <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayValue" />
         </ExamplePreview>
     </ComponentExampleBox>
@@ -106,44 +95,30 @@
     <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
             <div>Handle various events in BitOtpInput, including change, fill, focus, input, keydown, and paste events.</div>
-            <br /><br />
-            <div>OnChange</div><br />
-            <BitOtpInput OnChange="v => onChangeValue = v" />
             <br />
+            <BitOtpInput Label="OnChange" OnChange="v => onChangeValue = v" />
             <div>OnChange value: @onChangeValue</div>
-            <br /><br /><br />
-            <div>OnFill</div><br />
-            <BitOtpInput OnFill="v => onFillValue = v" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnFill" OnFill="v => onFillValue = v" />
             <div>OnFill value: @onFillValue</div>
-            <br /><br /><br />
-            <div>OnFocusIn</div><br />
-            <BitOtpInput OnFocusIn="args => onFocusInArgs = args" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnFocusIn" OnFocusIn="args => onFocusInArgs = args" />
             <div>Focus type: @onFocusInArgs?.Event.Type</div>
             <div>Input index: @onFocusInArgs?.Index</div>
-            <br /><br /><br />
-            <div>OnFocusOut</div><br />
-            <BitOtpInput OnFocusOut="args => onFocusOutArgs = args" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnFocusOut" OnFocusOut="args => onFocusOutArgs = args" />
             <div>Focus type: @onFocusOutArgs?.Event.Type</div>
             <div>Input index: @onFocusOutArgs?.Index</div>
-            <br /><br /><br />
-            <div>OnInput</div><br />
-            <BitOtpInput OnInput="args => onInputArgs = args" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnInput" OnInput="args => onInputArgs = args" />
             <div>Value: @onInputArgs?.Event.Value</div>
             <div>Input index: @onInputArgs?.Index</div>
-            <br /><br /><br />
-            <div>OnKeyDown</div><br />
-            <BitOtpInput OnKeyDown="args => onKeyDownArgs = args" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnKeyDown" OnKeyDown="args => onKeyDownArgs = args" />
             <div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
             <div>Input index: @onKeyDownArgs?.Index</div>
-            <br /><br /><br />
-            <div>OnPaste</div><br />
-            <BitOtpInput OnPaste="args => onPasteArgs = args" />
-            <br />
+            <br /><br />
+            <BitOtpInput Label="OnPaste" OnPaste="args => onPasteArgs = args" />
             <div>Focus type: @onPasteArgs?.Event.Type</div>
             <div>Input index: @onPasteArgs?.Index</div>
         </ExamplePreview>
@@ -153,41 +128,39 @@
         <ExamplePreview>
             <div>Use data annotations to validate the OTP input component in a form submission scenario.</div>
             <br /><br />
-            @if (formIsValidSubmit is false)
-            {
-                <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
+            <div>
+                @if (formIsValidSubmit is false)
+                {
+                    <EditForm Model="validationOtpInputModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                        <DataAnnotationsValidator />
 
-                    <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
-                    <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
+                        <BitOtpInput Length="6" @bind-Value="validationOtpInputModel.OtpValue" />
+                        <ValidationMessage For="() => validationOtpInputModel.OtpValue" />
 
-                    <br />
+                        <br />
 
-                    <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
-                </EditForm>
-            }
-            else
-            {
-                <BitMessage Color="BitColor.Success">
-                    The form submitted successfully.
-                </BitMessage>
-            }
+                        <BitButton Style="margin-top: 10px;" ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                }
+                else
+                {
+                    <BitMessage Color="BitColor.Success">
+                        The form submitted successfully.
+                    </BitMessage>
+                }
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Size" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>Varying sizes for inputs tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+            <br />
+            <BitOtpInput Label="Small" Size="BitSize.Small" />
             <br /><br />
-            <div>Small</div><br />
-            <BitOtpInput Size="BitSize.Small" />
-            <br /><br /><br />
-            <div>Medium</div><br />
-            <BitOtpInput Size="BitSize.Medium" />
-            <br /><br /><br />
-            <div>Large</div><br />
-            <BitOtpInput Size="BitSize.Large" />
-            <br /><br /><br />
+            <BitOtpInput Label="Medium" Size="BitSize.Medium" />
+            <br /><br />
+            <BitOtpInput Label="Large" Size="BitSize.Large" />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -214,19 +187,11 @@
     <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div>Use the BitOtpInput component in right-to-left (RTL).</div>
-            <br /><br />
+            <br />
             <div dir="rtl">
-                <div>Default</div><br />
-                <BitOtpInput Dir="BitDir.Rtl" />
-                <br /><br /><br />
-                <div>Reversed</div><br />
-                <BitOtpInput Reversed Dir="BitDir.Rtl" />
-                <br /><br /><br />
-                <div>Vertical</div><br />
-                <BitOtpInput Vertical Dir="BitDir.Rtl" />
-                <br /><br /><br />
-                <div>Reversed Vertical</div><br />
-                <BitOtpInput Vertical Reversed Dir="BitDir.Rtl" />
+                <BitOtpInput Label="Default" Dir="BitDir.Rtl" />
+                <br /><br />
+                <BitOtpInput Label="Reversed" Reversed Dir="BitDir.Rtl" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

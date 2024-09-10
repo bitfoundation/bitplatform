@@ -28,7 +28,7 @@
         var inputType = GetInputType();
         var inputMode = GetInputMode();
     }
-    <div class="bit-otp-iwr">
+    <div style="@Styles?.InputsWrapper" class="bit-otp-iwr @Classes?.InputsWrapper">
         @for (var i = 0; i < Length; i++)
         {
             int index = i;

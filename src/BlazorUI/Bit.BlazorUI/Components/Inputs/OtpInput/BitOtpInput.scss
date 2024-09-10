@@ -22,7 +22,7 @@
     &.bit-inv {
         .bit-otp-inp {
             outline: none;
-            border: spacing(0.25) $shp-border-style $clr-err;
+            border-color: $clr-err;
         }
     }
 }
@@ -42,6 +42,7 @@
     display: flex;
     gap: spacing(1.25);
     box-sizing: border-box;
+    flex-direction: var(--bit-otp-iwr-flexdirection);
 }
 
 .bit-otp-inp {
@@ -71,15 +72,15 @@
 }
 
 .bit-otp-vrt {
-    flex-direction: column;
+    --bit-otp-iwr-flexdirection: column;
 }
 
 .bit-otp-rvs {
-    flex-direction: row-reverse;
+    --bit-otp-iwr-flexdirection: row-reverse;
 }
 
 .bit-otp-vrt.bit-otp-rvs {
-    flex-direction: column-reverse;
+    --bit-otp-iwr-flexdirection: column-reverse;
 }
 
 
