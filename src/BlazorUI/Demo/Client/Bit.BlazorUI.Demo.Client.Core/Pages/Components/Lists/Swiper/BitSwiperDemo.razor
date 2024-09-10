@@ -7,298 +7,81 @@
 <ComponentDemo ComponentName="Swiper"
                ComponentDescription="Swipers (touch slider) let people show their slides in a swiping row."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic Swiper" RazorCode="@example1RazorCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>
+                <BitSwiper>
+                    @for (int i = 1; i <= 32; i++)
+                    {
+                        var index = i;
+                        var imageIndex = (index - 1) % 4 + 1;
+                        <BitSwiperItem Class="item">
+                            <div class="number">Item @index</div>
+                            <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        </BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="ScrollItemsCount" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>Configure BitSwiper to scroll multiple items at once.</div>
+            <br />
             <div>
                 <BitSwiper ScrollItemsCount="2">
-                    <BitSwiperItem Class="item">
-                        <div class="number">1</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">2</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">3</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">4</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">5</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">6</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">7</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">8</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">9</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">10</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">11</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">12</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">13</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">14</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">15</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">16</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">17</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">18</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">19</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">20</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">21</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">22</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">23</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">24</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">25</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">26</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">27</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">28</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">29</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">30</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">31</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">32</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
+                    @for (int i = 1; i <= 32; i++)
+                    {
+                        var index = i;
+                        var imageIndex = (index - 1) % 4 + 1;
+                        <BitSwiperItem Class="item">
+                            <div class="number">Item @index</div>
+                            <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        </BitSwiperItem>
+                    }
                 </BitSwiper>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL Swiper" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="HideNextPrev" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
+            <div>Use BitSwiper without showing the next and previous navigation buttons.</div>
+            <br />
+            <div>
+                <BitSwiper HideNextPrev ScrollItemsCount="2">
+                    @for (int i = 1; i <= 32; i++)
+                    {
+                        var index = i;
+                        var imageIndex = (index - 1) % 4 + 1;
+                        <BitSwiperItem Class="item">
+                            <div class="number">Item @index</div>
+                            <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        </BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>Use BitSwiper in right-to-left (RTL).</div>
+            <br />
             <div>
                 <BitSwiper Dir="BitDir.Rtl">
-                    <BitSwiperItem Class="item">
-                        <div class="number">یک</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">دو</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">سه</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">چهار</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">پنج</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">شش</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">هفت</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">هشت</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">نه</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">ده</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">11</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">12</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">13</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">14</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">15</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">16</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">17</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">18</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">19</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">20</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">21</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">22</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">23</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">24</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">25</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">26</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">27</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">28</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">29</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">30</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">31</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
-                    </BitSwiperItem>
-                    <BitSwiperItem Class="item">
-                        <div class="number">32</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
-                    </BitSwiperItem>
+                    @for (int i = 1; i <= 32; i++)
+                    {
+                        var index = i;
+                        var imageIndex = (index - 1) % 4 + 1;
+                        <BitSwiperItem Class="item">
+                            <div class="number">مورد @index</div>
+                            <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        </BitSwiperItem>
+                    }
                 </BitSwiper>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
 </ComponentDemo>
-
-@code {
-    //private int index;
-    //private BitSwiper swiper;
-
-    //private void GoNext()
-    //{
-    //    swiper.GoNext();
-    //}
-
-    //private void GoPrev()
-    //{
-    //    swiper.GoPrev();
-    //}
-
-    //private void GoTo()
-    //{
-    //    swiper.GoTo(index);
-    //}
-}
