@@ -31,6 +31,20 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Label displayed above the inputs.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template for the label displayed above the inputs.",
+        },
+        new()
+        {
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
@@ -130,6 +144,20 @@ public partial class BitOtpInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the root element of the otp input.",
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the label of the otp input.",
+                },
+                new()
+                {
+                    Name = "InputsWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper element of the inputs.",
                 },
                 new()
                 {
@@ -281,53 +309,66 @@ public partial class BitOtpInputDemo
 <BitOtpInput AutoFocus />";
 
     private readonly string example2RazorCode = @"
-<BitOtpInput Type=""BitInputType.Text"" />
-<BitOtpInput Type=""BitInputType.Number"" />
-<BitOtpInput Type=""BitInputType.Password"" />";
+<BitOtpInput Label=""OTP"" />
+
+<BitOtpInput>
+    <LabelTemplate>
+        <BitStack Horizontal>
+            <BitText Gutter><i>Custom label</i></BitText>
+            <BitSpacer />
+            <BitIcon IconName=""@BitIconName.TemporaryAccessPass"" />
+        </BitStack>
+    </LabelTemplate>
+</BitOtpInput>";
 
     private readonly string example3RazorCode = @"
-<BitOtpInput />
-<BitOtpInput Reversed />
-<BitOtpInput Vertical />
-<BitOtpInput Vertical Reversed />";
+<BitOtpInput Label=""Text"" Type=""BitInputType.Text"" />
+<BitOtpInput Label=""Number"" Type=""BitInputType.Number"" />
+<BitOtpInput Label=""Password"" Type=""BitInputType.Password"" />";
 
     private readonly string example4RazorCode = @"
-<BitOtpInput Value=""@oneWayValue"" />
+<BitOtpInput Label=""Default"" />
+<BitOtpInput Label=""Reversed"" Reversed />
+<BitOtpInput Label=""Vertical"" Vertical />
+<BitOtpInput Label=""Reversed Vertical"" Vertical Reversed />";
+
+    private readonly string example5RazorCode = @"
+<BitOtpInput Label=""One-way"" Value=""@oneWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
-<BitOtpInput @bind-Value=""twoWayValue"" />
+<BitOtpInput Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string? oneWayValue;
 private string? twoWayValue;";
 
-    private readonly string example5RazorCode = @"
-<BitOtpInput OnChange=""v => onChangeValue = v"" />
+    private readonly string example6RazorCode = @"
+<BitOtpInput Label=""OnChange"" OnChange=""v => onChangeValue = v"" />
 <div>OnChange value: @onChangeValue</div>
 
-<BitOtpInput OnFill=""v => onFillValue = v"" />
+<BitOtpInput Label=""OnFill"" OnFill=""v => onFillValue = v"" />
 <div>OnFill value: @onFillValue</div>
 
-<BitOtpInput OnFocusIn=""args => onFocusInArgs = args"" />
+<BitOtpInput Label=""OnFocusIn"" OnFocusIn=""args => onFocusInArgs = args"" />
 <div>Focus type: @onFocusInArgs?.Event.Type</div>
 <div>Input index: @onFocusInArgs?.Index</div>
 
-<BitOtpInput OnFocusOut=""args => onFocusOutArgs = args"" />
+<BitOtpInput Label=""OnFocusOut"" OnFocusOut=""args => onFocusOutArgs = args"" />
 <div>Focus type: @onFocusOutArgs?.Event.Type</div>
 <div>Input index: @onFocusOutArgs?.Index</div>
 
-<BitOtpInput OnInput=""args => onInputArgs = args"" />
+<BitOtpInput Label=""OnInput"" OnInput=""args => onInputArgs = args"" />
 <div>Value: @onInputArgs?.Event.Value</div>
 <div>Input index: @onInputArgs?.Index</div>
 
-<BitOtpInput OnKeyDown=""args => onKeyDownArgs = args"" />
+<BitOtpInput Label=""OnKeyDown"" OnKeyDown=""args => onKeyDownArgs = args"" />
 <div>Key & Code: [@onKeyDownArgs?.Event.Key] [@onKeyDownArgs?.Event.Code]</div>
 <div>Input index: @onKeyDownArgs?.Index</div>
 
-<BitOtpInput OnPaste=""args => onPasteArgs = args"" />
+<BitOtpInput Label=""OnPaste"" OnPaste=""args => onPasteArgs = args"" />
 <div>Focus type: @onPasteArgs?.Event.Type</div>
 <div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string? onChangeValue;
 private string? onFillValue;
 private (FocusEventArgs Event, int Index)? onFocusInArgs;
@@ -336,10 +377,11 @@ private (ChangeEventArgs Event, int Index)? onInputArgs;
 private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
 private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .validation-message {
         color: red;
+        font-size: 0.75rem;
     }
 </style>
 
@@ -351,7 +393,7 @@ private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""The OTP value is required."")]
@@ -364,12 +406,12 @@ private ValidationOtpInputModel validationOtpInputModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example7RazorCode = @"
-<BitOtpInput Size=""BitSize.Small"" />
-<BitOtpInput Size=""BitSize.Medium"" />
-<BitOtpInput Size=""BitSize.Large"" />";
-
     private readonly string example8RazorCode = @"
+<BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
+<BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
+<BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
+
+    private readonly string example9RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -412,9 +454,7 @@ private void HandleInvalidSubmit() { }";
                                 Input = ""custom-input"",
                                 Focused = ""custom-focused"" })"" />";
 
-    private readonly string example9RazorCode = @"
-<BitOtpInput Dir=""BitDir.Rtl"" />
-<BitOtpInput Reversed Dir=""BitDir.Rtl"" />
-<BitOtpInput Vertical Dir=""BitDir.Rtl"" />
-<BitOtpInput Vertical Reversed Dir=""BitDir.Rtl"" />";
+    private readonly string example10RazorCode = @"
+<BitOtpInput Label=""Default"" Dir=""BitDir.Rtl"" />
+<BitOtpInput Label=""Reversed"" Reversed Dir=""BitDir.Rtl"" />";
 }

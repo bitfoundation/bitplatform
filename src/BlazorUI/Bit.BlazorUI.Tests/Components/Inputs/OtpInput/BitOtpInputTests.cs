@@ -40,7 +40,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.Length, length);
         });
 
-        var bitOtpInput = com.Find(".bit-otp");
+        var bitOtpInput = com.Find(".bit-otp-iwr");
 
         Assert.AreEqual(length, bitOtpInput.Children.Length);
     }
