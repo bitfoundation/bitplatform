@@ -1,20 +1,18 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-otp {
-    margin: 0;
-    padding: 0;
     display: flex;
-    box-shadow: none;
-    font-weight: 400;
-    gap: spacing(1.25);
     width: fit-content;
-    position: relative;
-    flex-direction: row;
     box-sizing: border-box;
+    flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-otp-fontsize);
 
     &.bit-dis {
+        .bit-otp-lbl {
+            color: $clr-fg-dis;
+        }
+
         .bit-otp-inp {
             border-color: $clr-brd-dis;
             background-color: $clr-bg-dis;
@@ -27,6 +25,23 @@
             border: spacing(0.25) $shp-border-style $clr-err;
         }
     }
+}
+
+.bit-otp-lbl {
+    margin: 0;
+    display: block;
+    font-weight: 600;
+    color: $clr-fg-pri;
+    font-size: inherit;
+    box-sizing: border-box;
+    padding: spacing(0.625) 0;
+    overflow-wrap: break-word;
+}
+
+.bit-otp-iwr {
+    display: flex;
+    gap: spacing(1.25);
+    box-sizing: border-box;
 }
 
 .bit-otp-inp {

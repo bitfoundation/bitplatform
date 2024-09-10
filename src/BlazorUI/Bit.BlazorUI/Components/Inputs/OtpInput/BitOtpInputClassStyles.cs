@@ -8,6 +8,11 @@ public class BitOtpInputClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the label of the otp input.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for each input in otp input.
     /// </summary>
     public string? Input { get; set; }

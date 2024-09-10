@@ -5,8 +5,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 {
-    private bool[] _inputFocusStates = default!;
+    private string _labelId = default!;
+    private string?[] _inputIds = default!;
     private string?[] _inputValues = default!;
+    private bool[] _inputFocusStates = default!;
     private ElementReference[] _inputRefs = default!;
     private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
 
@@ -30,6 +32,16 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     /// Custom CSS classes for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Label displayed above the inputs.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom template for the label displayed above the inputs.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Length of the OTP or number of the inputs.
@@ -147,6 +159,9 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
     protected override void OnInitialized()
     {
+        _labelId = $"BitOtpInput-{UniqueId}-label";
+        _inputIds = Enumerable.Range(0, Length).Select(i => $"BitOtpInput-{UniqueId}-input-{i}").ToArray();
+
         _inputRefs = new ElementReference[Length];
 
         _inputValues = new string[Length];

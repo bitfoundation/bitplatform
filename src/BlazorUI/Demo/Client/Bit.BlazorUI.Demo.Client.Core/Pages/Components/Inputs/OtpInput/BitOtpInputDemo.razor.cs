@@ -31,6 +31,20 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Label displayed above the inputs.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template for the label displayed above the inputs.",
+        },
+        new()
+        {
             Name = "Length",
             Type = "int",
             DefaultValue = "5",
@@ -281,27 +295,40 @@ public partial class BitOtpInputDemo
 <BitOtpInput AutoFocus />";
 
     private readonly string example2RazorCode = @"
+<BitOtpInput Label=""OTP"" />
+
+<BitOtpInput>
+    <LabelTemplate>
+        <BitStack Horizontal>
+            <BitText Gutter>Custom label</BitText>
+            <BitSpacer />
+            <BitIcon IconName=""@BitIconName.TemporaryAccessPass"" />
+        </BitStack>
+    </LabelTemplate>
+</BitOtpInput>";
+
+    private readonly string example3RazorCode = @"
 <BitOtpInput Type=""BitInputType.Text"" />
 <BitOtpInput Type=""BitInputType.Number"" />
 <BitOtpInput Type=""BitInputType.Password"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitOtpInput />
 <BitOtpInput Reversed />
 <BitOtpInput Vertical />
 <BitOtpInput Vertical Reversed />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitOtpInput Value=""@oneWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
 <BitOtpInput @bind-Value=""twoWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string? oneWayValue;
 private string? twoWayValue;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitOtpInput OnChange=""v => onChangeValue = v"" />
 <div>OnChange value: @onChangeValue</div>
 
@@ -327,7 +354,7 @@ private string? twoWayValue;";
 <BitOtpInput OnPaste=""args => onPasteArgs = args"" />
 <div>Focus type: @onPasteArgs?.Event.Type</div>
 <div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string? onChangeValue;
 private string? onFillValue;
 private (FocusEventArgs Event, int Index)? onFocusInArgs;
@@ -336,7 +363,7 @@ private (ChangeEventArgs Event, int Index)? onInputArgs;
 private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
 private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -351,7 +378,7 @@ private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""The OTP value is required."")]
@@ -364,12 +391,12 @@ private ValidationOtpInputModel validationOtpInputModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitOtpInput Size=""BitSize.Small"" />
 <BitOtpInput Size=""BitSize.Medium"" />
 <BitOtpInput Size=""BitSize.Large"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -412,7 +439,7 @@ private void HandleInvalidSubmit() { }";
                                 Input = ""custom-input"",
                                 Focused = ""custom-focused"" })"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitOtpInput Dir=""BitDir.Rtl"" />
 <BitOtpInput Reversed Dir=""BitDir.Rtl"" />
 <BitOtpInput Vertical Dir=""BitDir.Rtl"" />
