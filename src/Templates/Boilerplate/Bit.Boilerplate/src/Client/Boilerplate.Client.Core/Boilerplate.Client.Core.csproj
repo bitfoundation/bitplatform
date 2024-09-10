@@ -16,18 +16,18 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.11.0-pre-06" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.11.0-pre-06" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.11.0-pre-06" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.11.0-pre-06" />
+        <PackageReference Include="Bit.Butil" Version="8.11.0-pre-07" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.11.0-pre-07" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.11.0-pre-07" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.11.0-pre-07" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.0-pre-06" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.0-pre-07" />
         <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-06" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-07" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-06" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-06" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-07" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-07" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
