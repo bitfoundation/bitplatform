@@ -168,19 +168,21 @@
         <ExamplePreview>
             <div>Explore styling and class customization for BitOtpInput, including component styles, custom classes, and detailed styles.</div>
             <br /><br />
-            <div>Component's Style & Class:</div><br />
-            <BitOtpInput Style="margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;" />
-            <br />
-            <BitOtpInput Class="custom-class" />
-            <br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitOtpInput Style="margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;" />
+                <br />
+                <BitOtpInput Class="custom-class" />
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div><br />
+                <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
                                            Input = "border-color: blueviolet;",
                                            Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
-            <br />
-            <BitOtpInput Classes="@(new() { Root = "custom-root",
+                <br />
+                <BitOtpInput Classes="@(new() { Root = "custom-root",
                                             Input = "custom-input",
                                             Focused = "custom-focused" })" />
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
