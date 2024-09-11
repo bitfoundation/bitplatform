@@ -873,6 +873,10 @@ private bool showMonthPickerAsOverlay;";
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 
     private readonly string example9RazorCode = @"
+<BitCalendar ShowTimePicker=""true"" HourStep=""2"" />
+<BitCalendar ShowTimePicker=""true"" MinuteStep=""15"" />";
+
+    private readonly string example10RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -891,7 +895,7 @@ private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class BitCalendarValidationModel
 {
     [Required]
@@ -903,10 +907,6 @@ private BitCalendarValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example10RazorCode = @"
-<BitCalendar Dir=""BitDir.Rtl"" />";
-
     private readonly string example11RazorCode = @"
-<BitCalendar ShowTimePicker=""true"" HourStep=""2"" />
-<BitCalendar ShowTimePicker=""true"" MinuteStep=""15"" />";
+<BitCalendar Dir=""BitDir.Rtl"" />";
 }
