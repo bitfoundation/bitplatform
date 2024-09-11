@@ -228,6 +228,45 @@ public partial class BitSnackBarDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers = 
+    [
+        new()
+        {
+            Name = "Show",
+            Type = "async Task Show(string title, string? body = \"\", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)",
+            DefaultValue = "",
+            Description = "Shows the snackbar.",
+        },
+        new()
+        {
+            Name = "Info",
+            Type = "Task Info(string title, string? body = \"\")",
+            DefaultValue = "",
+            Description = "Shows the snackbar with Info type.",
+        },
+        new()
+        {
+            Name = "Success",
+            Type = "Task Success(string title, string? body = \"\")",
+            DefaultValue = "",
+            Description = "Shows the snackbar with Success type.",
+        },
+        new()
+        {
+            Name = "Warning",
+            Type = "Task Warning(string title, string? body = \"\")",
+            DefaultValue = "",
+            Description = "Shows the snackbar with Warning type.",
+        },
+        new()
+        {
+            Name = "Error",
+            Type = "Task Error(string title, string? body = \"\")",
+            DefaultValue = "",
+            Description = "Shows the snackbar with Error type.",
+        }
+    ];
+
 
 
     private BitSnackBar basicRef = default!;
