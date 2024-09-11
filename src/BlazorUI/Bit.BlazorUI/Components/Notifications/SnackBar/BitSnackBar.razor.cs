@@ -56,7 +56,7 @@ public partial class BitSnackBar : BitComponentBase
 
 
 
-    public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
+    public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.Info, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
         {
