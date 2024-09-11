@@ -21,28 +21,31 @@
         <br /><br />
         <BitStack Horizontal Gap="1rem">
             <BitButton IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
+                       Size="BitSize.Small"
                        Variant="BitVariant.Text"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GoogleSignUp)"
+                       Color="BitColor.SecondaryBackground"
                        Title="@Localizer[AppStrings.GoogleSignUpButtonText]">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/icons/google-icon.svg" />
             </BitButton>
 
             <BitButton IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
+                       Size="BitSize.Small"
                        Variant="BitVariant.Text"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(GitHubSignUp)"
+                       Color="BitColor.SecondaryBackground"
                        Title="@Localizer[AppStrings.GitHubSignUpButtonText]">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/icons/github-icon.svg" />
             </BitButton>
 
             <BitButton IsLoading="isWaiting"
-                       Color="BitColor.Tertiary"
+                       Size="BitSize.Small"
                        Variant="BitVariant.Text"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(TwitterSignUp)"
+                       Color="BitColor.SecondaryBackground"
                        Title="@Localizer[AppStrings.TwitterSignUpButtonText]">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/icons/x-icon.svg" />
             </BitButton>
@@ -58,7 +61,7 @@
                     <br />
                     <div class="form-input-container">
                         <BitTextField @bind-Value="signUpModel.Email"
-                                      Type="BitTextFieldType.Email"
+                                      Type="BitInputType.Email"
                                       Label="@Localizer[nameof(AppStrings.Email)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                         <ValidationMessage For="@(() => signUpModel.Email)" />
@@ -68,7 +71,7 @@
                     <br />
                     <div class="form-input-container">
                         <BitTextField @bind-Value="signUpModel.PhoneNumber"
-                                      Type="BitTextFieldType.Tel"
+                                      Type="BitInputType.Tel"
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
@@ -78,7 +81,7 @@
             <div class="form-input-container">
                 <BitTextField @bind-Value="signUpModel.Password"
                               CanRevealPassword="true"
-                              Type="BitTextFieldType.Password"
+                              Type="BitInputType.Password"
                               Label="@Localizer[nameof(AppStrings.Password)]"
                               AutoComplete="@BitAutoCompleteValue.NewPassword"
                               Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
