@@ -402,8 +402,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
 
         GenerateCalendarData(dateTime.DateTime);
-
-        base.OnParametersSet();
     }
 
     private void SelectDate(int dayIndex, int weekIndex)
