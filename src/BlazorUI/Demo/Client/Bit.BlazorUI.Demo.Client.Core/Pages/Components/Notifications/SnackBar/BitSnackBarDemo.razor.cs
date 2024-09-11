@@ -233,7 +233,7 @@ public partial class BitSnackBarDemo
     private BitSnackBar basicRef = default!;
     private async Task OpenBasicSnackBar()
     {
-        await basicRef.Show("This is title", "This is body");
+        await basicRef.Info("This is title", "This is body");
     }
 
 
@@ -259,13 +259,13 @@ public partial class BitSnackBarDemo
 
 
     private BitDir direction;
+    private int basicSnackBarDismissSeconds = 3;
+    private bool basicSnackBarAutoDismiss = true;
     private BitSnackBar customizationRef = default!;
+    private string basicSnackBarBody = "This is body";
+    private string basicSnackBarTitle = "This is title";
     private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
     private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
-    private string basicSnackBarTitle = "This is title";
-    private string basicSnackBarBody = "This is body";
-    private bool basicSnackBarAutoDismiss = true;
-    private int basicSnackBarDismissSeconds = 3;
 
     private async Task OpenCustomizationSnackBar()
     {
@@ -280,22 +280,22 @@ public partial class BitSnackBarDemo
 
     private async Task OpenSnackBarStyle()
     {
-        await snackBarClassRef.Show("This is title", "This is body", cssStyle: "background-color: dodgerblue; border-radius: 0.5rem;", type: BitSnackBarType.None);
+        await snackBarClassRef.Show("This is title", "This is body", cssStyle: "background-color: dodgerblue; border-radius: 0.5rem;");
     }
 
     private async Task OpenSnackBarClass()
     {
-        await snackBarStyleRef.Show("This is title", "This is body", cssClass: "custom-class", type: BitSnackBarType.None);
+        await snackBarStyleRef.Show("This is title", "This is body", cssClass: "custom-class");
     }
 
     private async Task OpenSnackBarStyles()
     {
-        await snackBarStylesRef.Show("This is title", "This is body", type: BitSnackBarType.None);
+        await snackBarStylesRef.Show("This is title", "This is body");
     }
 
     private async Task OpenSnackBarClasses()
     {
-        await snackBarClassesRef.Show("This is title", "This is body", type: BitSnackBarType.None);
+        await snackBarClassesRef.Show("This is title", "This is body");
     }
 
 
@@ -307,7 +307,7 @@ public partial class BitSnackBarDemo
 private BitSnackBar basicRef = default!;
 private async Task OpenBasicSnackBar()
 {
-    await basicRef.Show(""This is title"", ""This is body"");
+    await basicRef.Info(""This is title"", ""This is body"");
 }";
 
     private readonly string example2RazorCode = @"
@@ -349,13 +349,13 @@ private async Task OpenBasicSnackBar()
 <BitButton OnClick=""OpenBasicSnackBar"">Show</BitButton>";
     private readonly string example2CsharpCode = @"
 private BitDir direction;
-private BitSnackBar basicSnackBarRef = default!;
+private int basicSnackBarDismissSeconds = 3;
+private bool basicSnackBarAutoDismiss = true;
+private BitSnackBar customizationRef = default!;
+private string basicSnackBarBody = ""This is body"";
+private string basicSnackBarTitle = ""This is title"";
 private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
 private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
-private string basicSnackBarTitle = ""This is title"";
-private string basicSnackBarBody = ""This is body"";
-private bool basicSnackBarAutoDismiss = true;
-private int basicSnackBarDismissSeconds = 3;
 
 private async Task OpenBasicSnackBar()
 {
@@ -390,11 +390,10 @@ private async Task OpenBasicSnackBar()
 </BitSnackBar>
 <BitButton OnClick=""OpenBodyTemplate"">Body Template</BitButton>";
     private readonly string example3CsharpCode = @"
-private BitSnackBar dismissIconNameRef = default!;
-private BitSnackBar titleTemplateRef = default!;
-private BitSnackBar bodyTemplateRef = default!;
-
 private string? bodyTemplateAnswer;
+private BitSnackBar bodyTemplateRef = default!;
+private BitSnackBar titleTemplateRef = default!;
+private BitSnackBar dismissIconNameRef = default!;
 
 private async Task OpenDismissIconName()
 {
@@ -451,21 +450,21 @@ private BitSnackBar snackBarClassesRef = default!;
 
 private async Task OpenSnackBarStyle()
 {
-    await snackBarClassRef.Show(""This is title"", ""This is body"", cssStyle: ""background-color: dodgerblue; border-radius: 0.5rem;"", type: BitSnackBarType.None);
+    await snackBarClassRef.Show(""This is title"", ""This is body"", cssStyle: ""background-color: dodgerblue; border-radius: 0.5rem;"");
 }
 
 private async Task OpenSnackBarClass()
 {
-    await snackBarStyleRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"", type: BitSnackBarType.None);
+    await snackBarStyleRef.Show(""This is title"", ""This is body"", cssClass: ""custom-class"");
 }
 
 private async Task OpenSnackBarStyles()
 {
-    await snackBarStylesRef.Show(""This is title"", ""This is body"", type: BitSnackBarType.None);
+    await snackBarStylesRef.Show(""This is title"", ""This is body"");
 }
 
 private async Task OpenSnackBarClasses()
 {
-    await snackBarClassesRef.Show(""This is title"", ""This is body"", type: BitSnackBarType.None);
+    await snackBarClassesRef.Show(""This is title"", ""This is body"");
 }";
 }
