@@ -23,7 +23,7 @@
 
     <ItemGroup>
         <PackageReference Include="QRCoder" Version="1.6.0" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.0.0" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageReference Include="FluentStorage" Version="5.5.1" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.2.5" />
@@ -45,7 +45,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.8" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.1.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
-        <PackageReference Include="Twilio" Version="7.2.3" />
+        <PackageReference Include="Twilio" Version="7.3.0" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
