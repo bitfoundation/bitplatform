@@ -37,7 +37,7 @@
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="emailModel.Email"
-                                              Type="BitTextFieldType.Email"
+                                              Type="BitInputType.Email"
                                               Label="@Localizer[nameof(AppStrings.Email)]"
                                               IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
@@ -46,7 +46,7 @@
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="emailModel.Token"
-                                              Type="BitTextFieldType.Number"
+                                              Type="BitInputType.Number"
                                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.EmailToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
@@ -105,7 +105,7 @@
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="phoneModel.PhoneNumber"
-                                              Type="BitTextFieldType.Tel"
+                                              Type="BitInputType.Tel"
                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                               IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
@@ -113,7 +113,7 @@
                             </div>
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="phoneModel.Token"
-                                              Type="BitTextFieldType.Number"
+                                              Type="BitInputType.Number"
                                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />

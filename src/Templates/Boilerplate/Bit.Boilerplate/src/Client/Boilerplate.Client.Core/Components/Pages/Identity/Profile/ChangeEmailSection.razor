@@ -34,7 +34,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="sendModel.Email"
-                                  Type="BitTextFieldType.Email"
+                                  Type="BitInputType.Email"
                                   Label="@Localizer[nameof(AppStrings.NewEmail)]"
                                   Placeholder="@Localizer[nameof(AppStrings.NewEmailPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.Email)" />
@@ -68,7 +68,7 @@
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Email"
                                   IsEnabled="isEmailUnavailable"
-                                  Type="BitTextFieldType.Email"
+                                  Type="BitInputType.Email"
                                   Label="@Localizer[nameof(AppStrings.Email)]"
                                   Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Email)" />
@@ -76,7 +76,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Token"
-                                  Type="BitTextFieldType.Number"
+                                  Type="BitInputType.Number"
                                   Label="@Localizer[nameof(AppStrings.EmailToken)]"
                                   Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
