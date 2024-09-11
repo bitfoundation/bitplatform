@@ -56,6 +56,9 @@ public partial class BitSnackBar : BitComponentBase
 
 
 
+    /// <summary>
+    /// Shows the snackbar.
+    /// </summary>
     public async Task Show(string title, string? body = "", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)
     {
         var item = new BitSnackBarItem
@@ -83,12 +86,24 @@ public partial class BitSnackBar : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Shows the snackbar with Info type.
+    /// </summary>
     public Task Info(string title, string? body = "") => Show(title, body, BitSnackBarType.Info);
 
+    /// <summary>
+    /// Shows the snackbar with Success type.
+    /// </summary>
     public Task Success(string title, string? body = "") => Show(title, body, BitSnackBarType.Success);
 
+    /// <summary>
+    /// Shows the snackbar with Warning type.
+    /// </summary>
     public Task Warning(string title, string? body = "") => Show(title, body, BitSnackBarType.Warning);
 
+    /// <summary>
+    /// Shows the snackbar with Error type.
+    /// </summary>
     public Task Error(string title, string? body = "") => Show(title, body, BitSnackBarType.Error);
 
 
