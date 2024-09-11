@@ -34,7 +34,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
-                                  Type="BitTextFieldType.Tel"
+                                  Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
@@ -68,7 +68,7 @@
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.PhoneNumber"
                                   IsEnabled="isPhoneNumberUnavailable"
-                                  Type="BitTextFieldType.Tel"
+                                  Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
@@ -76,7 +76,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Token"
-                                  Type="BitTextFieldType.Number"
+                                  Type="BitInputType.Number"
                                   Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
