@@ -31,7 +31,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.80" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.82" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
         <PackageReference Include="Velopack" Version="0.0.594" />
         <!--/+:msbuild-conditional:noEmit -->
