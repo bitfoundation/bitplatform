@@ -371,4 +371,24 @@ public class BitOverlayTests : BunitTestContext
 
         component.MarkupMatches(@$"<div class=""bit-ovl bit-ovl-opn"" id:ignore></div>");
     }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitOverlayShouldRespectOnClick(bool isEnabled)
+    {
+        int clickedValue = 0;
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnClick, () => clickedValue++);
+        });
+
+        var rootDiv = component.Find(".bit-ovl");
+        rootDiv.Click();
+
+        var expected = isEnabled ? 1 : 0;
+        Assert.AreEqual(expected, clickedValue);
+    }
 }
