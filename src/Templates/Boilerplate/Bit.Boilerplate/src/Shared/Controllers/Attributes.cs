@@ -45,13 +45,3 @@ public class NoRetryPolicyAttribute : Attribute
 {
 
 }
-
-/// <summary>
-/// Ensure the authorization header is not set for the action.
-/// <see cref="Services.HttpMessageHandlers.AuthDelegatingHandler" />
-/// </summary>
-[AttributeUsage(AttributeTargets.Method)]
-public class NoAuthorizeHeaderPolicyAttribute : Attribute
-{
-
-}

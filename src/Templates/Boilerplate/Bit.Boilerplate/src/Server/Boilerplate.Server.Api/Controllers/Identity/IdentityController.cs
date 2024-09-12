@@ -11,6 +11,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Twilio.Jwt.AccessToken;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -98,12 +99,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
+    public async Task<ActionResult<SignInResponseDto>> ConfirmEmail(ConfirmEmailRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Email!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        if (await userManager.IsEmailConfirmedAsync(user)) return;
+        var expired = (DateTimeOffset.Now - user.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
+
+        if (expired)
+            throw new BadRequestException();
 
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
@@ -127,6 +131,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp,{user.OtpRequestedOn?.ToUniversalTime()}"));
+
+        return await SignIn(new() { Email = request.Email, Otp = token }, cancellationToken);
     }
 
     [HttpPost]
@@ -142,15 +150,18 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpPost]
-    public async Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken)
+    public async Task<ActionResult<SignInResponseDto>> ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
+        var expired = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
+
+        if (expired)
+            throw new BadRequestException();
+
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
-
-        if (await userManager.IsPhoneNumberConfirmedAsync(user)) return;
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{request.PhoneNumber},{user.PhoneNumberTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
 
@@ -169,6 +180,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var updateResult = await userManager.UpdateAsync(user);
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp,{user.OtpRequestedOn?.ToUniversalTime()}"));
+
+        return await SignIn(new() { PhoneNumber = request.PhoneNumber, Otp = token }, cancellationToken);
     }
 
     [HttpPost]
@@ -180,7 +195,17 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var userSession = CreateUserSession(request.DeviceInfo);
 
-        var result = string.IsNullOrEmpty(request.Otp) is false
+        bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
+
+        if (isOtpSignIn)
+        {
+            var expired = (DateTimeOffset.Now - user.OtpRequestedOn) > AppSettings.Identity.OtpTokenLifetime;
+
+            if (expired)
+                throw new BadRequestException();
+        }
+
+        var result = isOtpSignIn
             ? await signInManager.OtpSignInAsync(user, request.Otp!)
             : await signInManager.PasswordSignInAsync(user!.UserName!, request.Password!, isPersistent: false, lockoutOnFailure: true);
 
@@ -198,6 +223,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
             else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
+                if (string.IsNullOrEmpty(request.Otp) is false)
+                {
+                    throw new BadRequestException();
+                }
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
             }
             else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
@@ -321,7 +350,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) - AppSettings.Identity.ResetPasswordTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForResetPasswordTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
@@ -368,7 +397,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.OtpRequestedOn) - AppSettings.Identity.OtpTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForOtpRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
@@ -399,6 +428,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
+        var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) > AppSettings.Identity.ResetPasswordTokenLifetime;
+
+        if (expired)
+            throw new BadRequestException();
+
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), (DateTimeOffset.UtcNow - user.LockoutEnd!).Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
@@ -427,7 +461,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     {
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
-        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.TwoFactorTokenRequestedOn) - AppSettings.Identity.TwoFactorTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForTwoFactorTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
@@ -587,7 +621,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)
     {
-        var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForEmailTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
@@ -607,7 +641,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
     private async Task SendConfirmPhoneToken(User user, CancellationToken cancellationToken)
     {
-        var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenRequestResendDelay;
+        var resendDelay = (DateTimeOffset.Now - user.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
             throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPhoneNumberTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);

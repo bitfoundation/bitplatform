@@ -79,7 +79,11 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await identityController.ConfirmEmail(new() { Email = emailModel.Email, Token = emailModel.Token }, CurrentCancellationToken);
+            var signInResponse =  await identityController.ConfirmEmail(new() { Email = emailModel.Email, Token = emailModel.Token }, CurrentCancellationToken);
+
+            await AuthenticationManager.SignIn(signInResponse, true);
+
+            NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 
             isEmailConfirmed = true;
         });
@@ -101,7 +105,11 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
+            var signInResponse =  await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
+
+            await AuthenticationManager.SignIn(signInResponse, true);
+
+            NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 
             isPhoneConfirmed = true;
         });
