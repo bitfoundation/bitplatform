@@ -207,6 +207,7 @@ public partial class BitFileUploadDemo
             Description = "URL of the server endpoint receiving the files."
         }
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -286,6 +287,7 @@ public partial class BitFileUploadDemo
             }
         }
     ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -355,10 +357,14 @@ public partial class BitFileUploadDemo
 
 
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IConfiguration _configuration { get; set; } = default!;
+
     private string onAllUploadsCompleteText = "No File";
     private string ChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
     private string NonChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string RemoveUrl => $"{_configuration.GetApiServerAddress()}FileUpload/RemoveFile";
+
     private BitFileUpload bitFileUpload = default!;
     private BitFileUpload bitFileUploadWithBrowseFile = default!;
 
@@ -409,14 +415,13 @@ public partial class BitFileUploadDemo
         return $"{uploadSize}KB / {totalSize}KB";
     }
 
-    private string GetUploadMessageStr(BitFileInfo file)
-        => file.Status switch
-        {
-            BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
-            BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
-            BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
-            _ => string.Empty,
-        };
+    private string GetUploadMessageStr(BitFileInfo file) => file.Status switch
+    {
+        BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
+        BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
+        BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
+        _ => string.Empty,
+    };
 
     private bool IsFileTypeNotAllowed(BitFileInfo file)
     {
@@ -432,8 +437,6 @@ public partial class BitFileUploadDemo
         await bitFileUploadWithBrowseFile.Browse();
     }
 
-    [Inject] private IJSRuntime _js { get; set; } = default!;
-    [Inject] private IConfiguration _configuration { get; set; } = default!;
 
 
     private readonly string example1RazorCode = @"
@@ -636,17 +639,17 @@ private string RemoveUrl = $""/Remove"";";
         font-size: 12px;
         color: #78787D;
     }
-
 </style>
 
+
 <BitFileUpload @ref=""bitFileUpload""
-                Label=""""
-                UploadUrl=""@NonChunkedUploadUrl""
-                RemoveUrl=""@RemoveUrl""
-                MaxSize=""1024 * 1024 * 2""
-                AllowedExtensions=""@(new List<string> { "".jpeg"", "".jpg"", "".png"", "".bpm"" })""
-                SuccessfulUploadMessage=""File upload succeeded""
-                NotAllowedExtensionErrorMessage=""File type not supported"">
+               Label=""@string.Empty""
+               UploadUrl=""@NonChunkedUploadUrl""
+               RemoveUrl=""@RemoveUrl""
+               MaxSize=""1024 * 1024 * 2""
+               AllowedExtensions=""@(new List<string> { "".jpeg"", "".jpg"", "".png"", "".bpm"" })""
+               SuccessfulUploadMessage=""File upload succeeded""
+               NotAllowedExtensionErrorMessage=""File type not supported"">
     <LabelTemplate>
         @if (FileUploadIsEmpty())
         {
@@ -690,7 +693,6 @@ private string RemoveUrl = $""/Remove"";";
                                 <i class=""bit-icon bit-icon--ChromeClose remove-ico"" @onclick=""HandleRemoveOnClick"" />
                             </div>
                         </div>
-
                         @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
                         {
                             var fileUploadPercent = GetFileUploadPercent(file);
@@ -719,28 +721,30 @@ private string RemoveUrl = $""/Remove"";";
     </FileViewTemplate>
 </BitFileUpload>
 
-<br />
-
 <BitButton OnClick=""HandleUploadOnClick"">Upload</BitButton>";
     private readonly string example9CsharpCode = @"
 [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
 private string NonChunkedUploadUrl => ""FileUpload/UploadNonChunkedFile"";
 private string RemoveUrl => $""FileUpload/RemoveFile"";
 
 private BitFileUpload bitFileUpload;
 private bool FileUploadIsEmpty() => !bitFileUpload.Files?.Any(f => f.Status != BitFileUploadStatus.Removed) ?? true;
+
 private async Task HandleUploadOnClick()
 {
     if (bitFileUpload.Files is null) return;
 
     await bitFileUpload.Upload();
 }
+
 private async Task HandleRemoveOnClick()
 {
     if (bitFileUpload.Files is null) return;
 
     await bitFileUpload.RemoveFile();
 }
+
 private static int GetFileUploadPercent(BitFileInfo file)
 {
     int uploadedPercent;
@@ -755,6 +759,7 @@ private static int GetFileUploadPercent(BitFileInfo file)
 
     return uploadedPercent;
 }
+
 private static string GetFileUploadSize(BitFileInfo file)
 {
     long totalSize = file.Size / 1024;
@@ -770,14 +775,15 @@ private static string GetFileUploadSize(BitFileInfo file)
 
     return $""{uploadSize}KB / {totalSize}KB"";
 }
-private string GetUploadMessageStr(BitFileInfo file)
-    => file.Status switch
-    {
-        BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
-        BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
-        BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
-        _ => string.Empty,
-    };
+
+private string GetUploadMessageStr(BitFileInfo file) => file.Status switch
+{
+    BitFileUploadStatus.Completed => bitFileUpload.SuccessfulUploadMessage,
+    BitFileUploadStatus.Failed => bitFileUpload.FailedUploadMessage,
+    BitFileUploadStatus.NotAllowed => IsFileTypeNotAllowed(file) ? bitFileUpload.NotAllowedExtensionErrorMessage : bitFileUpload.MaxSizeErrorMessage,
+    _ => string.Empty,
+};
+
 private bool IsFileTypeNotAllowed(BitFileInfo file)
 {
     if (bitFileUpload.Accept is not null) return false;
@@ -789,10 +795,12 @@ private bool IsFileTypeNotAllowed(BitFileInfo file)
 
     private readonly string example10RazorCode = @"
 <BitFileUpload @ref=""bitFileUploadWithBrowseFile""
-               Label=""""
+               Label=""@string.Empty""
                UploadUrl=""@NonChunkedUploadUrl""
                RemoveUrl=""@RemoveUrl""
-               MaxSize=""1024 * 1024 * 500"" />";
+               MaxSize=""1024 * 1024 * 500"" />
+
+<BitButton OnClick=""HandleBrowseFileOnClick"">Browse file</BitButton>";
     private readonly string example10CsharpCode = @"
 private string NonChunkedUploadUrl = ""/Upload"";
 private string RemoveUrl => ""/RemoveFile"";
