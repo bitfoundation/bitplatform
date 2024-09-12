@@ -11,7 +11,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Twilio.Jwt.AccessToken;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
