@@ -378,13 +378,11 @@ public class BitOverlayTests : BunitTestContext
     ]
     public void BitOverlayShouldRespectOnClick(bool isEnabled)
     {
-        var isOpen = true;
         int clickedValue = 0;
         var component = RenderComponent<BitOverlay>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, isEnabled);
             parameters.Add(p => p.OnClick, () => clickedValue++);
-            parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
         });
 
         var rootDiv = component.Find(".bit-ovl");
