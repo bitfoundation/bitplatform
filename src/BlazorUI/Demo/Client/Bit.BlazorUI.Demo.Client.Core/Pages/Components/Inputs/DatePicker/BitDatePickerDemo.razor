@@ -225,46 +225,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <ExamplePreview>
-            <div>Implement form validation with BitDatePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
-            <br />
-            <div class="example-content">
-                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                    <DataAnnotationsValidator />
-
-                    <BitDatePicker @bind-Value="validationModel.Date" />
-
-                    <ValidationMessage For="@(() => validationModel.Date)" />
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
-                               OnClick="() => { validationModel = new(); SuccessMessage=string.Empty; }">
-                        Reset
-                    </BitButton>
-                </EditForm>
-                <br />
-                @if (string.IsNullOrEmpty(SuccessMessage) is false)
-                {
-                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
-                }
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
-        <ExamplePreview>
-            <div>Use BitDatePicker in a right-to-left (RTL) layout.</div>
-            <br />
-            <div dir="rtl">
-                <div class="example-content">
-                    <BitDatePicker Dir="BitDir.Rtl" />
-                </div>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Hour/minute step" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="Hour/Minute step" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div>Adjust the increment step for hours and minutes when using the BitDatePicker's time selection feature.</div>
             <br />
@@ -280,7 +241,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Standalone" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="Standalone" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <div>Use the BitDatePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
             <br />
@@ -294,6 +255,45 @@
                 <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth Standalone />
                 <br /><br />
                 <BitDatePicker Label="TimePicker" ShowTimePicker Standalone />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <ExamplePreview>
+            <div>Implement form validation with BitDatePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
+            <br />
+            <div class="example-content">
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitDatePicker @bind-Value="validationModel.Date" />
+
+                    <ValidationMessage For="@(() => validationModel.Date)" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
+                               OnClick="() => { validationModel = new(); SuccessMessage = string.Empty; }">
+                        Reset
+                    </BitButton>
+                </EditForm>
+                <br />
+                @if (string.IsNullOrEmpty(SuccessMessage) is false)
+                {
+                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+                }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div>Use BitDatePicker in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <div class="example-content">
+                    <BitDatePicker Dir="BitDir.Rtl" />
+                </div>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
