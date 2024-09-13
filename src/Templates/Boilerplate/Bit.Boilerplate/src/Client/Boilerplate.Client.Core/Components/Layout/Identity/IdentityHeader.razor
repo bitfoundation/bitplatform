@@ -1,9 +1,9 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal Grows>
-        <BitLink>
-            <BitStack Horizontal>
+    <BitStack Horizontal Grows Gap="1rem">
+        <BitLink NoUnderline Href="@Urls.HomePage">
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                 <BitIcon IconName="@BitIconName.DecreaseIndentArrow" />
                 <BitText Typography="BitTypography.Body2">Back to home</BitText>
             </BitStack>
@@ -11,7 +11,11 @@
 
         <BitSpacer />
 
-        <BitButton IconName="@BitIconName.Sunny" IconOnly Variant="BitVariant.Text" />
+        <BitButton IconOnly
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Sunny"
+                   Color="BitColor.SecondaryBackground" />
+
         <BitDropdown @bind-Value="SelectedCulture"
                      FitWidth NoBorder Transparent Items="cultures"
                      OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
