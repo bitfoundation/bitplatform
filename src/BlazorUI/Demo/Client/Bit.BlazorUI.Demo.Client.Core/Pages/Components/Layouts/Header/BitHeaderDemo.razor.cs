@@ -42,7 +42,7 @@ public partial class BitHeaderDemo
                    ChevronDownIcon=""@BitIconName.More""
                    Variant=""BitVariant.Text""
                    title=""See more""
-                   Styles=""@(new() { OperatorButton = ""padding: 0.5rem; color: dodgerblue"" })"">
+                   Styles=""@(new() { OperatorButton = ""padding: 0.5rem;"" })"">
         <BitMenuButtonOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
         <BitMenuButtonOption Text=""About"" IconName=""@BitIconName.Info"" />
         <BitMenuButtonOption Text=""Feedback"" IconName=""@BitIconName.Feedback"" />
