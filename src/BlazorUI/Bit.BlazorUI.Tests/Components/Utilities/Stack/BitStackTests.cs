@@ -693,7 +693,6 @@ public class BitStackTests : BunitTestContext
         DataRow(false, true, false),
         DataRow(false, false, true),
         DataRow(false, false, false)
-
     ]
     public void BitStackShouldRespectFullAndFullWidthAndFullHeight(bool full, bool fullWidth, bool fullHeight)
     {
