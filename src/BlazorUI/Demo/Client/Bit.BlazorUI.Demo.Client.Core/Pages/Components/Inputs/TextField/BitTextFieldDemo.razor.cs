@@ -414,6 +414,7 @@ public partial class BitTextFieldDemo
     ];
 
 
+
     private string? oneWayValue;
     private string? twoWayValue;
     private string? onChangeValue;
@@ -457,13 +458,13 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Description"" Description=""This is Description"" />
 <BitTextField Label=""Required"" Required />
 <BitTextField Label=""MaxLength: 5"" MaxLength=""5"" />
-<BitTextField Label=""Auto focused"" AutoFocus=""true"" />";
+<BitTextField Label=""Auto focused"" AutoFocus />";
 
     private readonly string example2RazorCode = @"
-<BitTextField Label=""Basic"" IsUnderlined=""true"" />
-<BitTextField Label=""Placeholder"" IsUnderlined=""true"" Placeholder=""Enter a text..."" />
-<BitTextField Label=""Disabled"" IsUnderlined=""true"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" IsUnderlined=""true"" Required />";
+<BitTextField Label=""Basic"" IsUnderlined />
+<BitTextField Label=""Placeholder"" IsUnderlined Placeholder=""Enter a text..."" />
+<BitTextField Label=""Disabled"" IsUnderlined IsEnabled=""false"" />
+<BitTextField Label=""Required"" IsUnderlined Required />";
 
     private readonly string example3RazorCode = @"
 <BitTextField Label=""Basic"" Placeholder=""Enter a text..."" HasBorder=""false"" />
@@ -471,9 +472,9 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" Required />";
 
     private readonly string example4RazorCode = @"
-<BitTextField Label=""Resizable"" IsMultiline=""true"" />
-<BitTextField Label=""Unresizable (Fixed)"" IsMultiline=""true"" IsResizable=""false"" />
-<BitTextField Label=""Rows = 10"" IsMultiline=""true"" Rows=""10"" />";
+<BitTextField Label=""Resizable"" IsMultiline />
+<BitTextField Label=""Unresizable (Fixed)"" IsMultiline IsResizable=""false"" />
+<BitTextField Label=""Rows = 10"" IsMultiline Rows=""10"" />";
 
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />
@@ -512,7 +513,7 @@ public partial class BitTextFieldDemo
 
     private readonly string example8RazorCode = @"
 <BitTextField Label=""Password"" Type=""BitInputType.Password"" />
-<BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword=""true"" />";
+<BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword />";
 
     private readonly string example9RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
@@ -543,7 +544,7 @@ private string? debounceValue;
 private string? throttleValue;";
 
     private readonly string example10RazorCode = @"
-<BitTextField Label=""Trimmed"" IsTrimmed=""true"" @bind-Value=""trimmedValue"" />
+<BitTextField Label=""Trimmed"" IsTrimmed @bind-Value=""trimmedValue"" />
 <pre>[@trimmedValue]</pre>
 
 <BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
@@ -662,15 +663,15 @@ private string notTrimmedValue;";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
     private readonly string example11CsharpCode = @"
-private string? classesValue;
-";
+private string? classesValue;";
 
     private readonly string example12RazorCode = @"
-< style>
+<style>
     .validation-message {
         color: red;
     }
 </style>
+
 
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
