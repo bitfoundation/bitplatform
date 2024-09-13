@@ -30,23 +30,23 @@
                 <br />
                 <BitTextField Label="MaxLength: 5" MaxLength="5" />
                 <br />
-                <BitTextField Label="Auto focused" AutoFocus="true" />
+                <BitTextField Label="Auto focused" AutoFocus />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Underline" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Underlined" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div>Showcases the BitTextField with an underlined style, including variations with placeholders, disabled state, and required fields.</div>
             <br />
             <div class="example-box">
-                <BitTextField Label="Basic" IsUnderlined="true" />
+                <BitTextField Label="Basic" IsUnderlined />
                 <br />
-                <BitTextField Label="Placeholder" IsUnderlined="true" Placeholder="Enter a text..." />
+                <BitTextField Label="Placeholder" IsUnderlined Placeholder="Enter a text..." />
                 <br />
-                <BitTextField Label="Disabled" IsUnderlined="true" IsEnabled="false" />
+                <BitTextField Label="Disabled" IsUnderlined IsEnabled="false" />
                 <br />
-                <BitTextField Label="Required" IsUnderlined="true" Required />
+                <BitTextField Label="Required" IsUnderlined Required />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -70,11 +70,11 @@
             <div>Displays BitTextField in multiline mode with options for resizable and fixed sizes, as well as setting the number of rows.</div>
             <br />
             <div class="example-box">
-                <BitTextField Label="Resizable" IsMultiline="true" />
+                <BitTextField Label="Resizable" IsMultiline />
                 <br />
-                <BitTextField Label="Unresizable (Fixed)" IsMultiline="true" IsResizable="false" />
+                <BitTextField Label="Unresizable (Fixed)" IsMultiline IsResizable="false" />
                 <br />
-                <BitTextField Label="Rows = 10" IsMultiline="true" Rows="10" />
+                <BitTextField Label="Rows = 10" IsMultiline Rows="10" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -146,7 +146,7 @@
             <div class="example-box">
                 <BitTextField Label="Password" Type="BitInputType.Password" />
                 <br />
-                <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword="true" />
+                <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
@@ -184,7 +184,7 @@
             <div>Demonstrates various binding scenarios with BitTextField, including one-way, two-way, on-change events, and immediate, debounce, and throttle options.</div>
             <br />
             <div class="example-box">
-                <BitTextField Label="Trimmed" IsTrimmed="true" @bind-Value="trimmedValue" />
+                <BitTextField Label="Trimmed" IsTrimmed @bind-Value="trimmedValue" />
                 <br />
                 <pre>[@trimmedValue]</pre>
                 <br /><br /><br />
