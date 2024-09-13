@@ -5,7 +5,7 @@
         <BitLink>
             <BitStack Horizontal>
                 <BitIcon IconName="@BitIconName.DecreaseIndentArrow" />
-                <BitTypography Variant="BitTypographyVariant.Body2">Back to home</BitTypography>
+                <BitText Typography="BitTypography.Body2">Back to home</BitText>
             </BitStack>
         </BitLink>
 
@@ -13,8 +13,7 @@
 
         <BitButton IconName="@BitIconName.Sunny" IconOnly Variant="BitVariant.Text" />
         <BitDropdown @bind-Value="SelectedCulture"
-                     Class="culture-drp"
-                     Items="cultures"
+                     FitWidth NoBorder Transparent Items="cultures"
                      OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
     </BitStack>
 </header>

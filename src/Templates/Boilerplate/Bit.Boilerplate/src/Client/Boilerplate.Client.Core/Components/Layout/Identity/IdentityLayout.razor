@@ -1,15 +1,15 @@
 @inherits LayoutComponentBase
 
-<BitStack Style="width:100%;height:100%">
+<BitStack Full>
     <IdentityHeader />
 
-    <BitStack Horizontal Style="width:100%">
+    <BitStack Horizontal FullWidth>
         <main>
             @Body
         </main>
-        <BitStack Grows Style="height:100%"
-                  HorizontalAlign="BitStackAlignment.Center"
-                  VerticalAlign="BitStackAlignment.Center">
+        <BitStack Grows FullHeight
+                  HorizontalAlign="BitAlignment.Center"
+                  VerticalAlign="BitAlignment.Center">
             Admin Panel
         </BitStack>
     </BitStack>
