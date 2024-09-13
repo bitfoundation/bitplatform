@@ -171,7 +171,7 @@ public partial class BitSwiperDemo
         var imageIndex = (index - 1) % 4 + 1;
         <BitSwiperItem Class=""item"">
             <div class=""number"">مورد @index</div>
-            <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg"" />
+            <img class=""image"" src=""img@(imageIndex).jpg"" />
         </BitSwiperItem>
     }
 </BitSwiper>";
