@@ -167,8 +167,14 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user!, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ProfilePage}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+        var token = await userManager.GenerateUserTokenAsync(
+            user,
+            TokenOptions.DefaultPhoneProvider,
+            FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
+
+        var link = new Uri(
+            HttpContext.Request.GetWebClientUrl(),
+            $"{Urls.ProfilePage}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
@@ -183,7 +189,11 @@ public partial class UserController : AppControllerBase, IUserController
         if (expired)
             throw new BadRequestException();
 
-        var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"), request.Token!);
+        var tokenIsValid = await userManager.VerifyUserTokenAsync(
+            user,
+            TokenOptions.DefaultPhoneProvider,
+            FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"),
+            request.Token!);
 
         if (tokenIsValid is false)
             throw new BadRequestException();
@@ -197,6 +207,7 @@ public partial class UserController : AppControllerBase, IUserController
         await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
         user.EmailTokenRequestedOn = null; // invalidates email token
         var updateResult = await userManager.UpdateAsync(user);
+
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
@@ -213,6 +224,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         user.PhoneNumberTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
+
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
@@ -225,6 +237,11 @@ public partial class UserController : AppControllerBase, IUserController
     public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var expired = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
+
+        if (expired)
+            throw new BadRequestException();
 
         var result = await userManager.ChangePhoneNumberAsync(user!, request.PhoneNumber!, request.Token!);
 
