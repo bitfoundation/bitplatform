@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Text;
 using System;
 using Bunit;
 
@@ -588,5 +589,132 @@ public class BitStackTests : BunitTestContext
                 component.MarkupMatches(@$"<div style=""flex-direction:{fd};align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
             }
         }
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFull(bool full)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Full, full);
+        });
+
+        var style = full ? "width:100%;height:100%;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFullChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Full, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}width:100%;height:100%;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFullWidth(bool fullWidth)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        var style = fullWidth ? "width:100%;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFullWidthChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}width:100%;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFullHeight(bool fullHeight)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FullHeight, fullHeight);
+        });
+
+        var style = fullHeight ? "height:100%;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFullHeightChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FullHeight, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}height:100%;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true, true, true),
+        DataRow(true, true, false),
+        DataRow(true, false, true),
+        DataRow(true, false, false),
+        DataRow(false, true, true),
+        DataRow(false, true, false),
+        DataRow(false, false, true),
+        DataRow(false, false, false)
+    ]
+    public void BitStackShouldRespectFullAndFullWidthAndFullHeight(bool full, bool fullWidth, bool fullHeight)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Full, full);
+            parameters.Add(p => p.FullWidth, fullWidth);
+            parameters.Add(p => p.FullHeight, fullHeight);
+        });
+
+        StringBuilder style = new();
+
+        if (full || fullWidth)
+        {
+            style.Append("width:100%;");
+        }
+
+        if (full || fullHeight)
+        {
+            style.Append("height:100%;");
+        }
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 }
