@@ -643,7 +643,7 @@ private string RemoveUrl = $""/Remove"";";
 
 
 <BitFileUpload @ref=""bitFileUpload""
-               Label=""@string.Empty""
+               Label=""""
                UploadUrl=""@NonChunkedUploadUrl""
                RemoveUrl=""@RemoveUrl""
                MaxSize=""1024 * 1024 * 2""
@@ -795,7 +795,7 @@ private bool IsFileTypeNotAllowed(BitFileInfo file)
 
     private readonly string example10RazorCode = @"
 <BitFileUpload @ref=""bitFileUploadWithBrowseFile""
-               Label=""@string.Empty""
+               Label=""""
                UploadUrl=""@NonChunkedUploadUrl""
                RemoveUrl=""@RemoveUrl""
                MaxSize=""1024 * 1024 * 500"" />
