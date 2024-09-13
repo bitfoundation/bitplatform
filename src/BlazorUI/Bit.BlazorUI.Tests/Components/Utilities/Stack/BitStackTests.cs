@@ -715,7 +715,6 @@ public class BitStackTests : BunitTestContext
             style.Append("height:100%;");
         }
 
-
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 }
