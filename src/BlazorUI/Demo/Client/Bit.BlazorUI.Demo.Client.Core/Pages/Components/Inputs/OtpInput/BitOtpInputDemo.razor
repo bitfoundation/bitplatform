@@ -124,41 +124,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example7RazorCode" Id="example7">
-        <ExamplePreview>
-            <div>Varying sizes for inputs tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
-            <br />
-            <BitOtpInput Label="Small" Size="BitSize.Small" />
-            <br /><br />
-            <BitOtpInput Label="Medium" Size="BitSize.Medium" />
-            <br /><br />
-            <BitOtpInput Label="Large" Size="BitSize.Large" />
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
-        <ExamplePreview>
-            <div>Explore styling and class customization for BitOtpInput, including component styles, custom classes, and detailed styles.</div>
-            <br /><br />
-            <div>
-                <div>Component's Style & Class:</div><br />
-                <BitOtpInput Style="margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;" />
-                <br />
-                <BitOtpInput Class="custom-class" />
-                <br /><br /><br />
-                <div><b>Styles</b> & <b>Classes</b>:</div><br />
-                <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
-                                           Input = "border-color: blueviolet;",
-                                           Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
-                <br />
-                <BitOtpInput Classes="@(new() { Root = "custom-root",
-                                            Input = "custom-input",
-                                            Focused = "custom-focused" })" />
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <ExamplePreview>
             <div>Use data annotations to validate the BitOtpInput component in a form submission scenario.</div>
             <br /><br />
@@ -182,6 +148,40 @@
                         The form submitted successfully.
                     </BitMessage>
                 }
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Size" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <div>Varying sizes for inputs tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+            <br />
+            <BitOtpInput Label="Small" Size="BitSize.Small" />
+            <br /><br />
+            <BitOtpInput Label="Medium" Size="BitSize.Medium" />
+            <br /><br />
+            <BitOtpInput Label="Large" Size="BitSize.Large" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+        <ExamplePreview>
+            <div>Explore styling and class customization for BitOtpInput, including component styles, custom classes, and detailed styles.</div>
+            <br /><br />
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitOtpInput Style="margin-inline: 1rem; box-shadow: aqua 0 0 0.5rem;" />
+                <br />
+                <BitOtpInput Class="custom-class" />
+                <br /><br /><br />
+                <div><b>Styles</b> & <b>Classes</b>:</div><br />
+                <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
+                                           Input = "border-color: blueviolet;",
+                                           Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
+                <br />
+                <BitOtpInput Classes="@(new() { Root = "custom-root",
+                                            Input = "custom-input",
+                                            Focused = "custom-focused" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
