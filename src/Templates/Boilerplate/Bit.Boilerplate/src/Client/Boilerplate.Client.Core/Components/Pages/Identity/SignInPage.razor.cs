@@ -89,7 +89,7 @@ public partial class SignInPage
 
             if (requiresTwoFactor is false)
             {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? "/", replace: true);
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
         }
         catch (KnownException e)

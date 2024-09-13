@@ -43,19 +43,20 @@ public class IdentitySettings : IdentityOptions
     /// <summary>
     /// To either confirm and/or change email
     /// </summary>
-    public TimeSpan EmailTokenRequestResendDelay { get; set; }
+    public TimeSpan EmailTokenLifetime { get; set; }
     /// <summary>
     /// To either confirm and/or change phone number
     /// </summary>
-    public TimeSpan PhoneNumberTokenRequestResendDelay { get; set; }
-    public TimeSpan ResetPasswordTokenRequestResendDelay { get; set; }
-    public TimeSpan TwoFactorTokenRequestResendDelay { get; set; }
-    public TimeSpan RevokeUserSessionsDelay { get; set; }
+    public TimeSpan PhoneNumberTokenLifetime { get; set; }
+    public TimeSpan ResetPasswordTokenLifetime { get; set; }
+    public TimeSpan TwoFactorTokenLifetime { get; set; }
 
     /// <summary>
     /// To sign in with either Otp or magic link.
     /// </summary>
-    public TimeSpan OtpRequestResendDelay { get; set; }
+    public TimeSpan OtpTokenLifetime { get; set; }
+
+    public TimeSpan RevokeUserSessionsDelay { get; set; }
 }
 
 public class EmailSettings

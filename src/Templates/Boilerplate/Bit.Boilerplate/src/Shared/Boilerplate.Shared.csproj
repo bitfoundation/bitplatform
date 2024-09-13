@@ -35,11 +35,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="**\*.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Designer','')).resx</DependentUpon>
-        </Compile>
         <EmbeddedResource Update="Resources\AppStrings.resx">
             <Generator>MSBuild:Compile</Generator>
             <LastGenOutput>Resources\AppStrings.Designer.cs</LastGenOutput>
