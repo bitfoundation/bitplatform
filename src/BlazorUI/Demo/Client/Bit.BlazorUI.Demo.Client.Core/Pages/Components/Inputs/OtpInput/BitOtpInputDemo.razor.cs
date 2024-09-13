@@ -270,6 +270,7 @@ public partial class BitOtpInputDemo
     ];
 
 
+
     private string? oneWayValue;
     private string? twoWayValue;
 
@@ -378,40 +379,11 @@ private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
 private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
     private readonly string example7RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-        font-size: 0.75rem;
-    }
-</style>
-
-<EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-
-    <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
-    <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
-
-    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example7CsharpCode = @"
-public class ValidationOtpInputModel
-{
-    [Required(ErrorMessage = ""The OTP value is required."")]
-    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
-    public string OtpValue { get; set; }
-}
-
-private ValidationOtpInputModel validationOtpInputModel = new();
-
-private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example8RazorCode = @"
 <BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
 <BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
 <BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -453,6 +425,35 @@ private void HandleInvalidSubmit() { }";
 <BitOtpInput Classes=""@(new() { Root = ""custom-root"",
                                 Input = ""custom-input"",
                                 Focused = ""custom-focused"" })"" />";
+
+    private readonly string example9RazorCode = @"
+<style>
+    .validation-message {
+        color: red;
+        font-size: 0.75rem;
+    }
+</style>
+
+<EditForm Model=""validationOtpInputModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitOtpInput Length=""6"" @bind-Value=""validationOtpInputModel.OtpValue"" />
+    <ValidationMessage For=""() => validationOtpInputModel.OtpValue"" />
+
+    <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>";
+    private readonly string example9CsharpCode = @"
+public class ValidationOtpInputModel
+{
+    [Required(ErrorMessage = ""The OTP value is required."")]
+    [MinLength(6, ErrorMessage = ""Minimum length is 6."")]
+    public string OtpValue { get; set; }
+}
+
+private ValidationOtpInputModel validationOtpInputModel = new();
+
+private void HandleValidSubmit() { }
+private void HandleInvalidSubmit() { }";
 
     private readonly string example10RazorCode = @"
 <BitOtpInput Label=""Default"" Dir=""BitDir.Rtl"" />
