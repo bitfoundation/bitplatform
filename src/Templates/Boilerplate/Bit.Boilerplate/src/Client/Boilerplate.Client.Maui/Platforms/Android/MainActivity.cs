@@ -38,7 +38,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = Intent?.DataString;
         if (string.IsNullOrWhiteSpace(url) is false)
         {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
     }
 
@@ -50,7 +50,7 @@ public class MainActivity : MauiAppCompatActivity
         var url = intent.DataString;
         if (action is Intent.ActionView && string.IsNullOrWhiteSpace(url) is false)
         {
-            _ = Routes.OpenUniversalLink(new URL(url).File ?? "/");
+            _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
     }
 }

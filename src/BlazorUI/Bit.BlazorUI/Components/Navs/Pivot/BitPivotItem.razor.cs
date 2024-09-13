@@ -13,6 +13,16 @@ public partial class BitPivotItem : BitComponentBase, IDisposable
     [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
+    /// The custom css class of the content of the pivot item.
+    /// </summary>
+    [Parameter] public string? BodyClass { get; set; }
+
+    /// <summary>
+    /// The custom css style of the content of the pivot item.
+    /// </summary>
+    [Parameter] public string? BodyStyle { get; set; }
+
+    /// <summary>
     /// The content of the pivot item, It can be Any custom tag or a text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }

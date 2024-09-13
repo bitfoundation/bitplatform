@@ -10,16 +10,16 @@ public class BitStackTests : BunitTestContext
 {
     private const string STYLE = "flex-direction:column;align-items:flex-start;justify-content:flex-start;";
 
-    private static readonly Dictionary<BitStackAlignment, string> _AlignmentMap = new()
+    private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
-        { BitStackAlignment.Start, "flex-start" },
-        { BitStackAlignment.End, "flex-end" },
-        { BitStackAlignment.Center, "center" },
-        { BitStackAlignment.SpaceBetween, "space-between" },
-        { BitStackAlignment.SpaceAround, "space-around" },
-        { BitStackAlignment.SpaceEvenly, "space-evenly" },
-        { BitStackAlignment.Baseline, "baseline" },
-        { BitStackAlignment.Stretch, "stretch" },
+        { BitAlignment.Start, "flex-start" },
+        { BitAlignment.End, "flex-end" },
+        { BitAlignment.Center, "center" },
+        { BitAlignment.SpaceBetween, "space-between" },
+        { BitAlignment.SpaceAround, "space-around" },
+        { BitAlignment.SpaceEvenly, "space-evenly" },
+        { BitAlignment.Baseline, "baseline" },
+        { BitAlignment.Stretch, "stretch" },
     };
 
     [DataTestMethod]
@@ -389,16 +389,16 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitStackAlignment.Start),
-        DataRow(BitStackAlignment.End),
-        DataRow(BitStackAlignment.Center),
-        DataRow(BitStackAlignment.SpaceBetween),
-        DataRow(BitStackAlignment.SpaceAround),
-        DataRow(BitStackAlignment.SpaceEvenly),
-        DataRow(BitStackAlignment.Baseline),
-        DataRow(BitStackAlignment.Stretch)
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch)
     ]
-    public void BitStackShouldRespectHorizontalAlign(BitStackAlignment horizontalAlign)
+    public void BitStackShouldRespectHorizontalAlign(BitAlignment horizontalAlign)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -419,7 +419,7 @@ public class BitStackTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.HorizontalAlign, BitStackAlignment.SpaceBetween);
+            parameters.Add(p => p.HorizontalAlign, BitAlignment.SpaceBetween);
         });
 
         component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:space-between;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
@@ -457,16 +457,16 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitStackAlignment.Start),
-        DataRow(BitStackAlignment.End),
-        DataRow(BitStackAlignment.Center),
-        DataRow(BitStackAlignment.SpaceBetween),
-        DataRow(BitStackAlignment.SpaceAround),
-        DataRow(BitStackAlignment.SpaceEvenly),
-        DataRow(BitStackAlignment.Baseline),
-        DataRow(BitStackAlignment.Stretch)
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch)
     ]
-    public void BitStackShouldRespectBitStackAlignment(BitStackAlignment verticalAlign)
+    public void BitStackShouldRespectBitAlignment(BitAlignment verticalAlign)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -487,7 +487,7 @@ public class BitStackTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.VerticalAlign, BitStackAlignment.SpaceBetween);
+            parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
         });
 
         component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:flex-start;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
@@ -568,11 +568,11 @@ public class BitStackTests : BunitTestContext
     ]
     public void BitStackShouldRespectHorizontalAndReversedAndHorizontalAlignAndVerticalAlign(bool horizontal)
     {
-        var aligns = Enum.GetValues(typeof(BitStackAlignment));
+        var aligns = Enum.GetValues(typeof(BitAlignment));
 
-        foreach (BitStackAlignment horizontalAlign in aligns)
+        foreach (BitAlignment horizontalAlign in aligns)
         {
-            foreach (BitStackAlignment verticalAlign in aligns)
+            foreach (BitAlignment verticalAlign in aligns)
             {
                 var component = RenderComponent<BitStack>(parameters =>
                 {

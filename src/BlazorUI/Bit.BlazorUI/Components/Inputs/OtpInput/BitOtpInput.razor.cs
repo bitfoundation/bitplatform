@@ -5,8 +5,10 @@ namespace Bit.BlazorUI;
 
 public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 {
-    private bool[] _inputFocusStates = default!;
+    private string _labelId = default!;
+    private string?[] _inputIds = default!;
     private string?[] _inputValues = default!;
+    private bool[] _inputFocusStates = default!;
     private ElementReference[] _inputRefs = default!;
     private DotNetObjectReference<BitOtpInput> _dotnetObj = default!;
 
@@ -22,14 +24,24 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Enables auto shifting the indexes while clearing the inputs using Delete or Backspace.
+    /// </summary>
+    [Parameter] public bool AutoShift { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Type of the inputs.
+    /// Label displayed above the inputs.
     /// </summary>
-    [Parameter] public BitOtpInputType InputType { get; set; } = BitOtpInputType.Text;
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom template for the label displayed above the inputs.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Length of the OTP or number of the inputs.
@@ -72,9 +84,20 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [Parameter] public bool Reversed { get; set; }
 
     /// <summary>
+    /// The size of the inputs.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
     [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Type of the inputs.
+    /// </summary>
+    [Parameter] public BitInputType? Type { get; set; }
 
     /// <summary>
     /// Defines whether to render inputs vertically.
@@ -99,7 +122,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
         if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
         if (pastedValue.HasNoValue()) return;
-        if (InputType is BitOtpInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+        if (Type is BitInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
         SetInputsValue(pastedValue);
 
@@ -112,8 +135,33 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
     protected override string RootElementClass => "bit-otp";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Reversed ? "bit-otp-rvs" : string.Empty);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-otp-sm",
+            BitSize.Medium => "bit-otp-md",
+            BitSize.Large => "bit-otp-lg",
+            _ => "bit-otp-md"
+        });
+
+        ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override void OnInitialized()
     {
+        _labelId = $"BitOtpInput-{UniqueId}-label";
+        _inputIds = Enumerable.Range(0, Length).Select(i => $"BitOtpInput-{UniqueId}-input-{i}").ToArray();
+
         _inputRefs = new ElementReference[Length];
 
         _inputValues = new string[Length];
@@ -152,20 +200,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         }
     }
 
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => Classes?.Root);
-
-        ClassBuilder.Register(() => Reversed ? $"{RootElementClass}-rvs" : string.Empty);
-
-        ClassBuilder.Register(() => Vertical ? $"{RootElementClass}-vrt" : string.Empty);
-    }
-
-    protected override void RegisterCssStyles()
-    {
-        StyleBuilder.Register(() => Styles?.Root);
-    }
-
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
         result = value;
@@ -185,20 +219,22 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
 
 
-    private string GetInputType() => InputType switch
+    private string GetInputType() => Type switch
     {
-        BitOtpInputType.Text => "text",
-        BitOtpInputType.Number => "number",
-        BitOtpInputType.Password => "password",
-        _ => string.Empty
+        BitInputType.Text => "text",
+        BitInputType.Number => "number",
+        BitInputType.Password => "password",
+        BitInputType.Email => "email",
+        BitInputType.Tel => "tel",
+        BitInputType.Url => "url",
+        _ => "text"
     };
 
-    private string GetInputMode() => InputType switch
+    private string GetInputMode() => Type switch
     {
-        BitOtpInputType.Text => "text",
-        BitOtpInputType.Number => "numeric",
-        BitOtpInputType.Password => "text",
-        _ => string.Empty
+        BitInputType.Text => "text",
+        BitInputType.Number => "numeric",
+        _ => "text"
     };
 
     private string GetInputStyles(int index)
@@ -242,8 +278,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = true;
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync((e, index));
     }
 
@@ -252,8 +286,6 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         if (IsEnabled is false) return;
 
         _inputFocusStates[index] = false;
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync((e, index));
     }
 
@@ -273,7 +305,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         {
             var diff = DiffValues(oldValue ?? string.Empty, newValue);
 
-            if (InputType is BitOtpInputType.Number && int.TryParse(diff, out _) is false)
+            if (Type is BitInputType.Number && int.TryParse(diff, out _) is false)
             {
                 _inputValues[index] = oldValue;
             }
@@ -328,13 +360,28 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         {
             await Task.Delay(1);
             await _inputRefs[previousIndex].FocusAsync();
+            if (AutoShift)
+            {
+                for (int i = index; i < Length; i++)
+                {
+                    _inputValues[i] = i < Length - 1 ? _inputValues[i + 1] : string.Empty;
+                }
+            }
             return;
         }
 
         if (code is "Delete" || key is "Delete")
         {
             await Task.Delay(1);
-            await _inputRefs[nextIndex].FocusAsync();
+            _inputValues[index] = string.Empty;
+            await _inputRefs[index].FocusAsync();
+            if (AutoShift)
+            {
+                for (int i = index; i < Length; i++)
+                {
+                    _inputValues[i] = i < Length - 1 ? _inputValues[i + 1] : string.Empty;
+                }
+            }
             return;
         }
 

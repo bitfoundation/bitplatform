@@ -9,6 +9,7 @@ public partial class Templates03GettingStartedPage
     private bool installVs;
     private bool installVsCode;
     private bool enableCrossPlatform;
+    private bool enableVirtualization;
     private string devOS = "Windows";
     private string copyButtonText = "Copy commands";
     private bool showCrossPlatform;
@@ -16,7 +17,8 @@ public partial class Templates03GettingStartedPage
     private List<(string text, string command)> GetSelectedComands()
     {
         List<(string text, string command)> selectedCommandGroups = [.. commandGroups[CommandGroup.Core]];
-
+        if (enableVirtualization)
+            selectedCommandGroups.AddRange(commandGroups[CommandGroup.Virtualization]);
         if (enableCrossPlatform)
             selectedCommandGroups.AddRange(commandGroups[CommandGroup.Additional]);
         if (installVsCode)
@@ -56,12 +58,6 @@ public partial class Templates03GettingStartedPage
             (text:"echo 'Set execution policy';",
             command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
 
-            (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
-            command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
-
-            (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
-            command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;"),
-
             (text:"echo 'Install - Update winget';",
             command:"$ProgressPreference = 'SilentlyContinue'; Install-PackageProvider -Name \"NuGet\" -Force; Set-PSRepository -Name \"PSGallery\" -InstallationPolicy Trusted; Install-Script winget-install -Force; winget-install -Force;"),
 
@@ -78,13 +74,19 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::8.11.0-pre-04;"),
+            command:"dotnet new install Bit.Boilerplate::8.11.0-pre-08;"),
         ],
 
         [CommandGroup.Additional] =
         [
             (text:@"echo 'Install MAUI workloads https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=visual-studio-code#install-net-and-net-maui-workloads';",
-            command:"dotnet workload install maui;")
+            command:"dotnet workload install maui;"),
+
+            (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
+            command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
+
+            (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
+            command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;"),
         ],
 
         [CommandGroup.VS] =
@@ -110,6 +112,9 @@ public partial class Templates03GettingStartedPage
             (text:@"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
             command:"code --install-extension ms-dotnettools.csdevkit;"),
 
+            (text:@"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
+            command:"code --install-extension ms-vscode-remote.remote-containers;"),
+
             (text:@"echo 'Install the Blazor WASM Companion extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
             command:"code --install-extension ms-dotnettools.blazorwasm-companion;"),
 
@@ -124,6 +129,23 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
             command:"code --install-extension DominicVonk.vscode-resx-editor;"),
+        ],
+        [CommandGroup.Virtualization] =
+        [
+            (text:@"echo 'Install WSL';",
+            command:"wsl --install;"),
+
+            (text:@"echo 'Install HyperV';",
+            command:"Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart;"),
+
+            (text:@"echo 'Install HyperVisior Platform';",
+            command:"Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart;"),
+
+            (text:@"echo 'Install Virtual Machine Platform';",
+            command:"Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart;"),
+
+            (text:@"echo 'Install Docker Desktop';",
+            command:"winget install Docker.DockerDesktop --accept-source-agreements --accept-package-agreements;"),
         ]
     };
 
@@ -134,5 +156,6 @@ public partial class Templates03GettingStartedPage
         AdditionalVS,
         VS,
         VSCode,
+        Virtualization
     }
 }

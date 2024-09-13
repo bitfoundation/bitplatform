@@ -12,7 +12,7 @@
             <div style="display: flex; width: 100%;">
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" />
                 <BitSpacer />
-                <BitTypography Variant="BitTypographyVariant.H6">Title</BitTypography>
+                <BitText Typography="BitTypography.H6">Title</BitText>
                 <BitSpacer />
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" />
             </div>
@@ -21,11 +21,11 @@
     <ComponentExampleBox Title="Width" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div style="display: flex; width: 100%;">
-                <BitSpinner />
+                <BitProgress Circular Indeterminate />
                 <BitSpacer Width="64" />
-                <BitSpinner />
+                <BitProgress Circular Indeterminate />
                 <BitSpacer Width="64" />
-                <BitSpinner />
+                <BitProgress Circular Indeterminate />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

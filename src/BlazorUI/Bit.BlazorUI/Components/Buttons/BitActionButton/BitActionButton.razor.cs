@@ -112,6 +112,15 @@ public partial class BitActionButton : BitComponentBase
             BitColor.Warning => "bit-acb-wrn",
             BitColor.SevereWarning => "bit-acb-swr",
             BitColor.Error => "bit-acb-err",
+            BitColor.PrimaryBackground => "bit-acb-pbg",
+            BitColor.SecondaryBackground => "bit-acb-sbg",
+            BitColor.TertiaryBackground => "bit-acb-tbg",
+            BitColor.PrimaryForeground => "bit-acb-pfg",
+            BitColor.SecondaryForeground => "bit-acb-sfg",
+            BitColor.TertiaryForeground => "bit-acb-tfg",
+            BitColor.PrimaryBorder => "bit-acb-pbr",
+            BitColor.SecondaryBorder => "bit-acb-sbr",
+            BitColor.TertiaryBorder => "bit-acb-tbr",
             _ => "bit-acb-pri"
         });
 

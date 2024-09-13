@@ -8,6 +8,12 @@ public partial class BitPivot : BitComponentBase
 
 
     /// <summary>
+    /// Determines the alignment of the header section of the pivot.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
     /// The content of pivot, It can be Any custom tag
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -106,6 +112,19 @@ public partial class BitPivot : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Start => "--bit-pvt-hal:flex-start",
+            BitAlignment.End => "--bit-pvt-hal:flex-end",
+            BitAlignment.Center => "--bit-pvt-hal:center",
+            BitAlignment.SpaceBetween => "--bit-pvt-hal:space-between",
+            BitAlignment.SpaceAround => "--bit-pvt-hal:space-around",
+            BitAlignment.SpaceEvenly => "--bit-pvt-hal:space-evenly",
+            BitAlignment.Baseline => "--bit-pvt-hal:baseline",
+            BitAlignment.Stretch => "--bit-pvt-hal:stretch",
+            _ => "--bit-pvt-hal:flex-start"
+        });
     }
 
     protected override async Task OnInitializedAsync()
@@ -119,8 +138,6 @@ public partial class BitPivot : BitComponentBase
     }
 
 
-
-    internal string GetPivotItemId(BitPivotItem item) => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == item)}";
 
     internal int GetPivotItemTabIndex(BitPivotItem item) => item.IsSelected ? 0 : _allItems.FindIndex(i => i == item) == 0 ? 0 : -1;
 
@@ -185,15 +202,32 @@ public partial class BitPivot : BitComponentBase
 
     private string GetSelectedItemStyle()
     {
-        return _selectedItem?.Visibility switch
-        {
-            BitVisibility.Collapsed => "visibility:hidden",
-            BitVisibility.Hidden => "display:none",
-            _ => string.Empty
-        };
+        List<string?> list =
+        [
+            _selectedItem?.Visibility switch
+            {
+                BitVisibility.Collapsed => "visibility:hidden",
+                BitVisibility.Hidden => "display:none",
+                _ => string.Empty
+            },
+            Styles?.Body,
+            _selectedItem?.BodyStyle
+        ];
+
+        return string.Join(';', list.Where(s => s.HasValue()));
     }
 
-    private string GetAriaLabelledby => $"Pivot-{UniqueId}-Tab-{_allItems.FindIndex(i => i == _selectedItem)}";
+    private string GetSelectedItemClass()
+    {
+        List<string?> list =
+        [
+            (_selectedItem?.IsEnabled is false) ? "disabled" : string.Empty,
+            Classes?.Body,
+            _selectedItem?.BodyClass
+        ];
+
+        return string.Join(' ', list.Where(s => s.HasValue()));
+    }
 
     private void OnSetSelectedKey()
     {

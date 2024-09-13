@@ -2,6 +2,7 @@
 @inherits BitComponentBase
 
 <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+        id="@_Id"
         role="tab"
         type="button"
         name="@HeaderText"
@@ -9,7 +10,6 @@
         data-content="@HeaderText"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
-        id="@Parent?.GetPivotItemId(this)"
         tabindex="@Parent?.GetPivotItemTabIndex(this)"
         aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="@Parent?.Classes?.HeaderItemContent">

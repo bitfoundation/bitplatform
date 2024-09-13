@@ -11,7 +11,7 @@
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
 
-    <ComponentExampleBox Title="Basic FileUpload" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
@@ -80,7 +80,7 @@
             <div>
                 <BitFileUpload IsMultiSelect="true"
                                AutoUploadEnabled="true"
-                               MaxSize="1024 * 1024 * 500" 
+                               MaxSize="1024 * 1024 * 500"
                                UploadUrl="@ChunkedUploadUrl"
                                Label="Select or drag and drop files"
                                OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
@@ -119,7 +119,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Custom FileUpload" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div class="example-desc">Use custom template for file upload.</div>
             <div>
@@ -174,7 +174,6 @@
                                                 <i class="bit-icon bit-icon--ChromeClose remove-ico" @onclick="HandleRemoveOnClick" />
                                             </div>
                                         </div>
-
                                         @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
                                         {
                                             var fileUploadPercent = GetFileUploadPercent(file);
@@ -202,9 +201,7 @@
                         }
                     </FileViewTemplate>
                 </BitFileUpload>
-
                 <br />
-
                 <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
             </div>
         </ExamplePreview>
@@ -219,9 +216,7 @@
                                UploadUrl="@NonChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
                                MaxSize="1024 * 1024 * 500" />
-
                 <br />
-
                 <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
             </div>
         </ExamplePreview>

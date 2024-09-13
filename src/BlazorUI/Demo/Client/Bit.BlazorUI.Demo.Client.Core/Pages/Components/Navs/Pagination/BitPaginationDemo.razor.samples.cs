@@ -72,12 +72,42 @@ public partial class BitPaginationDemo
 <BitPagination Count=""5"" Size=""BitSize.Large"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example10RazorCode = @"
+<style>
+    .custom-class {
+        margin-left: 1rem;
+        border-radius: 0.125rem;
+        box-shadow: aqua 0 0 0.5rem;
+        background-color: #00ffff7d;
+    }
+
+
+    .custom-root {
+        margin-left: 1rem;
+    }
+
+    .custom-button {
+        color: seagreen;
+        border-radius: 50%;
+        border-color: seagreen;
+    }
+
+    .custom-button:hover {
+        color: white;
+        background-color: mediumseagreen;
+    }
+
+    .custom-selected-button {
+        color: white;
+        background-color: seagreen;
+    }
+</style>
+
 <BitPagination Count=""5""
                NextIcon=""@BitIconName.ChevronDown""
                PreviousIcon=""@BitIconName.ChevronUp""
                Style=""margin-left: 1rem; flex-flow: column;"" />
 
-<BitPagination Count=""5"" Class=""custom-class"" />
+<BitPagination Count=""5"" Class=""custom-class"" />    
 
 <BitPagination Count=""5""
                Styles=""@(new() { Root = ""margin-left: 1rem; gap: 1rem;"",
@@ -86,7 +116,9 @@ public partial class BitPaginationDemo
 
 <BitPagination Count=""5""
                Variant=""BitVariant.Outline""
-               Classes=""@(new() { Root = ""custom-root"", Button = ""custom-button"" })"" />";
+               Classes=""@(new() { Root = ""custom-root"",
+                                  Button = ""custom-button"",
+                                  SelectedButton = ""custom-selected-button""})"" />";
 
     private readonly string example11RazorCode = @"
 <BitPagination Count=""5"" SelectedPage=""oneWaySelectedPage"" />

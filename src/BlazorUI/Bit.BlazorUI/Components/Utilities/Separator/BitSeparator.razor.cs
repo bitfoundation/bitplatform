@@ -14,6 +14,12 @@ public partial class BitSeparator : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Renders the separator in full width of its container.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Whether the element is a vertical separator.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -33,5 +39,10 @@ public partial class BitSeparator : BitComponentBase
             BitSeparatorAlignContent.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => FullWidth ? "width:100%" : string.Empty);
     }
 }

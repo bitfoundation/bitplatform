@@ -1,11 +1,5 @@
 ﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-.example-box {
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-}
-
 ::deep {
     .custom-class {
         gap: 1rem;
@@ -33,6 +27,7 @@
     }
 
     .validation-message {
+        font-size: 0.75rem;
         color: $bit-color-error;
     }
 }

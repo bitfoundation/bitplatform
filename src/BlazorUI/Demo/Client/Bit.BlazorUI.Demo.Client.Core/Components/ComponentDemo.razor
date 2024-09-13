@@ -1,56 +1,59 @@
 ﻿@inherits AppComponentBase
 
-<div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Class="title">@ComponentName</BitTypography>
-    <section id="overview-section" class="page-section">
-        <BitTypography Variant="BitTypographyVariant.Subtitle1">
-            @ComponentDescription
-        </BitTypography>
-    </section>
-    @if (Notes.HasValue())
-    {
-        <section id="notes-section" class="page-section">
-            <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Notes</BitTypography>
-            @Notes
+<div class="example-page">
+    <div class="page-container example">
+        <BitText Typography="BitTypography.H3" Class="title">@ComponentName</BitText>
+        <section id="overview-section" class="page-section">
+            <BitText Typography="BitTypography.Subtitle1">
+                @ComponentDescription
+            </BitText>
         </section>
-    }
-    <section id="usage-section" class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Usage</BitTypography>
-        @ChildContent
-    </section>
-    <section id="implementation-section" class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Class="subtitle">Implementation</BitTypography>
-
-        <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
-
-        @if (ComponentPublicMembers.Any())
+        @if (Notes.HasValue())
         {
-            <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+            <section id="notes-section" class="page-section">
+                <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
+                @Notes
+            </section>
         }
+        <section id="usage-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
+            @ChildContent
+        </section>
+        <section id="api-section" class="page-section">
+            <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
-        @if (_textInputComponents.Contains(ComponentName))
-        {
-            <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
-        }
+            <ComponentParametersTable Name="@($"Bit{ComponentName}")" Parameters="ComponentParameters" />
 
-        @if (_inputComponents.Contains(ComponentName))
-        {
-            <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
+            @if (ComponentPublicMembers.Any())
+            {
+                <ComponentParametersTable Name="@($"Bit{ComponentName}")" NameSuffix="public members" Parameters="ComponentPublicMembers" />
+            }
 
-            <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
-        }
+            @if (_textInputComponents.Contains(ComponentName))
+            {
+                <ComponentParametersTable Name="BitTextInputBase" Parameters="_textInputBaseParameters" />
+            }
 
-        @if (_extraComponents.Contains(ComponentName) is false)
-        {
-            <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
+            @if (_inputComponents.Contains(ComponentName))
+            {
+                <ComponentParametersTable Name="BitInputBase" Parameters="_inputBaseParameters" />
 
-            <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
-        }
+                <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
+            }
 
-        <ComponentClassesTable Classes="ComponentSubClasses" />
+            @if (_extraComponents.Contains(ComponentName) is false)
+            {
+                <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
-        <ComponentEnumsTable Enums="ComponentSubEnums" />
+                <ComponentParametersTable Name="BitComponentBase" NameSuffix="public members" Parameters="_componentBasePublicMembers" />
+            }
 
-        <ComponentEnumsTable Enums="_componentBaseSubEnums" />
-    </section>
+            <ComponentClassesTable Classes="ComponentSubClasses" />
+
+            <ComponentEnumsTable Enums="ComponentSubEnums" />
+
+            <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+        </section>
+    </div>
+    <SideRail />
 </div>

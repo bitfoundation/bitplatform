@@ -1,0 +1,34 @@
+﻿::deep {
+    .custom-class {
+        border-radius: 1rem;
+        border-color: blueviolet;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, magenta, transparent) blue;
+
+        &:hover {
+            border-color: magenta;
+            background-color: magenta;
+        }
+    }
+
+    .custom-root {
+        color: aqua;
+        min-width: 7.2rem;
+        font-weight: bold;
+        border-color: aqua;
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 0.5rem;
+
+        &:hover {
+            background-color: gray;
+        }
+    }
+
+    .custom-text {
+        text-shadow: tomato 0 0 0.5rem;
+    }
+
+    .custom-opened {
+        color: green;
+    }
+}

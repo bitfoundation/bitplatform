@@ -44,14 +44,14 @@
     .form {
         width: 100%;
         display: flex;
+        padding: 2rem;
         position: relative;
         text-align: center;
         align-items: center;
-        max-width: rem2(504px);
+        max-width: rem2(450px);
         justify-content: center;
         flex-flow: column nowrap;
         border-radius: rem2(4px);
-        padding: rem2(48px) rem2(16px);
         box-shadow: $bit-box-shadow-callout;
         background-color: $bit-color-background-primary;
     }
@@ -96,7 +96,8 @@
     }
 
     .form-submit-button {
-        margin-top: rem2(20px);
+        width: 100%;
+        max-width: rem2(300px);
         margin-bottom: rem2(10px);
     }
 

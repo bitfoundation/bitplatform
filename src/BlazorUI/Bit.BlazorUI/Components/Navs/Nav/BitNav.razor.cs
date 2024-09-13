@@ -17,6 +17,11 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
 
     /// <summary>
+    /// The custom icon name of the chevron-down element of the BitNav component.
+    /// </summary>
+    [Parameter] public string? ChevronDownIcon { get; set; }
+
+    /// <summary>
     /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }

@@ -1,0 +1,37 @@
+﻿@page "/components/text"
+@page "/components/typography"
+
+<PageOutlet Url="components/text"
+            Title="Text"
+            Description="text component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Text"
+               ComponentDescription="Use text to present your design and content as clearly and efficiently as possible."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div class="example-box">
+                <BitText>This is default (Subtitle1)</BitText>
+                <br />
+                <BitText Typography="BitTypography.H1">H1. Heading</BitText>
+                <BitText Typography="BitTypography.H2">H2. Heading</BitText>
+                <BitText Typography="BitTypography.H3">H3. Heading</BitText>
+                <BitText Typography="BitTypography.H4">H4. Heading</BitText>
+                <BitText Typography="BitTypography.H5">H5. Heading</BitText>
+                <BitText Typography="BitTypography.H6">H6. Heading</BitText>
+
+                <BitText Typography="BitTypography.Subtitle1">Subtitle1. Lorem ipsum dolor sit amet</BitText>
+                <BitText Typography="BitTypography.Subtitle2">Subtitle2. Lorem ipsum dolor sit amet</BitText>
+
+                <BitText Typography="BitTypography.Body1">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+                <BitText Typography="BitTypography.Body2">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+
+                <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
+                <BitText Typography="BitTypography.Caption1">Caption1. Hello World!</BitText>
+                <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
+                <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

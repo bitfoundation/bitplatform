@@ -311,6 +311,9 @@
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>شما باید با شرایط ما موافقت کنید.</value>
   </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>با ثبت نام، شما موافقت کردید با</value>
+  </data>
     <data name="Gender" xml:space="preserve">
     <value>جنسیت</value>
   </data>
@@ -811,6 +814,9 @@
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن خود را وارد کنید:</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>

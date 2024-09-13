@@ -16,18 +16,18 @@
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.11.0-pre-04" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.11.0-pre-04" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.11.0-pre-04" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.11.0-pre-04" />
+        <PackageReference Include="Bit.Butil" Version="8.11.0-pre-08" />
+        <PackageReference Include="Bit.BlazorUI" Version="8.11.0-pre-08" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.11.0-pre-08" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.11.0-pre-08" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.0-pre-04" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.0-pre-08" />
         <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-04" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="8.11.0-pre-08" />
         <!--/-:msbuild-conditional:noEmit -->
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-04" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-04" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-08" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-08" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
@@ -54,16 +54,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <IsolatedScssFiles Include="**\*.razor.scss" />
-        <GlobalScssFiles Include="Styles\**\*.scss" />
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
-        <CallTarget Targets="BuildIsolatedScssFiles" />
-        <CallTarget Targets="BuildGlobalScssFiles" />
+        <CallTarget Targets="BuildCssFiles" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
@@ -75,12 +72,8 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
-        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
-    </Target>
-
-    <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">        
-        <Exec Command="node_modules/.bin/sass Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildCssFiles">        
+        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

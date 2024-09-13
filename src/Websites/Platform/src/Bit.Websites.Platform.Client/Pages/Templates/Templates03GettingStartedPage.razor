@@ -7,47 +7,45 @@
             Description="Getting started with the project templates on the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Getting started</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Getting started</BitText>
     <br />
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Setup your development environment</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
             <br />
             <BitPivot>
-                <BitPivotItem HeaderText="One-step setup">
+                <BitPivotItem HeaderText="Easy setup">
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>
-                        Windows - Visual Studio & Visual Studio Code
-                    </BitTypography>
+                    <BitText Typography="BitTypography.H6" Gutter>
+                        For Windows: Visual Studio & Visual Studio Code
+                    </BitText>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        To enhance the developer experience, we’ve consolidated the installation process into a single,
-                        easy-to-use chain of commands.
-                        <br />
-                        The components are installed using the
-                        <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>
-                        which is installed by default on Windows 11.
+                    <BitText Typography="BitTypography.Body1" Gutter>
+                        To streamline your development setup, we’ve simplified the installation process into a straightforward sequence of commands.
+                        These components are installed via the <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>, which comes pre-installed on Windows 11.
                         <br /><br />
                         The default commands listed below are required for Web & API development, however,
                         you can choose other options too, then click the Copy button and paste them into
                         the Windows PowerShell as an Administrator to run.
-                    </BitTypography>
+                    </BitText>
                     <br />
                     <BitStack Gap="1rem">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
+                        <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
-                        <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     </BitStack>
-                    <br />
-                    List of commands:
+                    <br /><br />
+                    <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
+                    <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
                     @if (installVs)
                     {
                         <br />
+                        <BitText Typography="BitTypography.H5" Gutter>Visual Studio Extensions</BitText>
                         <div class="section-card-txt">
-                            <b>Note</b>: you can install the following extensions for Visual Studio to have a better development experience:
+                            Install the following extensions for Visual Studio to have a better development experience:
                             <ol>
                                 <li>
                                     <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
@@ -58,13 +56,35 @@
                             </ol>
                         </div>
                     }
+                    @if (enableVirtualization)
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions</BitText>
+                        <div>
+                            Make sure Virtualization is enabled on your system:
+                            <br />
+                            <br />
+                            <div class="image-container">
+                                <img class="image" src="images/templates/virtualization.webp" />
+                            </div>
+                            If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                            <br />
+                            <br />
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                        width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                </iframe>
+                            </div>
+                            <br />
+                        </div>
+                    }
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitStack Horizontal VerticalAlign="BitStackAlignment.End" Gap="1rem">
-                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="1rem">
+                        <BitText Typography="BitTypography.H6" Gutter>
                             Step-by-step instructions for
-                        </BitTypography>
+                        </BitText>
                         <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
@@ -87,7 +107,7 @@ tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 dotnet dev-certs https --trust
-rm dotnet.tar.gz</CodeBox>
+rm $HOME/dotnet.tar.gz</CodeBox>
                                 </BitAccordion>
                             }
                         </li>
@@ -128,8 +148,8 @@ rm dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0-pre-04" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-04</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0-pre-08" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-08</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {
@@ -144,16 +164,41 @@ rm dotnet.tar.gz</CodeBox>
                         }
                     </ol>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
+                    @if (devOS is "Windows")
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions (Docker, WSL, Android Emulators)</BitText>
+                        <ol>
+                            <li>
+                                Make sure Virtualization is enabled on your system:
+                                <br />
+                                <div class="image-container">
+                                    <img class="image" src="images/templates/virtualization.webp" />
+                                </div>
+                            </li>
+                            <li>
+                                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                                <br />
+                                <br />
+                                <div class="video-container">
+                                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                    </iframe>
+                                </div>
+                                <br />
+                            </li>
+                        </ol>
+                    }
+                    <BitText Typography="BitTypography.H5" Gutter>IDE specific requirements</BitText>
                     <br />
                     @if (devOS is "Windows")
                     {
-                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
-                        <BitStack Horizontal VerticalAlign="BitStackAlignment.Center" Gap="2rem" Style="overflow-x:auto">
+                        <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="2rem" Style="overflow-x:auto">
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
-                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
+                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.11 or higher
                                         <ul dir="auto">
                                             <li>
                                                 Workloads:
@@ -176,16 +221,20 @@ rm dotnet.tar.gz</CodeBox>
                                     </li>
                                 </ul>
                             </div>
-                            <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
+                            @if (showCrossPlatform)
+                            {
+                                <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
+                            }
                         </BitStack>
                     }
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
+                    <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
                     <div class="section-card-txt">
                         <ul>
                             <li>
                                 <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
                                 <ul dir="auto">
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit" title="C# Dev Kit" rel="nofollow">C# Dev Kit</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" title="Dev Containers" rel="nofollow">Dev Containers</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion" title="Razor/Blazor CSS IntelliSense" rel="nofollow">Razor/Blazor CSS IntelliSense</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion" title="BlazorWasmDebugging" rel="nofollow">BlazorWasmDebugging</a></li>
@@ -201,6 +250,7 @@ rm dotnet.tar.gz</CodeBox>
                             @if (showCrossPlatform)
                             {
                                 <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
@@ -209,11 +259,14 @@ code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>
+code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor
+                                </CodeBox>
                             }
                         </BitAccordion>
                     </div>

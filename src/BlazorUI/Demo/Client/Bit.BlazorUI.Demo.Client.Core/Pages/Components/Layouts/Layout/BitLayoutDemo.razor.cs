@@ -176,6 +176,7 @@ public partial class BitLayoutDemo
     }
 </style>
 
+
 <BitLayout>
     <Header>
         <div class=""header"">Header</div>
@@ -215,6 +216,7 @@ public partial class BitLayoutDemo
     }
 </style>
 
+
 <BitToggle Label=""Hide NavMenu"" @bind-Value=""hideNavMenu"" />
 
 <BitLayout HideNavMenu=""hideNavMenu"">
@@ -235,7 +237,7 @@ public partial class BitLayoutDemo
 private bool hideNavMenu;";
 
     private readonly string example3RazorCode = @"
-< style>
+<style>
     .header {
         color: black;
         display: flex;
@@ -279,12 +281,13 @@ private bool hideNavMenu;";
     }
 </style>
 
-<BitLayout Classes=""@(new() { Header=""header"",
-                              Main=""main"",
-                              NavMenu=""nav-menu2"",
-                              MainContent=""main-content"",
-                              Footer=""footer"" })""
-           Styles=""@(new() { Main=""height:300px"" })"">
+
+<BitLayout Styles=""@(new() { Main = ""height: 19rem;"" })"" 
+           Classes=""@(new() { Header = ""header2"",
+                              Main = ""main2"",
+                              NavMenu = ""nav-menu2"",
+                              MainContent = ""main-content2"",
+                              Footer = ""footer2"" })"">
     <Header>Header</Header>
     <NavMenu>NavMenu</NavMenu>
     <Main>Main</Main>
@@ -295,14 +298,14 @@ private bool hideNavMenu;";
 <BitNumberField Label=""Header height"" @bind-Value=""headerHeight"" />
 <BitNumberField Label=""Footer height"" @bind-Value=""footerHeight"" />
 
-<div class=""container"">
-<BitLayout HeaderHeight=""headerHeight"" FooterHeight=""footerHeight""
-           Style=""color:black""
-           Styles=""@(new() { Header=""background:lightcoral"",
-                             Main=""background:lightgreen"",
-                             NavMenu=""padding:1rem"",
-                             MainContent=""padding:1rem"",
-                             Footer=""background:lightblue"" })"">
+<BitLayout HeaderHeight=""headerHeight"" 
+           FooterHeight=""footerHeight""
+           Styles=""@(new() { Root = ""color: black;"",
+                             Header = ""background: lightcoral;"",
+                             Main = ""background: lightgreen;"",
+                             NavMenu = ""padding: 1rem;"",
+                             MainContent = ""padding: 1rem;"",
+                             Footer = ""background: lightblue;"" })"">
     <Header>Header</Header>
     <NavMenu>NavMenu</NavMenu>
     <Main>Main</Main>

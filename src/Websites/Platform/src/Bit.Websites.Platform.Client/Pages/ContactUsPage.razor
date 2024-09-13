@@ -8,17 +8,17 @@
 <div class="page-container">
     <section class="page-section">
         <div class="page-section-content">
-            <BitTypography Variant="BitTypographyVariant.H1" Gutter Class="page-title">Contact us</BitTypography>
+            <BitText Typography="BitTypography.H1" Gutter Class="page-title">Contact us</BitText>
             <br />
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+            <BitText Typography="BitTypography.H5" Gutter>
                 Email: <a href="mailto:info@bitplatform.dev" target="_blank" rel="noopener noreferrer">info@bitplatform.dev</a>
-            </BitTypography>
+            </BitText>
             <br />
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+            <BitText Typography="BitTypography.H5" Gutter>
                 Let's talk about your project.
                 <br />
                 Send us an email and we will get back to you.
-            </BitTypography>
+            </BitText>
 
             <br /><br />
 
@@ -26,10 +26,10 @@
                 <EditForm Model="contactUsModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
                     <DataAnnotationsValidator />
 
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                    <BitText Typography="BitTypography.H5" Gutter>
                         Have any feedbacks?
 
-                    </BitTypography>
+                    </BitText>
 
                     <BitTextField @bind-Value="@contactUsModel.Email"
                                   Label="Email"
@@ -45,7 +45,7 @@
                                   Placeholder="Enter your message" />
                     <ValidationMessage For="() => contactUsModel.Message" />
 
-                    <BitStack Horizontal Gap="1rem" HorizontalAlign="BitStackAlignment.Center">
+                    <BitStack Horizontal Gap="1rem" HorizontalAlign="BitAlignment.Center">
                         <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">
                             Send
                         </BitButton>

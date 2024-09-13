@@ -311,6 +311,9 @@
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>Vous devez accepter nos conditions.</value>
   </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>En vous inscrivant, vous acceptez notre</value>
+  </data>
     <data name="Gender" xml:space="preserve">
     <value>Genre</value>
   </data>
@@ -522,7 +525,7 @@
     <value>Vous n'avez pas reçu l'e-mail de confirmation ?</value>
   </data>
     <data name="Or" xml:space="preserve">
-    <value>OU</value>
+    <value>Ou</value>
   </data>
     <data name="ProfileImage" xml:space="preserve">
     <value>Image de profil</value>
@@ -811,6 +814,9 @@
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>Envoyer un lien OTP et Magic</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>Entrez votre email ou votre numéro de téléphone:</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Soit fournir un mot de passe, soit Otp</value>

@@ -164,7 +164,88 @@ private BitMenuButtonNameSelectors<MenuActionItem> nameSelectors = new()
 
 <BitMenuButton Text=""Error"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" Split />
 <BitMenuButton Text=""Error"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Split />
-<BitMenuButton Text=""Error"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" Split />";
+<BitMenuButton Text=""Error"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" Split />
+
+
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" />
+
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" Split />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" Split />
+<BitMenuButton Text=""PrimaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" Split />
+
+
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" />
+
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" Split />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" Split />
+<BitMenuButton Text=""SecondaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" Split />
+
+
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" />
+
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" Split />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" Split />
+<BitMenuButton Text=""TertiaryBackground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" Split />
+
+
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" />
+
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" Split />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" Split />
+<BitMenuButton Text=""PrimaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" Split />
+
+
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" />
+
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" Split />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" Split />
+<BitMenuButton Text=""SecondaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" Split />
+
+
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" />
+
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" Split />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" Split />
+<BitMenuButton Text=""TertiaryForeground"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" Split />
+
+
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" />
+
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" Split />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" Split />
+<BitMenuButton Text=""PrimaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" Split />
+
+
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" />
+
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" Split />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" Split />
+<BitMenuButton Text=""SecondaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" Split />
+
+
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" />
+
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Split />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Split />
+<BitMenuButton Text=""TertiaryBorder"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Split />";
     private readonly string example4CsharpCode = @"
 public class MenuActionItem
 {
