@@ -1,9 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Text;
 using System;
 using Bunit;
-using System.Text;
-using System.Linq;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Stack;
 
