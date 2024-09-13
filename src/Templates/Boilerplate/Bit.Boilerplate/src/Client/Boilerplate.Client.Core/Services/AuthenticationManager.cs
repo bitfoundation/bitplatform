@@ -23,12 +23,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         if (response.RequiresTwoFactor) return true;
 
-        await SignIn(response!, request.RememberMe);
+        await OnNewToken(response!, request.RememberMe);
 
         return false;
     }
 
-    public async Task SignIn(SignInResponseDto response, bool? rememberMe = null)
+    public async Task OnNewToken(TokenResponseDto response, bool? rememberMe = null)
     {
         await StoreTokens(response, rememberMe);
 

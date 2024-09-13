@@ -222,10 +222,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             }
             else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
             {
-                if (string.IsNullOrEmpty(request.Otp) is false)
-                {
-                    throw new BadRequestException();
-                }
                 result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
             }
             else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
