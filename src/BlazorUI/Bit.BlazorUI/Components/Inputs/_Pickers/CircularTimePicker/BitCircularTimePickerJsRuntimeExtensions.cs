@@ -4,16 +4,16 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
 {
     internal static ValueTask<string> BitCircularTimePickerRegisterPointerUp(this IJSRuntime js, DotNetObjectReference<BitCircularTimePicker> obj, string methodName)
     {
-        return js.InvokeAsync<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointerup", obj, methodName);
+        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointerup", obj, methodName);
     }
 
     internal static ValueTask<string> BitCircularTimePickerRegisterPointerMove(this IJSRuntime js, DotNetObjectReference<BitCircularTimePicker> obj, string methodName)
     {
-        return js.InvokeAsync<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointermove", obj, methodName);
+        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.registerEvent", "pointermove", obj, methodName);
     }
 
     internal static ValueTask BitCircularTimePickerAbort(this IJSRuntime jSRuntime, string? abortControllerId, bool dispose = false)
     {
-        return jSRuntime.InvokeVoidAsync("BitBlazorUI.CircularTimePicker.abort", abortControllerId, dispose);
+        return jSRuntime.InvokeVoid("BitBlazorUI.CircularTimePicker.abort", abortControllerId, dispose);
     }
 }
