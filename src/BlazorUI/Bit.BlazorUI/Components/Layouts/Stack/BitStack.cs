@@ -5,6 +5,24 @@ namespace Bit.BlazorUI;
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
+    /// Make the height of the stack auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoHeight { get; set; }
+
+    /// <summary>
+    /// Make the width and height of the stack auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoSize { get; set; }
+
+    /// <summary>
+    /// Make the width of the stack auto.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoWidth { get; set; }
+
+    /// <summary>
     /// The content of the stack.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -42,25 +60,7 @@ public partial class BitStack : BitComponentBase
     /// Defines whether to render Stack children horizontally.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitAlignment HorizontalAlign { get; set; }
-
-    /// <summary>
-    /// Make the width and height of the stack 100%.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public bool Full { get; set; }
-
-    /// <summary>
-    /// Make the height of the stack 100%.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public bool FullHeight { get; set; }
-
-    /// <summary>
-    /// Make the width of the stack 100%.
-    /// </summary>
-    [Parameter, ResetStyleBuilder]
-    public bool FullWidth { get; set; }
+    public BitAlignment? HorizontalAlign { get; set; }
 
     /// <summary>
     /// Defines whether to render Stack children in the opposite direction (bottom-to-top if it's a vertical Stack and right-to-left if it's a horizontal Stack).
@@ -72,7 +72,7 @@ public partial class BitStack : BitComponentBase
     /// Defines whether to render Stack children vertically.
     /// </summary>
     [Parameter, ResetStyleBuilder]
-    public BitAlignment VerticalAlign { get; set; }
+    public BitAlignment? VerticalAlign { get; set; }
 
     /// <summary>
     /// Defines whether Stack children should wrap onto multiple rows or columns when they are about to overflow the size of the Stack.
@@ -88,18 +88,24 @@ public partial class BitStack : BitComponentBase
     {
         StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
 
-        StyleBuilder.Register(() => $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign : HorizontalAlign]}");
+        StyleBuilder.Register(() => $"gap:{Gap ?? "1rem"}");
 
-        StyleBuilder.Register(() => $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign : VerticalAlign]}");
+        StyleBuilder.Register(() =>
+            (Horizontal && VerticalAlign is not null) || (Horizontal is false && HorizontalAlign is not null)
+                ? $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign!.Value : HorizontalAlign!.Value]}"
+                : string.Empty);
 
-        StyleBuilder.Register(() => Gap.HasValue() ? $"gap:{Gap}" : string.Empty);
+        StyleBuilder.Register(() =>
+            (Horizontal && HorizontalAlign is not null) || (Horizontal is false && VerticalAlign is not null)
+                ? $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign!.Value : VerticalAlign!.Value]}"
+                : string.Empty);
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
 
         StyleBuilder.Register(() => Wrap ? "flex-wrap:wrap" : string.Empty);
 
-        StyleBuilder.Register(() => (Full || FullWidth) ? "width:100%" : string.Empty);
-        StyleBuilder.Register(() => (Full || FullHeight) ? "height:100%" : string.Empty);
+        StyleBuilder.Register(() => (AutoSize || AutoWidth) ? "width:auto" : string.Empty);
+        StyleBuilder.Register(() => (AutoSize || AutoHeight) ? "height:auto" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
