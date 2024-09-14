@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class ConflictException : RestException
+public partial class ConflictException : RestException
 {
     public ConflictException()
         : this(nameof(AppStrings.ConflictException))

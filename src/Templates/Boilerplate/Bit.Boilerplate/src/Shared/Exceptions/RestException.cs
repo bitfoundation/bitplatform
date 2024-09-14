@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class RestException : KnownException
+public partial class RestException : KnownException
 {
     public RestException()
         : base(nameof(AppStrings.RestException))

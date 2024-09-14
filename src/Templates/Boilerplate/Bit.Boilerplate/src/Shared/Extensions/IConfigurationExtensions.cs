@@ -1,6 +1,6 @@
 ﻿//-:cnd:noEmit
 namespace Microsoft.Extensions.Configuration;
-public static class IConfigurationExtensions
+public static partial class IConfigurationExtensions
 {
     public static T GetRequiredValue<T>(this IConfiguration configuration, string name)
     {

@@ -3,6 +3,6 @@
 namespace Boilerplate.Server.Api.Hubs;
 
 [Authorize]
-public class IdentityHub : Hub
+public partial class IdentityHub : Hub
 {
 }

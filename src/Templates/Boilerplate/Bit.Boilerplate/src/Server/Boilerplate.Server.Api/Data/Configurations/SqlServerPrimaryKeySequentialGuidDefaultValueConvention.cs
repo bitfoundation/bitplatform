@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Data.Configurations;
 
-public class SqlServerPrimaryKeySequentialGuidDefaultValueConvention : IModelFinalizingConvention
+public partial class SqlServerPrimaryKeySequentialGuidDefaultValueConvention : IModelFinalizingConvention
 {
     public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
     {

@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class UserDto : IValidatableObject
+public partial class UserDto : IValidatableObject
 {
     public Guid Id { get; set; }
 

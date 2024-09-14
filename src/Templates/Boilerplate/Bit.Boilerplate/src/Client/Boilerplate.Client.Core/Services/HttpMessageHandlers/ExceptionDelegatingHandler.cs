@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, JsonSerializerOptions jsonSerializerOptions, HttpClientHandler httpClientHandler)
+public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, JsonSerializerOptions jsonSerializerOptions, HttpClientHandler httpClientHandler)
     : DelegatingHandler(httpClientHandler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

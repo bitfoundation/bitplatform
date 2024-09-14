@@ -2,7 +2,7 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class IdentityRequestDto : IValidatableObject
+public partial class IdentityRequestDto : IValidatableObject
 {
     /// <example>test</example>
     [Display(Name = nameof(AppStrings.UserName))]

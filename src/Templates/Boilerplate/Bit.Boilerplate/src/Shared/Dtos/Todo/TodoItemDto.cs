@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Todo;
 
 [DtoResourceType(typeof(AppStrings))]
-public class TodoItemDto
+public partial class TodoItemDto
 {
     public Guid Id { get; set; }
 
