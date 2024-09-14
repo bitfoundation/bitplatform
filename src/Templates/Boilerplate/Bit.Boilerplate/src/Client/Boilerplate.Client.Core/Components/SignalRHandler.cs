@@ -14,12 +14,12 @@ public partial class SignalRHandler : AppComponentBase
     {
         await base.OnAfterFirstRenderAsync();
 
-        authManager.AuthenticationStateChanged += IsUserAuthenticated;
+        authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
         await ConnectSignalR();
     }
 
-    private async void IsUserAuthenticated(Task<AuthenticationState> task)
+    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
