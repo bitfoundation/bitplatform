@@ -23,21 +23,21 @@ internal static class CalloutsJsRuntimeExtensions
         string rootCssClass) where T : class
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.toggle",
-                                           dotnetObj,
-                                           componentId,
-                                           component,
-                                           calloutId,
-                                           callout,
-                                           isCalloutOpen,
-                                           responsiveMode,
-                                           dropDirection,
-                                           isRtl,
-                                           scrollContainerId,
-                                           scrollOffset,
-                                           headerId,
-                                           footerId,
-                                           setCalloutWidth,
-                                           rootCssClass);
+                                      dotnetObj,
+                                      componentId,
+                                      component,
+                                      calloutId,
+                                      callout,
+                                      isCalloutOpen,
+                                      responsiveMode,
+                                      dropDirection,
+                                      isRtl,
+                                      scrollContainerId,
+                                      scrollOffset,
+                                      headerId,
+                                      footerId,
+                                      setCalloutWidth,
+                                      rootCssClass);
     }
 
     internal static ValueTask ClearCallout(this IJSRuntime jsRuntime, string calloutId)
