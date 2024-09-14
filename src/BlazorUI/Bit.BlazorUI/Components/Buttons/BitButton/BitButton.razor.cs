@@ -59,6 +59,12 @@ public partial class BitButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Preserves the foreground color of the button through hover and focus.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FixedColor { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -203,6 +209,8 @@ public partial class BitButton : BitComponentBase
         });
 
         ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
+
+        ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
