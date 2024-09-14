@@ -24,7 +24,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
     [AutoInject] private IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory = default!;
     //#if (signalr == true)
-    [AutoInject] private IHubContext<IdentityHub> identityHubContext = default!;
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
     //#if (captcha == "reCaptcha")
@@ -146,10 +146,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
             throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
-
-        //#if (signalr == true)
-        await identityHubContext.Clients.User(user.Id.ToString()).SendAsync("NewUserSession", userSession, cancellationToken);
-        //#endif
     }
 
     /// <summary>
@@ -300,6 +296,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 await smsService.SendSms(Localizer[nameof(AppStrings.TwoFactorTokenSmsText), token], user.PhoneNumber!, cancellationToken);
             }
         }
+
+        //#if (signalr == true)
+        await appHubContext.Clients.User(user.Id.ToString()).SendAsync("TwoFactorToken", token, cancellationToken);
+        //#endif
 
         await Task.WhenAll([SendEmail(), SendSms()]);
     }
