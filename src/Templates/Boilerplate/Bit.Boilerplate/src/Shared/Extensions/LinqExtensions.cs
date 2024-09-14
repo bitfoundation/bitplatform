@@ -2,7 +2,7 @@
 
 namespace System.Collections.Generic;
 
-public static class LinqExtensions
+public static partial class LinqExtensions
 {
     /// <summary>
     /// https://extensionmethod.net/csharp/ienumerable-t/whereif

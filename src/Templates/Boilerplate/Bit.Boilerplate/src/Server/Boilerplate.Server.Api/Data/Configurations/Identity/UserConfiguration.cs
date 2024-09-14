@@ -4,7 +4,7 @@ using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public partial class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {

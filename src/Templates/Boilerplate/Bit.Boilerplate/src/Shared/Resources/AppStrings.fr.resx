@@ -377,6 +377,12 @@
     <data name="Token" xml:space="preserve">
     <value>Jeton</value>
   </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>Jeton non valide.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>Jeton expiré.</value>
+  </data>
     <data name="TokenPlaceholder" xml:space="preserve">
     <value>Entrez le jeton</value>
   </data>

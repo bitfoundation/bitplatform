@@ -3,7 +3,7 @@
 namespace Boilerplate.Tests;
 
 [TestClass]
-public class SampleApiTest
+public partial class SampleApiTest
 {
     [TestMethod]
     public async Task SignInTest()

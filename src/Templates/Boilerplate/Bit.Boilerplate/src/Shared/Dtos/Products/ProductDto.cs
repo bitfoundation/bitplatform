@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Products;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ProductDto
+public partial class ProductDto
 {
     public Guid Id { get; set; }
 

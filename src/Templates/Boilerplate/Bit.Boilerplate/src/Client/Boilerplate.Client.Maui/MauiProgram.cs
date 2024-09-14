@@ -162,7 +162,7 @@ public static partial class MauiProgram
     }
 
 #if iOS || Mac
-    public class CustomWKNavigationDelegate : WKNavigationDelegate
+    public partial class CustomWKNavigationDelegate : WKNavigationDelegate
     {
         public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, WKWebpagePreferences preferences, Action<WKNavigationActionPolicy, WKWebpagePreferences> decisionHandler)
         {

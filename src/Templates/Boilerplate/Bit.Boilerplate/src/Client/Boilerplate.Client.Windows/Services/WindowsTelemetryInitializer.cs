@@ -4,7 +4,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Boilerplate.Client.Windows.Services;
 
-public class WindowsTelemetryInitializer : ITelemetryInitializer
+public partial class WindowsTelemetryInitializer : ITelemetryInitializer
 {
     private string sessionId { get; } = Guid.NewGuid().ToString();
 

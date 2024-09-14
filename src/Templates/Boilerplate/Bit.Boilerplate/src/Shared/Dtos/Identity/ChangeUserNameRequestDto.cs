@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ChangeUserNameRequestDto
+public partial class ChangeUserNameRequestDto
 {
     /// <example>new</example>
     [Display(Name = nameof(AppStrings.UserName))]

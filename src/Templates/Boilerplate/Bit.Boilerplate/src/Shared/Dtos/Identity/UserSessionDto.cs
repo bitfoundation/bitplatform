@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
-public class UserSessionDto
+public partial class UserSessionDto
 {
     public Guid SessionUniqueId { get; set; }
 

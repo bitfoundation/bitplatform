@@ -6,7 +6,7 @@ using Boilerplate.Server.Api.Data;
 
 namespace Boilerplate.Tests;
 
-public class AppTestServer : IAsyncDisposable
+public partial class AppTestServer : IAsyncDisposable
 {
     private TestServer? testServer;
     private WebApplication? webApp;

@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Services;
 
-public class CultureInfoManager
+public partial class CultureInfoManager
 {
     /// <summary>
     /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.

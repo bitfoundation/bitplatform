@@ -3,7 +3,7 @@
 namespace Boilerplate.Server.Api.Data.Configurations;
 
 // Cannot write DateTimeOffset with Offset=XX:XX:XX to PostgreSQL type 'timestamp with time zone', only offset 0 (UTC) is supported.
-public class PostgresDateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
+public partial class PostgresDateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
 {
     public PostgresDateTimeOffsetConverter()
         : base(
@@ -13,7 +13,7 @@ public class PostgresDateTimeOffsetConverter : ValueConverter<DateTimeOffset, Da
     }
 }
 
-public class NullablePostgresDateTimeOffsetConverter : ValueConverter<DateTimeOffset?, DateTimeOffset?>
+public partial class NullablePostgresDateTimeOffsetConverter : ValueConverter<DateTimeOffset?, DateTimeOffset?>
 {
     public NullablePostgresDateTimeOffsetConverter()
         : base(
