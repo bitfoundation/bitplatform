@@ -41,7 +41,7 @@ public partial class SignalRHandler : AppComponentBase
         var access_token = await AuthTokenProvider.GetAccessTokenAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{Configuration.GetServerAddress()}/identity-hub?access_token={access_token}")
+            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}")
             .Build();
 
         hubConnection.On<string>("TwoFactorToken", async (token) =>
