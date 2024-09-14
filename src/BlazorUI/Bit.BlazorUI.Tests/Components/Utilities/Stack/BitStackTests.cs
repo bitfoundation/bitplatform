@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Stack;
 [TestClass]
 public class BitStackTests : BunitTestContext
 {
-    private const string STYLE = "flex-direction:column;align-items:flex-start;justify-content:flex-start;";
+    private const string STYLE = "flex-direction:column;gap:1rem;";
 
     private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
@@ -272,9 +272,9 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Gap, gap);
         });
 
-        var style = gap.HasValue() ? $"gap:{gap}" : null;
+        var style = gap.HasValue() ? $"gap:{gap}" : $"gap:1rem";
 
-        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -290,7 +290,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Gap, gap);
         });
 
-        component.MarkupMatches(@$"<div style=""{STYLE}gap:{gap};"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:{gap};"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -371,7 +371,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = horizontal ? "row" : "column";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};align-items:flex-start;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -386,7 +386,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Horizontal, true);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:row;align-items:flex-start;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:row;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -408,7 +408,7 @@ public class BitStackTests : BunitTestContext
 
         var ai = _AlignmentMap[horizontalAlign];
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:{ai};justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:{ai}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -423,7 +423,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.HorizontalAlign, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:space-between;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:space-between"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -439,7 +439,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = reversed ? "column-reverse" : "column";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};align-items:flex-start;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -454,7 +454,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Reversed, true);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column-reverse;align-items:flex-start;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column-reverse;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -476,7 +476,7 @@ public class BitStackTests : BunitTestContext
 
         var jc = _AlignmentMap[verticalAlign];
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:flex-start;justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -491,7 +491,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;align-items:flex-start;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -560,7 +560,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = $"{(horizontal ? "row" : "column")}{(reversed ? "-reverse" : null)}";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};align-items:flex-start;justify-content:flex-start;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -586,7 +586,7 @@ public class BitStackTests : BunitTestContext
                 var ai = _AlignmentMap[horizontal ? verticalAlign : horizontalAlign];
                 var jc = _AlignmentMap[horizontal ? horizontalAlign : verticalAlign];
 
-                component.MarkupMatches(@$"<div style=""flex-direction:{fd};align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
+                component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem;align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
             }
         }
     }
@@ -599,10 +599,10 @@ public class BitStackTests : BunitTestContext
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.Full, full);
+            parameters.Add(p => p.AutoSize, full);
         });
 
-        var style = full ? "width:100%;height:100%;" : null;
+        var style = full ? "width:auto;height:auto;" : null;
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
@@ -616,24 +616,24 @@ public class BitStackTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.Full, true);
+            parameters.Add(p => p.AutoSize, true);
         });
 
-        component.MarkupMatches(@$"<div style=""{STYLE}width:100%;height:100%;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{STYLE}width:auto;height:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectFullWidth(bool fullWidth)
+    public void BitStackShouldRespectFullWidth(bool autoWidth)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.FullWidth, fullWidth);
+            parameters.Add(p => p.AutoWidth, autoWidth);
         });
 
-        var style = fullWidth ? "width:100%;" : null;
+        var style = autoWidth ? "width:auto;" : null;
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
@@ -647,24 +647,24 @@ public class BitStackTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.AutoWidth, true);
         });
 
-        component.MarkupMatches(@$"<div style=""{STYLE}width:100%;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{STYLE}width:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectFullHeight(bool fullHeight)
+    public void BitStackShouldRespectFullHeight(bool autoHeight)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.FullHeight, fullHeight);
+            parameters.Add(p => p.AutoHeight, autoHeight);
         });
 
-        var style = fullHeight ? "height:100%;" : null;
+        var style = autoHeight ? "height:auto;" : null;
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
@@ -678,10 +678,10 @@ public class BitStackTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.FullHeight, true);
+            parameters.Add(p => p.AutoHeight, true);
         });
 
-        component.MarkupMatches(@$"<div style=""{STYLE}height:100%;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{STYLE}height:auto;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -694,25 +694,25 @@ public class BitStackTests : BunitTestContext
         DataRow(false, false, true),
         DataRow(false, false, false)
     ]
-    public void BitStackShouldRespectFullAndFullWidthAndFullHeight(bool full, bool fullWidth, bool fullHeight)
+    public void BitStackShouldRespectFullAndFullWidthAndFullHeight(bool autoSize, bool autoWidth, bool autoHeight)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.Full, full);
-            parameters.Add(p => p.FullWidth, fullWidth);
-            parameters.Add(p => p.FullHeight, fullHeight);
+            parameters.Add(p => p.AutoSize, autoSize);
+            parameters.Add(p => p.AutoWidth, autoWidth);
+            parameters.Add(p => p.AutoHeight, autoHeight);
         });
 
         StringBuilder style = new();
 
-        if (full || fullWidth)
+        if (autoSize || autoWidth)
         {
-            style.Append("width:100%;");
+            style.Append("width:auto;");
         }
 
-        if (full || fullHeight)
+        if (autoSize || autoHeight)
         {
-            style.Append("height:100%;");
+            style.Append("height:auto;");
         }
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
