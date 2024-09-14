@@ -401,7 +401,8 @@
                 {
                     "condition": "(signalr != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Hubs/**"
+                        "src/Server/Boilerplate.Server.Api/Hubs/**",
+                        "src/Client/Boilerplate.Client.Core/Components/SignalRHandler.cs"
                     ]
                 },
                 {
