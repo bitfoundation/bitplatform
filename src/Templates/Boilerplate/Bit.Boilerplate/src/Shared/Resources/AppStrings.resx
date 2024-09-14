@@ -235,11 +235,8 @@
   </data>
     <!--#endif-->
     <!--#if (signalr == true) -->
-    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
-    <value>New session!</value>
-  </data>
-    <data name="DeviceDetails" xml:space="preserve">
-    <value>Device: {0}</value>
+    <data name="TwoFactorTokenPushText" xml:space="preserve">
+    <value>{0} is your two factor token in Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
