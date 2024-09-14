@@ -111,8 +111,8 @@ public partial class BitSplitter : BitComponentBase
 
     private async Task ResetPaneDimensions()
     {
-        await _js.InvokeVoidAsync("BitSplitter.resetPaneDimensions", _firstPanelRef);
-        await _js.InvokeVoidAsync("BitSplitter.resetPaneDimensions", _secondPanelRef);
+        await _js.BitSplitterResetPaneDimensions(_firstPanelRef);
+        await _js.BitSplitterResetPaneDimensions(_secondPanelRef);
     }
 
     private async Task OnDraggingStart(double position)
@@ -122,11 +122,11 @@ public partial class BitSplitter : BitComponentBase
 
         _initialPosition = position;
 
-        _initialFirstPanelWidth = await _js.InvokeAsync<double>("BitSplitter.getSplitterWidth", _firstPanelRef);
-        _initialSecondPanelWidth = await _js.InvokeAsync<double>("BitSplitter.getSplitterWidth", _secondPanelRef);
+        _initialFirstPanelWidth = await _js.BitSplitterGetSplitterWidth(_firstPanelRef);
+        _initialSecondPanelWidth = await _js.BitSplitterGetSplitterWidth(_secondPanelRef);
 
-        _initialFirstPanelHeight = await _js.InvokeAsync<double>("BitSplitter.getSplitterHeight", _firstPanelRef);
-        _initialSecondPanelHeight = await _js.InvokeAsync<double>("BitSplitter.getSplitterHeight", _secondPanelRef);
+        _initialFirstPanelHeight = await _js.BitSplitterGetSplitterHeight(_firstPanelRef);
+        _initialSecondPanelHeight = await _js.BitSplitterGetSplitterHeight(_secondPanelRef);
     }
 
     private async Task OnDragging(double position)
@@ -139,15 +139,15 @@ public partial class BitSplitter : BitComponentBase
             {
                 var newPrimaryHeight = _initialFirstPanelHeight + delta;
                 var newSecondaryHeight = _initialSecondPanelHeight - delta;
-                await _js.InvokeVoidAsync("BitSplitter.setSplitterHeight", _firstPanelRef, newPrimaryHeight);
-                await _js.InvokeVoidAsync("BitSplitter.setSplitterHeight", _secondPanelRef, newSecondaryHeight);
+                await _js.BitSplitterSetSplitterHeight(_firstPanelRef, newPrimaryHeight);
+                await _js.BitSplitterSetSplitterHeight(_secondPanelRef, newSecondaryHeight);
             }
             else
             {
                 var newPrimaryWidth = _initialFirstPanelWidth + delta;
                 var newSecondaryWidth = _initialSecondPanelWidth - delta;
-                await _js.InvokeVoidAsync("BitSplitter.setSplitterWidth", _firstPanelRef, newPrimaryWidth);
-                await _js.InvokeVoidAsync("BitSplitter.setSplitterWidth", _secondPanelRef, newSecondaryWidth);
+                await _js.BitSplitterSetSplitterWidth(_firstPanelRef, newPrimaryWidth);
+                await _js.BitSplitterSetSplitterWidth(_secondPanelRef, newSecondaryWidth);
             }
         }
     }
@@ -157,7 +157,7 @@ public partial class BitSplitter : BitComponentBase
         _isDragging = false;
         ClassBuilder.Reset();
 
-        await _js.InvokeVoidAsync("BitSplitter.handleSplitterDraggingEnd");
+        await _js.BitSplitterHandleSplitterDraggingEnd();
     }
 
     private async Task OnPointerDown(PointerEventArgs e)
@@ -172,7 +172,7 @@ public partial class BitSplitter : BitComponentBase
 
     private async Task OnTouchStart(TouchEventArgs e)
     {
-        await _js.InvokeVoidAsync("BitSplitter.handleSplitterDragging", e);
+        await _js.BitSplitterHandleSplitterDragging(e);
 
         await OnDraggingStart(Vertical ? e.Touches[0].ClientY : e.Touches[0].ClientX);
     }

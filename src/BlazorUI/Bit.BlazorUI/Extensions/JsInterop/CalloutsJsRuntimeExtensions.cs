@@ -22,7 +22,7 @@ internal static class CalloutsJsRuntimeExtensions
         bool setCalloutWidth,
         string rootCssClass) where T : class
     {
-        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.Callouts.toggle",
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.toggle",
                                            dotnetObj,
                                            componentId,
                                            component,
@@ -42,6 +42,6 @@ internal static class CalloutsJsRuntimeExtensions
 
     internal static ValueTask ClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.Callouts.clear", calloutId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.clear", calloutId);
     }
 }
