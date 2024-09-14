@@ -5,8 +5,9 @@
 
 main {
     width: 30%;
-    height: 100%;
+    min-height: 100%;
     padding-top: 5rem;
+    padding-bottom: 2rem;
     min-width: rem2(560px);
     background-color: $bit-color-background-secondary;
 }

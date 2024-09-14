@@ -9,7 +9,6 @@ public partial class CultureService : ICultureService
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
 
 
-
     public async Task ChangeCulture(string? cultureName)
     {
         if (AppPlatform.IsBlazorHybrid)
