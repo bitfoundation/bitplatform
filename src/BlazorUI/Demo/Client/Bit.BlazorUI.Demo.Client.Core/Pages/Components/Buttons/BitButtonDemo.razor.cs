@@ -68,6 +68,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "FixedColor",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Preserves the foreground color of the button through hover and focus.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
