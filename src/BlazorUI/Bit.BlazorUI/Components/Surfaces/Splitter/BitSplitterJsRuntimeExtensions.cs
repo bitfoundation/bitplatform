@@ -24,7 +24,7 @@ internal static class BitSplitterJsRuntimeExtensions
 
     internal static ValueTask BitSplitterSetSplitterHeight(this IJSRuntime js, ElementReference element, double value)
     {
-        return js.InvokeVoid("BitBlazorUI.Splitter.SetSplitterHeight", element, value);
+        return js.InvokeVoid("BitBlazorUI.Splitter.setSplitterHeight", element, value);
     }
 
     internal static ValueTask BitSplitterHandleSplitterDragging(this IJSRuntime js, TouchEventArgs e)
