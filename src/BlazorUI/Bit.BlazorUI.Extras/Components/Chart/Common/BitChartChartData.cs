@@ -23,7 +23,7 @@ public class BitChartChartData
     /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
-    public virtual IList<string> Labels { get; }
+    public virtual List<string> Labels { get; }
 
     /// <summary>
     /// Gets the labels the horizontal axes will use.
@@ -32,7 +32,7 @@ public class BitChartChartData
     /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
-    public virtual IList<string> XLabels { get; }
+    public virtual List<string> XLabels { get; }
 
     /// <summary>
     /// Gets the labels the vertical axes will use.
@@ -41,12 +41,12 @@ public class BitChartChartData
     /// <see cref="Enums.AxisType.Category"/> for the chart to work correctly.
     /// </para>
     /// </summary>
-    public virtual IList<string> YLabels { get; }
+    public virtual List<string> YLabels { get; }
 
     /// <summary>
     /// Gets the datasets displayed in this chart.
     /// </summary>
-    public IList<IBitChartDataset> Datasets { get; }
+    public List<IBitChartDataset> Datasets { get; }
 
     [Obsolete("json.net", true)]
     public bool ShouldSerializeLabels() => Labels?.Count > 0;

@@ -18,7 +18,7 @@ public sealed class BitChartDelegateHandler<T> : IBitChartMethodHandler<T>, IDis
     private static readonly bool _delegateHasReturnValue;
 
     private readonly T _function;
-    private readonly IList<int> _ignoredIndices;
+    private readonly List<int> _ignoredIndices;
 
     /// <summary>
     /// Gets the name of the method which should be called from JavaScript.
