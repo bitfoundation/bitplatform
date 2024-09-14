@@ -42,6 +42,7 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
+            .OrderByDescending(s => s.RenewedOn)
             .Select(us =>
             {
                 var dto = us.Map();
@@ -187,7 +188,7 @@ public partial class UserController : AppControllerBase, IUserController
         var expired = (DateTimeOffset.Now - user!.EmailTokenRequestedOn) > AppSettings.Identity.EmailTokenLifetime;
 
         if (expired)
-            throw new BadRequestException();
+            throw new BadRequestException(nameof(AppStrings.ExpiredToken));
 
         var tokenIsValid = await userManager.VerifyUserTokenAsync(
             user,
@@ -196,7 +197,7 @@ public partial class UserController : AppControllerBase, IUserController
             request.Token!);
 
         if (tokenIsValid is false)
-            throw new BadRequestException();
+            throw new BadRequestException(nameof(AppStrings.InvalidToken));
 
         await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, request.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user);
@@ -241,7 +242,7 @@ public partial class UserController : AppControllerBase, IUserController
         var expired = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
 
         if (expired)
-            throw new BadRequestException();
+            throw new BadRequestException(nameof(AppStrings.ExpiredToken));
 
         var result = await userManager.ChangePhoneNumberAsync(user!, request.PhoneNumber!, request.Token!);
 
