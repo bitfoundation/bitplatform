@@ -5,6 +5,27 @@ public partial class BitStackDemo
     [
         new()
         {
+            Name = "AutoHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the height of the stack auto."
+        },
+        new()
+        {
+            Name = "AutoSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the width and height of the stack auto."
+        },
+        new()
+        {
+            Name = "AutoWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Make the width of the stack auto."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -48,32 +69,11 @@ public partial class BitStackDemo
         new()
         {
             Name = "HorizontalAlign",
-            Type = "BitAlignment",
-            DefaultValue = "BitAlignment.Start",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
             Description = "Defines whether to render Stack children horizontally.",
+            LinkType = LinkType.Link,
             Href = "#alignment-enum",
-            LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "Full",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Make the width and height of the stack 100%."
-        },
-        new()
-        {
-            Name = "FullHeight",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Make the height of the stack 100%."
-        },
-        new()
-        {
-            Name = "FullWidth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Make the width of the stack 100%."
         },
         new()
         {
@@ -85,11 +85,11 @@ public partial class BitStackDemo
         new()
         {
             Name = "VerticalAlign",
-            Type = "BitAlignment",
-            DefaultValue = "BitAlignment.Start",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
             Description = "Defines whether to render Stack children vertically.",
+            LinkType = LinkType.Link,
             Href = "#alignment-enum",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -331,19 +331,19 @@ private double stackHeight = 15;
     private readonly string example6RazorCode = @"
 <BitStack Gap=""0.5rem"" Style=""background:#71afe5;height:15rem"">
     <BitStack Grow=""3""
-              Class=""item"" Style=""width:100%""
+              Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Grow is 3
     </BitStack>
     <BitStack Grow=""2""
-              Class=""item"" Style=""width:100%""
+              Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Grow is 2
     </BitStack>
     <BitStack Grow=""1""
-              Class=""item"" Style=""width:100%""
+              Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Grow is 1
@@ -353,18 +353,18 @@ private double stackHeight = 15;
 <br /><br />
 
 <BitStack Gap=""0.5rem"" Style=""background:#71afe5;height:15rem"">
-    <BitStack Class=""item"" Style=""width:100%""
+    <BitStack Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
     <BitStack Grows
-              Class=""item"" Style=""width:100%""
+              Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Grows
     </BitStack>
-    <BitStack Class=""item"" Style=""width:100%""
+    <BitStack Class=""item"" AutoHeight
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Normal
@@ -376,18 +376,18 @@ private double stackHeight = 15;
 <BitStack Horizontal
           Gap=""0.5rem""
           Style=""background:#71afe5;height:15rem"">
-    <BitStack Class=""item"" Style=""height:100%""
+    <BitStack Class=""item"" AutoWidth
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Normal
     </BitStack>
     <BitStack Grows
-              Class=""item"" Style=""height:100%""
+              Class=""item"" AutoWidth
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Grows
     </BitStack>
-    <BitStack Class=""item"" Style=""height:100%""
+    <BitStack Class=""item"" AutoWidth
               VerticalAlign=""BitAlignment.Center""
               HorizontalAlign=""BitAlignment.Center"">
         Normal
