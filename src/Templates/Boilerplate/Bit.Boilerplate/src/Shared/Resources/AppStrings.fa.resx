@@ -377,6 +377,12 @@
     <data name="Token" xml:space="preserve">
     <value>توکن</value>
   </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>توکن معتبر نیست.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>توکن منقضی شده است.</value>
+  </data>
     <data name="TokenPlaceholder" xml:space="preserve">
     <value>توکن را وارد کنید</value>
   </data>
