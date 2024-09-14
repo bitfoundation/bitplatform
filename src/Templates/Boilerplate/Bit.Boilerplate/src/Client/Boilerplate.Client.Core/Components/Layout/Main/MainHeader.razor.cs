@@ -11,9 +11,12 @@ public partial class MainHeader : AppComponentBase
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     private UserDto user = new();
+    private string? pageTitle;
+    private string? pageSubtitle;
     private string? SelectedCulture;
     private string? profileImageUrl;
-    private Action unsubscribe = default!;
+    private Action unsubscribeUerDataUpdated = default!;
+    private Action unsubscribePageTitleChanged = default!;
     private BitDropdownItem<string>[] cultures = default!;
 
     protected override async Task OnInitAsync()
@@ -27,7 +30,12 @@ public partial class MainHeader : AppComponentBase
             SelectedCulture = CultureInfo.CurrentUICulture.Name;
         }
 
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
+        unsubscribePageTitleChanged = PubSubService.Subscribe(PubSubMessages.PAGE_TITLE_CHANGED, async payload =>
+        {
+            (pageTitle, pageSubtitle) = (ValueTuple<string?, string?>)payload!;
+        });
+
+        unsubscribeUerDataUpdated = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
         {
             if (payload is null) return;
 
@@ -76,5 +84,13 @@ public partial class MainHeader : AppComponentBase
     {
         //await CloseMenu();
         NavigationManager.NavigateTo(Urls.ProfilePage);
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        await base.DisposeAsync(disposing);
+
+        unsubscribeUerDataUpdated();
+        unsubscribePageTitleChanged();
     }
 }

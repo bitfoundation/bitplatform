@@ -17,17 +17,19 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 
+        services.TryAddSessioned<IThemeService, ThemeService>();
         services.TryAddSessioned<IPubSubService, PubSubService>();
-        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddSessioned<ICultureService, CultureService>();
         services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
-        services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
+        services.TryAddSessioned<HttpClientHandler>();
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddSessioned<HttpClientHandler>();
+        services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());

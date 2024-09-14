@@ -5,7 +5,9 @@
 <CascadingValue Value="currentDir">
     <div dir="@currentDir?.ToString()" class="layout">
         <AppErrorBoundary>
-            @Body
+            <CascadingValue Value="isUserAuthenticated" Name="IsUserAuthenticated">
+                @Body
+            </CascadingValue>
         </AppErrorBoundary>
         <MessageBox />
     </div>

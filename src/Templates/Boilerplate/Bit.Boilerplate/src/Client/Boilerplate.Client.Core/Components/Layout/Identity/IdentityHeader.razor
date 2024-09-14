@@ -3,9 +3,9 @@
 <header>
     <BitStack Horizontal Grows Gap="1rem">
         <BitLink NoUnderline Href="@Urls.HomePage">
-            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                <BitIcon IconName="@BitIconName.DecreaseIndentArrow" />
-                <BitText Typography="BitTypography.Body2">Back to home</BitText>
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.IncreaseIndentArrow : BitIconName.DecreaseIndentArrow)" />
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
             </BitStack>
         </BitLink>
 
@@ -14,10 +14,13 @@
         <BitButton IconOnly
                    Variant="BitVariant.Text"
                    IconName="@BitIconName.Sunny"
-                   Color="BitColor.SecondaryBackground" />
+                   Color="BitColor.SecondaryBackground"
+                   OnClick="WrapHandled(ToggleTheme)" />
 
-        <BitDropdown @bind-Value="SelectedCulture"
-                     FitWidth NoBorder Transparent Items="cultures"
-                     OnSelectItem="WrapHandled((BitDropdownItem<string> item) => OnCultureChanged())" />
+
+        <BitDropdown Items="cultures"
+                     FitWidth NoBorder Transparent
+                     DefaultValue="@CultureInfo.CurrentUICulture.Name"
+                     OnChange="WrapHandled((string c) => OnCultureChanged(c))" />
     </BitStack>
 </header>

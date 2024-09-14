@@ -359,6 +359,9 @@
     <data name="Home" xml:space="preserve">
     <value>خانه</value>
   </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>بازگشت به خانه</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
@@ -981,6 +984,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>داشبورد</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>داده های تحلیلی شما</value>
   </data>
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">

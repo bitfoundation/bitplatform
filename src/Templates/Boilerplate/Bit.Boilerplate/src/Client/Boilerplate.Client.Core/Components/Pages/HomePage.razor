@@ -1,20 +1,35 @@
 ﻿@attribute [Route(Urls.HomePage)]
-@inherits AppComponentBase
+@inherits BasePage
 @layout EmptyLayout
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
 
-<div class="page-container">
-    <section class="page-section hero-section">
-        <h1 class="hero-section-title">@Localizer[nameof(AppStrings.HomeTitle)]</h1>
+<LayoutView Layout="@(isUserAuthenticated ? typeof( MainLayout) : typeof(EmptyLayout))">
+    <div class="page-container">
+        <section class="page-section hero-section">
+            <h1 class="hero-section-title">@Localizer[nameof(AppStrings.HomeTitle)]</h1>
 
-        <div class="hero-section-desc">@Localizer[nameof(AppStrings.HomeMessage)]</div>
+            <div class="hero-section-desc">@Localizer[nameof(AppStrings.HomeMessage)]</div>
 
-        <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate"
-                   Target="_blank"
-                   Variant="BitVariant.Outline"
-                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]">
-            @Localizer[nameof(AppStrings.GitHubRepo)]
-        </BitButton>
-    </section>
-</div>
+            <BitStack Gap="1rem">
+                <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate"
+                           Target="_blank"
+                           Variant="BitVariant.Outline"
+                           Title="@Localizer[nameof(AppStrings.GitHubRepo)]">
+                    @Localizer[nameof(AppStrings.GitHubRepo)]
+                </BitButton>
+
+
+                @if (isUserAuthenticated is false)
+                {
+                    <BitButton Href="@Urls.SignInPage">
+                        @Localizer[nameof(AppStrings.SignIn)]
+                    </BitButton>
+                    <BitButton Href="@Urls.SignUpPage">
+                        @Localizer[nameof(AppStrings.SignUp)]
+                    </BitButton>
+                }
+            </BitStack>
+        </section>
+    </div>
+</LayoutView>

@@ -1,10 +1,14 @@
 @inherits LayoutComponentBase
 
-<BitStack Full>
-    <MainHeader />
+<BitStack Horizontal Full Style="padding-top:1rem">
+    <NavMenu />
 
-    <main>
-        @Body
-    </main>
+    <BitStack Full Style="padding-inline:1rem">
+        <MainHeader />
+
+        <main>
+            @Body
+        </main>
+    </BitStack>
 
 </BitStack>

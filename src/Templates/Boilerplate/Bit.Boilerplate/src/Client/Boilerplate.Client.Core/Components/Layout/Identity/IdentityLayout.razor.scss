@@ -4,7 +4,9 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
+    width: 30%;
+    height: 100%;
     padding-top: 5rem;
-    width: rem2(560px);
+    min-width: rem2(560px);
     background-color: $bit-color-background-secondary;
 }

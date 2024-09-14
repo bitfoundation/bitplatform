@@ -1,28 +1,27 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {
     private bool disposed;
-    private bool isMenuOpen;
     private BitDir? currentDir;
     private bool isUserAuthenticated;
-    private ErrorBoundary errorBoundaryRef = default!;
     private Action unsubscribeCultureChange = default!;
+
 
     [AutoInject] private IPubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
+
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            authManager.AuthenticationStateChanged += IsUserAuthenticated;
+            authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
             isUserAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -52,6 +51,7 @@ public partial class RootLayout : IDisposable
         base.OnParametersSet();
     }
 
+
     private void SetCurrentDir()
     {
         var currentCulture = CultureInfo.CurrentUICulture;
@@ -59,12 +59,7 @@ public partial class RootLayout : IDisposable
         currentDir = currentCulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
     }
 
-    private void ToggleMenuHandler()
-    {
-        isMenuOpen = !isMenuOpen;
-    }
-
-    private async void IsUserAuthenticated(Task<AuthenticationState> task)
+    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
@@ -80,6 +75,7 @@ public partial class RootLayout : IDisposable
         }
     }
 
+
     public void Dispose()
     {
         Dispose(true);
@@ -91,7 +87,7 @@ public partial class RootLayout : IDisposable
     {
         if (disposed || disposing is false) return;
 
-        authManager.AuthenticationStateChanged -= IsUserAuthenticated;
+        authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         unsubscribeCultureChange();
 

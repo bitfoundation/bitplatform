@@ -359,6 +359,9 @@
     <data name="Home" xml:space="preserve">
     <value>Maison</value>
   </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>Retour à la maison</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>
@@ -981,6 +984,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Tableau de bord</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Voici vos données analytiques</value>
   </data>
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">

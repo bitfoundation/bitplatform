@@ -1,8 +1,6 @@
 header {
+    top: 0;
     width: 100%;
-    position: absolute;
-}
-
-::deep .culture-drp {
-    width: fit-content;
+    position: sticky;
+    padding-block: 1rem;
 }

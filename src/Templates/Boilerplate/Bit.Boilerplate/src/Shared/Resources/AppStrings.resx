@@ -359,6 +359,9 @@
     <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>Back to home</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
   </data>
@@ -981,6 +984,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Here's your analytic data</value>
   </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
