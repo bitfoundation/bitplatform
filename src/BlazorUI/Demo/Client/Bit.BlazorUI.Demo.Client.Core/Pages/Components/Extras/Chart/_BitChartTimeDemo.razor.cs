@@ -119,7 +119,10 @@ public partial class _BitChartTimeDemo
             {
                 int count = intDataset.Count;
                 intDataset.Clear();
-                intDataset.AddRange(BitChartDemoUtils.RandomScalingFactor(count));
+                foreach (var factor in BitChartDemoUtils.RandomScalingFactor(count))
+                {
+                    intDataset.Add(factor);
+                }
             }
         }
 
@@ -329,7 +332,10 @@ private void RandomizeData()
         {
             int count = intDataset.Count;
             intDataset.Clear();
-            intDataset.AddRange(BitChartDemoUtils.RandomScalingFactor(count));
+            foreach (var factor in BitChartDemoUtils.RandomScalingFactor(count))
+            {
+                intDataset.Add(factor);
+            }
         }
     }
 
