@@ -44,6 +44,8 @@
 }
 
 .bit-btn-prt {
+    display: flex;
+    align-items: center;
     font-size: var(--bit-btn-prt-fontsize);
 }
 
