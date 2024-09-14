@@ -8,7 +8,9 @@ namespace Boilerplate.Client.Core.Components;
 
 public partial class AppInitializer : AppComponentBase
 {
+    //#if (signalr == true)
     private HubConnection? hubConnection;
+    //#endif
 
     [AutoInject] private MessageBoxService messageBoxService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
