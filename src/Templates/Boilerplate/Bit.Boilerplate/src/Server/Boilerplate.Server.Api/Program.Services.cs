@@ -77,7 +77,9 @@ public static partial class Program
 
         services
             .AddControllers()
+            //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
+            //#endif
             .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
