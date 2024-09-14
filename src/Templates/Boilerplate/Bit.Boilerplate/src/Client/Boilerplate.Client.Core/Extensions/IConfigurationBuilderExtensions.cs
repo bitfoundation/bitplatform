@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Microsoft.Extensions.Configuration;
 
-public static class IConfigurationBuilderExtensions
+public static partial class IConfigurationBuilderExtensions
 {
     /// <summary>
     /// Configuration priority (Lowest to highest) =>

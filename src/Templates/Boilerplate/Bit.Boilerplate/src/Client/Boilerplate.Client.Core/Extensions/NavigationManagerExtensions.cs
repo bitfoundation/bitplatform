@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNetCore.Components;
 
-public static class NavigationManagerExtensions
+public static partial class NavigationManagerExtensions
 {
     public static string GetUriWithoutQueryParameter(this NavigationManager navigationManager, string key)
     {

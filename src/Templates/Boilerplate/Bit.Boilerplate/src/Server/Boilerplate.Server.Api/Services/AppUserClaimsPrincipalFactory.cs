@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Services;
 
-public class AppUserClaimsPrincipalFactory(UserManager<User> userManager, IOptions<IdentityOptions> optionsAccessor)
+public partial class AppUserClaimsPrincipalFactory(UserManager<User> userManager, IOptions<IdentityOptions> optionsAccessor)
     : UserClaimsPrincipalFactory<User>(userManager, optionsAccessor)
 {
     /// <summary>

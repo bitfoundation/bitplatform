@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
 /// </summary>
-public class ODataOperationFilter : IOperationFilter
+public partial class ODataOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {

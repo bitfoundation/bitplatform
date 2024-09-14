@@ -5,6 +5,6 @@
 /// generate the remaining code necessary to inject that field or property using dependency injection.
 /// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-public sealed class AutoInjectAttribute : Attribute
+public sealed partial class AutoInjectAttribute : Attribute
 {
 }

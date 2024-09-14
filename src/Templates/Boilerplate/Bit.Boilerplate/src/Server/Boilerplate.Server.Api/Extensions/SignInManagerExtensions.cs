@@ -3,7 +3,7 @@ using Boilerplate.Server.Api.Models.Identity;
 
 namespace Microsoft.AspNetCore.Identity;
 
-public static class SignInManagerExtensions
+public static partial class SignInManagerExtensions
 {
     public static async Task<SignInResult> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otp)
     {

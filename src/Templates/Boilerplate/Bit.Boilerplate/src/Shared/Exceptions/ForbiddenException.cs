@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class ForbiddenException : RestException
+public partial class ForbiddenException : RestException
 {
     public ForbiddenException()
         : base(nameof(AppStrings.ForbiddenException))

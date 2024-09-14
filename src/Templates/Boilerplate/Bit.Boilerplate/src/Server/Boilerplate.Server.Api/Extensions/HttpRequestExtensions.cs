@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-public static class HttpRequestExtensions
+public static partial class HttpRequestExtensions
 {
     /// <summary>
     /// https://blog.elmah.io/how-to-get-base-url-in-asp-net-core/

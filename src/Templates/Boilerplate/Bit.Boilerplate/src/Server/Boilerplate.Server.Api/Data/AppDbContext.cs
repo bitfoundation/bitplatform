@@ -12,7 +12,7 @@ using Boilerplate.Server.Api.Data.Configurations;
 
 namespace Boilerplate.Server.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
+public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }

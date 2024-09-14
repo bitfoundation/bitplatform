@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Identity;
 
-public class Role : IdentityRole<Guid>
+public partial class Role : IdentityRole<Guid>
 {
 }
 
