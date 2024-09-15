@@ -113,7 +113,7 @@ public static partial class Program
         }).WithTags("Test");
 
         //#if (signalr == true)
-        app.MapHub<Api.Hubs.IdentityHub>("/identity-hub");
+        app.MapHub<Api.Hubs.AppHub>("/app-hub");
         //#endif
 
         app.MapControllers().RequireAuthorization();
