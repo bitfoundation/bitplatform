@@ -53,8 +53,8 @@ public partial class Footer
         if(string.IsNullOrEmpty(culture) is false)
         {
             uri = uri
-                .Replace(culture, string.Empty)
-                .Replace($"{culture}/", string.Empty);
+                .Replace($"{culture}/", string.Empty)
+                .Replace(culture, string.Empty);
         }
 
         NavigationManager.NavigateTo(uri, forceLoad: true, replace: true);
