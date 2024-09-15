@@ -22,10 +22,8 @@
 
         @if (requiresTwoFactor is false)
         {
-            <br />
-
-            <br />
-            <BitStack Horizontal Gap="1.5rem">
+            <br /><br />
+            <BitStack Horizontal>
                 <BitButton IsLoading="isWaiting"
                            Size="BitSize.Small"
                            Variant="BitVariant.Text"
@@ -155,7 +153,7 @@
             <BitPivot>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorCode)]">
                     <br />
-                    <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitStack>
                         <div class="form-input-container tfa-pivot-item">
                             <BitTextField @bind-Value="model.TwoFactorCode"
                                           Label="@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]"
@@ -167,7 +165,7 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]">
                     <br />
-                    <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitStack>
                         <div class="form-input-container tfa-pivot-item">
                             <BitTextField @bind-Value="model.TwoFactorRecoveryCode"
                                           Label="@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]"
@@ -179,7 +177,7 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorToken)]">
                     <br />
-                    <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitStack>
                         <div class="form-input-container tfa-pivot-item">
                             <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
                             <BitButton IsLoading="isSendingTfaToken"

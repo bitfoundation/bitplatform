@@ -29,6 +29,9 @@ public static partial class IConfigurationBuilderExtensions
 
         var originalSources = builder.Sources.ToList();
         builder.Sources.Clear();
-        builder.Sources.AddRange(configBuilder.Sources.Union(originalSources));
+        foreach (var source in configBuilder.Sources.Union(originalSources))
+        {
+            builder.Sources.Add(source);
+        }
     }
 }
