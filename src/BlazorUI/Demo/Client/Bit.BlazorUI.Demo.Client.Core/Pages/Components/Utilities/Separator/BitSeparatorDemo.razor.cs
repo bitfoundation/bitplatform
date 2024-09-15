@@ -15,17 +15,17 @@ public partial class BitSeparatorDemo
         },
         new()
         {
+            Name = "AutoSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the separator with auto width or height."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the Separator, it can be any custom tag or text."
-        },
-        new()
-        {
-            Name = "FullWidth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the separator in full width of its container."
         },
         new()
         {
@@ -101,14 +101,16 @@ public partial class BitSeparatorDemo
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
 
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>";
+<div style=""height: 13rem"">
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
+</div>";
 
     private readonly string example4RazorCode = @"
 <div style=""display:flex;flex-direction:column;align-items:center"">
-    <BitSeparator>Normal</BitSeparator>
-    <BitSeparator FullWidth>FullWidth</BitSeparator>
+    <BitSeparator>Default</BitSeparator>
+    <BitSeparator AutoSize>AutoSize</BitSeparator>
 </div>";
 }
 
