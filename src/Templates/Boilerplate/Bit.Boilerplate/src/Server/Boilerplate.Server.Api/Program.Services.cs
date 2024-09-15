@@ -156,8 +156,6 @@ public static partial class Program
 
         AddIdentity(builder);
 
-        services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
-
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.Email.DefaultFromEmail);
 
         if (appSettings.Email.UseLocalFolderForEmails)

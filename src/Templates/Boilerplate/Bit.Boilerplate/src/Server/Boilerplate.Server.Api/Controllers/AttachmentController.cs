@@ -13,8 +13,6 @@ public partial class AttachmentController : AppControllerBase
 
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
 
-    [AutoInject] private IContentTypeProvider contentTypeProvider = default!;
-
     [AutoInject] private IBlobStorage blobStorage = default!;
 
     [HttpPost]
