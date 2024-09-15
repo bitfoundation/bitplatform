@@ -46,7 +46,11 @@ public partial class Footer
             });
         }
 
-        NavigationManager.NavigateTo(NavigationManager.GetUriWithoutQueryParameter("culture"), forceLoad: true, replace: true);
+        var uri = NavigationManager.GetUriWithoutQueryParameter("culture");
+
+        var culture = cultureInfoManager.GetCultureFromUrl(new Uri(uri)) ?? string.Empty;
+
+        NavigationManager.NavigateTo(uri.Replace(culture, string.Empty), forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()

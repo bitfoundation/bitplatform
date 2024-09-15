@@ -1,4 +1,5 @@
 ﻿@attribute [Route(Urls.NotAuthorizedPage)]
+@attribute [Route("{culture?}" + Urls.NotAuthorizedPage)]
 @inherits AppComponentBase
 
 <AuthorizeView>

@@ -17,7 +17,6 @@ using FluentStorage;
 using FluentStorage.Blobs;
 using Twilio;
 using Boilerplate.Server.Api.Controllers;
-using System.Configuration;
 
 namespace Boilerplate.Server.Api;
 
@@ -64,7 +63,7 @@ public static partial class Program
             {
                 var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
 
-                policy.SetIsOriginAllowed(origin => 
+                policy.SetIsOriginAllowed(origin =>
                             LocalhostOriginRegex().IsMatch(origin) ||
                             (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
@@ -75,8 +74,11 @@ public static partial class Program
 
         services.AddAntiforgery();
 
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default));
+
         services
             .AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default))
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif

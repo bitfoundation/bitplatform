@@ -34,8 +34,6 @@ public static partial class Program
 
         if (CultureInfoManager.MultilingualEnabled)
         {
-            var uri = new Uri(host.Services.GetRequiredService<NavigationManager>().Uri);
-
             var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
 
             if (cultureCookie is not null)
@@ -44,11 +42,13 @@ public static partial class Program
                 cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
             }
 
-            var culture = HttpUtility.ParseQueryString(uri.Query)["culture"] ?? // 1- Culture query string
+            var cultureInfoManager = host.Services.GetRequiredService<CultureInfoManager>();
+
+            var culture = cultureInfoManager.GetCultureFromUrl(new Uri(host.Services.GetRequiredService<NavigationManager>().Uri)) ?? // 1- Culture query string OR Route data request culture
                           cultureCookie ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings
 
-            host.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(culture);
+            cultureInfoManager.SetCurrentCulture(culture);
         }
 
         try

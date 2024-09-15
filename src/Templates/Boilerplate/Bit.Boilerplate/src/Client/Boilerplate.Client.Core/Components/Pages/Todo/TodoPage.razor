@@ -1,4 +1,5 @@
 ﻿@attribute [Route(Urls.TodoPage)]
+@attribute [Route("{culture?}" + Urls.TodoPage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.TodoTitle)]</PageTitle>

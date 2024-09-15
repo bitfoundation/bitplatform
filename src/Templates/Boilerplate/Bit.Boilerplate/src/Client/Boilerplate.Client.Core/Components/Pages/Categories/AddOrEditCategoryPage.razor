@@ -1,4 +1,5 @@
 ﻿@attribute [Route(Urls.AddOrEditCategoryPage + "/{Id:guid?}")]
+@attribute [Route("{culture?}" + Urls.AddOrEditCategoryPage + "/{Id:guid?}")]
 @inherits AppComponentBase
 
 <PageTitle>
