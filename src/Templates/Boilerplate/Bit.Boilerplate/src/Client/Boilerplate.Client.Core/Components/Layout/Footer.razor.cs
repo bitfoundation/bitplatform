@@ -48,9 +48,16 @@ public partial class Footer
 
         var uri = NavigationManager.GetUriWithoutQueryParameter("culture");
 
-        var culture = cultureInfoManager.GetCultureFromUrl(new Uri(uri)) ?? string.Empty;
+        var culture = cultureInfoManager.GetCultureFromUrl(new Uri(uri));
 
-        NavigationManager.NavigateTo(uri.Replace(culture, string.Empty), forceLoad: true, replace: true);
+        if(string.IsNullOrEmpty(culture) is false)
+        {
+            uri = uri
+                .Replace(culture, string.Empty)
+                .Replace($"{culture}/", string.Empty);
+        }
+
+        NavigationManager.NavigateTo(uri, forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()
