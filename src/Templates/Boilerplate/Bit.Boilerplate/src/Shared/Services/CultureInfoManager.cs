@@ -46,28 +46,6 @@ public partial class CultureInfoManager
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
     }
 
-    public string? GetCultureFromUrl(Uri uri)
-    {
-        var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
-
-        if (string.IsNullOrEmpty(culture) is false)
-            return culture;
-
-        var match = RouteDataRequestCulture().Match(uri.ToString());
-
-        try
-        {
-            CreateCultureInfo(match.Value);
-            return match.Value;
-        }
-        catch { };
-
-        return null;
-    }
-
-    [GeneratedRegex(@"([a-zA-Z]{2}-[a-zA-Z]{2})")]
-    public static partial Regex RouteDataRequestCulture();
-
     /// <summary>
     /// This is an example to demonstrate the way you can customize application culture
     /// </summary>

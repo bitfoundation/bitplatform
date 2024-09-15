@@ -46,18 +46,7 @@ public partial class Footer
             });
         }
 
-        var uri = NavigationManager.GetUriWithoutQueryParameter("culture");
-
-        var culture = cultureInfoManager.GetCultureFromUrl(new Uri(uri));
-
-        if(string.IsNullOrEmpty(culture) is false)
-        {
-            uri = uri
-                .Replace($"{culture}/", string.Empty)
-                .Replace(culture, string.Empty);
-        }
-
-        NavigationManager.NavigateTo(uri, forceLoad: true, replace: true);
+        NavigationManager.NavigateTo(NavigationManager.GetUriWithoutCulture(), forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()

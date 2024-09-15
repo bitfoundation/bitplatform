@@ -42,13 +42,13 @@ public static partial class Program
                 cultureCookie = cultureCookie[(cultureCookie.IndexOf("|uic=") + 5)..];
             }
 
-            var cultureInfoManager = host.Services.GetRequiredService<CultureInfoManager>();
+            var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 
-            var culture = cultureInfoManager.GetCultureFromUrl(new Uri(host.Services.GetRequiredService<NavigationManager>().Uri)) ?? // 1- Culture query string OR Route data request culture
+            var culture = navigationManager.GetCultureFromUri(new Uri(navigationManager.Uri)) ?? // 1- Culture query string OR Route data request culture
                           cultureCookie ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings
 
-            cultureInfoManager.SetCurrentCulture(culture);
+            host.Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(culture);
         }
 
         try
