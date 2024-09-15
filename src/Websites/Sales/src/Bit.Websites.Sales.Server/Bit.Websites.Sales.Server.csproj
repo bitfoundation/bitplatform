@@ -9,11 +9,11 @@
         <ProjectReference Include="..\Bit.Websites.Sales.Client\Bit.Websites.Sales.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-08">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0-pre-09">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-08">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0-pre-09">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
