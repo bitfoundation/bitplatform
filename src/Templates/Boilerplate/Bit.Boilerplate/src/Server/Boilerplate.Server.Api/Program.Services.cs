@@ -61,6 +61,8 @@ public static partial class Program
         {
             builder.AddDefaultPolicy(policy =>
             {
+                policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
+
                 var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
 
                 policy.SetIsOriginAllowed(origin =>
@@ -200,8 +202,7 @@ public static partial class Program
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(attachmentsDirPath);
-            var connectionString = $"disk://path={attachmentsDirPath}";
-            return StorageFactory.Blobs.FromConnectionString(connectionString);
+            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
         });
         //#elif (filesStorage == "AzureBlobStorage")
         services.TryAddSingleton(sp =>
@@ -341,7 +342,7 @@ public static partial class Program
 
         services.AddSwaggerGen(options =>
         {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"), includeControllerXmlComments: true);
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Shared.xml"));
 
             options.OperationFilter<ODataOperationFilter>();
