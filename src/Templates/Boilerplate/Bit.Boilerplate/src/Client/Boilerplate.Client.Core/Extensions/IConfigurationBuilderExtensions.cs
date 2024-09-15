@@ -42,7 +42,7 @@ public static partial class IConfigurationBuilderExtensions
         {
             configBuilder.AddJsonStream(envClientCoreAppSettings);
         }
-        
+
         if (AppPlatform.IsBrowser)
         {
             var providersField = builder.GetType().GetField("_providers", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -50,13 +50,19 @@ public static partial class IConfigurationBuilderExtensions
         }
         else if (AppPlatform.IsBlazorHybrid)
         {
-            builder.Sources.AddRange(configBuilder.Sources);
+            foreach (var source in configBuilder.Sources)
+            {
+                builder.Sources.Add(source);
+            }
         }
         else
         {
             var originalSources = builder.Sources.ToList();
             builder.Sources.Clear();
-            builder.Sources.AddRange(configBuilder.Sources.Union(originalSources));
+            foreach (var source in configBuilder.Sources.Union(originalSources))
+            {
+                builder.Sources.Add(source);
+            }
         }
     }
 }
