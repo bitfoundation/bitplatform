@@ -32,7 +32,7 @@ public partial class _BitTimelineItemDemo
 
     private List<BitTimelineItem> styleClassItems =
     [
-        new() { PrimaryText = "Styled", Style = "color: darkred;", IconName = BitIconName.Brush },
+        new() { PrimaryText = "Styled", Style = "color: dodgerblue;", IconName = BitIconName.Brush },
         new() { PrimaryText = "Classed", Class = "custom-item", IconName = BitIconName.FormatPainter }
     ];
 

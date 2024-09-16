@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
 {
     private bool _disposed;
     private List<TItem> _items = [];
@@ -207,6 +207,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             BitColor.Warning => "bit-mnb-wrn",
             BitColor.SevereWarning => "bit-mnb-swr",
             BitColor.Error => "bit-mnb-err",
+            BitColor.PrimaryBackground => "bit-mnb-pbg",
+            BitColor.SecondaryBackground => "bit-mnb-sbg",
+            BitColor.TertiaryBackground => "bit-mnb-tbg",
+            BitColor.PrimaryForeground => "bit-mnb-pfg",
+            BitColor.SecondaryForeground => "bit-mnb-sfg",
+            BitColor.TertiaryForeground => "bit-mnb-tfg",
+            BitColor.PrimaryBorder => "bit-mnb-pbr",
+            BitColor.SecondaryBorder => "bit-mnb-sbr",
+            BitColor.TertiaryBorder => "bit-mnb-tbr",
             _ => "bit-mnb-pri"
         });
 
@@ -241,6 +250,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
     protected override async Task OnInitializedAsync()
     {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
 
         if (SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
@@ -275,16 +286,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
             item = _items.FirstOrDefault(GetIsEnabled);
             await AssignSelectedItem(item);
         }
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _dotnetObj = DotNetObjectReference.Create(this);
-        }
-
-        base.OnAfterRender(firstRender);
     }
 
 
@@ -569,7 +570,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
         await _js.ToggleCallout(_dotnetObj,
                                 _Id,
+                                null,
                                 _calloutId,
+                                null,
                                 IsOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
@@ -584,20 +587,25 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IDisposable where 
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected async void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
         if (_dotnetObj is not null)
         {
-            await _js.ClearCallout(_calloutId);
             _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

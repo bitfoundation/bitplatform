@@ -10,8 +10,15 @@ public partial class BitSeparatorDemo
             Type = "BitSeparatorAlignContent",
             DefaultValue = "BitSeparatorAlignContent.Center",
             Description = "Where the content should be aligned in the separator.",
+            LinkType = LinkType.Link,
             Href = "#separator-align-enum",
-            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "AutoSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the separator with auto width or height."
         },
         new()
         {
@@ -94,9 +101,17 @@ public partial class BitSeparatorDemo
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
 <BitSeparator AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
 
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
-<BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>";
+<div style=""height: 13rem"">
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Center"">Center</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.Start"">Start</BitSeparator>
+    <BitSeparator Vertical AlignContent=""@BitSeparatorAlignContent.End"">End</BitSeparator>
+</div>";
+
+    private readonly string example4RazorCode = @"
+<div style=""display:flex;flex-direction:column;align-items:center"">
+    <BitSeparator>Default</BitSeparator>
+    <BitSeparator AutoSize>AutoSize</BitSeparator>
+</div>";
 }
 
 

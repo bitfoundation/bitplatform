@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Emailing;
 
-public class OtpTemplateModel
+public partial class OtpTemplateModel
 {
     public string? DisplayName { get; set; }
     public required string Token { get; set; }

@@ -1,40 +1,57 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.example-box {
+    max-width: 19rem;
+}
 
 ::deep {
-    .example-content {
-        display: flex;
-        gap: rem2(20px);
-        flex-flow: row wrap;
+    .custom-class {
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid tomato;
+    }
+
+    .custom-class * {
+        border: none;
+    }
+
+    .custom-root {
+        margin-inline: 1rem;
+    }
+
+    .custom-input-container {
+        height: 3rem;
+        overflow: hidden;
         align-items: center;
-        max-width: rem2(304px);
+        border-radius: 1.5rem;
+        border-color: #13a3a375;
+        background-color: #13a3a375;
+    }
 
-        &.column {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+    .custom-focused .custom-input-container {
+        border-width: 1px;
+        border-color: #13a3a375;
+    }
 
-        & > div {
-            width: 100%;
-        }
+    .custom-clear:hover {
+        background: transparent;
+    }
+
+    .custom-icon {
+        color: darkslategrey;
+    }
+
+    .custom-icon-wrapper {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 1rem;
+        margin-inline: 0.5rem;
+        background-color: whitesmoke;
     }
 
     .validation-message {
-        color: red;
         font-size: rem2(12px);
-    }
-
-    .custom-class {
-        border: 1px solid red;
-        box-shadow: aqua 0 0 1rem;
-    }
-
-    .custom-clear {
-        color: blueviolet;
-    }
-
-    .custom-search {
-        margin-right: 0.25rem;
-        border-radius: 0.5rem;
-        background-color: tomato;
+        color: $bit-color-error;
     }
 }

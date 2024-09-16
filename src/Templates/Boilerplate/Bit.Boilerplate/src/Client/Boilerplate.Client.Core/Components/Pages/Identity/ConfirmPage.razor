@@ -1,5 +1,6 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.ConfirmPage)]
+@attribute [Route("{culture?}" + Urls.ConfirmPage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ConfirmTitle)]</PageTitle>
@@ -15,9 +16,9 @@
             }
         </div>
 
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>
+        <BitText Typography="BitTypography.H4" Gutter>
             @Localizer[nameof(AppStrings.ConfirmTitle)]
-        </BitTypography>
+        </BitText>
         <br />
         <BitPivot>
             @if (showEmailConfirmation)
@@ -26,18 +27,18 @@
                     <br />
                     @if (isEmailConfirmed is false)
                     {
-                        <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                        <BitText Typography="BitTypography.Subtitle1" Gutter>
                             @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
                             <br />
                             @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" class="confirm-form">
                             <AppDataAnnotationsValidator />
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="emailModel.Email"
-                                              Type="BitTextFieldType.Email"
+                                              Type="BitInputType.Email"
                                               Label="@Localizer[nameof(AppStrings.Email)]"
                                               IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
@@ -46,7 +47,7 @@
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="emailModel.Token"
-                                              Type="BitTextFieldType.Number"
+                                              Type="BitInputType.Number"
                                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.EmailToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
@@ -59,12 +60,12 @@
                         </EditForm>
                         <br />
                         <br />
-                        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                        <BitText Typography="BitTypography.Body1" Gutter>
                             @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
-                        </BitTypography>
-                        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                        </BitText>
+                        <BitText Typography="BitTypography.Body1" Gutter>
                             @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <BitButton IsLoading="isWaiting"
                                    ButtonType="BitButtonType.Button"
@@ -75,13 +76,13 @@
                     }
                     else
                     {
-                        <BitTypography Variant="BitTypographyVariant.H6" Gutter>
+                        <BitText Typography="BitTypography.H6" Gutter>
                             @Localizer[nameof(AppStrings.EmailConfirmationSuccessTitle), emailModel.Email!]
-                        </BitTypography>
+                        </BitText>
                         <br />
-                        <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                        <BitText Typography="BitTypography.Subtitle1" Gutter>
                             @Localizer[nameof(AppStrings.EmailConfirmationSuccessMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                     }
@@ -94,18 +95,18 @@
                     <br />
                     @if (isPhoneConfirmed is false)
                     {
-                        <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                        <BitText Typography="BitTypography.Subtitle1" Gutter>
                             @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
                             <br />
                             @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" class="confirm-form">
                             <AppDataAnnotationsValidator />
 
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="phoneModel.PhoneNumber"
-                                              Type="BitTextFieldType.Tel"
+                                              Type="BitInputType.Tel"
                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                               IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
@@ -113,7 +114,7 @@
                             </div>
                             <div class="form-input-container">
                                 <BitTextField @bind-Value="phoneModel.Token"
-                                              Type="BitTextFieldType.Number"
+                                              Type="BitInputType.Number"
                                               AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                               Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
@@ -126,9 +127,9 @@
                         </EditForm>
                         <br />
                         <br />
-                        <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                        <BitText Typography="BitTypography.Body1" Gutter>
                             @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <BitButton IsLoading="isWaiting"
                                    ButtonType="BitButtonType.Button"
@@ -139,13 +140,13 @@
                     }
                     else
                     {
-                        <BitTypography Variant="BitTypographyVariant.H5" Gutter>
+                        <BitText Typography="BitTypography.H5" Gutter>
                             @Localizer[nameof(AppStrings.PhoneConfirmationSuccessTitle), phoneModel.PhoneNumber!]
-                        </BitTypography>
+                        </BitText>
                         <br />
-                        <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+                        <BitText Typography="BitTypography.Subtitle1" Gutter>
                             @Localizer[nameof(AppStrings.PhoneConfirmationSuccessMessage)]
-                        </BitTypography>
+                        </BitText>
                         <br />
                         <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                     }

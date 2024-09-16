@@ -3,7 +3,7 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ResetPasswordRequestDto : IdentityRequestDto
+public partial class ResetPasswordRequestDto : IdentityRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }

@@ -6,12 +6,13 @@
 
 .bit-spr-cnt {
     position: relative;
-    display: inline-block;
     color: $clr-fg-pri;
+    display: inline-block;
     background: $clr-bg-pri;
 }
 
 .bit-spr-hrz {
+    width: 100%;
     display: block;
     padding: spacing(0.5) 0;
 

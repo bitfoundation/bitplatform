@@ -13,6 +13,8 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
+            <div>Explore basic configurations of the BitCircularTimePicker, including labels, placeholders, icons, and time format feature.</div>
+            <br />
             <div class="example-content">
                 <BitCircularTimePicker Label="Basic CircularTimePicker" />
                 <br /><br />
@@ -56,42 +58,55 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
+            <div>Explore styling and class customization for BitCircularTimePicker, including component styles, custom classes, and detailed styles.</div>
+            <br /><br />
             <div>Component's Style & Class:</div>
             <br />
             <div class="example-content">
-                <BitCircularTimePicker Style="padding: 1rem; background: purple;" />
-
+                <BitCircularTimePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+                <br />
                 <BitCircularTimePicker Class="custom-class" />
             </div>
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div>
             <br />
             <div class="example-content">
-                <BitCircularTimePicker Styles="@(new() { Root = "margin: 1rem; border: 1px solid gold;",
-                                                         HourMinuteSeparator = "border-color: green;",
-                                                         Toolbar = "color: red;",
-                                                         ClockPointer = "background-color: red;",
-                                                         ClockPointerThumb = "background-color: purple;",
-                                                         SelectedButtons = "color: blue;",
-                                                         ClockFace="background-color: green;"})" />
-
-                <BitCircularTimePicker Classes="@(new() { Root = "custom-root",
+                <BitCircularTimePicker Styles="@(new() { Root = "margin-inline: 1rem;",
+                                                         Focused = "--focused-background: #b2b2b25a;",
+                                                         Input = "padding: 0.5rem;",
+                                                         InputContainer = "background: var(--focused-background);",
+                                                         HourButton = "color: gray;",
+                                                         MinuteButton = "color: gray;",
+                                                         HourMinuteSeparator = "color: gray;",
+                                                         Toolbar = "background-color: transparent;",
+                                                         ClockFace="box-shadow: dodgerblue 0 0 1rem;",
+                                                         ClockPointerThumb = "background-color: blue;" })" />
+                <br />
+                <BitCircularTimePicker @bind-Value="@classesValue"
+                                       Label="Select a date"
+                                       Classes="@(new() { Root = "custom-root",
+                                                          Focused = "custom-focus",
+                                                          Input = "custom-input",
+                                                          InputContainer = "custom-input-container",
+                                                          Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
                                                           Toolbar = "custom-toolbar",
-                                                          ClockFace = "custom-clock-face",
                                                           ClockPin = "custom-clock-pin",
+                                                          ClockFace = "custom-clock-face",
+                                                          ClockNumber = "custom-clock-number",
                                                           ClockPointer = "custom-clock-pointer",
                                                           ClockPointerThumb = "custom-clock-pointer-thumb",
-                                                          ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute",
                                                           ClockSelectedNumber = "custom-clock-selected-number",
-                                                          ClockNumber = "custom-clock-number" })" />
+                                                          ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute" })" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
+            <div>Bind a selected time to a model or view, allowing two-way data binding with the BitCircularTimePicker.</div>
+            <br />
             <div class="example-content">
                 <BitCircularTimePicker @bind-Value="@selectedTime" />
             </div>
@@ -145,6 +160,8 @@
 
     <ComponentExampleBox Title="Responsive" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
+            <div>Enable responsive design for the BitCircularTimePicker, allowing it to adjust its layout and appearance based on the screen size.</div>
+            <br />
             <div class="example-content">
                 <BitCircularTimePicker Label="Response CircularTimePicker"
                                        IsResponsive="true"
@@ -155,6 +172,8 @@
 
     <ComponentExampleBox Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
+            <div>Implement form validation with BitCircularTimePicker using data annotations, ensuring the user selects a valid date before submitting the form.</div>
+            <br />
             <div class="example-content">
                 <EditForm Model="formValidationCircularTimePickerModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
@@ -205,8 +224,28 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
-            <div class="example-content">
-                <BitCircularTimePicker Dir="BitDir.Rtl" />
+            <div>Use BitCircularTimePicker in a right-to-left (RTL) layout.</div>
+            <br />
+            <div dir="rtl">
+                <div class="example-content">
+                    <BitCircularTimePicker Dir="BitDir.Rtl" />
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Standalone" RazorCode="@example11RazorCode" Id="example11">
+        <ExamplePreview>
+            <div>Use the BitCircularTimePicker in a standalone mode, allowing it to function independently without a surrounding form or container.</div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
+                <br /><br />
+                <BitCircularTimePicker Label="Disabled" IsEnabled="false" Standalone />
+                <br /><br />
+                <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" Standalone />
+                <br /><br />
+                <BitCircularTimePicker Label="TimeFormat (AM/PM)" TimeFormat="BitTimeFormat.TwelveHours" Standalone />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>

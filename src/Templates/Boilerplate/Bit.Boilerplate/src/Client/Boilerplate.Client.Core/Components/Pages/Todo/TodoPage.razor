@@ -1,4 +1,5 @@
 ﻿@attribute [Route(Urls.TodoPage)]
+@attribute [Route("{culture?}" + Urls.TodoPage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.TodoTitle)]</PageTitle>
@@ -8,6 +9,7 @@
         <BitSearchBox @ref="searchBox"
                       Style="width: 300px"
                       OnChange="SearchTodoItems"
+                      Immediate DebounceTime="300"
                       OnClear="@(() => SearchTodoItems(""))"
                       Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
     </div>

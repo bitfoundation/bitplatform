@@ -4,7 +4,7 @@ using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public partial class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
@@ -17,13 +17,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             EmailConfirmed = true,
             LockoutEnabled = true,
             Gender = Gender.Other,
-            BirthDate = new DateTime(2023, 1, 1),
+            BirthDate = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
             FullName = "Boilerplate test account",
             UserName = userName,
             NormalizedUserName = userName.ToUpperInvariant(),
             Email = email,
             NormalizedEmail = email.ToUpperInvariant(),
-            EmailTokenRequestedOn = new DateTime(2023,1,1),
+            EmailTokenRequestedOn = new DateTimeOffset(new DateOnly(2023, 1, 1), default, default),
             PhoneNumber = "+31684207362",
             PhoneNumberConfirmed = true,
             SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",

@@ -33,11 +33,28 @@
             color: $clr-fg-dis;
             background: none $clr-bg-dis;
         }
+
+        .bit-dtrp-pkt,
+        .bit-dtrp-nbt,
+        .bit-dtrp-wlb,
+        .bit-dtrp-dbt,
+        .bit-dtrp-pkb,
+        .bit-dtrp-ptb,
+        .bit-dtrp-tdv {
+            color: $clr-fg-dis;
+        }
     }
 
     &.bit-inv {
         .bit-dtrp-icp {
             border-color: $clr-err;
+        }
+    }
+
+    &.bit-rtl {
+        .bit-dtrp-am-pm {
+            order: -1;
+            direction: rtl;
         }
     }
 }
@@ -160,9 +177,13 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-size: spacing(1.75);
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
-    font-family: $tg-font-family;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-dtrp-rsp {
@@ -264,10 +285,6 @@
     outline: none;
     box-shadow: none;
     box-sizing: border-box;
-    animation-duration: 167ms;
-    animation-fill-mode: both;
-    animation-name: bit-fade-in, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-dtrp-sdt {
@@ -316,14 +333,14 @@
     border: none;
     aspect-ratio: 1;
     font-weight: 400;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: 0.267s;
-    animation-name: bit-fade-in;
-    color: $clr-fg-pri;
+    animation-name: bit-fade-show;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -470,6 +487,7 @@
     overflow: hidden;
     font-weight: 600;
     text-align: start;
+    color: $clr-fg-pri;
     position: relative;
     align-items: center;
     white-space: nowrap;
@@ -479,13 +497,8 @@
     padding: 0 spacing(1.25);
     font-size: spacing(1.75);
     line-height: spacing(3.5);
-    animation-fill-mode: both;
-    animation-duration: 0.267s;
-    animation-name: bit-fade-show;
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
 .bit-dtrp-ptb {
@@ -494,6 +507,16 @@
     @media (hover: hover) {
         &:hover {
             background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:disabled {
+        pointer-events: none;
+        background-color: transparent;
+
+        .bit-dtrp-gti,
+        .bit-icon {
+            color: $clr-fg-dis;
         }
     }
 }
@@ -714,9 +737,9 @@
 .bit-dtrp-am-pm {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    margin-left: spacing(2);
     padding: spacing(1.6) 0;
+    justify-content: space-between;
+    margin-inline-start: spacing(2);
 }
 
 .bit-dtrp-tin {
@@ -747,6 +770,11 @@
         border-bottom: $shp-border-width $shp-border-style $clr-brd-pri-active;
         outline: none;
     }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-dtrp-bam,
@@ -755,10 +783,13 @@
     font-weight: $tg-font-weight;
 }
 
-.bit-dtrp-bns,
-.bit-dtrp-bns:disabled {
+.bit-dtrp-bns {
     color: $clr-pri-text;
     background-color: $clr-pri;
+
+    &:disabled {
+        background-color: $clr-bg-dis;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -824,5 +855,19 @@
 .bit-dtrp-nbd {
     .bit-dtrp-icn {
         border: none;
+    }
+}
+
+.bit-dtrp-sta {
+    width: fit-content;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+
+    .bit-dtrp-cal {
+        display: block;
+        z-index: unset;
+        animation: none;
+        position: relative;
     }
 }

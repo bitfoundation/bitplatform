@@ -1,4 +1,4 @@
-// bit version: 8.10.0
+// bit version: 8.11.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
@@ -15,7 +15,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js?v=8.0.303"
+        url: "_framework/blazor.web.js?v=8.0.8"
     }
 ];
 

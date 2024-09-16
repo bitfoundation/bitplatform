@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Exceptions;
 
-public class RestErrorInfo
+public partial class RestErrorInfo
 {
     public string? ExceptionType { get; set; }
 

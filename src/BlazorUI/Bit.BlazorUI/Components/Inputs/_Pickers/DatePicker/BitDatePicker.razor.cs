@@ -11,6 +11,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
 
+    private bool _hasFocus;
     private int _currentDay;
     private int _currentYear;
     private int _currentMonth;
@@ -21,7 +22,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool _showMonthPicker = true;
     private bool _isTimePickerOverlayOnTop;
     private bool _isMonthPickerOverlayOnTop;
-    private string _focusClass = string.Empty;
     private string _monthTitle = string.Empty;
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
@@ -136,6 +136,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// CultureInfo for the DatePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -275,12 +276,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// The maximum date allowed for the DatePicker.
     /// </summary>
-    [Parameter] public DateTimeOffset? MaxDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum date allowed for the DatePicker.
     /// </summary>
-    [Parameter] public DateTimeOffset? MinDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
     /// Custom template to render the month cells of the DatePicker.
@@ -340,12 +345,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowTimePicker { get; set; }
 
     /// <summary>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
@@ -390,7 +399,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether the clear button should be shown or not when the BitDatePicker has a value.
@@ -410,7 +421,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Specifies the date and time of the date-picker when it is opened without any selected value.
     /// </summary>
-    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? StartingValue { get; set; }
+
+    /// <summary>
+    /// Whether the date-picker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool Standalone { get; set; }
 
 
 
@@ -422,6 +442,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
@@ -445,12 +466,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-dtp-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
+
+        ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -462,31 +487,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _calloutId = $"{_datePickerId}-callout";
         _inputId = $"{_datePickerId}-input";
 
+        OnValueChanged += HandleOnValueChanged;
+
+        HandleParameterChanges();
+
         base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _culture = Culture ?? CultureInfo.CurrentUICulture;
-
-        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
-
-        if (MinDate.HasValue && MinDate > dateTime)
-        {
-            dateTime = MinDate.Value;
-        }
-
-        if (MaxDate.HasValue && MaxDate < dateTime)
-        {
-            dateTime = MaxDate.Value;
-        }
-
-        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
-        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
-
-        GenerateCalendarData(dateTime.DateTime);
-
-        base.OnParametersSet();
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -521,8 +526,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (disposing)
         {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
+            _dotnetObj?.Dispose();
+            _cancellationTokenSource?.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);
@@ -532,6 +538,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnClick()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(true) is false) return;
@@ -570,8 +577,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -579,8 +587,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -588,8 +597,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-dtp-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
@@ -631,6 +641,56 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         await InputElement.FocusAsync();
     }
 
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        HandleParameterChanges();
+    }
+
+    private void HandleParameterChanges()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
+
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
+
+        if (MinDate.HasValue && MinDate > dateTime)
+        {
+            dateTime = MinDate.Value;
+        }
+
+        if (MaxDate.HasValue && MaxDate < dateTime)
+        {
+            dateTime = MaxDate.Value;
+        }
+
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
+
+        GenerateCalendarData(dateTime.DateTime);
+
+        if (Standalone)
+        {
+            _isMonthPickerOverlayOnTop = false;
+            _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
+            _isTimePickerOverlayOnTop = false;
+            _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+
+            if (_showMonthPickerAsOverlayInternal)
+            {
+                _isMonthPickerOverlayOnTop = false;
+            }
+
+            if (_showTimePickerAsOverlayInternal)
+            {
+                _isTimePickerOverlayOnTop = false;
+            }
+
+            if (CurrentValue.HasValue)
+            {
+                CheckCurrentCalendarMatchesCurrentValue();
+            }
+        }
+    }
+
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
         if (IsEnabled is false) return;
@@ -654,7 +714,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             _currentYear--;
         }
 
-        if (AutoClose)
+        if (AutoClose && Standalone is false)
         {
             await AssignIsOpen(false);
 
@@ -920,6 +980,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
+        if (IsEnabled is false) return true;
+
         if (showYearPicker)
         {
             return _yearPickerStartYear == todayYear - 1
@@ -1011,6 +1073,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool CanChangeYearRange(bool isNext)
     {
+        if (IsEnabled is false) return false;
+
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) < _yearPickerStartYear + 12) ||
                 (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) >= _yearPickerStartYear)
@@ -1278,8 +1342,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 
@@ -1380,6 +1444,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task<bool> ToggleCallout()
     {
+        if (Standalone) return false;
         if (IsEnabled is false) return false;
 
         _isMonthPickerOverlayOnTop = false;
@@ -1389,7 +1454,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _datePickerId,
+                                       null,
                                        _calloutId,
+                                       null,
                                        IsOpen,
                                        IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,

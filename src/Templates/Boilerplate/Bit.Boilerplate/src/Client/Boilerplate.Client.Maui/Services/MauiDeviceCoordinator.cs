@@ -1,10 +1,12 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Client.Core.Styles;
+
 namespace Boilerplate.Client.Maui.Services;
 
 /// <summary>
 /// More info at <see cref="IBitDeviceCoordinator"/>
 /// </summary>
-public class MauiDeviceCoordinator : IBitDeviceCoordinator
+public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
 {
     public double GetStatusBarHeight()
     {
@@ -36,7 +38,7 @@ public class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(isDark ? Android.Graphics.Color.ParseColor("#0D1117") : Android.Graphics.Color.White);
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(isDark ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>

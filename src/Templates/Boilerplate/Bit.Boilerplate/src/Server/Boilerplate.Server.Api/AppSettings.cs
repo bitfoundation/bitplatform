@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Server.Api;
 
-public class AppSettings : IValidatableObject
+public partial class AppSettings : IValidatableObject
 {
     public IdentitySettings Identity { get; set; } = default!;
 
@@ -17,11 +17,6 @@ public class AppSettings : IValidatableObject
     public string GoogleRecaptchaSecretKey { get; set; } = default!;
     //#endif
 
-    /// <summary>
-    /// See WebClientUrl_Comment in appsettings.json for more info.
-    /// </summary>
-    public string? WebClientUrl { get; set; }
-
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = new List<ValidationResult>();
@@ -34,7 +29,7 @@ public class AppSettings : IValidatableObject
     }
 }
 
-public class IdentitySettings : IdentityOptions
+public partial class IdentitySettings : IdentityOptions
 {
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
@@ -48,22 +43,23 @@ public class IdentitySettings : IdentityOptions
     /// <summary>
     /// To either confirm and/or change email
     /// </summary>
-    public TimeSpan EmailTokenRequestResendDelay { get; set; }
+    public TimeSpan EmailTokenLifetime { get; set; }
     /// <summary>
     /// To either confirm and/or change phone number
     /// </summary>
-    public TimeSpan PhoneNumberTokenRequestResendDelay { get; set; }
-    public TimeSpan ResetPasswordTokenRequestResendDelay { get; set; }
-    public TimeSpan TwoFactorTokenRequestResendDelay { get; set; }
-    public TimeSpan RevokeUserSessionsDelay { get; set; }
+    public TimeSpan PhoneNumberTokenLifetime { get; set; }
+    public TimeSpan ResetPasswordTokenLifetime { get; set; }
+    public TimeSpan TwoFactorTokenLifetime { get; set; }
 
     /// <summary>
     /// To sign in with either Otp or magic link.
     /// </summary>
-    public TimeSpan OtpRequestResendDelay { get; set; }
+    public TimeSpan OtpTokenLifetime { get; set; }
+
+    public TimeSpan RevokeUserSessionsDelay { get; set; }
 }
 
-public class EmailSettings
+public partial class EmailSettings
 {
     [Required]
     public string Host { get; set; } = default!;
@@ -82,7 +78,7 @@ public class EmailSettings
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 
-public class SmsSettings
+public partial class SmsSettings
 {
     public string? FromPhoneNumber { get; set; }
     public string? TwilioAccountSid { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Windows.Services;
 
-public class WindowsStorageService : IStorageService
+public partial class WindowsStorageService : IStorageService
 {
     private readonly Dictionary<string, string?> tempStorage = [];
 

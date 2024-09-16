@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
 {
     private bool _disposed;
     private bool _isCalloutOpen;
@@ -37,7 +37,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
     /// Collection of BreadLists to render.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
-    
+
     /// <summary>
     /// The maximum number of BreadLists to display before coalescing.
     /// If not specified, all BreadLists will be rendered.
@@ -424,7 +424,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
 
         await _js.ToggleCallout(_dotnetObj,
                                 _overflowAnchorId,
+                                null,
                                 _calloutId,
+                                null,
                                 _isCalloutOpen,
                                 BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
@@ -439,17 +441,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IDisposable where 
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
-        _dotnetObj.Dispose();
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
 
         _disposed = true;
     }

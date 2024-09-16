@@ -8,6 +8,11 @@ public class BitTimePickerClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the focused of the BitTimePicker.
+    /// </summary>
+    public string? Focused { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the label of the BitTimePicker.
     /// </summary>
     public string? Label { get; set; }

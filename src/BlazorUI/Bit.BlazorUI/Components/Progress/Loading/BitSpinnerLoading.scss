@@ -1,16 +1,19 @@
 .bit-ldn-spn {
+}
+
+.bit-ldn-spn-ccn {
     position: relative;
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-spn div {
+.bit-ldn-spn-chl {
     animation: bit-ldn-spn-anm 1.2s linear infinite;
     transform-origin: var(--bit-ldn-spn-40) var(--bit-ldn-spn-40);
 }
 
-.bit-ldn-spn div:after {
+.bit-ldn-spn-chl:after {
     content: " ";
     display: block;
     position: absolute;
@@ -22,64 +25,64 @@
     background: var(--bit-ldn-color);
 }
 
-.bit-ldn-spn div:nth-child(1) {
-    transform: rotate(0deg);
+.bit-ldn-spn-ch1 {
     animation-delay: -1.1s;
+    transform: rotate(0deg);
 }
 
-.bit-ldn-spn div:nth-child(2) {
-    transform: rotate(30deg);
+.bit-ldn-spn-ch2 {
     animation-delay: -1s;
+    transform: rotate(30deg);
 }
 
-.bit-ldn-spn div:nth-child(3) {
-    transform: rotate(60deg);
+.bit-ldn-spn-ch3 {
     animation-delay: -0.9s;
+    transform: rotate(60deg);
 }
 
-.bit-ldn-spn div:nth-child(4) {
-    transform: rotate(90deg);
+.bit-ldn-spn-ch4 {
     animation-delay: -0.8s;
+    transform: rotate(90deg);
 }
 
-.bit-ldn-spn div:nth-child(5) {
-    transform: rotate(120deg);
+.bit-ldn-spn-ch5 {
     animation-delay: -0.7s;
+    transform: rotate(120deg);
 }
 
-.bit-ldn-spn div:nth-child(6) {
-    transform: rotate(150deg);
+.bit-ldn-spn-ch6 {
     animation-delay: -0.6s;
+    transform: rotate(150deg);
 }
 
-.bit-ldn-spn div:nth-child(7) {
-    transform: rotate(180deg);
+.bit-ldn-spn-ch7 {
     animation-delay: -0.5s;
+    transform: rotate(180deg);
 }
 
-.bit-ldn-spn div:nth-child(8) {
-    transform: rotate(210deg);
+.bit-ldn-spn-ch8 {
     animation-delay: -0.4s;
+    transform: rotate(210deg);
 }
 
-.bit-ldn-spn div:nth-child(9) {
-    transform: rotate(240deg);
+.bit-ldn-spn-ch9 {
     animation-delay: -0.3s;
+    transform: rotate(240deg);
 }
 
-.bit-ldn-spn div:nth-child(10) {
-    transform: rotate(270deg);
+.bit-ldn-spn-ch10 {
     animation-delay: -0.2s;
+    transform: rotate(270deg);
 }
 
-.bit-ldn-spn div:nth-child(11) {
-    transform: rotate(300deg);
+.bit-ldn-spn-ch11 {
     animation-delay: -0.1s;
+    transform: rotate(300deg);
 }
 
-.bit-ldn-spn div:nth-child(12) {
-    transform: rotate(330deg);
+.bit-ldn-spn-ch12 {
     animation-delay: 0s;
+    transform: rotate(330deg);
 }
 
 @keyframes bit-ldn-spn-anm {

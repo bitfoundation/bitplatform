@@ -1,0 +1,175 @@
+﻿@page "/components/callout"
+
+<PageOutlet Url="components/callout"
+            Title="Callout"
+            Description="callout component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Callout"
+               ComponentDescription="A callout is an anchored tip that can be used to teach people or guide them through the app without blocking them."
+               ComponentParameters="componentParameters"
+               ComponentPublicMembers="componentPublicMembers"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <div>Basic usage of BitCallout component with a simple content and a button as the anchor to show or hide the callout.</div>
+            <br />
+            <div>
+                <BitCallout>
+                    <Anchor>
+                        <BitButton>Show callout</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            This is the callout content.
+                        </div>
+                    </Content>
+                </BitCallout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="External anchor" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div>Use an external element as the anchor for a BitCallout component, with both ID-based and ElementSelector-based anchoring options.</div>
+            <br />
+            <div class="example-box">
+                <BitButton Id="anchor_id" OnClick="() => callout1.Toggle()">AnchorId</BitButton>
+                <BitCallout AnchorId="anchor_id" @ref="callout1">
+                    <div style="padding: 1rem; border: 1px solid gray;">
+                        <BitCalendar />
+                    </div>
+                </BitCallout>
+
+                <button @ref="anchorEl" @onclick="() => callout2.Toggle()">AnchorEl</button>
+                <BitCallout AnchorEl="() => anchorEl" @ref="callout2">
+                    <div style="padding: 1rem; border: 1px solid gray;">
+                        <BitCalendar />
+                    </div>
+                </BitCallout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>Bind the Open state of BitCallout component to a boolean variable, allowing for more control over its opening and closing behavior.</div>
+            <br />
+            <div class="example-box">
+                <BitButton OnClick="() => isOpen = true">Show callout</BitButton>
+
+                <BitCallout @bind-IsOpen="isOpen">
+                    <Anchor>
+                        <button>Anchor</button>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            This is the callout content.
+                            <br />
+                            You can even close it from here!
+                            <br /><br />
+                            <div>
+                                <BitButton OnClick="() => isOpen = false">Done</BitButton>
+                                <BitButton OnClick="() => isOpen = false" Variant="BitVariant.Outline">Cancel</BitButton>
+                            </div>
+                        </div>
+                    </Content>
+                </BitCallout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="DropDirection" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div>Explores different drop directions for the BitCallout component, including automatic and explicit directions.</div>
+            <br /><br />
+            <div>
+                <div>DropDirection: All</div><br />
+                <BitCallout Direction="BitDropDirection.All">
+                    <Anchor>
+                        <BitButton>Show callout</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            @for (int i = 1; i < 13; i++)
+                            {
+                                var item = i;
+                                <div>Callout content @(item)</div><br />
+                            }
+                        </div>
+                    </Content>
+                </BitCallout>
+                <br /><br />
+                <div>DropDirection: TopAndBottom</div><br />
+                <BitCallout Direction="BitDropDirection.TopAndBottom">
+                    <Anchor>
+                        <BitButton>Show callout</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            @for (int i = 1; i < 13; i++)
+                            {
+                                var item = i;
+                                <div>Callout content @(item)</div><br />
+                            }
+                        </div>
+                    </Content>
+                </BitCallout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Explores styling and class customization for BitCallout, including component styles, custom classes, and detailed style options.</div>
+            <br />
+            <div>
+                <div>Component's Style & Class:</div><br />
+                <BitCallout Style="width: fit-content; box-shadow: tomato 0px 0px 8px;">
+                    <Anchor>
+                        <BitButton Color="BitColor.Error">Show callout</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            This is the callout content.
+                        </div>
+                    </Content>
+                </BitCallout>
+                <br />
+                <BitCallout Class="custom-class">
+                    <Anchor>
+                        <BitButton>Show callout</BitButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            This is the callout content.
+                        </div>
+                    </Content>
+                </BitCallout>
+                <br /><br />
+                <div>Styles & Classes:</div><br />
+                <BitCallout Styles="@(new() { Root = "--anchor-color: #2e8b5775; width: fit-content;",
+                                              Opened = "--anchor-color: #04cb5b75;",
+                                              AnchorContainer = "background-color: var(--anchor-color);" })">
+                    <Anchor>
+                        <BitActionButton>Show callout</BitActionButton>
+                    </Anchor>
+                    <Content>
+                        <div style="padding: 1rem; border: 1px solid gray;">
+                            This is the callout content.
+                        </div>
+                    </Content>
+                </BitCallout>
+                <br />
+                <BitCallout Classes="@(new() { Content = "custom-content", AnchorContainer = "custom-anchor" })">
+                    <Anchor>
+                        Show callout
+                    </Anchor>
+                    <Content>
+                        This is the callout content.
+                    </Content>
+                </BitCallout>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

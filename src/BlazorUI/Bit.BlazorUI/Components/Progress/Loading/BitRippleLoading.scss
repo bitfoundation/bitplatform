@@ -1,11 +1,14 @@
 .bit-ldn-rpl {
+}
+
+.bit-ldn-rpl-ccn {
     position: relative;
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-rpl div {
+.bit-ldn-rpl-chl {
     opacity: 1;
     position: absolute;
     border-radius: 50%;
@@ -13,7 +16,7 @@
     animation: bit-ldn-rpl-anm 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
-.bit-ldn-rpl div:nth-child(2) {
+.bit-ldn-rpl-ch2 {
     animation-delay: -0.5s;
 }
 

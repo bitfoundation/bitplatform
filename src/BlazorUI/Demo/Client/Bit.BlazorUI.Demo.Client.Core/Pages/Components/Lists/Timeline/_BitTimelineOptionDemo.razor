@@ -202,7 +202,7 @@
                 </PrimaryContent>
                 <DotTemplate>
                     <div class="dot-template">
-                        <BitRingLoading CustomSize="30" />
+                        <BitRingLoading CustomSize="30" Color="BitColor.Tertiary" />
                     </div>
                 </DotTemplate>
                 <SecondaryContent>
@@ -479,7 +479,7 @@
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br /><br />
         <div>Component's style & class:</div><br />
-        <BitTimeline Style="background-color: tomato; box-shadow: red 0 0 1rem;" TItem="BitTimelineOption">
+        <BitTimeline Style="max-width: max-content; color: dodgerblue;" TItem="BitTimelineOption">
             <BitTimelineOption PrimaryText="Option 1" />
             <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
             <BitTimelineOption PrimaryText="Option 3" />
@@ -491,18 +491,18 @@
             <BitTimelineOption PrimaryText="Option 3" />
         </BitTimeline>
         <br /><br /><br /><br />
-        <div>Item's style & class:</div><br />
+        <div>Option's Style & Class:</div><br />
         <BitTimeline TItem="BitTimelineOption">
-            <BitTimelineOption PrimaryText="Styled" IconName="@BitIconName.Brush" Style="color: darkred;" />
-            <BitTimelineOption PrimaryText="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
+            <BitTimelineOption PrimaryText="Styled" IconName="@BitIconName.Brush" Style="color: dodgerblue;" />
+        <BitTimelineOption PrimaryText="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
         </BitTimeline>
         <br /><br /><br /><br />
         <div><b>Styles</b> & <b>Classes</b>:</div><br />
         <div class="example-content">
             <BitTimeline TItem="BitTimelineOption"
-                         Styles="@(new() { Icon = "color: red;",
-                                           PrimaryText = "color: aqua; font-size: 1.5rem;",
-                                           Dot = "background-color: dodgerblue;" })">
+                         Styles="@(new() { Icon = "color: whitesmoke;",
+                                           Dot = "background-color: lightseagreen; border-color: mediumseagreen;",
+                                           PrimaryText = "color: lightseagreen; font-weight: bold;" })">
                 <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
                 <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
                 <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
@@ -510,9 +510,10 @@
 
             <BitTimeline TItem="BitTimelineOption"
                          Variant="BitVariant.Outline"
-                         Classes="@(new() { Icon = "custom-icon",
-                                            Divider = "custom-divider",
-                                            PrimaryText = "custom-text" })">
+                         Classes="@(new() { Dot = "custom-dot",
+                                            Icon = "custom-icon",
+                                            Item = "custom-item-text",
+                                            Divider = "custom-divider" })">
                 <BitTimelineOption PrimaryText="Option 1" IconName="@BitIconName.Add" />
                 <BitTimelineOption PrimaryText="Option 2" IconName="@BitIconName.Edit" SecondaryText="Option 2 Secondary" IsEnabled="false" />
                 <BitTimelineOption PrimaryText="Option 3" IconName="@BitIconName.Delete" />
@@ -522,7 +523,9 @@
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="RTL" RazorCode="@example11RazorCode" Id="example11">
-    <ExamplePreview>
+    <ExamplePreview>        
+        <div>Use the BitTimeline component in right-to-left (RTL).</div>
+        <br /><br /><br />
         <div>Vertical</div><br />
         <BitTimeline TItem="BitTimelineOption" Dir="BitDir.Rtl">
             <BitTimelineOption PrimaryText="گزینه ۱" />

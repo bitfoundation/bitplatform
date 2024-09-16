@@ -1,0 +1,26 @@
+﻿.example-box {
+    gap: 3rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+::deep {
+    .custom-class {
+        width: fit-content;
+        box-shadow: dodgerblue 0px 0px 8px;
+    }
+
+    .custom-content {
+        padding: 16px;
+        border-radius: 2px;
+        box-shadow: #a9a9a92e 0px 0px 4px 2px;
+    }
+
+    .custom-anchor {
+        color: white;
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 2px;
+        background-color: darkviolet;
+    }
+}

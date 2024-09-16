@@ -3,12 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitTimePicker : BitInputBase<TimeSpan?>
+public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
+    private bool _hasFocus;
+    private bool _disposed;
     private string? _labelId;
     private string? _inputId;
     private string _calloutId = string.Empty;
-    private string _focusClass = string.Empty;
     private string _timePickerId = string.Empty;
     private ElementReference _inputHourRef = default!;
     private ElementReference _inputMinuteRef = default!;
@@ -40,6 +41,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         }
         set
         {
+            if (IsEnabled is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
             if (val > 23)
@@ -65,6 +67,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         get => _minute?.ToString("D2");
         set
         {
+            if (IsEnabled is false) return;
             if (int.TryParse(value, out int val) is false) return;
 
             if (val > 59)
@@ -119,6 +122,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// CultureInfo for the TimePicker
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -229,6 +233,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public BitTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Whether the BitTimePicker is rendered standalone or with the input component and callout.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Standalone { get; set; }
+
+    /// <summary>
     /// The tabIndex of the TextField.
     /// </summary>
     [Parameter] public int TabIndex { get; set; }
@@ -244,10 +254,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? ValueFormat { get; set; }
 
 
-
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
@@ -271,12 +281,16 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _focusClass);
+        ClassBuilder.Register(() => Standalone ? "bit-tpc-sta" : string.Empty);
+
+        ClassBuilder.Register(() => _hasFocus ? $"bit-tpc-foc {Classes?.Focused}" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
     }
 
     protected override void OnInitialized()
@@ -294,11 +308,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _culture = Culture ?? CultureInfo.CurrentUICulture;
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -334,26 +343,15 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return time.ToString(GetValueFormat(), Culture);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj.Dispose();
-            _cancellationTokenSource.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task HandleOnFocusIn()
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-tpc-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusIn.InvokeAsync();
     }
 
@@ -361,8 +359,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = string.Empty;
+        _hasFocus = false;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync();
     }
 
@@ -370,8 +369,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsEnabled is false) return;
 
-        _focusClass = "bit-tpc-foc";
+        _hasFocus = true;
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
         await OnFocus.InvokeAsync();
     }
 
@@ -386,11 +386,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task ToggleCallout()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         await _js.ToggleCallout(_dotnetObj,
                                 _timePickerId,
+                                null,
                                 _calloutId,
+                                null,
                                 IsOpen,
                                 IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 DropDirection,
@@ -415,6 +418,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnClick()
     {
+        if (Standalone) return;
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(true) is false) return;
@@ -422,6 +426,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         await ToggleCallout();
 
         await OnClick.InvokeAsync();
+    }
+
+    private void HandleParameterChanges()
+    {
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
     }
 
     private async Task UpdateCurrentValue()
@@ -433,12 +442,16 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private async Task HandleOnAmClick()
     {
+        if (IsEnabled is false) return;
+
         _hour %= 12;  // "12:-- am" is "00:--" in 24h
         await UpdateCurrentValue();
     }
 
     private async Task HandleOnPmClick()
     {
+        if (IsEnabled is false) return;
+
         if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
         {
             _hour += 12;
@@ -578,8 +591,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
     private void ResetCts()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new();
     }
 
@@ -590,5 +603,35 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             : TimeFormat == BitTimeFormat.TwentyFourHours
                 ? "HH:mm"
                 : "hh:mm tt";
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        _cancellationTokenSource?.Dispose();
+
+        OnValueChanged -= HandleOnValueChanged;
+
+        _disposed = true;
     }
 }

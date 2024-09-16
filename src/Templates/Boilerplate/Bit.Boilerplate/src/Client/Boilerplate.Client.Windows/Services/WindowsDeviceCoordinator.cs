@@ -2,4 +2,4 @@
 
 namespace Boilerplate.Client.Windows.Services;
 
-public class WindowsDeviceCoordinator : IBitDeviceCoordinator { }
+public partial class WindowsDeviceCoordinator : IBitDeviceCoordinator { }

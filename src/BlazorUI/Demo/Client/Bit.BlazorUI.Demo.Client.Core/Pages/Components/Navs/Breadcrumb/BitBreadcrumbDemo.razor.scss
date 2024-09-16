@@ -1,36 +1,33 @@
 ﻿::deep {
+    .example-box {
+        gap: 20px;
+        display: flex;
+        flex-direction: column;
+
+        .operators {
+            gap: 5px;
+            display: flex;
+            max-width: 300px;
+            flex-flow: column nowrap;
+        }
+    }
+
     .custom-item {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: limegreen;
+        color: #ffcece;
 
         &:hover {
-            background: greenyellow;
+            color: #ff6868;
+            background: transparent;
         }
     }
 
     .custom-selected-item {
-        color: red;
-        margin: 2px 5px;
-        border-radius: 2px;
-        background: mediumspringgreen;
+        color: blueviolet;
 
         &:hover {
-            background: greenyellow;
+            color: blueviolet;
+            background: transparent;
+            text-shadow: blueviolet 0 0 1rem;
         }
-    }
-}
-
-.example-box {
-    gap: 20px;
-    display: flex;
-    flex-direction: column;
-
-    .operators {
-        gap: 5px;
-        display: flex;
-        max-width: 300px;
-        flex-flow: column nowrap;
     }
 }

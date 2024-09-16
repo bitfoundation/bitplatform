@@ -1,0 +1,18 @@
+﻿<ComponentExampleBox Title="Scatter" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example7">
+    <ExamplePreview>
+        <div class="example-desc">
+            Scatter charts are based on basic line charts with the x-axis changed to a linear axis.
+            To use a scatter chart, data must be passed as objects containing X and Y properties. The example below creates a scatter chart with 4 points.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" IsDateAdapterRequired="true" @ref="_chart" />
+            </div>
+        </div>
+        <div class="buttons-container">
+            <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizeData">Randomize Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddDataset">Add Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveDataset">Remove Dataset</BitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

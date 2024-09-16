@@ -7,175 +7,234 @@
             Description="Getting started with the project templates on the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Getting started</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Getting started</BitText>
     <br />
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Setup your development environment</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
             <br />
             <BitPivot>
-                <BitPivotItem HeaderText="One-step setup">
+                <BitPivotItem HeaderText="Easy setup">
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>
-                        Windows - Visual Studio & Visual Studio Code
-                    </BitTypography>
+                    <BitText Typography="BitTypography.H6" Gutter>
+                        For Windows: Visual Studio & Visual Studio Code
+                    </BitText>
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        To enhance the developer experience, we’ve consolidated the installation process into a single,
-                        easy-to-use chain of commands.
-                        <br />
-                        The required components are installed using the
-                        <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>
-                        which is installed by default on Windows 11.
-                        <br />
-                        Please choose your preferred options below, click the Copy button,
-                        and paste them into the Windows PowerShell running as an Administrator.
-                    </BitTypography>
+                    <BitText Typography="BitTypography.Body1" Gutter>
+                        To streamline your development setup, we’ve simplified the installation process into a straightforward sequence of commands.
+                        These components are installed via the <a href="https://aka.ms/getwinget" target="_blank">Windows Package Manager (WinGet)</a>, which comes pre-installed on Windows 11.
+                        <br /><br />
+                        The default commands listed below are required for Web & API development, however,
+                        you can choose other options too, then click the Copy button and paste them into
+                        the Windows PowerShell as an Administrator to run.
+                    </BitText>
                     <br />
-                    <BitStack Gap="1rem">
+                    <BitStack HorizontalAlign="BitAlignment.Start">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
+                        <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
                         <BitCheckbox Label="Visual Studio Code" @bind-Value="installVsCode" />
-                        <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     </BitStack>
-                    <br />
-                    List of commands:
+                    <br /><br />
+                    <BitText Typography="BitTypography.H5" Gutter>Installation Script</BitText>
+                    <BitButton IconName="@BitIconName.Copy" OnClick="CopyCommandsToClipboard">@copyButtonText</BitButton>
                     <CodeBox MaxHeight="300px" HideCopyButton>@GetDisplayableSelectedCommands()</CodeBox>
                     @if (installVs)
                     {
                         <br />
+                        <BitText Typography="BitTypography.H5" Gutter>Visual Studio Extensions</BitText>
                         <div class="section-card-txt">
-                            <b>Note</b>: you can install the following extensions for Visual Studio to have a better development experience:
+                            Install the following extensions for Visual Studio to have a better development experience:
                             <ol>
                                 <li>
                                     <a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" target="_blank">Web Compiler 2022+ extension</a>
                                 </li>
                                 <li>
-                                    <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">SQLite and SQL Server Compact Toolbox extension</a>
+                                    <a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" target="_blank">ResXManager</a>
                                 </li>
                             </ol>
+                        </div>
+                    }
+                    @if (enableVirtualization)
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions</BitText>
+                        <div>
+                            Make sure Virtualization is enabled on your system:
+                            <br />
+                            <br />
+                            <div class="image-container">
+                                <img class="image" src="images/templates/virtualization.webp" />
+                            </div>
+                            If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                            <br />
+                            <br />
+                            <div class="video-container">
+                                <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                        width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                </iframe>
+                            </div>
+                            <br />
                         </div>
                     }
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>
-                        Windows, macOS, Linux - Any IDE
-                    </BitTypography>
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
+                        <BitText Typography="BitTypography.H6" Gutter>
+                            Step-by-step instructions for
+                        </BitText>
+                        <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
+                            <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
+                            <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
+                            <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
+                        </BitPivot>
+                    </BitStack>
+                    <br /><br />
+                    <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                     <br />
-                    <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
-                        Here are the step-by-step instructions to setup your development environment:
-                    </BitTypography>
-                    <br />
-                    <div class="section-card-txt">
-                        <BitToggle IsInlineLabel Label="Show steps for cross-platform development" @bind-Value="showCrossPlatform" />
-                        <ol>
-                            <li style="margin-bottom:8px">
-                                Install .NET Sdk <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">8.0.303</a>
-                            </li>
-                            <BitAccordion Title=".NET 8 Sdk on Linux instructions">
-                                <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/60218cc4-13eb-41d5-aa0b-5fd5a3fb03b8/6c42bee7c3651b1317b709a27a741362/dotnet-sdk-8.0.303-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                    <ol>
+                        <li style="margin-bottom:8px">
+                            Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">.NET 8 SDK</a>
+                            @if (devOS is "Linux")
+                            {
+                                <BitAccordion Title=".NET 8 Sdk on Linux instructions">
+                                    <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
+                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 dotnet dev-certs https --trust
-rm dotnet.tar.gz</CodeBox>
-                            </BitAccordion>
-                            <br />
-                            <li>Install <a href="https://nodejs.org/en/download/" title="Node.js" rel="nofollow">Node.js</a></li>
-                            <br />
-                            <li>
-                                <div style="margin-bottom:8px">Install .NET workloads</div>
-                                <BitPivot>
-                                    <BitPivotItem HeaderText="Windows">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>dotnet workload install maui <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                    <BitPivotItem HeaderText="Linux">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>dotnet workload update <br />dotnet workload install maui-android <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>dotnet workload update <br />dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                    <BitPivotItem HeaderText="macOS">
-                                        @if (showCrossPlatform)
-                                        {
-                                            <CodeBox>sudo dotnet workload install maui <br />sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                        else
-                                        {
-                                            <CodeBox>sudo dotnet workload install wasm-tools wasm-experimental</CodeBox>
-                                        }
-                                    </BitPivotItem>
-                                </BitPivot>
-                            </li>
-                            <li>
-                                <div style="margin-bottom:8px">Install Bit Boilerplate project template</div>
-                                <CodeBox>dotnet new install Bit.Boilerplate::8.10.0 <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://www.nuget.org/packages/Bit.Boilerplate/" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
-                            </li>
+rm $HOME/dotnet.tar.gz</CodeBox>
+                                </BitAccordion>
+                            }
+                        </li>
+                        <br />
+                        <li>Install <a href="@( devOS is "Windows" ? "https://nodejs.org/en/download/prebuilt-installer" : "https://nodejs.org/en/download/package-manager")" title="Node.js" rel="nofollow">Node.js</a></li>
+                        <br />
+                        <li>
+                            <div style="margin-bottom:8px">Install .NET workloads</div>
                             @if (showCrossPlatform)
                             {
-                                <li>
-                                    Enable long paths files in Windows
-                                    <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
-                                </li>
-                                <li>
-                                    Enable Windows developer mode
-                                    <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
-                                </li>
+                                @if (devOS is "Windows")
+                                {
+                                    <CodeBox>dotnet workload install maui<br />dotnet workload install wasm-tools</CodeBox>
+                                }
+                                else if (devOS is "Linux")
+                                {
+                                    <CodeBox>dotnet workload update<br />dotnet workload install maui-android<br />dotnet workload install wasm-tools</CodeBox>
+                                }
+                                else
+                                {
+                                    <CodeBox>sudo dotnet workload install maui<br />sudo dotnet workload install wasm-tools</CodeBox>
+                                }
                             }
-                        </ol>
-                    </div>
-                    <br />
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>IDE specific requirements</BitTypography>
-                    <br />
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>Visual Studio</BitTypography>
-                    <div class="section-card-txt">
-                        <ul>
+                            else
+                            {
+                                @if (devOS is "Windows")
+                                {
+                                    <CodeBox>dotnet workload install wasm-tools</CodeBox>
+                                }
+                                else if (devOS is "Linux")
+                                {
+                                    <CodeBox>dotnet workload update<br />dotnet workload install wasm-tools</CodeBox>
+                                }
+                                else
+                                {
+                                    <CodeBox>sudo dotnet workload install wasm-tools</CodeBox>
+                                }
+                            }
+                        </li>
+                        <li>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0</CodeBox>
+                        </li>
+                        @if (showCrossPlatform && devOS is "Windows")
+                        {
                             <li>
-                                <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.8.0 or higher
-                                <ul dir="auto">
+                                Enable long paths files in Windows
+                                <CodeBox>reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                            </li>
+                            <li>
+                                Enable Windows developer mode
+                                <CodeBox>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f <BitButton Class="link-btn" Size="BitSize.Small" IconName="ArrowUpRight" Href="https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging" Target="_blank" Variant="BitVariant.Text" /></CodeBox>
+                            </li>
+                        }
+                    </ol>
+                    <br />
+                    @if (devOS is "Windows")
+                    {
+                        <BitText Typography="BitTypography.H5" Gutter>Virtualization Instructions (Docker, WSL, Android Emulators)</BitText>
+                        <ol>
+                            <li>
+                                Make sure Virtualization is enabled on your system:
+                                <br />
+                                <div class="image-container">
+                                    <img class="image" src="images/templates/virtualization.webp" />
+                                </div>
+                            </li>
+                            <li>
+                                If this feature shown as not enabled in <i>Task Manager</i>, please refer to the following video:
+                                <br />
+                                <br />
+                                <div class="video-container">
+                                    <iframe src="https://www.youtube.com/embed/ZDeje9wgDp4"
+                                            width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                                    </iframe>
+                                </div>
+                                <br />
+                            </li>
+                        </ol>
+                    }
+                    <BitText Typography="BitTypography.H5" Gutter>IDE specific requirements</BitText>
+                    <br />
+                    @if (devOS is "Windows")
+                    {
+                        <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Start" HorizontalAlign="BitAlignment.Start">
+                            <div class="section-card-txt">
+                                <ul>
                                     <li>
-                                        Workloads:
+                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.11 or higher
                                         <ul dir="auto">
-                                            <li>ASP.NET and web development</li>
-                                            @if (showCrossPlatform)
-                                            {
-                                                <li>.NET Multi-Platform App UI development + Android Sdk setup</li>
-                                            }
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        Extensions:
-                                        <ul dir="auto">
-                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
-                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" title="SQLite and SQL Server Compact Toolbox" rel="nofollow">SQLite and SQL Server Compact Toolbox</a> extension</li>
+                                            <li>
+                                                Workloads:
+                                                <ul dir="auto">
+                                                    <li>ASP.NET and web development</li>
+                                                    @if (showCrossPlatform)
+                                                    {
+                                                        <li>.NET Multi-Platform App UI development + Android Sdk setup</li>
+                                                    }
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                Extensions:
+                                                <ul dir="auto">
+                                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64" title="Web Compiler 2022+" rel="nofollow">Web Compiler 2022+</a> extension</li>
+                                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager" title="ResXManager" rel="nofollow">ResXManager</a> extension</li>
+                                                </ul>
+                                            </li>
                                         </ul>
                                     </li>
                                 </ul>
-                            </li>
-                        </ul>
-                    </div>
-                    <BitTypography Variant="BitTypographyVariant.H6" Gutter>VS Code</BitTypography>
+                            </div>
+                            @if (showCrossPlatform)
+                            {
+                                <img class="image" alt="VS Setup" src="/images/templates/vs-setup.webp" />
+                            }
+                        </BitStack>
+                    }
+                    <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
                     <div class="section-card-txt">
                         <ul>
                             <li>
                                 <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
                                 <ul dir="auto">
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit" title="C# Dev Kit" rel="nofollow">C# Dev Kit</a></li>
+                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers" title="Dev Containers" rel="nofollow">Dev Containers</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=kevin-chatham.aspnetcorerazor-html-css-class-completion" title="Razor/Blazor CSS IntelliSense" rel="nofollow">Razor/Blazor CSS IntelliSense</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion" title="BlazorWasmDebugging" rel="nofollow">BlazorWasmDebugging</a></li>
@@ -183,7 +242,6 @@ rm dotnet.tar.gz</CodeBox>
                                     {
                                         <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
                                     }
-                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" title="SQLite3 Editor" rel="nofollow">SQLite3 Editor</a></li>
                                     <li><a href="https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor" title="RESX Editor" rel="nofollow">RESX Editor</a></li>
                                 </ul>
                             </li>
@@ -192,20 +250,20 @@ rm dotnet.tar.gz</CodeBox>
                             @if (showCrossPlatform)
                             {
                                 <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
 code --install-extension ms-dotnettools.dotnet-maui
-code --install-extension yy0931.vscode-sqlite3-editor
 code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
                                 <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension yy0931.vscode-sqlite3-editor
 code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                         </BitAccordion>

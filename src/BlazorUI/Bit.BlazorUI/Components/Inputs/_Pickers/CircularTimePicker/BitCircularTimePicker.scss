@@ -24,6 +24,19 @@
                 background: none $clr-bg-dis;
             }
         }
+
+        .bit-ctp-txt,
+        .bit-ctp-num {
+            cursor: default;
+            color: $clr-fg-dis;
+        }
+
+        .bit-ctp-tbr,
+        .bit-ctp-pin,
+        .bit-ctp-ptr,
+        .bit-ctp-sel {
+            background-color: $clr-bg-dis;
+        }
     }
 
     &.bit-inv {
@@ -171,9 +184,13 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-size: spacing(1.75);
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
-    font-family: $tg-font-family;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-ctp-cac {
@@ -214,6 +231,11 @@
     -webkit-appearance: none;
     background-color: transparent;
     color: $clr-fg-pri;
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-ctp-ina {
@@ -222,6 +244,7 @@
 
 .bit-ctp-hmc {
     display: flex;
+    direction: ltr;
     gap: spacing(0.5);
     align-items: baseline;
     justify-content: flex-end;
@@ -229,8 +252,8 @@
 
 .bit-ctp-apc {
     display: flex;
-    margin-left: spacing(2.5);
     flex-direction: column;
+    margin-inline-start: spacing(2.5);
 }
 
 .bit-ctp-apb {
@@ -353,6 +376,17 @@
 .bit-ctp-cbi {
     speak: none;
     display: inline-block;
+}
+
+.bit-ctp-sta {
+    width: fit-content;
+
+    .bit-ctp-cal {
+        display: block;
+        z-index: unset;
+        animation: none;
+        position: relative;
+    }
 }
 
 .bit-ctp-rsp {

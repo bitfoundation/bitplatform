@@ -1,6 +1,4 @@
-﻿@page "/todo-template/create-project"
-@page "/admin-panel/create-project"
-@page "/templates/create-project"
+﻿@page "/templates/create-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/create-project"
@@ -8,58 +6,319 @@
             Description="create project of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
+
+    <BitText Typography="BitTypography.H3" Gutter>Create Project</BitText>
     <br />
-    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
-        Let's make our next web project a success with Bit.Boilerplate.
-    </BitTypography>
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        Let's make our next cross platform project a success with Bit.Boilerplate.
+    </BitText>
+    <br />
+    <BitSticky Top="90px">
+        <CodeBox>
+            @GetFinalCommand()
+        </CodeBox>
+    </BitSticky>
     <br />
 
+    <BitGrid Columns="2"
+             VerticalSpacing="1rem"
+             HorizontalSpacing="1rem">
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
+                <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetNameCommand()
+            </CodeBox>
+            <br />
+            It is required to specify a name for your project.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
+                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetCaptchaCommand()
+            </CodeBox>
+            <br />
+            <div>
+                @if (captcha.Value == "None")
+                {
+                    <div>
+                        By setting this parameter to None, CAPTCHA won't be added to the project.
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
+                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank">Live demo</a>
+                    </div>
+                }
+            </div>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
+                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetPipelineCommand()
+            </CodeBox>
+            <br />
+            @switch (pipeline.Value)
+            {
+                case "None":
+                    <div>
+                        By selecting None, no CI/CD pipeline will be added.
+                    </div>
+                    break;
+                case "GitHub":
+                    <div>
+                        Ensure a rapid and reliable deployment by utilizing a pipeline.
+                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
+                    </div>
+                    break;
+                case "Azure":
+                    <div>
+                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank">Azure Devops</a>.
+                    </div>
+                    break;
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
+                <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetSampleCommand()
+            </CodeBox>
+            Use this parameter to initialize the project with a sample pages.
+            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
+                <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetWindowsCommand()
+            </CodeBox>
+            If you set the windows parameter to false, the Maui project will still be created,
+            but no separate Windows application will be included.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
+                <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetAppCenterCommand()
+            </CodeBox>
+            Adding --appCenter true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            seamlessly across all supported platforms.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
+                <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetAppInsightsCommand()
+            </CodeBox>
+            To enable Azure Application Insights for both server and client-side applications (including web),
+            set the appinsights parameter to true. This option will configure the application to store logs such as
+            errors and informational messages.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
+                <BitToggle @bind-Value="signalr.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetSignalRCommand()
+            </CodeBox>
+            Enabling this parameter will include sample code for SignalR, which can be used to implement real-time functionalities, such as chat, in your Blazor project.
+            <br />
+            <br />
+            <b>Note:</b>
+            <br />  
+            This setting does not affect the enabling or disabling of Blazor Server.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
+            </div>
+            <CodeBox>
+                @GetFileStorageCommand()
+            </CodeBox>
+
+            @if (fileStorage.Value == "Local")
+            {
+                <div>
+                    The API project includes an Attachment Controller responsible for handling user images,
+                    including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
+                    <br />
+                    <br />
+                    Local option stores files on local hard drive.
+                </div>
+            }
+            @if (fileStorage.Value == "AzureBlobStorage")
+            {
+                <div>
+                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                </div>
+            }
+            @if (fileStorage.Value == "Other")
+            {
+                <div>
+                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+                    <br />
+                    <br />
+                    One noteable implementation is <a href="https://nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
+                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
+                </div>
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
+                <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetOfflineDbCommand()
+            </CodeBox>
+            Setting this parameter to True enables SQLite and Entity Framework Core,
+            allowing for the development of an offline-capable cross platform application.
+            <br />
+            <br />
+            Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
+                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetDatabaseCommand()
+            </CodeBox>
+            @switch (database.Value)
+            {
+                case "Sqlite":
+                    <div>
+                        The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
+                        <br />
+                        <br />
+                        Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
+                        If you require a database not listed among the options, select Other. After project creation, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
+                        package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
+                        <br />
+                        <br />
+                        For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
+                    </div>
+                    break;
+                case "SqlServer":
+                    <div>
+                        You can use Sql Server LocalDb 2022 for development purposes.
+                        <br />
+                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
+                        <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
+                    </div>
+                    break;
+                case "PostgreSQL":
+                    <div>
+                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
+                        Alternatively, use the following command:
+                        <br />
+                        <CodeBox>winget install --id=PostgreSQL.PostgreSQL.14</CodeBox>
+                    </div>
+                    break;
+                case "MySQL":
+                    <div>
+                        Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
+                    </div>
+                    break;
+                case "Cosmos":
+                    <div>
+                        Download and install Cosmos Storage emulator <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
+                        Alternatively, use the following command:
+                        <br />
+                        <CodeBox>winget install -e --id Microsoft.Azure.CosmosEmulator</CodeBox>
+                    </div>
+                    break;
+                case "Other":
+                    <div>
+                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
+                    </div>
+                    break;
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
+                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetApiCommand()
+            </CodeBox>
+            Select the API mode that best aligns with your specific requirements.
+            <br />
+            <br />
+            @if (api.Value == "Integrated")
+            {
+                <div>
+                    Easily debug and deploy Server.Web projects that serves restful API services, SSR, Blazor Server, Blazor Auto and pre-rendering.
+                </div>
+                <br />
+                <div class="api-image-container">
+                    <img class="image" src="images/templates/api-integrated.webp" />
+                </div>
+            }
+            else
+            {
+                <div>
+                    Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
+                </div>
+                <br />
+                <div class="api-image-container">
+                    <img class="image" src="images/templates/api-standalone.webp" />
+                </div>
+            }
+
+        </BitGridItem>
+    </BitGrid>
+    <br />
+    <br />
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>CLI</BitTypography>
-        <div class="section-card-txt">
-            Create a new project using dotnet new command:
-            <CodeBox>dotnet new bit-bp</CodeBox>
-        </div>
-        <div class="section-card-txt">
-            <b>Note</b>: bit project templates accept the following parameters:
-            <ul>
-                <li>--name (default is current folder name)</li>
-                <li>--api defaults to true: '--api true' adds support for aspnetcore identity, webapi, odata, ef core and fluent email.</li>
-                <li>--database default to <i>SqlServer</i> among following options: <i>SqlServer</i> <i>Sqlite</i>, <i>Other</i></li>
-                <li>--captcha default to <i>reCaptcha</i> among following options: <i>reCaptcha</i> <i>None</i></li>
-                <li>--serverUrl The backend server url. You can change its value later if needed.</li>
-                <li>--pipeline default to <i>GitHub</i> among the following options: <i>GitHub</i>, <i>Azure</i> (AzureDevOps pipelines), <i>None</i></li>
-                <li>--sample default to <i>None</i> among the following options: <i>Admin</i>, <i>Todo</i>, <i>None</i></li>
-                <li>--offlineDb defaults to false: '--offlineDb true' adds sqlite database support to the client mobile, web and desktop apps</li>
-                <li>--windows default to false: '--windows true' adds support for exe output for windows 7+</li>
-                <li>--appInsights defaults to false: '--appInsights true' adds support for Azure application insights in all clients (Android, iOS, Windows, macOS, Web)</li>
-                <li>--appCenter defaults to false: '--appCenter true' adds support for Visual Studio AppCenter in hybrid clients (Android, iOS, Windows, macOS)</li>
-            </ul>
-        </div>
-        Examples:
+        <BitText Typography="BitTypography.H5" Gutter>Visual Studio</BitText>
         <br />
-        <br />
-        1- Create a cross-platform AdminPanel app for mobile, desktop and web with Azure DevOps pipelines and a SqlServer database:
-        <CodeBox>dotnet new bit-bp --name MyAdminPanel --database SqlServer --pipeline Azure --sample Admin</CodeBox>
-
-        2- Create a cross-platform Todo app for mobile, desktop and web with GitHub Actions and a SQLite database:
-        <CodeBox>dotnet new bit-bp --name MyTodoApp --database Sqlite --pipeline GitHub --sample Todo --serverUrl todo.bitplatform.dev</CodeBox>
-
-        3- Create a mobile, desktop and web app without sample pages, integrating GitHub Actions and a SQL Server database:
-        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --serverUrl app.mycompany.com</CodeBox>
-
-        4- Create an offline capable mobile, desktop and web app:
-        <CodeBox>dotnet new bit-bp --name MyCompany.MyApp --database SqlServer --pipeline GitHub --sample None --offlineDb</CodeBox>
-
-        <div class="section-card-txt">
-            <b>Note</b>: We recommend to create the project in a path that is not too long without space character in the folder names.
-        </div>
-    </section>
-    <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
-        <br />
-        <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="3000">
+        <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
             <BitCarouselItem>
                 <div class="image-container">
                     <img src="images/templates/create-new-project-vs-1.webp">
@@ -70,11 +329,6 @@
                     <img src="images/templates/create-new-project-vs-2.webp" />
                 </div>
             </BitCarouselItem>
-            <BitCarouselItem>
-                <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-3.webp" />
-                </div>
-            </BitCarouselItem>
         </BitCarousel>
         <br />
         <div class="section-card-txt">
@@ -83,4 +337,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Database" NextUrl="/templates/database" />
+<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Run project" NextUrl="/templates/run-project" />

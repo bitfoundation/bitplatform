@@ -23,13 +23,18 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         if (response.RequiresTwoFactor) return true;
 
-        await StoreTokens(response, request.RememberMe);
+        await OnNewToken(response!, request.RememberMe);
+
+        return false;
+    }
+
+    public async Task OnNewToken(TokenResponseDto response, bool? rememberMe = null)
+    {
+        await StoreTokens(response, rememberMe);
 
         var state = await GetAuthenticationStateAsync();
 
         NotifyAuthenticationStateChanged(Task.FromResult(state));
-
-        return false;
     }
 
     public async Task SignOut(CancellationToken cancellationToken)
@@ -125,6 +130,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 Name = "access_token",
                 Value = response.AccessToken,
                 MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
+                Path = "/",
                 SameSite = SameSite.Strict,
                 Secure = AppEnvironment.IsDev() is false
             });

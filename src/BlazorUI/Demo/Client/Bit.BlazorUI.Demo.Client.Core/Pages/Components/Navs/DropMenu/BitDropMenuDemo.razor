@@ -1,0 +1,142 @@
+﻿@page "/components/dropmenu"
+
+<PageOutlet Url="components/dropmenu"
+            Title="DropMenu"
+            Description="DropMenu component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="DropMenu"
+               ComponentDescription="DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu. This can be particularly useful for creating navigation menus, action lists, or any other interactive elements that require a dropdown."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitDropMenu Text="Basic">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitButton>Click me</BitButton>
+                    <BitToggle>Toggle me</BitToggle>
+                </BitStack>
+            </BitDropMenu>
+            <br />
+            <BitDropMenu Text="Disabled" IsEnabled="false">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitButton>Click me</BitButton>
+                    <BitToggle>Toggle me</BitToggle>
+                </BitStack>
+            </BitDropMenu>
+            <br />
+            <BitDropMenu Text="Transparent" Transparent>
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitButton>Click me</BitButton>
+                    <BitToggle>Toggle me</BitToggle>
+                </BitStack>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Icon" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <div>Customizing the drop menu icons.</div><br />
+            <BitDropMenu Text="IconName" IconName="@BitIconName.Emoji2">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+            <br /><br />
+            <BitDropMenu Text="ChevronDownIcon" ChevronDownIcon="@BitIconName.DoubleChevronDown">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Template" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>Here is an example of customizing the drop menu.</div><br />
+            <BitDropMenu Text="Add Icon" IconName="@BitIconName.Emoji2">
+                <Template>
+                    <div style="display:flex;gap:10px;">
+                        <BitIcon IconName="@BitIconName.Airplane" Color="BitColor.Tertiary" />
+                        <span>A template</span>
+                        <BitRippleLoading CustomSize="20" Color="BitColor.Tertiary" />
+                    </div>
+                </Template>
+                <Body>
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    </BitStack>
+                </Body>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div>Utilizing the drop menu OnClick event:</div><br />
+            <BitDropMenu Text="@($"Click me ({clickCounter})")" OnClick="() => clickCounter++">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Further customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+            <br /><br />
+            <div>Component's Style & Class:</div><br />
+            <div>
+                <BitDropMenu Text="Styled Drop menu" Style="background-color: transparent; border-color: blueviolet; color: blueviolet;">
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    </BitStack>
+                </BitDropMenu>
+                <br />
+                <BitDropMenu Text="Classed Drop menu" Class="custom-class">
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    </BitStack>
+                </BitDropMenu>
+            </div>
+            <br /><br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <div>
+                <BitDropMenu Text="Styled Drop menu"
+                             Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
+                                               Text = "color: tomato; font-weight: bold;",
+                                               Opened = "border-color: tomato; background-color: goldenrod;" })">
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    </BitStack>
+                </BitDropMenu>
+                <br />
+                <BitDropMenu Text="Classed Drop menu"
+                             Classes="@(new() { Root = "custom-root",
+                                                Text = "custom-text",
+                                                Opened = "custom-opened" })">
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    </BitStack>
+                </BitDropMenu>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <ExamplePreview>
+            <div>Use BitDropMenu in right-to-left (RTL).</div>
+            <br />
+            <div class="example-content" dir="rtl">
+                <BitDropMenu Text="منو" Dir="BitDir.Rtl">
+                    <BitStack Gap="1rem" Style="padding:0.5rem">
+                        <BitText Typography="BitTypography.Subtitle1">این یک محتوای تستی می باشد.</BitText>
+                    </BitStack>
+                </BitDropMenu>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

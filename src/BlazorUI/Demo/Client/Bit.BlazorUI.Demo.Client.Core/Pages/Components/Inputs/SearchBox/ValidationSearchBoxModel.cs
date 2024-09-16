@@ -3,6 +3,6 @@
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2,
-    ErrorMessage = "The text field length must be between 6 and 2 characters in length.")]
+    ErrorMessage = "Text must be between 2 and 6 chars.")]
     public string Text { get; set; } = default!;
 }

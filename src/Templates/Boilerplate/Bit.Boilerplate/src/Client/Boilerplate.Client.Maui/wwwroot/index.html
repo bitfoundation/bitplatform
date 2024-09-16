@@ -23,9 +23,7 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
-    <!--#if (sample == "Admin")-->
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
-    <!--#endif-->
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
     <link rel="stylesheet" href="Boilerplate.Client.Maui.styles.css" />
@@ -34,9 +32,6 @@
     <!--#endif-->
 
     <style>
-        body {
-            background-color: #0D2960;
-        }
 
         .bit-lds-grid div {
             background-color: #123456;
@@ -131,8 +126,8 @@
     </style>
 </head>
 
-<body class="bit-blazor-hybrid">
-    <div id="app-container" class="bit-css-clr-bg-primary bit-css-clr-fg-primary">
+<body class="bit-css-clr-bg-pri bit-css-clr-fg-pri bit-blazor-hybrid">
+    <div id="app-container">
         <div class="bit-lds-wrapper">
             <div class="bit-lds-grid">
                 <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
@@ -143,10 +138,8 @@
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/Bit.Butil/bit-butil.js"></script>
     <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
-    <!--#if (sample == "Admin")-->
-    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
-    <!--#endif-->
     <script src="_content/Boilerplate.Client.Core/scripts/app.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
 
 </body>
 

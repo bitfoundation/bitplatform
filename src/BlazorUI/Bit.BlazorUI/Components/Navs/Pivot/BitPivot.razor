@@ -19,9 +19,9 @@
     {
         <div role="tabpanel"
              aria-hidden="false"
-             aria-labelledby="@GetAriaLabelledby"
-             style="@GetSelectedItemStyle() @Styles?.ContentView"
-             class="bit-pvt-cct@((_selectedItem?.IsEnabled??false) ? "" : " disabled") @Classes?.ContentView">
+             style="@GetSelectedItemStyle()"
+             aria-labelledby="@(_selectedItem?._Id)"
+             class="bit-pvt-cct @GetSelectedItemClass()">
             @(_selectedItem?.Body ?? _selectedItem?.ChildContent)
         </div>
     }

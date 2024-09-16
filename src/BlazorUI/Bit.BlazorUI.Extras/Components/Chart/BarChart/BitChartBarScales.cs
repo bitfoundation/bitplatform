@@ -12,12 +12,12 @@ public class BitChartBarScales
     /// <para>You can use any <see cref="BitChartCartesianAxis"/> but there are extended axes in the <see cref="BarChart.Axes"/> namespace which contain additional properties to customize the bar chart axes.</para>
     /// </summary>
     [JsonProperty("xAxes")]
-    public IList<BitChartCartesianAxis> XAxes { get; set; }
+    public List<BitChartCartesianAxis> XAxes { get; set; }
 
     /// <summary>
     /// Gets or sets the configurations for the y-axes.
     /// <para>You can use any <see cref="BitChartCartesianAxis"/> but there are extended axes in the <see cref="BarChart.Axes"/> namespace which contain additional properties to customize the bar chart axes.</para>
     /// </summary>
     [JsonProperty("yAxes")]
-    public IList<BitChartCartesianAxis> YAxes { get; set; }
+    public List<BitChartCartesianAxis> YAxes { get; set; }
 }

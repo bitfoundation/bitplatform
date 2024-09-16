@@ -22,14 +22,13 @@ public partial class Program
         // https://github.com/velopack/velopack
         VelopackApp.Build().Run();
         var application = new App();
-        application.InitializeComponent();
         Task.Run(async () =>
         {
+            var services = await App.Current.Dispatcher.InvokeAsync(() => ((MainWindow)App.Current.MainWindow).AppWebView.Services);
             try
             {
-                var services = await App.Current.Dispatcher.InvokeAsync(() => ((MainWindow)App.Current.MainWindow).BlazorWebView.Services);
                 var windowsUpdateSettings = services.GetRequiredService<IOptionsSnapshot<WindowsUpdateSettings>>().Value;
-                if (windowsUpdateSettings?.FilesUrl is null)
+                if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
                 {
                     return;
                 }
@@ -44,7 +43,10 @@ public partial class Program
                     }
                 }
             }
-            catch { }
+            catch (Exception exp)
+            {
+                services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            }
         });
         application.Run();
     }

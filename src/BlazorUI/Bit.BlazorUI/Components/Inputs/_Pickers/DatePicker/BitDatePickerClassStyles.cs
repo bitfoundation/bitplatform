@@ -8,6 +8,11 @@ public class BitDatePickerClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the focused state of the BitDatePicker.
+    /// </summary>
+    public string? Focused { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the label of the BitDatePicker.
     /// </summary>
     public string? Label { get; set; }

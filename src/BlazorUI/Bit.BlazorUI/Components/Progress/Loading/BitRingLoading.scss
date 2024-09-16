@@ -1,11 +1,14 @@
 .bit-ldn-rng {
+}
+
+.bit-ldn-rng-ccn {
     position: relative;
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-rng div {
+.bit-ldn-rng-chl {
     display: block;
     position: absolute;
     border-radius: 50%;
@@ -18,15 +21,15 @@
     border-color: var(--bit-ldn-color) transparent transparent transparent;
 }
 
-.bit-ldn-rng div:nth-child(1) {
+.bit-ldn-rng-ch1 {
     animation-delay: -0.45s;
 }
 
-.bit-ldn-rng div:nth-child(2) {
+.bit-ldn-rng-ch2 {
     animation-delay: -0.3s;
 }
 
-.bit-ldn-rng div:nth-child(3) {
+.bit-ldn-rng-ch3 {
     animation-delay: -0.15s;
 }
 

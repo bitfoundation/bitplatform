@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+
+@code {
+    [Parameter] public BitLoadingBase This { get; set; } = default!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
+
+<div @ref="This!.RootElement" @attributes="This?.HtmlAttributes"
+     id="@This?._Id"
+     style="@This?.StyleBuilder.Value"
+     class="@This?.ClassBuilder.Value">
+    @if (This?.LabelTemplate is not null)
+    {
+        @This?.LabelTemplate
+    }
+    else if (This?.Label is not null)
+    {
+        <label style="@This?.Styles?.Label" class="bit-ldn-lbl @This?.Classes?.Label">
+            @This?.Label
+        </label>
+    }
+    @ChildContent
+</div>

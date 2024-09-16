@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class EditUserDto
+public partial class EditUserDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.FullName))]

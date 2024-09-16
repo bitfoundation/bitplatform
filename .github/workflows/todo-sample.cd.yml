@@ -49,12 +49,12 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure app render mode
       run: |
           sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
-          sed -i 's/Auto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+          sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
     - name: Changes for static-todo.bitplatform.dev - Part 1
       run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/Server/TodoSample.Server.Web/Program.Middlewares.cs
@@ -149,6 +149,16 @@ jobs:
     - name: Set app center secret
       run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
       shell: pwsh
+
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Windows/Resources/SplashScreen.png
+
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Windows/Resources/'
+          fileName: 'SplashScreen.png'
+          encodedString: ${{ vars.TODO_WPF_SPLASH_SCREEN }}
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -169,7 +179,7 @@ jobs:
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
           dotnet tool restore
-          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows-x86.exe -r win-x86 --framework net8.0.7-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows-x86.exe -r win-x86 --framework net8.0.8-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4

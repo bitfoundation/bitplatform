@@ -61,9 +61,16 @@ public static partial class Program
         {
             builder.AddDefaultPolicy(policy =>
             {
-                policy.SetIsOriginAllowed(origin => 
+                if (env.IsDevelopment() is false)
+                {
+                    policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
+                }
+
+                var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+
+                policy.SetIsOriginAllowed(origin =>
                             LocalhostOriginRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(appSettings.WebClientUrl) is false && string.Equals(origin, appSettings.WebClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                            (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
@@ -72,9 +79,14 @@ public static partial class Program
 
         services.AddAntiforgery();
 
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default));
+
         services
             .AddControllers()
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default))
+            //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
+            //#endif
             .AddOData(options => options.EnableQueryFeatures())
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
@@ -149,8 +161,6 @@ public static partial class Program
 
         AddIdentity(builder);
 
-        services.TryAddTransient<IContentTypeProvider, FileExtensionContentTypeProvider>();
-
         var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.Email.DefaultFromEmail);
 
         if (appSettings.Email.UseLocalFolderForEmails)
@@ -195,8 +205,7 @@ public static partial class Program
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(attachmentsDirPath);
-            var connectionString = $"disk://path={attachmentsDirPath}";
-            return StorageFactory.Blobs.FromConnectionString(connectionString);
+            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
         });
         //#elif (filesStorage == "AzureBlobStorage")
         services.TryAddSingleton(sp =>
@@ -336,7 +345,7 @@ public static partial class Program
 
         services.AddSwaggerGen(options =>
         {
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Server.Api.xml"), includeControllerXmlComments: true);
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Boilerplate.Shared.xml"));
 
             options.OperationFilter<ODataOperationFilter>();

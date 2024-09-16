@@ -3,7 +3,7 @@ using Boilerplate.Shared.Dtos.Identity;
 
 namespace Microsoft.AspNetCore.Identity;
 
-public static class UserManagerExtensions
+public static partial class UserManagerExtensions
 {
     public static async Task<User?> FindUserAsync(this UserManager<User> userManager, IdentityRequestDto identity)
     {

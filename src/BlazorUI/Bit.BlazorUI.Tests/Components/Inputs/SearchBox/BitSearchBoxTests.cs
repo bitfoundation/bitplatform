@@ -50,7 +50,7 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(false)]
     public void SearchBoxUnderlinedShouldHaveClassName(bool isUnderlined)
     {
-        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.IsUnderlined, isUnderlined));
+        var component = RenderComponent<BitSearchBox>(parameter => parameter.Add(p => p.Underlined, isUnderlined));
 
         var searchBox = component.Find(".bit-srb");
 
@@ -163,6 +163,7 @@ public class BitSearchBoxTests : BunitTestContext
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
             parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Immediate, true);
         });
 
         var isValid = value == "test@bit.com" || value == "test@bit-components.com";
@@ -202,6 +203,7 @@ public class BitSearchBoxTests : BunitTestContext
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
             parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Immediate, true);
         });
 
         var isInvalid = value != "test@bit.com" && value != "test@bit-components.com";
@@ -240,6 +242,7 @@ public class BitSearchBoxTests : BunitTestContext
         {
             parameters.Add(p => p.TestModel, new BitSearchBoxTestModel { Value = value });
             parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Immediate, true);
         });
 
         var isInvalid = value != "test@bit.com";

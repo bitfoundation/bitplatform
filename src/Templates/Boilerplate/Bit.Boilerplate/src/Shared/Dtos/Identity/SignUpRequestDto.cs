@@ -2,7 +2,7 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class SignUpRequestDto : IdentityRequestDto
+public partial class SignUpRequestDto : IdentityRequestDto
 {
     /// <example>test2</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
@@ -16,9 +16,9 @@ public class SignUpRequestDto : IdentityRequestDto
     public string? Password { get; set; }
 
     /// <example>true</example>
-    [Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
-    [Display(Name = nameof(AppStrings.TermsAccepted))]
-    public bool TermsAccepted { get; set; }
+    //[Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
+    //[Display(Name = nameof(AppStrings.TermsAccepted))]
+    //public bool TermsAccepted { get; set; }
 
     //#if (captcha == "reCaptcha")
     /// <example>null</example>

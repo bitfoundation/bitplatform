@@ -3,34 +3,53 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel">
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (LabelTemplate is not null)
+    {
+        <label id="@_labelId" for="@_inputIds[0]">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label id="@_labelId"
+               for="@_inputIds[0]"
+               style="@Styles?.Label"
+               class="bit-otp-lbl @Classes?.Label">
+            @Label
+        </label>
+    }
 
     @{
         var inputType = GetInputType();
         var inputMode = GetInputMode();
     }
-    @for (var i = 0; i < Length; i++)
-    {
-        int index = i;
+    <div style="@Styles?.InputsWrapper" class="bit-otp-iwr @Classes?.InputsWrapper">
+        @for (var i = 0; i < Length; i++)
+        {
+            int index = i;
 
-        <input @ref="_inputRefs[index]"
-               @onpaste="e => HandleOnPaste(e, index)"
-               @oninput="e => HandleOnInput(e, index)"
-               @onfocusin="e => HandleOnFocusIn(e, index)"
-               @onkeydown="e => HandleOnKeyDown(e, index)"
-               @onfocusout="e => HandleOnFocusOut(e, index)"
-               type="@inputType"
-               style="@Styles?.Input"
-               class="bit-otp-inp @Classes?.Input"
-               inputmode="@inputMode"
-               value="@_inputValues[index]"
-               disabled="@(IsEnabled is false)"
-               spellcheck="false"
-               autocorrect="off"
-               autocapitalize="none"
-               autocomplete="@BitAutoCompleteValue.OneTimeCode" />
-    }
+            <input @ref="_inputRefs[index]"
+                   @onpaste="e => HandleOnPaste(e, index)"
+                   @oninput="e => HandleOnInput(e, index)"
+                   @onfocusin="e => HandleOnFocusIn(e, index)"
+                   @onkeydown="e => HandleOnKeyDown(e, index)"
+                   @onfocusout="e => HandleOnFocusOut(e, index)"
+                   type="@inputType"
+                   autocorrect="off"
+                   spellcheck="false"
+                   autocapitalize="none"
+                   id="@_inputIds[index]"
+                   inputmode="@inputMode"
+                   value="@_inputValues[index]"
+                   style="@GetInputStyles(index)"
+                   class="@GetInputClasses(index)"
+                   disabled="@(IsEnabled is false)"
+                   autocomplete="@BitAutoCompleteValue.OneTimeCode" />
+        }
+    </div>
 </div>

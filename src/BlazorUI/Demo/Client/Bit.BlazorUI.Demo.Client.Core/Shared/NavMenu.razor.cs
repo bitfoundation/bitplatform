@@ -31,12 +31,12 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
-                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect, ComboBox" },
+                new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, MultiSelect, ComboBox", Data = "Chips" },
                 new() { Text = "FileUpload", Url = "/components/fileupload", AdditionalUrls = ["/components/file-upload"] },
                 new() { Text = "NumberField", Url = "/components/numberfield", AdditionalUrls = ["/components/numerictextfield", "/components/numeric-text-field"], Description = "NumberInput" },
                 new() { Text = "OtpInput", Url = "/components/otpinput", AdditionalUrls = ["/components/otp-input"] },
                 new() { Text = "Rating", Url = "/components/rating" },
-                new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"] },
+                new() { Text = "SearchBox", Url = "/components/searchbox", AdditionalUrls = ["/components/search-box"], Data = "AutoComplete" },
                 new() { Text = "Slider", Url = "/components/slider", Description = "Range" },
                 new() { Text = "SpinButton", Url = "/components/spinbutton", AdditionalUrls = ["/components/spin-button"] },
                 new() { Text = "TextField", Url = "/components/textfield", AdditionalUrls = ["/components/text-field"], Description = "TextInput" },
@@ -65,7 +65,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Header", Url = "/components/header" },
                 new() { Text = "Layout", Url = "/components/layout" },
                 new() { Text = "Spacer", Url = "/components/spacer" },
-                new() { Text = "Stack", Url = "/components/stack" },
+                new() { Text = "Stack", Url = "/components/stack", Description = "WrapPanel" },
             ],
         },
         new()
@@ -85,6 +85,7 @@ public partial class NavMenu : IDisposable
             ChildItems =
             [
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
+                new() { Text = "DropMenu", Url = "/components/dropmenu" },
                 new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
@@ -118,6 +119,8 @@ public partial class NavMenu : IDisposable
             ChildItems =
             [
                 new() { Text = "Accordion", Url = "/components/accordion", Description = "Expander" },
+                new() { Text = "Callout", Url = "/components/callout", Description = "Popover, Popup" },
+                new() { Text = "Card", Url = "/components/card" },
                 new() { Text = "Dialog", Url = "/components/dialog" },
                 new() { Text = "Modal", Url = "/components/modal" },
                 new() { Text = "Panel", Url = "/components/panel" },
@@ -139,7 +142,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Overlay", Url = "/components/overlay" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
-                new() { Text = "Typography", Url = "/components/typography" },
+                new() { Text = "Text", Url = "/components/text" },
             ],
         },
         new()
@@ -199,7 +202,17 @@ public partial class NavMenu : IDisposable
         _filteredNavItems = _allNavItems;
         if (string.IsNullOrEmpty(text)) return;
 
-        _filteredNavItems = _flatNavItemList.FindAll(item => text.Split(' ').Where(t => t.HasValue()).Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
+        var mainItems = _flatNavItemList
+                            .FindAll(item => text.Split(' ')
+                                                 .Where(t => t.HasValue())
+                                                 .Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
+
+        var subItems = _flatNavItemList
+                            .FindAll(item => text.Split(' ')
+                                                 .Where(t => t.HasValue())
+                                                 .Any(t => item.Data?.ToString()?.Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
+
+        _filteredNavItems = [.. mainItems, .. subItems];
     }
 
     private async Task HandleOnItemClick(BitNavItem item)

@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitCarousel : BitComponentBase, IDisposable
+public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
     private int _pagesCount;
@@ -17,7 +17,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitCarousel>? _dotnetObjRef = default!;
+    private DotNetObjectReference<BitCarousel> _dotnetObjRef = default!;
 
 
 
@@ -26,34 +26,9 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
 
     /// <summary>
-    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
-    [Parameter] public bool InfiniteScrolling { get; set; }
-
-    /// <summary>
-    /// Items of the carousel.
-    /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    /// <summary>
-    /// Shows or hides the Dots indicator at the bottom of the BitCarousel.
-    /// </summary>
-    [Parameter] public bool ShowDots { get; set; } = true;
-
-    /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitCarousel.
-    /// </summary>
-    [Parameter] public bool ShowNextPrev { get; set; } = true;
-
-    /// <summary>
-    /// Number of items that is visible in the carousel
-    /// </summary>
-    [Parameter] public int VisibleItemsCount { get; set; } = 1;
-
-    /// <summary>
-    /// Number of items that is going to be changed on navigation
-    /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
@@ -66,31 +41,67 @@ public partial class BitCarousel : BitComponentBase, IDisposable
     [Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
-    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// Items of the carousel.
     /// </summary>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Hides the Dots indicator at the bottom of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool HideDots { get; set; }
+
+    /// <summary>
+    /// Hides the Next/Prev buttons of the BitCarousel.
+    /// </summary>
+    [Parameter] public bool HideNextPrev { get; set; }
+
+    /// <summary>
+    /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
+    /// </summary>
+    [Parameter] public bool InfiniteScrolling { get; set; }
 
     /// <summary>
     /// The event that will be called on carousel page navigation.
     /// </summary>
     [Parameter] public EventCallback<int> OnChange { get; set; }
 
+    /// <summary>
+    /// Number of items that is going to be changed on navigation.
+    /// </summary>
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// Number of items that is visible in the carousel.
+    /// </summary>
+    [Parameter] public int VisibleItemsCount { get; set; } = 1;
 
 
-    public async Task GoPrev()
-    {
-        await Prev();
-    }
 
+    /// <summary>
+    /// Navigates to the next carousel item.
+    /// </summary>
     public async Task GoNext()
     {
         await Next();
     }
 
+    /// <summary>
+    /// Navigates to the previous carousel item.
+    /// </summary>
+    public async Task GoPrev()
+    {
+        await Prev();
+    }
+
+    /// <summary>
+    /// Navigates to the given carousel item index.
+    /// </summary>
     public async Task GoTo(int index)
     {
         await GotoPage(index - 1);
     }
+
+
 
     [JSInvokable("OnRootResize")]
     public async Task OnRootResize(ContentRect rect)
@@ -118,6 +129,13 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
     protected override string RootElementClass => "bit-csl";
 
+    protected override void OnInitialized()
+    {
+        _dotnetObjRef = DotNetObjectReference.Create(this);
+
+        base.OnInitialized();
+    }
+
     protected override void OnParametersSet()
     {
         _internalScrollItemsCount = ScrollItemsCount;
@@ -133,7 +151,6 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
         if (firstRender is false) return;
 
-        _dotnetObjRef = DotNetObjectReference.Create(this);
         _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
 
         if (AutoPlay)
@@ -326,6 +343,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
             await GoRight();
         }
     }
+
     private async Task HandlePointerDown(MouseEventArgs e)
     {
         _isPointerDown = true;
@@ -333,6 +351,7 @@ public partial class BitCarousel : BitComponentBase, IDisposable
         await _js.SetStyle(_carousel, "cursor", "grabbing");
         StateHasChanged();
     }
+
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
@@ -347,13 +366,13 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
 
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
@@ -365,8 +384,12 @@ public partial class BitCarousel : BitComponentBase, IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
-            //_dotnetObjRef.Dispose();
+            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+                await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

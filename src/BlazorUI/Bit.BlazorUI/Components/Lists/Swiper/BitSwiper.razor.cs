@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitSwiper : BitComponentBase, IDisposable
+public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 {
     private double _lastX;
     private bool _disposed;
@@ -24,7 +24,7 @@ public partial class BitSwiper : BitComponentBase, IDisposable
     private string _resizeObserverId = string.Empty;
     private readonly List<BitSwiperItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitSwiper>? _dotnetObjRef = default!;
+    private DotNetObjectReference<BitSwiper> _dotnetObjRef = default!;
 
 
 
@@ -32,30 +32,10 @@ public partial class BitSwiper : BitComponentBase, IDisposable
 
 
 
-    ///// <summary>
-    ///// If enabled the swiper items will navigate in an infinite loop.
-    ///// </summary>
-    //[Parameter] public bool InfiniteScrolling { get; set; }
-
     /// <summary>
-    /// Items of the swiper.
+    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    ///// <summary>
-    ///// Shows or hides the Dots indicator at the bottom of the BitSwiper.
-    ///// </summary>
-    //[Parameter] public bool ShowDots { get; set; } = true;
-
-    /// <summary>
-    /// Shows or hides the Next/Prev buttons of the BitSwiper.
-    /// </summary>
-    [Parameter] public bool ShowNextPrev { get; set; } = true;
-
-    /// <summary>
-    /// Number of items that is going to be changed on navigation
-    /// </summary>
-    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
 
     ///// <summary>
     ///// Enables/disables the auto scrolling of the slides.
@@ -68,68 +48,46 @@ public partial class BitSwiper : BitComponentBase, IDisposable
     //[Parameter] public double AutoPlayInterval { get; set; } = 2000;
 
     /// <summary>
-    /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
+    /// Items of the swiper.
     /// </summary>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    ///// <summary>
+    ///// Hides the Dots indicator at the bottom of the BitSwiper.
+    ///// </summary>
+    //[Parameter] public bool HideDots { get; set; }
+
+    /// <summary>
+    /// Hides the Next/Prev buttons of the BitSwiper.
+    /// </summary>
+    [Parameter] public bool HideNextPrev { get; set; }
+
+    ///// <summary>
+    ///// If enabled the swiper items will navigate in an infinite loop.
+    ///// </summary>
+    //[Parameter] public bool InfiniteScrolling { get; set; }
+
+    /// <summary>
+    /// Number of items that is going to be changed on navigation.
+    /// </summary>
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
 
 
-    public async Task GoPrev() => await Go(false);
-
+    /// <summary>
+    /// Navigates to the next swiper item.
+    /// </summary>
     public async Task GoNext() => await Go(true);
 
+    /// <summary>
+    /// Navigates to the previous swiper item.
+    /// </summary>
+    public async Task GoPrev() => await Go(false);
+
+    /// <summary>
+    /// Navigates to the given swiper item index.
+    /// </summary>
     public async Task GoTo(int index) => await GotoPage(index - 1);
-
-
-
-    internal void RegisterItem(BitSwiperItem item)
-    {
-        item.Index = _allItems.Count;
-
-        _allItems.Add(item);
-    }
-
-    internal void UnregisterItem(BitSwiperItem carouselItem) => _allItems.Remove(carouselItem);
-
-
-
-    protected override string RootElementClass => "bit-swp";
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
-
-        await base.OnParametersSetAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await GetDimensions();
-
-        var itemsCount = _allItems.Count;
-        _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
-                                  : ScrollItemsCount > itemsCount ? itemsCount
-                                  : ScrollItemsCount;
-
-        if (firstRender)
-        {
-            //if (AutoPlay)
-            //{
-            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
-            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
-            //    _autoPlayTimer.Start();
-            //}
-
-            _dotnetObjRef = DotNetObjectReference.Create(this);
-            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
-
-            await _js.BitSwiperRegisterPointerLeave(RootElement, DotNetObjectReference.Create(this));
-
-            SetNavigationButtonsVisibility(_translateX);
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
 
 
 
@@ -160,6 +118,63 @@ public partial class BitSwiper : BitComponentBase, IDisposable
 
         var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
+    }
+
+
+
+    internal void RegisterItem(BitSwiperItem item)
+    {
+        item.Index = _allItems.Count;
+
+        _allItems.Add(item);
+    }
+
+    internal void UnregisterItem(BitSwiperItem item) => _allItems.Remove(item);
+
+
+
+    protected override string RootElementClass => "bit-swp";
+
+    protected override void OnInitialized()
+    {
+        _dotnetObjRef = DotNetObjectReference.Create(this);
+
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetDimensions();
+
+        var itemsCount = _allItems.Count;
+        _internalScrollItemsCount = ScrollItemsCount < 1 ? 1
+                                  : ScrollItemsCount > itemsCount ? itemsCount
+                                  : ScrollItemsCount;
+
+        if (firstRender)
+        {
+            //if (AutoPlay)
+            //{
+            //    _autoPlayTimer = new System.Timers.Timer(AutoPlayInterval);
+            //    _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            //    _autoPlayTimer.Start();
+            //}
+
+            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
+
+            await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObjRef);
+
+            SetNavigationButtonsVisibility(_translateX);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
@@ -256,13 +271,14 @@ public partial class BitSwiper : BitComponentBase, IDisposable
     }
 
 
-    public void Dispose()
+
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (_disposed || disposing is false) return;
 
@@ -274,8 +290,12 @@ public partial class BitSwiper : BitComponentBase, IDisposable
 
         if (_dotnetObjRef is not null)
         {
-            _ = _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
-            //_dotnetObjRef.Dispose();
+            //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
+            try
+            {
+               await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         _disposed = true;

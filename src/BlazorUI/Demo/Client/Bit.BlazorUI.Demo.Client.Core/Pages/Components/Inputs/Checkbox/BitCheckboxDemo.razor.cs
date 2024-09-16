@@ -159,6 +159,13 @@ public partial class BitCheckboxDemo
                },
                new()
                {
+                   Name = "Checked",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the checked state of the BitCheckbox."
+               },
+               new()
+               {
                    Name = "Box",
                    Type = "string?",
                    DefaultValue = "null",
@@ -281,32 +288,61 @@ private bool customContentIndeterminate = true;";
     private readonly string example8RazorCode = @"
 <style>
     .custom-class {
-        color: brown;
-        padding: 1rem;
-        background-color: aquamarine;
+        padding: 0.5rem;
+        border-radius: 0.125rem;
+        background-color: #d3d3d347;
+        border: 1px solid dodgerblue;
     }
 
+
     .custom-label {
-        color: darkblue;
-        font-size: 18px;
         font-weight: bold;
+        color: lightseagreen;
+    }
+
+    .custom-icon {
+        color: lightseagreen
     }
 
     .custom-box {
-        border-width: 3px;
-        border-color: crimson;
+        border-radius: 0.2rem;
+        border-color: lightseagreen;
+    }
+
+    .custom-checked .custom-icon {
+        color: white
+    }
+
+    .custom-checked:hover .custom-icon {
+        color: whitesmoke;
+    }
+
+    .custom-checked .custom-box {
+        background-color: lightseagreen;
+    }
+
+    .custom-checked:hover .custom-box {
+        border-color: mediumseagreen;
     }
 </style>
 
 
-<BitCheckbox Label=""Styled checkbox"" Style=""background-color:aqua;color:red"" />
+<BitCheckbox Label=""Styled checkbox"" Style=""color: dodgerblue; text-shadow: lightskyblue 0 0 1rem;"" />
 
 <BitCheckbox Label=""Classed checkbox"" Class=""custom-class"" />
 
 
-<BitCheckbox Label=""Styles"" Styles=""@(new() { Label=""color:darkgoldenrod"", Box=""border-color:brown"", Icon=""color:red"" })"" />
+<BitCheckbox Label=""Styles"" 
+             Styles=""@(new() { Checked = ""--check-color: deeppink; --icon-color: white;"", 
+                               Label = ""color: var(--check-color);"",
+                               Box = ""border-radius: 50%; border-color: var(--check-color); background-color: var(--check-color);"",
+                               Icon = ""color: var(--icon-color);"" })"" />
 
-<BitCheckbox Label=""Classes"" Classes=""@(new() { Label=""custom-label"", Box=""custom-box"" })"" />";
+<BitCheckbox Label=""Classes"" 
+             Classes=""@(new() { Checked = ""custom-checked"",
+                                Icon = ""custom-icon"",
+                                Label=""custom-label"",
+                                Box=""custom-box"" })"" />";
 
     private readonly string example9RazorCode = @"
 <style>

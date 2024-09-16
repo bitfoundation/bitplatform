@@ -1,11 +1,14 @@
 .bit-ldn-bar {
+}
+
+.bit-ldn-bar-ccn {
     position: relative;
     display: inline-block;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
-.bit-ldn-bar div {
+.bit-ldn-bar-chl {
     position: absolute;
     display: inline-block;
     width: var(--bit-ldn-bar-16);
@@ -13,17 +16,17 @@
     animation: bit-ldn-bar-anm 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
 }
 
-.bit-ldn-bar div:nth-child(1) {
+.bit-ldn-bar-ch1 {
     animation-delay: -0.24s;
     left: var(--bit-ldn-bar-8);
 }
 
-.bit-ldn-bar div:nth-child(2) {
+.bit-ldn-bar-ch2 {
     animation-delay: -0.12s;
     left: var(--bit-ldn-bar-32);
 }
 
-.bit-ldn-bar div:nth-child(3) {
+.bit-ldn-bar-ch3 {
     animation-delay: 0;
     left: var(--bit-ldn-bar-56);
 }

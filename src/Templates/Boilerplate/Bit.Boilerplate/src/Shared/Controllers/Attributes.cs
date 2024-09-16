@@ -1,37 +1,37 @@
 ﻿namespace Boilerplate.Shared.Controllers;
 
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
-internal class RouteAttribute(string template) : Attribute
+internal partial class RouteAttribute(string template) : Attribute
 {
     public string Template { get; } = template;
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpGetAttribute(string? template = null) : Attribute
+internal partial class HttpGetAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPostAttribute(string? template = null) : Attribute
+internal partial class HttpPostAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPutAttribute(string? template = null) : Attribute
+internal partial class HttpPutAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpDeleteAttribute(string? template = null) : Attribute
+internal partial class HttpDeleteAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-internal class HttpPatchAttribute(string? template = null) : Attribute
+internal partial class HttpPatchAttribute(string? template = null) : Attribute
 {
     public string? Template { get; } = template;
 }
@@ -41,17 +41,7 @@ internal class HttpPatchAttribute(string? template = null) : Attribute
 /// <see cref="Services.HttpMessageHandlers.RetryDelegatingHandler" />
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public class NoRetryPolicyAttribute : Attribute
-{
-
-}
-
-/// <summary>
-/// Ensure the authorization header is not set for the action.
-/// <see cref="Services.HttpMessageHandlers.AuthDelegatingHandler" />
-/// </summary>
-[AttributeUsage(AttributeTargets.Method)]
-public class NoAuthorizeHeaderPolicyAttribute : Attribute
+public partial class NoRetryPolicyAttribute : Attribute
 {
 
 }

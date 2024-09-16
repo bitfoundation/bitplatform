@@ -73,27 +73,27 @@ public partial class BitDataGridDemo
             Description = @"If true, renders draggable handles around the column headers, allowing the user to resize the columns
                             manually. Size changes are not persisted.",
         },
-        new()
-        {
-            Name = "ItemKey",
-            Type = "Func<TGridItem, object>",
-            DefaultValue = "x => x!",
-            Description = @"Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
-                            unique identifier, such as a primary key value, for each data item.
-                            This allows the grid to preserve the association between row elements and data items based on their
-                            unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
-                            If not set, the @key will be the TGridItem instance itself.",
-        },
-        new()
-        {
-            Name = "Pagination",
-            Type = "BitDataGridPaginationState?",
-            DefaultValue = "null",
-            Description = @"Optionally links this BitDataGrid<TGridItem> instance with a BitDataGridPaginationState model,
-                            causing the grid to fetch and render only the current page of data.
-                            This is normally used in conjunction with a Paginator component or some other UI logic
-                            that displays and updates the supplied BitDataGridPaginationState instance.",
-        }
+         new()
+         {
+             Name = "ItemKey",
+             Type = "Func<TGridItem, object>",
+             DefaultValue = "x => x!",
+             Description = @"Optionally defines a value for @key on each rendered row. Typically this should be used to specify a
+                             unique identifier, such as a primary key value, for each data item.
+                             This allows the grid to preserve the association between row elements and data items based on their
+                             unique identifiers, even when the TGridItem instances are replaced by new copies (for example, after a new query against the underlying data store).
+                             If not set, the @key will be the TGridItem instance itself.",
+         },
+         new()
+         {
+             Name = "Pagination",
+             Type = "BitDataGridPaginationState?",
+             DefaultValue = "null",
+             Description = @"Optionally links this BitDataGrid<TGridItem> instance with a BitDataGridPaginationState model,
+                             causing the grid to fetch and render only the current page of data.
+                             This is normally used in conjunction with a Paginator component or some other UI logic
+                             that displays and updates the supplied BitDataGridPaginationState instance.",
+         }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -342,10 +342,6 @@ public partial class BitDataGridDemo
         new CountryModel { Code = "VE", Name = "Venezuela", Medals = new MedalsModel { Gold = 1, Silver = 3, Bronze = 0 } },
     ];
 
-    [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
-
-    private bool isLoadingAssemblies = true;
-
     protected override async Task OnInitAsync()
     {
         allCountries = _countries.AsQueryable();
@@ -420,19 +416,48 @@ public partial class BitDataGridDemo
             }
         };
 
-        try
-        {
-            if (OperatingSystem.IsBrowser())
-            {
-                await lazyAssemblyLoader.LoadAssembliesAsync(["Newtonsoft.Json.wasm", "System.Private.Xml.wasm", "System.Data.Common.wasm"]);
-            }
-        }
-        finally
-        {
-            isLoadingAssemblies = false;
-        }
-
         await base.OnInitAsync();
+    }
+
+
+
+    IQueryable<CountryModel> allCountries = default!;
+    BitDataGrid<FoodRecall> dataGrid = default!;
+    BitDataGrid<ProductDto> productsDataGrid = default!;
+    BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
+    BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
+    BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
+    BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
+
+    IQueryable<CountryModel>? FilteredItems1 =>
+        allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+    IQueryable<CountryModel>? FilteredItems2 =>
+        allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
+
+    string typicalSampleNameFilter1 = string.Empty;
+    string typicalSampleNameFilter2 = string.Empty;
+
+    string _virtualSampleNameFilter = string.Empty;
+    string VirtualSampleNameFilter
+    {
+        get => _virtualSampleNameFilter;
+        set
+        {
+            _virtualSampleNameFilter = value;
+            _ = dataGrid.RefreshDataAsync();
+        }
+    }
+
+    string _odataSampleNameFilter = string.Empty;
+
+    string ODataSampleNameFilter
+    {
+        get => _odataSampleNameFilter;
+        set
+        {
+            _odataSampleNameFilter = value;
+            _ = productsDataGrid.RefreshDataAsync();
+        }
     }
 
 
@@ -455,10 +480,12 @@ public partial class BitDataGridDemo
 
 <div class=""grid"">
     <div class=""grid-container"">
-        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
+        <BitDataGrid Items=""@FilteredItems1"" ResizableColumns=""true"" Pagination=""@pagination1"">
             <BitDataGridPropertyColumn Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
-                    <BitSearchBox @bind-Value=""typicalSampleNameFilter""
+                    <BitSearchBox @bind-Value=""typicalSampleNameFilter1""
+                                  FixedIcon
+                                  Immediate DebounceTime=""300""
                                   Placeholder=""Search on Name""
                                   InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
@@ -469,13 +496,14 @@ public partial class BitDataGridDemo
             <BitDataGridPropertyColumn Property=""@(c => c.Medals.Total)"" Sortable=""true"" />
         </BitDataGrid>
     </div>
-    <BitDataGridPaginator Value=""@pagination"" />
+    <BitDataGridPaginator Value=""@pagination1"" />
 </div>";
     private readonly string example1CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
-private string typicalSampleNameFilter = string.Empty;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+private string typicalSampleNameFilter1 = string.Empty;
+private BitDataGridPaginationState pagination1 = new() { ItemsPerPage = 7 };
+private IQueryable<CountryModel> FilteredItems1 => 
+    allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter1 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
@@ -654,12 +682,14 @@ public class MedalsModel
 
 <div class=""grid"">
     <div class=""grid-container"">
-        <BitDataGrid Items=""@FilteredItems"" ResizableColumns=""true"" Pagination=""@pagination"">
+        <BitDataGrid Items=""@FilteredItems2"" ResizableColumns=""true"" Pagination=""@pagination2"">
             <BitDataGridPropertyColumn Class=""column--large"" Property=""@(c => c.Name)"" Sortable=""true"" IsDefaultSort=""BitDataGridSortDirection.Ascending"">
                 <ColumnOptions>
-                    <BitSearchBox @bind-Value=""typicalSampleNameFilter""
-                                    Placeholder=""Search on Name""
-                                    InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
+                    <BitSearchBox @bind-Value=""typicalSampleNameFilter2""
+                                  FixedIcon
+                                  Immediate DebounceTime=""300""
+                                  Placeholder=""Search on Name""
+                                  InputHtmlAttributes=""@(new Dictionary<string, object> {{""autofocus"", true}})"" />
                 </ColumnOptions>
             </BitDataGridPropertyColumn>
             <BitDataGridTemplateColumn Title=""Flag"" Align=""BitDataGridAlign.Center"">
@@ -674,13 +704,14 @@ public class MedalsModel
             </BitDataGridTemplateColumn>
         </BitDataGrid>
     </div>
-    <BitDataGridPaginator Value=""@pagination"" />
+    <BitDataGridPaginator Value=""@pagination2"" />
 </div>";
     private readonly string example2CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
-private string typicalSampleNameFilter = string.Empty;
-private BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-private IQueryable<CountryModel> FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
+private string typicalSampleNameFilter2 = string.Empty;
+private BitDataGridPaginationState pagination2 = new() { ItemsPerPage = 7 };
+private IQueryable<CountryModel> FilteredItems2 
+    => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter2 ?? string.Empty, StringComparison.CurrentCultureIgnoreCase));
 
 protected override async Task OnInitializedAsync()
 {
@@ -764,7 +795,9 @@ public class MedalsModel
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" Width=""250px"" Placeholder=""Search on Company""/>
+    <BitSearchBox @bind-Value=""virtualSampleNameFilter"" 
+                  Immediate DebounceTime=""300""
+                  Placeholder=""Search on Company""/>
 </div>";
     private readonly string example3CsharpCode = @"
 BitDataGrid<FoodRecall>? dataGrid;
@@ -999,7 +1032,9 @@ public class Openfda
     </BitDataGrid>
 </div>
 <div class=""search-panel"">
-    <BitSearchBox @bind-Value=""ODataSampleNameFilter"" Width=""250px"" Placeholder=""Search on Name"" />
+    <BitSearchBox @bind-Value=""ODataSampleNameFilter"" 
+                  Immediate DebounceTime=""300""
+                  Placeholder=""Search on Name"" />
 </div>";
     private readonly string example4CsharpCode = @"
 

@@ -7,19 +7,19 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.10.0">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.10.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="8.0.1" />
-        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
         <PackageReference Include="Riok.Mapperly" Version="3.6.0" />

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Identity;
 
-public class UserSession
+public partial class UserSession
 {
     public Guid SessionUniqueId { get; set; }
 

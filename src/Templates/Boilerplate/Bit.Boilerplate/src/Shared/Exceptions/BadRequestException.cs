@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class BadRequestException : RestException
+public partial class BadRequestException : RestException
 {
     public BadRequestException()
         : base(nameof(AppStrings.BadRequestException))

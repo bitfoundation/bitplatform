@@ -1,0 +1,27 @@
+.bit-ldn {
+    display: flex;
+    gap: spacing(1);
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-ldn-lbl {
+    font-size: var(--bit-ldn-font-size);
+}
+
+.bit-ldn-ltp {
+    flex-direction: column;
+}
+
+.bit-ldn-lbm {
+    flex-direction: column-reverse;
+}
+
+.bit-ldn-lst {
+    flex-direction: row;
+}
+
+.bit-ldn-led {
+    flex-direction: row-reverse;
+}

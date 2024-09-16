@@ -6,18 +6,4 @@ namespace Bit.Websites.Platform.Server.Components;
 public partial class App
 {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
-
-    protected override void OnInitialized()
-    {
-        HttpContext.Response.OnStarting(async _ =>
-        {
-            HttpContext.Response.GetTypedHeaders().CacheControl = new()
-            {
-                MaxAge = TimeSpan.FromDays(1),
-                Public = true
-            };
-        }, null!);
-
-        base.OnInitialized();
-    }
 }

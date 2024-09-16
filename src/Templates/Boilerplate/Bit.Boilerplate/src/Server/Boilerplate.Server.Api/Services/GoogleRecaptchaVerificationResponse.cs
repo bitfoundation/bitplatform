@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Services;
 
-public class GoogleRecaptchaVerificationResponse
+public partial class GoogleRecaptchaVerificationResponse
 {
     public bool Success { get; set; }
 

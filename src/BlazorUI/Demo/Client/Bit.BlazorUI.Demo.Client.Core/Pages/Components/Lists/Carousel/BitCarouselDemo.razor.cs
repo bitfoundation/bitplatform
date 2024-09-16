@@ -6,45 +6,10 @@ public partial class BitCarouselDemo
     [
         new()
         {
-            Name = "InfiniteScrolling",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
-        },
-        new()
-        {
-            Name = "ChildContent",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "Items of the carousel."
-        },
-        new()
-        {
-            Name = "ShowDots",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the Dots indicator at the bottom of the BitCarousel."
-        },
-        new()
-        {
-            Name = "ShowNextPrev",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the Next/Prev buttons of the BitCarousel."
-        },
-        new()  
-        {
-            Name = "VisibleItemsCount",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Number of items that is visible in the carousel"
-        },
-        new()
-        {
-            Name = "ScrollItemsCount",
-            Type = "int",
-            DefaultValue = "1",
-            Description = "Number of items that is going to be changed on navigation"
+            Name = "AnimationDuration",
+            Type = "double",
+            DefaultValue = "0.5",
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
         },
         new()
         {
@@ -62,18 +27,95 @@ public partial class BitCarouselDemo
         },
         new()
         {
-            Name = "AnimationDuration",
-            Type = "double",
-            DefaultValue = "0.5",
-            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
+            Name = "ChildContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Items of the carousel."
+        },
+        new()
+        {
+            Name = "HideDots",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the Dots indicator at the bottom of the BitCarousel."
+        },
+        new()
+        {
+            Name = "HideNextPrev",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the Next/Prev buttons of the BitCarousel."
+        },
+        new()
+        {
+            Name = "InfiniteScrolling",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item)."
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<int>",
             Description = "The event that will be called on carousel page navigation."
+        },
+        new()
+        {
+            Name = "ScrollItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is going to be changed on navigation."
+        },
+        new()
+        {
+            Name = "VisibleItemsCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Number of items that is visible in the carousel."
         }
     ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "GoNext",
+            Type = "Task",
+            Description = "Navigates to the next carousel item.",
+        },
+        new()
+        {
+            Name = "GoPrev",
+            Type = "Task",
+            Description = "Navigates to the previous carousel item.",
+        },
+        new()
+        {
+            Name = "GoTo",
+            Type = "Task",
+            Description = "Navigates to the given carousel item index.",
+        }
+    ];
+
+
+
+    private int index;
+    private BitCarousel carousel = default!;
+
+    private void GoNext()
+    {
+        carousel.GoNext();
+    }
+
+    private void GoPrev()
+    {
+        carousel.GoPrev();
+    }
+
+    private void GoTo()
+    {
+        carousel.GoTo(index);
+    }
 
 
 
@@ -138,7 +180,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel InfiniteScrolling=""true"">
+<BitCarousel InfiniteScrolling>
     <BitCarouselItem>
         <img class=""image"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
@@ -187,7 +229,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel ShowDots=""false"">
+<BitCarousel HideDots>
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""img1.jpg"" />
@@ -255,7 +297,7 @@ public partial class BitCarouselDemo
 </style>
 
 <div>
-    <BitCarousel ShowNextPrev=""false"" @ref=""carousel"">
+    <BitCarousel HideNextPrev @ref=""carousel"">
         <BitCarouselItem>
             <div class=""numbertext"">1 / 4</div>
             <img class=""image"" src=""img1.jpg"" />
@@ -352,7 +394,7 @@ private void GoTo()
     }
 </style>
 
-<BitCarousel ShowNextPrev=""false"" AutoPlay=""true"" AutoPlayInterval=""2500"" InfiniteScrolling=""true"">
+<BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval=""2500"">
     <BitCarouselItem>
         <div class=""numbertext"">1 / 4</div>
         <img class=""image"" src=""img1.jpg"" />
@@ -422,7 +464,7 @@ private void GoTo()
 </style>
 
 <div>
-    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling=""true"">
+    <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling>
         <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>
         <BitCarouselItem Class=""item""><div>سه</div></BitCarouselItem>

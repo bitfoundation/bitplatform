@@ -6,6 +6,13 @@ public partial class BitNavDemo
     [
         new()
         {
+            Name = "ChevronDownIcon",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom icon name of the chevron-down element of the BitNav component.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",

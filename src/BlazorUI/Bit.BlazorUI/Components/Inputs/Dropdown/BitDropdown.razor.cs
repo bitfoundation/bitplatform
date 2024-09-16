@@ -4,8 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDisposable where TItem : class, new()
 {
+    private bool _disposed;
     private int? _totalItems;
     private string? _searchText;
     private bool _isResponsiveMode;
@@ -64,9 +65,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Shows the selected items like chips in the BitDropdown.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Chips { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
     [Parameter] public BitDropdownClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Activates the ComboBox feature in BitDropDown component.
+    /// </summary>
+    [Parameter] public bool Combo { get; set; }
 
     /// <summary>
     /// The default key value that will be initially used to set selected item if the Value parameter is not set.
@@ -82,6 +94,37 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Determines the allowed drop directions of the callout.
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
+    /// <summary>
+    /// It is allowed to add a new item in the ComboBox mode.
+    /// </summary>
+    [Parameter] public bool Dynamic { get; set; }
+
+    /// <summary>
+    /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, bool>? ExistsSelectedItemFunction { get; set; }
+
+    /// <summary>
+    /// Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.
+    /// </summary>
+    [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
+
+    /// <summary>
+    /// Enables fit-content value for the width of the root element.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
+    /// The custom template for rendering the header items of the dropdown.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
     /// Enables the multi select mode.
@@ -146,14 +189,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public BitDropdownNameSelectors<TItem, TValue>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback that called when selected items change.
+    /// Removes the border from the root element.
     /// </summary>
-    [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
 
     /// <summary>
     /// The click callback for the dropdown.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// The callback that is called when a new item is on added Dynamic ComboBox mode.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnDynamicAdd { get; set; }
 
     /// <summary>
     /// The callback that called when an item gets selected.
@@ -164,6 +213,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The callback that called when an item gets selected.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// The callback that called when selected items change.
+    /// </summary>
+    [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -184,6 +238,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The custom template for the placeholder of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? PlaceholderTemplate { get; set; }
+
+    /// <summary>
+    /// Prefix displayed before the BitDropdown contents. This is not included in the value.
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Shows the custom prefix for BitDropdown.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+
+    /// <summary>
+    /// Disables automatic setting of the callout width and preserves its original width.
+    /// </summary>
+    [Parameter] public bool PreserveCalloutWidth { get; set; }
 
     /// <summary>
     /// The placeholder text of the SearchBox input.
@@ -211,14 +281,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public BitDropdownClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The title to show when the mouse hovers over the dropdown.
+    /// Suffix displayed after the BitDropdown contents. This is not included in the value. 
+    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
     /// </summary>
-    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// Shows the custom suffix for BitDropdown.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// The custom template for the text of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
+
+    /// <summary>
+    /// The title to show when the mouse hovers over the dropdown.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// Removes the default background color from the root element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Transparent { get; set; }
 
     /// <summary>
     /// The values of the selected items in multi select mode. (two-way bound)
@@ -238,69 +325,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The template for items that have not yet been rendered in virtualization mode.
     /// </summary>
     [Parameter] public RenderFragment<PlaceholderContext>? VirtualizePlaceholder { get; set; }
-
-    /// <summary>
-    /// Activates the ComboBox feature in BitDropDown component.
-    /// </summary>
-    [Parameter] public bool Combo { get; set; }
-
-    /// <summary>
-    /// Shows the selected items like chips in the BitDropdown.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Chips { get; set; }
-
-    /// <summary>
-    /// The callback that is called when a new item is on added Dynamic ComboBox mode.
-    /// </summary>
-    [Parameter] public EventCallback<TItem> OnDynamicAdd { get; set; }
-
-    /// <summary>
-    /// It is allowed to add a new item in the ComboBox mode.
-    /// </summary>
-    [Parameter] public bool Dynamic { get; set; }
-
-    /// <summary>
-    /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
-    /// </summary>
-    [Parameter] public Func<ICollection<TItem>, string, bool>? ExistsSelectedItemFunction { get; set; }
-
-    /// <summary>
-    /// Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.
-    /// </summary>
-    [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
-
-    /// <summary>
-    /// Prefix displayed before the BitDropdown contents. This is not included in the value.
-    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the prefix.
-    /// </summary>
-    [Parameter] public string? Prefix { get; set; }
-
-    /// <summary>
-    /// Shows the custom prefix for BitDropdown.
-    /// </summary>
-    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
-
-    /// <summary>
-    /// Suffix displayed after the BitDropdown contents. This is not included in the value. 
-    /// Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.
-    /// </summary>
-    [Parameter] public string? Suffix { get; set; }
-
-    /// <summary>
-    /// Shows the custom suffix for BitDropdown.
-    /// </summary>
-    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
-
-    /// <summary>
-    /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
-    /// </summary>
-    [Parameter] public Func<TItem, TValue>? DynamicValueGenerator { get; set; }
-
-    /// <summary>
-    /// The custom template for rendering the header items of the dropdown.
-    /// </summary>
-    [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
 
 
@@ -531,11 +555,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         ClassBuilder.Register(() => _selectedItems?.Count > 0 ? "bit-drp-hvl" : string.Empty);
 
         ClassBuilder.Register(() => Chips ? "bit-drp-sch" : string.Empty);
+
+        ClassBuilder.Register(() => NoBorder ? "bit-drp-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => Transparent ? "bit-drp-trn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
-        ClassBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -593,16 +623,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             base.CreateFieldIdentifier();
         }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 
 
@@ -822,7 +842,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _isResponsiveMode = await _js.ToggleCallout(_dotnetObj,
                                                     _dropdownId,
+                                                    null,
                                                     _calloutId,
+                                                    null,
                                                     IsOpen,
                                                     IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                                     DropDirection,
@@ -831,7 +853,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                                                     ShowSearchBox && Combo is false ? 32 : 0,
                                                     CalloutHeaderTemplate is not null ? _headerId : "",
                                                     CalloutFooterTemplate is not null ? _footerId : "",
-                                                    true,
+                                                    PreserveCalloutWidth is false,
                                                     RootElementClass);
     }
 
@@ -1310,5 +1332,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         UpdateSelectedItemsFromValues();
 
         EditContext?.NotifyFieldChanged(FieldIdentifier);
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        if (_dotnetObj is not null)
+        {
+            _dotnetObj.Dispose();
+
+            try
+            {
+                await _js.ClearCallout(_calloutId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        _disposed = true;
     }
 }

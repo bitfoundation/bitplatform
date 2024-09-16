@@ -29,21 +29,12 @@ public partial class MainLayout : IDisposable
 
     private readonly List<BitNavItem> templatesNavItems =
     [
-        new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = ["/admin-panel/overview", "/todo-template/overview"] },
+        new BitNavItem { Text = "Overview", Url = "/templates/overview" },
         new BitNavItem { Text = "Samples", Url = "/templates/samples" },
-        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = ["/templates/development-prerequisites", "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites"] },
-        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = ["/admin-panel/project-structure", "/todo-template/project-structure"] },
-        new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = ["/admin-panel/create-project", "/todo-template/create-project"] },
-        new BitNavItem { Text = "Database", Url = "/templates/database", AdditionalUrls = ["/admin-panel/database", "/todo-template/database"] },
-        new BitNavItem { Text = "Run", Url = "/templates/run", AdditionalUrls = ["/admin-panel/run", "/todo-template/run"] },
-        new BitNavItem { Text = "App models", Url = "/templates/app-models", AdditionalUrls = ["/admin-panel/hosting-models", "/todo-template/hosting-models"] },
-        new BitNavItem { Text = "Deployment type", Url = "/templates/deployment-type", AdditionalUrls = ["/admin-panel/deployment-type", "/todo-template/deployment-type"] },
-        new BitNavItem { Text = "Cache mechanism", Url = "/templates/cache-mechanism", AdditionalUrls = ["/admin-panel/cache-mechanism", "/todo-template/cache-mechanism"] },
-        new BitNavItem { Text = "DevOps", Url = "/templates/devops", AdditionalUrls = ["/admin-panel/devops", "/todo-template/devops"] },
-        new BitNavItem { Text = "Platform integration", Url = "/templates/platform-integration", AdditionalUrls = ["/admin-panel/platform-integration", "/todo-template/platform-integration"] },
-        new BitNavItem { Text = "Settings", Url = "/templates/settings", AdditionalUrls = ["/admin-panel/settings", "/todo-template/settings"] },
-        new BitNavItem { Text = "Exception handling", Url = "/templates/exception-handling", AdditionalUrls = ["/admin-panel/exception-handling", "/todo-template/exception-handling"] },
-        new BitNavItem { Text = "Multilingualism", Url = "/templates/multilingualism", AdditionalUrls = ["/admin-panel/multilingualism", "/todo-template/multilingualism"] },
+        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started" },
+        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure" },
+        new BitNavItem { Text = "Create project", Url = "/templates/create-project" },
+        new BitNavItem { Text = "Run project", Url = "/templates/run-project" }
     ];
 
     private readonly List<BitNavItem> bswupNavItems =

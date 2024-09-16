@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitInputBase<string?>
+@inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -17,7 +17,7 @@
                @onkeydown="@HandleOnKeyDown"
                @onfocusout="HandleInputFocusOut"
                @onfocusin="HandleInputFocusIn"
-               @oninput="@HandleOnChange"
+               @oninput="@HandleOnStringValueInputAsync"
                type="text"
                name="@Name"
                id="@_inputId"

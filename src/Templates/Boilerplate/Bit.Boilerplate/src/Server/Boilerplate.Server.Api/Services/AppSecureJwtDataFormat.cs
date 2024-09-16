@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// Stores bearer token in jwt format
 /// </summary>
-public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationParameters validationParameters)
+public partial class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
@@ -57,7 +57,7 @@ public class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationPara
             {
                 Issuer = appSettings.Identity.Issuer,
                 Audience = appSettings.Identity.Audience,
-                IssuedAt = DateTime.UtcNow,
+                IssuedAt = DateTimeOffset.UtcNow.DateTime,
                 Expires = data.Properties.ExpiresUtc!.Value.UtcDateTime,
                 SigningCredentials = new SigningCredentials(validationParameters.IssuerSigningKey, SecurityAlgorithms.RsaSha512),
                 Subject = new ClaimsIdentity(data.Principal.Claims),

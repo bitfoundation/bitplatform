@@ -23,6 +23,30 @@
     @include SectionCardText;
 }
 
+.image-container {
+    @include ImageContainer;
+}
+
+.row {
+    display: flex;
+}
+
+.image {
+    @include Image;
+    width: rem2(500px);
+}
+
+.video-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep .plt-drp{
+    width: rem2(150px);
+    margin-left: rem2(20px);
+}
+
 ::deep {
     a {
         color: $bit-color-primary;
