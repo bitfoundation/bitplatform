@@ -37,7 +37,6 @@
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-rc.1.24451.1" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0-rc.1" />
         <PackageReference Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="9.0.0-rc.1.24451.1" />
-        <!--<PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.1" />-->
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-rc.1.24451.1" PrivateAssets="all" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-rc.1.24452.1" />
