@@ -61,7 +61,10 @@ public static partial class Program
         {
             builder.AddDefaultPolicy(policy =>
             {
-                policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
+                if (env.IsDevelopment() is false)
+                {
+                    policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
+                }
 
                 var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
 

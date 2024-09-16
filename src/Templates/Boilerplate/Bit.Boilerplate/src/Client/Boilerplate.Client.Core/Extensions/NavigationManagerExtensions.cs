@@ -30,8 +30,12 @@ public static partial class NavigationManagerExtensions
     /// https://adminpanel.bitpaltform.dev/en-US/categories
     /// https://adminpanel.bitpaltform.dev/categories?culture=en-US
     /// </summary>
-    public static string? GetCultureFromUri(this NavigationManager navigationManager, Uri uri)
+    public static string? GetCultureFromUri(this NavigationManager navigationManager)
     {
+        var url = navigationManager.Uri;
+
+        var uri = new Uri(url);
+
         var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
         if (string.IsNullOrEmpty(culture) is false)
@@ -56,7 +60,7 @@ public static partial class NavigationManagerExtensions
     {
         var uri = navigationManager.GetUriWithoutQueryParameter("culture");
 
-        var culture = navigationManager.GetCultureFromUri(new Uri(uri));
+        var culture = navigationManager.GetCultureFromUri();
 
         if (string.IsNullOrEmpty(culture) is false)
         {
