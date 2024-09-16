@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
 
+using Microsoft.AspNetCore.Localization.Routing;
+
 namespace Boilerplate.Server.Api;
 
 public static partial class Program
@@ -17,12 +19,15 @@ public static partial class Program
         if (CultureInfoManager.MultilingualEnabled)
         {
             var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
-            app.UseRequestLocalization(new RequestLocalizationOptions
+            var options = new RequestLocalizationOptions
             {
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
                 ApplyCurrentCultureToResponseHeaders = true
-            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name));
+            };
+            options.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
+            options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
+            app.UseRequestLocalization(options);
         }
 
         app.UseExceptionHandler("/", createScopeForErrors: true);

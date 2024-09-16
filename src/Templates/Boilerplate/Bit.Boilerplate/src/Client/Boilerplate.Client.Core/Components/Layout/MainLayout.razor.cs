@@ -93,7 +93,7 @@ public partial class MainLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        unsubscribeCultureChange();
+        unsubscribeCultureChange?.Invoke();
 
         disposed = true;
     }

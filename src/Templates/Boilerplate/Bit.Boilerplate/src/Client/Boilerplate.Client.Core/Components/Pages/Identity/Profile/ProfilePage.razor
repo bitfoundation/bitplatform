@@ -1,5 +1,6 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.ProfilePage)]
+@attribute [Route("{culture?}" + Urls.ProfilePage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProfileTitle)]</PageTitle>

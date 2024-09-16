@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Reflection;
+﻿using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
+using System.Reflection;
+using System.Diagnostics;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Boilerplate.Server.Api.Services;
 
