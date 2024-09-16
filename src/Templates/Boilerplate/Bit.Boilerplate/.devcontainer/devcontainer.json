@@ -4,7 +4,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "dotnet dev-certs https --trust && dotnet workload install wasm-tools",
+    "onCreateCommand": "dotnet workload install wasm-tools",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {
