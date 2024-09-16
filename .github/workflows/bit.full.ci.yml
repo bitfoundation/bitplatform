@@ -71,10 +71,10 @@ jobs:
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
-        cd TestMySql/src/Server/TestMySql.Server.Api/
-        dotnet build
-        cd ../../../../
+        # dotnet new bit-bp --name TestMySql --database MySql
+        # cd TestMySql/src/Server/TestMySql.Server.Api/
+        # dotnet build
+        # cd ../../../../
         dotnet new bit-bp --name TestOther --database Other
         cd TestOther/src/Server/TestOther.Server.Api/
         dotnet build

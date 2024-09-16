@@ -13,7 +13,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        "url": "_framework\/blazor.web.js?v=8.0.8"
+        "url": "_framework\/blazor.web.js?v=9.0.0-rc.1.24452.1"
     },
     {
         "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"
