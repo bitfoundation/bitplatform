@@ -1,0 +1,93 @@
+﻿@page "/components/card"
+
+<PageOutlet Url="components/card"
+            Title="Card"
+            Description="card component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="Card"
+               ComponentDescription="A Card provides a container to wrap around a specific content. Keeping a card to a single subject keeps the design clean."
+               ComponentParameters="componentParameters"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitCard>
+                <BitStack HorizontalAlign="BitAlignment.Start">
+                    <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                    <BitText Typography="BitTypography.Body1">
+                        bit BlazorUI components are native, easy-to-customize, and ...
+                    </BitText>
+                    <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+                </BitStack>
+            </BitCard>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Background" RazorCode="@example2RazorCode" CSharpCode="@example2CSharpCode" Id="example2">
+        <ExamplePreview>
+            <BitChoiceGroup @bind-Value="backgroundColorKind" Horizontal
+                            TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
+                <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
+                <BitChoiceGroupOption Text="Secondary" Value="BitColorKind.Secondary" />
+                <BitChoiceGroupOption Text="Tertiary" Value="BitColorKind.Tertiary" />
+                <BitChoiceGroupOption Text="Transparent" Value="BitColorKind.Transparent" />
+            </BitChoiceGroup>
+            <br />
+            <div style="padding:2rem;background:gray">
+                <BitCard Background="backgroundColorKind">
+                    <BitStack HorizontalAlign="BitAlignment.Start">
+                        <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                        <BitText Typography="BitTypography.Body1">
+                            bit BlazorUI components are native, easy-to-customize, and ...
+                        </BitText>
+                        <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+                    </BitStack>
+                </BitCard>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Border" RazorCode="@example3RazorCode" CSharpCode="@example3CSharpCode" Id="example3">
+        <ExamplePreview>
+            <BitChoiceGroup @bind-Value="borderColorKind" Horizontal
+                            TItem="BitChoiceGroupOption<BitColorKind>" TValue="BitColorKind">
+                <BitChoiceGroupOption Text="Primary" Value="BitColorKind.Primary" />
+                <BitChoiceGroupOption Text="Secondary" Value="BitColorKind.Secondary" />
+                <BitChoiceGroupOption Text="Tertiary" Value="BitColorKind.Tertiary" />
+                <BitChoiceGroupOption Text="Transparent" Value="BitColorKind.Transparent" />
+            </BitChoiceGroup>
+            <br />
+            <BitCard Border="borderColorKind">
+                <BitStack HorizontalAlign="BitAlignment.Start">
+                    <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                    <BitText Typography="BitTypography.Body1">
+                        bit BlazorUI components are native, easy-to-customize, and ...
+                    </BitText>
+                    <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+                </BitStack>
+            </BitCard>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="FullSize" RazorCode="@example4RazorCode" CSharpCode="@example4CSharpCode" Id="example4">
+        <ExamplePreview>
+            <BitChoiceGroup @bind-Value="size" Horizontal
+                            TItem="BitChoiceGroupOption<int>" TValue="int">
+                <BitChoiceGroupOption Text="FullSize" Value="0" />
+                <BitChoiceGroupOption Text="FullWidth" Value="1" />
+                <BitChoiceGroupOption Text="FullHeight" Value="2" />
+            </BitChoiceGroup>
+            <br />
+            <div style="padding:2rem;background:gray;height:500px">
+                <BitCard FullSize="size==0" FullWidth="size==1" FullHeight="size==2">
+                    <BitStack HorizontalAlign="BitAlignment.Start">
+                        <BitText Typography="BitTypography.H4">bit BlazorUI</BitText>
+                        <BitText Typography="BitTypography.Body1">
+                            bit BlazorUI components are native, easy-to-customize, and ...
+                        </BitText>
+                        <BitLink Href="https://blazorui.bitplatform.dev" Target="_blank">Learn more</BitLink>
+                    </BitStack>
+                </BitCard>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
