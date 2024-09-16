@@ -43,7 +43,6 @@ public partial class BitCard : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-
         ClassBuilder.Register(() => Background switch
         {
             BitColorKind.Primary => "bit-crd-pbg",
