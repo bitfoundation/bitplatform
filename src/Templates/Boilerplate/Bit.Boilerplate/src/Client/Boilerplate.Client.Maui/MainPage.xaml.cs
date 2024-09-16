@@ -1,7 +1,7 @@
 ﻿//-:cnd:noEmit
-using System.Runtime.InteropServices;
 using Maui.AppStores;
 using Maui.InAppReviews;
+using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Maui;
 
