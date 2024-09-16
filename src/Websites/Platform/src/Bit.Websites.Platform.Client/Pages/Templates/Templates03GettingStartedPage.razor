@@ -30,7 +30,7 @@
                         the Windows PowerShell as an Administrator to run.
                     </BitText>
                     <br />
-                    <BitStack Gap="1rem" HorizontalAlign="BitAlignment.Start">
+                    <BitStack HorizontalAlign="BitAlignment.Start">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
                         <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
@@ -81,7 +81,7 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="1rem">
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
                         <BitText Typography="BitTypography.H6" Gutter>
                             Step-by-step instructions for
                         </BitText>
@@ -101,13 +101,15 @@
                             {
                                 <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-mkdir -p $HOME/.dotnet
-tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-dotnet dev-certs https --trust
-rm $HOME/dotnet.tar.gz</CodeBox>
+                                    <CodeBox>
+                                        wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                        mkdir -p $HOME/.dotnet
+                                        tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+                                        echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+                                        export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+                                        dotnet dev-certs https --trust
+                                        rm $HOME/dotnet.tar.gz
+                                    </CodeBox>
                                 </BitAccordion>
                             }
                         </li>
@@ -194,7 +196,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                     @if (devOS is "Windows")
                     {
                         <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
-                        <BitStack Horizontal VerticalAlign="BitAlignment.Start" Gap="2rem" Style="overflow-x:auto">
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Start" HorizontalAlign="BitAlignment.Start">
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
@@ -259,14 +261,12 @@ code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>
-code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                         </BitAccordion>
                     </div>
