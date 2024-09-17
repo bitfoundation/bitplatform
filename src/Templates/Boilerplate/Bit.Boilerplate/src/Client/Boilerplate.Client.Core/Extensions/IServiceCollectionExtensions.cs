@@ -30,7 +30,7 @@ public static partial class IServiceCollectionExtensions
         services.TryAddSessioned<HttpClientHandler>();
 
         // The following code build chain of http message handlers, it uses HttpClientHandler to send requests to the server by default,
-        // but you can also send other http message handlers such as aspnetcore's test host's http message handler.
+        // but you can also use other http message handlers such as aspnetcore's test host's http message handler for integration tests.
         services.TryAddTransient<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
         {
             return ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
