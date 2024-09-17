@@ -47,6 +47,11 @@
     flex-direction: row-reverse;
 }
 
+.bit-acb-fwi {
+    width: 100%;
+    justify-content: flex-start;
+}
+
 
 .bit-acb-pri {
     --bit-acb-clr-ico: #{$clr-pri};
