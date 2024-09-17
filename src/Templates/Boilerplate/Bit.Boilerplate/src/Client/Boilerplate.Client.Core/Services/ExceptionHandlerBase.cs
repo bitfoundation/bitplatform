@@ -24,12 +24,12 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
     protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
     {
-        var isDebug = AppEnvironment.IsDev();
+        var isDevEnv = AppEnvironment.IsDev();
 
         string exceptionMessage = (exception as KnownException)?.Message ??
-            (isDebug ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);
+            (isDevEnv ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);
 
-        if (isDebug)
+        if (isDevEnv)
         {
             if (AppPlatform.IsBlazorHybrid)
             {

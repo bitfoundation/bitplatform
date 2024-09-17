@@ -43,7 +43,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
 
-    protected bool InPrerenderSession => JSRuntime.IsInitialized() is false;
+    protected bool InPrerenderSession => JSRuntime.IsInPrerenderSession();
 
 
     protected sealed override void OnInitialized()

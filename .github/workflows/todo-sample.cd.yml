@@ -56,9 +56,6 @@ jobs:
           sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
           sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
 
-    - name: Changes for static-todo.bitplatform.dev - Part 1
-      run:  sed -i 's/http:\/\/localhost:4030/https:\/\/static-todo.bitplatform.dev/g' TodoSample/src/Server/TodoSample.Server.Web/Program.Middlewares.cs
-
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 

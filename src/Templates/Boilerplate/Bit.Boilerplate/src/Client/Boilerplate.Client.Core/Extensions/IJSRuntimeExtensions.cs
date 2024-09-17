@@ -27,12 +27,17 @@ public static partial class IJSRuntimeExtensions
     }
     //#endif
 
-    public static bool IsInitialized(this IJSRuntime jsRuntime)
+    public static bool IsInPrerenderSession(this IJSRuntime jsRuntime)
     {
         var type = jsRuntime.GetType();
 
-        if (type.Name is not "RemoteJSRuntime") return true; // Blazor WASM/Hybrid
+        var jsRuntimeIsInitialized = type.Name switch
+        {
+            "UnsupportedJavaScriptRuntime" => false, // pre-rendering
+            "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!, // blazor server
+            _ => true // blazor wasm / hybrid
+        };
 
-        return (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+        return jsRuntimeIsInitialized is false;
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using System.Net.Http.Headers;
-using Boilerplate.Shared.Controllers;
+﻿using System.Net.Http.Headers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -30,10 +28,10 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, ISe
             if (tokenProvider.IsInitialized is false ||
                request.RequestUri?.LocalPath?.Contains("api/Identity/Refresh", StringComparison.InvariantCultureIgnoreCase) is true /* To prevent refresh token loop */) throw;
 
-            var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
             var refresh_token = await storageService.GetItem("refresh_token");
-
             if (refresh_token is null) throw;
+
+            var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
             // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
             await authManager.RefreshToken();
