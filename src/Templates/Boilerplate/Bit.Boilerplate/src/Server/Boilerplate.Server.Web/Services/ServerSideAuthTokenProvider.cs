@@ -16,7 +16,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
-    public bool IsInitialized => jsRuntime.GetType().Name is not "UnsupportedJavaScriptRuntime" && jsRuntime.IsInitialized();
+    public bool IsInitialized => jsRuntime.IsInitialized();
 
     public async Task<string?> GetAccessTokenAsync()
     {

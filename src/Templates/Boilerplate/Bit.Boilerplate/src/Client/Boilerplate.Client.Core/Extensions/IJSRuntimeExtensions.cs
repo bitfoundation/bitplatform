@@ -31,8 +31,11 @@ public static partial class IJSRuntimeExtensions
     {
         var type = jsRuntime.GetType();
 
-        if (type.Name is not "RemoteJSRuntime") return true; // Blazor WASM/Hybrid
-
-        return (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+        return type.Name switch
+        {
+            "UnsupportedJavaScriptRuntime" => false, // pre-rendering
+            "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!, // blazor server
+            _ => true // blazor wasm / hybrid
+        };
     }
 }
