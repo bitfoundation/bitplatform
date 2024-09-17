@@ -20,7 +20,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
 
     public async Task<string?> GetAccessTokenAsync()
     {
-        if (jsRuntime.IsInitialized())
+        if (IsInitialized)
         {
             return await storageService.GetItem("access_token");
         }

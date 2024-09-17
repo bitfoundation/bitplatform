@@ -106,6 +106,19 @@
     }
   ],
   "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "defaultValue": "net8.0",
+      "choices": [
+        {
+          "choice": "net8.0",
+          "description": "Target net8.0"
+        }
+      ],
+      "replaces": "net8.0"
+    },
     "InteractivityPlatform": {
       "type": "parameter",
       "datatype": "choice",
