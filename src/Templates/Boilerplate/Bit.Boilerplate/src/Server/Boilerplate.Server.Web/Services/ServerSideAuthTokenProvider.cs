@@ -16,13 +16,15 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
+    public bool IsInitialized => jsRuntime.IsInitialized();
+
     public async Task<string?> GetAccessTokenAsync()
     {
-        if (jsRuntime.IsInPrerenderSession())
+        if (jsRuntime.IsInitialized())
         {
-            return httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
+            return await storageService.GetItem("access_token");
         }
 
-        return await storageService.GetItem("access_token");
+        return httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
     }
 }

@@ -27,17 +27,15 @@ public static partial class IJSRuntimeExtensions
     }
     //#endif
 
-    public static bool IsInPrerenderSession(this IJSRuntime jsRuntime)
+    public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
         var type = jsRuntime.GetType();
 
-        var jsRuntimeIsInitialized = type.Name switch
+        return type.Name switch
         {
             "UnsupportedJavaScriptRuntime" => false, // pre-rendering
             "RemoteJSRuntime" => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!, // blazor server
             _ => true // blazor wasm / hybrid
         };
-
-        return jsRuntimeIsInitialized is false;
     }
 }

@@ -9,8 +9,6 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public partial class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
-    [AutoInject] private IJSRuntime jsRuntime = default!;
-
     private PersistingComponentStateSubscription? subscription;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
@@ -51,7 +49,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     void Persist<T>(string key, T value)
     {
-        if (noPersistant || jsRuntime.IsInPrerenderSession() is false) return;
+        if (noPersistant || AppPlatform.IsBlazorHybridOrBrowser) return;
 
         values.TryRemove(key, out object? _);
         values.TryAdd(key, value);

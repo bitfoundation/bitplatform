@@ -15,7 +15,7 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
-        services.TryAddScoped<IPrerenderStateService, PrerenderStateService>();
+        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -27,18 +27,22 @@ public static partial class IServiceCollectionExtensions
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddTransient<Func<HttpClientHandler, HttpMessageHandler>>(serviceProvider => httpClientHandler =>
+        services.TryAddSessioned<HttpClientHandler>();
+
+        // The following code build chain of http message handlers, it uses HttpClientHandler to send requests to the server by default,
+        // but you can also send other http message handlers such as aspnetcore's test host's http message handler.
+        services.TryAddTransient<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
         {
             return ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [httpClientHandler])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [underlyingHttpMessageHandler])])])]);
         });
         services.TryAddTransient(serviceProvider =>
         {
-            return serviceProvider.GetRequiredService<Func<HttpClientHandler, HttpMessageHandler>>().Invoke(serviceProvider.GetRequiredService<HttpClientHandler>());
+            var underlyingHttpMessageHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
+            return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>().Invoke(underlyingHttpMessageHandler);
         });
-        services.TryAddSessioned<HttpClientHandler>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
