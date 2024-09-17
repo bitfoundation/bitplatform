@@ -340,8 +340,9 @@ private bool isDismissed;";
 
     .custom-root {
         color: mediumpurple;
-        border-color: mediumpurple;
         border-radius: 0.5rem;
+        border-color: mediumpurple;
+        background-color: transparent;
         box-shadow: mediumpurple 0 0 0.5rem;
     }
 
@@ -363,8 +364,9 @@ private bool isDismissed;";
 
 <BitTag Text=""Styles""
         IconName=""@BitIconName.People""
-        Styles=""@(new() { Root = ""border-color: darkblue; border-width: 0.25rem;"",
-                          Text = ""color: darkblue; font-weight: 600;"" })"" />
+        Styles=""@(new() { Root = ""border-color: red; background-color: transparent;"",
+                          Text = ""color: tomato; font-weight: bold;"",
+                          Icon = ""color: tomato;"" })"" />
 
 <BitTag Text=""Classes""
         IconName=""@BitIconName.People""
