@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Maui;
 
-class Program : MauiApplication
+partial class Program : MauiApplication
 {
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 

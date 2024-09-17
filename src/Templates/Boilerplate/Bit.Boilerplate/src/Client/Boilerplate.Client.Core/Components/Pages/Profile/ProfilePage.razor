@@ -1,5 +1,6 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.ProfilePage)]
+@attribute [Route("{culture?}" + Urls.ProfilePage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProfileTitle)]</PageTitle>
@@ -39,7 +40,3 @@
         <DeleteAccountSection />
     </div>
 </div>
-
-@*#if (signalr == true)*@
-<BitSnackBar @ref="snackBar" />
-@*#endif*@

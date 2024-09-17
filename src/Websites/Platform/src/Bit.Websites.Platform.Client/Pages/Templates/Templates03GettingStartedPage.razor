@@ -30,7 +30,7 @@
                         the Windows PowerShell as an Administrator to run.
                     </BitText>
                     <br />
-                    <BitStack Gap="1rem">
+                    <BitStack HorizontalAlign="BitAlignment.Start">
                         <BitCheckbox Label="Cross-platform development" @bind-Value="enableCrossPlatform" />
                         <BitCheckbox Label="Virtualization (Docker, WSL, Android Emulators)" @bind-Value="enableVirtualization" />
                         <BitCheckbox Label="Visual Studio" @bind-Value="installVs" />
@@ -81,7 +81,7 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
-                    <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="1rem">
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
                         <BitText Typography="BitTypography.H6" Gutter>
                             Step-by-step instructions for
                         </BitText>
@@ -112,7 +112,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <br />
-                        <li>Install <a href="https://nodejs.org/dist/v20.16.0/node-v20.16.0-x64.msi" title="Node.js" rel="nofollow">Node.js</a></li>
+                        <li>Install <a href="@( devOS is "Windows" ? "https://nodejs.org/en/download/prebuilt-installer" : "https://nodejs.org/en/download/package-manager")" title="Node.js" rel="nofollow">Node.js</a></li>
                         <br />
                         <li>
                             <div style="margin-bottom:8px">Install .NET workloads</div>
@@ -148,8 +148,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0-pre-08" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0-pre-08</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.0" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.0</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {
@@ -194,7 +194,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                     @if (devOS is "Windows")
                     {
                         <BitText Typography="BitTypography.H6" Gutter>Visual Studio</BitText>
-                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="2rem" Style="overflow-x:auto">
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Start" HorizontalAlign="BitAlignment.Start">
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
@@ -259,14 +259,12 @@ code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>
-code --install-extension ms-dotnettools.csdevkit
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
 code --install-extension ms-vscode-remote.remote-containers
 code --install-extension ms-dotnettools.blazorwasm-companion
 code --install-extension glenn2223.live-sass
 code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-code --install-extension DominicVonk.vscode-resx-editor
-                                </CodeBox>
+code --install-extension DominicVonk.vscode-resx-editor</CodeBox>
                             }
                         </BitAccordion>
                     </div>

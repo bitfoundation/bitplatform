@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Hubs;
 
-[Authorize]
-public class IdentityHub : Hub
+[AllowAnonymous]
+public partial class AppHub : Hub
 {
 }

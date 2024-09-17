@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Services;
 
-public static class AppRenderMode
+public static partial class AppRenderMode
 {
     public static readonly bool PrerenderEnabled = false;
 

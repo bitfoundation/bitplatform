@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Exceptions;
 
-public class UnknownException : Exception
+public partial class UnknownException : Exception
 {
     public UnknownException()
         : base(nameof(AppStrings.UnknownException))

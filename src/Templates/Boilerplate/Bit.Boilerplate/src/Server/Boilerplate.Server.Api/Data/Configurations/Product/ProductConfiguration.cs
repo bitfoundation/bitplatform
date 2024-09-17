@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;
 
-public class ProductConfiguration : IEntityTypeConfiguration<Product>
+public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {

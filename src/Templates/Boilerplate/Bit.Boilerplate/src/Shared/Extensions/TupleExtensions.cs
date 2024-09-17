@@ -10,7 +10,7 @@ namespace System.Threading.Tasks;
 /// promoting a streamlined and efficient workflow across various functionalities.
 /// 
 /// As an alternative to the following code:
-/// public class MyPage : AppComponentBase
+/// public partial class MyPage : AppComponentBase
 /// {
 ///     CategoryDto[] categories;
 ///     ProductDto[] products;
@@ -23,7 +23,7 @@ namespace System.Threading.Tasks;
 /// }
 /// 
 /// You can now employ the following concise approach:
-/// public class MyPage : AppComponentBase
+/// public partial class MyPage : AppComponentBase
 /// {
 ///     CategoryDto[] categories;
 ///     ProductDto[] products;
@@ -34,7 +34,7 @@ namespace System.Threading.Tasks;
 ///     }
 /// }
 /// </summary>
-public static class TupleExtensions
+public static partial class TupleExtensions
 {
     public static TaskAwaiter<(T1, T2)> GetAwaiter<T1, T2>(this (Task<T1>, Task<T2>) tuple)
     {

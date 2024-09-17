@@ -14,7 +14,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
     AllowBackup = true,
     SupportsRtl = true
 )]
-public class MainApplication : MauiApplication
+public partial class MainApplication : MauiApplication
 {
     public MainApplication(IntPtr handle, JniHandleOwnership ownership)
         : base(handle, ownership)

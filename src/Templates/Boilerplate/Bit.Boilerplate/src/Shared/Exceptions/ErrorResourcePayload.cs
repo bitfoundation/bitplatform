@@ -1,20 +1,20 @@
 ﻿namespace Boilerplate.Shared.Exceptions;
 
-public class ErrorResourcePayload
+public partial class ErrorResourcePayload
 {
     public string? ResourceTypeName { get; set; } = "*";
 
     public List<PropertyErrorResourceCollection> Details { get; set; } = [];
 }
 
-public class PropertyErrorResourceCollection
+public partial class PropertyErrorResourceCollection
 {
     public string? Name { get; set; } = "*";
 
     public List<ErrorResource> Errors { get; set; } = [];
 }
 
-public class ErrorResource
+public partial class ErrorResource
 {
     public string? Key { get; set; }
 

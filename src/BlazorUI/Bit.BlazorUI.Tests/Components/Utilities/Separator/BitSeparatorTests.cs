@@ -348,16 +348,16 @@ public class BitSeparatorTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitSeparatorShouldRespectFullWidth(bool fullWidth)
+    public void BitSeparatorShouldRespectAutoSize(bool autoSize)
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
-            parameters.Add(p => p.FullWidth, fullWidth);
+            parameters.Add(p => p.AutoSize, autoSize);
         });
 
-        if (fullWidth)
+        if (autoSize)
         {
-            component.MarkupMatches(@"<div style=""width:100%"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+            component.MarkupMatches(@"<div style=""width:auto"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
         }
         else
         {
@@ -374,9 +374,49 @@ public class BitSeparatorTests : BunitTestContext
 
         component.SetParametersAndRender(parameters =>
         {
-            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.AutoSize, true);
         });
 
-        component.MarkupMatches(@"<div style=""width:100%"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@"<div style=""width:auto"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitSeparatorShouldRespectAutoSizeInVertical(bool autoSize)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.AutoSize, autoSize);
+            parameters.Add(p => p.Vertical, true);
+        });
+
+        if (autoSize)
+        {
+            component.MarkupMatches(@"<div style=""height:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<div class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
+        }
+    }
+
+    [DataTestMethod]
+    public void BitSeparatorShouldRespectFullWidthChangingAfterRenderInVertical()
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.AutoSize, true);
+        });
+
+        component.MarkupMatches(@"<div style=""height:auto"" class=""bit-spr bit-spr-vrt bit-spr-ctr"" id:ignore></div>");
     }
 }

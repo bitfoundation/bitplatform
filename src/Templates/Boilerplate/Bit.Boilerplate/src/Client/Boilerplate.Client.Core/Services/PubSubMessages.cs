@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public static class PubSubMessages
+public static partial class PubSubMessages
 {
     public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
     public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);

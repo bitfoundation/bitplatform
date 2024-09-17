@@ -42,11 +42,12 @@ public partial class Footer
                 Name = ".AspNetCore.Culture",
                 Value = Uri.EscapeDataString($"c={SelectedCulture}|uic={SelectedCulture}"),
                 MaxAge = 30 * 24 * 3600,
+                Path = "/",
                 Secure = AppEnvironment.IsDev() is false
             });
         }
 
-        NavigationManager.NavigateTo(NavigationManager.GetUriWithoutQueryParameter("culture"), forceLoad: true, replace: true);
+        NavigationManager.NavigateTo(NavigationManager.GetUriWithoutCulture(), forceLoad: true, replace: true);
     }
 
     private async Task ToggleTheme()

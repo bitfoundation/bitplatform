@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Emailing;
 
-public class EmailTokenTemplateModel
+public partial class EmailTokenTemplateModel
 {
     public string? Email { get; set; }
     public string? Token { get; set; }

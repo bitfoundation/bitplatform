@@ -12,7 +12,7 @@ using Boilerplate.Server.Api.Data.Configurations;
 
 namespace Boilerplate.Server.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
+public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
@@ -138,20 +138,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Role>()
             .ToContainer("Roles").HasPartitionKey(e => e.Id);
 
-        builder.Entity<IdentityUserRole<Guid>>()
-            .ToContainer("UserRoles").HasPartitionKey(e => e.RoleId);
-
-        builder.Entity<IdentityUserLogin<Guid>>()
-            .ToContainer("UserLogins").HasPartitionKey(e => e.ProviderKey);
+        builder.Entity<IdentityRoleClaim<Guid>>()
+            .ToContainer("RoleClaims").HasPartitionKey(e => e.RoleId);
 
         builder.Entity<IdentityUserToken<Guid>>()
             .ToContainer("UserTokens").HasPartitionKey(e => e.UserId);
 
-        builder.Entity<IdentityRoleClaim<Guid>>()
-            .ToContainer("RoleClaims").HasPartitionKey(e => e.RoleId);
-
         builder.Entity<IdentityUserClaim<Guid>>()
             .ToContainer("UserClaims").HasPartitionKey(e => e.UserId);
+
+        builder.Entity<IdentityUserRole<Guid>>()
+            .ToContainer("UserRoles").HasPartitionKey(e => e.UserId);
+
+        builder.Entity<IdentityUserLogin<Guid>>()
+            .ToContainer("UserLogins").HasPartitionKey(e => e.UserId);
 
         builder.Entity<DataProtectionKey>()
             .ToContainer("DataProtectionKeys").HasPartitionKey(e => e.Id);
@@ -171,11 +171,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .ToContainer("TodoItems").HasPartitionKey(e => e.Id);
 
         //#elif (sample == "Admin")
-        builder.Entity<Product>()
-            .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
-
         builder.Entity<Category>()
             .ToContainer("Categories").HasPartitionKey(e => e.Id);
+
+        builder.Entity<Product>()
+            .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
         //#endif    
     }
     //#endif

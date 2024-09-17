@@ -13,8 +13,6 @@ public partial class AttachmentController : AppControllerBase
 
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
 
-    [AutoInject] private IContentTypeProvider contentTypeProvider = default!;
-
     [AutoInject] private IBlobStorage blobStorage = default!;
 
     [HttpPost]
@@ -32,27 +30,14 @@ public partial class AttachmentController : AppControllerBase
             throw new ResourceNotFoundException();
 
         var destFileName = $"{userId}_{file.FileName}";
-        var destFilePath = $"{AppSettings.UserProfileImagesDir}{destFileName}";
-
-        await using (var requestStream = file.OpenReadStream())
-        {
-            await blobStorage.WriteAsync(destFilePath, requestStream, cancellationToken: cancellationToken);
-        }
 
         if (user.ProfileImageName is not null)
         {
-            try
-            {
-                var oldFilePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
+            var oldFilePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
 
-                if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
-                {
-                    await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
-                }
-            }
-            catch
+            if (await blobStorage.ExistsAsync(oldFilePath, cancellationToken))
             {
-                // not important
+                await blobStorage.DeleteAsync(oldFilePath, cancellationToken);
             }
         }
 
@@ -61,8 +46,7 @@ public partial class AttachmentController : AppControllerBase
 
         try
         {
-            await using var destFileStream = await blobStorage.OpenReadAsync(destFilePath, cancellationToken);
-            using MagickImage sourceImage = new(destFileStream);
+            using MagickImage sourceImage = new(file.OpenReadStream());
 
             MagickGeometry resizedImageSize = new(256, 256);
 
@@ -81,10 +65,6 @@ public partial class AttachmentController : AppControllerBase
             await blobStorage.DeleteAsync(resizedFilePath, cancellationToken);
 
             throw;
-        }
-        finally
-        {
-            await blobStorage.DeleteAsync(destFilePath, cancellationToken);
         }
     }
 
@@ -127,11 +107,6 @@ public partial class AttachmentController : AppControllerBase
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             return new EmptyResult();
 
-        if (contentTypeProvider.TryGetContentType(filePath, out var contentType) is false)
-        {
-            throw new InvalidOperationException();
-        }
-
-        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), contentType, enableRangeProcessing: true);
+        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
     }
 }

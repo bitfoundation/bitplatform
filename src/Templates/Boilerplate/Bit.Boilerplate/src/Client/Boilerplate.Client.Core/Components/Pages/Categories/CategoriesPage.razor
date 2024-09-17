@@ -1,4 +1,5 @@
 ﻿@attribute [Route(Urls.CategoriesPage)]
+@attribute [Route("{culture?}" + Urls.CategoriesPage)]
 @using Boilerplate.Shared.Dtos.Categories
 @inherits AppComponentBase
 
@@ -15,7 +16,7 @@
             <BitDataGrid @ref="dataGrid" ItemsProvider="categoriesProvider" TGridItem="CategoryDto" ResizableColumns="true" Pagination="pagination">
                 <BitDataGridPropertyColumn Sortable="true" Property="c => c!.Name" Title="@Localizer[nameof(AppStrings.Name)]" Align="BitDataGridAlign.Left">
                     <ColumnOptions>
-                        <BitStack Horizontal Gap="8px">
+                        <BitStack Horizontal>
                             <BitSearchBox @bind-Value="CategoryNameFilter"
                                           Immediate DebounceTime="500"
                                           Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"

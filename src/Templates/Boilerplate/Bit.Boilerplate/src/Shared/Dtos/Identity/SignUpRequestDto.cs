@@ -2,7 +2,7 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class SignUpRequestDto : IdentityRequestDto
+public partial class SignUpRequestDto : IdentityRequestDto
 {
     /// <example>test2</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]

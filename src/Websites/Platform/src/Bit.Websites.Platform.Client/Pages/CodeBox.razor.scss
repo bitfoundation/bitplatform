@@ -4,6 +4,7 @@
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 .code-box {
+    display: grid;
     position: relative;
 }
 
@@ -52,7 +53,7 @@
 
 ::deep .copy-btn {
     padding: 0;
-    top: rem2(8px);
+    top: rem2(20px);
     right: rem2(8px);
     width: rem2(32px);
     height: rem2(32px);

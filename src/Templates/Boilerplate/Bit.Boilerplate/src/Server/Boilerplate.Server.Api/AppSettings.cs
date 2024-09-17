@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Server.Api;
 
-public class AppSettings : IValidatableObject
+public partial class AppSettings : IValidatableObject
 {
     public IdentitySettings Identity { get; set; } = default!;
 
@@ -29,7 +29,7 @@ public class AppSettings : IValidatableObject
     }
 }
 
-public class IdentitySettings : IdentityOptions
+public partial class IdentitySettings : IdentityOptions
 {
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
@@ -59,7 +59,7 @@ public class IdentitySettings : IdentityOptions
     public TimeSpan RevokeUserSessionsDelay { get; set; }
 }
 
-public class EmailSettings
+public partial class EmailSettings
 {
     [Required]
     public string Host { get; set; } = default!;
@@ -78,7 +78,7 @@ public class EmailSettings
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 
-public class SmsSettings
+public partial class SmsSettings
 {
     public string? FromPhoneNumber { get; set; }
     public string? TwilioAccountSid { get; set; }

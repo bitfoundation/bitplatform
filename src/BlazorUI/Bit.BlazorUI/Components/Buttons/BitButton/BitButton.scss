@@ -44,6 +44,8 @@
 }
 
 .bit-btn-prt {
+    display: flex;
+    align-items: center;
     font-size: var(--bit-btn-prt-fontsize);
 }
 
@@ -147,6 +149,10 @@
         color: var(--bit-btn-clr-txt);
         background-color: var(--bit-btn-clr-active);
     }
+}
+
+.bit-btn-ftc {
+    color: var(--bit-btn-clr-txt);
 }
 
 

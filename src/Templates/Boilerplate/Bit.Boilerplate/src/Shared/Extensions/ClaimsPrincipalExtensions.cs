@@ -1,6 +1,6 @@
 ﻿namespace System.Security.Claims;
 
-public static class ClaimsPrincipalExtensions
+public static partial class ClaimsPrincipalExtensions
 {
     public static bool IsAuthenticated(this ClaimsPrincipal? claimsPrincipal)
     {

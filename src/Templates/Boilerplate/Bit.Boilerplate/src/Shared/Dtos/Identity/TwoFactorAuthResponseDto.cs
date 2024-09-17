@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
-public class TwoFactorAuthResponseDto
+public partial class TwoFactorAuthResponseDto
 {
     public required string SharedKey { get; init; }
 

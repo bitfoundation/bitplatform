@@ -21,10 +21,10 @@
 }
 else
 {
-    <BitStack Gap="1.5rem" Style="width:100%">
+    <BitStack>
         @if (currentSession is not null)
         {
-            <BitStack Gap="0.5rem" Style="width:100%">
+            <BitStack>
                 <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
                 <BitPersona PrimaryText="@currentSession.Device"
                             SecondaryText="@currentSession.Address"
@@ -44,7 +44,7 @@ else
 
             @foreach (var session in otherSessions)
             {
-                <BitStack Horizontal Style="width:100%;padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
+                <BitStack Horizontal Style="padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
                     <BitPersona PrimaryText="@session.Device"
                                 SecondaryText="@session.Address"
                                 TertiaryText="@($"{session.IP} - {session.LastSeenOn}")"
