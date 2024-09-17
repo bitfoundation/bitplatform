@@ -92,7 +92,7 @@ public partial class AppInitializer : AppComponentBase
                 options.HttpMessageHandlerFactory = httpClientHandler =>
                 {
                     return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                        .Invoke((HttpClientHandler)httpClientHandler);
+                        .Invoke(httpClientHandler);
                 };
             })
             .Build();
