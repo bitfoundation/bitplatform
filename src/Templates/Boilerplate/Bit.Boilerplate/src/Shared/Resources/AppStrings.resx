@@ -190,6 +190,18 @@
     <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
   </data>

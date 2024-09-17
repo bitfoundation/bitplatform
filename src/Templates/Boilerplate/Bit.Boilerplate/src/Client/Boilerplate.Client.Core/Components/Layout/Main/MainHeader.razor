@@ -1,8 +1,8 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal Full>
-        <BitStack>
+    <BitStack Horizontal>
+        <BitStack AutoSize>
             <BitText Typography="BitTypography.H5">@pageTitle</BitText>
             <BitText Typography="BitTypography.Body1">@pageSubtitle</BitText>
         </BitStack>
@@ -15,26 +15,34 @@
 
         <BitDropMenu Transparent>
             <Template>
-                <BitPersona Size=@BitPersonaSize.Size32
+                <BitPersona Class="persona"
+                            Size=@BitPersonaSize.Size32
                             PrimaryText="@user.FullName"
                             ImageUrl="@imageUrl" />
                 <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" />
             </Template>
             <Body>
-                <BitStack Gap="1rem" Style="padding:0.75rem">
-                    <BitPersona OnImageClick=GoToProfile
-                                PrimaryText="@user.FullName"
-                                Size=@BitPersonaSize.Size48
-                                SecondaryText="@user.DisplayName"
-                                Presence="BitPersonaPresence.Online"
-                                ImageUrl="@imageUrl" />
-                    <BitSeparator />
-                    <BitLink>Profile</BitLink>
-                    <BitText>Language</BitText>
-                    <BitToggle>Language</BitToggle>
-                    <BitLink>Setting</BitLink>
-                    <BitText>Sign out</BitText>
-                </BitStack>
+                <BitCard FullSize>
+                    <BitStack HorizontalAlign="BitAlignment.Start">
+                        <BitPersona Class="persona"
+                                    OnImageClick="GoToProfile"
+                                    PrimaryText="@user.FullName"
+                                    Size="BitPersonaSize.Size48"
+                                    SecondaryText="@user.DisplayName"
+                                    Presence="BitPersonaPresence.Online"
+                                    ImageUrl="@imageUrl" />
+                        <BitSeparator />
+                        <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage">@Localizer[nameof(AppStrings.ProfileTitle)]</BitActionButton>
+                        <BitActionButton IconName="@BitIconName.Globe">@Localizer[nameof(AppStrings.Language)]</BitActionButton>
+                        <BitStack Horizontal>
+                            <BitActionButton IconName="@BitIconName.ClearNight">@Localizer[nameof(AppStrings.Dark)]</BitActionButton>
+                            <BitSpacer />
+                            <BitToggle></BitToggle>
+                        </BitStack>
+                        <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage">@Localizer[nameof(AppStrings.Settings)]</BitActionButton>
+                        <BitActionButton IconName="@BitIconName.SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitActionButton>
+                    </BitStack>
+                </BitCard>
             </Body>
         </BitDropMenu>
     </BitStack>

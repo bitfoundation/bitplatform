@@ -1,6 +1,10 @@
+@import '../../../Styles/abstracts/_functions.scss';
+
 header {
-    top: 0;
     width: 100%;
-    position: sticky;
     padding-block: 1rem;
+}
+
+::deep .persona {
+    max-width: rem2(180px);
 }

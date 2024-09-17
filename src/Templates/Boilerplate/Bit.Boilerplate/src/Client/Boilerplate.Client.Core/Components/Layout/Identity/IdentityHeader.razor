@@ -1,9 +1,9 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal Grows Gap="1rem">
+    <BitStack Horizontal Grows>
         <BitLink NoUnderline Href="@Urls.HomePage">
-            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+            <BitStack Horizontal>
                 <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.IncreaseIndentArrow : BitIconName.DecreaseIndentArrow)" />
                 <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
             </BitStack>
