@@ -1,15 +1,17 @@
 @inherits LayoutComponentBase
 
-<BitStack>
-    <IdentityHeader />
+<main>
+    <BitStack VerticalAlign="BitAlignment.Start">
+        <IdentityHeader />
 
-    <BitStack Horizontal>
-        <main>
-            @Body
-        </main>
-        <BitStack Grows>
-            Admin Panel
+        <BitStack Horizontal AutoHeight Grows>
+            <div class="panel1">
+                @Body
+            </div>
+            <BitStack Grows Class="panel2">
+                Admin Panel
+            </BitStack>
         </BitStack>
-    </BitStack>
 
-</BitStack>
+    </BitStack>
+</main>

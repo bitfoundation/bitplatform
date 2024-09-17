@@ -1,13 +1,28 @@
-@import '../../../Styles/abstracts/_vars.scss';
 @import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
+    width: 100%;
+    height: 100%
+}
+
+.panel1 {
     width: 30%;
     min-height: 100%;
     padding-top: 5rem;
     padding-bottom: 2rem;
     min-width: rem2(560px);
     background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+::deep .panel2 {
+    @include lt-md {
+        display:none;
+    }
 }

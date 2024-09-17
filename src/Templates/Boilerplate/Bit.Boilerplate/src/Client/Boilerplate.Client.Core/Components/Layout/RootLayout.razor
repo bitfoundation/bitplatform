@@ -2,13 +2,17 @@
 
 <div class="status-bar">Boilerplate</div>
 
-<CascadingValue Value="currentDir">
-    <div dir="@currentDir?.ToString()" class="layout">
-        <AppErrorBoundary>
-            <CascadingValue Value="isUserAuthenticated" Name="IsUserAuthenticated">
-                @Body
+<div dir="@currentDir?.ToString()" class="layout">
+    <AppErrorBoundary>
+        <LayoutView Layout="GetCurrentLayout()">
+            <CascadingValue Value="currentDir" Name="CurrentDir">
+                <CascadingValue Value="currentUrl" Name="CurrentUrl">
+                    <CascadingValue Value="isUserAuthenticated" Name="IsUserAuthenticated">
+                        @Body
+                    </CascadingValue>
+                </CascadingValue>
             </CascadingValue>
-        </AppErrorBoundary>
-        <MessageBox />
-    </div>
-</CascadingValue>
+            <MessageBox />
+        </LayoutView>
+    </AppErrorBoundary>
+</div>

@@ -1,9 +1,14 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿using Boilerplate.Client.Core.Components.Layout.Identity;
+using Boilerplate.Client.Core.Components.Layout.Main;
+using Microsoft.AspNetCore.Components;
+
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {
     private bool disposed;
     private BitDir? currentDir;
+    private string? currentUrl;
     private bool isUserAuthenticated;
     private Action unsubscribeCultureChange = default!;
 
@@ -11,6 +16,7 @@ public partial class RootLayout : IDisposable
     [AutoInject] private IPubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
 
@@ -21,6 +27,8 @@ public partial class RootLayout : IDisposable
     {
         try
         {
+            navigationManager.LocationChanged += NavigationManagerLocationChanged;
+
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
             isUserAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
@@ -33,6 +41,7 @@ public partial class RootLayout : IDisposable
             });
 
             SetCurrentDir();
+            SetCurrentUrl();
 
             await base.OnInitializedAsync();
         }
@@ -52,11 +61,25 @@ public partial class RootLayout : IDisposable
     }
 
 
+    private Type GetCurrentLayout()
+    {
+        return isUserAuthenticated
+                ? typeof(MainLayout)
+                : currentUrl == Urls.HomePage
+                    ? typeof(EmptyLayout)
+                    : typeof(IdentityLayout);
+    }
+
     private void SetCurrentDir()
     {
         var currentCulture = CultureInfo.CurrentUICulture;
 
         currentDir = currentCulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+    }
+
+    private void SetCurrentUrl()
+    {
+        currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
     }
 
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
@@ -75,6 +98,12 @@ public partial class RootLayout : IDisposable
         }
     }
 
+    private void NavigationManagerLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        SetCurrentUrl();
+        StateHasChanged();
+    }
+
 
     public void Dispose()
     {
@@ -86,6 +115,8 @@ public partial class RootLayout : IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (disposed || disposing is false) return;
+
+        navigationManager.LocationChanged -= NavigationManagerLocationChanged;
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
