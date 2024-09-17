@@ -1,5 +1,4 @@
-﻿using Bit.Besql.Demo.Client.Data.CompiledModel;
-using Bit.Besql.Demo.Client.Model;
+﻿using Bit.Besql.Demo.Client.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
