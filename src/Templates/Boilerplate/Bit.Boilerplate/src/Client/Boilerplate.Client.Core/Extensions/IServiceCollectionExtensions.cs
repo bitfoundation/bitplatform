@@ -23,10 +23,21 @@ public static partial class IServiceCollectionExtensions
         services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
         services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
-        services.TryAddKeyedTransient<DelegatingHandler, RequestHeadersDelegationHandler>("DefaultMessageHandler");
+        services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
+        services.TryAddTransient<Func<HttpClientHandler, HttpMessageHandler>>(serviceProvider => httpClientHandler =>
+        {
+            return ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [httpClientHandler])])])]);
+        });
+        services.TryAddTransient(serviceProvider =>
+        {
+            return serviceProvider.GetRequiredService<Func<HttpClientHandler, HttpMessageHandler>>().Invoke(serviceProvider.GetRequiredService<HttpClientHandler>());
+        });
         services.TryAddSessioned<HttpClientHandler>();
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
