@@ -5,7 +5,7 @@ public partial class ClientSideAuthTokenProvider : IAuthTokenProvider
 {
     [AutoInject] private IStorageService storageService = default!;
 
-    public bool IsInitialized => true;
+    public bool InPrerenderSession => false;
 
     public async Task<string?> GetAccessTokenAsync()
     {

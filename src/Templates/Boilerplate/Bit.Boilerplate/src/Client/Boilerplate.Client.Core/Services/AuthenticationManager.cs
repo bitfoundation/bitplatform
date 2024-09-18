@@ -74,7 +74,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         {
             var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
 
-            if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
+            if (string.IsNullOrEmpty(access_token) && tokenProvider.InPrerenderSession is false)
             {
                 string? refresh_token = await storageService.GetItem("refresh_token");
 

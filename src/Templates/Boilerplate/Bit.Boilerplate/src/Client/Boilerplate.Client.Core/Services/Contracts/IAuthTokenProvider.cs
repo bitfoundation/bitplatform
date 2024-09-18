@@ -2,6 +2,6 @@
 
 public interface IAuthTokenProvider
 {
-    bool IsInitialized { get; }
+    bool InPrerenderSession { get; }
     Task<string?> GetAccessTokenAsync();
 }
