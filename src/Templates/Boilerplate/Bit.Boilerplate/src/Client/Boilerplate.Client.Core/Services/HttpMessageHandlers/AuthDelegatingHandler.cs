@@ -2,7 +2,11 @@
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, IServiceProvider serviceProvider, IStorageService storageService, HttpMessageHandler handler)
+public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
+    IJSRuntime jsRuntime,
+    IServiceProvider serviceProvider, 
+    IStorageService storageService, 
+    HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -25,7 +29,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider, ISe
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            if (tokenProvider.InPrerenderSession) 
+            if (jsRuntime.IsInitialized() is false) 
                 throw; // We don't have access to refresh_token during pre-rendering.
 
             if (request.RequestUri?.LocalPath?.Contains("api/Identity/Refresh", StringComparison.InvariantCultureIgnoreCase) is true)
