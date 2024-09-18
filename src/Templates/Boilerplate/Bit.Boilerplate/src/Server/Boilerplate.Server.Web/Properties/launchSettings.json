@@ -46,6 +46,7 @@
             "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/",
             "environmentVariables": {
                 "ASPNETCORE_HTTP_PORTS": "5030",
+                "ASPNETCORE_ENVIRONMENT": "Development",
                 "ConnectionStrings__SqliteConnectionString": "Data Source=/container_volume/App_Data/BoilerplateDb.db;"
             },
             "DockerfileRunArguments": "-v C:\\DockerVolumes\\AC87AA5B-4B37-4E52-8468-2D5DF24AF256:/container_volume",
