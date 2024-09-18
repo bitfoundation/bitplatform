@@ -378,7 +378,7 @@ private bool IsOpen2 = false;";
 </style>
 
 
-<BitButton OnClick=""() => IsOpen3 = true"">Open Modal (AbsolutePosition = true</BitButton>
+<BitButton OnClick=""() => IsOpen3 = true"">Open Modal (AbsolutePosition = true)</BitButton>
 <BitButton OnClick=""() => IsOpen4 = true"">Open Modal (ScrollerSelector)</BitButton>
 
 <div class=""relative-container"">
