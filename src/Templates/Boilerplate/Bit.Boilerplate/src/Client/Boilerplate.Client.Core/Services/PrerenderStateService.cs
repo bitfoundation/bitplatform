@@ -51,7 +51,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     void Persist<T>(string key, T value)
     {
-        if (noPersistant || jsRuntime.IsInPrerenderSession() is false) return;
+        if (noPersistant || AppPlatform.IsBlazorHybridOrBrowser) return;
 
         values.TryRemove(key, out object? _);
         values.TryAdd(key, value);

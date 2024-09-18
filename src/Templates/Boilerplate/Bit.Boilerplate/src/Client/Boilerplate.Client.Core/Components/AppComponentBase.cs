@@ -45,7 +45,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     protected bool InPrerenderSession => JSRuntime.IsInPrerenderSession();
 
-
     protected sealed override void OnInitialized()
     {
         base.OnInitialized();
