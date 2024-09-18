@@ -6,8 +6,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-
-
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected IStorageService StorageService = default!;
@@ -37,7 +35,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
-
 
 
     private readonly CancellationTokenSource cts = new();
@@ -203,6 +200,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         if (disposing)
         {
+            await PrerenderStateService.DisposeAsync();
             cts.Cancel();
             cts.Dispose();
         }

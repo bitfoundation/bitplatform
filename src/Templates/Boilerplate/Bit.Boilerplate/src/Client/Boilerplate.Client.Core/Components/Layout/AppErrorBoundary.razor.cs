@@ -10,7 +10,7 @@ public partial class AppErrorBoundary
     private bool showException;
 
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
-
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
 
     protected override void OnInitialized()

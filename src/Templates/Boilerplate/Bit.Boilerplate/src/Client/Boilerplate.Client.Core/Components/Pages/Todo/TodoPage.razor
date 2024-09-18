@@ -21,7 +21,7 @@
                           Class="add-todo-input"
                           Immediate DebounceTime="300"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]" />
-            <BitButton IsLoading="isAdding"
+            <BitButton AutoLoading
                        OnClick="WrapHandled(AddTodoItem)"
                        Title="@Localizer[nameof(AppStrings.Add)]"
                        IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">

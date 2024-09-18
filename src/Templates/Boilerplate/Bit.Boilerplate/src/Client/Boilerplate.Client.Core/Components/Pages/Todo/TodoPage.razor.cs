@@ -9,7 +9,6 @@ public partial class TodoPage
     [AutoInject] Keyboard keyboard = default!;
     [AutoInject] ITodoItemController todoItemController = default!;
 
-    private bool isAdding;
     private bool isLoading;
     private string? searchText;
     private string? selectedSort;
@@ -112,27 +111,16 @@ public partial class TodoPage
 
     private async Task AddTodoItem()
     {
-        if (isAdding) return;
+        var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
 
-        isAdding = true;
+        allTodoItems.Add(addedTodoItem!);
 
-        try
+        if (TodoItemIsVisible(addedTodoItem!))
         {
-            var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
-
-            allTodoItems.Add(addedTodoItem!);
-
-            if (TodoItemIsVisible(addedTodoItem!))
-            {
-                viewTodoItems.Add(addedTodoItem!);
-            }
-
-            newTodoTitle = "";
+            viewTodoItems.Add(addedTodoItem!);
         }
-        finally
-        {
-            isAdding = false;
-        }
+
+        newTodoTitle = "";
     }
 
     private async Task DeleteTodoItem(TodoItemDto todoItem)

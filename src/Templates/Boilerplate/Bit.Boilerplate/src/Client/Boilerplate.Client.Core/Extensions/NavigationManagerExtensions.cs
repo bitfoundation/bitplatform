@@ -25,6 +25,10 @@ public static partial class NavigationManagerExtensions
             : pagePathWithoutQueryString;
     }
 
+    private static readonly string[] allCultures = CultureInfoManager.MultilingualEnabled
+        ? CultureInfo.GetCultures(CultureTypes.AllCultures).Select(c => c.Name).ToArray()
+        : [];
+
     /// <summary>
     /// Reads culture from either route segment or query string.
     /// https://adminpanel.bitpaltform.dev/en-US/categories
@@ -41,20 +45,16 @@ public static partial class NavigationManagerExtensions
         if (string.IsNullOrEmpty(culture) is false)
             return culture;
 
-        var match = RouteDataRequestCulture().Match(uri.ToString());
-
-        try
+        foreach (var segment in uri.Segments.Take(2))
         {
-            CultureInfoManager.CreateCultureInfo(match.Value);
-            return match.Value;
+            if (allCultures.Contains(segment, StringComparer.InvariantCultureIgnoreCase))
+            {
+                return segment;
+            }
         }
-        catch { };
 
         return null;
     }
-
-    [GeneratedRegex(@"([a-zA-Z]{2}-[a-zA-Z]{2})")]
-    public static partial Regex RouteDataRequestCulture();
 
     public static string GetUriWithoutCulture(this NavigationManager navigationManager)
     {
