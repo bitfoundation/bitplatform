@@ -10,8 +10,8 @@ public partial class AppInitializer : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
-
     [AutoInject] private MessageBoxService messageBoxService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -87,7 +87,14 @@ public partial class AppInitializer : AppComponentBase
         var access_token = await AuthTokenProvider.GetAccessTokenAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}")
+            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
+            {
+                options.HttpMessageHandlerFactory = httpClientHandler =>
+                {
+                    return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
+                        .Invoke(httpClientHandler);
+                };
+            })
             .Build();
 
         hubConnection.On<string>("TwoFactorToken", async (token) =>
