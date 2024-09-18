@@ -135,18 +135,10 @@ public partial class AppInitializer : AppComponentBase
             cssClasses.Add("bit-android");
         }
 
-        var cssVariables = new Dictionary<string, string>();
-        var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
-
-        if (AppPlatform.IsMacOS is false)
+        var cssVariables = new Dictionary<string, string>
         {
-            //For iOS this is handled in css using safe-area env() variables
-            //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626
-            //For Windows there's an issue with TitleBar. more info: https://github.com/bitfoundation/bitplatform/issues/5695
-            statusBarHeight = 0;
-        }
+        };
 
-        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
