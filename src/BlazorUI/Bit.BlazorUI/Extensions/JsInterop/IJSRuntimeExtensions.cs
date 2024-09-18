@@ -68,7 +68,7 @@ public static class IJSRuntimeExtensions
 
 
 
-    public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
+    internal static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
         var type = jsRuntime.GetType();
 
