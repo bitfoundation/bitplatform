@@ -14,8 +14,8 @@
     flex-flow: row nowrap;
     justify-content: space-between;
     background-color: $bit-color-background-primary;
-    padding-top: calc(0.5rem + var(--bit-status-bar-height));
-    height: calc($headerHeight + var(--bit-status-bar-height));
+    padding-top: 0.5rem;
+    height: $headerHeight;
 
     .bit-ios & {
         height: calc($headerHeight + env(safe-area-inset-top));
