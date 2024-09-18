@@ -53,6 +53,12 @@ public partial class BitActionButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Renders the action button in full width of its container with flex-start.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button.
     /// If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
@@ -123,6 +129,8 @@ public partial class BitActionButton : BitComponentBase
             BitColor.TertiaryBorder => "bit-acb-tbr",
             _ => "bit-acb-pri"
         });
+
+        ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
