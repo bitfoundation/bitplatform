@@ -1,6 +1,7 @@
 ﻿//-:cnd:noEmit
 using Maui.AppStores;
 using Maui.InAppReviews;
+using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Maui;
 
@@ -78,5 +79,6 @@ public partial class MainPage
         }
         catch (InvalidOperationException) when ((AppPlatform.IsIOS || AppPlatform.IsMacOS) && AppEnvironment.IsDev()) { }
         catch (FileNotFoundException) { }
+        catch (COMException) { }
     }
 }
