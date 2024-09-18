@@ -2,30 +2,30 @@
 
 public partial class BitToggleDemo
 {
-    private readonly List<ComponentParameter> componentParameters = new()
-    {
+    private readonly List<ComponentParameter> componentParameters =
+    [
         new()
         {
             Name = "Classes",
             Type = "BitToggleClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the toggle.",
             LinkType = LinkType.Link,
-            Href = "#toggle-class-styles",
-            Description = "Custom CSS classes for different parts of the BitToggle.",
+            Href = "#class-styles",
         },
         new()
         {
-            Name = "DefaultText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default text used when the On or Off texts are null.",
-        },
-        new()
-        {
-            Name = "IsInlineLabel",
+            Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the label (not the onText/offText) should be positioned inline with the toggle control. Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.",
+            Description = "Renders the toggle in full width of its container while putting space between the label and the knob.",
+        },
+        new()
+        {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the label and the knob in a single line together.",
         },
         new()
         {
@@ -67,20 +67,27 @@ public partial class BitToggleDemo
             Name = "Styles",
             Type = "BitToggleClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the toggle.",
             LinkType = LinkType.Link,
-            Href = "#toggle-class-styles",
-            Description = "Custom CSS styles for different parts of the BitToggle.",
-        }
-    };
-
-    private readonly List<ComponentSubClass> componentSubClasses = new()
-    {
+            Href = "#class-styles",
+        },
         new()
         {
-            Id = "toggle-class-styles",
+            Name = "Text",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Default text used when the On or Off texts are null.",
+        },
+    ];
+
+    private readonly List<ComponentSubClass> componentSubClasses =
+    [
+        new()
+        {
+            Id = "class-styles",
             Title = "BitToggleClassStyles",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -130,9 +137,9 @@ public partial class BitToggleDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the text of the BitToggle."
                 }
-            }
+            ]
         }
-    };
+    ];
 
 
 
@@ -162,11 +169,11 @@ public partial class BitToggleDemo
 <BitToggle Label=""Disabled"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
-<BitToggle Label=""DefaultText"" DefaultText=""This is a good toggle!"" />
+<BitToggle Label=""Text"" Text=""This is a toggle!"" />
 <BitToggle Label=""OnText & OffText"" OnText=""Toggle is On"" OffText=""Toggle is Off"" />";
 
     private readonly string example3RazorCode = @"
-<BitToggle Label=""This is an inline label"" IsInlineLabel />
+<BitToggle Label=""This is an inline label"" Inline />
 
 <BitToggle>
     <LabelTemplate>
@@ -178,21 +185,26 @@ public partial class BitToggleDemo
 </BitToggle>";
 
     private readonly string example4RazorCode = @"
-<BitToggle Reversed Label=""This is a reversed label"" />
+<BitToggle Label=""This is a reversed label"" Reversed />
 
-<BitToggle Reversed IsInlineLabel Label=""This is a reversed inline label"" />";
+<BitToggle Label=""This is a reversed inline label"" Reversed Inline />";
 
     private readonly string example5RazorCode = @"
+<BitToggle Label=""This is a full-width toggle"" FullWidth Inline />
+
+<BitToggle Label=""This is a reversed full-width toggle"" Reversed FullWidth Inline />";
+
+    private readonly string example6RazorCode = @"
 <BitToggle Label=""One-way"" Value=""oneWayValue"" />
 <BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
 
 <BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-thumb {
         background: #fff;
@@ -233,7 +245,7 @@ private bool twoWayValue;";
                               Button = ""custom-button"",
                               Checked = ""custom-check"" } )"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -243,12 +255,12 @@ private bool twoWayValue;";
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitToggle Label=""Terms and conditions"" DefaultText=""I agree."" @bind-Value=""validationModel.TermsAgreement"" />
+    <BitToggle Label=""Terms and conditions"" Text=""I agree."" @bind-Value=""validationModel.TermsAgreement"" />
     <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
@@ -260,6 +272,10 @@ public BitToggleValidationModel validationModel { get; set; } = new();
 private async Task HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example8RazorCode = @"
-<BitToggle Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />";
+    private readonly string example9RazorCode = @"
+<BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />
+
+<BitToggle Label=""این یک تاگل خطی است"" Dir=""BitDir.Rtl"" Inline />
+
+<BitToggle Label=""این یک تاگل خطی برعکس است"" Dir=""BitDir.Rtl"" Reversed Inline />";
 }

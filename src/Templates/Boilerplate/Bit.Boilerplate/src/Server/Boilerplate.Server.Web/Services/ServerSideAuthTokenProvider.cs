@@ -16,11 +16,9 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
-    public bool IsInitialized => jsRuntime.IsInitialized();
-
     public async Task<string?> GetAccessTokenAsync()
     {
-        if (IsInitialized)
+        if (jsRuntime.IsInitialized())
         {
             return await storageService.GetItem("access_token");
         }
