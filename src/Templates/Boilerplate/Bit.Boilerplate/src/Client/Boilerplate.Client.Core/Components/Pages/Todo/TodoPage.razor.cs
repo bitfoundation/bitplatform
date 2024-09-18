@@ -18,7 +18,6 @@ public partial class TodoPage
     private ConfirmMessageBox confirmMessageBox = default!;
     private IList<TodoItemDto> allTodoItems = [];
     private IList<TodoItemDto> viewTodoItems = default!;
-    private List<BitDropdownItem<string>> sortItems = [];
     private BitSearchBox searchBox = default!;
 
     protected override async Task OnInitAsync()
@@ -27,12 +26,6 @@ public partial class TodoPage
 
         selectedFilter = nameof(AppStrings.All);
         selectedSort = nameof(AppStrings.Alphabetical);
-
-        sortItems =
-        [
-            new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Alphabetical)], Value = nameof(AppStrings.Alphabetical) },
-            new BitDropdownItem<string> { Text = Localizer[nameof(AppStrings.Date)], Value = nameof(AppStrings.Date) }
-        ];
 
         await LoadTodoItems();
 

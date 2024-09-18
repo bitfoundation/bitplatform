@@ -38,10 +38,15 @@
                 </BitPivot>
                 <div class="sort-drp-container">
                     <BitDropdown Class="sort-todo-drp"
-                                 Items="sortItems"
-                                 OnSelectItem="(BitDropdownItem<string> item) => SortTodoItems(item)"
-                                 DefaultValue="@sortItems[0].Value"
+                                 TItem="BitDropdownItem<string>"
+                                 DefaultValue="nameof(AppStrings.Alphabetical)"
+                                 TValue="string"
+                                 OnSelectItem="(item) => SortTodoItems(item)"
                                  IsResponsive="true">
+                        <Options>
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
+                        </Options>
                         <CaretDownTemplate>
                             <BitIcon IconName="@BitIconName.Sort" Class="sort-todo-icn" />
                         </CaretDownTemplate>
