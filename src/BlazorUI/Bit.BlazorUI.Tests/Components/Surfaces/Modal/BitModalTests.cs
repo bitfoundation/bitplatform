@@ -209,33 +209,26 @@ public class BitModalTests : BunitTestContext
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            if (position.HasValue)
-            {
-                parameters.Add(p => p.Position, position.Value);
-            }
+            parameters.Add(p => p.Position, position);
         });
-
-        var modalElement = com.Find(".bit-mdl-doc");
 
         var positionClass = position switch
         {
             BitModalPosition.Center => "bit-mdl-ctr",
-
             BitModalPosition.TopLeft => "bit-mdl-tl",
             BitModalPosition.TopCenter => "bit-mdl-tc",
             BitModalPosition.TopRight => "bit-mdl-tr",
-
             BitModalPosition.CenterLeft => "bit-mdl-cl",
             BitModalPosition.CenterRight => "bit-mdl-cr",
-
             BitModalPosition.BottomLeft => "bit-mdl-bl",
             BitModalPosition.BottomCenter => "bit-mdl-bc",
             BitModalPosition.BottomRight => "bit-mdl-br",
-
             _ => "bit-mdl-ctr",
         };
 
-        Assert.IsTrue(modalElement.ClassList.Contains(positionClass));
+        var element = com.Find(".bit-mdl");
+
+        Assert.IsTrue(element.ClassList.Contains(positionClass));
     }
 
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
