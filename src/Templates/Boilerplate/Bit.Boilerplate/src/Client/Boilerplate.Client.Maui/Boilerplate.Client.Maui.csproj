@@ -25,6 +25,9 @@
         <!-- Required for C# Hot Reload -->
         <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
+        <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+        <WindowsPackageType>None</WindowsPackageType>
+
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
 
         <ResolveStaticWebAssetsInputsDependsOn>
@@ -117,8 +120,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-01" PrivateAssets="all" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
         <Content Remove="Properties\launchSettings.json" />

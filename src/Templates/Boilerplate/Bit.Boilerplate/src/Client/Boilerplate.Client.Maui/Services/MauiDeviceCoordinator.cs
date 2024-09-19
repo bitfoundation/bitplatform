@@ -8,25 +8,6 @@ namespace Boilerplate.Client.Maui.Services;
 /// </summary>
 public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
 {
-    public double GetStatusBarHeight()
-    {
-#if Android
-        var resourceId = MauiApplication.Current.Resources!.GetIdentifier("status_bar_height", "dimen", "android");
-        var dimensionPixelSize = MauiApplication.Current.Resources.GetDimensionPixelSize(resourceId);
-        var density = (double)DeviceDisplay.Current.MainDisplayInfo.Density;
-        return dimensionPixelSize / density;
-#elif iOS
-        var window = UIKit.UIApplication.SharedApplication.Windows.First().WindowScene;
-        return window!.StatusBarManager!.StatusBarFrame.Height;
-#elif Windows
-        return 30;
-#elif Mac
-        return 25;
-#else
-        return 0;
-#endif
-    }
-
     public async Task ApplyTheme(bool isDark)
     {
         Application.Current!.UserAppTheme = isDark ? AppTheme.Dark : AppTheme.Light;

@@ -11,27 +11,89 @@
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <ExamplePreview>
-            <div class="example-box">
-                <BitText>This is default (Subtitle1)</BitText>
-                <br />
-                <BitText Typography="BitTypography.H1">H1. Heading</BitText>
-                <BitText Typography="BitTypography.H2">H2. Heading</BitText>
-                <BitText Typography="BitTypography.H3">H3. Heading</BitText>
-                <BitText Typography="BitTypography.H4">H4. Heading</BitText>
-                <BitText Typography="BitTypography.H5">H5. Heading</BitText>
-                <BitText Typography="BitTypography.H6">H6. Heading</BitText>
+            <BitText>This is default (Subtitle1)</BitText>
+            <br /><br />
+            <BitText Typography="BitTypography.H1">H1. Heading</BitText>
+            <br />
+            <BitText Typography="BitTypography.H2">H2. Heading</BitText>
+            <br />
+            <BitText Typography="BitTypography.H3">H3. Heading</BitText>
+            <br />
+            <BitText Typography="BitTypography.H4">H4. Heading</BitText>
+            <br />
+            <BitText Typography="BitTypography.H5">H5. Heading</BitText>
+            <br />
+            <BitText Typography="BitTypography.H6">H6. Heading</BitText>
+            <br /><br />
+            <BitText Typography="BitTypography.Subtitle1">Subtitle1. Lorem ipsum dolor sit amet</BitText>
+            <br />
+            <BitText Typography="BitTypography.Subtitle2">Subtitle2. Lorem ipsum dolor sit amet</BitText>
+            <br /><br />
+            <BitText Typography="BitTypography.Body1">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+            <br />
+            <BitText Typography="BitTypography.Body2">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
+            <br /><br />
+            <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
+            <br />
+            <BitText Typography="BitTypography.Caption1">Caption1. Hello World!</BitText>
+            <br />
+            <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
+            <br />
+            <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
+        </ExamplePreview>
+    </ComponentExampleBox>
 
-                <BitText Typography="BitTypography.Subtitle1">Subtitle1. Lorem ipsum dolor sit amet</BitText>
-                <BitText Typography="BitTypography.Subtitle2">Subtitle2. Lorem ipsum dolor sit amet</BitText>
-
-                <BitText Typography="BitTypography.Body1">Body1. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
-                <BitText Typography="BitTypography.Body2">Body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</BitText>
-
-                <BitText Typography="BitTypography.Button">Button. Click Me</BitText>
-                <BitText Typography="BitTypography.Caption1">Caption1. Hello World!</BitText>
-                <BitText Typography="BitTypography.Caption2">Caption2. Hello World!</BitText>
-                <BitText Typography="BitTypography.Overline">Overline. this is overline text.</BitText>
+    <ComponentExampleBox Title="Foreground" RazorCode="@example2RazorCode" Id="example2">
+        <ExamplePreview>
+            <BitText Foreground="BitColorKind.Primary">Primary foreground</BitText>
+            <br />
+            <BitText Foreground="BitColorKind.Secondary">Secondary foreground</BitText>
+            <br />
+            <BitText Foreground="BitColorKind.Tertiary">Tertiary foreground</BitText>
+            <br />
+            <div style="background:linear-gradient(blue, pink);background-clip:text;">
+                <BitText Foreground="BitColorKind.Transparent">Transparent foreground</BitText>
             </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <BitText Color="BitColor.Primary">Primary color</BitText>
+            <br />
+            <BitText Color="BitColor.Secondary">Secondary color</BitText>
+            <br />
+            <BitText Color="BitColor.Tertiary">Tertiary color</BitText>
+            <br />
+            <BitText Color="BitColor.Info">Info color</BitText>
+            <br />
+            <BitText Color="BitColor.Success">Success color</BitText>
+            <br />
+            <BitText Color="BitColor.Warning">Warning color</BitText>
+            <br />
+            <BitText Color="BitColor.SevereWarning">SevereWarning color</BitText>
+            <br />
+            <BitText Color="BitColor.Error">Error color</BitText>
+            <br />
+            <div style="background:var(--bit-clr-fg-sec);padding:1rem">
+                <BitText Color="BitColor.PrimaryBackground">PrimaryBackground color</BitText>
+                <br />
+                <BitText Color="BitColor.SecondaryBackground">SecondaryBackground color</BitText>
+                <br />
+                <BitText Color="BitColor.TertiaryBackground">TertiaryBackground color</BitText>
+            </div>
+            <br />
+            <BitText Color="BitColor.PrimaryForeground">PrimaryForeground color</BitText>
+            <br />
+            <BitText Color="BitColor.SecondaryForeground">SecondaryForeground color</BitText>
+            <br />
+            <BitText Color="BitColor.TertiaryForeground">TertiaryForeground color</BitText>
+            <br />
+            <BitText Color="BitColor.PrimaryBorder">PrimaryBorder color</BitText>
+            <br />
+            <BitText Color="BitColor.SecondaryBorder">SecondaryBorder color</BitText>
+            <br />
+            <BitText Color="BitColor.TertiaryBorder">TertiaryBorder color</BitText>
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

@@ -29,7 +29,7 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler")) { BaseAddress = serverAddress });
+        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
 
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>

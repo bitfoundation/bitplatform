@@ -12,7 +12,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IUserController userController = default!;
-    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService;
@@ -74,7 +74,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         {
             var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
 
-            if (string.IsNullOrEmpty(access_token) && tokenProvider.IsInitialized)
+            if (string.IsNullOrEmpty(access_token) && jsRuntime.IsInitialized())
             {
                 string? refresh_token = await storageService.GetItem("refresh_token");
 

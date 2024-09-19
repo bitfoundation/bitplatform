@@ -61,6 +61,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the action button in full width of its container with flex-start.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",

@@ -76,7 +76,7 @@ public static partial class Program
                 serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
             }
 
-            var httpClient = new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
+            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
                 BaseAddress = serverAddress
             };

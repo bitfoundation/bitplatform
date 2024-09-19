@@ -368,6 +368,12 @@
     <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Oops, something went wrong...</value>
+  </data>
     <data name="BackToHome" xml:space="preserve">
     <value>Back to home</value>
   </data>
