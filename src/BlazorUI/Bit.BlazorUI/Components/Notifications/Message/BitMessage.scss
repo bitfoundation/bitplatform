@@ -6,33 +6,41 @@
     font-weight: 400;
     flex-flow: column;
     box-sizing: border-box;
-    font-size: spacing(1.5);
     justify-content: center;
     font-family: $tg-font-family;
+    box-shadow: var(--bit-msg-elv);
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
+    font-size: var(--bit-msg-fontsize);
 }
 
 .bit-msg-con {
+    display: flex;
+    align-items: start;
+}
+
+.bit-msg-mct {
     width: 100%;
     display: flex;
+    overflow: hidden;
     align-items: start;
     line-height: normal;
     padding: 0 spacing(0.5);
+    justify-content: var(--bit-msg-con);
 }
 
 .bit-msg-ict {
     display: flex;
-    margin: spacing(1);
+    margin: var(--bit-msg-margin);
+    margin-inline-end: 0;
 }
 
 .bit-msg-ico {
-    font-size: spacing(2);
+    font-size: var(--bit-msg-ico-fontsize);
 }
 
 .bit-msg-cnc {
-    flex: 1;
     display: flex;
     overflow: hidden;
     align-items: center;
@@ -48,7 +56,7 @@
     flex-grow: 1;
     min-width: 0;
     display: flex;
-    margin: spacing(1);
+    margin: var(--bit-msg-margin);
     flex-direction: column;
 }
 
@@ -140,4 +148,68 @@
 .bit-msg-err {
     --bit-msg-clr: #{$clr-err-text};
     --bit-msg-clr-bg: #{$clr-err};
+}
+
+
+.bit-msg-pbg {
+    --bit-msg-clr: #{$clr-fg-pri};
+    --bit-msg-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-msg-sbg {
+    --bit-msg-clr: #{$clr-fg-pri};
+    --bit-msg-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-msg-tbg {
+    --bit-msg-clr: #{$clr-fg-pri};
+    --bit-msg-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-msg-pfg {
+    --bit-msg-clr: #{$clr-bg-pri};
+    --bit-msg-clr-bg: #{$clr-fg-pri};
+}
+
+.bit-msg-sfg {
+    --bit-msg-clr: #{$clr-bg-pri};
+    --bit-msg-clr-bg: #{$clr-fg-sec};
+}
+
+.bit-msg-tfg {
+    --bit-msg-clr: #{$clr-bg-pri};
+    --bit-msg-clr-bg: #{$clr-fg-ter};
+}
+
+.bit-msg-pbr {
+    --bit-msg-clr: #{$clr-fg-pri};
+    --bit-msg-clr-bg: #{$clr-brd-pri};
+}
+
+.bit-msg-sbr {
+    --bit-msg-clr: #{$clr-bg-pri};
+    --bit-msg-clr-bg: #{$clr-brd-sec};
+}
+
+.bit-msg-tbr {
+    --bit-msg-clr: #{$clr-bg-pri};
+    --bit-msg-clr-bg: #{$clr-brd-ter};
+}
+
+.bit-msg-sm {
+    --bit-msg-margin: #{spacing(0.5)};
+    --bit-msg-fontsize: #{spacing(1)};
+    --bit-msg-ico-fontsize: #{spacing(1.5)};
+}
+
+.bit-msg-md {
+    --bit-msg-margin: #{spacing(1)};
+    --bit-msg-fontsize: #{spacing(1.5)};
+    --bit-msg-ico-fontsize: #{spacing(2)};
+}
+
+.bit-msg-lg {
+    --bit-msg-margin: #{spacing(2)};
+    --bit-msg-fontsize: #{spacing(2.0)};
+    --bit-msg-ico-fontsize: #{spacing(2.5)};
 }

@@ -13,7 +13,18 @@ public partial class BitMessageDemo
 <BitMessage Color=""BitColor.Success"">Success.</BitMessage>
 <BitMessage Color=""BitColor.Warning"">Warning.</BitMessage>
 <BitMessage Color=""BitColor.SevereWarning"">SevereWarning.</BitMessage>
-<BitMessage Color=""BitColor.Error"">Error.</BitMessage>";
+<BitMessage Color=""BitColor.Error"">Error.</BitMessage>
+
+<BitMessage Color=""BitColor.PrimaryBackground"">PrimaryBackground.</BitMessage>
+<BitMessage Color=""BitColor.SecondaryBackground"">SecondaryBackground.</BitMessage>
+<BitMessage Color=""BitColor.TertiaryBackground"">TertiaryBackground.</BitMessage>
+                
+<BitMessage Color=""BitColor.PrimaryForeground"">PrimaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.SecondaryForeground"">SecondaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.TertiaryForeground"">TertiaryForeground.</BitMessage>
+<BitMessage Color=""BitColor.PrimaryBorder"">PrimaryBorder.</BitMessage>
+<BitMessage Color=""BitColor.SecondaryBorder"">SecondaryBorder.</BitMessage>
+<BitMessage Color=""BitColor.TertiaryBorder"">TertiaryBorder.</BitMessage>";
 
     private readonly string example3RazorCode = @"
 <BitMessage Color=""BitColor.Primary"" Variant=""BitVariant.Fill"">Primary.</BitMessage>
@@ -44,26 +55,45 @@ public partial class BitMessageDemo
 <BitMessage Color=""BitColor.Error"" Variant=""BitVariant.Text"">Error.</BitMessage>";
 
     private readonly string example4RazorCode = @"
+<BitMessage ContentAlignment=""BitAlignment.Start"" Color=""BitColor.Primary"">Start</BitMessage>
+<BitMessage ContentAlignment=""BitAlignment.Center"" Color=""BitColor.Secondary"">Center</BitMessage>
+<BitMessage ContentAlignment=""BitAlignment.End"" Color=""BitColor.Tertiary"">End</BitMessage>";
+
+    private readonly string example5RazorCode = @"
+<BitMessage Elevation=""(int)elevation"">Elevated Message</BitMessage>
+
+<BitSlider Label=""Elevation"" Min=""0"" Max=""24"" Step=""1"" @bind-Value=""elevation"" />";
+    private readonly string example5CsharpCode = @"
+private double elevation = 7;";
+
+    private readonly string example6RazorCode = @"
 <BitMessage Multiline Color=""BitColor.Success"">
     <b>Multiline</b> parameter makes the content to be rendered in multiple lines.
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitMessage Truncate Color=""BitColor.Warning"">
     <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
     Truncation is not available if you use multiline and should be used sparingly.
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
-    private readonly string example6RazorCode = @"
-<BitMessage OnDismiss=""() => isDismissed = true"" Color=""BitColor.SevereWarning"">
-    Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
-</BitMessage>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8RazorCode = @"
+@if (isDismissed is false)
+{
+    <BitMessage OnDismiss=""() => isDismissed = true"" Color=""BitColor.SevereWarning"">
+        Dismiss option enabled by adding <strong>OnDismiss</strong> parameter.
+    </BitMessage>
+}
+else
+{
+    <BitButton OnClick=""() => isDismissed = false"">Dismissed, click to reset</BitButton>
+}";
+    private readonly string example8CsharpCode = @"
 private bool isDismissed;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitMessage>
     <Actions>
         <BitButton Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IconName=""@BitIconName.Up"" />
@@ -75,14 +105,14 @@ private bool isDismissed;";
     </Content>
 </BitMessage>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitMessage Color=""BitColor.Info"" HideIcon>Info (default) Message.</BitMessage>
 <BitMessage Color=""BitColor.Success"" HideIcon>Success Message.</BitMessage>
 <BitMessage Color=""BitColor.Warning"" HideIcon>Warning Message.</BitMessage>
 <BitMessage Color=""BitColor.SevereWarning"" HideIcon>SevereWarning Message.</BitMessage>
 <BitMessage Color=""BitColor.Error"" HideIcon>Error Message.</BitMessage>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitMessage Color=""BitColor.Success"" IconName=""@BitIconName.CheckMark"">
     Message with a custom icon.
 </BitMessage>
@@ -99,7 +129,7 @@ private bool isDismissed;";
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -142,7 +172,7 @@ private bool isDismissed;";
 <BitMessage Color=""BitColor.Warning"" OnDismiss=""() => {}"" Multiline
             Styles=""@(new() { Root=""padding:1rem"",
                               IconContainer=""line-height:1.25"",
-                              Content=""color:pink"",
+                              Content=""color:blueviolet"",
                               ContentContainer=""margin:0 10px"",
                               DismissIcon=""font-size:1rem"",
                               Actions=""justify-content:center;gap:1rem"" })"">
@@ -165,7 +195,7 @@ private bool isDismissed;";
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
 </BitMessage>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitMessage Truncate OnDismiss=""() => isWarningDismissed = true"" Color=""BitColor.Warning"">
     <Content>
         <b>Truncate</b> with <b>OnDismiss</b> and <b>Actions</b>.
@@ -190,11 +220,11 @@ private bool isDismissed;";
         <BitButton Variant=""BitVariant.Outline"">No</BitButton>
     </Actions>
 </BitMessage>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool isWarningDismissed;
 private bool isErrorDismissed;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitMessage Dir=""BitDir.Rtl"" Color=""BitColor.Info"">
     پیام خبری (پیش فرض). <BitLink Href=""https://bitplatform.dev"">به وبسایت ما سر بزنید.</BitLink>
 </BitMessage>

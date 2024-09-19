@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Drawing;
+
+namespace Bit.BlazorUI;
 
 public partial class BitMessage : BitComponentBase
 {
@@ -38,9 +40,21 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
+    /// Determines the alignment of the content section of the message.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitAlignment? ContentAlignment { get; set; }
+
+    /// <summary>
     /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.
     /// </summary>
     [Parameter] public string DismissIconName { get; set; } = "Cancel";
+
+    /// <summary>
+    /// Determines the elevation of the message, a scale from 1 to 24.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public int? Elevation { get; set; }
 
     /// <summary>
     /// Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.
@@ -73,6 +87,12 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
+    /// The size of Message, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
     /// </summary>
     [Parameter] public BitMessageClassStyles? Styles { get; set; }
@@ -97,6 +117,21 @@ public partial class BitMessage : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => ContentAlignment switch
+        {
+            BitAlignment.Start => "--bit-msg-con:flex-start",
+            BitAlignment.End => "--bit-msg-con:flex-end",
+            BitAlignment.Center => "--bit-msg-con:center",
+            BitAlignment.SpaceBetween => "--bit-msg-con:space-between",
+            BitAlignment.SpaceAround => "--bit-msg-con:space-around",
+            BitAlignment.SpaceEvenly => "--bit-msg-con:space-evenly",
+            BitAlignment.Baseline => "--bit-msg-con:baseline",
+            BitAlignment.Stretch => "--bit-msg-con:stretch",
+            _ => "--bit-msg-con:flex-start"
+        });
+
+        StyleBuilder.Register(() => Elevation is > 0 or < 25 ? $"--bit-msg-elv:var(--bit-shd-{Elevation.Value})" : string.Empty);
     }
 
     protected override void RegisterCssClasses()
@@ -121,7 +156,24 @@ public partial class BitMessage : BitComponentBase
             BitColor.Warning => "bit-msg-wrn",
             BitColor.SevereWarning => "bit-msg-swr",
             BitColor.Error => "bit-msg-err",
+            BitColor.PrimaryBackground => "bit-msg-pbg",
+            BitColor.SecondaryBackground => "bit-msg-sbg",
+            BitColor.TertiaryBackground => "bit-msg-tbg",
+            BitColor.PrimaryForeground => "bit-msg-pfg",
+            BitColor.SecondaryForeground => "bit-msg-sfg",
+            BitColor.TertiaryForeground => "bit-msg-tfg",
+            BitColor.PrimaryBorder => "bit-msg-pbr",
+            BitColor.SecondaryBorder => "bit-msg-sbr",
+            BitColor.TertiaryBorder => "bit-msg-tbr",
             _ => "bit-msg-inf"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-msg-sm",
+            BitSize.Medium => "bit-msg-md",
+            BitSize.Large => "bit-msg-lg",
+            _ => "bit-msg-md"
         });
     }
 
@@ -140,6 +192,15 @@ public partial class BitMessage : BitComponentBase
         [BitColor.Success] = "Completed",
         [BitColor.Warning] = "Info",
         [BitColor.SevereWarning] = "Warning",
-        [BitColor.Error] = "ErrorBadge"
+        [BitColor.Error] = "ErrorBadge",
+        [BitColor.PrimaryBackground] = "Info",
+        [BitColor.SecondaryBackground] = "Info",
+        [BitColor.TertiaryBackground] = "Info",
+        [BitColor.PrimaryForeground] = "Info",
+        [BitColor.SecondaryForeground] = "Info",
+        [BitColor.TertiaryForeground] = "Info",
+        [BitColor.PrimaryBorder] = "Info",
+        [BitColor.SecondaryBorder] = "Info",
+        [BitColor.TertiaryBorder] = "Info"
     };
 }

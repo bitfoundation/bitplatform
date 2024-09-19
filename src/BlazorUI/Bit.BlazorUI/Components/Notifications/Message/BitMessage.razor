@@ -7,17 +7,19 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
-        @if (HideIcon is false)
-        {
-            <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
-                <i style="@Styles?.Icon" class="bit-msg-ico bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
-            </div>
-        }
+        <div style="@Styles?.MainContainer" class="bit-msg-mct @Classes?.MainContainer">
+            @if (HideIcon is false)
+            {
+                <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
+                    <i style="@Styles?.Icon" class="bit-msg-ico bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
+                </div>
+            }
 
-        <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
-            <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
-                <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
-                    @(Content ?? ChildContent)
+            <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
+                <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
+                    <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
+                        @(Content ?? ChildContent)
+                    </div>
                 </div>
             </div>
         </div>
