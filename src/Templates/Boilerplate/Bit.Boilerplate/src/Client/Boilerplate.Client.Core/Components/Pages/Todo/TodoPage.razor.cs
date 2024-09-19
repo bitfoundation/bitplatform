@@ -82,9 +82,9 @@ public partial class TodoPage
         FilterViewTodoItems();
     }
 
-    private void SortTodoItems(BitDropdownItem<string> sort)
+    private void SortTodoItems(string? sort)
     {
-        selectedSort = sort.Value;
+        selectedSort = sort;
 
         FilterViewTodoItems();
     }

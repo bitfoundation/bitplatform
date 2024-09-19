@@ -37,12 +37,11 @@
                     <BitPivotItem Key="@nameof(AppStrings.Completed)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Completed)]" />
                 </BitPivot>
                 <div class="sort-drp-container">
-                    <BitDropdown Class="sort-todo-drp"
-                                 TItem="BitDropdownItem<string>"
+                    <BitDropdown IsResponsive
+                                 Class="sort-todo-drp"
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
-                                 TValue="string"
-                                 OnSelectItem="(item) => SortTodoItems(item)"
-                                 IsResponsive="true">
+                                 TItem="BitDropdownOption<string>" TValue="string"
+                                 OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)">
                         <Options>
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
                             <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
