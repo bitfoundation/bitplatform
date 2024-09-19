@@ -360,8 +360,8 @@
                          Items="GetBasicCustoms()"
                          Placeholder="Select an item"
                          NameSelectors="nameSelectors"
-                         TItem="BitDropdownCustom" TValue="string"
-                         OnValuesChange="(BitDropdownCustom[] items) => changedItem = items.SingleOrDefault()" />
+                         TItem="ProduceModel" TValue="string"
+                         OnValuesChange="(ProduceModel[] items) => changedItem = items.SingleOrDefault()" />
             <br />
             <div>Changed Value: @changedItem?.Value</div>
             <br /><br />
@@ -370,8 +370,8 @@
                          Items="GetBasicCustoms()"
                          Placeholder="Select items"
                          NameSelectors="nameSelectors"
-                         TItem="BitDropdownCustom" TValue="string"
-                         OnValuesChange="(BitDropdownCustom[] items) => changedItems = items" />
+                         TItem="ProduceModel" TValue="string"
+                         OnValuesChange="(ProduceModel[] items) => changedItems = items" />
             <br />
             <div>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</div>
             <br /><br /><br /><br />
@@ -381,7 +381,7 @@
                          DefaultValue="@string.Empty"
                          Placeholder="Select an item"
                          NameSelectors="nameSelectors"
-                         OnSelectItem="(BitDropdownCustom item) => selectedItem1 = item" />
+                         OnSelectItem="(ProduceModel item) => selectedItem1 = item" />
             <br />
             <div>Selected Value: @selectedItem1?.Value</div>
             <br /><br />
@@ -391,7 +391,7 @@
                          Placeholder="Select items"
                          DefaultValue="@string.Empty"
                          NameSelectors="nameSelectors"
-                         OnSelectItem="(BitDropdownCustom item) => selectedItem2 = item" />
+                         OnSelectItem="(ProduceModel item) => selectedItem2 = item" />
             <br />
             <div>Selected Value: @selectedItem2?.Value</div>
         </div>
@@ -497,8 +497,8 @@
                          Placeholder="Select an option"
                          Items="comboBoxCustoms"
                          NameSelectors="comboBoxNameSelectors"
-                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+                         DynamicValueGenerator="@((ProduceModel item) => item.Text ?? "")"
+                         OnDynamicAdd="(ProduceModel item) => HandleOnDynamicAdd(item)" />
             <br />
             <div>Value: @comboBoxValueSample3</div>
         </div>
@@ -514,8 +514,8 @@
                          Items="comboBoxCustoms"
                          IsResponsive="true"
                          NameSelectors="comboBoxNameSelectors"
-                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+                         DynamicValueGenerator="@((ProduceModel item) => item.Text ?? "")"
+                         OnDynamicAdd="(ProduceModel item) => HandleOnDynamicAdd(item)" />
             <br />
             <div>Value: @comboBoxValueSample4</div>
             <br /><br />
@@ -526,8 +526,8 @@
                          Items="comboBoxCustoms"
                          IsResponsive="true"
                          NameSelectors="comboBoxNameSelectors"
-                         DynamicValueGenerator="@((BitDropdownCustom item) => item.Text ?? "")"
-                         OnDynamicAdd="(BitDropdownCustom item) => HandleOnDynamicAdd(item)" />
+                         DynamicValueGenerator="@((ProduceModel item) => item.Text ?? "")"
+                         OnDynamicAdd="(ProduceModel item) => HandleOnDynamicAdd(item)" />
             <br />
             <div>Values: @string.Join(',', comboBoxValues3)</div>
         </div>
