@@ -356,6 +356,12 @@
     <data name="Home" xml:space="preserve">
     <value>Maison</value>
   </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Oups, quelque chose s'est mal passé...</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
   </data>

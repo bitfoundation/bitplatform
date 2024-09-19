@@ -6,8 +6,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
-
-
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 
     [AutoInject] protected IStorageService StorageService = default!;
@@ -39,12 +37,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
 
-
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
 
     protected bool InPrerenderSession => JSRuntime.IsInitialized() is false;
-
 
     protected sealed override void OnInitialized()
     {
@@ -204,6 +200,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         if (disposing)
         {
+            await PrerenderStateService.DisposeAsync();
             cts.Cancel();
             cts.Dispose();
         }

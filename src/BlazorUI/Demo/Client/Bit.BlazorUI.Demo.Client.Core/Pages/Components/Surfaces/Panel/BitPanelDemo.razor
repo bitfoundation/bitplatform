@@ -2,7 +2,7 @@
 
 <PageOutlet Url="components/Panel"
             Title="Panel"
-            Description="Panel component of the bit blazorui components" />
+            Description="panel component of the bit BlazorUI components" />
 
 <div>
     <ComponentDemo ComponentName="Panel"
@@ -12,7 +12,7 @@
                    ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitButton OnClick=@(() => IsBasicPanelOpen = true)>Open Panel</BitButton>
+                <BitButton OnClick="() => IsBasicPanelOpen = true">Open Panel</BitButton>
 
                 <BitPanel Classes="@panelClassStyles" @bind-IsOpen="IsBasicPanelOpen">
                     Content goes here.
@@ -25,11 +25,11 @@
                 <div class="btn-container">
                     <div>
                         <BitLabel>Panel with header text</BitLabel>
-                        <BitButton OnClick=@(() => IsPanelWithHeaderTextOpen = true)>Open Panel</BitButton>
+                        <BitButton OnClick="() => IsPanelWithHeaderTextOpen = true">Open Panel</BitButton>
                     </div>
                     <div>
                         <BitLabel>Panel with custom header content</BitLabel>
-                        <BitButton OnClick=@(() => IsPanelWithCustomHeaderOpen = true)>Open Panel</BitButton>
+                        <BitButton OnClick="() => IsPanelWithCustomHeaderOpen = true">Open Panel</BitButton>
                     </div>
                 </div>
 
@@ -74,7 +74,7 @@
         <ComponentExampleBox Title="Footer" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
                 <BitLabel>Panel with custom footer content</BitLabel>
-                <BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
+                <BitButton OnClick="() => IsPanelWithFooterOpen = true">Open Panel</BitButton>
 
                 <BitPanel Classes="@(new() { Header = "header-margin", Footer = "footer-margin" })" HeaderText="BitPanel with custom footer content" @bind-IsOpen="IsPanelWithFooterOpen">
                     <ChildContent>
@@ -90,8 +90,8 @@
                         </p>
                     </ChildContent>
                     <FooterTemplate>
-                        <BitButton OnClick=@(() => IsPanelWithFooterOpen = false)>Save</BitButton>
-                        <BitButton Variant="BitVariant.Outline" OnClick=@(() => IsPanelWithFooterOpen = false)>Close</BitButton>
+                        <BitButton OnClick="() => IsPanelWithFooterOpen = false">Save</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="() => IsPanelWithFooterOpen = false">Close</BitButton>
                     </FooterTemplate>
                 </BitPanel>
             </ExamplePreview>
@@ -99,20 +99,21 @@
 
         <ComponentExampleBox Title="Advanced options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <ExamplePreview>
-                <div class="example-desc">BitPanel has some advanced options to be customized.</div>
+                <div>BitPanel has some advanced options to be customized.</div>
+                <br /><br />
                 <div>
                     <div class="btn-container">
                         <div>
                             <BitLabel>Panel with IsBlocking = true</BitLabel>
-                            <BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
+                            <BitButton OnClick="() => IsBlockingPanelOpen = true">Open Panel</BitButton>
                         </div>
                         <div>
                             <BitLabel>Panel with IsModeless = true</BitLabel>
-                            <BitButton OnClick=@(() => IsModelessPanelOpen = true)>Open Panel</BitButton>
+                            <BitButton OnClick="() => IsModelessPanelOpen = true">Open Panel</BitButton>
                         </div>
                         <div>
                             <BitLabel>Panel with AutoToggleScroll = false</BitLabel>
-                            <BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
+                            <BitButton OnClick="() => IsAutoToggleScrollPanelOpen = true">Open Panel</BitButton>
                         </div>
                         <div>
                             <BitLabel>Panel with ShowCloseButton = false</BitLabel>
@@ -154,40 +155,43 @@
 
         <ComponentExampleBox Title="Position and size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <ExamplePreview>
-                <div class="example-desc">To set the Panel position on the page you can use the Position parameter.</div>
-                <div class="position-btn">
-                    <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
-                    <div>
+                <div>To set the Panel position on the page you can use the Position parameter.</div>
+                <br /><br />
+                <div>
+                    <div class="position-btn">
+                        <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                        <div>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Left)">Left</BitButton>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Right)">Right</BitButton>
-                    </div>
-                    <div>
+                        </div>
+                        <div>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Top)">Top</BitButton>
                         <BitButton OnClick="() => OpenPanelInPosition(BitPanelPosition.Bottom)">Bottom</BitButton>
+                        </div>
                     </div>
+                    <BitPanel Classes="@panelClassStyles" @bind-Size="CustomPanelSize" HeaderText="Panel types" @bind-IsOpen="IsOpenInPosition" Position="position">
+                        <p>
+                            BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        </p>
+                        <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
+                    </BitPanel>
                 </div>
-                <BitPanel Classes="@panelClassStyles" @bind-Size="CustomPanelSize" HeaderText="Panel types" @bind-IsOpen="IsOpenInPosition" Position="position">
-                    <p>
-                        BitPanel with custom position and size. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    </p>
-                    <BitSpinButton @bind-Value="CustomPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
-                </BitPanel>
             </ExamplePreview>
         </ComponentExampleBox>
 
         <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <ExamplePreview>
+                <div>Explore styling and class customization for BitPanel, including component styles, custom classes, and detailed styles.</div>
+                <br /><br />
                 <div>
                     <div class="btn-container">
                         <div>Component's Style & Class:</div>
-                        <br />
                         <BitButton OnClick="() => IsStyledPanelOpen = true">Open styled panel</BitButton>
                         <BitButton OnClick="() => IsClassedPanelOpen = true">Open classed panel</BitButton>
                     </div>
                     <br /><br /><br />
                     <div class="btn-container">
                         <div><b>Styles</b> & <b>Classes</b>:</div>
-                        <br />
                         <BitButton OnClick="() => IsPanelStylesOpen = true">Open panel styles</BitButton>
                         <BitButton OnClick="() => IsPanelClassesOpen = true">Open panel classes</BitButton>
                     </div>
@@ -221,58 +225,26 @@
 
         <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <ExamplePreview>
-                <BitButton Dir="BitDir.Rtl" OnClick=@(() => IsRtlPanelOpen = true)>
-                    باز کردن پنل
-                </BitButton>
+                <div>Use BitPanel in right-to-left (RTL).</div>
+                <br /><br />
+                <div>
+                    <BitButton Dir="BitDir.Rtl" OnClick="() => IsRtlPanelOpen = true">
+                        باز کردن پنل
+                    </BitButton>
 
-                <BitPanel @bind-IsOpen="IsRtlPanelOpen" 
-                          Dir="BitDir.Rtl"
-                          HeaderText="سرصفحه ی ساده"
-                          Classes="@panelClassStyles">
-                    <p>
-                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-                        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-                    </p>
-                </BitPanel>
+                    <BitPanel @bind-IsOpen="IsRtlPanelOpen"
+                              Dir="BitDir.Rtl"
+                              HeaderText="سرصفحه ی ساده"
+                              Classes="@panelClassStyles">
+                        <p>
+                            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+                            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+                            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+                            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        </p>
+                    </BitPanel>
+                </div>
             </ExamplePreview>
         </ComponentExampleBox>
     </ComponentDemo>
 </div>
-
-@code {
-    private BitPanelClassStyles panelClassStyles = new() { Header = "header-margin" };
-
-    private bool IsBasicPanelOpen = false;
-
-    private bool IsPanelWithHeaderTextOpen = false;
-    private bool IsPanelWithCustomHeaderOpen = false;
-
-    private bool IsPanelWithFooterOpen = false;
-
-    private bool IsBlockingPanelOpen = false;
-    private bool IsModelessPanelOpen = false;
-    private bool IsAutoToggleScrollPanelOpen = false;
-
-    private bool IsOpenInPosition = false;
-
-    private bool IsStyledPanelOpen = false;
-    private bool IsClassedPanelOpen = false;
-    private bool IsPanelStylesOpen = false;
-    private bool IsPanelClassesOpen = false;
-
-    private bool IsRtlPanelOpen = false;
-
-    private BitPanel bitPanelRef = default!;
-
-    private double CustomPanelSize = 320;
-
-    private BitPanelPosition position;
-
-    private void OpenPanelInPosition(BitPanelPosition positionValue)
-    {
-        IsOpenInPosition = true;
-        position = positionValue;
-    }
-}

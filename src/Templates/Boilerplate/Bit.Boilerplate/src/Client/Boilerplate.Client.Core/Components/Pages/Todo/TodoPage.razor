@@ -21,7 +21,7 @@
                           Class="add-todo-input"
                           Immediate DebounceTime="300"
                           Placeholder="@Localizer[nameof(AppStrings.TodoAddPlaceholder)]" />
-            <BitButton IsLoading="isAdding"
+            <BitButton AutoLoading
                        OnClick="WrapHandled(AddTodoItem)"
                        Title="@Localizer[nameof(AppStrings.Add)]"
                        IsEnabled="(string.IsNullOrWhiteSpace(newTodoTitle) is false)">
@@ -37,11 +37,15 @@
                     <BitPivotItem Key="@nameof(AppStrings.Completed)" Class="todo-pivot-tab" HeaderText="@Localizer[nameof(AppStrings.Completed)]" />
                 </BitPivot>
                 <div class="sort-drp-container">
-                    <BitDropdown Class="sort-todo-drp"
-                                 Items="sortItems"
-                                 OnSelectItem="(BitDropdownItem<string> item) => SortTodoItems(item)"
-                                 DefaultValue="@sortItems[0].Value"
-                                 IsResponsive="true">
+                    <BitDropdown IsResponsive
+                                 Class="sort-todo-drp"
+                                 DefaultValue="nameof(AppStrings.Alphabetical)"
+                                 TItem="BitDropdownOption<string>" TValue="string"
+                                 OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)">
+                        <Options>
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
+                        </Options>
                         <CaretDownTemplate>
                             <BitIcon IconName="@BitIconName.Sort" Class="sort-todo-icn" />
                         </CaretDownTemplate>

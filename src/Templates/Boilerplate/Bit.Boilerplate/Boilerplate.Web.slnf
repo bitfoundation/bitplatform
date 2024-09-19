@@ -2,11 +2,11 @@
   "solution": {
     "path": "Boilerplate.sln",
     "projects": [
-      "src\\Server\\Boilerplate.Server.Web\\Boilerplate.Server.Web.csproj",
-      "src\\Server\\Boilerplate.Server.Api\\Boilerplate.Server.Api.csproj",
-      "src\\Shared\\Boilerplate.Shared.csproj",
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
+      "src\\Server\\Boilerplate.Server.Api\\Boilerplate.Server.Api.csproj",
+      "src\\Server\\Boilerplate.Server.Web\\Boilerplate.Server.Web.csproj",
+      "src\\Shared\\Boilerplate.Shared.csproj",
       "src\\Tests\\Boilerplate.Tests.csproj"
     ]
   }

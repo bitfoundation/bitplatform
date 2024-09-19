@@ -1,6 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-tgl {
+    width: fit-content;
     font-size: inherit;
     font-weight: inherit;
     font-family: $tg-font-family;
@@ -70,14 +71,15 @@
 
 .bit-tgl-lbl {
     margin: 0;
+    cursor: pointer;
     box-shadow: none;
     font-weight: 600;
+    color: $clr-fg-pri;
     display: inline-block;
     box-sizing: border-box;
     font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
 }
 
 .bit-tgl-cnt {
@@ -127,6 +129,7 @@
 
 .bit-tgl-stx {
     padding: 0;
+    cursor: pointer;
     font-weight: 400;
     user-select: none;
     margin: 0 spacing(1);
@@ -156,6 +159,14 @@
     }
 }
 
+.bit-tgl-fwi {
+    width: 100%;
+
+    .bit-tgl-lbl {
+        flex-grow: 1;
+    }
+}
+
 .bit-tgl-inl {
     display: flex;
     gap: spacing(2);
@@ -169,5 +180,9 @@
 
     &.bit-tgl-inl {
         flex-direction: row-reverse;
+    }
+
+    .bit-tgl-lbl {
+        text-align: end;
     }
 }
