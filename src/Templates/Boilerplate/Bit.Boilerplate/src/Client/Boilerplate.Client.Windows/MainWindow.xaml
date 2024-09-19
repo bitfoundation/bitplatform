@@ -10,14 +10,12 @@
     Background="{DynamicResource PrimaryBgColor}"
     WindowState="Maximized"
     mc:Ignorable="d">
-    <Grid>
-        <blazor:BlazorWebView
+    <blazor:BlazorWebView
             x:Name="AppWebView"
             x:FieldModifier="public"
             HostPage="wwwroot\index.html">
-            <blazor:BlazorWebView.RootComponents>
-                <blazor:RootComponent ComponentType="{x:Type core:Routes}" Selector="#app-container" />
-            </blazor:BlazorWebView.RootComponents>
-        </blazor:BlazorWebView>
-    </Grid>
+        <blazor:BlazorWebView.RootComponents>
+            <blazor:RootComponent ComponentType="{x:Type core:Routes}" Selector="#app-container" />
+        </blazor:BlazorWebView.RootComponents>
+    </blazor:BlazorWebView>
 </Window>

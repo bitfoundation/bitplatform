@@ -52,6 +52,7 @@
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
         <!--/+:msbuild-conditional:noEmit -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
         <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
