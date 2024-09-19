@@ -32,7 +32,7 @@
 
 .bit-msg-ict {
     display: flex;
-    margin: var(--bit-msg-margin);
+    margin: var(--bit-msg-ico-margin);
     margin-inline-end: 0;
 }
 
@@ -56,8 +56,8 @@
     flex-grow: 1;
     min-width: 0;
     display: flex;
-    margin: var(--bit-msg-margin);
     flex-direction: column;
+    margin: var(--bit-msg-margin);
 }
 
 .bit-msg-cnt {
@@ -199,17 +199,20 @@
 .bit-msg-sm {
     --bit-msg-margin: #{spacing(0.5)};
     --bit-msg-fontsize: #{spacing(1.5)};
+    --bit-msg-ico-margin: #{spacing(1)};
     --bit-msg-ico-fontsize: #{spacing(1.5)};
 }
 
 .bit-msg-md {
     --bit-msg-margin: #{spacing(1)};
     --bit-msg-fontsize: #{spacing(1.75)};
+    --bit-msg-ico-margin: #{spacing(1.2)};
     --bit-msg-ico-fontsize: #{spacing(2)};
 }
 
 .bit-msg-lg {
     --bit-msg-margin: #{spacing(2)};
     --bit-msg-fontsize: #{spacing(2.0)};
+    --bit-msg-ico-margin: #{spacing(2)};
     --bit-msg-ico-fontsize: #{spacing(2.5)};
 }
