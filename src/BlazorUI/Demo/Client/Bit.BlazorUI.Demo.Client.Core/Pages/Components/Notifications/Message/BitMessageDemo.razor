@@ -28,6 +28,21 @@
                 <BitMessage Color="BitColor.SevereWarning">SevereWarning.</BitMessage>
                 <BitMessage Color="BitColor.Error">Error.</BitMessage>
             </div>
+            <div style="background:var(--bit-clr-fg-sec);padding:1rem;margin: 1rem 0;">
+                <div class="box">
+                    <BitMessage Color="BitColor.PrimaryBackground">PrimaryBackground.</BitMessage>
+                    <BitMessage Color="BitColor.SecondaryBackground">SecondaryBackground.</BitMessage>
+                    <BitMessage Color="BitColor.TertiaryBackground">TertiaryBackground.</BitMessage>
+                </div>
+            </div>
+            <div class="box">
+                <BitMessage Color="BitColor.PrimaryForeground">PrimaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.SecondaryForeground">SecondaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.TertiaryForeground">TertiaryForeground.</BitMessage>
+                <BitMessage Color="BitColor.PrimaryBorder">PrimaryBorder.</BitMessage>
+                <BitMessage Color="BitColor.SecondaryBorder">SecondaryBorder.</BitMessage>
+                <BitMessage Color="BitColor.TertiaryBorder">TertiaryBorder.</BitMessage>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -71,7 +86,28 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Alignment" RazorCode="@example4RazorCode" Id="example4">
+        <ExamplePreview>
+            <div class="box">
+                <BitMessage Alignment="BitAlignment.Start" Color="BitColor.Primary">Start</BitMessage>
+                <BitMessage Alignment="BitAlignment.Center" Color="BitColor.Secondary">Center</BitMessage>
+                <BitMessage Alignment="BitAlignment.End" Color="BitColor.Tertiary">End</BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Elevation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <ExamplePreview>
+            <div class="box">
+                <BitMessage Elevation="(int)elevation">Elevated Message</BitMessage>
+
+                <br />
+                <BitSlider Label="Elevation" Min="0" Max="24" Step="1" @bind-Value="elevation" />
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Multiline" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <BitMessage Multiline Color="BitColor.Success">
                 <b>Multiline</b> parameter makes the content to be rendered in multiple lines.
@@ -80,7 +116,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Truncate" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Truncate" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <BitMessage Truncate Color="BitColor.Warning">
                 <b>Truncate</b> parameter cut the overflowed content at the end of the single line Message.
@@ -90,7 +126,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Dismiss" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ComponentExampleBox Title="Dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             @if (isDismissed is false)
             {
@@ -105,7 +141,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Actions" RazorCode="@example7RazorCode" Id="example7">
+    <ComponentExampleBox Title="Actions" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <BitMessage>
                 <Actions>
@@ -120,7 +156,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="HideIcon" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="HideIcon" RazorCode="@example10RazorCode" Id="example10">
         <ExamplePreview>
             <div class="box">
                 <div>HideIcon parameter removes the icon:</div>
@@ -133,19 +169,19 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Icons" RazorCode="@example9RazorCode" Id="example9">
+    <ComponentExampleBox Title="Icons" RazorCode="@example11RazorCode" Id="example11">
         <ExamplePreview>
             <BitMessage Color="BitColor.Success" IconName="@BitIconName.CheckMark">
                 Message with a custom icon.
             </BitMessage>
             <br />
-            <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" DismissIconName="@BitIconName.Blocked2Solid">
+            <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" DismissIcon="@BitIconName.Blocked2Solid">
                 Message with a custom dismiss icon.
             </BitMessage>
             <br />
             <BitMessage Truncate Color="BitColor.Warning"
-                        ExpandIconName="@BitIconName.ChevronDownEnd"
-                        CollapseIconName="@BitIconName.ChevronUpEnd">
+                        ExpandIcon="@BitIconName.ChevronDownEnd"
+                        CollapseIcon="@BitIconName.ChevronUpEnd">
                 Message with custom expand and collapse icon.
                 Truncation is not available if you use multiline and should be used sparingly.
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
@@ -153,56 +189,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
-        <ExamplePreview>
-            <div>
-                <div>Component's Style & Class:</div>
-                <br />
-                <BitMessage Color="BitColor.Info" Multiline OnDismiss="() => {}"
-                            Style="padding:8px;color:red;">
-                    <b>Styled Message.</b>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-                </BitMessage>
-                <br />
-                <BitMessage Color="BitColor.Success" Truncate Class="custom-class">
-                    <b>Classed Message.</b>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-                </BitMessage>
-                <br />
-                <br />
-                <br />
-                <div><b>Styles</b> & <b>Classes</b>:</div>
-                <br />
-                <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" Multiline
-                            Styles="@(new() { Root="padding:1rem",
-                                              IconContainer="line-height:1.25",
-                                              Content="color:pink",
-                                              ContentContainer="margin:0 10px",
-                                              DismissIcon="font-size:1rem",
-                                              Actions="justify-content:center;gap:1rem" })">
-                    <Content>
-                        <b>Styles.</b>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-                    </Content>
-                    <Actions>
-                        <BitButton Variant="BitVariant.Text">Ok</BitButton>
-                        <BitButton Variant="BitVariant.Text">Cancel</BitButton>
-                    </Actions>
-                </BitMessage>
-                <br />
-                <BitMessage Color="BitColor.SevereWarning" OnDismiss="() => {}" Truncate
-                            Classes="@(new() { Icon="custom-icon",
-                                               Content="custom-content",
-                                               ExpanderIcon="custom-expander-icon",
-                                               DismissIcon="custom-dismiss-icon" })">
-                    <b>Classes.</b>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
-                </BitMessage>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Advanced" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="Advanced" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <ExamplePreview>
             @if (isWarningDismissed is false)
             {
@@ -246,7 +233,66 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="Size" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div class="box">
+                <BitMessage Size="BitSize.Small" Color="BitColor.Primary">Small</BitMessage>
+                <BitMessage Size="BitSize.Medium" Color="BitColor.Secondary">Medium</BitMessage>
+                <BitMessage Size="BitSize.Large" Color="BitColor.Tertiary">Large</BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+        <ExamplePreview>
+            <div>
+                <div>Component's Style & Class:</div>
+                <br />
+                <BitMessage Color="BitColor.Info" Multiline OnDismiss="() => {}"
+                            Style="padding:8px;color:red;">
+                    <b>Styled Message.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+                <br />
+                <BitMessage Color="BitColor.Success" Truncate Class="custom-class">
+                    <b>Classed Message.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+                <br />
+                <br />
+                <br />
+                <div><b>Styles</b> & <b>Classes</b>:</div>
+                <br />
+                <BitMessage Color="BitColor.Warning" OnDismiss="() => {}" Multiline
+                            Styles="@(new() { Root="padding:1rem",
+                                              IconContainer="line-height:1.25",
+                                              Content="color:blueviolet",
+                                              ContentContainer="margin:0 10px",
+                                              DismissIcon="font-size:1rem",
+                                              Actions="justify-content:center;gap:1rem" })">
+                    <Content>
+                        <b>Styles.</b>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                    </Content>
+                    <Actions>
+                        <BitButton Variant="BitVariant.Text">Ok</BitButton>
+                        <BitButton Variant="BitVariant.Text">Cancel</BitButton>
+                    </Actions>
+                </BitMessage>
+                <br />
+                <BitMessage Color="BitColor.SevereWarning" OnDismiss="() => {}" Truncate
+                            Classes="@(new() { Icon="custom-icon",
+                                               Content="custom-content",
+                                               ExpanderIcon="custom-expander-icon",
+                                               DismissIcon="custom-dismiss-icon" })">
+                    <b>Classes.</b>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi luctus, purus a lobortis tristique, odio augue pharetra metus, ac placerat nunc mi nec dui. Vestibulum aliquam et nunc semper scelerisque. Curabitur vitae orci nec quam condimentum porttitor et sed lacus. Vivamus ac efficitur leo. Cras faucibus mauris libero, ac placerat erat euismod et. Donec pulvinar commodo odio sit amet faucibus. In hac habitasse platea dictumst. Duis eu ante commodo, condimentum nibh pellentesque, laoreet enim. Fusce massa lorem, ultrices eu mi a, fermentum suscipit magna. Integer porta purus pulvinar, hendrerit felis eget, condimentum mauris.
+                </BitMessage>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <ExamplePreview>
             <div class="box">
                 <BitMessage Dir="BitDir.Rtl" Color="BitColor.Info">
