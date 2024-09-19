@@ -15,7 +15,7 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
-        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.TryAddSessioned<IPrerenderStateService, PrerenderStateService>();
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -27,6 +27,17 @@ public static partial class IServiceCollectionExtensions
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
+        services.TryAddTransient<Func<HttpClientHandler, HttpMessageHandler>>(serviceProvider => httpClientHandler =>
+        {
+            return ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [httpClientHandler])])])]);
+        });
+        services.TryAddTransient(serviceProvider =>
+        {
+            return serviceProvider.GetRequiredService<Func<HttpClientHandler, HttpMessageHandler>>().Invoke(serviceProvider.GetRequiredService<HttpClientHandler>());
+        });
         services.TryAddSessioned<HttpClientHandler>();
 
         // The following code build chain of http message handlers, it uses HttpClientHandler to send requests to the server by default,
