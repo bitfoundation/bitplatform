@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitModal : BitComponentBase, IAsyncDisposable
 {
@@ -25,11 +23,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool AbsolutePosition { get; set; }
-
-    /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
-    /// </summary>
-    [Parameter] public bool? Alert { get; set; }
 
     /// <summary>
     /// Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).
@@ -59,17 +52,25 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Makes the Modal height 100% of its parent container.
     /// </summary>
-    [Parameter] public bool FullHeight { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool FullHeight { get; set; }
 
     /// <summary>
     /// Makes the Modal width and height 100% of its parent container.
     /// </summary>
-    [Parameter] public bool FullSize { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool FullSize { get; set; }
 
     /// <summary>
     /// Makes the Modal width 100% of its parent container.
     /// </summary>
-    [Parameter] public bool FullWidth { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// </summary>
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Modal is displayed.
@@ -90,7 +91,8 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Position of the Modal on the screen.
     /// </summary>
-    [Parameter] public BitModalPosition Position { get; set; } = BitModalPosition.Center;
+    [Parameter, ResetClassBuilder]
+    public BitModalPosition? Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
@@ -121,6 +123,23 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+
+        ClassBuilder.Register(() => FullSize || FullHeight ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => FullSize || FullWidth ? "bit-mdl-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => Position switch
+        {
+            BitModalPosition.Center => "bit-mdl-ctr",
+            BitModalPosition.TopLeft => "bit-mdl-tl",
+            BitModalPosition.TopCenter => "bit-mdl-tc",
+            BitModalPosition.TopRight => "bit-mdl-tr",
+            BitModalPosition.CenterLeft => "bit-mdl-cl",
+            BitModalPosition.CenterRight => "bit-mdl-cr",
+            BitModalPosition.BottomLeft => "bit-mdl-bl",
+            BitModalPosition.BottomCenter => "bit-mdl-bc",
+            BitModalPosition.BottomRight => "bit-mdl-br",
+            _ => "bit-mdl-ctr"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -183,37 +202,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         if (await AssignIsOpen(false) is false) return;
 
         await OnDismiss.InvokeAsync(e);
-    }
-
-    private string GetPositionClass() => Position switch
-    {
-        BitModalPosition.Center => "bit-mdl-ctr",
-        BitModalPosition.TopLeft => "bit-mdl-tl",
-        BitModalPosition.TopCenter => "bit-mdl-tc",
-        BitModalPosition.TopRight => "bit-mdl-tr",
-        BitModalPosition.CenterLeft => "bit-mdl-cl",
-        BitModalPosition.CenterRight => "bit-mdl-cr",
-        BitModalPosition.BottomLeft => "bit-mdl-bl",
-        BitModalPosition.BottomCenter => "bit-mdl-bc",
-        BitModalPosition.BottomRight => "bit-mdl-br",
-        _ => "bit-mdl-ctr",
-    };
-
-    private string GetContentClasses()
-    {
-        StringBuilder className = new StringBuilder();
-
-        className.Append("bit-mdl-ctn");
-
-        className.Append(FullSize || FullHeight ? " bit-mdl-fhe" : string.Empty);
-        className.Append(FullSize || FullWidth ? " bit-mdl-fwi" : string.Empty);
-
-        if (Classes?.Content.HasValue() ?? false)
-        {
-            className.Append(' ').Append(Classes?.Content);
-        }
-
-        return className.ToString();
     }
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";

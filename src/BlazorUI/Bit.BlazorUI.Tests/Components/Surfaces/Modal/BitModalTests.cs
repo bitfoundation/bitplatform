@@ -17,7 +17,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.Alert, isAlert);
+            parameters.Add(p => p.IsAlert, isAlert);
             parameters.Add(p => p.IsOpen, true);
         });
 

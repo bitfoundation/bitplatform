@@ -20,13 +20,6 @@ public partial class BitModalDemo
         },
         new()
         {
-            Name = "Alert",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.",
-        },
-        new()
-        {
             Name = "Blocking",
             Type = "bool",
             DefaultValue = "false",
@@ -45,8 +38,8 @@ public partial class BitModalDemo
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitModal component.",
+            LinkType = LinkType.Link,
             Href = "#modal-class-styles",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -85,6 +78,13 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "IsAlert",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.",
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -106,11 +106,11 @@ public partial class BitModalDemo
         new()
         {
             Name = "Position",
-            Type = "BitModalPosition",
-            LinkType = LinkType.Link,
-            Href = "#component-position-enum",
-            DefaultValue = "BitModalPosition.Center",
+            Type = "BitModalPosition?",
+            DefaultValue = "null",
             Description = "Position of the Modal on the screen.",
+            LinkType = LinkType.Link,
+            Href = "#modal-position-enum",
         },
         new()
         {
@@ -125,8 +125,8 @@ public partial class BitModalDemo
             Type = "BitModalClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitModal component.",
+            LinkType = LinkType.Link,
             Href = "#modal-class-styles",
-            LinkType = LinkType.Link
         },
         new()
         {
@@ -195,7 +195,7 @@ public partial class BitModalDemo
     [
         new()
         {
-            Id = "component-position-enum",
+            Id = "modal-position-enum",
             Name = "BitModalPosition",
             Description = "",
             Items =
