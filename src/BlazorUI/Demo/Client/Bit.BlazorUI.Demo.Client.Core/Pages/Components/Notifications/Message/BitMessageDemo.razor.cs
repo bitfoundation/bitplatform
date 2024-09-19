@@ -406,6 +406,13 @@ public partial class BitMessageDemo
                 },
                 new()
                 {
+                    Name = "MainContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the main container of the BitMessage."
+                },
+                new()
+                {
                     Name = "ContentContainer",
                     Type = "string?",
                     DefaultValue = "null",
