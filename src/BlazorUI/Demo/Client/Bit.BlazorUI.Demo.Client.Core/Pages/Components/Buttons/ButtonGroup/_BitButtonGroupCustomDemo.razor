@@ -265,7 +265,7 @@
             <div>Component's ItemClick event:</div>
             <BitButtonGroup Items="basicCustoms"
                             NameSelectors="nameSelector"
-                            OnItemClick="(ButtonGroupActionItem item) => clickedCustom = item.Name" />
+                            OnItemClick="(OperationModel item) => clickedCustom = item.Name" />
             <div>Clicked item: <b>@clickedCustom</b></div>
         </div>
         <br /><br />
