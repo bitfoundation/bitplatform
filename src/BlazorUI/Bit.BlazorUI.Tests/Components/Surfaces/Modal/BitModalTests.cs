@@ -17,7 +17,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsAlert, isAlert);
+            parameters.Add(p => p.Alert, isAlert);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -33,7 +33,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, isBlocking);
             parameters.Add(p => p.IsOpen, isModalOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
@@ -56,7 +56,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsModeless, isModeless);
+            parameters.Add(p => p.Modeless, isModeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
