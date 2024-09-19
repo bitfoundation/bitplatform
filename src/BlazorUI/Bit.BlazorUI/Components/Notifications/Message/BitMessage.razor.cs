@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitMessage : BitComponentBase
 {
