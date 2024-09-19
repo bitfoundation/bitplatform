@@ -32,11 +32,10 @@ self.serverHandledUrls = [
     /\/api.fda.gov/
 ];
 
+self.isPassive = true;
 self.defaultUrl = "/";
-self.errorTolerance = 'lax';
 self.caseInsensitiveUrl = true;
-self.enableIntegrityCheck = false;
 self.noPrerenderQuery = 'no-prerender=true';
-self.isPassive = self.disablePassiveFirstBoot = true;
+self.disablePassiveFirstBoot = true;
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

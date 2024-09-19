@@ -9,7 +9,7 @@
         <HybridGlobalization>true</HybridGlobalization>
         <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
         <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <BlazorCacheBootResources>false</BlazorCacheBootResources>
+        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     </PropertyGroup>
