@@ -8,26 +8,26 @@
     box-sizing: border-box;
     justify-content: center;
     font-family: $tg-font-family;
-    box-shadow: var(--bit-msg-elv);
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
     font-size: var(--bit-msg-fontsize);
+    box-shadow: var(--bit-msg-boxshadow);
 }
 
-.bit-msg-con {
+.bit-msg-rct {
     display: flex;
     align-items: start;
 }
 
-.bit-msg-mct {
+.bit-msg-con {
     width: 100%;
     display: flex;
     overflow: hidden;
     align-items: start;
     line-height: normal;
     padding: 0 spacing(0.5);
-    justify-content: var(--bit-msg-con);
+    justify-content: var(--bit-msg-justifycontent);
 }
 
 .bit-msg-ict {
@@ -111,43 +111,43 @@
 }
 
 .bit-msg-pri {
-    --bit-msg-clr: #{$clr-pri-text};
     --bit-msg-clr-bg: #{$clr-pri};
+    --bit-msg-clr: #{$clr-pri-text};
 }
 
 .bit-msg-sec {
-    --bit-msg-clr: #{$clr-sec-text};
     --bit-msg-clr-bg: #{$clr-sec};
+    --bit-msg-clr: #{$clr-sec-text};
 }
 
 .bit-msg-ter {
-    --bit-msg-clr: #{$clr-ter-text};
     --bit-msg-clr-bg: #{$clr-ter};
+    --bit-msg-clr: #{$clr-ter-text};
 }
 
 .bit-msg-inf {
-    --bit-msg-clr: #{$clr-inf-text};
     --bit-msg-clr-bg: #{$clr-inf};
+    --bit-msg-clr: #{$clr-inf-text};
 }
 
 .bit-msg-suc {
-    --bit-msg-clr: #{$clr-suc-text};
     --bit-msg-clr-bg: #{$clr-suc};
+    --bit-msg-clr: #{$clr-suc-text};
 }
 
 .bit-msg-wrn {
-    --bit-msg-clr: #{$clr-wrn-text};
     --bit-msg-clr-bg: #{$clr-wrn};
+    --bit-msg-clr: #{$clr-wrn-text};
 }
 
 .bit-msg-swr {
-    --bit-msg-clr: #{$clr-swr-text};
     --bit-msg-clr-bg: #{$clr-swr};
+    --bit-msg-clr: #{$clr-swr-text};
 }
 
 .bit-msg-err {
-    --bit-msg-clr: #{$clr-err-text};
     --bit-msg-clr-bg: #{$clr-err};
+    --bit-msg-clr: #{$clr-err-text};
 }
 
 
@@ -198,13 +198,13 @@
 
 .bit-msg-sm {
     --bit-msg-margin: #{spacing(0.5)};
-    --bit-msg-fontsize: #{spacing(1)};
+    --bit-msg-fontsize: #{spacing(1.5)};
     --bit-msg-ico-fontsize: #{spacing(1.5)};
 }
 
 .bit-msg-md {
     --bit-msg-margin: #{spacing(1)};
-    --bit-msg-fontsize: #{spacing(1.5)};
+    --bit-msg-fontsize: #{spacing(1.75)};
     --bit-msg-ico-fontsize: #{spacing(2)};
 }
 

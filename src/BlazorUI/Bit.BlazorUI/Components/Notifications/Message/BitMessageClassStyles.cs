@@ -8,7 +8,12 @@ public class BitMessageClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the main container of the BitMessage.
+    /// Custom CSS classes/styles for the root container of the BitMessage.
+    /// </summary>
+    public string? RootContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon and content container of the BitMessage.
     /// </summary>
     public string? Container { get; set; }
 
@@ -21,11 +26,6 @@ public class BitMessageClassStyles
     /// Custom CSS classes/styles for the icon element of the BitMessage.
     /// </summary>
     public string? Icon { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the main container of the BitMessage.
-    /// </summary>
-    public string? MainContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the content container of the BitMessage.

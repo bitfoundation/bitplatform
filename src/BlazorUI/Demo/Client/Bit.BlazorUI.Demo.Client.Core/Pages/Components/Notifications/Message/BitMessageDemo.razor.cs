@@ -13,6 +13,15 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Determines the alignment of the content section of the message.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -29,7 +38,7 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "CollapseIconName",
+            Name = "CollapseIcon",
             Type = "string",
             DefaultValue = "DoubleChevronUp",
             Description = "Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.",
@@ -52,16 +61,7 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "ContentAlignment",
-            Type = "BitAlignment?",
-            DefaultValue = "null",
-            Description = "Determines the alignment of the content section of the message.",
-            LinkType = LinkType.Link,
-            Href = "#alignment-enum",
-        },
-        new()
-        {
-            Name = "DismissIconName",
+            Name = "DismissIcon",
             Type = "string",
             DefaultValue = "Cancel",
             Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.",
@@ -75,7 +75,7 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "ExpandIconName",
+            Name = "ExpandIcon",
             Type = "string",
             DefaultValue = "DoubleChevronDown",
             Description = "Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.",
@@ -385,10 +385,17 @@ public partial class BitMessageDemo
                 },
                 new()
                 {
+                    Name = "RootContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root container of the BitMessage."
+                },
+                new()
+                {
                     Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the main container of the BitMessage."
+                    Description = "Custom CSS classes/styles for the icon and content container of the BitMessage."
                 },
                 new()
                 {
@@ -403,13 +410,6 @@ public partial class BitMessageDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the icon element of the BitMessage."
-                },
-                new()
-                {
-                    Name = "MainContainer",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the main container of the BitMessage."
                 },
                 new()
                 {
