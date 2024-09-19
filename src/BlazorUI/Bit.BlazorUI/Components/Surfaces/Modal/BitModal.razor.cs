@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Text;
+
+namespace Bit.BlazorUI;
 
 public partial class BitModal : BitComponentBase, IAsyncDisposable
 {
@@ -25,6 +27,16 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// </summary>
+    [Parameter] public bool? Alert { get; set; }
+
+    /// <summary>
+    /// Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).
+    /// </summary>
+    [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -40,24 +52,24 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     [Parameter] public string? DragElementSelector { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
-    /// </summary>
-    [Parameter] public bool? IsAlert { get; set; }
-
-    /// <summary>
-    /// Whether the modal can be light dismissed by clicking outside the Modal (on the overlay).
-    /// </summary>
-    [Parameter] public bool IsBlocking { get; set; }
-
-    /// <summary>
     /// Whether the Modal can be dragged around.
     /// </summary>
-    [Parameter] public bool IsDraggable { get; set; }
+    [Parameter] public bool Draggable { get; set; }
 
     /// <summary>
-    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// Makes the Modal height 100% of its parent container.
     /// </summary>
-    [Parameter] public bool IsModeless { get; set; }
+    [Parameter] public bool FullHeight { get; set; }
+
+    /// <summary>
+    /// Makes the Modal width and height 100% of its parent container.
+    /// </summary>
+    [Parameter] public bool FullSize { get; set; }
+
+    /// <summary>
+    /// Makes the Modal width 100% of its parent container.
+    /// </summary>
+    [Parameter] public bool FullWidth { get; set; }
 
     /// <summary>
     /// Whether the Modal is displayed.
@@ -66,12 +78,17 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// </summary>
+    [Parameter] public bool Modeless { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// Position of the modal on the screen.
+    /// Position of the Modal on the screen.
     /// </summary>
     [Parameter] public BitModalPosition Position { get; set; } = BitModalPosition.Center;
 
@@ -130,7 +147,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         if (IsOpen)
         {
-            if (IsDraggable)
+            if (Draggable)
             {
                 _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
@@ -161,7 +178,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     private async Task CloseModal(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsBlocking is not false) return;
+        if (Blocking is not false) return;
 
         if (await AssignIsOpen(false) is false) return;
 
@@ -181,6 +198,23 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         BitModalPosition.BottomRight => "bit-mdl-br",
         _ => "bit-mdl-ctr",
     };
+
+    private string GetContentClasses()
+    {
+        StringBuilder className = new StringBuilder();
+
+        className.Append("bit-mdl-ctn");
+
+        className.Append(FullSize || FullHeight ? " bit-mdl-fhe" : string.Empty);
+        className.Append(FullSize || FullWidth ? " bit-mdl-fwi" : string.Empty);
+
+        if (Classes?.Content.HasValue() ?? false)
+        {
+            className.Append(' ').Append(Classes?.Content);
+        }
+
+        return className.ToString();
+    }
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
 
