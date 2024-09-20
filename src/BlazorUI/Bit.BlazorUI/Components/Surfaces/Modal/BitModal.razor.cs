@@ -25,6 +25,11 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool AbsolutePosition { get; set; }
 
     /// <summary>
+    /// Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).
+    /// </summary>
+    [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
     /// The content of the Modal, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -40,24 +45,32 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     [Parameter] public string? DragElementSelector { get; set; }
 
     /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by IsBlocking and IsModeless.
-    /// </summary>
-    [Parameter] public bool? IsAlert { get; set; }
-
-    /// <summary>
-    /// Whether the modal can be light dismissed by clicking outside the Modal (on the overlay).
-    /// </summary>
-    [Parameter] public bool IsBlocking { get; set; }
-
-    /// <summary>
     /// Whether the Modal can be dragged around.
     /// </summary>
-    [Parameter] public bool IsDraggable { get; set; }
+    [Parameter] public bool Draggable { get; set; }
 
     /// <summary>
-    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// Makes the Modal height 100% of its parent container.
     /// </summary>
-    [Parameter] public bool IsModeless { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool FullHeight { get; set; }
+
+    /// <summary>
+    /// Makes the Modal width and height 100% of its parent container.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullSize { get; set; }
+
+    /// <summary>
+    /// Makes the Modal width 100% of its parent container.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// </summary>
+    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Modal is displayed.
@@ -66,14 +79,20 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// </summary>
+    [Parameter] public bool Modeless { get; set; }
+
+    /// <summary>
     /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// Position of the modal on the screen.
+    /// Position of the Modal on the screen.
     /// </summary>
-    [Parameter] public BitModalPosition Position { get; set; } = BitModalPosition.Center;
+    [Parameter, ResetClassBuilder]
+    public BitModalPosition? Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
@@ -104,6 +123,23 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+
+        ClassBuilder.Register(() => FullSize || FullHeight ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => FullSize || FullWidth ? "bit-mdl-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => Position switch
+        {
+            BitModalPosition.Center => "bit-mdl-ctr",
+            BitModalPosition.TopLeft => "bit-mdl-tl",
+            BitModalPosition.TopCenter => "bit-mdl-tc",
+            BitModalPosition.TopRight => "bit-mdl-tr",
+            BitModalPosition.CenterLeft => "bit-mdl-cl",
+            BitModalPosition.CenterRight => "bit-mdl-cr",
+            BitModalPosition.BottomLeft => "bit-mdl-bl",
+            BitModalPosition.BottomCenter => "bit-mdl-bc",
+            BitModalPosition.BottomRight => "bit-mdl-br",
+            _ => "bit-mdl-ctr"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -130,7 +166,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         if (IsOpen)
         {
-            if (IsDraggable)
+            if (Draggable)
             {
                 _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
@@ -161,26 +197,12 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     private async Task CloseModal(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (IsBlocking is not false) return;
+        if (Blocking is not false) return;
 
         if (await AssignIsOpen(false) is false) return;
 
         await OnDismiss.InvokeAsync(e);
     }
-
-    private string GetPositionClass() => Position switch
-    {
-        BitModalPosition.Center => "bit-mdl-ctr",
-        BitModalPosition.TopLeft => "bit-mdl-tl",
-        BitModalPosition.TopCenter => "bit-mdl-tc",
-        BitModalPosition.TopRight => "bit-mdl-tr",
-        BitModalPosition.CenterLeft => "bit-mdl-cl",
-        BitModalPosition.CenterRight => "bit-mdl-cr",
-        BitModalPosition.BottomLeft => "bit-mdl-bl",
-        BitModalPosition.BottomCenter => "bit-mdl-bc",
-        BitModalPosition.BottomRight => "bit-mdl-br",
-        _ => "bit-mdl-ctr",
-    };
 
     private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
 

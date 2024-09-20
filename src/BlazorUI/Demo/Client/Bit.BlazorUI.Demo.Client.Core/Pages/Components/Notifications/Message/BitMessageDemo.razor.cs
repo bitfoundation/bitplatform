@@ -13,6 +13,15 @@ public partial class BitMessageDemo
         },
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Determines the alignment of the content section of the message.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -29,7 +38,7 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "CollapseIconName",
+            Name = "CollapseIcon",
             Type = "string",
             DefaultValue = "DoubleChevronUp",
             Description = "Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.",
@@ -52,14 +61,21 @@ public partial class BitMessageDemo
         },
         new()
         {
-            Name = "DismissIconName",
+            Name = "DismissIcon",
             Type = "string",
             DefaultValue = "Cancel",
             Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.",
         },
         new()
         {
-            Name = "ExpandIconName",
+            Name = "Elevation",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Determines the elevation of the message, a scale from 1 to 24.",
+        },
+        new()
+        {
+            Name = "ExpandIcon",
             Type = "string",
             DefaultValue = "DoubleChevronDown",
             Description = "Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.",
@@ -97,6 +113,15 @@ public partial class BitMessageDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom role to apply to the message text.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of Message, Possible values: Small | Medium | Large.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -182,6 +207,60 @@ public partial class BitMessageDemo
                     Description = "Error general color.",
                     Value = "7",
                 },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
             ]
         },
         new()
@@ -210,7 +289,83 @@ public partial class BitMessageDemo
                     Value = "2",
                 },
             ]
-        }
+        },
+        new()
+        {
+            Id = "alignment-enum",
+            Name = "BitAlignment",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "SpaceBetween",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "SpaceAround",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "SpaceEvenly",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "Baseline",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Stretch",
+                    Value = "7",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size message.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size message.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size message.",
+                    Value="2",
+                }
+            ]
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -230,10 +385,17 @@ public partial class BitMessageDemo
                 },
                 new()
                 {
+                    Name = "RootContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root container of the BitMessage."
+                },
+                new()
+                {
                     Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the main container of the BitMessage."
+                    Description = "Custom CSS classes/styles for the icon and content container of the BitMessage."
                 },
                 new()
                 {
@@ -312,6 +474,7 @@ public partial class BitMessageDemo
 
 
     private bool isDismissed;
-    private bool isWarningDismissed;
+    private double elevation = 7;
     private bool isErrorDismissed;
+    private bool isWarningDismissed;
 }
