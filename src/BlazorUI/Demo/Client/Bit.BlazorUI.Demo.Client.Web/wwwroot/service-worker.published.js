@@ -5,8 +5,7 @@ self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
-    /bit\.blazorui\.fluent-light\.css$/,
-    /Bit.BlazorUI.Demo\.Client\.Web\.styles\.css$/
+    /bit\.blazorui\.fluent-light\.css$/
 ];
 self.externalAssets = [
     {
