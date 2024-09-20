@@ -6,7 +6,7 @@ public partial class _BitDropdownCustomDemo
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
 
-    private BitDropdownNameSelectors<ProduceModel, string> nameSelectors = new()
+    private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
@@ -21,7 +21,7 @@ public partial class _BitDropdownCustomDemo
         Value = { Selector = c => c.Value },
     };
 
-    private BitDropdownNameSelectors<ProduceModel, string> comboBoxNameSelectors = new()
+    private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     {
         AriaLabel = { Selector = c => c.Label },
         Class = { Selector = c => c.CssClass },
@@ -34,12 +34,12 @@ public partial class _BitDropdownCustomDemo
         Text = { Selector = c => c.Text },
         Title = { Selector = c => c.Title },
         Value = { Selector = c => c.Value },
-        ValueSetter = (ProduceModel item, string value) => item.Value = value,
-        TextSetter = (string text, ProduceModel item) => item.Text = text
+        ValueSetter = (Product item, string value) => item.Value = value,
+        TextSetter = (string text, Product item) => item.Text = text
     };
 
 
-    private List<ProduceModel> GetBasicCustoms() =>
+    private List<Product> GetBasicCustoms() =>
     [
         new() { Text = "Fruits", Type = BitDropdownItemType.Header },
         new() { Text = "Apple", Value = "f-app" },
@@ -53,7 +53,7 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Lettuce", Value = "v-let" }
     ];
 
-    private List<ProduceModel> GetDataCustoms() =>
+    private List<Product> GetDataCustoms() =>
     [
         new() { Type = BitDropdownItemType.Header, Text = "Items", Payload = new DropdownItemData { IconName = "BulletedList2" } },
         new() { Text = "Item a", Value = "A", Payload = new DropdownItemData { IconName = "Memo" } },
@@ -66,10 +66,10 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Item f", Value = "F", Payload = new DropdownItemData { IconName = "Running" } }
     ];
 
-    private ICollection<ProduceModel>? virtualizeCustoms1;
-    private ICollection<ProduceModel>? virtualizeCustoms2;
+    private ICollection<Product>? virtualizeCustoms1;
+    private ICollection<Product>? virtualizeCustoms2;
 
-    private List<ProduceModel> GetRtlCustoms() =>
+    private List<Product> GetRtlCustoms() =>
     [
         new() { Type = BitDropdownItemType.Header, Text = "میوه ها" },
         new() { Text = "سیب", Value = "f-app" },
@@ -82,8 +82,8 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "هویج", Value = "v-car" },
         new() { Text = "کاهو", Value = "v-let" }
     ];
-    private ICollection<ProduceModel>? dropDirectionCustoms;
-    private List<ProduceModel> GetStyleClassCustoms() => new()
+    private ICollection<Product>? dropDirectionCustoms;
+    private List<Product> GetStyleClassCustoms() => new()
     {
         new() { Type = BitDropdownItemType.Header, Text = "Fruits", CssStyle = "text-align: center;" },
         new() { Text = "Apple", Value = "f-app", CssClass = "custom-fruit" },
@@ -96,7 +96,7 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Carrot", Value = "v-car", CssClass = "custom-veg" },
         new() { Text = "Lettuce", Value = "v-let", CssClass = "custom-veg" }
     };
-    private List<ProduceModel> comboBoxCustoms = new()
+    private List<Product> comboBoxCustoms = new()
     {
         new() { Text = "Fruits", Type = BitDropdownItemType.Header },
         new() { Text = "Apple", Value = "f-app" },
@@ -115,11 +115,11 @@ public partial class _BitDropdownCustomDemo
     private string controlledValue = "f-app";
     private ICollection<string> controlledValues = ["f-app", "f-ban"];
 
-    private ProduceModel? changedItem;
-    private ProduceModel[] changedItems = Array.Empty<ProduceModel>();
+    private Product? changedItem;
+    private Product[] changedItems = Array.Empty<Product>();
 
-    private ProduceModel? selectedItem1;
-    private ProduceModel? selectedItem2;
+    private Product? selectedItem1;
+    private Product? selectedItem2;
 
     private string clearValue = "f-app";
     private ICollection<string> clearValues = ["f-app", "f-ban"];
@@ -138,15 +138,15 @@ public partial class _BitDropdownCustomDemo
     protected override void OnInitialized()
     {
         virtualizeCustoms1 = Enumerable.Range(1, 10_000)
-                                       .Select(p => new ProduceModel { Text = $"Produce {p}", Value = p.ToString() })
+                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
         virtualizeCustoms2 = Enumerable.Range(1, 10_000)
-                                       .Select(p => new ProduceModel { Text = $"Produce {p}", Value = p.ToString() })
+                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
         dropDirectionCustoms = Enumerable.Range(1, 15)
-                                         .Select(p => new ProduceModel { Text = $"Produce {p}", Value = p.ToString() })
+                                         .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                          .ToArray();
 
         base.OnInitialized();
@@ -167,13 +167,13 @@ public partial class _BitDropdownCustomDemo
         successMessage = string.Empty;
     }
 
-    private void HandleOnDynamicAdd(ProduceModel item)
+    private void HandleOnDynamicAdd(Product item)
     {
         comboBoxCustoms.Add(item);
     }
 
-    private async ValueTask<BitDropdownItemsProviderResult<ProduceModel>> LoadItems(
-        BitDropdownItemsProviderRequest<ProduceModel> request)
+    private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
+        BitDropdownItemsProviderRequest<Product> request)
     {
         try
         {
@@ -194,7 +194,7 @@ public partial class _BitDropdownCustomDemo
 
             var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
-            var items = data!.Items!.Select(i => new ProduceModel
+            var items = data!.Items!.Select(i => new Product
             {
                 Text = i.Name,
                 Value = i.Id.ToString(),
@@ -208,7 +208,7 @@ public partial class _BitDropdownCustomDemo
         }
         catch
         {
-            return BitDropdownItemsProviderResult.From(new List<ProduceModel>(), 0);
+            return BitDropdownItemsProviderResult.From(new List<Product>(), 0);
         }
     }
 }

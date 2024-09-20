@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
-public class ProduceModel
+public class Product
 {
     public string? Label { get; set; }
 
