@@ -9,13 +9,13 @@
 
     @if (LabelTemplate is not null)
     {
-        <label for="@_buttonId">
+        <label for="@_buttonId" @onclick="HandleOnClick">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label" for="@_buttonId">
+        <label for="@_buttonId" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
             @Label
         </label>
     }
