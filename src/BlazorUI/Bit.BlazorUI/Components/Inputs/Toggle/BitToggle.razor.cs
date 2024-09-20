@@ -20,7 +20,7 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public BitToggleClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Renders the inline toggle in full width of its container while putting space between the label and the knob.
+    /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
@@ -82,7 +82,7 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => (FullWidth && Inline) ? "bit-tgl-fwi" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-tgl-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Inline ? "bit-tgl-inl" : string.Empty);
 
