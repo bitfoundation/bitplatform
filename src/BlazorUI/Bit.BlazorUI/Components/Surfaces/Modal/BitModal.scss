@@ -60,47 +60,77 @@
     background-color: $clr-bg-pri;
 }
 
+.bit-mdl-fhe {
+    .bit-mdl-ctn {
+        height: 100%;
+    }
+}
+
+.bit-mdl-fwi {
+    .bit-mdl-ctn {
+        width: 100%;
+    }
+}
+
 .bit-mdl-ctr {
-    align-items: center;
-    justify-content: center;
+    .bit-mdl-doc {
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .bit-mdl-tl {
-    align-items: flex-start;
-    justify-content: flex-start;
+    .bit-mdl-doc {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
 }
 
 .bit-mdl-tc {
-    align-items: flex-start;
-    justify-content: center;
+    .bit-mdl-doc {
+        align-items: flex-start;
+        justify-content: center;
+    }
 }
 
 .bit-mdl-tr {
-    align-items: flex-start;
-    justify-content: flex-end;
+    .bit-mdl-doc {
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
 }
 
 .bit-mdl-cl {
-    align-items: center;
-    justify-content: flex-start;
+    .bit-mdl-doc {
+        align-items: center;
+        justify-content: flex-start;
+    }
 }
 
 .bit-mdl-cr {
-    align-items: center;
-    justify-content: flex-end;
+    .bit-mdl-doc {
+        align-items: center;
+        justify-content: flex-end;
+    }
 }
 
 .bit-mdl-bl {
-    align-items: flex-end;
-    justify-content: flex-start;
+    .bit-mdl-doc {
+        align-items: flex-end;
+        justify-content: flex-start;
+    }
 }
 
 .bit-mdl-bc {
-    align-items: flex-end;
-    justify-content: center;
+    .bit-mdl-doc {
+        align-items: flex-end;
+        justify-content: center;
+    }
 }
 
 .bit-mdl-br {
-    align-items: flex-end;
-    justify-content: flex-end;
+    .bit-mdl-doc {
+        align-items: flex-end;
+        justify-content: flex-end;
+    }
 }

@@ -6,18 +6,20 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
-        @if (HideIcon is false)
-        {
-            <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
-                <i style="@Styles?.Icon" class="bit-msg-ico bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
-            </div>
-        }
+    <div style="@Styles?.RootContainer" class="bit-msg-rct @Classes?.RootContainer">
+        <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
+            @if (HideIcon is false)
+            {
+                <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
+                    <i style="@Styles?.Icon" class="bit-msg-ico bit-icon bit-icon--@GetIconName() @Classes?.Icon" />
+                </div>
+            }
 
-        <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
-            <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
-                <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
-                    @(Content ?? ChildContent)
+            <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
+                <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
+                    <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
+                        @(Content ?? ChildContent)
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,14 +32,14 @@
         @if (Truncate && Multiline is false)
         {
             <button style="@Styles?.ExpanderButton" class="bit-msg-exb @Classes?.ExpanderButton" @onclick="ToggleExpand" type="button">
-                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi bit-icon bit-icon--@(_isExpanded ? CollapseIconName : ExpandIconName) @Classes?.ExpanderIcon" aria-hidden="true" />
+                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi bit-icon bit-icon--@(_isExpanded ? CollapseIcon : ExpandIcon) @Classes?.ExpanderIcon" aria-hidden="true" />
             </button>
         }
 
         @if (OnDismiss.HasDelegate)
         {
             <button style="@Styles?.DismissButton" class="bit-msg-dmb @Classes?.DismissButton" @onclick="OnDismiss" type="button">
-                <i style="@Styles?.DismissIcon" class="bit-msg-dmi bit-icon bit-icon--@DismissIconName @Classes?.DismissIcon" aria-hidden="true" />
+                <i style="@Styles?.DismissIcon" class="bit-msg-dmi bit-icon bit-icon--@DismissIcon @Classes?.DismissIcon" aria-hidden="true" />
             </button>
         }
     </div>
