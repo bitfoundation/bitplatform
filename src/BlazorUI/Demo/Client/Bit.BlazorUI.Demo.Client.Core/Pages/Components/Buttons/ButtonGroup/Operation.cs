@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
-public class OperationModel
+public class Operation
 {
     public string? Id { get; set; }
 
@@ -14,5 +14,5 @@ public class OperationModel
 
     public string? Style { get; set; }
 
-    public Action<OperationModel>? Clicked { get; set; }
+    public Action<Operation>? Clicked { get; set; }
 }
