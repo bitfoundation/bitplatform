@@ -2,7 +2,7 @@
 
 public partial class HomePage : BasePage
 {
-    [CascadingParameter(Name = "IsUserAuthenticated")]
+    [CascadingParameter(Name = Parameters.IsAuthenticated)]
     private bool isUserAuthenticated { get; set; }
 
     protected override string? Title => Localizer[nameof(AppStrings.Home)];

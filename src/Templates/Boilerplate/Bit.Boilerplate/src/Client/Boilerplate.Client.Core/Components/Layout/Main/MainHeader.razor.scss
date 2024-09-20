@@ -1,8 +1,12 @@
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 header {
+    top: 0;
     width: 100%;
+    position: sticky;
     padding-block: 1rem;
+    background-color: $bit-color-background-primary;
 }
 
 ::deep .persona {

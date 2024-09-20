@@ -1,35 +1,41 @@
 ﻿@inherits AppComponentBase;
 
+@{
+    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+}
+
 @if (IsMenuOpen)
 {
     <div class="menu-overlay" @onclick=CloseMenu></div>
 }
+<section class="@(IsMenuOpen ? null : "closed")">
+    <BitCard Class="panel">
+        <BitStack HorizontalAlign="BitAlignment.Start"
+                  VerticalAlign="BitAlignment.Start">
+            <BitPersona Class="persona"
+                        PrimaryText="@user.FullName"
+                        SecondaryText="@user.DisplayName"
+                        Size=@BitPersonaSize.Size48
+                        Presence="BitPersonaPresence.Online"
+                        ImageUrl="@imageUrl"
+                        OnImageClick=GoToProfile>
+                <ImageOverlayTemplate>
+                    <span>@Localizer[nameof(AppStrings.Edit)]</span>
+                </ImageOverlayTemplate>
+            </BitPersona>
 
-<section class="main-container @(IsMenuOpen ? null : "main-container--closed")">
-    <div class="top-container">
-        @{
-            var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
-        }
-        <BitPersona Class="persona"
-                    PrimaryText="@user.FullName"
-                    SecondaryText="@user.DisplayName"
-                    Size=@BitPersonaSize.Size48
-                    Presence="BitPersonaPresence.Online"
-                    ImageUrl="@imageUrl"
-                    OnImageClick=GoToProfile>
-            <ImageOverlayTemplate>
-                <span>@Localizer[nameof(AppStrings.Edit)]</span>
-            </ImageOverlayTemplate>
-        </BitPersona>
-        <br />
-        <BitActionButton IconName="@BitIconName.SignOut" OnClick=DoSignOut Style="width:fit-content">
-            @Localizer[nameof(AppStrings.SignOut)]
-        </BitActionButton>
-    </div>
-    <BitNav Items="navItems"
-            DefaultSelectedItem="navItems[0]"
-            OnItemClick="(BitNavItem item) => HandleNavItemClick(item)">
-    </BitNav>
+            <BitActionButton IconName="@BitIconName.SignOut" OnClick="DoSignOut" Style="width:fit-content">
+                @Localizer[nameof(AppStrings.SignOut)]
+            </BitActionButton>
+
+            <BitSeparator />
+
+            <BitNav Items="navItems" Style="width:100%"
+                    DefaultSelectedItem="navItems[0]"
+                    OnItemClick="(BitNavItem item) => HandleNavItemClick(item)">
+            </BitNav>
+        </BitStack>
+    </BitCard>
 </section>
 
 <SignOutConfirmModal @bind-IsOpen=isSignOutModalOpen></SignOutConfirmModal>

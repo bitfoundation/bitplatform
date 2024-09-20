@@ -1,6 +1,5 @@
 ﻿using Boilerplate.Client.Core.Components.Layout.Identity;
 using Boilerplate.Client.Core.Components.Layout.Main;
-using Microsoft.AspNetCore.Components;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -9,7 +8,7 @@ public partial class RootLayout : IDisposable
     private bool disposed;
     private BitDir? currentDir;
     private string? currentUrl;
-    private bool isUserAuthenticated;
+    private bool isAuthenticated;
     private Action unsubscribeCultureChange = default!;
 
 
@@ -31,12 +30,11 @@ public partial class RootLayout : IDisposable
 
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
-            isUserAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
+            isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
-
                 StateHasChanged();
             });
 
@@ -63,7 +61,7 @@ public partial class RootLayout : IDisposable
 
     private Type GetCurrentLayout()
     {
-        return isUserAuthenticated
+        return isAuthenticated
                 ? typeof(MainLayout)
                 : currentUrl == Urls.HomePage
                     ? typeof(EmptyLayout)
@@ -72,9 +70,7 @@ public partial class RootLayout : IDisposable
 
     private void SetCurrentDir()
     {
-        var currentCulture = CultureInfo.CurrentUICulture;
-
-        currentDir = currentCulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+        currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
     }
 
     private void SetCurrentUrl()
@@ -86,7 +82,7 @@ public partial class RootLayout : IDisposable
     {
         try
         {
-            isUserAuthenticated = (await task).User.IsAuthenticated();
+            isAuthenticated = (await task).User.IsAuthenticated();
         }
         catch (Exception ex)
         {

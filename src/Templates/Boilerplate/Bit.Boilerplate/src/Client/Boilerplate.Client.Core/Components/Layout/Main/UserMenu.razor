@@ -1,0 +1,73 @@
+@inherits AppComponentBase
+
+@{
+    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+}
+
+<BitDropMenu Transparent @bind-IsOpen="isOpen">
+    <Template>
+        <BitPersona Class="persona"
+                    Size=@BitPersonaSize.Size32
+                    PrimaryText="@user.FullName"
+                    ImageUrl="@imageUrl" />
+        <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" />
+    </Template>
+    <Body>
+        <BitCard FullSize>
+            @if (showCultures is false)
+            {
+                <BitStack HorizontalAlign="BitAlignment.Start">
+                    <BitPersona Class="persona"
+                                OnImageClick="GoToProfile"
+                                PrimaryText="@user.FullName"
+                                Size="BitPersonaSize.Size48"
+                                SecondaryText="@user.DisplayName"
+                                Presence="BitPersonaPresence.Online"
+                                ImageUrl="@imageUrl" />
+                    <BitSeparator />
+                    <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
+                        @Localizer[nameof(AppStrings.ProfileTitle)]
+                    </BitActionButton>
+                    <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
+                        <BitStack Horizontal Gap="0" Grows>
+                            @Localizer[nameof(AppStrings.Language)]
+                            <BitSpacer />
+                            <BitIcon Size="BitSize.Small"
+                                     Color="BitColor.SecondaryForeground"
+                                     IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                        </BitStack>
+                    </BitActionButton>
+                    <BitToggle FullWidth Inline OnChange="ToggleTheme">
+                        <LabelTemplate>
+                            <BitActionButton IconName="@BitIconName.ClearNight" OnClick="ToggleTheme">
+                                @Localizer[nameof(AppStrings.Dark)]
+                            </BitActionButton>
+                        </LabelTemplate>
+                    </BitToggle>
+                    <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
+                        @Localizer[nameof(AppStrings.Settings)]
+                    </BitActionButton>
+                    <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { showSignOut=true; isOpen=false; }">
+                        @Localizer[nameof(AppStrings.SignOut)]
+                    </BitActionButton>
+                </BitStack>
+            }
+            else
+            {
+                <BitStack HorizontalAlign="BitAlignment.Start">
+                    <BitActionButton FullWidth
+                                     OnClick="() => showCultures=false"
+                                     IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
+                        @Localizer[nameof(AppStrings.SelectLanguage)]
+                    </BitActionButton>
+                    <BitSeparator />
+                    <BitChoiceGroup Items="cultures"
+                                    OnChange="async (string? c) => await OnCultureChanged(c)"
+                                    DefaultValue="@CultureInfo.CurrentUICulture.Name" />
+                </BitStack>
+            }
+        </BitCard>
+    </Body>
+</BitDropMenu>
+
+<SignOutConfirmModal @bind-IsOpen="showSignOut"></SignOutConfirmModal>

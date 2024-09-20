@@ -9,8 +9,7 @@ public partial class IdentityHeader : AppComponentBase
     [AutoInject] private ICultureService cultureService = default!;
 
 
-    [CascadingParameter]
-    private BitDir? currentDir { get; set; }
+    [CascadingParameter(Name = Parameters.CurrentDir)] private BitDir? currentDir { get; set; }
 
 
     protected override async Task OnInitAsync()

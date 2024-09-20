@@ -3,31 +3,23 @@
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
-.main-container {
-    height: 100%;
-    display: flex;
+section {
+    top: 0;
+    height: 100vh;
     position: sticky;
-    min-height: 100%;
-    max-height: 100vh;
     overflow: hidden auto;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
     min-width: rem2($navMenuWidth);
-    background-color: $bit-color-background-primary;
-    top: $headerHeight;
-    padding-bottom: calc($headerHeight + $footerHeight);
+    max-width: rem2($navMenuWidth);
 
     .bit-ios & {
-        top: calc($headerHeight + env(safe-area-inset-top));
+        top: calc(env(safe-area-inset-top));
     }
 
     &::-webkit-scrollbar {
         width: 0;
     }
-}
 
-@include lt-lg {
-    .main-container {
+    @include lt-lg {
         z-index: 3;
         position: fixed;
         padding-bottom: 0;
@@ -36,21 +28,11 @@
             top: 0;
             padding-top: calc(env(safe-area-inset-top));
         }
-    }
 
-    .main-container--closed {
-        display: none;
+        &.closed {
+            display: none;
+        }
     }
-}
-
-.top-container {
-    width: 100%;
-    display: flex;
-    padding: rem2(16px);
-    flex-flow: column nowrap;
-    margin-bottom: rem2(20px);
-    justify-content: flex-start;
-    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .menu-overlay {
@@ -69,12 +51,19 @@
 }
 
 ::deep {
-    a {
-        text-decoration: none;
+    .panel {
+        margin: 1rem;
+        padding: 1rem;
+        width: calc(100% - 2rem);
+        height: calc(100% - 2rem);
+        background-color: $bit-color-background-secondary;
     }
 
     .persona {
-        margin: auto;
-        max-width: rem2(calc($navMenuWidth - 20px));
+        width: 100%;
+    }
+
+    a {
+        text-decoration: none;
     }
 }

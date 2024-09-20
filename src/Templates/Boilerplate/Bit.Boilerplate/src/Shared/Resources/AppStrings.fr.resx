@@ -202,6 +202,9 @@
     <data name="Language" xml:space="preserve">
     <value>langue</value>
   </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>Sélectionnez la langue</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profil</value>
   </data>

@@ -1,18 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="status-bar">Boilerplate</div>
-
-<div dir="@currentDir?.ToString()" class="layout">
+<div dir="@currentDir?.ToString().ToLower()" class="layout">
     <AppErrorBoundary>
-        <LayoutView Layout="GetCurrentLayout()">
-            <CascadingValue Value="currentDir" Name="CurrentDir">
-                <CascadingValue Value="currentUrl" Name="CurrentUrl">
-                    <CascadingValue Value="isUserAuthenticated" Name="IsUserAuthenticated">
+        <CascadingValue Value="currentDir" Name="@Parameters.CurrentDir">
+            <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
+                <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
+                    <LayoutView Layout="GetCurrentLayout()">
                         @Body
-                    </CascadingValue>
+                    </LayoutView>
                 </CascadingValue>
             </CascadingValue>
-            <MessageBox />
-        </LayoutView>
+        </CascadingValue>
+        <MessageBox />
     </AppErrorBoundary>
 </div>

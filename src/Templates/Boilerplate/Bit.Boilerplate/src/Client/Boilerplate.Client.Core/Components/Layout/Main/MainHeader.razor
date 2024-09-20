@@ -4,46 +4,11 @@
     <BitStack Horizontal>
         <BitStack AutoSize HorizontalAlign="BitAlignment.Start" Gap="0.5rem" Style="height:4rem">
             <BitText Typography="BitTypography.H5">@pageTitle</BitText>
-            <BitText Typography="BitTypography.Body1">@pageSubtitle</BitText>
+            <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">@pageSubtitle</BitText>
         </BitStack>
 
         <BitSpacer />
 
-        @{
-            var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
-        }
-
-        <BitDropMenu Transparent>
-            <Template>
-                <BitPersona Class="persona"
-                            Size=@BitPersonaSize.Size32
-                            PrimaryText="@user.FullName"
-                            ImageUrl="@imageUrl" />
-                <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" />
-            </Template>
-            <Body>
-                <BitCard FullSize>
-                    <BitStack HorizontalAlign="BitAlignment.Start">
-                        <BitPersona Class="persona"
-                                    OnImageClick="GoToProfile"
-                                    PrimaryText="@user.FullName"
-                                    Size="BitPersonaSize.Size48"
-                                    SecondaryText="@user.DisplayName"
-                                    Presence="BitPersonaPresence.Online"
-                                    ImageUrl="@imageUrl" />
-                        <BitSeparator />
-                        <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage">@Localizer[nameof(AppStrings.ProfileTitle)]</BitActionButton>
-                        <BitActionButton IconName="@BitIconName.Globe">@Localizer[nameof(AppStrings.Language)]</BitActionButton>
-                        <BitStack Horizontal>
-                            <BitActionButton IconName="@BitIconName.ClearNight">@Localizer[nameof(AppStrings.Dark)]</BitActionButton>
-                            <BitSpacer />
-                            <BitToggle></BitToggle>
-                        </BitStack>
-                        <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage">@Localizer[nameof(AppStrings.Settings)]</BitActionButton>
-                        <BitActionButton IconName="@BitIconName.SignOut">@Localizer[nameof(AppStrings.SignOut)]</BitActionButton>
-                    </BitStack>
-                </BitCard>
-            </Body>
-        </BitDropMenu>
+        <UserMenu />
     </BitStack>
 </header>
