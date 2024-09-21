@@ -22,23 +22,23 @@ public partial class _BitMenuButtonCustomDemo
 
     private static List<Operation> basicCustoms =
     [
-        new() { Name = "Action A", Id = "A" },
-        new() { Name = "Action B", Id = "B", Disabled = true },
-        new() { Name = "Action C", Id = "C" }
+        new() { Name = "Custom A", Id = "A" },
+        new() { Name = "Custom B", Id = "B", Disabled = true },
+        new() { Name = "Custom C", Id = "C" }
     ];
 
     private static List<Operation> basicIconCustoms =
     [
-        new() { Name = "Action A", Id = "A", Icon = BitIconName.Emoji },
-        new() { Name = "Action B", Id = "B", Icon = BitIconName.Emoji },
-        new() { Name = "Action C", Id = "C", Icon = BitIconName.Emoji2 }
+        new() { Name = "Custom A", Id = "A", Icon = BitIconName.Emoji },
+        new() { Name = "Custom B", Id = "B", Icon = BitIconName.Emoji },
+        new() { Name = "Custom C", Id = "C", Icon = BitIconName.Emoji2 }
     ];
 
     private static List<Operation> basicCustomsOnClick =
     [
-        new() { Name = "Action A", Id = "A", Icon = BitIconName.Emoji },
-        new() { Name = "Action B", Id = "B", Icon = BitIconName.Emoji },
-        new() { Name = "Action C", Id = "C", Icon = BitIconName.Emoji2 }
+        new() { Name = "Custom A", Id = "A", Icon = BitIconName.Emoji },
+        new() { Name = "Custom B", Id = "B", Icon = BitIconName.Emoji },
+        new() { Name = "Custom C", Id = "C", Icon = BitIconName.Emoji2 }
     ];
 
     private static List<Operation> itemTemplateCustoms =
@@ -50,16 +50,16 @@ public partial class _BitMenuButtonCustomDemo
 
     private static List<Operation> itemStyleClassCustoms =
     [
-        new() { Name = "Action A (Default)", Id = "A", Icon = BitIconName.Emoji },
-        new() { Name = "Action B (Styled)", Id = "B", Icon = BitIconName.Emoji, Style = "color: tomato; border-color: brown; background-color: peachpuff;" },
-        new() { Name = "Action C (Classed)", Id = "C", Icon = BitIconName.Emoji2, Class = "custom-item" },
+        new() { Name = "Custom A (Default)", Id = "A", Icon = BitIconName.Emoji },
+        new() { Name = "Custom B (Styled)", Id = "B", Icon = BitIconName.Emoji, Style = "color: tomato; border-color: brown; background-color: peachpuff;" },
+        new() { Name = "Custom C (Classed)", Id = "C", Icon = BitIconName.Emoji2, Class = "custom-item" },
     ];
 
     private static List<Operation> isSelectedCustoms =
     [
-        new() { Name = "Action A", Id = "A", Icon = BitIconName.Emoji },
-        new() { Name = "Action B", Id = "B", Icon = BitIconName.Emoji },
-        new() { Name = "Action C", Id = "C", Icon = BitIconName.Emoji2, IsSelected = true }
+        new() { Name = "Custom A", Id = "A", Icon = BitIconName.Emoji },
+        new() { Name = "Custom B", Id = "B", Icon = BitIconName.Emoji },
+        new() { Name = "Custom C", Id = "C", Icon = BitIconName.Emoji2, IsSelected = true }
     ];
 
     private static List<Operation> rtlCustoms =
