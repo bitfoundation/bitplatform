@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
 
-public class MenuActionItem
+public class Operation
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
@@ -10,7 +10,7 @@ public class MenuActionItem
     public string? Class { get; set; }
     public string? Style { get; set; }
 
-    public RenderFragment<MenuActionItem>? Fragment { get; set; }
+    public RenderFragment<Operation>? Fragment { get; set; }
 
-    public Action<MenuActionItem>? Clicked { get; set; }
+    public Action<Operation>? Clicked { get; set; }
 }
