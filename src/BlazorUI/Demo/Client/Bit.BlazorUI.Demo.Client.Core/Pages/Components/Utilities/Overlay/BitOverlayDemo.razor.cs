@@ -176,7 +176,7 @@ private bool AbsoluteIsOpen;";
 <BitButton OnClick=""() => AutoToggleIsOpen = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsOpen=""AutoToggleIsOpen"" Class=""overlay"" AutoToggleScroll>
-    <BitStack HorizontalAlign=""BitAlignment.Center"">
+    <BitStack Alignment=""BitAlignment.Center"">
         <BitText Style=""color: dodgerblue;"" Typography=""BitTypography.H3"">Please wait...</BitText>
         <BitProgress Indeterminate Thickness=""10"" Style=""width: 19rem;""/>
     </BitStack>
