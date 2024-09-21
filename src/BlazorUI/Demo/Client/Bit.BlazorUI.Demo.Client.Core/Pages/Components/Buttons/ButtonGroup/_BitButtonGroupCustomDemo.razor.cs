@@ -5,33 +5,33 @@ public partial class _BitButtonGroupCustomDemo
     private int clickCounter;
     private string? clickedCustom;
 
-    private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+    private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-    private List<ButtonGroupActionItem> basicCustoms =
+    private List<Operation> basicCustoms =
     [
         new() { Name = "Add" }, new() { Name = "Edit" }, new() { Name = "Delete" }
     ];
 
-    private List<ButtonGroupActionItem> disabledCustoms =
+    private List<Operation> disabledCustoms =
     [
         new() { Name = "Add" }, new() { Name = "Edit", IsEnabled = false }, new() { Name = "Delete" }
     ];
 
-    private List<ButtonGroupActionItem> iconCustoms =
+    private List<Operation> iconCustoms =
     [
         new() { Name = "Add", Icon = BitIconName.Add },
         new() { Name = "Edit", Icon = BitIconName.Edit },
         new() { Name = "Delete", Icon = BitIconName.Delete }
     ];
 
-    private List<ButtonGroupActionItem> eventsCustoms =
+    private List<Operation> eventsCustoms =
     [
         new() { Name = "Increase", Icon = BitIconName.Add },
         new() { Name = "Reset", Icon = BitIconName.Reset },
         new() { Name = "Decrease", Icon = BitIconName.Remove }
     ];
 
-    private List<ButtonGroupActionItem> styleClassCustoms =
+    private List<Operation> styleClassCustoms =
     [
         new()
         {
@@ -47,7 +47,7 @@ public partial class _BitButtonGroupCustomDemo
         }
     ];
 
-    private List<ButtonGroupActionItem> rtlCustoms =
+    private List<Operation> rtlCustoms =
     [
         new() { Name = "اضافه کردن", Icon = BitIconName.Add },
         new() { Name = "ویرایش", Icon = BitIconName.Edit },
@@ -66,14 +66,14 @@ public partial class _BitButtonGroupCustomDemo
     private readonly string example1RazorCode = @"
 <BitButtonGroup Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example1CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };";
@@ -91,20 +91,20 @@ private List<ButtonGroupActionItem> basicCustoms = new()
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""disabledCustoms""NameSelectors=""nameSelector"" />
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" IsEnabled=""false"" />";
     private readonly string example2CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };
 
-private List<ButtonGroupActionItem> disabledCustoms = new()
+private List<Operation> disabledCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"", IsEnabled = false }, new() { Name = ""Delete"" }
 };";
@@ -181,14 +181,14 @@ private List<ButtonGroupActionItem> disabledCustoms = new()
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example3CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };";
@@ -206,13 +206,13 @@ private List<ButtonGroupActionItem> basicCustoms = new()
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
     private readonly string example4CsharpCode = @"
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
     public string? Icon { get; set; }
 }
 
-private List<ButtonGroupActionItem> iconCustoms = new()
+private List<Operation> iconCustoms = new()
 {
     new() { Name = ""Add"", Icon = BitIconName.Add },
     new() { Name = ""Edit"", Icon = BitIconName.Edit },
@@ -224,14 +224,14 @@ private List<ButtonGroupActionItem> iconCustoms = new()
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" Vertical />";
     private readonly string example5CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };";
@@ -249,14 +249,14 @@ private List<ButtonGroupActionItem> basicCustoms = new()
 <BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
     private readonly string example6CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };";
@@ -295,9 +295,9 @@ private List<ButtonGroupActionItem> basicCustoms = new()
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
     private readonly string example7CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
     public string? Icon { get; set; }
@@ -305,12 +305,12 @@ public class ButtonGroupActionItem
     public string? Style { get; set; }
 }
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };
 
-private List<ButtonGroupActionItem> styleClassCustoms = new()
+private List<Operation> styleClassCustoms = new()
 {
     new()
     {
@@ -329,7 +329,7 @@ private List<ButtonGroupActionItem> styleClassCustoms = new()
     private readonly string example8RazorCode = @"
 <BitButtonGroup Items=""basicCustoms""
                 NameSelectors=""nameSelector""
-                OnItemClick=""(ButtonGroupActionItem item) => clickedCustom = item.Name"" />
+                OnItemClick=""(Operation item) => clickedCustom = item.Name"" />
 <div>Clicked item: <b>@clickedCustom</b></div>
 
 <BitButtonGroup Items=""eventsCustoms""
@@ -338,23 +338,23 @@ private List<ButtonGroupActionItem> styleClassCustoms = new()
                                          OnClick = { Selector = i => i.Clicked } })"" />
 <div>Click count: <b>@clickCounter</b></div>";
     private readonly string example8CsharpCode = @"
-private BitButtonGroupNameSelectors<ButtonGroupActionItem> nameSelector = new() { Text = { Selector = i => i.Name } };
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
     public string? Icon { get; set; }
-    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+    public Action<Operation>? Clicked { get; set; }
 }
 
 private int clickCounter;
 
-private List<ButtonGroupActionItem> basicCustoms = new()
+private List<Operation> basicCustoms = new()
 {
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 };
 
-private List<ButtonGroupActionItem> eventsCustoms = new()
+private List<Operation> eventsCustoms = new()
 {
     new() { Name = ""Increase"", Icon = BitIconName.Add },
     new() { Name = ""Reset"", Icon = BitIconName.Reset },
@@ -387,13 +387,13 @@ protected override void OnInitialized()
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
     private readonly string example9CsharpCode = @"
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Name { get; set; }
     public string? Icon { get; set; }
 }
 
-private List<ButtonGroupActionItem> rtlCustoms = new()
+private List<Operation> rtlCustoms = new()
 {
     new() { Name = ""اضافه کردن"", Icon = BitIconName.Add },
     new() { Name = ""ویرایش"", Icon = BitIconName.Edit },
