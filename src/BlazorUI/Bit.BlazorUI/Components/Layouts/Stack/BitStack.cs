@@ -5,6 +5,12 @@ namespace Bit.BlazorUI;
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
+    /// Defines whether to render Stack children both horizontally and vertically.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
     /// Make the height of the stack auto.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -91,14 +97,24 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => $"gap:{Gap ?? "1rem"}");
 
         StyleBuilder.Register(() =>
-            (Horizontal && VerticalAlign is not null) || (Horizontal is false && HorizontalAlign is not null)
-                ? $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign!.Value : HorizontalAlign!.Value]}"
-                : string.Empty);
+        {
+            var vAlign = VerticalAlign ?? Alignment;
+            var hAlign = HorizontalAlign ?? Alignment;
+
+            return (Horizontal && vAlign is not null) || (Horizontal is false && hAlign is not null)
+                ? $"align-items:{_AlignmentMap[Horizontal ? vAlign!.Value : hAlign!.Value]}"
+                : string.Empty;
+        });
 
         StyleBuilder.Register(() =>
-            (Horizontal && HorizontalAlign is not null) || (Horizontal is false && VerticalAlign is not null)
-                ? $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign!.Value : VerticalAlign!.Value]}"
-                : string.Empty);
+        {
+            var vAlign = VerticalAlign ?? Alignment;
+            var hAlign = HorizontalAlign ?? Alignment;
+
+            return (Horizontal && hAlign is not null) || (Horizontal is false && vAlign is not null)
+            ? $"justify-content:{_AlignmentMap[Horizontal ? hAlign!.Value : vAlign!.Value]}"
+            : string.Empty;
+        });
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
 
