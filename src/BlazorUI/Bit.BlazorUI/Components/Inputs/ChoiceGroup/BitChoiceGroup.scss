@@ -1,8 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-chg {
-    display: block;
     font-weight: 400;
+    width: fit-content;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
 
@@ -369,6 +369,10 @@
                 }
             }
         }
+    }
+
+    .bit-chg-itx {
+        font-weight: bold;
     }
 }
 

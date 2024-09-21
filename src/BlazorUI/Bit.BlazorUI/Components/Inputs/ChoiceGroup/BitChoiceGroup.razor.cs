@@ -72,6 +72,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public BitChoiceGroupNameSelectors<TItem, TValue>? NameSelectors { get; set; }
 
     /// <summary>
+    /// Removes the circle from the start of each item.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoCircle { get; set; }
+
+    /// <summary>
     /// Callback for when the option clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
@@ -216,8 +222,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private string GetItemContainerCssClasses(TItem item)
     {
-        StringBuilder cssClass = new(RootElementClass);
-        cssClass.Append("-icn");
+        StringBuilder cssClass = new("bit-chg-icn");
 
         if (string.IsNullOrEmpty(GetClass(item)) is false)
         {
@@ -233,10 +238,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         if (GetIsCheckedItem(item))
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ich");
-
+            cssClass.Append(' ').Append("bit-chg-ich");
             cssClass.Append(' ').Append(Classes?.ItemChecked);
         }
 
@@ -244,16 +246,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         if (IsEnabled is false || GetIsEnabled(item) is false)
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ids");
+            cssClass.Append(' ').Append("bit-chg-ids");
         }
 
         if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ihi");
+            cssClass.Append(' ').Append("bit-chg-ihi");
         }
 
         return cssClass.ToString();
