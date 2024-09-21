@@ -7,7 +7,7 @@
 <ComponentDemo ComponentName="Overlay"
                ComponentDescription="The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to the user of a state change within the application and can be used for creating loaders, dialogs and more."
                ComponentParameters="componentParameters">
-    <ComponentExampleBox Title="Basic Overlay" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div>
                 <BitButton OnClick="() => BasicIsOpen = true">Show Overlay</BitButton>
@@ -20,6 +20,8 @@
 
     <ComponentExampleBox Title="Disabled AutoClose" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
+            <div>Use BitOverlay with NoAutoClose to disable automatic closing when clicking outside the overlay.</div>
+            <br />
             <div>
                 <BitButton OnClick="() => AutoCloseIsOpen = true">Show Overlay</BitButton>
                 <BitOverlay @bind-IsOpen="AutoCloseIsOpen" Class="overlay" NoAutoClose>
@@ -40,7 +42,8 @@
 
     <ComponentExampleBox Title="Absolute Positioning" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
-            <div class="example-desc">Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
+            <div>Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
+            <br />
             <div class="container">
                 <BitButton Class="show-button" OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
                 <BitOverlay @bind-IsOpen="AbsoluteIsOpen"
@@ -55,15 +58,16 @@
 
     <ComponentExampleBox Title="AutoToggleScroll" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
-            <div class="example-desc">Scrolling cannot be left enabled behind the Overlay</div>
+            <div>Scrolling cannot be left enabled behind the Overlay</div>
+            <br />
             <div>
                 <BitButton OnClick="() => AutoToggleIsOpen = true">Show Overlay</BitButton>
                 <BitOverlay @bind-IsOpen="AutoToggleIsOpen"
                             Class="overlay"
                             AutoToggleScroll>
-                    <BitStack HorizontalAlign="BitAlignment.Stretch">
+                    <BitStack Alignment="BitAlignment.Center">
                         <BitText Style="color: dodgerblue;" Typography="BitTypography.H3">Please wait...</BitText>
-                        <BitProgress Indeterminate Thickness="10"/>
+                        <BitProgress Indeterminate Thickness="10" Style="width: 19rem;"/>
                     </BitStack>
                 </BitOverlay>
             </div>
@@ -72,8 +76,8 @@
 
     <ComponentExampleBox Title="Scroller Selector" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
-            <div class="example-desc">Set specific scroller element to toggle the scrollbar.</div>
-
+            <div>Set specific scroller element to toggle the scrollbar.</div>
+            <br />
             <div class="btn-container">
 
                 <BitButton OnClick="() => EnabledScrollerIsOpen = true">Show with Enabled scrolling</BitButton>
@@ -143,6 +147,8 @@
 
     <ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <ExamplePreview>
+            <div>Use BitOverlay with event handlers to handle custom actions on user interactions, such as clicking outside to close.</div>
+            <br />
             <div>
                 <BitButton OnClick="() => EventOnCloseIsOpen = true">Show Overlay</BitButton>
                 <BitOverlay @bind-IsOpen="EventOnCloseIsOpen" Class="overlay" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
