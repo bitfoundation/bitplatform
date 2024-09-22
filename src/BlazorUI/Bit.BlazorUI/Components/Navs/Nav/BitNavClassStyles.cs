@@ -33,6 +33,11 @@ public class BitNavClassStyles
     public string? ItemIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the item text of the BitNav.
+    /// </summary>
+    public string? ItemText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the selected item container of the BitNav.
     /// </summary>
     public string? SelectedItemContainer { get; set; }
