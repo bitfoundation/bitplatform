@@ -214,7 +214,7 @@
 
 
 @code {
-    private List<TimelineActionItem> templateItems = new()
+    private List<Event> templateItems = new()
     {
         new()
         {
@@ -226,9 +226,9 @@
             DotContent = (item => @<div class="dot-template"><BitRingLoading CustomSize="30" Color="BitColor.Tertiary" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-        <BitIcon IconName="Accept" Style="color: limegreen;" />
-        <BitLabel>Software Engineer</BitLabel>
-    </div>)
+                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                          <BitLabel>Software Engineer</BitLabel>
+                                      </div>)
         },
         new()
         {
@@ -239,9 +239,9 @@
             DotContent = (item => @<div class="dot-template"><BitSpinnerLoading CustomSize="30" Color="BitColor.Tertiary" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-        <BitIcon IconName="Accept" Style="color: limegreen;" />
-        <BitLabel>Co-Founder & CTO</BitLabel>
-    </div>),
+                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                          <BitLabel>Co-Founder & CTO</BitLabel>
+                                      </div>),
             Reversed = true
         },
         new()
@@ -254,9 +254,9 @@
             DotContent = (item => @<div class="dot-template"><BitRollerLoading CustomSize="30" Color="BitColor.Tertiary" /></div>),
 
             SecondContent = (item => @<div style="display: flex; align-items: center; gap: 1rem;">
-        <BitIcon IconName="Accept" Style="color: limegreen;" />
-        <BitLabel>Project Manager</BitLabel>
-    </div>)
+                                          <BitIcon IconName="Accept" Style="color: limegreen;" />
+                                          <BitLabel>Project Manager</BitLabel>
+                                      </div>)
         },
     };
 }
