@@ -11,22 +11,24 @@ public partial class _BitChoiceGroupCustomDemo
     public string? successMessage;
 
 
-    private readonly List<ChoiceModel> basicCustoms = new()
-    {
+    private readonly List<ChoiceModel> basicCustoms =
+    [
         new() { Name = "Custom A", ItemValue = "A" },
         new() { Name = "Custom B", ItemValue = "B" },
         new() { Name = "Custom C", ItemValue = "C" },
         new() { Name = "Custom D", ItemValue = "D" }
-    };
-    private readonly List<ChoiceModel> disabledCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> disabledCustoms =
+    [
         new() { Name = "Custom A", ItemValue = "A" },
         new() { Name = "Custom B", ItemValue = "B" },
         new() { Name = "Custom C", ItemValue = "C", IsDisabled = true },
         new() { Name = "Custom D", ItemValue = "D" }
-    };
-    private readonly List<ChoiceModel> imageCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> imageCustoms =
+    [
         new()
         {
             Name = "Bar",
@@ -45,33 +47,59 @@ public partial class _BitChoiceGroupCustomDemo
             ImageAddress= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
             SelectedImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
         }
-    };
-    private readonly List<ChoiceModel> iconCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> inlineImageCustoms =
+    [
+        new()
+        {
+            Name = "Bar",
+            ItemValue = "Bar",
+            ImageSize = new BitImageSize(20, 20),
+            ImageDescription = "alt for Bar image",
+            ImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
+            SelectedImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
+        },
+        new()
+        {
+            Name = "Pie",
+            ItemValue = "Pie",
+            ImageSize = new BitImageSize(20, 20),
+            ImageDescription = "alt for Pie image",
+            ImageAddress= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
+            SelectedImageAddress = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
+        }
+    ];
+
+    private readonly List<ChoiceModel> iconCustoms =
+    [
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
         new() { Name = "Week", ItemValue = "Week", IconName = BitIconName.CalendarWeek },
         new() { Name = "Month", ItemValue = "Month", IconName = BitIconName.Calendar, IsDisabled = true }
-    };
-    private readonly List<ChoiceModel> itemStyleClassCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> itemStyleClassCustoms =
+    [
         new() { Name = "Custom A", ItemValue = "A", Class = "custom-item" },
         new() { Name = "Custom B", ItemValue = "B", Style = "padding: 8px; border-radius: 20px; border: 1px solid gray;" },
         new() { Name = "Custom C", ItemValue = "C", Class = "custom-item" },
         new() { Name = "Custom D", ItemValue = "D", Class = "custom-item" }
-    };
-    private readonly List<ChoiceModel> itemTemplateCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> itemTemplateCustoms =
+    [
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
         new() { Name = "Week", ItemValue = "Week", IconName = BitIconName.CalendarWeek },
         new() { Name = "Month", ItemValue = "Month", IconName = BitIconName.Calendar }
-    };
-    private readonly List<ChoiceModel> rtlCustoms = new()
-    {
+    ];
+
+    private readonly List<ChoiceModel> rtlCustoms =
+    [
         new() { Name = "ویژه آ", ItemValue = "A" },
         new() { Name = "ویژه ب", ItemValue = "B" },
         new() { Name = "ویژه پ", ItemValue = "C" },
         new() { Name = "ویژه ت", ItemValue = "D" }
-    };
+    ];
 
 
     private void HandleValidSubmit()
@@ -89,6 +117,12 @@ public partial class _BitChoiceGroupCustomDemo
 <BitChoiceGroup Label=""Basic Customs""
                 Items=""basicCustoms""
                 DefaultValue=""basicCustoms[1].ItemValue""
+                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />
+
+<BitChoiceGroup Label=""Basic Customs""
+                NoCircle
+                Items=""basicCustoms""
+                DefaultValue=""basicCustoms[1].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })"" />";
     private readonly string example1CsharpCode = @"
 public class ChoiceModel
@@ -97,13 +131,13 @@ public class ChoiceModel
     public string ItemValue { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
+];";
 
     private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
@@ -126,26 +160,26 @@ public class ChoiceModel
     public bool IsDisabled { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};
+];
 
-private readonly List<ChoiceModel> disabledCustoms = new()
-{
+private readonly List<ChoiceModel> disabledCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"", IsDisabled = true },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
+];";
 
     private readonly string example3RazorCode = @"
 <BitChoiceGroup Label=""Image Customs""
-                DefaultValue=""@(""Bar"")""
                 Items=""imageCustoms""
+                DefaultValue=""@(""Bar"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) },
                                          Value = { Name = nameof(ChoiceModel.ItemValue) },
                                          ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
@@ -154,8 +188,29 @@ private readonly List<ChoiceModel> disabledCustoms = new()
                                          SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})"" />
 
 <BitChoiceGroup Label=""Icon Customs""
-                DefaultValue=""@(""Day"")""
                 Items=""iconCustoms""
+                DefaultValue=""@(""Day"")""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         Value = { Selector = i => i.ItemValue },
+                                         IconName = { Selector = i => i.IconName },
+                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />
+
+
+<BitChoiceGroup Label=""Image Customs""
+                Inline
+                Items=""inlineImageCustoms""
+                DefaultValue=""@(""Bar"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                         Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                         ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
+                                         ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
+                                         ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
+                                         SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})"" />
+
+<BitChoiceGroup Label=""Icon Customs""
+                Inline
+                Items=""iconCustoms""
+                DefaultValue=""@(""Day"")""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
                                          IconName = { Selector = i => i.IconName },
@@ -173,8 +228,8 @@ public class ChoiceModel
     public bool IsDisabled { get; set; }
 }
 
-private readonly List<ChoiceModel> imageCustoms = new()
-{
+private readonly List<ChoiceModel> imageCustoms =
+[
     new()
     {
         Name = ""Bar"",
@@ -193,14 +248,36 @@ private readonly List<ChoiceModel> imageCustoms = new()
         ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
     }
-};
+];
 
-private readonly List<ChoiceModel> iconCustoms = new()
-{
+private readonly List<ChoiceModel> inlineImageCustoms =
+[
+    new()
+    {
+        Name = ""Bar"",
+        ItemValue = ""Bar"",
+        ImageSize = new BitImageSize(20, 20),
+        ImageDescription = ""alt for Bar image"",
+        ImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
+        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+    },
+    new()
+    {
+        Name = ""Pie"",
+        ItemValue = ""Pie"",
+        ImageSize = new BitImageSize(20, 20),
+        ImageDescription = ""alt for Pie image"",
+        ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
+        SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+    }
+];
+
+private readonly List<ChoiceModel> iconCustoms =
+[
     new() { Name = ""Day"", ItemValue = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Name = ""Week"", ItemValue = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
-};";
+];";
 
     private readonly string example4RazorCode = @"
 <BitChoiceGroup Label=""Basic""
@@ -248,16 +325,16 @@ public class ChoiceModel
     public bool IsDisabled { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};
+];
 
-private readonly List<ChoiceModel> imageCustoms = new()
-{
+private readonly List<ChoiceModel> imageCustoms =
+[
     new()
     {
         Name = ""Bar"",
@@ -276,14 +353,14 @@ private readonly List<ChoiceModel> imageCustoms = new()
         ImageAddress= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageAddress = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
     }
-};
+];
 
-private readonly List<ChoiceModel> iconCustoms = new()
-{
+private readonly List<ChoiceModel> iconCustoms =
+[
     new() { Name = ""Day"", ItemValue = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Name = ""Week"", ItemValue = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
-};";
+];";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -312,7 +389,6 @@ private readonly List<ChoiceModel> iconCustoms = new()
         width: 8px;
         height: 8px;
         border: none;
-        inset-block-start: 6px;
         inset-inline-start: 6px;
         background-color: whitesmoke;
     }
@@ -378,21 +454,21 @@ public class ChoiceModel
     public string? Style { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};
+];
 
-private readonly List<ChoiceModel> itemStyleClassCustoms = new()
-{
+private readonly List<ChoiceModel> itemStyleClassCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"", Class = ""custom-item"" },
     new() { Name = ""Custom B"", ItemValue = ""B"", Style = ""padding: 8px; border-radius: 20px; border: 1px solid gray;"" },
     new() { Name = ""Custom C"", ItemValue = ""C"", Class = ""custom-item"" },
     new() { Name = ""Custom D"", ItemValue = ""D"", Class = ""custom-item"" }
-};";
+];";
 
     private readonly string example6RazorCode = @"
 <style>
@@ -419,13 +495,13 @@ public class ChoiceModel
     public string ItemValue { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
+];";
 
     private readonly string example7RazorCode = @"
 <BitChoiceGroup Label=""One-way"" Value=""@oneWayValue""
@@ -447,13 +523,13 @@ public class ChoiceModel
     public string? ItemValue { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
+];";
 
     private readonly string example8RazorCode = @"
 <style>
@@ -540,26 +616,26 @@ public class ChoiceModel
     public int Idx { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};
+];
 
-private readonly List<ChoiceModel> itemTemplateCustoms = new()
-{
+private readonly List<ChoiceModel> itemTemplateCustoms =
+[
     new() { Name = ""Day"", ItemValue = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Name = ""Week"", ItemValue = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar }
-};
+];
 
 private List<ChoiceModel> itemTemplateCustoms2 = default!;    
 protected override void OnInitialized()
 {
-    itemTemplateCustoms2 = new()
-    {
+    itemTemplateCustoms2 =
+    [
         new()
         {
             Name = ""Day"",
@@ -587,7 +663,7 @@ protected override void OnInitialized()
                                      <span style=""color:blue"">@item.Name</span>
                                  </div>)
         }
-    };
+    ];
 }";
 
     private readonly string example9RazorCode = @"
@@ -610,13 +686,13 @@ public class ChoiceModel
     public string ItemValue { get; set; }
 }
 
-private readonly List<ChoiceModel> rtlCustoms = new()
-{
+private readonly List<ChoiceModel> rtlCustoms =
+[
     new() { Name = ""ویژه آ"", ItemValue = ""A"" },
     new() { Name = ""ویژه ب"", ItemValue = ""B"" },
     new() { Name = ""ویژه پ"", ItemValue = ""C"" },
     new() { Name = ""ویژه ت"", ItemValue = ""D"" }
-};";
+];";
 
     private readonly string example10RazorCode = @"
 <style>
@@ -653,11 +729,11 @@ public class ChoiceModel
     public string ItemValue { get; set; }
 }
 
-private readonly List<ChoiceModel> basicCustoms = new()
-{
+private readonly List<ChoiceModel> basicCustoms =
+[
     new() { Name = ""Custom A"", ItemValue = ""A"" },
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
-};";
+];";
 }

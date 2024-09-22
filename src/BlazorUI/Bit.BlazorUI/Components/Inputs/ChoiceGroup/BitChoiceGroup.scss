@@ -1,8 +1,12 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-chg {
+    display: flex;
+    gap: spacing(1);
     font-weight: 400;
     width: fit-content;
+    padding: spacing(1);
+    flex-direction: column;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
 
@@ -81,19 +85,18 @@
 }
 
 .bit-chg-lbl {
-    margin: 0;
     display: block;
     box-shadow: none;
     font-weight: 600;
+    color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    padding: spacing(0.625) 0;
     overflow-wrap: break-word;
-    color: $clr-fg-pri;
 }
 
 .bit-chg-cnt {
     display: flex;
+    gap: spacing(1);
     flex-flow: column nowrap;
 }
 
@@ -106,13 +109,11 @@
     display: flex;
     font-weight: 400;
     position: relative;
+    color: $clr-fg-pri;
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
     min-height: spacing(3.25);
-    margin-inline-end: spacing(1);
-    margin-block-start: spacing(1);
-    color: $clr-fg-pri;
     font-family: $tg-font-family;
 }
 
@@ -133,52 +134,11 @@
     margin-block-start: 0;
     display: inline-block;
     min-height: spacing(2.5);
-    padding-inline-start: spacing(3.25);
-
-    &:before {
-        content: "";
-        position: absolute;
-        border-radius: 50%;
-        width: spacing(2.5);
-        height: spacing(2.5);
-        inset-block-start: 0;
-        inset-inline-start: 0;
-        display: inline-block;
-        box-sizing: border-box;
-        background-color: $clr-bg-pri;
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
-    }
-
-    &:after {
-        width: 0;
-        height: 0;
-        content: "";
-        position: absolute;
-        border-radius: 50%;
-        inset-inline-end: 0;
-        box-sizing: border-box;
-        inset-inline-start: spacing(1.25);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-    }
 
     @media (hover: hover) {
         &:hover {
             .bit-chg-itx {
                 color: $clr-fg-pri-hover;
-            }
-
-            &:before {
-                border-color: $clr-brd-pri-hover;
-            }
-
-            &:after {
-                width: spacing(1.25);
-                height: spacing(1.25);
-                inset-block-start: spacing(0.625);
-                inset-inline-start: spacing(0.625);
-                transition-property: background-color;
-                background-color: $clr-fg-sec-hover;
             }
         }
     }
@@ -201,42 +161,129 @@
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
 
-    &:before {
-        opacity: 0;
-        content: "";
-        position: absolute;
-        border-radius: 50%;
-        width: spacing(2.5);
-        height: spacing(2.5);
-        display: inline-block;
-        box-sizing: border-box;
-        inset-inline-start: auto;
-        inset-inline-end: spacing(0.375);
-        inset-block-start: spacing(0.375);
-        background-color: $clr-bg-pri;
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-        border: $shp-border-width $shp-border-style $clr-brd-pri;
-    }
-
-    &:after {
-        width: 0;
-        height: 0;
-        content: "";
-        position: absolute;
-        border-radius: 50%;
-        inset-inline-end: 0;
-        box-sizing: border-box;
-        inset-inline-start: spacing(1.25);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
-    }
-
     @media (hover: hover) {
         &:hover {
             border-color: $clr-brd-pri-hover;
+        }
+    }
+}
 
-            &:before {
-                opacity: 1;
-                border-color: $clr-brd-pri-hover;
+.bit-chg-ncr {
+}
+
+.bit-chg-wcr {
+    .bit-chg-ilw {
+        padding-inline-start: spacing(3.25);
+
+        &:before {
+            top: 50%;
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            width: spacing(2.5);
+            height: spacing(2.5);
+            display: inline-block;
+            inset-inline-start: 0;
+            box-sizing: border-box;
+            transform: translateY(-50%);
+            background-color: $clr-bg-pri;
+            transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+            border: $shp-border-width $shp-border-style $clr-brd-pri;
+        }
+
+        &:after {
+            top: 50%;
+            opacity: 0;
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            width: spacing(1.25);
+            height: spacing(1.25);
+            box-sizing: border-box;
+            transform: translateY(-50%);
+            inset-inline-start: spacing(0.625);
+            background-color: $clr-fg-sec-hover;
+            transition-property: background-color;
+            transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                &:before {
+                    border-color: $clr-brd-pri-hover;
+                }
+
+                &:after {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+
+    .bit-chg-ilwi {
+        &:before {
+            opacity: 0;
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            width: spacing(2.5);
+            height: spacing(2.5);
+            display: inline-block;
+            box-sizing: border-box;
+            inset-inline-start: auto;
+            background-color: $clr-bg-pri;
+            inset-inline-end: spacing(0.375);
+            inset-block-start: spacing(0.375);
+            transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+            border: $shp-border-width $shp-border-style $clr-brd-pri;
+        }
+
+        &:after {
+            width: 0;
+            height: 0;
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            inset-inline-end: 0;
+            box-sizing: border-box;
+            inset-inline-start: spacing(1.25);
+            transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                &:before {
+                    opacity: 1;
+                    border-color: $clr-brd-pri-hover;
+                }
+            }
+        }
+    }
+}
+
+.bit-chg-inl {
+    .bit-chg-ihi {
+        background-color: unset;
+
+        .bit-chg-ilw {
+            display: flex;
+            gap: spacing(1);
+            align-items: center;
+            justify-content: center;
+
+            .bit-chg-iic,
+            .bit-chg-icc {
+                height: unset;
+                padding: unset;
+
+                .bit-chg-icw {
+                    font-size: spacing(2);
+                }
+            }
+
+            .bit-chg-itw {
+                margin: unset;
+                height: unset;
             }
         }
     }
@@ -314,10 +361,7 @@
         }
 
         &:after {
-            width: spacing(1.25);
-            height: spacing(1.25);
-            inset-block-start: spacing(0.625);
-            inset-inline-start: spacing(0.625);
+            opacity: 1;
             background-color: $clr-pri;
             border: spacing(0.625) $shp-border-style $clr-pri;
         }

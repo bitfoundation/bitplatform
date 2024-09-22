@@ -37,6 +37,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public bool Horizontal { get; set; }
 
     /// <summary>
+    /// Renders the icons and images in a single line with the items in the ChoiceGroup.
+    /// </summary>
+    [Parameter] public bool Inline { get; set; }
+
+    /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
@@ -141,6 +146,10 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Inline ? "bit-chg-inl" : string.Empty);
+
+        ClassBuilder.Register(() => NoCircle ? "bit-chg-ncr" : "bit-chg-wcr");
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
     }
@@ -260,7 +269,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string GetItemLabelWrapperCssClasses(TItem item)
     {
         var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
-        return hasImageOrIcon && ItemLabelTemplate is null
+        return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
                 ? "bit-chg-ilwi"
                 : "bit-chg-ilw";
     }

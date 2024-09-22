@@ -1,9 +1,17 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <BitChoiceGroup Label="Basic Customs"
-                        Items="basicCustoms"
-                        DefaultValue="basicCustoms[1].ItemValue"
-                        NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+        <div class="example-content">
+            <BitChoiceGroup Label="Basic Customs"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+
+            <BitChoiceGroup Label="NoCircle"
+                            NoCircle
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -31,11 +39,11 @@
 <ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>Showcases BitChoiceGroup with image and icon items.</div>
-        <br />
+        <br /><br />
         <div class="example-content">
             <BitChoiceGroup Label="Image Customs"
-                            DefaultValue="@("Bar")"
                             Items="imageCustoms"
+                            DefaultValue="@("Bar")"
                             NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
                                                      Value = { Name = nameof(ChoiceModel.ItemValue) },
                                                      ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
@@ -44,8 +52,31 @@
                                                      SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
 
             <BitChoiceGroup Label="Icon Customs"
-                            DefaultValue="@("Day")"
                             Items="iconCustoms"
+                            DefaultValue="@("Day")"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Inline:</div><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Image Customs"
+                            Inline
+                            Items="inlineImageCustoms"
+                            DefaultValue="@("Bar")"
+                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
+                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
+                                                     ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
+                                                     ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
+
+            <BitChoiceGroup Label="Icon Customs"
+                            Inline
+                            Items="iconCustoms"
+                            DefaultValue="@("Day")"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
