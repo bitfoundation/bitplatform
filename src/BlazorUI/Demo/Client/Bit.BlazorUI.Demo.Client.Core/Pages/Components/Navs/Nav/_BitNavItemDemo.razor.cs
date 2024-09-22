@@ -48,6 +48,16 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
+    private static readonly List<BitNavItem> HideTextNavMenu =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
+        new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
+        new() { Text = "AdminPanel sample", IconName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+        new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
+        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
+        new() { Text = "Contact us", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+    ];
+
     private static readonly List<BitNavItem> CarNavMenu =
     [
         new()
@@ -249,6 +259,8 @@ public partial class _BitNavItemDemo
         },
         new() { Text = "شمایل نگاری", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
+
+    private bool hideText;
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
     private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];

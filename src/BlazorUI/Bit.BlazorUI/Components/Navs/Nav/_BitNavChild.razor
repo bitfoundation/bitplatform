@@ -19,6 +19,7 @@
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
         var href = (isEnabled && (Nav.SelectedItem != Item || Nav.Reselectable)) ? url : null;
+        var itemKey = Nav.GetItemKey(Item);
     }
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
@@ -63,7 +64,7 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
@@ -76,7 +77,7 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
@@ -103,16 +104,17 @@
             ? (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : 0))
             : (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : Nav.IndentPadding));
 
-            <div name="@text"
-                 class="bit-nav-ict @GetItemContainerClasses()"
-                 style="padding-inline-start:@(padding)px; @GetItemContainerStyles()">
+            <label name="@text"
+                   for="@itemKey"
+                   class="bit-nav-ict @GetItemContainerClasses()"
+                   style="padding-inline-start:@(padding)px;@GetItemContainerStyles()">
 
                 <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                     @if (childItems.Any())
                     {
                         <button @onclick="ToggleItem"
-                                type="button"
                                 tabindex="0"
+                                type="button"
                                 style="@Nav.Styles?.ToggleButton"
                                 class="bit-nav-cbt @Nav.Classes?.ToggleButton"
                                 aria-expanded="@(isExpanded ? "true" : "false")"
@@ -134,13 +136,14 @@
                         @if (renderLink)
                         {
                             <a @onclick="HandleOnClick"
+                               id="@itemKey"
+                               href="@href"
                                tabindex="-1"
-                               style="@GetItemStyles()"
                                target="@target"
+                               style="@GetItemStyles()"
+                               disabled="@(isEnabled is false)"
                                aria-label="@Nav.GetAriaLabel(Item)"
                                class="bit-nav-itm @GetItemClasses()"
-                               disabled="@(isEnabled is false)"
-                               href="@href"
                                title="@(title is not null ? title : text)"
                                aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
@@ -158,13 +161,14 @@
                                     {
                                         <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                     }
-                                    <span>@text</span>
+                                    <span style="@Nav.Styles?.ItemText" class="bit-nav-itx @Nav.Classes?.ItemText">@text</span>
                                 }
                             </a>
                         }
                         else
                         {
                             <button @onclick="HandleOnClick"
+                                    id="@itemKey"
                                     type="button"
                                     tabindex="-1"
                                     style="@GetItemStyles()"
@@ -187,7 +191,7 @@
                                     {
                                         <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                     }
-                                    <span>@text</span>
+                                    <span style="@Nav.Styles?.ItemText" class="bit-nav-itx @Nav.Classes?.ItemText">@text</span>
                                 }
                             </button>
                         }
@@ -223,7 +227,7 @@
                         </button>
                     }
                 }
-            </div>
+            </label>
         }
     }
 
