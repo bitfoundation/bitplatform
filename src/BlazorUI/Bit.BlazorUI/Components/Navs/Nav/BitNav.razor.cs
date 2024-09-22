@@ -53,10 +53,10 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
 
     /// <summary>
-    /// Removes the text of all items and only renders the icon.
+    /// Only renders the icon of each nav item.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public bool HideText { get; set; }
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// The indentation value in px for each level of depth of child item.
@@ -748,7 +748,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
         ClassBuilder.Register(() => FullWidth ? "bit-nav-fwi" : string.Empty);
 
-        ClassBuilder.Register(() => HideText ? "bit-nav-htx" : string.Empty);
+        ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

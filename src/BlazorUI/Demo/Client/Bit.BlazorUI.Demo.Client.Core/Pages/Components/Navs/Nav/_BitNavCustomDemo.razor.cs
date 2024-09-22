@@ -48,7 +48,7 @@ public partial class _BitNavCustomDemo
         new() { Text = "Iconography", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private static readonly List<BitPlatformMenu> CustomHideTextNavMenu =
+    private static readonly List<BitPlatformMenu> CustomIconOnlyNavMenu =
     [
         new() { Text = "Home", Icon = BitIconName.Home, Url = "https://bitplatform.dev/" },
         new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
@@ -260,7 +260,7 @@ public partial class _BitNavCustomDemo
         new() { Text = "شمایل نگاری", Icon = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private bool hideText;
+    private bool iconOnly;
 
     private static List<FoodMenu> Flatten(IList<FoodMenu> e) => e.SelectMany(c => Flatten(c.Childs)).Concat(e).ToList();
     private FoodMenu CustomSelectedFood = CustomFoodNavMenu[0].Childs[2];
@@ -415,13 +415,13 @@ private static readonly List<BitPlatformMenu> CustomBitPlatformNavMenu =
 ];";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""hideText"" Label=""Hide texts?"" Inline />
-<BitNav Items=""CustomHideTextNavMenu"" HideText=""hideText""
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav Items=""CustomIconOnlyNavMenu"" IconOnly=""iconOnly""
         NameSelectors=""@(new() { IconName =  { Name = nameof(BitPlatformMenu.Icon) },
                                  ChildItems =  { Name = nameof(BitPlatformMenu.Links) },
                                  Description =  { Name = nameof(BitPlatformMenu.Comment) } })"" />";
     private readonly string example3CsharpCode = @"
-private bool hideText;
+private bool iconOnly;
 
 public class BitPlatformMenu
 {
@@ -433,7 +433,7 @@ public class BitPlatformMenu
     public List<BitPlatformMenu> Links { get; set; } = [];
 }
 
-private static readonly List<BitPlatformMenu> CustomHideTextNavMenu =
+private static readonly List<BitPlatformMenu> CustomIconOnlyNavMenu =
 [
     new() { Text = ""Home"", Icon = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
     new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },

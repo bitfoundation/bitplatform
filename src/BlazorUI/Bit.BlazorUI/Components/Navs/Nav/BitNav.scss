@@ -153,7 +153,12 @@
     color: $clr-pri;
 }
 
-.bit-nav-htx {
+.bit-nav-ion {
+    .bit-nav-ict {
+        width: fit-content;
+        padding: spacing(2) !important;
+    }
+
     .bit-nav-itx {
         display: none;
     }
