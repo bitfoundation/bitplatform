@@ -1,6 +1,15 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <BitChoiceGroup Label="Basic Items" Items="basicItems" DefaultValue="basicItems[1].Value" />
+        <div class="example-content">
+            <BitChoiceGroup Label="Basic Items"
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value" />
+
+            <BitChoiceGroup Label="NoCircle"
+                            NoCircle
+                            Items="basicItems"
+                            DefaultValue="basicItems[1].Value" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -24,10 +33,16 @@
 <ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>Showcases BitChoiceGroup with image and icon items.</div>
-        <br />
+        <br /><br />
         <div class="example-content">
             <BitChoiceGroup Label="Image Items" Items="imageItems" DefaultValue="@("Bar")" />
             <BitChoiceGroup Label="Icon Items" Items="iconItems" DefaultValue="@("Day")" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Inline:</div><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Image Items" Items="inlineImageItems" DefaultValue="@("Bar")" Inline />
+            <BitChoiceGroup Label="Icon Items" Items="iconItems" DefaultValue="@("Day")" Inline />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
