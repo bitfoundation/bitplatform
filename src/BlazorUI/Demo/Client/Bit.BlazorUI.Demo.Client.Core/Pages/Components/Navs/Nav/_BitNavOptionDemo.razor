@@ -66,11 +66,11 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="HideText" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="IconOnly" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
-        <BitToggle @bind-Value="hideText" Label="Hide texts?" Inline />
+        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
         <br />
-        <BitNav TItem="BitNavOption" HideText="hideText">
+        <BitNav TItem="BitNavOption" IconOnly="iconOnly">
             <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
             <BitNavOption Text="Todo sample" IconName="@BitIconName.ToDoLogoOutline" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
             <BitNavOption Text="AdminPanel sample" IconName="@BitIconName.LocalAdmin" Url="https://bitplatform.dev/templates/overview" Target="_blank" />

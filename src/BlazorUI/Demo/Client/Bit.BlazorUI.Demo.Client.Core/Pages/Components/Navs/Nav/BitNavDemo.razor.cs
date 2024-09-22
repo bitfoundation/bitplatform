@@ -57,10 +57,10 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "HideText",
+            Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the text of all items and only renders the icon."
+            Description = "Only renders the icon of each nav item."
         },
         new()
         {

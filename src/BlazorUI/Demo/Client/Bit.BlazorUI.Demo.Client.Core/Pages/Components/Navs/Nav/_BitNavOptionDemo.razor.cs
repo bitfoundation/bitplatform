@@ -2,7 +2,7 @@
 
 public partial class _BitNavOptionDemo
 {
-    private bool hideText;
+    private bool iconOnly;
 
     private BitNavOption ClickedOption = default!;
     private BitNavOption ToggledOption = default!;
@@ -88,8 +88,8 @@ public partial class _BitNavOptionDemo
 </BitNav>";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""hideText"" Label=""Hide texts?"" Inline />
-<BitNav TItem=""BitNavOption"" HideText=""hideText"">
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav TItem=""BitNavOption"" IconOnly=""iconOnly"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
     <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
     <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
@@ -98,7 +98,7 @@ public partial class _BitNavOptionDemo
     <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
 </BitNav>";
     private readonly string example3CsharpCode = @"
-private bool hideText;";
+private bool iconOnly;";
 
     private readonly string example4RazorCode = @"
 < BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">

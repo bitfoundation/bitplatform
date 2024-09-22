@@ -48,7 +48,7 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private static readonly List<BitNavItem> HideTextNavMenu =
+    private static readonly List<BitNavItem> IconOnlyNavMenu =
     [
         new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
         new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
@@ -260,7 +260,7 @@ public partial class _BitNavItemDemo
         new() { Text = "شمایل نگاری", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    private bool hideText;
+    private bool iconOnly;
 
     private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e).ToList();
     private BitNavItem SelectedItemNav = FoodNavMenu[0].ChildItems[2];
@@ -389,12 +389,12 @@ private static readonly List<BitNavItem> BitPlatformNavMenu =
 ];";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""hideText"" Label=""Hide texts?"" Inline />
-<BitNav Items=""HideTextNavMenu"" HideText=""hideText"" />";
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav Items=""IconOnlyNavMenu"" IconOnly=""iconOnly"" />";
     private readonly string example3CsharpCode = @"
-private bool hideText;
+private bool iconOnly;
 
-private static readonly List<BitNavItem> HideTextNavMenu =
+private static readonly List<BitNavItem> IconOnlyNavMenu =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
     new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
