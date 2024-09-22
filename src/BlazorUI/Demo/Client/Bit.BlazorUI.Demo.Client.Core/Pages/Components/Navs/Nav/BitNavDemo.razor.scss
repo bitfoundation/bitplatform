@@ -2,16 +2,6 @@
 
 ::deep {
     .example-box {
-        width: 350px;
-        display: flex;
-        flex-direction: column;
-
-        @include sm {
-            width: 250px;
-        }
-    }
-
-    .events-example-box {
         gap: 100px;
         display: flex;
         flex-direction: row;
