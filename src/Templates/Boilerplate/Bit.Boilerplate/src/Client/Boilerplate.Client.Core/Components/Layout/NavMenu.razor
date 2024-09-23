@@ -1,17 +1,17 @@
 ﻿@inherits AppComponentBase;
 
-@{
-    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
-}
-
 @if (IsMenuOpen)
 {
     <div class="menu-overlay" @onclick=CloseMenu></div>
 }
+
+@{
+    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+}
+
 <section class="@(IsMenuOpen ? null : "closed")">
     <BitCard Class="panel">
-        <BitStack HorizontalAlign="BitAlignment.Start"
-                  VerticalAlign="BitAlignment.Start">
+        <BitStack>
             <BitPersona Class="persona"
                         PrimaryText="@user.FullName"
                         SecondaryText="@user.DisplayName"
@@ -24,16 +24,19 @@
                 </ImageOverlayTemplate>
             </BitPersona>
 
+            <BitSeparator />
+
+            <BitNav Items="navItems" FullWidth IconOnly
+                    DefaultSelectedItem="navItems[0]"
+                    Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })"
+                    OnItemClick="(BitNavItem item) => HandleNavItemClick(item)">
+            </BitNav>
+
+            <BitSpacer />
+
             <BitActionButton IconName="@BitIconName.SignOut" OnClick="DoSignOut" Style="width:fit-content">
                 @Localizer[nameof(AppStrings.SignOut)]
             </BitActionButton>
-
-            <BitSeparator />
-
-            <BitNav Items="navItems" Style="width:100%"
-                    DefaultSelectedItem="navItems[0]"
-                    OnItemClick="(BitNavItem item) => HandleNavItemClick(item)">
-            </BitNav>
         </BitStack>
     </BitCard>
 </section>
