@@ -8,7 +8,7 @@ using Android.Runtime;
 namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [Application(
-#if DEBUG
+#if Development
     UsesCleartextTraffic = true,
 #endif
     AllowBackup = true,

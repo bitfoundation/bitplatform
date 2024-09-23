@@ -8,32 +8,32 @@
             {
                 "appID": "76WD644YU8.com.bitplatform.AdminPanel.Template",
                 "paths": [
-                    "NOT /api*",
-                    "NOT /odata*",
-                    "NOT /jobs*",
-                    "NOT /core*",
-                    "NOT /signalr*",
-                    "NOT /healthchecks-ui*",
-                    "NOT /healthz*",
-                    "NOT /swagger*",
-                    "NOT /signin*",
-                    "NOT /.well-known*",
+                    "NOT /api/*",
+                    "NOT /odata/*",
+                    "NOT /jobs/*",
+                    "NOT /core/*",
+                    "NOT /signalr/*",
+                    "NOT /healthchecks-ui/*",
+                    "NOT /healthz/*",
+                    "NOT /swagger/*",
+                    "NOT /signin/*",
+                    "NOT /.well-known/*",
                     "*"
                 ]
             },
             {
                 "appID": "76WD644YU8.com.bitplatform.Todo.Template",
                 "paths": [
-                    "NOT /api*",
-                    "NOT /odata*",
-                    "NOT /jobs*",
-                    "NOT /core*",
-                    "NOT /signalr*",
-                    "NOT /healthchecks-ui*",
-                    "NOT /healthz*",
-                    "NOT /swagger*",
-                    "NOT /signin*",
-                    "NOT /.well-known*",
+                    "NOT /api/*",
+                    "NOT /odata/*",
+                    "NOT /jobs/*",
+                    "NOT /core/*",
+                    "NOT /signalr/*",
+                    "NOT /healthchecks-ui/*",
+                    "NOT /healthz/*",
+                    "NOT /swagger/*",
+                    "NOT /signin/*",
+                    "NOT /.well-known/*",
                     "*"
                 ]
             }
