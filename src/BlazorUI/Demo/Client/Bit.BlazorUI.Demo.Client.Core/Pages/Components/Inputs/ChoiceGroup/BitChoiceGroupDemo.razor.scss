@@ -7,7 +7,6 @@
         flex-wrap: wrap;
 
         &.column {
-            max-width: 19rem;
             flex-direction: column;
         }
     }
@@ -35,7 +34,6 @@
         width: 8px;
         height: 8px;
         border: none;
-        inset-block-start: 6px;
         inset-inline-start: 6px;
         background-color: whitesmoke;
     }

@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
 
-public class ButtonGroupActionItem
+public class Operation
 {
     public string? Id { get; set; }
 
@@ -14,5 +14,5 @@ public class ButtonGroupActionItem
 
     public string? Style { get; set; }
 
-    public Action<ButtonGroupActionItem>? Clicked { get; set; }
+    public Action<Operation>? Clicked { get; set; }
 }
