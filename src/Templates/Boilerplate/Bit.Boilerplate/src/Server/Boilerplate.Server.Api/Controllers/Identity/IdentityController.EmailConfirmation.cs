@@ -44,7 +44,6 @@ public partial class IdentityController
             throw new BadRequestException(nameof(AppStrings.InvalidToken));
         }
 
-        var userEmailStore = (IUserEmailStore<User>)userStore;
         await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
