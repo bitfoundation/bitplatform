@@ -5,19 +5,19 @@ public partial class _BitTimelineCustomDemo
     private readonly string example1RazorCode = @"
 <BitTimeline Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example1CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText }
 };
 
-private List<TimelineActionItem> basicCustoms =
+private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
@@ -27,19 +27,19 @@ private List<TimelineActionItem> basicCustoms =
     private readonly string example2RazorCode = @"
 <BitTimeline Horizontal Items=""basicCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example2CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText }
 };
 
-private List<TimelineActionItem> basicCustoms =
+private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
@@ -50,28 +50,28 @@ private List<TimelineActionItem> basicCustoms =
 <BitTimeline Horizontal Items=""basicCustoms"" NameSelectors=""nameSelectors"" IsEnabled=""false"" />
 <BitTimeline Horizontal Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example3CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
     public bool Disabled { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
     IsEnabled = { Selector = i => i.Disabled is false },
 };
 
-private List<TimelineActionItem> basicCustoms =
+private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
     new() { FirstText = ""Custom 3"" }
 ];
 
-private List<TimelineActionItem> disabledCustoms =
+private List<Event> disabledCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"", Disabled = true },
@@ -83,21 +83,21 @@ private List<TimelineActionItem> disabledCustoms =
 <BitTimeline Horizontal Variant=""BitVariant.Outline"" Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Variant=""BitVariant.Text"" Items=""disabledCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example4CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
     public bool Disabled { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
     IsEnabled = { Selector = i => i.Disabled is false },
 };
 
-private List<TimelineActionItem> disabledCustoms =
+private List<Event> disabledCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"", Disabled = true },
@@ -109,7 +109,7 @@ private List<TimelineActionItem> disabledCustoms =
 <BitTimeline Horizontal Items=""iconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />
 <BitTimeline Horizontal Items=""iconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />";
     private readonly string example5CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
@@ -117,7 +117,7 @@ public class TimelineActionItem
     public string? Icon { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
@@ -125,7 +125,7 @@ BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
     IconName = { Selector = i => i.Icon },
 };
 
-private List<TimelineActionItem> iconCustoms =
+private List<Event> iconCustoms =
 [
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
     new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit, SecondText = ""Item 2 Secondary"", Disabled = true },
@@ -139,27 +139,27 @@ private List<TimelineActionItem> iconCustoms =
 <BitTimeline Horizontal Items=""basicCustoms"" NameSelectors=""nameSelectors"" Reversed />
 <BitTimeline Horizontal Items=""reversedCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example6CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
     public bool Reversed { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText }
 };
 
-private List<TimelineActionItem> basicCustoms =
+private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
     new() { FirstText = ""Custom 3"" }
 ];
 
-private List<TimelineActionItem> reversedCustoms =
+private List<Event> reversedCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", Reversed = true },
@@ -180,22 +180,22 @@ private List<TimelineActionItem> reversedCustoms =
 
 <BitTimeline Horizontal Items=""templateItems"" NameSelectors=""nameSelectors"" />";
     private readonly string example7CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
-    public RenderFragment<TimelineActionItem>? FirstContent { get; set; }
-    public RenderFragment<TimelineActionItem>? DotContent { get; set; }
-    public RenderFragment<TimelineActionItem>? SecondContent { get; set; }
+    public RenderFragment<Event>? FirstContent { get; set; }
+    public RenderFragment<Event>? DotContent { get; set; }
+    public RenderFragment<Event>? SecondContent { get; set; }
     public bool Reversed { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryContent = { Selector = i => i.FirstContent },
     DotTemplate = { Selector = i => i.DotContent },
     SecondaryContent = { Selector = i => i.SecondContent },
 };
 
-private List<TimelineActionItem> templateItems = 
+private List<Event> templateItems = 
 [
     new()
     {
@@ -274,7 +274,7 @@ private List<TimelineActionItem> templateItems =
 <BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Color=""BitColor.Error"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example8CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
@@ -282,7 +282,7 @@ public class TimelineActionItem
     public string? Icon { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
@@ -290,7 +290,7 @@ BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
     IconName = { Selector = i => i.Icon },
 };
 
-private List<TimelineActionItem> iconCustoms =
+private List<Event> iconCustoms =
 [
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
     new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit, SecondText = ""Item 2 Secondary"", Disabled = true },
@@ -310,7 +310,7 @@ private List<TimelineActionItem> iconCustoms =
 <BitTimeline Horizontal Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""iconCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example9CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
@@ -318,7 +318,7 @@ public class TimelineActionItem
     public string? Icon { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
@@ -326,7 +326,7 @@ BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
     IconName = { Selector = i => i.Icon },
 };
 
-private List<TimelineActionItem> iconCustoms =
+private List<Event> iconCustoms =
 [
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
     new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit, SecondText = ""Item 2 Secondary"", Disabled = true },
@@ -390,7 +390,7 @@ private List<TimelineActionItem> iconCustoms =
                                 Item = ""custom-item-text"",
                                 Divider = ""custom-divider"" })"" />";
     private readonly string example10CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
@@ -400,7 +400,7 @@ public class TimelineActionItem
     public string? Style { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText },
@@ -408,20 +408,20 @@ BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
     IconName = { Selector = i => i.Icon },
 };
 
-private List<TimelineActionItem> basicCustoms =
+private List<Event> basicCustoms =
 [
     new() { FirstText = ""Custom 1"" },
     new() { FirstText = ""Custom 2"", SecondText = ""Custom 2 Secondary"" },
     new() { FirstText = ""Custom 3"" }
 ];
 
-private List<TimelineActionItem> styleClassCustoms =
+private List<Event> styleClassCustoms =
 [
     new() { FirstText = ""Styled"", Style = ""color: dodgerblue;"", Icon = BitIconName.Brush },
     new() { FirstText = ""Classed"", Class = ""custom-item"", Icon = BitIconName.FormatPainter }
 ];
 
-private List<TimelineActionItem> iconCustoms = new()
+private List<Event> iconCustoms = new()
 {
     new() { FirstText = ""Custom 1"", Icon = BitIconName.Add },
     new() { FirstText = ""Custom 2"", Icon = BitIconName.Edit },
@@ -432,19 +432,19 @@ private List<TimelineActionItem> iconCustoms = new()
 <BitTimeline Dir=""BitDir.Rtl"" Items=""basicRtlCustoms"" NameSelectors=""nameSelectors"" />
 <BitTimeline Horizontal Dir=""BitDir.Rtl"" Items=""basicRtlCustoms"" NameSelectors=""nameSelectors"" />";
     private readonly string example11CsharpCode = @"
-public class TimelineActionItem
+public class Event
 {
     public string? FirstText { get; set; }
     public string? SecondText { get; set; }
 }
 
-BitTimelineNameSelectors<TimelineActionItem> nameSelectors = new()
+BitTimelineNameSelectors<Event> nameSelectors = new()
 {
     PrimaryText = { Selector = i => i.FirstText },
     SecondaryText = { Selector = i => i.SecondText }
 };
 
-private List<TimelineActionItem> basicRtlCustoms =
+private List<Event> basicRtlCustoms =
 [
     new() { FirstText = ""گزینه ۱"" },
     new() { FirstText = ""گزینه ۲"", SecondText = ""گزینه ۲ ثانویه"" },
