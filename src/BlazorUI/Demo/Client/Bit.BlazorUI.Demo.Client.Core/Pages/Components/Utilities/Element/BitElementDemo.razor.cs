@@ -24,8 +24,8 @@ public partial class BitElementDemo
 
     private int counter;
 
-    private string elementTag = "div";
-    private List<BitDropdownItem<string>> tagsList =
+    private string element = "div";
+    private List<BitDropdownItem<string>> elementsList =
     [
          new() { Text = "div", Value = "div" },
          new() { Text = "a", Value = "a" },
@@ -41,24 +41,24 @@ public partial class BitElementDemo
 <BitElement>This is default (div)</BitElement>";
 
     private string example2RazorCode = @"
-<BitElement Tag=""input"" placeholder=""Input"" />
-<BitElement Tag=""a"" href=""https://bitplatform.dev/"" target=""_blank"">Anchor (Link)</BitElement>
-<BitElement Tag=""button"" @onclick=""@(() => counter++)"">Button (Click count @counter)</BitElement>";
+<BitElement Element=""input"" placeholder=""Input"" />
+<BitElement Element=""a"" href=""https://bitplatform.dev/"" target=""_blank"">Anchor (Link)</BitElement>
+<BitElement Element=""button"" @onclick=""@(() => counter++)"">Button (Click count @counter)</BitElement>";
     private string example2CsharpCode = @"
 private int counter;";
 
     private string example3RazorCode = @"
-<BitElement Tag=""@elementTag""
-            placeholder=""@elementTag""
+<BitElement Element=""@element""
+            placeholder=""@element""
             target=""_blank""
             href=""https://bitplatform.dev/"">
-    @elementTag
+    @element
 </BitElement>
 
-<BitDropdown Label=""Tags"" Items=""tagsList"" @bind-Value=""elementTag"" />";
+<BitDropdown Label=""Elements"" Items=""elementsList"" @bind-Value=""element"" />";
     private string example3CsharpCode = @"
-private string elementTag = ""div"";
-private List<BitDropdownItem<string>> tagsList = new()
+private string element = ""div"";
+private List<BitDropdownItem<string>> elementsList = new()
 {
         new() { Text = ""div"", Value = ""div"" },
         new() { Text = ""a"", Value = ""a"" },

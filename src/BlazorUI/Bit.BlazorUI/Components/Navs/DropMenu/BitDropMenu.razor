@@ -1,36 +1,40 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement" @attributes="HtmlAttributes"
-        id="@_Id"
-        type="button"
-        aria-label="@AriaLabel"
-        @onclick="HandleOnClick"
-        style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value"
-        dir="@Dir?.ToString().ToLower()"
-        tabindex="@(IsEnabled ? 0 : -1)">
-    @if (Template is not null)
-    {
-        @Template
-    }
-    else
-    {
-        @if (IconName.HasValue())
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     type="button"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@(IsEnabled ? 0 : -1)">
+    <button @onclick="HandleOnClick"
+            type="button"
+            style="@Styles?.Button"
+            class="bit-drm-btn @Classes?.Button">
+        @if (Template is not null)
         {
-            <i style="@Styles?.Icon" class="bit-drm-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+            @Template
         }
-
-        @if (Text.HasValue())
+        else
         {
-            <div style="@Styles?.Text" class="bit-drm-txt @Classes?.Text">
-                @Text
-            </div>
-        }
+            @if (IconName.HasValue())
+            {
+                <i style="@Styles?.Icon" class="bit-drm-icn bit-icon bit-icon--@IconName @Classes?.Icon" />
+            }
 
-        <i style="@Styles?.ChevronDown"
-           class="bit-drm-cdi bit-icon bit-icon--@(ChevronDownIcon ?? "ChevronDown") @Classes?.ChevronDown" />
-    }
+            @if (Text.HasValue())
+            {
+                <div style="@Styles?.Text" class="bit-drm-txt @Classes?.Text">
+                    @Text
+                </div>
+            }
+
+            <i style="@Styles?.ChevronDown"
+               class="bit-drm-cdi bit-icon bit-icon--@(ChevronDownIcon ?? "ChevronDown") @Classes?.ChevronDown" />
+        }
+    </button>
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
          style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
@@ -41,4 +45,4 @@
          class="bit-drm-cal @Classes?.Callout">
         @(Body ?? ChildContent)
     </div>
-</button>
+</div>

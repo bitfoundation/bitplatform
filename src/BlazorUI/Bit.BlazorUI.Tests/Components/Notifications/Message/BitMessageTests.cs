@@ -88,7 +88,7 @@ public class BitMessageTests : BunitTestContext
     {
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.DismissIconName, iconName);
+            parameters.Add(p => p.DismissIcon, iconName);
             parameters.Add(p => p.OnDismiss, () => { });
         });
 

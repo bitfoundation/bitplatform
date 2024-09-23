@@ -5,6 +5,15 @@ public partial class BitStackDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Defines whether to render Stack children both horizontally and vertically.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
             Name = "AutoHeight",
             Type = "bool",
             DefaultValue = "false",

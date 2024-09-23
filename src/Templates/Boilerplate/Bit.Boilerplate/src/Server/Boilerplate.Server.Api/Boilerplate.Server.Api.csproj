@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-01" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-02" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-02" PrivateAssets="all" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
         <PackageReference Include="Humanizer" Version="2.14.1" />
     </ItemGroup>
@@ -38,12 +38,12 @@
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0-rc.1" />
         <PackageReference Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="9.0.0-rc.1.24451.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-rc.1.24451.1" PrivateAssets="all" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-rc.1.24452.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.0-rc.1.24452.1" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
         <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
-        <PackageReference Include="Twilio" Version="7.3.0" />
+        <PackageReference Include="Twilio" Version="7.3.1" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
