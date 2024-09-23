@@ -308,8 +308,8 @@
         <div>Present BitMenuButton instances with customized icons, enriching the visual options for representing menu buttons.</div>
         <br />
         <div class="example-content">
-            <BitMenuButton Text="IconName" Items="basicCustoms" NameSelectors="nameSelectors" IconName="@BitIconName.Edit" />
-            <BitMenuButton Text="ChevronDownIcon" Items="basicCustoms" NameSelectors="nameSelectors" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
+            <BitMenuButton Text="IconName" Items="basicIconCustoms" NameSelectors="nameSelectors" IconName="@BitIconName.Edit" />
+            <BitMenuButton Text="ChevronDownIcon" Items="basicIconCustoms" NameSelectors="nameSelectors" ChevronDownIcon="@BitIconName.DoubleChevronDown" Split />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -386,23 +386,23 @@
             <div>Non-Sticky</div>
             <div class="example-content">
                 <BitMenuButton Text="Customs" Items="basicCustoms" NameSelectors="nameSelectors"
-                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
-                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
+                               OnChange="(Operation item) => eventsChangedCustom = item?.Id"
+                               OnClick="(Operation item) => eventsClickedCustom = item?.Id" />
 
                 <BitMenuButton Split Text="Customs" Items="basicCustomsOnClick" NameSelectors="nameSelectors"
-                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
-                               OnClick="@((MenuActionItem item) => eventsClickedCustom = "Main button clicked")" />
+                               OnChange="(Operation item) => eventsChangedCustom = item?.Id"
+                               OnClick="@((Operation item) => eventsClickedCustom = "Main button clicked")" />
             </div>
             <br /><br />
             <div>Sticky</div>
             <div class="example-content">
                 <BitMenuButton Sticky Items="basicCustoms" NameSelectors="nameSelectors"
-                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
-                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
+                               OnChange="(Operation item) => eventsChangedCustom = item?.Id"
+                               OnClick="(Operation item) => eventsClickedCustom = item?.Id" />
 
                 <BitMenuButton Sticky Split Items="basicCustomsOnClick" NameSelectors="nameSelectors"
-                               OnChange="(MenuActionItem item) => eventsChangedCustom = item?.Id"
-                               OnClick="(MenuActionItem item) => eventsClickedCustom = item?.Id" />
+                               OnChange="(Operation item) => eventsChangedCustom = item?.Id"
+                               OnClick="(Operation item) => eventsClickedCustom = item?.Id" />
             </div>
         </div>
         <br /><br />
@@ -460,19 +460,19 @@
 </ComponentExampleBox>
 
 @code {
-    private List<MenuActionItem> itemTemplateCustoms2 =
+    private List<Operation> itemTemplateCustoms2 =
     [
         new()
         {
             Name = "Add", Id = "add-key", Icon = BitIconName.Add,
             Fragment = (item => @<div class="item-template-box" style="color:green">@item.Name (@item.Id)</div>)
         },
-    new()
+        new()
         {
             Name = "Edit", Id = "edit-key", Icon = BitIconName.Edit,
             Fragment = (item => @<div class="item-template-box" style="color:yellow">@item.Name (@item.Id)</div>)
         },
-    new()
+        new()
         {
             Name = "Delete", Id = "delete-key", Icon = BitIconName.Delete,
             Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)

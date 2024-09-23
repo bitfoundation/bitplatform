@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.ChoiceGroup;
 
-public class ChoiceModel
+public class Order
 {
     public string? Name { get; set; }
     public string? ItemValue { get; set; }
@@ -12,6 +12,6 @@ public class ChoiceModel
     public bool IsDisabled { get; set; }
     public string? Class { get; set; }
     public string? Style { get; set; }
-    public RenderFragment<ChoiceModel>? Fragment { get; set; }
+    public RenderFragment<Order>? Fragment { get; set; }
     public int Idx { get; set; }
 }

@@ -37,6 +37,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// Renders the nav in full width of its container.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
@@ -45,6 +51,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// The render mode of the custom HeaderTemplate.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
+    /// Only renders the icon of each nav item.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// The indentation value in px for each level of depth of child item.
@@ -733,6 +745,10 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-nav-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

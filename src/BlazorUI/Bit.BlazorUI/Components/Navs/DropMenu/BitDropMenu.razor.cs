@@ -40,8 +40,7 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// Determines the opening state of the callout of the drop menu.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [Parameter, CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -72,6 +71,15 @@ public partial class BitDropMenu : BitComponentBase
     public bool Transparent { get; set; }
 
 
+    [JSInvokable("CloseCallout")]
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (await AssignIsOpen(false) is false) return;
+
+        StateHasChanged();
+    }
+
+
 
     protected override string RootElementClass => "bit-drm";
 
@@ -99,6 +107,7 @@ public partial class BitDropMenu : BitComponentBase
 
         await base.OnInitializedAsync();
     }
+
 
 
     private async Task HandleOnClick()

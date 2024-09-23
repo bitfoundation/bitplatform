@@ -36,6 +36,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Inline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the icons and images in a single line with the items in the ChoiceGroup."
+        },
+        new()
+        {
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
@@ -96,6 +103,13 @@ public partial class BitChoiceGroupDemo
             Description = "Names and selectors of the custom input type properties.",
             Href = "#name-selectors",
             LinkType = LinkType.Link,
+        },
+        new()
+        {
+            Name = "NoCircle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the circle from the start of each item."
         },
         new()
         {

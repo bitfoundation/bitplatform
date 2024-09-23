@@ -111,6 +111,13 @@ public partial class BitDropMenuDemo
                 },
                 new()
                 {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button of the BitDropMenu."
+                },
+                new()
+                {
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
