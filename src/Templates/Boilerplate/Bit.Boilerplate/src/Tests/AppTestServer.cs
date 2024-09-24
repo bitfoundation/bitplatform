@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Boilerplate.Server.Api;
+using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
 
 namespace Boilerplate.Tests;
@@ -28,14 +29,34 @@ public partial class AppTestServer : IAsyncDisposable
         builder.WebHost.UseTestServer();
 
         configureTestServices?.Invoke(builder.Services);
-        builder.ConfigureApiServices();
-        builder.Services.AddSharedProjectServices();
+        AddTestProjectServices(builder.Services);
+        builder.AddServerWebProjectServices();
 
         var app = webApp = builder.Build();
 
         app.ConfiureMiddlewares();
 
         return this;
+    }
+
+    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
+
+    private void AddTestProjectServices(IServiceCollection services)
+    {
+        services.TryAddTransient(_ => testServer!.CreateWebSocketClient());
+
+        services.TryAddTransient(sp =>
+        {
+            var underlyingHttpMessageHandler = testServer!.CreateHandler();
+
+            var constructedHttpMessageHander = testServer.Services.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
+                .Invoke(underlyingHttpMessageHandler);
+
+            return new HttpClient(constructedHttpMessageHander)
+            {
+                BaseAddress = testServer.BaseAddress
+            };
+        });
     }
 
     public async Task Start()
@@ -53,26 +74,6 @@ public partial class AppTestServer : IAsyncDisposable
         await webApp.StartAsync();
 
         testServer = webApp.GetTestServer();
-    }
-
-    public HttpClient CreateClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateClient();
-    }
-
-    public HttpMessageHandler CreateHandler()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateHandler();
-    }
-
-    public RequestBuilder CreateRequest(string path)
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateRequest(path);
-    }
-
-    public WebSocketClient CreateWebSocketClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateWebSocketClient();
     }
 
     public async ValueTask DisposeAsync()

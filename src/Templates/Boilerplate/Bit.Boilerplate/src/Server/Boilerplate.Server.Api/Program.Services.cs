@@ -22,7 +22,7 @@ namespace Boilerplate.Server.Api;
 
 public static partial class Program
 {
-    public static void ConfigureApiServices(this WebApplicationBuilder builder)
+    public static void AddServerApiProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
 

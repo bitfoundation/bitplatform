@@ -8,7 +8,7 @@ public partial class MainWindow
     {
         AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
-        services.ConfigureServices();
+        services.AddClientWindowsProjectServices();
         InitializeComponent();
         AppWebView.Services = services.BuildServiceProvider();
         if (CultureInfoManager.MultilingualEnabled)

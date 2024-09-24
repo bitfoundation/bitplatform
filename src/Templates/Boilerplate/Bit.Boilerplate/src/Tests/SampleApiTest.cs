@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Tests;
 
@@ -15,20 +15,20 @@ public partial class SampleApiTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
 
-        var client = server.CreateClient();
+        await using var scope = server.Services.CreateAsyncScope();
 
-        using var response = await client.PostAsJsonAsync("/api/Identity/SignIn", new SignInRequestDto
+        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+
+        var signInResponse = await identityController.SignIn(new()
         {
             Email = "test@bitplatform.dev",
             Password = "123456"
-        });
+        }, default);
 
-        var signInResponse = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<SignInResponseDto>();
+        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
-        client.DefaultRequestHeaders.Authorization = new("Bearer", signInResponse!.AccessToken);
+        var user = await userController.GetCurrentUser(default);
 
-        var user = await client.GetFromJsonAsync<UserDto>("api/User/GetCurrentUser");
-
-        Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user!.Id);
+        Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.Id);
     }
 }
