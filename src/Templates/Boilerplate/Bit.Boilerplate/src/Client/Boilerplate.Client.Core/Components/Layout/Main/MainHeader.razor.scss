@@ -6,6 +6,7 @@ header {
     width: 100%;
     position: sticky;
     padding-block: 1rem;
+    z-index: $bit-zindex-base;
     background-color: $bit-color-background-primary;
 }
 

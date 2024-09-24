@@ -2,5 +2,7 @@
 
 public interface IThemeService
 {
-    Task ToggleTheme();
+    Task<AppThemeType> GetCurrentTheme();
+
+    Task<AppThemeType> ToggleTheme();
 }

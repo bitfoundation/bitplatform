@@ -23,7 +23,11 @@
                                 Size="BitPersonaSize.Size48"
                                 SecondaryText="@user.DisplayName"
                                 Presence="BitPersonaPresence.Online"
-                                ImageUrl="@imageUrl" />
+                                ImageUrl="@imageUrl">
+                        <ImageOverlayTemplate>
+                            <span>@Localizer[nameof(AppStrings.Edit)]</span>
+                        </ImageOverlayTemplate>
+                    </BitPersona>
                     <BitSeparator />
                     <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
                         @Localizer[nameof(AppStrings.ProfileTitle)]
@@ -38,10 +42,12 @@
                         </BitStack>
                     </BitActionButton>
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                        <BitActionButton IconName="@BitIconName.ClearNight" OnClick="ToggleTheme" Style="flex-grow:1">
-                            @Localizer[nameof(AppStrings.Dark)]
+                        <BitActionButton Style="flex-grow:1"
+                                         OnClick="ToggleTheme"
+                                         IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)">
+                            @(currentTheme == AppThemeType.Light ? Localizer[nameof(AppStrings.Light)] : Localizer[nameof(AppStrings.Dark)])
                         </BitActionButton>
-                        <BitToggle OnChange="ToggleTheme" />
+                        <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
                     </BitStack>
                     <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
                         @Localizer[nameof(AppStrings.Settings)]

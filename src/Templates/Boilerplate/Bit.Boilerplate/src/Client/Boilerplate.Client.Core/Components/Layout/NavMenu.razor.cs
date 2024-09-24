@@ -6,17 +6,19 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class NavMenu
 {
     private bool disposed;
+    private bool isNavToggled;
+    private UserDto user = new();
     private bool isSignOutModalOpen;
     private string? profileImageUrl;
-    private UserDto user = new();
-    private List<BitNavItem> navItems = [];
     private Action unsubscribe = default!;
+    private List<BitNavItem> navItems = [];
 
     [AutoInject] private NavigationManager navManager = default!;
 
     [Parameter] public bool IsMenuOpen { get; set; }
 
     [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
+
 
     protected override async Task OnInitAsync()
     {
@@ -104,6 +106,7 @@ public partial class NavMenu
         profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
+
     private async Task DoSignOut()
     {
         isSignOutModalOpen = true;
@@ -129,6 +132,12 @@ public partial class NavMenu
         IsMenuOpen = false;
         await IsMenuOpenChanged.InvokeAsync(false);
     }
+
+    private async Task ToggleNavMenu()
+    {
+        isNavToggled = !isNavToggled;
+    }
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

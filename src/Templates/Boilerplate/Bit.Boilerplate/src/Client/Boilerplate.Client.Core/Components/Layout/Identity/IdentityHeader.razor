@@ -14,9 +14,9 @@
         <BitButton IconOnly
                    FixedColor
                    Variant="BitVariant.Text"
-                   IconName="@BitIconName.Sunny"
+                   OnClick="WrapHandled(ToggleTheme)"
                    Color="BitColor.SecondaryBackground"
-                   OnClick="WrapHandled(ToggleTheme)" />
+                   IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)" />
 
 
         <BitDropdown Items="cultures"

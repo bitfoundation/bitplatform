@@ -9,9 +9,12 @@ public partial class RootLayout : IDisposable
     private BitDir? currentDir;
     private string? currentUrl;
     private bool isAuthenticated;
+    private AppThemeType? currentTheme;
+    private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
 
 
+    [AutoInject] private IThemeService themeService = default!;
     [AutoInject] private IPubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
@@ -27,19 +30,24 @@ public partial class RootLayout : IDisposable
         try
         {
             navigationManager.LocationChanged += NavigationManagerLocationChanged;
-
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
-
-            isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
-
             unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
             });
+            unsubscribeThemeChange = pubSubService.Subscribe(PubSubMessages.THEME_CHANGED, async payload =>
+            {
+                if (payload is null) return;
+                currentTheme = (AppThemeType)payload;
+                StateHasChanged();
+            });
+
+            isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             SetCurrentDir();
             SetCurrentUrl();
+            currentTheme = await themeService.GetCurrentTheme();
 
             await base.OnInitializedAsync();
         }
