@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Boilerplate.Tests;
 
 public partial class AppTestServer : IAsyncDisposable
 {
-    private TestServer? testServer;
     private WebApplication? webApp;
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
@@ -26,11 +25,11 @@ public partial class AppTestServer : IAsyncDisposable
 
         builder.Configuration.AddSharedConfigurations();
 
-        builder.WebHost.UseTestServer();
+        builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
         configureTestServices?.Invoke(builder.Services);
-        AddTestProjectServices(builder.Services);
-        builder.AddServerWebProjectServices();
+
+        builder.AddTestProjectServices();
 
         var app = webApp = builder.Build();
 
@@ -40,24 +39,6 @@ public partial class AppTestServer : IAsyncDisposable
     }
 
     public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
-
-    private void AddTestProjectServices(IServiceCollection services)
-    {
-        services.TryAddTransient(_ => testServer!.CreateWebSocketClient());
-
-        services.TryAddTransient(sp =>
-        {
-            var underlyingHttpMessageHandler = testServer!.CreateHandler();
-
-            var constructedHttpMessageHander = testServer.Services.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                .Invoke(underlyingHttpMessageHandler);
-
-            return new HttpClient(constructedHttpMessageHander)
-            {
-                BaseAddress = testServer.BaseAddress
-            };
-        });
-    }
 
     public async Task Start()
     {
@@ -72,8 +53,6 @@ public partial class AppTestServer : IAsyncDisposable
         }
 
         await webApp.StartAsync();
-
-        testServer = webApp.GetTestServer();
     }
 
     public async ValueTask DisposeAsync()
@@ -82,6 +61,5 @@ public partial class AppTestServer : IAsyncDisposable
         {
             await webApp.DisposeAsync();
         }
-        testServer?.Dispose();
     }
 }

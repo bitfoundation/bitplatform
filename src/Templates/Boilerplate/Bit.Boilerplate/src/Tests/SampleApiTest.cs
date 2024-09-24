@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Client.Core.Services;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Tests;
 
@@ -17,7 +18,7 @@ public partial class SampleApiTest
 
         await using var scope = server.Services.CreateAsyncScope();
 
-        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+        var identityController = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
         var signInResponse = await identityController.SignIn(new()
         {

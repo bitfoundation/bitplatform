@@ -18,6 +18,8 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
         <PackageReference Include="MSTest.TestAdapter" Version="3.6.0" />
         <PackageReference Include="MSTest.TestFramework" Version="3.6.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-02" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-02" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
