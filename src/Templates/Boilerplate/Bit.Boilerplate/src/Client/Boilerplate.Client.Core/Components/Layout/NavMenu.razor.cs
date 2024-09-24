@@ -29,26 +29,20 @@ public partial class NavMenu
                 Url = Urls.HomePage,
             },
             //#if (sample == "Admin")
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.ProductCategory)],
+            new() {
+                Text = Localizer[nameof(AppStrings.Dashboard)],
+                IconName = BitIconName.BarChartVerticalFill,
+                Url = Urls.DashboardPage,
+            },
+            new() {
+                Text = Localizer[nameof(AppStrings.Products)],
                 IconName = BitIconName.Product,
-                IsExpanded = true,
-                ChildItems =
-                [
-                    new() {
-                        Text = Localizer[nameof(AppStrings.Dashboard)],
-                        Url = Urls.DashboardPage,
-                    },
-                    new() {
-                        Text = Localizer[nameof(AppStrings.Products)],
-                        Url = Urls.ProductsPage,
-                    },
-                    new() {
-                        Text = Localizer[nameof(AppStrings.Categories)],
-                        Url = Urls.CategoriesPage,
-                    },
-                ]
+                Url = Urls.ProductsPage,
+            },
+            new() {
+                Text = Localizer[nameof(AppStrings.Categories)],
+                IconName = BitIconName.BuildQueue,
+                Url = Urls.CategoriesPage,
             },
             //#elif (sample == "Todo")
             new()

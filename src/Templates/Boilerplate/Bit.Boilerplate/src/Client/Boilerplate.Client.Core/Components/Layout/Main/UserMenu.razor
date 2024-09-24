@@ -16,7 +16,7 @@
         <BitCard FullSize>
             @if (showCultures is false)
             {
-                <BitStack HorizontalAlign="BitAlignment.Start">
+                <BitStack>
                     <BitPersona Class="persona"
                                 OnImageClick="GoToProfile"
                                 PrimaryText="@user.FullName"
@@ -29,7 +29,7 @@
                         @Localizer[nameof(AppStrings.ProfileTitle)]
                     </BitActionButton>
                     <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
-                        <BitStack Horizontal Gap="0" Grows>
+                        <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
                             @Localizer[nameof(AppStrings.Language)]
                             <BitSpacer />
                             <BitIcon Size="BitSize.Small"
@@ -37,13 +37,12 @@
                                      IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
                         </BitStack>
                     </BitActionButton>
-                    <BitToggle FullWidth Inline OnChange="ToggleTheme">
-                        <LabelTemplate>
-                            <BitActionButton IconName="@BitIconName.ClearNight" OnClick="ToggleTheme">
-                                @Localizer[nameof(AppStrings.Dark)]
-                            </BitActionButton>
-                        </LabelTemplate>
-                    </BitToggle>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                        <BitActionButton IconName="@BitIconName.ClearNight" OnClick="ToggleTheme" Style="flex-grow:1">
+                            @Localizer[nameof(AppStrings.Dark)]
+                        </BitActionButton>
+                        <BitToggle OnChange="ToggleTheme" />
+                    </BitStack>
                     <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
                         @Localizer[nameof(AppStrings.Settings)]
                     </BitActionButton>
@@ -56,14 +55,16 @@
             {
                 <BitStack HorizontalAlign="BitAlignment.Start">
                     <BitActionButton FullWidth
+                                     Style="align-items:flex-end"
                                      OnClick="() => showCultures=false"
                                      IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                         @Localizer[nameof(AppStrings.SelectLanguage)]
                     </BitActionButton>
                     <BitSeparator />
-                    <BitChoiceGroup Items="cultures"
+                    <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
+                                    DefaultValue="@CultureInfo.CurrentUICulture.Name"
                                     OnChange="async (string? c) => await OnCultureChanged(c)"
-                                    DefaultValue="@CultureInfo.CurrentUICulture.Name" />
+                                    Styles="@(new() { ItemLabel = "flex-grow:1", ItemLabelWrapper = "width:100%" })" />
                 </BitStack>
             }
         </BitCard>
