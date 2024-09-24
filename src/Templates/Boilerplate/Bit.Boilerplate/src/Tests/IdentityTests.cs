@@ -34,7 +34,7 @@ public partial class IdentityTests
     }
 
     [TestMethod, ExpectedException(typeof(UnauthorizedException))]
-    public async Task A()
+    public async Task UnauthorizedAccessTest()
     {
         await using var server = new AppTestServer();
 
