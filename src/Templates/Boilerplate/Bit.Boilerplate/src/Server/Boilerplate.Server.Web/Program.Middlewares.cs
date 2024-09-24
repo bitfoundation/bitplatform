@@ -81,7 +81,6 @@ public static partial class Program
                 await next.Invoke();
             });
         }
-        app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
