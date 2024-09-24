@@ -22,7 +22,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddSharedConfigurations();
+        builder.Configuration.AddClientConfigurations();
 
         builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
