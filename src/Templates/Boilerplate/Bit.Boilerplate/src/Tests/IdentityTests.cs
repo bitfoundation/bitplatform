@@ -4,7 +4,7 @@ using Boilerplate.Shared.Controllers.Identity;
 namespace Boilerplate.Tests;
 
 [TestClass]
-public partial class SampleApiTest
+public partial class IdentityTests
 {
     [TestMethod]
     public async Task SignInTest()
@@ -18,9 +18,9 @@ public partial class SampleApiTest
 
         await using var scope = server.Services.CreateAsyncScope();
 
-        var identityController = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
+        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
-        var signInResponse = await identityController.SignIn(new()
+        var signInResponse = await authenticationManager.SignIn(new()
         {
             Email = "test@bitplatform.dev",
             Password = "123456"
@@ -31,5 +31,22 @@ public partial class SampleApiTest
         var user = await userController.GetCurrentUser(default);
 
         Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.Id);
+    }
+
+    [TestMethod, ExpectedException(typeof(UnauthorizedException))]
+    public async Task A()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services =>
+        {
+            // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
+        }).Start();
+
+        await using var scope = server.Services.CreateAsyncScope();
+
+        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+
+        var user = await userController.GetCurrentUser(default);
     }
 }
