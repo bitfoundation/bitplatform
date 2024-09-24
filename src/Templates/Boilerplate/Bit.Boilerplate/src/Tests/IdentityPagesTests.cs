@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright.MSTest;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Playwright.MSTest;
 
 namespace Boilerplate.Tests;
 
@@ -17,6 +18,6 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.GetServerAddress(), Urls.ProfilePage).ToString());
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.SignIn);
+        await Expect(Page).ToHaveURLAsync(new Regex(@".*sign-in\?return-url=profile"));
     }
 }
