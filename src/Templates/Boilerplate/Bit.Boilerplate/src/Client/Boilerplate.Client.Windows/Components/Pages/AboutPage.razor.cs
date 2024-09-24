@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Windows.Components.Pages;
 
@@ -15,7 +14,7 @@ public partial class AboutPage
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
         appVersion = asm.GetName().Version!.ToString();
-        os = RuntimeInformation.OSDescription;
+        os = AppPlatform.OSDescription;
         processId = Environment.ProcessId.ToString();
 
         await base.OnInitAsync();
