@@ -17,7 +17,8 @@ public partial class AppTestServer : IAsyncDisposable
 
         var builder = WebApplication.CreateBuilder(options: new()
         {
-            EnvironmentName = Environments.Development
+            EnvironmentName = Environments.Development,
+            Args = Environment.GetCommandLineArgs()
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);

@@ -1,5 +1,4 @@
-﻿using Boilerplate.Shared;
-using Microsoft.Playwright.MSTest;
+﻿using Microsoft.Playwright.MSTest;
 
 namespace Boilerplate.Tests;
 

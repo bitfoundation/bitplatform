@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
@@ -15,7 +14,6 @@
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="FakeItEasy" Version="8.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
         <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.47.0" />
         <PackageReference Include="MSTest.TestAdapter" Version="3.6.0" />
@@ -31,6 +29,7 @@
     <ItemGroup>
         <Using Include="System.Net.Http.Headers" />
         <Using Include="System.Net.Http.Json" />
+        <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Enums" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
