@@ -74,7 +74,7 @@ public partial class AppInitializer : AppComponentBase
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
-    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? userSessionId);
+    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, Guid? userSessionId);
 
     //#if (signalr == true)
     private async Task ConnectSignalR()

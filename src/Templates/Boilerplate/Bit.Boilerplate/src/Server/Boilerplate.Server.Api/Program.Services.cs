@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Boilerplate.Server.Api.Services;
@@ -260,6 +260,11 @@ public static partial class Program
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
+
+        services.AddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
+
+        services.AddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {

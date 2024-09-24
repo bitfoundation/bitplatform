@@ -8,7 +8,7 @@ public partial class UserSessionsSection
     private bool isLoading;
     private bool isWaiting;
     private string? message;
-    private string? currentSessionId;
+    private Guid? currentSessionId;
     private UserSessionDto? currentSession;
     private ElementReference messageRef = default!;
     private BitColor messageColor = BitColor.Error;
@@ -37,14 +37,14 @@ public partial class UserSessionsSection
         finally
         {
             isLoading = false;
-            otherSessions = userSessions.Where(s => s.SessionUniqueId.ToString() != currentSessionId);
-            currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId.ToString() == currentSessionId);
+            otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId);
+            currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId);
         }
     }
 
     private async Task RevokeSession(UserSessionDto session)
     {
-        if (isWaiting || session.SessionUniqueId.ToString() == currentSessionId) return;
+        if (isWaiting || session.SessionUniqueId == currentSessionId) return;
 
         isWaiting = true;
         message = null;

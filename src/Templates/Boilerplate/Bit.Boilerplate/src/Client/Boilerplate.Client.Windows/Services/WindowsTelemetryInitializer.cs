@@ -12,7 +12,7 @@ public partial class WindowsTelemetryInitializer : ITelemetryInitializer
     {
         telemetry.Context.Session.Id = sessionId;
 
-        telemetry.Context.Device.OperatingSystem = RuntimeInformation.OSDescription;
+        telemetry.Context.Device.OperatingSystem = AppPlatform.OSDescription;
 
         telemetry.Context.Component.Version = typeof(WindowsTelemetryInitializer).Assembly.GetName().Version!.ToString();
     }

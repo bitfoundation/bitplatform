@@ -29,6 +29,8 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     ctx.Redirect(url);
 
                     _ = Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+
+                    await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
                 }
                 catch (Exception exp)
                 {

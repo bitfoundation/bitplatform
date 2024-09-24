@@ -17,12 +17,14 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private IUserStore<User> userStore = default!;
+    [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+    [AutoInject] private IUserPhoneNumberStore<User> userPhoneNumberStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private ILogger<IdentityController> logger = default!;
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
-    [AutoInject] private IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory = default!;
+    [AutoInject] private AppUserClaimsPrincipalFactory userClaimsPrincipalFactory = default!;
     //#if (signalr == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
@@ -54,12 +56,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(request.Email) is false)
         {
-            await ((IUserEmailStore<User>)userStore).SetEmailAsync(userToAdd, request.Email!, cancellationToken);
+            await userEmailStore.SetEmailAsync(userToAdd, request.Email!, cancellationToken);
         }
 
         if (string.IsNullOrEmpty(request.PhoneNumber) is false)
         {
-            await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
+            await userPhoneNumberStore.SetPhoneNumberAsync(userToAdd, request.PhoneNumber!, cancellationToken);
         }
 
         var result = await userManager.CreateAsync(userToAdd, request.Password!);
@@ -164,7 +166,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             StartedOn = DateTimeOffset.UtcNow
         };
 
-        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", userSession.SessionUniqueId.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", userSession.SessionUniqueId.ToString()));
 
         return userSession;
     }
@@ -219,7 +221,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             throw new UnauthorizedException();
         }
 
-        ((AppUserClaimsPrincipalFactory)userClaimsPrincipalFactory).SessionClaims.Add(new("session-id", currentSessionId.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", currentSessionId.ToString()));
 
         var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
