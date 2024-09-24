@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Boilerplate.Server.Api;
+﻿using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Boilerplate.Tests;
 
@@ -53,6 +52,8 @@ public partial class AppTestServer : IAsyncDisposable
         }
 
         await webApp.StartAsync();
+
+        webApp.Configuration["ServerAddress"] = GetServerAddress().ToString();
     }
 
     public async ValueTask DisposeAsync()
@@ -61,5 +62,14 @@ public partial class AppTestServer : IAsyncDisposable
         {
             await webApp.DisposeAsync();
         }
+    }
+
+    internal Uri GetServerAddress()
+    {
+        if (webApp == null)
+            throw new InvalidOperationException($"web app is null");
+
+        return new Uri(webApp.Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()!.Addresses.First());
     }
 }

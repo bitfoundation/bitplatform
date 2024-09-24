@@ -1,8 +1,6 @@
 ﻿using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
 using Boilerplate.Client.Core.Services.Contracts;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -19,7 +17,7 @@ public static partial class WebApplicationBuilderExtensions
         {
             return new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
-                BaseAddress = new Uri(sp.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.First())
+                BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute)
             };
         });
 
