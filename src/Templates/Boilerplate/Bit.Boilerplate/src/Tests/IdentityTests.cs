@@ -38,10 +38,7 @@ public partial class IdentityTests
     {
         await using var server = new AppTestServer();
 
-        await server.Build(services =>
-        {
-            // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-        }).Start();
+        await server.Build().Start();
 
         await using var scope = server.Services.CreateAsyncScope();
 
