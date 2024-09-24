@@ -1,6 +1,9 @@
 ﻿using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
@@ -17,8 +20,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         var builder = WebApplication.CreateBuilder(options: new()
         {
-            EnvironmentName = Environments.Development,
-            Args = Environment.GetCommandLineArgs()
+            EnvironmentName = Environments.Development
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
