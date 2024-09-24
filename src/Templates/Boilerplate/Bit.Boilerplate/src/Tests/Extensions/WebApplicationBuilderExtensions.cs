@@ -12,7 +12,7 @@ public static partial class WebApplicationBuilderExtensions
     {
         var services = builder.Services;
 
-        services.TryAddSingleton<IStorageService, TestStorageService>();
+        services.TryAddScoped<IStorageService, TestStorageService>();
         services.TryAddTransient<IAuthTokenProvider, TestTokenProvider>();
 
         services.TryAddTransient(sp =>
