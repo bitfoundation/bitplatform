@@ -72,7 +72,7 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
     {
         var styles = new List<string>();
 
-        if (Nav.FullWidth is false)
+        if (Nav.FullWidth is false && Nav.IconOnly is false)
         {
             styles.Add($"padding-inline-end:{Nav.IndentPadding}px;");
         }
