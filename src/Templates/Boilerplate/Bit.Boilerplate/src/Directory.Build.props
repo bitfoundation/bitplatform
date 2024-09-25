@@ -26,7 +26,7 @@
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Debug'">Development</Environment>
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
 
-        <!--#if (framework == net8.0) -->
+        <!--#if ('$(framework) == 'net8.0') -->
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
         <!--#else -->
