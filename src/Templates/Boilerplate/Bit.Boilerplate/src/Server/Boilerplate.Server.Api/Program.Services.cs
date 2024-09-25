@@ -1,4 +1,4 @@
-﻿//+:cnd:noEmit
+//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
 using Boilerplate.Server.Api.Services;
@@ -21,7 +21,7 @@ namespace Boilerplate.Server.Api;
 
 public static partial class Program
 {
-    public static void ConfigureApiServices(this WebApplicationBuilder builder)
+    public static void AddServerApiProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
 

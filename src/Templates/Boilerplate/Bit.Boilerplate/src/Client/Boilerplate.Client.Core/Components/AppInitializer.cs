@@ -89,10 +89,10 @@ public partial class AppInitializer : AppComponentBase
         hubConnection = new HubConnectionBuilder()
             .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
             {
-                options.HttpMessageHandlerFactory = httpClientHandler =>
+                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
                     return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                        .Invoke(httpClientHandler);
+                        .Invoke(signalrHttpMessageHandler);
                 };
             })
             .Build();
