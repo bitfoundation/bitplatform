@@ -101,11 +101,43 @@
           "exclude": [
             "*.sln"
           ]
+        },
+        {
+          "condition": "(Framework == \"net8.0\")",
+          "exclude": [
+            "global.json"
+          ],
+          "rename": {
+            "global8.json": "global.json"
+          }
+        },
+        {
+          "condition": "(Framework == \"net9.0\")",
+          "exclude": [
+            "global8.json"
+          ]
         }
       ]
     }
   ],
   "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "defaultValue": "net8.0",
+      "choices": [
+        {
+          "choice": "net8.0",
+          "description": "Target net8.0"
+        },
+        {
+          "choice": "net9.0",
+          "description": "Target net9.0"
+        }
+      ],
+      "replaces": "net9.0"
+    },
     "InteractivityPlatform": {
       "type": "parameter",
       "datatype": "choice",
