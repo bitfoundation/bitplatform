@@ -156,11 +156,19 @@
 .bit-nav-ion {
     .bit-nav-ict {
         width: fit-content;
-        padding: spacing(2) !important;
+    }
+
+    .bit-nav-itm {
+        padding: 1rem;
+        font-size: 1rem;
     }
 
     .bit-nav-itx {
         display: none;
+    }
+
+    .bit-nav-sel {
+        border: none;
     }
 }
 
