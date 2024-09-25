@@ -28,6 +28,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -36,7 +41,7 @@ jobs:
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -f net8.0
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
 
@@ -49,7 +54,7 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
+      run:  cd TodoSample/src && dotnet workload install wasm-tools
 
     - name: Configure app render mode
       run: |
@@ -122,6 +127,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global8.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -130,7 +140,7 @@ jobs:
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -f net8.0
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
@@ -197,6 +207,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -205,7 +220,7 @@ jobs:
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -f net8.0
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
   
@@ -229,7 +244,7 @@ jobs:
           sed -i 's/appCenterSecret = null;/appCenterSecret = "de0219a6-fdcd-44f7-8c28-c108331ed27c";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
-      run: cd src && dotnet workload install maui-android
+      run: cd TodoSample/src && dotnet workload install maui-android
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
@@ -281,6 +296,11 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -293,7 +313,7 @@ jobs:
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -f net8.0
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
       
@@ -310,7 +330,7 @@ jobs:
           brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "f72e6774-1c83-404c-bca8-6e5198fb8e0e";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
-      run: cd src && dotnet workload install maui
+      run: cd TodoSample/src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
       uses: apple-actions/import-codesign-certs@v3
