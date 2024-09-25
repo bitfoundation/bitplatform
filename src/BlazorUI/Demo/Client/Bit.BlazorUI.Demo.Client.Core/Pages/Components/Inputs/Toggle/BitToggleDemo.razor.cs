@@ -15,6 +15,13 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "DefaultValue",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "The default value of the toggle when the value parameter has not been assigned.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
