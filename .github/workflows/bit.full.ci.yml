@@ -22,6 +22,11 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.x
+
     - uses: actions/setup-node@v4
       with:
         node-version: 20
@@ -53,7 +58,7 @@ jobs:
 
     - name: Test SqlServer database option
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -61,7 +66,7 @@ jobs:
         cd ../../Tests
         dotnet test
 
-    - name: Test PostgreSQL, Cosmos, MySql, Other database options
+    - name: Test PostgreSQL, Cosmos, Other database options
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
@@ -71,10 +76,6 @@ jobs:
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
         dotnet build
         cd ../../../../
-        # dotnet new bit-bp --name TestMySql --database MySql
-        # cd TestMySql/src/Server/TestMySql.Server.Api/
-        # dotnet build
-        # cd ../../../../
         dotnet new bit-bp --name TestOther --database Other
         cd TestOther/src/Server/TestOther.Server.Api/
         dotnet build
@@ -98,7 +99,7 @@ jobs:
         cd TestStandalone.Server.Web/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestIntegrated --api Integrated
+        dotnet new bit-bp --name TestIntegrated --api Integrated --framework net8.0
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build
 

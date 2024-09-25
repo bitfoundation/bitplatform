@@ -3,10 +3,14 @@
   "isRoot": true,
   "tools": {
     "dotnet-ef": {
-      "version": "9.0.0-rc.1.24451.1",
-      "commands": [
-        "dotnet-ef"
-      ]
+        //#if (framework == 'net9.0')
+        "version": "9.0.0-rc.1.24451.1",
+        //#else
+        "version": "8.0.8",
+        //#endif
+        "commands": [
+            "dotnet-ef"
+        ]
     }
   }
 }

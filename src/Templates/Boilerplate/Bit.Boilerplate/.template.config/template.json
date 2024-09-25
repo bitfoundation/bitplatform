@@ -16,6 +16,23 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "framework": {
+            "type": "parameter",
+            "description": "The target framework for the project.",
+            "datatype": "choice",
+            "defaultValue": "net8.0",
+            "choices": [
+                {
+                    "choice": "net8.0",
+                    "description": "Target net8.0"
+                },
+                {
+                    "choice": "net9.0",
+                    "description": "Target net9.0"
+                }
+            ],
+            "replaces": "net9.0"
+        },
         "helpUrl": {
             "displayName": "More info at",
             "type": "parameter",
@@ -61,10 +78,6 @@
                 {
                     "choice": "Cosmos",
                     "description": "Azure Cosmos DB"
-                },
-                {
-                    "choice": "MySql",
-                    "description": "MySql - MariaDB"
                 },
                 {
                     "choice": "Other",
@@ -298,7 +311,9 @@
             ],
             "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
             "args": {
-                "files": [ "Boilerplate.Web.slnf" ]
+                "files": [
+                    "Boilerplate.Web.slnf"
+                ]
             },
             "continueOnError": true
         },
@@ -442,6 +457,24 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json"
                     ]
+                },
+                {
+                    "condition": "(framework == \"net8.0\")",
+                    "exclude": [
+                        "global.json",
+                        "src/Directory.Packages.props"
+                    ],
+                    "rename": {
+                        "global8.json": "global.json",
+                        "src/Directory.Packages8.props": "src/Directory.Packages.props"
+                    }
+                },
+                {
+                  "condition": "(framework == \"net9.0\")",
+                  "exclude": [
+                    "global8.json",
+                    "src/Directory.Packages8.props"
+                  ]
                 }
             ]
         }

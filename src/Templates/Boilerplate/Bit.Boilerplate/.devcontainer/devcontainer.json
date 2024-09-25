@@ -1,6 +1,10 @@
 {
     "name": "Boilerplate",
+    //#if (framework == 'net9.0')
     "image": "mcr.microsoft.com/dotnet/sdk:9.0",
+    //#else
+    "image": "mcr.microsoft.com/dotnet/sdk:8.0",
+    //#endif
     "hostRequirements": {
         "cpus": 4
     },

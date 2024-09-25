@@ -5,11 +5,13 @@
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    @*#if (framework == "net9.0")*@
     if (HttpContext.AcceptsInteractiveRouting() is false)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
         renderMode = null;
     }
+    @*#endif*@
 }
 
 <!DOCTYPE html>
@@ -54,6 +56,9 @@
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" href="Boilerplate.Server.Web.styles.css" />
     <Link rel="stylesheet" href="Boilerplate.Client.Web.styles.css" />
+    @*#if (framework == "net8.0")*@
+    <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
+    @*#endif*@
 
     @if (renderMode != null && (AppRenderMode.PrerenderEnabled is false || noPrerender))
     {
