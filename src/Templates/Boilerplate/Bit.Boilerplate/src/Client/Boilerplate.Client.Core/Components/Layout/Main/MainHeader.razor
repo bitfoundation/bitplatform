@@ -1,10 +1,21 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal>
+    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+        <BitButton IconOnly FixedColor
+                   Class="menu-btn"
+                   Size="BitSize.Large"
+                   OnClick="OpenNavMenu"
+                   Variant="BitVariant.Text"
+                   Color="BitColor.SecondaryBackground"
+                   IconName="@BitIconName.CollapseMenu" />
+
         <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0.5rem" Style="height:4rem">
             <BitText Typography="BitTypography.H5">@pageTitle</BitText>
-            <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">@pageSubtitle</BitText>
+            @if (string.IsNullOrWhiteSpace(pageSubtitle) is false)
+            {
+                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">@pageSubtitle</BitText>
+            }
         </BitStack>
 
         <BitSpacer />

@@ -6,97 +6,33 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class NavMenu
 {
     private bool disposed;
-    private bool isNavToggled;
+    private bool isMenuOpen;
+    private bool isMenuToggled;
     private UserDto user = new();
     private bool isSignOutModalOpen;
     private string? profileImageUrl;
-    private Action unsubscribe = default!;
     private List<BitNavItem> navItems = [];
+    private Action unsubOpenNavMenu = default!;
+    private Action unsubUserDataChange = default!;
 
     [AutoInject] private NavigationManager navManager = default!;
 
-    [Parameter] public bool IsMenuOpen { get; set; }
-
-    [Parameter] public EventCallback<bool> IsMenuOpenChanged { get; set; }
 
 
     protected override async Task OnInitAsync()
     {
-        navItems =
-        [
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.Home)],
-                IconName = BitIconName.Home,
-                Url = Urls.HomePage,
-            },
-            //#if (sample == "Admin")
-            new() {
-                Text = Localizer[nameof(AppStrings.Dashboard)],
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = Urls.DashboardPage,
-            },
-            new() {
-                Text = Localizer[nameof(AppStrings.Products)],
-                IconName = BitIconName.Product,
-                Url = Urls.ProductsPage,
-            },
-            new() {
-                Text = Localizer[nameof(AppStrings.Categories)],
-                IconName = BitIconName.BuildQueue,
-                Url = Urls.CategoriesPage,
-            },
-            //#elif (sample == "Todo")
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.TodoTitle)],
-                IconName = BitIconName.ToDoLogoOutline,
-                Url = Urls.TodoPage,
-            },
-            //#endif
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.ProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.ProfilePage,
-            },
-            //#if (offlineDb == true)
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.OfflineEditProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.OfflineEditProfilePage,
-            },
-            //#endif
-            new()
-            {
-                Text = Localizer[nameof(AppStrings.TermsTitle)],
-                IconName = BitIconName.EntityExtraction,
-                Url = Urls.TermsPage,
-            }
-        ];
+        CreateNavItems();
 
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            // Presently, the About page is absent from the Client/Core project, rendering it inaccessible on the web platform.
-            // In order to exhibit a sample page that grants direct access to native functionalities without dependence on dependency injection (DI) or publish-subscribe patterns,
-            // about page is integrated within Blazor hybrid projects like Client/Maui.
+        unsubOpenNavMenu = PubSubService.Subscribe(PubSubMessages.OPEN_NAV_MENU, async _ => {
+            isMenuOpen = true;
+            StateHasChanged();
+        });
 
-            navItems.Add(new()
-            {
-                Text = Localizer[nameof(AppStrings.AboutTitle)],
-                IconName = BitIconName.HelpMirrored,
-                Url = Urls.AboutPage,
-            });
-        }
-
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
+        unsubUserDataChange = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
         {
             if (payload is null) return;
-
             user = (UserDto)payload;
-
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         });
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
@@ -110,7 +46,6 @@ public partial class NavMenu
     private async Task DoSignOut()
     {
         isSignOutModalOpen = true;
-
         await CloseMenu();
     }
 
@@ -129,13 +64,12 @@ public partial class NavMenu
 
     private async Task CloseMenu()
     {
-        IsMenuOpen = false;
-        await IsMenuOpenChanged.InvokeAsync(false);
+        isMenuOpen = false;
     }
 
     private async Task ToggleNavMenu()
     {
-        isNavToggled = !isNavToggled;
+        isMenuToggled = !isMenuToggled;
     }
 
 
@@ -145,7 +79,8 @@ public partial class NavMenu
 
         if (disposed || disposing is false) return;
 
-        unsubscribe?.Invoke();
+        unsubOpenNavMenu?.Invoke();
+        unsubUserDataChange?.Invoke();
 
         disposed = true;
     }

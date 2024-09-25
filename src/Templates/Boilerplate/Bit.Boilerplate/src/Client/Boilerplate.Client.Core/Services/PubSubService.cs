@@ -11,7 +11,7 @@ public partial class PubSubService : IPubSubService
 
 
 
-    public void Publish(string message, object? payload)
+    public void Publish(string message, object? payload = null)
     {
         if (handlers.TryGetValue(message, out var messageHandlers))
         {

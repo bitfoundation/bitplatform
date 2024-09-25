@@ -17,6 +17,13 @@ public partial class MainHeader : AppComponentBase
         });
     }
 
+
+    private void OpenNavMenu()
+    {
+        PubSubService.Publish(PubSubMessages.OPEN_NAV_MENU);
+    }
+
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         await base.DisposeAsync(disposing);

@@ -1,15 +1,23 @@
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 header {
     top: 0;
+    z-index: 1;
     width: 100%;
     position: sticky;
-    padding-block: 1rem;
-    z-index: $bit-zindex-base;
     background-color: $bit-color-background-primary;
 }
 
-::deep .persona {
-    max-width: rem2(180px);
+::deep {
+    .menu-btn {
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    .persona {
+        max-width: rem2(180px);
+    }
 }
