@@ -9,9 +9,9 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
-		
-		<!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
-		<!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false OR dotnet build -p:PwaEnabled=false -->
+
+        <!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
+        <!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false OR dotnet build -p:PwaEnabled=false -->
 
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
@@ -25,18 +25,6 @@
         <!-- See Boilerplate.Shared.AppEnvironment for more info. -->
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Debug'">Development</Environment>
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Release'">Production</Environment>
-
-        <!--#if ('$(framework) == 'net8.0') -->
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
-        <!--#else -->
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">16.4</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">16.4</SupportedOSPlatformVersion>
-        <!--#endif -->
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</SupportedOSPlatformVersion>
-        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</TargetPlatformMinVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
         <DefineConstants Condition="  $(TargetFramework.Contains('-android')) ">$(DefineConstants);Android</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-ios')) ">$(DefineConstants);iOS</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
@@ -48,11 +36,33 @@
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
+    <PropertyGroup Condition="'$(framework)' == 'net8.0'">
+        <!--/-:msbuild-conditional:noEmit -->
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">14.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+        <!--/+:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(framework)' == 'net9.0' OR '$(framework)' == ''">
+        <!--/-:msbuild-conditional:noEmit -->
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">16.4</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">16.4</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+        <!--/+:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers"/>
         <PackageReference Include="Bit.SourceGenerators" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <Using Include="System.Globalization" />
         <Using Include="System.Net.Http" />

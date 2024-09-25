@@ -8,7 +8,7 @@
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') and ('$(framework)' == 'net9.0' OR '$(framework)' == '')">
+    <PropertyGroup Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') AND ('$(framework)' == 'net9.0' OR '$(framework)' == '')">
         <!--/-:msbuild-conditional:noEmit -->
         <!-- Add Microsoft.EntityFrameworkCore.Tasks package to make automated db context optimize work -->
         <EFOptimizeContext Condition="'$(Configuration)'=='Release'">true</EFOptimizeContext>
