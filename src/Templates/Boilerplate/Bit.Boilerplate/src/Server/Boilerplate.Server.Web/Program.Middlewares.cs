@@ -125,7 +125,7 @@ public static partial class Program
 
         app.UseSiteMap();
 
-        //#if (Framework == 'net9.0')
+        //#if (framework == 'net9.0')
         app.MapStaticAssets();
         //#endif
         // Handle the rest of requests with blazor
