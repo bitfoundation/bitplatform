@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
 		
@@ -42,6 +43,11 @@
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
+    <ItemGroup>
+        <PackageReference Include="Bit.CodeAnalyzers"/>
+        <PackageReference Include="Bit.SourceGenerators" />
+    </ItemGroup>
+    
     <ItemGroup>
         <Using Include="System.Globalization" />
         <Using Include="System.Net.Http" />
