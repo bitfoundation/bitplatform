@@ -16,6 +16,8 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
+    [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+
     [AutoInject] private SmsService smsService = default!;
 
     [AutoInject] private EmailService emailService = default!;
@@ -199,7 +201,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (tokenIsValid is false)
             throw new BadRequestException(nameof(AppStrings.InvalidToken));
 
-        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, request.Email, cancellationToken);
+        await userEmailStore.SetEmailAsync(user, request.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)

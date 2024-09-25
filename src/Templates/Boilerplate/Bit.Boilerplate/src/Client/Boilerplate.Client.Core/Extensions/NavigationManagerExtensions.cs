@@ -26,7 +26,7 @@ public static partial class NavigationManagerExtensions
     }
 
     private static readonly string[] allCultures = CultureInfoManager.MultilingualEnabled
-        ? CultureInfo.GetCultures(CultureTypes.AllCultures).Select(c => c.Name).ToArray()
+        ? CultureInfo.GetCultures(CultureTypes.AllCultures).Where(c => string.IsNullOrEmpty(c.Name) is false).Select(c => c.Name).ToArray()
         : [];
 
     /// <summary>
@@ -47,7 +47,7 @@ public static partial class NavigationManagerExtensions
 
         foreach (var segment in uri.Segments.Take(2))
         {
-            if (allCultures.Contains(segment, StringComparer.InvariantCultureIgnoreCase))
+            if (allCultures.Contains(segment.Trim('/'), StringComparer.InvariantCultureIgnoreCase))
             {
                 return segment;
             }
@@ -64,9 +64,7 @@ public static partial class NavigationManagerExtensions
 
         if (string.IsNullOrEmpty(culture) is false)
         {
-            uri = uri
-                .Replace($"{culture}/", string.Empty)
-                .Replace(culture, string.Empty);
+            uri = uri.Replace(culture, string.Empty);
         }
 
         return uri;
