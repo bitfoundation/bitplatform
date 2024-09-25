@@ -9,15 +9,16 @@
     var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
 }
 
-<section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isMenuToggled ? "4rem" : "14rem")}")">
-    <BitCard Class="panel" Style="@($"--nav-menu-padding:{(isMenuToggled ? "0.5rem" : "0.75rem")}")">
+<section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isMenuToggled ? "5rem" : "14rem")}")">
+    <BitCard Class="panel">
         <BitStack>
-            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+            <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
                           Visibility="@(isMenuToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
                 <BitSpacer Visibility="@(isMenuToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
                 <BitButton IconOnly FixedColor
                            Class="toggle-btn"
+                           Size="BitSize.Large"
                            OnClick="ToggleNavMenu"
                            Variant="BitVariant.Text"
                            Color="BitColor.TertiaryBackground"
@@ -32,7 +33,7 @@
                         PrimaryText="@user.FullName"
                         SecondaryText="@user.DisplayName"
                         Presence="BitPersonaPresence.Online"
-                        Size="@(isMenuToggled ? BitPersonaSize.Size32 : BitPersonaSize.Size48)">
+                        Size="@(isMenuToggled ? BitPersonaSize.Size40 : BitPersonaSize.Size48)">
                 <ImageOverlayTemplate>
                     <span>@Localizer[nameof(AppStrings.Edit)]</span>
                 </ImageOverlayTemplate>

@@ -6,11 +6,12 @@
 section {
     top: 0;
     height: 100vh;
+    padding: 1rem;
     position: sticky;
     overflow: hidden auto;
+    padding-inline-end: 0;
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
-    --nav-menu-width: 14rem;
 
     .bit-ios & {
         top: calc(env(safe-area-inset-top));
@@ -52,12 +53,10 @@ section {
 
 ::deep {
     .panel {
-        margin: var(--nav-menu-padding);
-        padding: var(--nav-menu-padding);
-        width: calc(100% - var(--nav-menu-padding)*2);
-        height: calc(100% - var(--nav-menu-padding)*2);
+        width: auto;
+        height: 100%;
+        padding: 0.5rem;
         background-color: $bit-color-background-secondary;
-        --nav-menu-padding: 0.75rem;
     }
 
     .toggle-btn {
