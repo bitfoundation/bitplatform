@@ -27,11 +27,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public BitChoiceGroupClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Default selected item for ChoiceGroup.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
     /// </summary>
     [Parameter] public bool Horizontal { get; set; }
@@ -161,6 +156,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
+    protected override bool ShouldUseDefaultValue => false;
 
 
 

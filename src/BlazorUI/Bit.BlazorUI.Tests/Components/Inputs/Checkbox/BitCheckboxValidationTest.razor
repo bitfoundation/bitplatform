@@ -1,20 +1,20 @@
 ﻿<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
-    <BitCheckbox IsEnabled="@IsEnabled"
+    <BitCheckbox IsEnabled="IsEnabled"
                  AriaLabel="@AriaLabel"
-                 CheckmarkIconName="@CheckmarkIconName"
+                 CheckIconName="@CheckmarkIconName"
                  AriaDescription="@AriaDescription"
                  AriaLabelledby="@AriaLabelledby"
-                 AriaPositionInSet="@AriaPositionInSet"
-                 AriaSetSize="@AriaSetSize"
+                 AriaPositionInSet="AriaPositionInSet"
+                 AriaSetSize="AriaSetSize"
                  Name="@Name"
                  Title="@Title"
-                 DefaultValue="@DefaultValue"
-                 @bind-Value="@TestModel.Value"
+                 @* DefaultValue="DefaultValue" *@
+                 @bind-Value="TestModel.Value"
                  CheckIconAriaLabel="@CheckIconAriaLabel"
-                 Reversed="@Reversed"
-                 DefaultIndeterminate="@DefaultIndeterminate"
+                 Reversed="Reversed"
+                 DefaultIndeterminate="DefaultIndeterminate"
                  OnClick="HandleOnClick"
                  OnChange="HandleOnChange">
         <ChildContent>

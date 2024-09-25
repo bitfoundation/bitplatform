@@ -163,6 +163,13 @@ public partial class ComponentDemo
     [
         new()
         {
+            Name = "DefaultValue",
+            Type = "TValue?",
+            DefaultValue = "null",
+            Description = "The default value of the input when the value has not been set.",
+        },
+        new()
+        {
             Name = "DisplayName",
             Type = "string?",
             DefaultValue = "null",

@@ -47,6 +47,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
 
     /// <summary>
+    /// The default value of the input when the value has not been set.
+    /// </summary>
+    [Parameter] public TValue? DefaultValue { get; set; }
+
+    /// <summary>
     /// Gets or sets the display name for this field.
     /// This value is used when generating error messages when the input value fails to parse correctly.
     /// </summary>
@@ -146,6 +151,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(DefaultValue):
+                    DefaultValue = (TValue?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(DisplayName):
                     DisplayName = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -225,10 +235,22 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
+        if (ShouldUseDefaultValue && ValueHasBeenSet is false && DefaultValue is not null)
+        {
+            Value = DefaultValue;
+        }
 
         base.OnInitialized();
     }
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => ValueInvalid is true ? "bit-inv" : string.Empty);
+
+        base.RegisterCssClasses();
+    }
+
+    protected virtual bool ShouldUseDefaultValue => true;
 
 
 

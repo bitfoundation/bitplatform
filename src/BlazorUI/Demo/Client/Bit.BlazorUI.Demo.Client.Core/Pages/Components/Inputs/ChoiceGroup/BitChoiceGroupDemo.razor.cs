@@ -24,15 +24,8 @@ public partial class BitChoiceGroupDemo
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitChoiceGroup.",
-            Href = "#class-styles",
             LinkType = LinkType.Link,
-        },
-        new()
-        {
-            Name = "DefaultValue",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Default selected Value for ChoiceGroup."
+            Href = "#class-styles",
         },
         new()
         {
@@ -101,8 +94,8 @@ public partial class BitChoiceGroupDemo
             Type = "BitChoiceGroupNameSelectors<TItem, TValue>?",
             DefaultValue = "null",
             Description = "Names and selectors of the custom input type properties.",
-            Href = "#name-selectors",
             LinkType = LinkType.Link,
+            Href = "#name-selectors",
         },
         new()
         {
@@ -130,8 +123,8 @@ public partial class BitChoiceGroupDemo
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitChoiceGroup.",
-            Href = "#class-styles",
             LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
     ];
 

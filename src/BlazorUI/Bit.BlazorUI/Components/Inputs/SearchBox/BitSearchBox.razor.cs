@@ -32,11 +32,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The default value of the text in the SearchBox, in the case of an uncontrolled component.
-    /// </summary>
-    [Parameter] public string? DefaultValue { get; set; }
-
-    /// <summary>
     /// Whether or not to animate the search box icon on focus.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -180,11 +175,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
         _calloutId = $"BitSearchBox-{UniqueId}-callout";
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
-
-        if (CurrentValue.HasNoValue() && DefaultValue.HasValue())
-        {
-            await SetCurrentValueAsStringAsync(DefaultValue);
-        }
 
         OnValueChanged += HandleOnValueChanged;
 

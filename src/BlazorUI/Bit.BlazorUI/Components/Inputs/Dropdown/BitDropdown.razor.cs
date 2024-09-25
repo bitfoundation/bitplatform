@@ -81,11 +81,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public bool Combo { get; set; }
 
     /// <summary>
-    /// The default key value that will be initially used to set selected item if the Value parameter is not set.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// The default key value that will be initially used to set selected items in multi select mode if the Values parameter is not set.
     /// </summary>
     [Parameter] public ICollection<TValue?>? DefaultValues { get; set; }
@@ -595,13 +590,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
             if (ValuesHasBeenSet is false && DefaultValues is not null)
             {
                 await AssignValues(DefaultValues);
-            }
-        }
-        else
-        {
-            if (ValueHasBeenSet is false && DefaultValue is not null)
-            {
-                Value = DefaultValue;
             }
         }
 

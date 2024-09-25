@@ -67,11 +67,6 @@ public partial class BitSpinButton : BitInputBase<double>
     [Parameter] public string? DecrementTitle { get; set; }
 
     /// <summary>
-    /// Initial value of the spin button.
-    /// </summary>
-    [Parameter] public double? DefaultValue { get; set; }
-
-    /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
@@ -209,16 +204,11 @@ public partial class BitSpinButton : BitInputBase<double>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _inputId = $"BitSpinButton-{UniqueId}-input";
 
-        if (ValueHasBeenSet is false && DefaultValue.HasValue)
-        {
-            Value = DefaultValue.Value;
-        }
-
-        await base.OnInitializedAsync();
+        base.OnInitialized();
     }
 
     protected override async Task OnParametersSetAsync()

@@ -71,13 +71,6 @@ public partial class BitCheckboxDemo
         },
         new()
         {
-            Name = "DefaultValue",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.",
-        },
-        new()
-        {
             Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
