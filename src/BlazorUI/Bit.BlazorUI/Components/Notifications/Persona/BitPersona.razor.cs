@@ -43,6 +43,12 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public string? Color { get; set; }
 
     /// <summary>
+    /// Renders the persona in full width of its container element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Whether to not render persona details, and just render the persona image/initials.
     /// </summary>
     [Parameter] public bool HidePersonaDetails { get; set; }
@@ -171,6 +177,8 @@ public partial class BitPersona : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-prs-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {

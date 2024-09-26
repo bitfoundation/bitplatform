@@ -1,16 +1,15 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-prs {
-    margin: 0;
-    padding: 0;
     display: flex;
     font-weight: 400;
     box-shadow: none;
+    color: $clr-fg-pri;
+    width: fit-content;
     position: relative;
     align-items: center;
     box-sizing: border-box;
     font-size: spacing(1.75);
-    color: $clr-fg-pri;
     font-family: $tg-font-family;
 
     &.bit-dis {
@@ -18,6 +17,10 @@
         color: $clr-fg-dis;
         background-color: $clr-bg-dis;
     }
+}
+
+.bit-prs-fwi {
+    width: 100%;
 }
 
 .bit-prs-cin {
