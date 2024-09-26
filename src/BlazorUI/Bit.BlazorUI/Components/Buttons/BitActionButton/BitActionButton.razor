@@ -19,7 +19,7 @@
         {
             <i style="@Styles?.Icon" class="bit-acb-ico bit-icon bit-icon--@IconName @Classes?.Icon" />
         }
-        @if (ChildContent is not null)
+        @if (ChildContent is not null && IconOnly is false)
         {
             <div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">
                 @ChildContent
