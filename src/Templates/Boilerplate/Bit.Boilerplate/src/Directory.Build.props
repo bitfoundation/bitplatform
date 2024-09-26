@@ -16,11 +16,6 @@
         <NeutralLanguage>en-US</NeutralLanguage>
         <MultilingualEnabled>true</MultilingualEnabled>
         <PwaEnabled>false</PwaEnabled>
-        <BlazorWebAssemblyStandalone>false</BlazorWebAssemblyStandalone>
-        <!-- By enabling the BlazorWebAssemblyStandalone option, you gain the ability to
-        deploy your Client.Web project on platforms such as GitHub/Cloudflare Pages and Azure Static Web Apps. -->
-
-        <PwaEnabled Condition=" '$(BlazorWebAssemblyStandalone)' == 'true' ">true</PwaEnabled>
 
         <!-- See Boilerplate.Shared.AppEnvironment for more info. -->
         <Environment Condition="'$(Environment)' == '' AND '$(Configuration)' == 'Debug'">Development</Environment>
@@ -37,15 +32,14 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-windows')) ">$(DefineConstants);Windows</DefineConstants>
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
         <DefineConstants Condition=" '$(MultilingualEnabled)' == 'true' ">$(DefineConstants);MultilingualEnabled</DefineConstants>
-        <DefineConstants Condition=" '$(BlazorWebAssemblyStandalone)' == 'true' ">$(DefineConstants);BlazorWebAssemblyStandalone</DefineConstants>
         <DefineConstants Condition=" '$(PwaEnabled)' == 'true' ">$(DefineConstants);PwaEnabled</DefineConstants>
         <DefineConstants>$(DefineConstants);$(Environment)</DefineConstants>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers"/>
-        <PackageReference Include="Bit.SourceGenerators" />
+        <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
+        <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
     </ItemGroup>
     
     <ItemGroup>
