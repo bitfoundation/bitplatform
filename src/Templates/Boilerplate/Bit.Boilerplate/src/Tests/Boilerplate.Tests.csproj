@@ -16,8 +16,6 @@
         <PackageReference Include="Microsoft.Playwright.MSTest" />
         <PackageReference Include="MSTest.TestAdapter" />
         <PackageReference Include="MSTest.TestFramework" />
-        <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
