@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
-public class MedalsModel
+public class Medals
 {
     public int Gold { get; set; }
     public int Silver { get; set; }
