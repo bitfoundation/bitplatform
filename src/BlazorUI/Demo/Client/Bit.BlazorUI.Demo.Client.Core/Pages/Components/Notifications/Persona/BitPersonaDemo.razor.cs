@@ -502,7 +502,7 @@ public partial class BitPersonaDemo
             Unknown />";
 
     private readonly string example2RazorCode = @"
-<BitPersona PrimaryText=""Saleh Khafan""
+<BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
             Color=""#038387"" />
