@@ -119,8 +119,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     [JSInvokable]
     public async Task SetPastedData(string pastedValue)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (pastedValue.HasNoValue()) return;
         if (Type is BitInputType.Number && int.TryParse(pastedValue, out _) is false) return;
 
@@ -297,7 +296,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         _inputValues[index] = string.Empty;
         await Task.Delay(1); // waiting for input default behavior before setting a new value.
 
-        if (IsEnabled is false || (ValueHasBeenSet && ValueChanged.HasDelegate is false))
+        if (IsEnabled is false || InvalidValueBinding())
         {
             _inputValues[index] = oldValue;
         }
@@ -336,8 +335,8 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e, int index)
     {
-        if (IsEnabled is false || e.Code is null) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (e.Code is null) return;
 
         await NavigateInput(e.Code, e.Key, index);
 

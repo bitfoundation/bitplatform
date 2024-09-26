@@ -406,8 +406,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void SelectDate(int dayIndex, int weekIndex)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
         _currentDay = _daysOfCurrentMonth[weekIndex, dayIndex];
