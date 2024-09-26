@@ -35,8 +35,8 @@
 .bit-nav-cbt {
     cursor: pointer;
     user-select: none;
-    width: spacing(3.75);
     font-size: spacing(1.5);
+    min-width: spacing(3.375);
     background-color: transparent;
     color: $clr-fg-pri;
 
@@ -81,28 +81,15 @@
     align-items: center;
 }
 
-.bit-nav-des {
-    all: unset;
-    display: block;
-    cursor: pointer;
-    overflow: hidden;
-    color: $clr-fg-ter;
-    white-space: nowrap;
-    font-weight: normal;
-    font-size: spacing(1.5);
-    padding: spacing(0.5) 0;
-    background: transparent;
-    text-overflow: ellipsis;
-    padding-inline-start: spacing(2.75);
-}
-
 .bit-nav-ict {
     width: 100%;
     display: flex;
     cursor: pointer;
     flex-flow: column;
+    gap: spacing(0.25);
+    padding: spacing(0.5);
     box-sizing: border-box;
-    min-height: spacing(5.5);
+    min-height: spacing(6.0);
     border-radius: $shp-border-radius;
 
     @media (hover: hover) {
@@ -124,17 +111,31 @@
 .bit-nav-itm {
     width: 100%;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
     font-weight: 400;
     user-select: none;
-    gap: spacing(0.5);
     color: $clr-fg-pri;
     align-items: center;
     white-space: nowrap;
     flex-flow: row nowrap;
     text-overflow: ellipsis;
     font-size: spacing(1.75);
+}
+
+.bit-nav-des {
+    all: unset;
+    display: block;
+    cursor: pointer;
+    overflow: hidden;
+    color: $clr-fg-ter;
+    white-space: nowrap;
+    font-weight: normal;
+    font-size: spacing(1.5);
+    background: transparent;
+    text-overflow: ellipsis;
+    padding-inline-start: spacing(2.75);
 }
 
 .bit-nav-itm,
@@ -155,6 +156,7 @@
 
 .bit-nav-ion {
     .bit-nav-ict {
+        padding: 0;
         width: fit-content;
     }
 
