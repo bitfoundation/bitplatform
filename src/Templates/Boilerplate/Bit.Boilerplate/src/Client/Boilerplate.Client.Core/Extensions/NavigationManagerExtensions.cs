@@ -47,9 +47,10 @@ public static partial class NavigationManagerExtensions
 
         foreach (var segment in uri.Segments.Take(2))
         {
-            if (allCultures.Contains(segment.Trim('/'), StringComparer.InvariantCultureIgnoreCase))
+            var segmentValue = segment.Trim('/');
+            if (allCultures.Contains(segmentValue, StringComparer.InvariantCultureIgnoreCase))
             {
-                return segment;
+                return segmentValue;
             }
         }
 
@@ -64,7 +65,9 @@ public static partial class NavigationManagerExtensions
 
         if (string.IsNullOrEmpty(culture) is false)
         {
-            uri = uri.Replace(culture, string.Empty);
+            uri = uri
+                .Replace($"{culture}/", string.Empty)
+                .Replace(culture, string.Empty);
         }
 
         return uri;
