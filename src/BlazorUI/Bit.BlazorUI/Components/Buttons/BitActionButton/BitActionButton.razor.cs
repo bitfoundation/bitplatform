@@ -70,6 +70,11 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// Removes the container of the text and only renders the icon.
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; }
+
+    /// <summary>
     /// The callback for the click event of the button.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }

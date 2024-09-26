@@ -82,6 +82,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "null",
+            Description = "Removes the container of the text and only renders the icon.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "The callback for the click event of the button.",
