@@ -106,12 +106,12 @@ jobs:
     - name: Test sample configuration 1
       run: |
         dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true --signalr true
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PWA=true -p:BlazorWebAssemblyStandalone=true -p:Environment=Staging
+        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalr false
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PWA=false -p:BlazorWebAssemblyStandalone=false -p:Environment=Development
+        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.

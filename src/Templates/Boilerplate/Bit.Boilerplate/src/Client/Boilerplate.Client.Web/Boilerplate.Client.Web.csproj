@@ -10,7 +10,6 @@
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
         <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
-        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmEnableSIMD Condition=" '$(framework)' == 'net8.0'">false</WasmEnableSIMD>
@@ -20,12 +19,7 @@
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(BlazorWebAssemblyStandalone)' == 'false' ">
-        <Content Remove="wwwroot\index.html" />
-        <None Remove="Properties\launchSettings.json" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
     </ItemGroup>
 
     <ItemGroup>

@@ -72,7 +72,7 @@ jobs:
     - name: Publish adminpanel blazor wasm standalone
       run: |
           sed -i 's/adminpanel.bitplatform.dev/adminpanel-api.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/index.html
-          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -p:ResolveAssemblyReferencesFindRelatedSatellites=true -o ${{env.DOTNET_ROOT}}/static
+          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:PwaEnabled=true -p:ResolveAssemblyReferencesFindRelatedSatellites=true -o ${{env.DOTNET_ROOT}}/static
 
     - name: Upload static artifact
       uses: actions/upload-artifact@v4
