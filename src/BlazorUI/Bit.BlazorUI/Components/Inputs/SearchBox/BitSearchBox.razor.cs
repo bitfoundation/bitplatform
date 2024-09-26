@@ -245,8 +245,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         if (eventArgs.Key == "Escape")
         {
@@ -385,7 +384,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     private async Task HandleOnItemClick(string item)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (InvalidValueBinding()) return;
 
         CurrentValue = item;
 

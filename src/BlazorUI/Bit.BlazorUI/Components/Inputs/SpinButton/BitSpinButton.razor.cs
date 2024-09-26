@@ -297,8 +297,7 @@ public partial class BitSpinButton : BitInputBase<double>
 
     private async Task HandleOnPointerDown(bool isIncrement)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         //Change focus from input to number field
         if (isIncrement)
@@ -364,18 +363,16 @@ public partial class BitSpinButton : BitInputBase<double>
 
     private void HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsInputReadOnly) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         _intermediateValue = GetCleanValue(e.Value?.ToString());
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsInputReadOnly) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         switch (e.Key)
         {
@@ -470,7 +467,7 @@ public partial class BitSpinButton : BitInputBase<double>
 
     private async Task CheckIntermediateValueAndSetValue()
     {
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (InvalidValueBinding()) return;
         if (_intermediateValue == CurrentValueAsString) return;
 
         var isNumber = double.TryParse(_intermediateValue, out var numericValue);

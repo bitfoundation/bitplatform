@@ -137,7 +137,6 @@ public partial class BitToggle : BitInputBase<bool>
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
 
         CurrentValue = !CurrentValue;
     }
