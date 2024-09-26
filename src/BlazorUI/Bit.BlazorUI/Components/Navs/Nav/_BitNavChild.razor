@@ -100,9 +100,10 @@
         }
         else
         {
-            var padding = Nav.IconOnly ? 0 : childItems.Any()
-            ? (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : 0))
-            : (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : Nav.IndentPadding));
+            var padding = Nav.IconOnly ? 0
+            : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (childItems.Any() ? 0 : Nav.IndentPadding));
+
+            var desPadding = Nav.ReversedChevron is false && childItems.Any() ? Nav.IndentPadding : 0;
 
             <label name="@text"
                    for="@itemKey"
@@ -113,6 +114,8 @@
                     @if (childItems.Any())
                     {
                         <button @onclick="ToggleItem"
+                                @onclick:preventDefault="true" 
+                                @onclick:stopPropagation="true"
                                 tabindex="0"
                                 type="button"
                                 style="@Nav.Styles?.ToggleButton"
@@ -198,34 +201,22 @@
                     }
                 </div>
 
-                @if (description.HasValue())
+                @if (description.HasValue() && Nav.IconOnly is false)
                 {
-                    @if (renderLink)
-                    {
-                        <a @onclick="HandleOnClick"
-                           tabindex="-1"
-                           target="@target"
-                           title="@description"
-                           disabled="@(isEnabled is false)"
-                           href="@href"
-                           style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
-                           class="bit-nav-des @Nav.Classes?.Description"
-                           rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
-                            @description
-                        </a>
-                    }
-                    else
-                    {
-                        <button @onclick="HandleOnClick"
-                                type="button"
-                                tabindex="-1"
-                                title="@description"
-                                disabled="@(isEnabled is false)"
-                                style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
-                                class="bit-nav-des @Nav.Classes?.Description">
-                            @description
-                        </button>
-                    }
+                    <div title="@description"
+                         class="bit-nav-des @Nav.Classes?.Description"
+                         style="padding-inline-start:@(desPadding)px;@Nav.Styles?.Description">
+                        @description
+                    </div>
+                    @* <button @onclick="HandleOnClick"
+        type="button"
+        tabindex="-1"
+        title="@description"
+        disabled="@(isEnabled is false)"
+        style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
+        class="bit-nav-des @Nav.Classes?.Description">
+        @description
+        </button> *@
                 }
             </label>
         }
