@@ -353,7 +353,7 @@ private static readonly List<Section> CustomBitPlatformNavMenu =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitNav Items=""CustomBitPlatformNavMenu"" FullWidth
+<BitNav Items=""CustomBitPlatformNavMenu"" FitWidth
         NameSelectors=""@(new() { IconName =  { Name = nameof(Section.Icon) },
                                  ChildItems =  { Name = nameof(Section.Links) },
                                  Description =  { Name = nameof(Section.Comment) } })"" />";
