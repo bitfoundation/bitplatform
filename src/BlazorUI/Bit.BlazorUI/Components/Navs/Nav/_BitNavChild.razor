@@ -100,7 +100,7 @@
         }
         else
         {
-            var padding = childItems.Any()
+            var padding = Nav.IconOnly ? 0 : childItems.Any()
             ? (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : 0))
             : (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : Nav.IndentPadding));
 
