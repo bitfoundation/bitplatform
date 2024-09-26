@@ -36,10 +36,10 @@ public partial class BitNavDemo
         },
         new()
         {
-            Name = "FullWidth",
+            Name = "FitWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the nav in full width of its container."
+            Description = "Renders the nav in a width to only fit its content."
         },
         new()
         {
