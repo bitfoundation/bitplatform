@@ -383,8 +383,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
     private async Task HandleOnItemClick(string item)
     {
-        if (IsEnabled is false) return;
-        if (InvalidValueBinding()) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         CurrentValue = item;
 
