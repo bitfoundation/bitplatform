@@ -25,7 +25,7 @@ public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
         await Device.InvokeOnMainThreadAsync(() =>
         {
             UIKit.UIApplication.SharedApplication.SetStatusBarStyle(statusBarStyle, false);
-            Platform.GetCurrentUIViewController().SetNeedsStatusBarAppearanceUpdate();
+            Platform.GetCurrentUIViewController()!.SetNeedsStatusBarAppearanceUpdate();
         });
 #elif MACCATALYST
         var window = UIKit.UIApplication.SharedApplication.Windows[0].WindowScene;
