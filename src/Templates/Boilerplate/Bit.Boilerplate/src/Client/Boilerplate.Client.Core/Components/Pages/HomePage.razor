@@ -1,5 +1,8 @@
 ﻿@attribute [Route(Urls.HomePage)]
-@attribute [Route("{culture?}" + Urls.HomePage)]
+@attribute [Route(Urls.HomePage + "en-US")]
+@attribute [Route(Urls.HomePage + "en-GB")]
+@attribute [Route(Urls.HomePage + "fr-FR")]
+@attribute [Route(Urls.HomePage + "fa-IR")]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
