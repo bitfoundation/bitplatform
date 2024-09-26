@@ -11,7 +11,6 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
 using FluentStorage;
 using FluentStorage.Blobs;
@@ -130,11 +129,6 @@ public static partial class Program
             });
             //#elif (database == "Cosmos")
             options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
-            {
-
-            });
-            //#elif (database == "MySql")
-            options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });

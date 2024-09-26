@@ -124,7 +124,10 @@ public static partial class Program
         //#endif
 
         app.UseSiteMap();
-        
+
+        //#if (framework == 'net9.0')
+        app.MapStaticAssets();
+        //#endif
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()

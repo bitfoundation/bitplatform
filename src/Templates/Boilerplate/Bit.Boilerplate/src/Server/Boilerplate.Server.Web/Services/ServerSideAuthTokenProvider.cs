@@ -22,7 +22,6 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
         {
             return await storageService.GetItem("access_token");
         }
-
         return httpContextAccessor.HttpContext?.Request.Cookies["access_token"];
     }
 }
