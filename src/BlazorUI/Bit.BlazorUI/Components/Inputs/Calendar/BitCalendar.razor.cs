@@ -323,9 +323,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     protected override void OnInitialized()
     {
-        _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
-        _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
-
         OnValueChanged += HandleOnValueChanged;
 
         HandleParameterChanges();
@@ -381,8 +378,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void HandleParameterChanges()
     {
-        _showTimePicker = ShowTimePicker;
-        _showMonthPicker = ShowMonthPicker;
+        _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
+        _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
 
         _culture = Culture ?? CultureInfo.CurrentUICulture;
 
