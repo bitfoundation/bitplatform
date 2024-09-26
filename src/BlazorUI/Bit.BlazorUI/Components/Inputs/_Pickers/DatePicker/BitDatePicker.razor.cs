@@ -605,8 +605,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         var oldValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
@@ -693,8 +692,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 

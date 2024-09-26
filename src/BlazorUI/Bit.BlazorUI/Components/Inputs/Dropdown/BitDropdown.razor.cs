@@ -457,7 +457,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
         else
         {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (InvalidValueBinding()) return;
 
             var oldSelectedItem = _selectedItems.FirstOrDefault();
 
@@ -808,7 +808,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
         else
         {
-            if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+            if (InvalidValueBinding()) return;
 
             CurrentValue = default;
         }
@@ -819,8 +819,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     private async Task HandleOnAddItemComboClick()
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         await AddDynamicItem();
 
@@ -1164,8 +1163,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         if (eventArgs.Key == "Escape")
         {
@@ -1195,8 +1193,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     private async Task HandleOnComboInput(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         _searchText = e.Value?.ToString();
         await SearchVirtualized();
