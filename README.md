@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-4.9M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+[![Nuget downloads](https://img.shields.io/badge/packages_download-5.3M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Percentage of issues still open")
 
