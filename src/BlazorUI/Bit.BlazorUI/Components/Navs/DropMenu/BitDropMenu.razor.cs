@@ -50,6 +50,11 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// Renders the drop menu in responsive mode on small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the drop menu.
     /// </summary>
     [Parameter] public BitDropMenuClassStyles? Styles { get; set; }
@@ -143,7 +148,7 @@ public partial class BitDropMenu : BitComponentBase
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
                                 "",
