@@ -1,14 +1,14 @@
 <Project>
   <ItemGroup>
     <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-    <PackageVersion Include="Bit.Butil" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.BlazorUI" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.BlazorUI.Icons" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.BlazorUI.Assets" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.BlazorUI.Extras" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.Bswup" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.CodeAnalyzers" Version="8.11.1-pre-03" />
-    <PackageVersion Include="Bit.SourceGenerators" Version="8.11.1-pre-03" />
+    <PackageVersion Include="Bit.Butil" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.BlazorUI" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.BlazorUI.Icons" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.BlazorUI.Assets" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.BlazorUI.Extras" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.Bswup" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.CodeAnalyzers" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.SourceGenerators" Version="8.11.1-pre-04" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
     <!--/+:msbuild-conditional:noEmit -->
-    <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.1-pre-03" />
+    <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.1-pre-04" />
     <PackageVersion Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
     <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />

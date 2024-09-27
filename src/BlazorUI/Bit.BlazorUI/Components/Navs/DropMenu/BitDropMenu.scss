@@ -26,6 +26,12 @@
             cursor: default;
         }
     }
+
+    &.bit-rtl {
+        .bit-drm-rsp {
+            animation-name: bit-fade-show, bit-drp-trans-x-reverse;
+        }
+    }
 }
 
 .bit-drm-btn {
@@ -78,4 +84,11 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.bit-drm-rsp {
+    height: 100%;
+    max-height: unset;
+    box-shadow: $box-shadow-callout;
+    animation-name: bit-fade-show, bit-drp-trans-x;
 }

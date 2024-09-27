@@ -39,6 +39,9 @@ public class BitThemeGeneralColorVariants
     public string? Secondary { get; set; }
     public string? SecondaryHover { get; set; }
     public string? SecondaryActive { get; set; }
+    public string? Tertiary { get; set; }
+    public string? TertiaryHover { get; set; }
+    public string? TertiaryActive { get; set; }
     public string? Disabled { get; set; }
 }
 

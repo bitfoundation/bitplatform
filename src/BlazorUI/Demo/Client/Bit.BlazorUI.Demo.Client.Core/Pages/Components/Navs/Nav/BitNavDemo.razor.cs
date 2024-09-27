@@ -43,6 +43,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the nav in full width of its container element."
+        },
+        new()
+        {
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
