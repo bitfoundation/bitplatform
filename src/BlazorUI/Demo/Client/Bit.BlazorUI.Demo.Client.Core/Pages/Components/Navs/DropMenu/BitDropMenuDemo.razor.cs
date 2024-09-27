@@ -57,6 +57,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the drop menu in responsive mode on small screens."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitDropMenuClassStyles?",
             DefaultValue = "null",
