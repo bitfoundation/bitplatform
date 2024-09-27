@@ -43,6 +43,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     public bool FitWidth { get; set; }
 
     /// <summary>
+    /// Renders the nav in full width of its container element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the group header is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
@@ -746,7 +752,8 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => FitWidth ? "bit-nav-fwi" : string.Empty);
+        ClassBuilder.Register(() => FitWidth ? "bit-nav-ftw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-nav-flw" : string.Empty);
 
         ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
     }
