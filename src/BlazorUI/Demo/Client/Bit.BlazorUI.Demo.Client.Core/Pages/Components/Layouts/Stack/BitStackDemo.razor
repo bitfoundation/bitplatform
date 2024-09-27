@@ -54,7 +54,7 @@
 
          <ComponentExampleBox Title="Nesting" RazorCode="@example3RazorCode" Id="example3">
              <ExamplePreview>
-                 <BitStack Horizontal HorizontalAlign="BitStackAlignment.SpaceAround" Style="background:#71afe5">
+                 <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceAround" Style="background:#71afe5">
                      <div class="item">Item 1</div>
                      <BitStack>
                          <div class="item">Item 2-1</div>
@@ -89,29 +89,29 @@
                  <BitChoiceGroup Label="Horizontal Align"
                                  Horizontal
                                  @bind-Value="horizontalAlign"
-                                 TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
-                     <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
-                     <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
-                     <BitChoiceGroupOption Text="End" Value="BitStackAlignment.End" />
-                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitStackAlignment.SpaceBetween" />
-                     <BitChoiceGroupOption Text="SpaceAround" Value="BitStackAlignment.SpaceAround" />
-                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitStackAlignment.SpaceEvenly" />
-                     <BitChoiceGroupOption Text="Baseline" Value="BitStackAlignment.Baseline" />
-                     <BitChoiceGroupOption Text="Stretch" Value="BitStackAlignment.Stretch" />
+                                 TItem="BitChoiceGroupOption<BitAlignment>" TValue="BitAlignment">
+                     <BitChoiceGroupOption Text="Start" Value="BitAlignment.Start" />
+                     <BitChoiceGroupOption Text="Center" Value="BitAlignment.Center" />
+                     <BitChoiceGroupOption Text="End" Value="BitAlignment.End" />
+                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitAlignment.SpaceBetween" />
+                     <BitChoiceGroupOption Text="SpaceAround" Value="BitAlignment.SpaceAround" />
+                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitAlignment.SpaceEvenly" />
+                     <BitChoiceGroupOption Text="Baseline" Value="BitAlignment.Baseline" />
+                     <BitChoiceGroupOption Text="Stretch" Value="BitAlignment.Stretch" />
                  </BitChoiceGroup>
                  <br />
                  <BitChoiceGroup Label="Vertical Align"
                                  Horizontal
                                  @bind-Value="verticalAlign"
-                                 TItem="BitChoiceGroupOption<BitStackAlignment>" TValue="BitStackAlignment">
-                     <BitChoiceGroupOption Text="Start" Value="BitStackAlignment.Start" />
-                     <BitChoiceGroupOption Text="Center" Value="BitStackAlignment.Center" />
-                     <BitChoiceGroupOption Text="End" Value="BitStackAlignment.End" />
-                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitStackAlignment.SpaceBetween" />
-                     <BitChoiceGroupOption Text="SpaceAround" Value="BitStackAlignment.SpaceAround" />
-                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitStackAlignment.SpaceEvenly" />
-                     <BitChoiceGroupOption Text="Baseline" Value="BitStackAlignment.Baseline" />
-                     <BitChoiceGroupOption Text="Stretch" Value="BitStackAlignment.Stretch" />
+                                 TItem="BitChoiceGroupOption<BitAlignment>" TValue="BitAlignment">
+                     <BitChoiceGroupOption Text="Start" Value="BitAlignment.Start" />
+                     <BitChoiceGroupOption Text="Center" Value="BitAlignment.Center" />
+                     <BitChoiceGroupOption Text="End" Value="BitAlignment.End" />
+                     <BitChoiceGroupOption Text="SpaceBetween" Value="BitAlignment.SpaceBetween" />
+                     <BitChoiceGroupOption Text="SpaceAround" Value="BitAlignment.SpaceAround" />
+                     <BitChoiceGroupOption Text="SpaceEvenly" Value="BitAlignment.SpaceEvenly" />
+                     <BitChoiceGroupOption Text="Baseline" Value="BitAlignment.Baseline" />
+                     <BitChoiceGroupOption Text="Stretch" Value="BitAlignment.Stretch" />
                  </BitChoiceGroup>
                  <br />
                  <BitStack Style="background:#71afe5;height:15rem"
@@ -148,21 +148,21 @@
 
                 <BitStack Gap="0.5rem" Style="background:#71afe5;height:15rem">
                     <BitStack Grow="3"
-                              Class="item" Style="width:100%"
-                              VerticalAlign="BitStackAlignment.Center"
-                              HorizontalAlign="BitStackAlignment.Center">
+                              Class="item" AutoHeight
+                              VerticalAlign="BitAlignment.Center"
+                              HorizontalAlign="BitAlignment.Center">
                         Grow is 3
                     </BitStack>
                     <BitStack Grow="2"
-                              Class="item" Style="width:100%"
-                              VerticalAlign="BitStackAlignment.Center"
-                              HorizontalAlign="BitStackAlignment.Center">
+                              Class="item" AutoHeight
+                              VerticalAlign="BitAlignment.Center"
+                              HorizontalAlign="BitAlignment.Center">
                         Grow is 2
                     </BitStack>
                     <BitStack Grow="1"
-                              Class="item" Style="width:100%"
-                              VerticalAlign="BitStackAlignment.Center"
-                              HorizontalAlign="BitStackAlignment.Center">
+                              Class="item" AutoHeight
+                              VerticalAlign="BitAlignment.Center"
+                              HorizontalAlign="BitAlignment.Center">
                         Grow is 1
                     </BitStack>
                 </BitStack>
@@ -170,20 +170,20 @@
                 <br /><br />
 
                 <BitStack Gap="0.5rem" Style="background:#71afe5;height:15rem">
-                    <BitStack Class="item" Style="width:100%"
-                              VerticalAlign="BitStackAlignment.Center"
-                              HorizontalAlign="BitStackAlignment.Center">
+                    <BitStack Class="item" AutoHeight
+                              VerticalAlign="BitAlignment.Center"
+                              HorizontalAlign="BitAlignment.Center">
                         Normal
                     </BitStack>
                     <BitStack Grows
-                               Class="item" Style="width:100%"
-                               VerticalAlign="BitStackAlignment.Center"
-                               HorizontalAlign="BitStackAlignment.Center">
+                               Class="item" AutoHeight
+                               VerticalAlign="BitAlignment.Center"
+                               HorizontalAlign="BitAlignment.Center">
                          Grows
                      </BitStack>
-                     <BitStack Class="item" Style="width:100%"
-                               VerticalAlign="BitStackAlignment.Center"
-                               HorizontalAlign="BitStackAlignment.Center">
+                     <BitStack Class="item" AutoHeight
+                               VerticalAlign="BitAlignment.Center"
+                               HorizontalAlign="BitAlignment.Center">
                          Normal
                      </BitStack>
                  </BitStack>
@@ -193,20 +193,20 @@
                  <BitStack Horizontal
                            Gap="0.5rem"
                            Style="background:#71afe5;height:15rem">
-                     <BitStack Class="item" Style="height:100%"
-                               VerticalAlign="BitStackAlignment.Center"
-                               HorizontalAlign="BitStackAlignment.Center">
+                     <BitStack Class="item" AutoWidth
+                               VerticalAlign="BitAlignment.Center"
+                               HorizontalAlign="BitAlignment.Center">
                          Normal
                      </BitStack>
                      <BitStack Grows
-                               Class="item" Style="height:100%"
-                               VerticalAlign="BitStackAlignment.Center"
-                               HorizontalAlign="BitStackAlignment.Center">
+                               Class="item" AutoWidth
+                               VerticalAlign="BitAlignment.Center"
+                               HorizontalAlign="BitAlignment.Center">
                          Grows
                      </BitStack>
-                     <BitStack Class="item" Style="height:100%"
-                               VerticalAlign="BitStackAlignment.Center"
-                               HorizontalAlign="BitStackAlignment.Center">
+                     <BitStack Class="item" AutoWidth
+                               VerticalAlign="BitAlignment.Center"
+                               HorizontalAlign="BitAlignment.Center">
                          Normal
                      </BitStack>
                  </BitStack>

@@ -88,7 +88,9 @@ public partial class _BitDropdownOptionDemo
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private ICollection<string> comboBoxValues = [];
+    private ICollection<string> comboBoxValues1 = [];
+    private ICollection<string> comboBoxValues2 = [];
+    private ICollection<string> comboBoxValues3 = [];
 
 
     protected override void OnInitialized()

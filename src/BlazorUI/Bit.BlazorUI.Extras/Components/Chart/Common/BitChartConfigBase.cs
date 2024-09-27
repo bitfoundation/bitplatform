@@ -41,7 +41,7 @@ public abstract class BitChartConfigBase
     /// <see cref="BitChartBaseConfigOptions.Plugins"/> instead.
     /// </para>
     /// </summary>
-    public IList<object> Plugins { get; } = new List<object>();
+    public List<object> Plugins { get; } = new List<object>();
 
     /// <summary>
     /// This method tells json.net to only serialize the plugins when there

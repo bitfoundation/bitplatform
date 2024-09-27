@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Services;
 
-public class CultureInfoManager
+public partial class CultureInfoManager
 {
     /// <summary>
     /// To enable/disable multilingual support, navigate to Directory.Build.props and modify the MultilingualEnabled flag.
@@ -22,6 +22,7 @@ public class CultureInfoManager
         ("English UK", CreateCultureInfo("en-GB")),
         ("Française", CreateCultureInfo("fr-FR")),
         ("فارسی", CreateCultureInfo("fa-IR"))
+        // Adding new cultures requires changing HomePage.razor's routes and MainActivity's DataPathPrefixes.
     ];
 
     public static CultureInfo CreateCultureInfo(string name)

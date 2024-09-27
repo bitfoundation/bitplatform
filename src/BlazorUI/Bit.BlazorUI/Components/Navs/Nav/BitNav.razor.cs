@@ -17,6 +17,17 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
 
     /// <summary>
+    /// The accent color of the nav.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
+    /// The custom icon name of the chevron-down element of the BitNav component.
+    /// </summary>
+    [Parameter] public string? ChevronDownIcon { get; set; }
+
+    /// <summary>
     /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -27,9 +38,27 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the nav.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// The initially selected item in manual mode.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// Renders the nav in a width to only fit its content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
+    /// Renders the nav in full width of its container element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the group header is rendered.
@@ -40,6 +69,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// The render mode of the custom HeaderTemplate.
     /// </summary>
     [Parameter] public BitNavItemTemplateRenderMode HeaderTemplateRenderMode { get; set; } = BitNavItemTemplateRenderMode.Normal;
+
+    /// <summary>
+    /// Only renders the icon of each nav item.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// The indentation value in px for each level of depth of child item.
@@ -728,6 +763,55 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FitWidth ? "bit-nav-ftw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-nav-flw" : string.Empty);
+
+        ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nav-apri",
+            BitColor.Secondary => "bit-nav-asec",
+            BitColor.Tertiary => "bit-nav-ater",
+            BitColor.Info => "bit-nav-ainf",
+            BitColor.Success => "bit-nav-asuc",
+            BitColor.Warning => "bit-nav-awrn",
+            BitColor.SevereWarning => "bit-nav-aswr",
+            BitColor.Error => "bit-nav-aerr",
+            BitColor.PrimaryBackground => "bit-nav-apbg",
+            BitColor.SecondaryBackground => "bit-nav-asbg",
+            BitColor.TertiaryBackground => "bit-nav-atbg",
+            BitColor.PrimaryForeground => "bit-nav-apfg",
+            BitColor.SecondaryForeground => "bit-nav-asfg",
+            BitColor.TertiaryForeground => "bit-nav-atfg",
+            BitColor.PrimaryBorder => "bit-nav-apbr",
+            BitColor.SecondaryBorder => "bit-nav-asbr",
+            BitColor.TertiaryBorder => "bit-nav-atbr",
+            _ => "bit-nav-apbg",
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-nav-pri",
+            BitColor.Secondary => "bit-nav-sec",
+            BitColor.Tertiary => "bit-nav-ter",
+            BitColor.Info => "bit-nav-inf",
+            BitColor.Success => "bit-nav-suc",
+            BitColor.Warning => "bit-nav-wrn",
+            BitColor.SevereWarning => "bit-nav-swr",
+            BitColor.Error => "bit-nav-err",
+            BitColor.PrimaryBackground => "bit-nav-pbg",
+            BitColor.SecondaryBackground => "bit-nav-sbg",
+            BitColor.TertiaryBackground => "bit-nav-tbg",
+            BitColor.PrimaryForeground => "bit-nav-pfg",
+            BitColor.SecondaryForeground => "bit-nav-sfg",
+            BitColor.TertiaryForeground => "bit-nav-tfg",
+            BitColor.PrimaryBorder => "bit-nav-pbr",
+            BitColor.SecondaryBorder => "bit-nav-sbr",
+            BitColor.TertiaryBorder => "bit-nav-tbr",
+            _ => "bit-nav-pri",
+        });
     }
 
     protected override void RegisterCssStyles()

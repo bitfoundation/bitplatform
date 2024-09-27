@@ -6,7 +6,13 @@ public partial class BitSeparator : BitComponentBase
     /// Where the content should be aligned in the separator.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitSeparatorAlignContent AlignContent { get; set; } = BitSeparatorAlignContent.Center;
+    public BitSeparatorAlignContent? AlignContent { get; set; }
+
+    /// <summary>
+    /// Renders the separator with auto width or height.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool AutoSize { get; set; }
 
     /// <summary>
     /// The content of the Separator, it can be any custom tag or text.
@@ -33,5 +39,10 @@ public partial class BitSeparator : BitComponentBase
             BitSeparatorAlignContent.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => AutoSize ? (Vertical ? "height:auto" : "width:auto") : string.Empty);
     }
 }

@@ -16,20 +16,16 @@
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
-    @if (isLoadingAssemblies)
-    {
-        <LoadingComponent />
-    }
-    else
-    {
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
                 <div class="grid1">
                     <div class="grid1-container">
-                        <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
+                        <BitDataGrid Items="@FilteredItems1" ResizableColumns="true" Pagination="@pagination1">
                             <BitDataGridPropertyColumn Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
                                 <ColumnOptions>
-                                    <BitSearchBox @bind-Value="typicalSampleNameFilter"
+                                    <BitSearchBox @bind-Value="typicalSampleNameFilter1"
+                                                  FixedIcon
+                                                  Immediate DebounceTime="300"
                                                   Placeholder="Search on Name"
                                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                                 </ColumnOptions>
@@ -40,7 +36,7 @@
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
                         </BitDataGrid>
                     </div>
-                    <BitDataGridPaginator Value="@pagination" />
+                    <BitDataGridPaginator Value="@pagination1" />
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
@@ -49,10 +45,12 @@
             <ExamplePreview>
                 <div class="grid2">
                     <div class="grid2-container">
-                        <BitDataGrid Items="@FilteredItems" ResizableColumns="true" Pagination="@pagination">
+                        <BitDataGrid Items="@FilteredItems2" ResizableColumns="true" Pagination="@pagination2">
                             <BitDataGridPropertyColumn Class="column--large" Property="@(c => c.Name)" Sortable="true" IsDefaultSort="BitDataGridSortDirection.Ascending">
                                 <ColumnOptions>
-                                    <BitSearchBox @bind-Value="typicalSampleNameFilter"
+                                    <BitSearchBox @bind-Value="typicalSampleNameFilter2"
+                                                  FixedIcon
+                                                  Immediate DebounceTime="300"
                                                   Placeholder="Search on Name"
                                                   InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
                                 </ColumnOptions>
@@ -69,7 +67,7 @@
                             </BitDataGridTemplateColumn>
                         </BitDataGrid>
                     </div>
-                    <BitDataGridPaginator Value="@pagination" />
+                    <BitDataGridPaginator Value="@pagination2" />
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
@@ -87,7 +85,9 @@
                     </BitDataGrid>
                 </div>
                 <div class="search-panel">
-                    <BitSearchBox @bind-Value="VirtualSampleNameFilter" Placeholder="Search on Company" />
+                    <BitSearchBox @bind-Value="VirtualSampleNameFilter"
+                                  Immediate DebounceTime="300"
+                                  Placeholder="Search on Company" />
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
@@ -102,44 +102,10 @@
                     </BitDataGrid>
                 </div>
                 <div class="search-panel">
-                    <BitSearchBox @bind-Value="ODataSampleNameFilter" Placeholder="Search on Name" />
+                    <BitSearchBox @bind-Value="ODataSampleNameFilter"
+                                  Immediate DebounceTime="300"
+                                  Placeholder="Search on Name" />
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
-    }
 </ComponentDemo>
-
-@code {
-    IQueryable<CountryModel> allCountries = default!;
-    BitDataGrid<FoodRecall> dataGrid = default!;
-    BitDataGrid<ProductDto> productsDataGrid = default!;
-    BitDataGridItemsProvider<FoodRecall> foodRecallProvider = default!;
-    BitDataGridItemsProvider<ProductDto> productsItemsProvider = default!;
-    BitDataGridPaginationState pagination = new() { ItemsPerPage = 7 };
-    IQueryable<CountryModel>? FilteredItems => allCountries?.Where(x => x.Name.Contains(typicalSampleNameFilter, StringComparison.CurrentCultureIgnoreCase));
-
-    string typicalSampleNameFilter = string.Empty;
-    string _virtualSampleNameFilter = string.Empty;
-
-    string VirtualSampleNameFilter
-    {
-        get => _virtualSampleNameFilter;
-        set
-        {
-            _virtualSampleNameFilter = value;
-            _ = dataGrid.RefreshDataAsync();
-        }
-    }
-
-    string _odataSampleNameFilter = string.Empty;
-
-    string ODataSampleNameFilter
-    {
-        get => _odataSampleNameFilter;
-        set
-        {
-            _odataSampleNameFilter = value;
-            _ = productsDataGrid.RefreshDataAsync();
-        }
-    }
-}

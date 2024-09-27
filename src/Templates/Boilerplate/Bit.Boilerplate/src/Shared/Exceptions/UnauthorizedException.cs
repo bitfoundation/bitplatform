@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class UnauthorizedException : RestException
+public partial class UnauthorizedException : RestException
 {
     public UnauthorizedException()
         : base(nameof(AppStrings.UnauthorizedException))

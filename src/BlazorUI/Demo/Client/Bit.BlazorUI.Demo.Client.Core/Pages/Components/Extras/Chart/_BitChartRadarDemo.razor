@@ -1,0 +1,20 @@
+﻿<ComponentExampleBox Title="Radar Chart" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example1">
+    <ExamplePreview>
+        <div class="example-desc">
+            A radar chart is a way of showing multiple data points and the variation between them.
+            They are often useful for comparing the points of two or more different data sets.
+        </div>
+        <div class="chart-wrapper">
+            <div class="chart-container">
+                <BitChart Config="_config" @ref="_chart" />
+            </div>
+        </div>
+        <div class="buttons-container">
+            <BitButton Style="margin:5px" Variant="BitVariant.Fill" OnClick="RandomizeRadarData">Randomize Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddRadarDataset">Add Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveRadarDataset">Remove Dataset</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="AddRadarData">Add Data</BitButton>
+            <BitButton Style="margin:5px" Variant="BitVariant.Outline" OnClick="RemoveRadarData">Remove Data</BitButton>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>

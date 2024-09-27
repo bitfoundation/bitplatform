@@ -1,6 +1,4 @@
-﻿@page "/todo-template/project-structure"
-@page "/admin-panel/project-structure"
-@page "/templates/project-structure"
+﻿@page "/templates/project-structure"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/project-structure"
@@ -8,18 +6,18 @@
             Description="project structure of the project templates of the bit platform" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Project structure</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Project structure</BitText>
     <br />
     <section class="section-card">
         <div class="section-card-txt">
-            To examine the structure, start by creating a project with the following command in the command line:
+            To explore the structure of your project, start by creating a new project using the following command in the command line:
             <br />
             <CodeBox>dotnet new bit-bp –-name MyFirstProject</CodeBox>
         </div>
         <div class="row-section-container">
             <div>
                 <div class="section-card-txt">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Solution files</BitTypography>
+                    <BitText Typography="BitTypography.H5" Gutter>Solution files</BitText>
                     The image on the right displays project structure.
                     You will find two solution files in your project: MyFirstProject.sln and MyFirstProject.Web.slnf.
                     The MyFirstProject.Web.slnf file is designed to enhance your development efficiency by providing faster compilation,
@@ -29,7 +27,7 @@
                     <br />
                 </div>
                 <div class="section-card-txt">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Global files</BitTypography>
+                    <BitText Typography="BitTypography.H5" Gutter>Global files</BitText>
                     When navigating to the MyFirstProject folder, open the .github directory.
                     Here, you will find the workflows responsible for managing the CI/CD pipeline.
                     The subsequent sections will provide detailed information about these files.
@@ -52,7 +50,7 @@
                 </div>
 
                 <div class="section-card-txt">
-                    <BitTypography Variant="BitTypographyVariant.H5" Gutter>Directory.Build.props</BitTypography>
+                    <BitText Typography="BitTypography.H5" Gutter>Directory.Build.props</BitText>
                     In the src folder, which serves as the source of the project, you will find three directories: Client, Server, and Shared, as well as a Directory.Build.props file.
                     Just like csproj files, Directory.Build.props consists of two primary sections: PropertyGroup and ItemGroup.
 
@@ -72,7 +70,7 @@
                             <br />
                             <br />
                             <code>
-                                &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+                                &lt;PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
                             </code>
                             <br />
                             <br />
@@ -100,7 +98,7 @@
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Server Projects</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Server Projects</BitText>
 
             Inside the src/Server folder, there are two projects: Server.Api, Server.Web.
             <ul>
@@ -132,14 +130,14 @@
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Shared Project</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Shared Project</BitText>
             Since both the client and server are written in C#, it is logical to have a shared project that contains code used by both, such as Data Transfer Objects (DTOs) and other common classes.
         </div>
     </section>
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Client Projects</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Client Projects</BitText>
             On the client side, the Client.Core project contains various components, including Layouts, Pages, and other essential elements.
             <br />
             <br />
@@ -166,7 +164,7 @@
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitTypography Variant="BitTypographyVariant.H5" Gutter>Test Project</BitTypography>
+            <BitText Typography="BitTypography.H5" Gutter>Test Project</BitText>
             A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real
             behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
         </div>

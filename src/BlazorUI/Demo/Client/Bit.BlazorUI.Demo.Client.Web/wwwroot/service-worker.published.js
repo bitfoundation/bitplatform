@@ -1,19 +1,21 @@
-// bit version: 8.11.0-pre-01
+// bit version: 8.11.1-pre-04
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
-    /bit\.blazorui\.fluent-light\.css$/,
-    /Bit.BlazorUI.Demo\.Client\.Web\.styles\.css$/
+    /bit\.blazorui\.fluent-light\.css$/
 ];
 self.externalAssets = [
     {
         "url": "/"
     },
     {
-        "url": "_framework\/blazor.web.js?v=8.0.8"
+        "url": "_framework\/blazor.web.js"
+    },
+    {
+        "url": "Bit.BlazorUI.Demo.Server.styles.css"
     },
     {
         "url": "https://www.googletagmanager.com/gtag/js?id=G-G1ET5L69QF"

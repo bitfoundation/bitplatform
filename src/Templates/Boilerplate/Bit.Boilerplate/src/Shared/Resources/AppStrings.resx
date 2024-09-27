@@ -235,11 +235,8 @@
   </data>
     <!--#endif-->
     <!--#if (signalr == true) -->
-    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
-    <value>New session!</value>
-  </data>
-    <data name="DeviceDetails" xml:space="preserve">
-    <value>Device: {0}</value>
+    <data name="TwoFactorTokenPushText" xml:space="preserve">
+    <value>{0} is your two factor token in Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -311,6 +308,9 @@
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>You must agree to our terms.</value>
   </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>By signing up, you agree to our</value>
+  </data>
     <data name="Gender" xml:space="preserve">
     <value>Gender</value>
   </data>
@@ -356,6 +356,12 @@
     <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Oops, something went wrong...</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
   </data>
@@ -373,6 +379,12 @@
   </data>
     <data name="Token" xml:space="preserve">
     <value>Token</value>
+  </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid token.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>Expired token.</value>
   </data>
     <data name="TokenPlaceholder" xml:space="preserve">
     <value>Enter token</value>
@@ -522,7 +534,7 @@
     <value>Haven’t you received the confirmation email?</value>
   </data>
     <data name="Or" xml:space="preserve">
-    <value>OR</value>
+    <value>Or</value>
   </data>
     <data name="ProfileImage" xml:space="preserve">
     <value>Profile Image</value>
@@ -811,6 +823,9 @@
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>Send OTP and Magic link</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>Enter your email or phone number:</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>Either provide password or OTP</value>

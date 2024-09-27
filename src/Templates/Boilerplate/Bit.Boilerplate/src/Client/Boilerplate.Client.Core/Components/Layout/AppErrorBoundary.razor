@@ -13,14 +13,14 @@ else if (ErrorContent is null)
         <div>
             <img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
         </div>
-        <h1 class="title">Oops, something went wrong...</h1>
+        <h1 class="title">@localizer[nameof(AppStrings.SomethingWentWrong)]</h1>
         @if (showException)
         {
             <div class="exception">@CurrentException?.ToString()</div>
         }
         <div class="buttons">
-            <BitButton OnClick="Refresh">Refresh</BitButton>
-            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
+            <BitButton OnClick="Refresh">@localizer[nameof(AppStrings.Refresh)]</BitButton>
+            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Home)]</BitButton>
         </div>
     </div>
 }

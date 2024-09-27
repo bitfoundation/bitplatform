@@ -107,6 +107,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// CultureInfo for the Calendar.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(HandleParameterChanges))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -187,17 +188,23 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether the month picker is shown or hidden.
     /// </summary>
-    [Parameter] public bool ShowMonthPicker { get; set; } = true;
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowMonthPicker { get; set; } = true;
 
     /// <summary>
     /// The maximum allowable date of the calendar.
     /// </summary>
-    [Parameter] public DateTimeOffset? MaxDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum allowable date of the calendar.
     /// </summary>
-    [Parameter] public DateTimeOffset? MinDate { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
     /// Used to customize how content inside the month cell is rendered. 
@@ -237,7 +244,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether the time picker should be shown or not.
     /// </summary>
-    [Parameter] public bool ShowTimePicker { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public bool ShowTimePicker { get; set; }
 
     /// <summary>
     /// The time format of the time-picker, 24H or 12H.
@@ -292,7 +301,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Specifies the date and time of the calendar when it is showing without any selected value.
     /// </summary>
-    [Parameter] public DateTimeOffset? StartingValue { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public DateTimeOffset? StartingValue { get; set; }
 
 
 
@@ -312,37 +323,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     protected override void OnInitialized()
     {
-        _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
-        _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
+        OnValueChanged += HandleOnValueChanged;
+
+        HandleParameterChanges();
 
         base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        _showTimePicker = ShowTimePicker;
-        _showMonthPicker = ShowMonthPicker;
-
-        _culture = Culture ?? CultureInfo.CurrentUICulture;
-
-        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
-
-        if (MinDate.HasValue && MinDate > dateTime)
-        {
-            dateTime = MinDate.Value;
-        }
-
-        if (MaxDate.HasValue && MaxDate < dateTime)
-        {
-            dateTime = MaxDate.Value;
-        }
-
-        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
-        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
-
-        GenerateCalendarData(dateTime.DateTime);
-
-        base.OnParametersSet();
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -378,6 +363,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (disposing)
         {
             _cancellationTokenSource?.Dispose();
+            OnValueChanged -= HandleOnValueChanged;
         }
 
         base.Dispose(disposing);
@@ -385,10 +371,39 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
 
 
+    private void HandleOnValueChanged(object? sender, EventArgs args)
+    {
+        HandleParameterChanges();
+    }
+
+    private void HandleParameterChanges()
+    {
+        _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
+        _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
+
+        _culture = Culture ?? CultureInfo.CurrentUICulture;
+
+        var dateTime = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(DateTimeOffset.Now));
+
+        if (MinDate.HasValue && MinDate > dateTime)
+        {
+            dateTime = MinDate.Value;
+        }
+
+        if (MaxDate.HasValue && MaxDate < dateTime)
+        {
+            dateTime = MaxDate.Value;
+        }
+
+        _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
+        _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
+
+        GenerateCalendarData(dateTime.DateTime);
+    }
+
     private void SelectDate(int dayIndex, int weekIndex)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 
         _currentDay = _daysOfCurrentMonth[weekIndex, dayIndex];

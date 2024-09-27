@@ -162,17 +162,20 @@ public static partial class MauiProgram
     }
 
 #if iOS || Mac
-    public class CustomWKNavigationDelegate : WKNavigationDelegate
+    public partial class CustomWKNavigationDelegate : WKNavigationDelegate
     {
         public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, WKWebpagePreferences preferences, Action<WKNavigationActionPolicy, WKWebpagePreferences> decisionHandler)
         {
-            // To open Google reCAPTCHA and similar elements directly within the webview.
-            decisionHandler?.Invoke(WKNavigationActionPolicy.Allow, preferences);
-
             if (navigationAction.NavigationType is WKNavigationType.LinkActivated)
             {
                 // https://developer.apple.com/documentation/webkit/wknavigationtype/linkactivated#discussion
                 _ = Browser.OpenAsync(navigationAction.Request.Url!);
+                decisionHandler.Invoke(WKNavigationActionPolicy.Cancel, preferences);
+            }
+            else
+            {
+                // To open Google reCAPTCHA and similar elements directly within the webview.
+                decisionHandler.Invoke(WKNavigationActionPolicy.Allow, preferences);
             }
         }
     }

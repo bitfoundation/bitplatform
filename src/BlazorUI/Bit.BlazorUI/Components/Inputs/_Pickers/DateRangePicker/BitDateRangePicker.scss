@@ -50,6 +50,13 @@
             border-color: $clr-err;
         }
     }
+
+    &.bit-rtl {
+        .bit-dtrp-am-pm {
+            order: -1;
+            direction: rtl;
+        }
+    }
 }
 
 .bit-dtrp-lbl {
@@ -170,9 +177,13 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-size: spacing(1.75);
+    animation-fill-mode: both;
+    animation-duration: 0.367s;
+    font-family: $tg-font-family;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
-    font-family: $tg-font-family;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-dtrp-rsp {
@@ -274,10 +285,6 @@
     outline: none;
     box-shadow: none;
     box-sizing: border-box;
-    animation-duration: 167ms;
-    animation-fill-mode: both;
-    animation-name: bit-fade-in, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .bit-dtrp-sdt {
@@ -326,14 +333,14 @@
     border: none;
     aspect-ratio: 1;
     font-weight: 400;
+    color: $clr-fg-pri;
     position: relative;
     text-align: center;
     font-size: spacing(1.5);
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: 0.267s;
-    animation-name: bit-fade-in;
-    color: $clr-fg-pri;
+    animation-name: bit-fade-show;
     animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
@@ -480,6 +487,7 @@
     overflow: hidden;
     font-weight: 600;
     text-align: start;
+    color: $clr-fg-pri;
     position: relative;
     align-items: center;
     white-space: nowrap;
@@ -489,13 +497,8 @@
     padding: 0 spacing(1.25);
     font-size: spacing(1.75);
     line-height: spacing(3.5);
-    animation-fill-mode: both;
-    animation-duration: 0.267s;
-    animation-name: bit-fade-show;
     background-color: transparent;
-    color: $clr-fg-pri;
     border-radius: $shp-border-radius;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
 }
 
 .bit-dtrp-ptb {
@@ -734,9 +737,9 @@
 .bit-dtrp-am-pm {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    margin-left: spacing(2);
     padding: spacing(1.6) 0;
+    justify-content: space-between;
+    margin-inline-start: spacing(2);
 }
 
 .bit-dtrp-tin {
@@ -864,6 +867,7 @@
     .bit-dtrp-cal {
         display: block;
         z-index: unset;
+        animation: none;
         position: relative;
     }
 }

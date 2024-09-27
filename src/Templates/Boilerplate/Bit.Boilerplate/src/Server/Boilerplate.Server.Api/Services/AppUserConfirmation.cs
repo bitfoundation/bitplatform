@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Services;
 
-public class AppUserConfirmation : IUserConfirmation<User>
+public partial class AppUserConfirmation : IUserConfirmation<User>
 {
     public async Task<bool> IsConfirmedAsync(UserManager<User> manager, User user)
     {

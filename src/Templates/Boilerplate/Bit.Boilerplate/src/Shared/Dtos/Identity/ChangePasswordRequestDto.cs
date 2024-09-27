@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ChangePasswordRequestDto
+public partial class ChangePasswordRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [MinLength(6, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]

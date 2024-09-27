@@ -42,27 +42,23 @@ public partial class CategoriesPage
 
             try
             {
-                // https://docs.microsoft.com/en-us/odata/concepts/queryoptions-overview
-
-                categoryController.AddQueryStrings(new()
+                var odataQ = new ODataQuery
                 {
-                    { "$top", req.Count ?? 10 },
-                    { "$skip", req.StartIndex }
-                });
+                    Top = req.Count ?? 10,
+                    Skip = req.StartIndex,
+                    OrderBy = string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}"))
+                };
 
-                if (string.IsNullOrEmpty(categoryNameFilter) is false)
+                if (string.IsNullOrEmpty(CategoryNameFilter) is false)
                 {
-                    categoryController.AddQueryString("$filter", $"contains(Name,'{categoryNameFilter}')");
+                    odataQ.Filter = $"contains(tolower({nameof(CategoryDto.Name)}),'{CategoryNameFilter.ToLower()}')";
                 }
 
-                if (req.GetSortByProperties().Any())
-                {
-                    categoryController.AddQueryString("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
-                }
+                categoryController.AddQueryString(odataQ.ToString());
 
                 var data = await categoryController.GetCategories(CurrentCancellationToken);
 
-                return BitDataGridItemsProviderResult.From(data.Items!, (int)data.TotalCount);
+                return BitDataGridItemsProviderResult.From(data!.Items!, (int)data!.TotalCount);
             }
             catch (Exception exp)
             {

@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Exceptions;
 
-public class ResourceValidationException : RestException
+public partial class ResourceValidationException : RestException
 {
     public ResourceValidationException(params LocalizedString[] errorMessages)
     : this([("*", errorMessages)])

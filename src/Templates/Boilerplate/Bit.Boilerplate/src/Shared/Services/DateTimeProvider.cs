@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Services;
 
-public class DateTimeProvider : IDateTimeProvider
+public partial class DateTimeProvider : IDateTimeProvider
 {
     public DateTimeOffset GetCurrentDateTime()
     {

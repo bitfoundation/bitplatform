@@ -96,6 +96,9 @@ public partial class BitBasicListDemo
         Job = $"برنامه نویس {i + 1}"
     }).ToList();
 
+    [Inject] private HttpClient HttpClient { get; set; } = default!;
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
     private BitBasicListItemsProvider<ProductDto> ProductsProvider = default!;
     private BitBasicListItemsProvider<CategoryOrProductDto> CategoriesAndProductsProvider = default!;
 
@@ -167,7 +170,6 @@ private List<Person> FewPeople = Enumerable.Range(0, 100).Select(i => new Person
     Job = $""Programmer {i + 1}""
 }).ToList();
 
-
 public class Person
 {
     public int Id { get; set; }
@@ -199,7 +201,6 @@ private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Pe
     LastName = $""Person Family {i + 1}"",
     Job = $""Programmer {i + 1}""
 }).ToList();
-
 
 public class Person
 {
@@ -246,7 +247,6 @@ private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Pe
     Job = $""Programmer {i + 1}""
 }).ToList();
 
-
 public class Person
 {
     public int Id { get; set; }
@@ -281,7 +281,6 @@ private List<Person> LotsOfPeople = Enumerable.Range(0, 8000).Select(i => new Pe
     Job = $""Programmer {i + 1}""
 }).ToList();
 
-
 public class Person
 {
     public int Id { get; set; }
@@ -312,6 +311,9 @@ public class Person
     </VirtualizePlaceholder>
 </BitBasicList>";
     private readonly string example5CsharpCode = @"
+[Inject] private HttpClient HttpClient { get; set; } = default!;
+[Inject] private NavigationManager NavManager { get; set; } = default!;
+
 private BitBasicListItemsProvider<ProductDto> ProductsProvider;
 
 protected override void OnInitialized()
@@ -340,7 +342,6 @@ protected override void OnInitialized()
 
     base.OnInitialized();
 }
-
 
 public class ProductDto
 {
@@ -381,6 +382,9 @@ public partial class AppJsonContext : JsonSerializerContext { }";
     </VirtualizePlaceholder>
 </BitBasicList>";
     private readonly string example6CsharpCode = @"
+[Inject] private HttpClient HttpClient { get; set; } = default!;
+[Inject] private NavigationManager NavManager { get; set; } = default!;
+
 private BitBasicListItemsProvider<CategoryOrProductDto> CategoriesAndProductsProvider;
 
 protected override void OnInitialized()
@@ -409,7 +413,6 @@ protected override void OnInitialized()
 
     base.OnInitialized();
 }
-
 
 public class CategoryOrProductDto
 {
@@ -441,7 +444,6 @@ private List<Person> FewPeopleRtl = Enumerable.Range(0, 100).Select(i => new Per
     LastName = $""نام خانواگی شخص {i + 1}"",
     Job = $""برنامه نویس {i + 1}""
 }).ToList();
-
 
 public class Person
 {

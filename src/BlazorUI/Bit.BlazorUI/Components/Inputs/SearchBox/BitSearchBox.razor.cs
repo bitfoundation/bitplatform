@@ -227,9 +227,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        await OnSearch.InvokeAsync(CurrentValue);
-
         await CloseCallout();
+
+        await OnSearch.InvokeAsync(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -245,22 +245,21 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         if (eventArgs.Key == "Escape")
         {
             CurrentValue = string.Empty;
-            //await InputElement.FocusAsync(); // is it required when the keydown event is captured on the input itself?
+            await CloseCallout();
             await OnEscape.InvokeAsync();
             await OnClear.InvokeAsync();
-            await CloseCallout();
+            //await InputElement.FocusAsync(); // is it required when the keydown event is captured on the input itself?
         }
         else if (eventArgs.Key == "Enter")
         {
             CurrentValue = await _js.GetProperty(InputElement, "value");
-            await OnSearch.InvokeAsync(CurrentValue);
             await CloseCallout();
+            await OnSearch.InvokeAsync(CurrentValue);
         }
         else if (eventArgs.Key == "ArrowUp")
         {
@@ -384,8 +383,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
     private async Task HandleOnItemClick(string item)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         CurrentValue = item;
 

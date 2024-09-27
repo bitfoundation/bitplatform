@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Boilerplate.Client.Core.Data;
 
-public class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
+public partial class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
 {
     static OfflineDbContext()
     {

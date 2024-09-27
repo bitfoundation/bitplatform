@@ -8,9 +8,9 @@
         }
     </div>
 
-    <BitTypography Variant="BitTypographyVariant.H2">
+    <BitText Typography="BitTypography.H2">
         @Localizer[nameof(AppStrings.ChangePhoneNumberTitle)]
-    </BitTypography>
+    </BitText>
 
     <br />
 
@@ -34,7 +34,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
-                                  Type="BitTextFieldType.Tel"
+                                  Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
@@ -56,11 +56,11 @@
         }
         else
         {
-            <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+            <BitText Typography="BitTypography.Subtitle1" Gutter>
                 @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
                 <br />
                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
-            </BitTypography>
+            </BitText>
             <br />
             <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" class="change-phone-form">
                 <AppDataAnnotationsValidator />
@@ -68,7 +68,7 @@
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.PhoneNumber"
                                   IsEnabled="isPhoneNumberUnavailable"
-                                  Type="BitTextFieldType.Tel"
+                                  Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
@@ -76,7 +76,7 @@
 
                 <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Token"
-                                  Type="BitTextFieldType.Number"
+                                  Type="BitInputType.Number"
                                   Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
@@ -97,9 +97,9 @@
             {
                 <br />
                 <br />
-                <BitTypography Variant="BitTypographyVariant.Body1" Gutter>
+                <BitText Typography="BitTypography.Body1" Gutter>
                     @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
-                </BitTypography>
+                </BitText>
                 <br />
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"

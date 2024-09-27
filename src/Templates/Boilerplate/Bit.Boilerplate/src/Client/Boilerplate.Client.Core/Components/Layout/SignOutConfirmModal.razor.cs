@@ -27,8 +27,8 @@ public partial class SignOutConfirmModal
 
     private async Task SignOut()
     {
-        await CloseModal();
-
         await AuthenticationManager.SignOut(CurrentCancellationToken);
+
+        await CloseModal();
     }
 }

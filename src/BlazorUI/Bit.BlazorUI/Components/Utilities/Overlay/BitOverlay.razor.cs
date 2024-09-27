@@ -3,7 +3,7 @@
 public partial class BitOverlay : BitComponentBase
 {
     private int _offsetTop;
-    private bool _internalIsVisible;
+    private bool _internalIsOpen;
 
 
 
@@ -12,14 +12,9 @@ public partial class BitOverlay : BitComponentBase
 
 
     /// <summary>
-    /// When true, the Overlay will be closed by clicking on it.
-    /// </summary>
-    [Parameter] public bool AutoClose { get; set; } = true;
-
-    /// <summary>
     /// When true, the scroll behavior of the Scroller element behind the overlay will be disabled.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Overlay will be positioned absolute instead of fixed.
@@ -36,12 +31,22 @@ public partial class BitOverlay : BitComponentBase
     /// When true, the Overlay and its content will be shown.
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
-    public bool IsVisible { get; set; }
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// When true, the Overlay will be closed by clicking on it.
+    /// </summary>
+    [Parameter] public bool NoAutoClose { get; set; }
+
+    /// <summary>
+    /// Callback that is called when the overlay is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// Set the selector of the Selector element for the Overlay to disable its scroll if applicable.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public string? ScrollerSelector { get; set; }
 
 
 
@@ -54,7 +59,7 @@ public partial class BitOverlay : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => IsVisible ? "bit-ovl-vis" : string.Empty);
+        ClassBuilder.Register(() => IsOpen ? "bit-ovl-opn" : string.Empty);
         ClassBuilder.Register(() => AbsolutePosition ? "bit-ovl-abs" : string.Empty);
     }
 
@@ -62,15 +67,17 @@ public partial class BitOverlay : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_internalIsVisible == IsVisible) return;
+        if (_internalIsOpen == IsOpen) return;
 
-        _internalIsVisible = IsVisible;
+        _internalIsOpen = IsOpen;
 
         _offsetTop = 0;
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.BitOverlayToggleScroll(ScrollerSelector, IsVisible);
+        var scrollerSelector = ScrollerSelector.HasValue() ? ScrollerSelector! : "body";
+
+        _offsetTop = await _js.BitOverlayToggleScroll(scrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 
@@ -81,11 +88,14 @@ public partial class BitOverlay : BitComponentBase
 
 
 
-    private async Task CloseOverlay()
+    private async Task CloseOverlay(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (AutoClose is false) return;
 
-        await AssignIsVisible(false);
+        await OnClick.InvokeAsync(e);
+
+        if (NoAutoClose) return;
+
+        await AssignIsOpen(false);
     }
 }

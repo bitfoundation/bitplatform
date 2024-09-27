@@ -9,7 +9,7 @@ namespace Boilerplate.Shared.Services;
 /// Blazor Server, and Blazor WebAssembly (WASM).
 /// Additionally, in Blazor Hybrid, it stays in sync with the build configuration (Debug, Release).
 /// </summary>
-public static class AppEnvironment
+public static partial class AppEnvironment
 {
     const string DEV = "Development";
     const string STAGING = "Staging";

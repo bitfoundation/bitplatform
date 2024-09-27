@@ -15,20 +15,26 @@ public partial class BitToggle : BitInputBase<bool>
 
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitToggle.
+    /// Custom CSS classes for different parts of the toggle.
     /// </summary>
     [Parameter] public BitToggleClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Default text used when the On or Off texts are null.
+    /// The default value of the toggle when the value parameter has not been assigned.
     /// </summary>
-    [Parameter] public string? DefaultText { get; set; }
+    [Parameter] public bool? DefaultValue { get; set; }
 
     /// <summary>
-    /// Whether the label (not the onText/offText) should be positioned inline with the toggle control.
-    /// Left (right in RTL) side when on/off text provided VS right (left in RTL) side when there is no on/off text.
+    /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
-    [Parameter] public bool IsInlineLabel { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Renders the label and the knob in a single line together.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Inline { get; set; }
 
     /// <summary>
     /// Label of the toggle.
@@ -62,9 +68,14 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? Role { get; set; } = "switch";
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitToggle.
+    /// Custom CSS styles for different parts of the toggle.
     /// </summary>
     [Parameter] public BitToggleClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The default text used when the On or Off texts are null.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
 
 
 
@@ -76,9 +87,11 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-tgl-chk {Classes?.Checked}" : string.Empty);
 
-        ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-tgl-fwi" : string.Empty);
 
-        ClassBuilder.Register(() => IsInlineLabel ? "bit-tgl-inl" : string.Empty);
+        ClassBuilder.Register(() => Inline ? "bit-tgl-inl" : string.Empty);
+
+        ClassBuilder.Register(() => Reversed ? "bit-tgl-rvs" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -93,6 +106,11 @@ public partial class BitToggle : BitInputBase<bool>
         _labelId = $"BitToggle-{UniqueId}-label";
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
+
+        if (ValueHasBeenSet is false && DefaultValue is not null)
+        {
+            Value = DefaultValue.Value;
+        }
 
         SetStateText();
 
@@ -128,15 +146,14 @@ public partial class BitToggle : BitInputBase<bool>
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         CurrentValue = !CurrentValue;
     }
 
     private void SetStateText()
     {
-        _stateText = (CurrentValue ? OnText : OffText) ?? DefaultText;
+        _stateText = (CurrentValue ? OnText : OffText) ?? Text;
 
         if (AriaLabel.HasValue()) return;
 

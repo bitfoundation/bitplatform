@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
-public class TwoFactorAuthRequestDto
+public partial class TwoFactorAuthRequestDto
 {
     public bool? Enable { get; init; }
 

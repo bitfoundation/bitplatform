@@ -1,0 +1,215 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-txt {
+    color: inherit;
+    font-family: $tg-font-family;
+}
+
+.bit-txt-h1 {
+    margin: $tg-h1-margin;
+    font-size: $tg-h1-font-size;
+    font-weight: $tg-h1-font-weight;
+    line-height: $tg-h1-line-height;
+    letter-spacing: $tg-h1-letter-spacing;
+}
+
+.bit-txt-h2 {
+    margin: $tg-h2-margin;
+    font-size: $tg-h2-font-size;
+    font-weight: $tg-h2-font-weight;
+    line-height: $tg-h2-line-height;
+    letter-spacing: $tg-h2-letter-spacing;
+}
+
+.bit-txt-h3 {
+    margin: $tg-h3-margin;
+    font-size: $tg-h3-font-size;
+    font-weight: $tg-h3-font-weight;
+    line-height: $tg-h3-line-height;
+    letter-spacing: $tg-h3-letter-spacing;
+}
+
+.bit-txt-h4 {
+    margin: $tg-h4-margin;
+    font-size: $tg-h4-font-size;
+    font-weight: $tg-h4-font-weight;
+    line-height: $tg-h4-line-height;
+    letter-spacing: $tg-h4-letter-spacing;
+}
+
+.bit-txt-h5 {
+    margin: $tg-h5-margin;
+    font-size: $tg-h5-font-size;
+    line-height: $tg-h5-line-height;
+    font-weight: $tg-h5-font-weight;
+    letter-spacing: $tg-h5-letter-spacing;
+}
+
+.bit-txt-h6 {
+    margin: $tg-h6-margin;
+    font-size: $tg-h6-font-size;
+    font-weight: $tg-h6-font-weight;
+    line-height: $tg-h6-line-height;
+    letter-spacing: $tg-h6-letter-spacing;
+}
+
+.bit-txt-subtitle1 {
+    margin: $tg-subtitle1-margin;
+    font-size: $tg-subtitle1-font-size;
+    font-weight: $tg-subtitle1-font-weight;
+    line-height: $tg-subtitle1-line-height;
+    letter-spacing: $tg-subtitle1-letter-spacing;
+}
+
+.bit-txt-subtitle2 {
+    margin: $tg-subtitle2-margin;
+    font-size: $tg-subtitle2-font-size;
+    font-weight: $tg-subtitle2-font-weight;
+    line-height: $tg-subtitle2-line-height;
+    letter-spacing: $tg-subtitle2-letter-spacing;
+}
+
+.bit-txt-body1 {
+    margin: $tg-body1-margin;
+    font-size: $tg-body1-font-size;
+    font-weight: $tg-body1-font-weight;
+    line-height: $tg-body1-line-height;
+    letter-spacing: $tg-body1-letter-spacing;
+}
+
+.bit-txt-body2 {
+    margin: $tg-body2-margin;
+    font-size: $tg-body2-font-size;
+    font-weight: $tg-body2-font-weight;
+    line-height: $tg-body2-line-height;
+    letter-spacing: $tg-body2-letter-spacing;
+}
+
+.bit-txt-button {
+    margin: $tg-button-margin;
+    display: $tg-button-display;
+    font-size: $tg-button-font-size;
+    font-weight: $tg-button-font-weight;
+    line-height: $tg-button-line-height;
+    letter-spacing: $tg-button-letter-spacing;
+    text-transform: $tg-button-text-transform;
+}
+
+.bit-txt-caption1 {
+    margin: $tg-caption1-margin;
+    font-size: $tg-caption1-font-size;
+    font-weight: $tg-caption1-font-weight;
+    line-height: $tg-caption1-line-height;
+    letter-spacing: $tg-caption1-letter-spacing;
+}
+
+.bit-txt-caption2 {
+    margin: $tg-caption2-margin;
+    font-size: $tg-caption2-font-size;
+    font-weight: $tg-caption2-font-weight;
+    line-height: $tg-caption2-line-height;
+    letter-spacing: $tg-caption2-letter-spacing;
+}
+
+.bit-txt-overline {
+    margin: $tg-overline-margin;
+    display: $tg-overline-display;
+    font-size: $tg-overline-font-size;
+    font-weight: $tg-overline-font-weight;
+    line-height: $tg-overline-line-height;
+    letter-spacing: $tg-overline-letter-spacing;
+    text-transform: $tg-overline-text-transform;
+}
+
+.bit-txt-inherit {
+    margin: $tg-inherit-margin;
+    font-size: $tg-inherit-font-size;
+    font-family: $tg-inherit-font-family;
+    font-weight: $tg-inherit-font-weight;
+    line-height: $tg-inherit-line-height;
+    letter-spacing: $tg-inherit-letter-spacing;
+}
+
+
+.bit-txt-pri {
+    color: $clr-pri;
+}
+
+.bit-txt-sec {
+    color: $clr-sec;
+}
+
+.bit-txt-ter {
+    color: $clr-ter;
+}
+
+.bit-txt-inf {
+    color: $clr-inf;
+}
+
+.bit-txt-suc {
+    color: $clr-suc;
+}
+
+.bit-txt-wrn {
+    color: $clr-wrn;
+}
+
+.bit-txt-swr {
+    color: $clr-swr;
+}
+
+.bit-txt-err {
+    color: $clr-err;
+}
+
+.bit-txt-pbg {
+    color: $clr-bg-pri;
+}
+
+.bit-txt-sbg {
+    color: $clr-bg-sec;
+}
+
+.bit-txt-tbg {
+    color: $clr-bg-ter;
+}
+
+.bit-txt-pfg {
+    color: $clr-fg-pri;
+}
+
+.bit-txt-sfg {
+    color: $clr-fg-sec;
+}
+
+.bit-txt-tfg {
+    color: $clr-fg-ter;
+}
+
+.bit-txt-pbr {
+    color: $clr-brd-pri;
+}
+
+.bit-txt-sbr {
+    color: $clr-brd-sec;
+}
+
+.bit-txt-tbr {
+    color: $clr-brd-ter;
+}
+
+.bit-txt-rfg {
+    color: transparent;
+}
+
+
+.bit-txt-nowrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-txt-gutter {
+    margin-bottom: $tg-gutter-size;
+}

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Microsoft.JSInterop;
 
-public static class IJSRuntimeExtensions
+public static partial class IJSRuntimeExtensions
 {
     public static ValueTask<string> GetBrowserPlatform(this IJSRuntime jsRuntime)
     {
@@ -27,12 +27,18 @@ public static class IJSRuntimeExtensions
     }
     //#endif
 
+    /// <summary>
+    /// The return value would be false during pre-rendering
+    /// </summary>
     public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
         var type = jsRuntime.GetType();
 
-        if (type.Name is not "RemoteJSRuntime") return true; // Blazor WASM/Hybrid
-
-        return (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!;
+        return type.Name switch
+        {
+            "UnsupportedJavaScriptRuntime" => false, // pre-rendering
+            "RemoteJSRuntime" /* blazor server */ => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!,
+            _ => true // blazor wasm / hybrid
+        };
     }
 }

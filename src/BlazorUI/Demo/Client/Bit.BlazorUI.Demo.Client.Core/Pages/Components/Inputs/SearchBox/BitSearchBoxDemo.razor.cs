@@ -398,7 +398,6 @@ public partial class BitSearchBoxDemo
         margin-inline: 0.5rem;
         background-color: whitesmoke;
     }
-    }
 </style>
 
 

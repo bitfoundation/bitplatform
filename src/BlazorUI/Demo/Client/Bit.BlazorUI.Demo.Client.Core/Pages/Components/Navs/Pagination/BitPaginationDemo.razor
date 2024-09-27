@@ -18,7 +18,7 @@
     <ComponentExampleBox Title="Variants" RazorCode="@example2RazorCode" Id="example2">
         <ExamplePreview>
             <div>The pagination offers three variants: Fill (default), Outline, and Text.</div>
-            <br />
+            <br /><br />
             <div>Fill</div>
             <BitPagination Count="5" Variant="BitVariant.Fill" />
             <br /><br />
@@ -184,14 +184,18 @@
                 <br /><br />
                 <BitPagination Count="5"
                                Variant="BitVariant.Outline"
-                               Classes="@(new() { Root = "custom-root", Button = "custom-button" })" />
+                               Classes="@(new() { Root = "custom-root",
+                                                  Button = "custom-button",
+                                                  SelectedButton = "custom-selected-button"})" />
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
-            <div style="max-width:250px">
+            <div>Examples of one-way and two-way data binding with BitPagination.</div>
+            <br /><br />
+            <div style="max-width: 250px;">
                 <div>One-way:</div>
                 <br />
                 <BitPagination Count="5" SelectedPage="oneWaySelectedPage" />
@@ -215,6 +219,8 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
+            <div>Use BitPagination in right-to-left (RTL).</div>
+            <br /><br />
             <div dir="rtl">
                 <BitPagination Dir="BitDir.Rtl" Count="5" Variant="BitVariant.Fill" />
                 <br /><br />

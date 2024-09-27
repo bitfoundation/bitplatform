@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
+using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#endif
@@ -12,7 +14,7 @@ namespace Boilerplate.Server.Web;
 
 public static partial class Program
 {
-    private static void ConfigureServices(this WebApplicationBuilder builder)
+    public static void AddServerWebProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
 
@@ -21,10 +23,33 @@ public static partial class Program
 
         AddBlazor(builder);
 
+        //#if (api == "Integrated")
+        builder.AddServerApiProjectServices();
+        //#else
+        services.AddOptions<ForwardedHeadersOptions>()
+            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddResponseCaching();
+
         services.AddHttpContextAccessor();
 
-        //#if (api == "Integrated")
-        builder.ConfigureApiServices();
+        services.AddResponseCompression(opts =>
+        {
+            opts.EnableForHttps = true;
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
+            opts.Providers.Add<BrotliCompressionProvider>();
+            opts.Providers.Add<GzipCompressionProvider>();
+        })
+            .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
+            .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
+
+        //#if (appInsights == true)
+        services.AddApplicationInsightsTelemetry(configuration);
+        //#endif
+
+        services.AddAntiforgery();
         //#endif
 
         services.AddClientWebProjectServices();
@@ -51,7 +76,7 @@ public static partial class Program
                 serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
             }
 
-            var httpClient = new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
+            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
                 BaseAddress = serverAddress
             };

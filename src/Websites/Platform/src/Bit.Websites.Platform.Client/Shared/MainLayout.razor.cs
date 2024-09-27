@@ -29,11 +29,12 @@ public partial class MainLayout : IDisposable
 
     private readonly List<BitNavItem> templatesNavItems =
     [
-        new BitNavItem { Text = "Overview", Url = "/templates/overview", AdditionalUrls = ["/admin-panel/overview", "/todo-template/overview"] },
+        new BitNavItem { Text = "Overview", Url = "/templates/overview" },
         new BitNavItem { Text = "Samples", Url = "/templates/samples" },
-        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = ["/templates/development-prerequisites", "/admin-panel/development-prerequisites", "/todo-template/development-prerequisites"] },
-        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = ["/admin-panel/project-structure", "/todo-template/project-structure"] },
-        new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = ["/admin-panel/create-project", "/todo-template/create-project"] }
+        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started" },
+        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure" },
+        new BitNavItem { Text = "Create project", Url = "/templates/create-project" },
+        new BitNavItem { Text = "Run project", Url = "/templates/run-project" }
     ];
 
     private readonly List<BitNavItem> bswupNavItems =

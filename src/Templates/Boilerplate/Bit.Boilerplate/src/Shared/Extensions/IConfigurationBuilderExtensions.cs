@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.Configuration;
 
-public static class IConfigurationBuilderExtensions
+public static partial class IConfigurationBuilderExtensions
 {
     /// <summary>
     /// Configuration priority (Lowest to highest) =>
@@ -29,6 +29,9 @@ public static class IConfigurationBuilderExtensions
 
         var originalSources = builder.Sources.ToList();
         builder.Sources.Clear();
-        builder.Sources.AddRange(configBuilder.Sources.Union(originalSources));
+        foreach (var source in configBuilder.Sources.Union(originalSources))
+        {
+            builder.Sources.Add(source);
+        }
     }
 }

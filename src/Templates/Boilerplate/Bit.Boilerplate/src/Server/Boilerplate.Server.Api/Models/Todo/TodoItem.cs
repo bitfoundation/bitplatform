@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Models.Todo;
 
-public class TodoItem
+public partial class TodoItem
 {
     public Guid Id { get; set; }
 

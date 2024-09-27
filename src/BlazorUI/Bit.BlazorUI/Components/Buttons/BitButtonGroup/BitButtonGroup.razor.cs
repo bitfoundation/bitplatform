@@ -111,6 +111,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             BitColor.Warning => "bit-btg-wrn",
             BitColor.SevereWarning => "bit-btg-swr",
             BitColor.Error => "bit-btg-err",
+            BitColor.PrimaryBackground => "bit-btg-pbg",
+            BitColor.SecondaryBackground => "bit-btg-sbg",
+            BitColor.TertiaryBackground => "bit-btg-tbg",
+            BitColor.PrimaryForeground => "bit-btg-pfg",
+            BitColor.SecondaryForeground => "bit-btg-sfg",
+            BitColor.TertiaryForeground => "bit-btg-tfg",
+            BitColor.PrimaryBorder => "bit-btg-pbr",
+            BitColor.SecondaryBorder => "bit-btg-sbr",
+            BitColor.TertiaryBorder => "bit-btg-tbr",
             _ => "bit-btg-pri"
         });
 

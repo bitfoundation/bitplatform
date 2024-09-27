@@ -23,7 +23,14 @@ public partial class BitButtonDemo
             Name = "AriaHidden",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the element.",
+            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the element.",
+        },
+        new()
+        {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, shows the loading state while the OnClick event is in progress.",
         },
         new()
         {
@@ -58,6 +65,13 @@ public partial class BitButtonDemo
             Description = "The general color of the button.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "FixedColor",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Preserves the foreground color of the button through hover and focus.",
         },
         new()
         {
@@ -339,6 +353,60 @@ public partial class BitButtonDemo
                     Name= "Error",
                     Description="Error general color.",
                     Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
                 }
             ]
         },
@@ -431,8 +499,6 @@ public partial class BitButtonDemo
         }
     ];
 
-
-
     private bool fillIsLoading;
     private bool outlineIsLoading;
     private bool textIsLoading;
@@ -462,6 +528,12 @@ public partial class BitButtonDemo
         await Task.Delay(3000);
         textIsLoading = false;
     }
+
+    private async Task AutoLoadingClick()
+    {
+        await Task.Delay(3000);
+    }
+
 
     private async Task LoadingStylesClick()
     {

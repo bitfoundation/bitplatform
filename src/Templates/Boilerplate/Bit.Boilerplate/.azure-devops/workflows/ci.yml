@@ -27,3 +27,9 @@ jobs:
     inputs:
       targetType: 'inline'
       script: 'dotnet build Boilerplate.sln -c Release'
+
+  - task: Bash@3
+    displayName: 'Test'
+    inputs:
+      targetType: 'inline'
+      script: 'dotnet test src/Tests/Boilerplate.Tests.csproj'

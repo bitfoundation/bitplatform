@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
+public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

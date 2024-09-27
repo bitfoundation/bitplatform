@@ -1027,16 +1027,14 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
         transition: width 0.3s ease, left 0.3s ease;
     }
 
-    .custom-focus {
-        .custom-input-container::after {
-            left: 0;
-            width: 100%;
-        }
+    .custom-focus .custom-input-container::after {
+        left: 0;
+        width: 100%;
+    }
 
-        .custom-label {
-            color: blueviolet;
-            transform: translate(0, 1.5px) scale(0.75);
-        }
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-day-picker {
@@ -1177,6 +1175,7 @@ private DateTimeOffset? selectedDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, 
     }
 </style>
 
+
 <BitDatePicker>
     <LabelTemplate>
         Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
@@ -1222,11 +1221,28 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                Placeholder=""Select a date"" />";
 
     private readonly string example10RazorCode = @"
+<BitDatePicker ShowTimePicker
+               Label=""HourStep = 2""
+               HourStep=""2"" />
+
+<BitDatePicker ShowTimePicker
+               Label=""MinuteStep = 15""
+               MinuteStep=""15"" />";
+
+    private readonly string example11RazorCode = @"
+<BitDatePicker Label=""Basic DatePicker"" Standalone />
+<BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
+<BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
+<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
+<BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
+
+    private readonly string example12RazorCode = @"
 <style>
     .validation-message {
         color: red;
     }
 </style>
+
 
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
@@ -1236,11 +1252,11 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
-               OnClick=""() => { validationModel = new(); SuccessMessage=string.Empty; }"">
+               OnClick=""() => { validationModel = new(); SuccessMessage = string.Empty; }"">
         Reset
     </BitButton>
 </EditForm>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class BitDatePickerValidationModel
 {
     [Required]
@@ -1252,22 +1268,6 @@ private BitDatePickerValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example11RazorCode = @"
-<BitDatePicker Dir=""BitDir.Rtl"" />";
-
-    private readonly string example12RazorCode = @"
-<BitDatePicker ShowTimePicker
-               Label=""HourStep = 2""
-               HourStep=""2"" />
-
-<BitDatePicker ShowTimePicker
-               Label=""MinuteStep = 15""
-               MinuteStep=""15"" />";
-
     private readonly string example13RazorCode = @"
-<BitDatePicker Label=""Basic DatePicker"" Standalone />
-<BitDatePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
-<BitDatePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
-<BitDatePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
-<BitDatePicker Label=""TimePicker"" ShowTimePicker Standalone />";
+<BitDatePicker Dir=""BitDir.Rtl"" />";
 }

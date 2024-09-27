@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class IServiceCollectionExtensions
+public static partial class IServiceCollectionExtensions
 {
     public static IServiceCollection AddSharedProjectServices(this IServiceCollection services)
     {
@@ -22,7 +22,7 @@ public static class IServiceCollectionExtensions
 
         services.AddLocalization();
 
-        services.AddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
+        services.TryAddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
         services.TryAddTransient<HtmlRenderer>();
         services.TryAddTransient(sp => AppJsonContext.Default.Options);
 

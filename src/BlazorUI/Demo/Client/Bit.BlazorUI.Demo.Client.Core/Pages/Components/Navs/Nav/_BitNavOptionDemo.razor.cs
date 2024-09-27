@@ -2,11 +2,13 @@
 
 public partial class _BitNavOptionDemo
 {
+    private bool iconOnly;
+
     private BitNavOption ClickedOption = default!;
     private BitNavOption ToggledOption = default!;
     private BitNavOption SelectedOption = default!;
 
-    private string? SelectedOptionKey;
+    private string? SelectedOptionKey = "French Fries";
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     [
         new() { Text = "Beef Burger", Value = "Beef Burger" },
@@ -27,16 +29,16 @@ public partial class _BitNavOptionDemo
 
 
 
-    private readonly string example1NavOptionRazorCode = @"
+    private readonly string example1RazorCode = @"
 <BitNav TItem=""BitNavOption"">
     <BitNavOption Text=""bit platform""
-                    ExpandAriaLabel=""bit platform Expanded""
-                    CollapseAriaLabel=""bit platform Collapsed"">
+                  ExpandAriaLabel=""bit platform Expanded""
+                  CollapseAriaLabel=""bit platform Collapsed"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption IconName=""@BitIconName.ToDoLogoOutline"" Text=""Todo sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption IconName=""@BitIconName.LocalAdmin"" Text=""AdminPanel sample"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
@@ -47,23 +49,64 @@ public partial class _BitNavOptionDemo
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Community""
-                    ExpandAriaLabel=""Community Expanded""
-                    CollapseAriaLabel=""Community Collapsed"">
+                  ExpandAriaLabel=""Community Expanded""
+                  CollapseAriaLabel=""Community Collapsed"">
         <BitNavOption Text=""Linkedin"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Github repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
-
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
-    private readonly string example2NavOptionRazorCode = @"
-<BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
+    private readonly string example2RazorCode = @"
+<BitNav TItem=""BitNavOption"" FitWidth>
+    <BitNavOption Text=""bit platform""
+                  ExpandAriaLabel=""bit platform Expanded""
+                  CollapseAriaLabel=""bit platform Collapsed"">
+        <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""Project Templates"">
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" IsEnabled=""false"" />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+        </BitNavOption>
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Community""
+                  ExpandAriaLabel=""Community Expanded""
+                  CollapseAriaLabel=""Community Collapsed"">
+        <BitNavOption Text=""Linkedin"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Github repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
+</BitNav>";
+
+    private readonly string example3RazorCode = @"
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav TItem=""BitNavOption"" IconOnly=""iconOnly"">
+    <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
+    <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+    <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+    <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+    <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+    <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+</BitNav>";
+    private readonly string example3CsharpCode = @"
+private bool iconOnly;";
+
+    private readonly string example4RazorCode = @"
+< BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <BitNavOption Text=""Mercedes-Benz""
-                    ExpandAriaLabel=""Mercedes-Benz Expanded""
-                    CollapseAriaLabel=""Mercedes-Benz Collapsed""
-                    Title=""Mercedes-Benz Car Models""
-                    IsExpanded=""true"">
+                  ExpandAriaLabel=""Mercedes-Benz Expanded""
+                  CollapseAriaLabel=""Mercedes-Benz Collapsed""
+                  Title=""Mercedes-Benz Car Models""
+                  IsExpanded=""true"">
         <BitNavOption Text=""SUVs"">
             <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
             <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
@@ -81,17 +124,16 @@ public partial class _BitNavOptionDemo
         </BitNavOption>
     </BitNavOption>
     <BitNavOption Text=""Tesla""
-                    ExpandAriaLabel=""Tesla Expanded""
-                    CollapseAriaLabel=""Tesla Collapsed""
-                    Title=""Tesla Car Models"">
+                  ExpandAriaLabel=""Tesla Expanded""
+                  CollapseAriaLabel=""Tesla Collapsed""
+                  Title=""Tesla Car Models"">
         <BitNavOption Text=""Model S"" Url=""https://www.tesla.com/models"" Target=""_blank"" />
         <BitNavOption Text=""Model X"" Url=""https://www.tesla.com/modelx"" Target=""_blank"" />
         <BitNavOption Text=""Model Y"" Url=""https://www.tesla.com/modely"" Target=""_blank"" />
     </BitNavOption>
 </BitNav>";
 
-    private readonly string example3NavOptionRazorCode = @"
-<BitLabel>Basic</BitLabel>
+    private readonly string example5RazorCode = @"
 <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
                   IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
@@ -118,8 +160,8 @@ public partial class _BitNavOptionDemo
     <BitNavOption Text=""Cookie"" Key=""Cookie"" />
 </BitNav>
 
-<BitLabel>Two-Way Bind</BitLabel>
-<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
+<BitNav Mode=""BitNavMode.Manual""
+        OnSelectItem=""(BitNavOption option) => SelectedOptionKey = option.Key"">
     <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
                   IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
         <BitNavOption Text=""Burgers"" Description=""List of burgers"">
@@ -146,10 +188,10 @@ public partial class _BitNavOptionDemo
 </BitNav>
 
 <BitDropdown @bind-Value=""SelectedOptionKey""
-             DefaultValue=""French Fries""
-             Label=""Pick one""
+             FitWidth
+             Label=""Select Item""
              Items=""FoodMenuDropdownItems"" />";
-    private readonly string example3NavOptionCsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string SelectedOptionKey;
 
 private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
@@ -170,8 +212,7 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     new() { Text = ""Cookie"", Value = ""Cookie"" },
 ];";
 
-    private readonly string example4NavOptionRazorCode = @"
-<BitLabel>Header Template (in Grouped mode)</BitLabel>
+    private readonly string example6RazorCode = @"
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <HeaderTemplate Context=""item"">
         <div class=""nav-custom-header"">
@@ -212,7 +253,6 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     </ChildContent>
 </BitNav>
 
-<BitLabel>Option Template</BitLabel>
 <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
     <ItemTemplate Context=""option"">
         <div class=""nav-custom-item"">
@@ -248,7 +288,7 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     </ChildContent>
 </BitNav>";
 
-    private readonly string example5NavOptionRazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitNav Mode=""BitNavMode.Manual""
         OnItemClick=""(BitNavOption option) => ClickedOption = option""
         OnSelectItem=""(BitNavOption option) => SelectedOption = option""
@@ -281,12 +321,12 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
 <span>Clicked Option: @ClickedOption?.Text</span>
 <span>Selected Option: @SelectedOption?.Text</span>
 <span>Toggled Option: @(ToggledOption is null ? ""N/A"" : $""{ToggledOption.Text} ({(ToggledOption.IsExpanded ? ""Expanded"" : ""Collapsed"")})"")</span>";
-    private readonly string example5NavOptionCsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitNavOption ClickedOption;
 private BitNavOption SelectedOption;
 private BitNavOption ToggledOption;";
 
-    private readonly string example6NavOptionRazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitNav TItem=""BitNavOption""
         Styles=""@(new() { ItemContainer = ""border: 1px solid green; margin: 2px;"",
                           ToggleButton = ""color: cyan;"",
@@ -309,7 +349,6 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
-
     <BitNavOption Text=""Community""
                   ExpandAriaLabel=""Community Expanded""
                   CollapseAriaLabel=""Community Collapsed"">
@@ -317,11 +356,10 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""Github repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
-
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 
-    private readonly string example7NavOptionRazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitNav Dir=""BitDir.Rtl"" TItem=""BitNavOption"">
     <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">
         <BitNavOption Text=""خانه"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
@@ -343,7 +381,6 @@ private BitNavOption ToggledOption;";
         <BitNavOption Text=""توییتر"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""گیتهاب"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
-
     <BitNavOption Text=""شمایل نگاری"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" Target=""_blank"" />
 </BitNav>";
 }

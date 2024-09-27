@@ -27,9 +27,14 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
-    /// If true, add an aria-hidden attribute instructing screen readers to ignore the element.
+    /// If true, adds an aria-hidden attribute instructing screen readers to ignore the element.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, shows the loading state while the OnClick event is in progress.
+    /// </summary>
+    [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
     /// The value of the type attribute of the button.
@@ -54,6 +59,12 @@ public partial class BitButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Preserves the foreground color of the button through hover and focus.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FixedColor { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -70,8 +81,9 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Determines whether the button is in loading mode or not.
-    /// </summary>        
-    [Parameter] public bool IsLoading { get; set; }
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// The loading label text to show next to the spinner icon.
@@ -176,6 +188,15 @@ public partial class BitButton : BitComponentBase
             BitColor.Warning => "bit-btn-wrn",
             BitColor.SevereWarning => "bit-btn-swr",
             BitColor.Error => "bit-btn-err",
+            BitColor.PrimaryBackground => "bit-btn-pbg",
+            BitColor.SecondaryBackground => "bit-btn-sbg",
+            BitColor.TertiaryBackground => "bit-btn-tbg",
+            BitColor.PrimaryForeground => "bit-btn-pfg",
+            BitColor.SecondaryForeground => "bit-btn-sfg",
+            BitColor.TertiaryForeground => "bit-btn-tfg",
+            BitColor.PrimaryBorder => "bit-btn-pbr",
+            BitColor.SecondaryBorder => "bit-btn-sbr",
+            BitColor.TertiaryBorder => "bit-btn-tbr",
             _ => "bit-btn-pri"
         });
 
@@ -188,6 +209,8 @@ public partial class BitButton : BitComponentBase
         });
 
         ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
+
+        ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -223,6 +246,13 @@ public partial class BitButton : BitComponentBase
     {
         if (IsEnabled is false) return;
 
+        if (AutoLoading)
+        {
+            if (await AssignIsLoading(true) is false) return;
+        }
+
         await OnClick.InvokeAsync(e);
+
+        await AssignIsLoading(false);
     }
 }

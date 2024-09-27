@@ -34,7 +34,7 @@ public partial class EmailService
                 Link = link,
                 DisplayName = user.DisplayName!,
             },
-            [nameof(HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(ResetPasswordTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);
@@ -57,7 +57,7 @@ public partial class EmailService
                 Link = link,
                 DisplayName = user.DisplayName!,
             },
-            [nameof(HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(OtpTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);
@@ -75,7 +75,7 @@ public partial class EmailService
         var body = await BuildBody<TwoFactorTokenTemplate>(new Dictionary<string, object?>()
         {
             [nameof(TwoFactorTokenTemplate.Model)] = new TwoFactorTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
-            [nameof(HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(TwoFactorTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);
@@ -93,7 +93,7 @@ public partial class EmailService
         var body = await BuildBody<EmailTokenTemplate>(new Dictionary<string, object?>()
         {
             [nameof(EmailTokenTemplate.Model)] = new EmailTokenTemplateModel { Email = toEmailAddress, Token = token, Link = link },
-            [nameof(HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(EmailTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, toEmailAddress!, user.DisplayName!, subject, cancellationToken);

@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
-public static class Urls
+public static partial class Urls
 {
     public const string HomePage = "/";
 

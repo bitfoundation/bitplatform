@@ -1,6 +1,4 @@
-﻿@page "/todo-template/create-project"
-@page "/admin-panel/create-project"
-@page "/templates/create-project"
+﻿@page "/templates/create-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/create-project"
@@ -9,15 +7,17 @@
 
 <div class="page-container">
 
-    <BitTypography Variant="BitTypographyVariant.H3" Gutter>Create Project</BitTypography>
+    <BitText Typography="BitTypography.H3" Gutter>Create Project</BitText>
     <br />
-    <BitTypography Variant="BitTypographyVariant.Subtitle1" Gutter>
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
         Let's make our next cross platform project a success with Bit.Boilerplate.
-    </BitTypography>
+    </BitText>
     <br />
-    <CodeBox>
-        @GetFinalCommand()
-    </CodeBox>
+    <BitSticky Top="90px">
+        <CodeBox>
+            @GetFinalCommand()
+        </CodeBox>
+    </BitSticky>
     <br />
 
     <BitGrid Columns="2"
@@ -25,7 +25,7 @@
              HorizontalSpacing="1rem">
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Name</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
                 <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
             </div>
             <br />
@@ -38,7 +38,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Captcha</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
             </div>
             <br />
@@ -65,7 +65,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Pipeline</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
             </div>
             <br />
@@ -96,7 +96,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Sample</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
             </div>
             <br />
@@ -109,7 +109,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Windows</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
                 <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -122,20 +122,20 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>App Center</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
                 <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
                 @GetAppCenterCommand()
             </CodeBox>
-            By adding the --appCenter true parameter to the dotnet new command, App Center will be integrated for macOS,
-            Windows, iOS, and Android platforms.
+            Adding --appCenter true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            seamlessly across all supported platforms.
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>AppInsights</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -149,19 +149,24 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>SignalR</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
                 <BitToggle @bind-Value="signalr.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
                 @GetSignalRCommand()
             </CodeBox>
-            Enabling this parameter will provide you with sample code for SignalR.
+            Enabling this parameter will include sample code for SignalR, which can be used to implement real-time functionalities, such as chat, in your Blazor project.
+            <br />
+            <br />
+            <b>Note:</b>
+            <br />  
+            This setting does not affect the enabling or disabling of Blazor Server.
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>File Storage</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
             </div>
             <CodeBox>
@@ -198,7 +203,7 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Offline Database</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
             </div>
             <br />
@@ -214,7 +219,7 @@
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>Database</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
             </div>
             <br />
@@ -229,7 +234,7 @@
                         <br />
                         <br />
                         Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
-                        If you require a database not listed among the options, select Other. After project initialization, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
+                        If you require a database not listed among the options, select Other. After project creation, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
                         package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
                         <br />
                         <br />
@@ -275,7 +280,7 @@
 
         <BitGridItem Class="grid-item" ColumnSpan="2">
             <div class="row">
-                <BitTypography Variant="BitTypographyVariant.H6" Gutter>API</BitTypography>
+                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
                 <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
             </div>
             <br />
@@ -311,7 +316,7 @@
     <br />
     <br />
     <section class="section-card">
-        <BitTypography Variant="BitTypographyVariant.H5" Gutter>Visual Studio</BitTypography>
+        <BitText Typography="BitTypography.H5" Gutter>Visual Studio</BitText>
         <br />
         <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
             <BitCarouselItem>
@@ -332,4 +337,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" />
+<NavigationButtons Prev="Project structure" PrevUrl="/templates/project-structure" Next="Run project" NextUrl="/templates/run-project" />

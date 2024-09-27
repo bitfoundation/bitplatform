@@ -1,19 +1,19 @@
 @foreach (var subEnum in Enums)
 {
     <div id="@subEnum.Id" class="sec-con">
-        <BitTypography Variant="BitTypographyVariant.H6" Gutter Class="subenum-title"><b>@subEnum.Name</b> enum</BitTypography>
-         <table class="table-view enum-table">
-             <tr class="th-row">
-                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Name</BitTypography></th>
-                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Value</BitTypography></th>
-                 <th class="th-cell"><BitTypography Variant="BitTypographyVariant.Subtitle1">Description</BitTypography></th>
-             </tr>
-             @foreach (var item in subEnum.Items)
+        <BitText Typography="BitTypography.H6" Gutter Class="subenum-title"><b>@subEnum.Name</b> enum</BitText>
+        <table class="table-view enum-table">
+            <tr class="th-row">
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Name</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Value</BitText></th>
+                <th class="th-cell"><BitText Typography="BitTypography.Subtitle1">Description</BitText></th>
+            </tr>
+            @foreach (var item in subEnum.Items)
             {
                 <tr class="tdata-row">
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Name</BitTypography></td>
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Value</BitTypography></td>
-                    <td class="td-cell"><BitTypography Variant="BitTypographyVariant.Caption">@item.Description</BitTypography></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Name</BitText></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Value</BitText></td>
+                    <td class="td-cell"><BitText Typography="BitTypography.Caption1">@item.Description</BitText></td>
                 </tr>
             }
         </table>

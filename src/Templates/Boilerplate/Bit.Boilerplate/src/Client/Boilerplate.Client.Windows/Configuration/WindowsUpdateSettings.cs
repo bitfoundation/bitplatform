@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Windows.Configuration;
 
-public class WindowsUpdateSettings
+public partial class WindowsUpdateSettings
 {
     public bool AutoReload { get; set; }
 

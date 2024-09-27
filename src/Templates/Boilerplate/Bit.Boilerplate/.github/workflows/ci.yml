@@ -29,3 +29,6 @@ jobs:
       
     - name: Build
       run: dotnet build Boilerplate.sln -c Release
+
+    - name: Test
+      run: dotnet test src/Tests/Boilerplate.Tests.csproj

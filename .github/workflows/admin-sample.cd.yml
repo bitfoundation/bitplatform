@@ -51,11 +51,11 @@ jobs:
         node-version: 20
         
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools wasm-experimental
+      run:  cd src && dotnet workload install wasm-tools
 
     - name: Configure app render mode
       run: |
-          sed -i 's/Auto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
+          sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -72,7 +72,7 @@ jobs:
     - name: Publish adminpanel blazor wasm standalone
       run: |
           sed -i 's/adminpanel.bitplatform.dev/adminpanel-api.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/index.html
-          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
+          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:PwaEnabled=true -o ${{env.DOTNET_ROOT}}/static
 
     - name: Upload static artifact
       uses: actions/upload-artifact@v4

@@ -1,13 +1,17 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 .modal-header {
+    gap: 0.5rem;
     display: flex;
     font-weight: 600;
     align-items: center;
     font-size: rem2(24px);
-    justify-content: space-between;
     border-top: rem2(4px) solid #0054C6;
     padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
+}
+
+.modal-header-text {
+    flex-grow: 1;
 }
 
 .modal-body {

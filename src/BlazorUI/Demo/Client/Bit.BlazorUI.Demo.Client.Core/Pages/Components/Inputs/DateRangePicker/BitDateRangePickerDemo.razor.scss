@@ -36,21 +36,77 @@
 
 ::deep {
     .custom-class {
-        margin: 1rem;
-        box-shadow: aqua 0 0 1rem;
+        overflow: hidden;
+        margin-inline: 1rem;
+        border-radius: 1rem;
+        border: 2px solid tomato;
+    }
+
+    .custom-class *, .custom-class *:after {
+        border: none;
     }
 
     .custom-root {
+        height: 3rem;
         margin: 1rem;
+        display: flex;
+        align-items: end;
+        position: relative;
+        border-radius: 0.5rem;
     }
 
-    .custom-callout {
-        border-radius: 0.5rem;
-        background-color: #211e1b;
+    .custom-label {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        padding: 0;
+        font-size: 1rem;
+        color: darkgray;
+        position: absolute;
+        transform-origin: top left;
+        transform: translate(0, 22px) scale(1);
+        transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+    }
+
+    .custom-label-top {
+        transform: translate(0, 1.5px) scale(0.75);
+    }
+
+    .custom-input {
+        padding: 0;
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .custom-input-container {
+        border-radius: 0;
+        position: relative;
+        border-width: 0 0 1px 0;
+    }
+
+    .custom-input-container::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-focus .custom-input-container::after {
+        left: 0;
+        width: 100%;
+    }
+
+    .custom-focus .custom-label {
+        color: blueviolet;
+        transform: translate(0, 1.5px) scale(0.75);
     }
 
     .custom-day-picker {
-        border: 1px solid #e9981e;
+        border: 1px solid blueviolet;
         background-color: #211e1b;
         border-end-start-radius: 0.5rem;
         border-start-start-radius: 0.5rem;
@@ -63,24 +119,19 @@
     }
 
     .custom-day {
-        color: #e9981e;
+        color: blueviolet;
         margin: 0.15rem;
         border-radius: 50%;
-        border: 1px solid #e9981e;
+        border: 1px solid blueviolet;
     }
 
     .custom-today-day {
         color: #211e1b;
-        background-color: #e9981e;
+        background-color: blueviolet;
     }
 
-    .custom-start-end {
-        color: #211e1b;
-        background-color: #e9981e;
-    }
-
-    .custom-selected-days {
-        background-color: #e2ae3d7d;
+    .custom-selected-day {
+        background-color: violet;
     }
 
     .custom-week-header {
@@ -93,21 +144,29 @@
         color: white;
         margin: 0.15rem;
         padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e9981e;
+        border-bottom: 1px solid blueviolet;
     }
 
     .custom-year-picker {
         border: 1px solid #211e1b;
-        background-color: #e9981e;
+        background-color: blueviolet;
         border-end-end-radius: 0.5rem;
         border-start-end-radius: 0.5rem;
     }
 
-    .custom-increase-btn {
-        background-color: #48900f;
+    .custom-start-end {
+        color: black;
+        background-color: blueviolet;
     }
 
-    .custom-decrease-btn {
-        background-color: #c70505;
+    .custom-selected-days {
+        background-color: #9726ff5e;
+    }
+
+    .custom-year-picker {
+        border: 1px solid #9726ff5e;
+        background-color: blueviolet;
+        border-end-end-radius: 0.5rem;
+        border-start-end-radius: 0.5rem;
     }
 }

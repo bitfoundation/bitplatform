@@ -312,6 +312,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Surfaces/Card/BitCardDemo.razor.css",
+        "inputFile": "Pages/Components/Surfaces/Card/BitCardDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.css",
         "inputFile": "Pages/Components/Surfaces/Dialog/BitDialogDemo.razor.scss",
         "minify": { "enabled": false },
@@ -390,8 +396,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Utilities/Typography/BitTypographyDemo.razor.css",
-        "inputFile": "Pages/Components/Utilities/Typography/BitTypographyDemo.razor.scss",
+        "outputFile": "Pages/Components/Utilities/Text/BitTextDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/Text/BitTextDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -102,6 +102,9 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-fg-sec", bitTheme.Color.Foreground.Secondary);
         addCssVar("--bit-clr-fg-sec-hover", bitTheme.Color.Foreground.SecondaryHover);
         addCssVar("--bit-clr-fg-sec-active", bitTheme.Color.Foreground.SecondaryActive);
+        addCssVar("--bit-clr-fg-ter", bitTheme.Color.Foreground.Tertiary);
+        addCssVar("--bit-clr-fg-ter-hover", bitTheme.Color.Foreground.TertiaryHover);
+        addCssVar("--bit-clr-fg-ter-active", bitTheme.Color.Foreground.TertiaryActive);
         addCssVar("--bit-clr-fg-dis", bitTheme.Color.Foreground.Disabled);
 
         addCssVar("--bit-clr-bg-pri", bitTheme.Color.Background.Primary);
@@ -110,6 +113,9 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-bg-sec", bitTheme.Color.Background.Secondary);
         addCssVar("--bit-clr-bg-sec-hover", bitTheme.Color.Background.SecondaryHover);
         addCssVar("--bit-clr-bg-sec-active", bitTheme.Color.Background.SecondaryActive);
+        addCssVar("--bit-clr-bg-ter", bitTheme.Color.Background.Tertiary);
+        addCssVar("--bit-clr-bg-ter-hover", bitTheme.Color.Background.TertiaryHover);
+        addCssVar("--bit-clr-bg-ter-active", bitTheme.Color.Background.TertiaryActive);
         addCssVar("--bit-clr-bg-dis", bitTheme.Color.Background.Disabled);
         addCssVar("--bit-clr-bg-overlay", bitTheme.Color.Background.Overlay);
 
@@ -119,6 +125,9 @@ internal static class BitThemeMapper
         addCssVar("--bit-clr-brd-sec", bitTheme.Color.Border.Secondary);
         addCssVar("--bit-clr-brd-sec-hover", bitTheme.Color.Border.SecondaryHover);
         addCssVar("--bit-clr-brd-sec-active", bitTheme.Color.Border.SecondaryActive);
+        addCssVar("--bit-clr-brd-ter", bitTheme.Color.Border.Tertiary);
+        addCssVar("--bit-clr-brd-ter-hover", bitTheme.Color.Border.TertiaryHover);
+        addCssVar("--bit-clr-brd-ter-active", bitTheme.Color.Border.TertiaryActive);
         addCssVar("--bit-clr-brd-dis", bitTheme.Color.Border.Disabled);
 
         addCssVar("--bit-clr-req", bitTheme.Color.Required);
@@ -211,11 +220,17 @@ internal static class BitThemeMapper
         addCssVar("--bit-tpg-button-text-transform", bitTheme.Typography.Button.TextTransform);
         addCssVar("--bit-tpg-button-display", bitTheme.Typography.Button.Display);
 
-        addCssVar("--bit-tpg-caption-margin", bitTheme.Typography.Caption.Margin);
-        addCssVar("--bit-tpg-caption-font-weight", bitTheme.Typography.Caption.FontWeight);
-        addCssVar("--bit-tpg-caption-font-size", bitTheme.Typography.Caption.FontSize);
-        addCssVar("--bit-tpg-caption-line-height", bitTheme.Typography.Caption.LineHeight);
-        addCssVar("--bit-tpg-caption-letter-spacing", bitTheme.Typography.Caption.LetterSpacing);
+        addCssVar("--bit-tpg-caption1-margin", bitTheme.Typography.Caption1.Margin);
+        addCssVar("--bit-tpg-caption1-font-weight", bitTheme.Typography.Caption1.FontWeight);
+        addCssVar("--bit-tpg-caption1-font-size", bitTheme.Typography.Caption1.FontSize);
+        addCssVar("--bit-tpg-caption1-line-height", bitTheme.Typography.Caption1.LineHeight);
+        addCssVar("--bit-tpg-caption1-letter-spacing", bitTheme.Typography.Caption1.LetterSpacing);
+
+        addCssVar("--bit-tpg-caption2-margin", bitTheme.Typography.Caption2.Margin);
+        addCssVar("--bit-tpg-caption2-font-weight", bitTheme.Typography.Caption2.FontWeight);
+        addCssVar("--bit-tpg-caption2-font-size", bitTheme.Typography.Caption2.FontSize);
+        addCssVar("--bit-tpg-caption2-line-height", bitTheme.Typography.Caption2.LineHeight);
+        addCssVar("--bit-tpg-caption2-letter-spacing", bitTheme.Typography.Caption2.LetterSpacing);
 
         addCssVar("--bit-tpg-h1-margin", bitTheme.Typography.H1.Margin);
         addCssVar("--bit-tpg-h1-font-weight", bitTheme.Typography.H1.FontWeight);
@@ -389,6 +404,9 @@ internal static class BitThemeMapper
         result.Color.Foreground.Secondary = bitTheme.Color.Foreground.Secondary ?? other.Color.Foreground.Secondary;
         result.Color.Foreground.SecondaryHover = bitTheme.Color.Foreground.SecondaryHover ?? other.Color.Foreground.SecondaryHover;
         result.Color.Foreground.SecondaryActive = bitTheme.Color.Foreground.SecondaryActive ?? other.Color.Foreground.SecondaryActive;
+        result.Color.Foreground.Tertiary = bitTheme.Color.Foreground.Tertiary ?? other.Color.Foreground.Tertiary;
+        result.Color.Foreground.TertiaryHover = bitTheme.Color.Foreground.TertiaryHover ?? other.Color.Foreground.TertiaryHover;
+        result.Color.Foreground.TertiaryActive = bitTheme.Color.Foreground.TertiaryActive ?? other.Color.Foreground.TertiaryActive;
         result.Color.Foreground.Disabled = bitTheme.Color.Foreground.Disabled ?? other.Color.Foreground.Disabled;
 
         result.Color.Background.Primary = bitTheme.Color.Background.Primary ?? other.Color.Background.Primary;
@@ -397,6 +415,9 @@ internal static class BitThemeMapper
         result.Color.Background.Secondary = bitTheme.Color.Background.Secondary ?? other.Color.Background.Secondary;
         result.Color.Background.SecondaryHover = bitTheme.Color.Background.SecondaryHover ?? other.Color.Background.SecondaryHover;
         result.Color.Background.SecondaryActive = bitTheme.Color.Background.SecondaryActive ?? other.Color.Background.SecondaryActive;
+        result.Color.Background.Tertiary = bitTheme.Color.Background.Tertiary ?? other.Color.Background.Tertiary;
+        result.Color.Background.TertiaryHover = bitTheme.Color.Background.TertiaryHover ?? other.Color.Background.TertiaryHover;
+        result.Color.Background.TertiaryActive = bitTheme.Color.Background.TertiaryActive ?? other.Color.Background.TertiaryActive;
         result.Color.Background.Disabled = bitTheme.Color.Background.Disabled ?? other.Color.Background.Disabled;
         result.Color.Background.Overlay = bitTheme.Color.Background.Overlay ?? other.Color.Background.Overlay;
 
@@ -406,6 +427,9 @@ internal static class BitThemeMapper
         result.Color.Border.Secondary = bitTheme.Color.Border.Secondary ?? other.Color.Border.Secondary;
         result.Color.Border.SecondaryHover = bitTheme.Color.Border.SecondaryHover ?? other.Color.Border.SecondaryHover;
         result.Color.Border.SecondaryActive = bitTheme.Color.Border.SecondaryActive ?? other.Color.Border.SecondaryActive;
+        result.Color.Border.Tertiary = bitTheme.Color.Border.Tertiary ?? other.Color.Border.Tertiary;
+        result.Color.Border.TertiaryHover = bitTheme.Color.Border.TertiaryHover ?? other.Color.Border.TertiaryHover;
+        result.Color.Border.TertiaryActive = bitTheme.Color.Border.TertiaryActive ?? other.Color.Border.TertiaryActive;
         result.Color.Border.Disabled = bitTheme.Color.Border.Disabled ?? other.Color.Border.Disabled;
 
         result.Color.Required = bitTheme.Color.Required ?? other.Color.Required;
@@ -498,11 +522,17 @@ internal static class BitThemeMapper
         result.Typography.Button.TextTransform = bitTheme.Typography.Button.TextTransform ?? other.Typography.Button.TextTransform;
         result.Typography.Button.Display = bitTheme.Typography.Button.Display ?? other.Typography.Button.Display;
 
-        result.Typography.Caption.Margin = bitTheme.Typography.Caption.Margin ?? other.Typography.Caption.Margin;
-        result.Typography.Caption.FontWeight = bitTheme.Typography.Caption.FontWeight ?? other.Typography.Caption.FontWeight;
-        result.Typography.Caption.FontSize = bitTheme.Typography.Caption.FontSize ?? other.Typography.Caption.FontSize;
-        result.Typography.Caption.LineHeight = bitTheme.Typography.Caption.LineHeight ?? other.Typography.Caption.LineHeight;
-        result.Typography.Caption.LetterSpacing = bitTheme.Typography.Caption.LetterSpacing ?? other.Typography.Caption.LetterSpacing;
+        result.Typography.Caption1.Margin = bitTheme.Typography.Caption1.Margin ?? other.Typography.Caption1.Margin;
+        result.Typography.Caption1.FontWeight = bitTheme.Typography.Caption1.FontWeight ?? other.Typography.Caption1.FontWeight;
+        result.Typography.Caption1.FontSize = bitTheme.Typography.Caption1.FontSize ?? other.Typography.Caption1.FontSize;
+        result.Typography.Caption1.LineHeight = bitTheme.Typography.Caption1.LineHeight ?? other.Typography.Caption1.LineHeight;
+        result.Typography.Caption1.LetterSpacing = bitTheme.Typography.Caption1.LetterSpacing ?? other.Typography.Caption1.LetterSpacing;
+
+        result.Typography.Caption2.Margin = bitTheme.Typography.Caption2.Margin ?? other.Typography.Caption2.Margin;
+        result.Typography.Caption2.FontWeight = bitTheme.Typography.Caption2.FontWeight ?? other.Typography.Caption2.FontWeight;
+        result.Typography.Caption2.FontSize = bitTheme.Typography.Caption2.FontSize ?? other.Typography.Caption2.FontSize;
+        result.Typography.Caption2.LineHeight = bitTheme.Typography.Caption2.LineHeight ?? other.Typography.Caption2.LineHeight;
+        result.Typography.Caption2.LetterSpacing = bitTheme.Typography.Caption2.LetterSpacing ?? other.Typography.Caption2.LetterSpacing;
 
         result.Typography.H1.Margin = bitTheme.Typography.H1.Margin ?? other.Typography.H1.Margin;
         result.Typography.H1.FontWeight = bitTheme.Typography.H1.FontWeight ?? other.Typography.H1.FontWeight;

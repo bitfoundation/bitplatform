@@ -1,6 +1,7 @@
 {
     "liveSassCompile.settings.watchOnLaunch": true,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
+    "csharp.preview.improvedLaunchExperience": true,
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.resx": "$(capture).*.resx",

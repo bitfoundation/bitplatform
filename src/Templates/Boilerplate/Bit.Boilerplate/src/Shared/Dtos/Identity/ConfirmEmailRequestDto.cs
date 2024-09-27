@@ -2,7 +2,7 @@
 namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ConfirmEmailRequestDto
+public partial class ConfirmEmailRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [EmailAddress(ErrorMessage = nameof(AppStrings.EmailAddressAttribute_ValidationError))]
@@ -13,7 +13,7 @@ public class ConfirmEmailRequestDto
     public string? Token { get; set; }
 }
 
-public class ChangeEmailRequestDto : ConfirmEmailRequestDto
+public partial class ChangeEmailRequestDto : ConfirmEmailRequestDto
 {
     // This class needs the same set of properties as ConfirmEmailRequestDto
 }

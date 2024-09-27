@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Shared.Dtos.Identity;
 
 [DtoResourceType(typeof(AppStrings))]
-public class ConfirmPhoneRequestDto
+public partial class ConfirmPhoneRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [Phone(ErrorMessage = nameof(AppStrings.PhoneAttribute_ValidationError))]
@@ -12,7 +12,7 @@ public class ConfirmPhoneRequestDto
     public string? Token { get; set; }
 }
 
-public class ChangePhoneNumberRequestDto : ConfirmPhoneRequestDto
+public partial class ChangePhoneNumberRequestDto : ConfirmPhoneRequestDto
 {
     // This class needs the same set of properties as ConfirmPhoneNumberRequestDto
 }

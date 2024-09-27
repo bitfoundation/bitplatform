@@ -8,7 +8,7 @@ namespace Boilerplate.Client.Windows;
 
 public static partial class Program
 {
-    public static void ConfigureServices(this IServiceCollection services)
+    public static void AddClientWindowsProjectServices(this IServiceCollection services)
     {
         // Services being registered here can get injected in windows project only.
 
@@ -19,7 +19,7 @@ public static partial class Program
 
         services.TryAddSingleton(sp =>
         {
-            var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
+            var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)

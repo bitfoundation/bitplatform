@@ -35,14 +35,14 @@ public partial class BitHeaderDemo
     private readonly string example2RazorCode = @"
 <BitHeader Style=""gap: 1rem;"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation""/>
-    <BitTypography Variant=""BitTypographyVariant.Caption"">My Awesome App</BitTypography>
+    <BitText Typography=""BitTypography.Caption1"">My Awesome App</BitText>
     <BitSpacer />
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Contact"" Title=""Sign in"" />
     <BitMenuButton TItem=""BitMenuButtonOption""
                    ChevronDownIcon=""@BitIconName.More""
                    Variant=""BitVariant.Text""
                    title=""See more""
-                   Styles=""@(new() { OperatorButton = ""padding: 0.5rem; color: dodgerblue"" })"">
+                   Styles=""@(new() { OperatorButton = ""padding: 0.5rem;"" })"">
         <BitMenuButtonOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
         <BitMenuButtonOption Text=""About"" IconName=""@BitIconName.Info"" />
         <BitMenuButtonOption Text=""Feedback"" IconName=""@BitIconName.Feedback"" />

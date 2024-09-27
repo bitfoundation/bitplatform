@@ -12,18 +12,18 @@
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <ExamplePreview>
                 <div>
-                    <BitLabel>Empty separator</BitLabel>
+                    <div>Simple Separator</div>
                     <BitSeparator />
-                    <br />
-                    <BitLabel>Separator with text</BitLabel>
+                    <br /><br />
+                    <div>Separator with text</div>
                     <BitSeparator>Text</BitSeparator>
-                    <br />
-                    <BitLabel>Separator with icon</BitLabel>
+                    <br /><br />
+                    <div>Separator with icon</div>
                     <BitSeparator><BitIcon IconName="Clock" /></BitSeparator>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
-        <ComponentExampleBox Title="Vertical" RazorCode="@example2RazorCode" Id="example1">
+        <ComponentExampleBox Title="Vertical" RazorCode="@example2RazorCode" Id="example2">
             <ExamplePreview>
                 <div class="custom-horizontal-layout">
                     <span>Item 1</span>
@@ -38,25 +38,31 @@
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
-        <ComponentExampleBox Title="AlignContent" RazorCode="@example3RazorCode" Id="example1">
+        <ComponentExampleBox Title="AlignContent" RazorCode="@example3RazorCode" Id="example3">
             <ExamplePreview>
-                <div style="height: 28rem">
-                    <div>
-                        <BitLabel>Horizontal separator with text</BitLabel>
-                        <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
-                        <br />
-                        <BitSeparator AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
-                        <br />
-                        <BitSeparator AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
-                    </div>
-                    <br /><br />
-                    <div style="height: 13rem">
-                        <BitLabel>Vertical separator with text</BitLabel>
-                        <br />
-                        <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
-                        <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
-                        <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
-                    </div>
+                <div>Horizontal</div><br />
+                <BitSeparator AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
+                <br /><br />
+                <BitSeparator AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
+                <br /><br />
+                <BitSeparator AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
+                <br /><br /><br />
+                <div>Vertical</div><br />
+                <div style="height: 13rem">
+                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Center">Center</BitSeparator>
+                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.Start">Start</BitSeparator>
+                    <BitSeparator Vertical AlignContent="@BitSeparatorAlignContent.End">End</BitSeparator>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+        <ComponentExampleBox Title="FullWidth" RazorCode="@example4RazorCode" Id="example4">
+            <ExamplePreview>
+                <div>While using inside a flex container with align-items css style:</div>
+                <br /><br />
+                <div style="display:flex;flex-direction:column;align-items:center">
+                    <BitSeparator>Default</BitSeparator>
+                    <br />
+                    <BitSeparator AutoSize>AutoSize</BitSeparator>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>

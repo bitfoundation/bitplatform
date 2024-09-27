@@ -1,0 +1,12 @@
+{
+    "version": "1.0",
+    "components": [
+        "Microsoft.VisualStudio.Workload.NetWeb",
+        "Microsoft.VisualStudio.Workload.NetCrossPlat",
+        "Component.Android.SDK.MAUI"
+    ],
+    "extensions": [
+        "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager",
+        "https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64"
+    ]
+}

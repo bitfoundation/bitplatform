@@ -53,6 +53,12 @@ public partial class BitActionButton : BitComponentBase
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Renders the action button in full width of its container with flex-start.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button.
     /// If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
@@ -62,6 +68,11 @@ public partial class BitActionButton : BitComponentBase
     /// The icon name of the icon to render inside the button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Removes the container of the text and only renders the icon.
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; }
 
     /// <summary>
     /// The callback for the click event of the button.
@@ -112,8 +123,19 @@ public partial class BitActionButton : BitComponentBase
             BitColor.Warning => "bit-acb-wrn",
             BitColor.SevereWarning => "bit-acb-swr",
             BitColor.Error => "bit-acb-err",
+            BitColor.PrimaryBackground => "bit-acb-pbg",
+            BitColor.SecondaryBackground => "bit-acb-sbg",
+            BitColor.TertiaryBackground => "bit-acb-tbg",
+            BitColor.PrimaryForeground => "bit-acb-pfg",
+            BitColor.SecondaryForeground => "bit-acb-sfg",
+            BitColor.TertiaryForeground => "bit-acb-tfg",
+            BitColor.PrimaryBorder => "bit-acb-pbr",
+            BitColor.SecondaryBorder => "bit-acb-sbr",
+            BitColor.TertiaryBorder => "bit-acb-tbr",
             _ => "bit-acb-pri"
         });
+
+        ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {

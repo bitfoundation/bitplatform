@@ -5,30 +5,31 @@
             Description="iconography of the bit blazorui components" />
 
 <div class="page-container">
-    <BitTypography Variant="BitTypographyVariant.H3" Class="title">Iconography</BitTypography>
+    <BitText Typography="BitTypography.H3" Class="title">Iconography</BitText>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             bit BlazorUI has traditionally used a custom font for its iconography. This font is part of the MDL2 design system and contains glyphs that you can scale, color, and style in any way.
-        </BitTypography>
+        </BitText>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.Body1">
+        <BitText Typography="BitTypography.Body1">
             <b>Note:</b> To use these Icons, you need to add the <b>Bit.BlazorUI.Icons</b> nuget package to your project as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
-        </BitTypography>
+        </BitText>
     </section>
     <section class="page-section">
-        <BitTypography Variant="BitTypographyVariant.H4" Gutter>Available icons</BitTypography>
-        <BitSearchBox Class="iconography-search-box"
+        <BitText Typography="BitTypography.H4" Gutter>Available icons</BitText>
+        <BitSearchBox Immediate
+                      DebounceTime="300"
+                      OnClear="HandleClear"
+                      OnChange="HandleChange"
                       Placeholder="Search icons"
                       IconName="@BitIconName.Search"
-                      Value="@searchText"
-                      ValueChanged="@HandleChange"
-                      OnClear="@HandleClear" />
+                      Class="iconography-search-box" />
         <div class="icon-list">
             @if (filteredIcons.Count == 0)
             {
                 <div class="empty-list">
-                    <BitTypography Variant="BitTypographyVariant.H4">No result</BitTypography>
+                    <BitText Typography="BitTypography.H4">No result</BitText>
                 </div>
             }
             else

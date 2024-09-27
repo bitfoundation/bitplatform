@@ -22,6 +22,13 @@ function scrollToElement(targetElementId: string) {
     }
 }
 
+function getSideRailItems() {
+    return Array.from(document.querySelectorAll<HTMLElement>('[example-section-title]')).map((element) => ({
+        id: element.id,
+        title: element.innerText
+    }));
+}
+
 function copyToClipboard(codeSampleContentForCopy: string) {
     navigator.clipboard.writeText(codeSampleContentForCopy);
 }

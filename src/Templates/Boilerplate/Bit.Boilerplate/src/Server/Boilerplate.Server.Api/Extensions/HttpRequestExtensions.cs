@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-public static class HttpRequestExtensions
+public static partial class HttpRequestExtensions
 {
     /// <summary>
     /// https://blog.elmah.io/how-to-get-base-url-in-asp-net-core/
@@ -20,10 +20,12 @@ public static class HttpRequestExtensions
 
     internal static Uri GetWebClientUrl(this HttpRequest req)
     {
-        var appSettings = req.HttpContext.RequestServices.GetRequiredService<AppSettings>();
+        var configuration = req.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
 
-        if (string.IsNullOrEmpty(appSettings.WebClientUrl) is false)
-            return new Uri(appSettings.WebClientUrl);
+        var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+
+        if (string.IsNullOrEmpty(webClientUrl) is false)
+            return new Uri(webClientUrl);
 
         return req.GetBaseUrl();
     }

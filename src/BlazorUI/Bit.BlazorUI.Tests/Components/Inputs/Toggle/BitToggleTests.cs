@@ -49,7 +49,7 @@ public class BitToggleTests : BunitTestContext
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
-            parameters.Add(p => p.IsInlineLabel, isInlineLabel);
+            parameters.Add(p => p.Inline, isInlineLabel);
         });
         var bitToggle = com.Find(".bit-tgl");
 
@@ -89,7 +89,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.OnText, onText);
             parameters.Add(p => p.OffText, offText);
-            parameters.Add(p => p.DefaultText, defaultText);
+            parameters.Add(p => p.Text, defaultText);
             parameters.Add(p => p.AriaLabel, string.Empty);
             parameters.Add(p => p.Label, label);
         });

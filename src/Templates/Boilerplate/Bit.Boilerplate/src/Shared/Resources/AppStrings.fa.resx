@@ -235,11 +235,8 @@
   </data>
     <!--#endif-->
     <!--#if (signalr == true) -->
-    <data name="NewUserSessionSnackbarTitle" xml:space="preserve">
-    <value>لاگین جدید</value>
-  </data>
-    <data name="DeviceDetails" xml:space="preserve">
-    <value>دستگاه: {0}</value>
+    <data name="TwoFactorTokenPushText" xml:space="preserve">
+    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -311,6 +308,9 @@
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>شما باید با شرایط ما موافقت کنید.</value>
   </data>
+    <data name="AcceptTermsMessage" xml:space="preserve">
+    <value>با ثبت نام، شما موافقت کردید با</value>
+  </data>
     <data name="Gender" xml:space="preserve">
     <value>جنسیت</value>
   </data>
@@ -356,6 +356,12 @@
     <data name="Home" xml:space="preserve">
     <value>خانه</value>
   </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>تلاش مجدد</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>اوه! به نظر مشکلی پیش اومده...</value>
+  </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
   </data>
@@ -373,6 +379,12 @@
   </data>
     <data name="Token" xml:space="preserve">
     <value>توکن</value>
+  </data>
+    <data name="InvalidToken" xml:space="preserve">
+    <value>توکن معتبر نیست.</value>
+  </data>
+    <data name="ExpiredToken" xml:space="preserve">
+    <value>توکن منقضی شده است.</value>
   </data>
     <data name="TokenPlaceholder" xml:space="preserve">
     <value>توکن را وارد کنید</value>
@@ -811,6 +823,9 @@
   </data>
     <data name="SendOtpButtonText" xml:space="preserve">
     <value>ارسال رمز یکبار مصرف و لینک جادویی</value>
+  </data>
+    <data name="OtpEmailOrPhoneNumberSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن خود را وارد کنید:</value>
   </data>
     <data name="EitherProvidePasswordOrOtp" xml:space="preserve">
     <value>رمز عبور اصلی یا یک‌بار مصرف را وارد کنید</value>

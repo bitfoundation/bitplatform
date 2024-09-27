@@ -22,7 +22,7 @@ public partial class MainLayout : IDisposable
     {
         try
         {
-            authManager.AuthenticationStateChanged += IsUserAuthenticated;
+            authManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
             isUserAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -64,7 +64,7 @@ public partial class MainLayout : IDisposable
         isMenuOpen = !isMenuOpen;
     }
 
-    private async void IsUserAuthenticated(Task<AuthenticationState> task)
+    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
@@ -91,9 +91,9 @@ public partial class MainLayout : IDisposable
     {
         if (disposed || disposing is false) return;
 
-        authManager.AuthenticationStateChanged -= IsUserAuthenticated;
+        authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        unsubscribeCultureChange();
+        unsubscribeCultureChange?.Invoke();
 
         disposed = true;
     }

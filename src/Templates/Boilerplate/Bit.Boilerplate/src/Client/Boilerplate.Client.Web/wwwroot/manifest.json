@@ -39,7 +39,7 @@
             "name": "Todo",
             "url": "/todo"
         },
-        //#elif (sample == "AdminPanel")
+        //#elif (sample == "Admin")
         {
             "name": "Categories",
             "url": "/categories"

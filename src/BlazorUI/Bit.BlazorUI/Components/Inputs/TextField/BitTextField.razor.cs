@@ -6,7 +6,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
     private bool _isPasswordRevealed;
-    private BitTextFieldType _elementType;
+    private BitInputType _elementType;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
@@ -175,7 +175,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(SetElementType))]
-    public BitTextFieldType Type { get; set; }
+    public BitInputType Type { get; set; } = BitInputType.Text;
 
 
 
@@ -187,25 +187,25 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
-    protected override string RootElementClass => "bit-txt";
+    protected override string RootElementClass => "bit-tfl";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsMultiline && Type == BitTextFieldType.Text
-                                    ? $"bit-txt-{(IsResizable ? "mln" : "mlf")}"
+        ClassBuilder.Register(() => IsMultiline && Type == BitInputType.Text
+                                    ? $"bit-tfl-{(IsResizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-txt-req" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-txt-und" : string.Empty);
+        ClassBuilder.Register(() => IsUnderlined ? "bit-tfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "bit-txt-nbd" : string.Empty);
+        ClassBuilder.Register(() => HasBorder is false ? "bit-tfl-nbd" : string.Empty);
 
-        ClassBuilder.Register(() => _hasFocus ? $"bit-txt-fcs {Classes?.Focused}" : string.Empty);
+        ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
-        ClassBuilder.Register(() => Required && Label is null ? "bit-txt-rnl" : string.Empty);
+        ClassBuilder.Register(() => Required && Label is null ? "bit-tfl-rnl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -252,19 +252,19 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private void SetElementType()
     {
-        _elementType = Type is BitTextFieldType.Password && CanRevealPassword && _isPasswordRevealed
-                         ? BitTextFieldType.Text
+        _elementType = Type is BitInputType.Password && CanRevealPassword && _isPasswordRevealed
+                         ? BitInputType.Text
                          : Type;
 
         _inputType = _elementType switch
         {
-            BitTextFieldType.Text => "text",
-            BitTextFieldType.Password => "password",
-            BitTextFieldType.Number => "number",
-            BitTextFieldType.Email => "email",
-            BitTextFieldType.Tel => "tel",
-            BitTextFieldType.Url => "url",
-            _ => string.Empty,
+            BitInputType.Text => "text",
+            BitInputType.Number => "number",
+            BitInputType.Password => "password",
+            BitInputType.Email => "email",
+            BitInputType.Tel => "tel",
+            BitInputType.Url => "url",
+            _ => "text",
         };
     }
 
