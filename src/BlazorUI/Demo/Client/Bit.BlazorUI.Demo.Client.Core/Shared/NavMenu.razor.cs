@@ -150,8 +150,9 @@ public partial class NavMenu : IDisposable
             Text = "Extras",
             ChildItems =
             [
+                new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
-                new() { Text = "Chart", Url = "/components/chart" }
+                new() { Text = "PhoneInput", Url = "/components/phoneinput" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

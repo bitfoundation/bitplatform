@@ -60,6 +60,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/PhoneInput/BitPhoneInputDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/PhoneInput/BitPhoneInputDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.scss",
         "minify": { "enabled": false },

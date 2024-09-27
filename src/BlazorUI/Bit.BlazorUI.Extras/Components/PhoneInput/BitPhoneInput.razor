@@ -1,1 +1,16 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
+
+<div class="bit-pin">
+    <select>
+        @foreach (var country in Countries.All)
+        {
+            <option value="@country.Iso2">
+                <div class="bit-pin-opt">
+                    <span>@country.Code</span>
+                    <img src="@($"_content/Bit.BlazorUI.Extras/images/countries/{country.Iso2}-flat-16.webp")" />
+                </div>
+            </option>
+        }
+    </select>
+    <input />
+</div>
