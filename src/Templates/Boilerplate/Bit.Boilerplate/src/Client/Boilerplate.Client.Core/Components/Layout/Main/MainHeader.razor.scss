@@ -20,4 +20,10 @@ header {
     .persona {
         max-width: rem2(180px);
     }
+
+    .persona-details {
+        @include lt-sm {
+            display: none;
+        }
+    }
 }

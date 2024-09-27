@@ -9,7 +9,6 @@ section {
     padding: 1rem;
     position: sticky;
     overflow: hidden auto;
-    padding-inline-end: 0;
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
 
@@ -23,8 +22,8 @@ section {
 
     @include lt-md {
         z-index: 3;
+        padding: 0;
         position: fixed;
-        padding-bottom: 0;
 
         .bit-ios & {
             top: 0;
@@ -57,6 +56,10 @@ section {
         height: 100%;
         padding: 0.5rem;
         background-color: $bit-color-background-secondary;
+
+        @include lt-md {
+            padding: 1rem;
+        }
     }
 
     .toggle-btn {

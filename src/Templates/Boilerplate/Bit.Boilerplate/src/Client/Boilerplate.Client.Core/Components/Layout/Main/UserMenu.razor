@@ -7,9 +7,10 @@
 <BitDropMenu Transparent @bind-IsOpen="isOpen">
     <Template>
         <BitPersona Class="persona"
+                    ImageUrl="@imageUrl"
                     Size=@BitPersonaSize.Size32
                     PrimaryText="@user.FullName"
-                    ImageUrl="@imageUrl" />
+                    Classes="@(new() { DetailsContainer="persona-details" })" />
         <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" />
     </Template>
     <Body>

@@ -11,10 +11,14 @@
                    IconName="@BitIconName.CollapseMenu" />
 
         <BitStack AutoSize VerticalAlign="BitAlignment.Center" Gap="0.5rem" Style="height:4rem">
-            <BitText Typography="BitTypography.H5">@pageTitle</BitText>
+            <BitText Typography="BitTypography.H5">
+                @pageTitle
+            </BitText>
             @if (string.IsNullOrWhiteSpace(pageSubtitle) is false)
             {
-                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">@pageSubtitle</BitText>
+                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary" NoWrap>
+                    @pageSubtitle
+                </BitText>
             }
         </BitStack>
 
