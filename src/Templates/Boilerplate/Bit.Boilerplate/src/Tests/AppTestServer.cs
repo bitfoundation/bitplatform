@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Boilerplate.Server.Api;
+﻿using Boilerplate.Server.Api;
+using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Boilerplate.Tests;
 
 public partial class AppTestServer : IAsyncDisposable
 {
-    private TestServer? testServer;
     private WebApplication? webApp;
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
@@ -18,18 +20,19 @@ public partial class AppTestServer : IAsyncDisposable
 
         var builder = WebApplication.CreateBuilder(options: new()
         {
-            EnvironmentName = Environments.Development
+            EnvironmentName = Environments.Development,
+            ApplicationName = typeof(Boilerplate.Server.Web.Program).Assembly.GetName().Name
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddSharedConfigurations();
+        builder.Configuration.AddClientConfigurations();
 
-        builder.WebHost.UseTestServer();
+        builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
         configureTestServices?.Invoke(builder.Services);
-        builder.ConfigureApiServices();
-        builder.Services.AddSharedProjectServices();
+
+        builder.AddTestProjectServices();
 
         var app = webApp = builder.Build();
 
@@ -37,6 +40,8 @@ public partial class AppTestServer : IAsyncDisposable
 
         return this;
     }
+
+    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
 
     public async Task Start()
     {
@@ -52,27 +57,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         await webApp.StartAsync();
 
-        testServer = webApp.GetTestServer();
-    }
-
-    public HttpClient CreateClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateClient();
-    }
-
-    public HttpMessageHandler CreateHandler()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateHandler();
-    }
-
-    public RequestBuilder CreateRequest(string path)
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateRequest(path);
-    }
-
-    public WebSocketClient CreateWebSocketClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateWebSocketClient();
+        webApp.Configuration["ServerAddress"] = GetServerAddress().ToString();
     }
 
     public async ValueTask DisposeAsync()
@@ -81,6 +66,14 @@ public partial class AppTestServer : IAsyncDisposable
         {
             await webApp.DisposeAsync();
         }
-        testServer?.Dispose();
+    }
+
+    internal Uri GetServerAddress()
+    {
+        if (webApp == null)
+            throw new InvalidOperationException($"web app is null");
+
+        return new Uri(webApp.Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()!.Addresses.First());
     }
 }

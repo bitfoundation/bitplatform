@@ -24,10 +24,6 @@ public static partial class NavigationManagerExtensions
             : pagePathWithoutQueryString;
     }
 
-    private static readonly string[] allCultures = CultureInfoManager.MultilingualEnabled
-        ? CultureInfo.GetCultures(CultureTypes.AllCultures).Select(c => c.Name).ToArray()
-        : [];
-
     /// <summary>
     /// Reads culture from either route segment or query string.
     /// https://adminpanel.bitpaltform.dev/en-US/categories
@@ -46,9 +42,10 @@ public static partial class NavigationManagerExtensions
 
         foreach (var segment in uri.Segments.Take(2))
         {
-            if (allCultures.Contains(segment, StringComparer.InvariantCultureIgnoreCase))
+            var segmentValue = segment.Trim('/');
+            if (CultureInfoManager.SupportedCultures.Any(sc => string.Equals(sc.Culture.Name, segmentValue, StringComparison.InvariantCultureIgnoreCase)))
             {
-                return segment;
+                return segmentValue;
             }
         }
 

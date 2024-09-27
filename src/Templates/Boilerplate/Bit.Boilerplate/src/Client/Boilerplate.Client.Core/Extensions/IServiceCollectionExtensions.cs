@@ -31,19 +31,22 @@ public static partial class IServiceCollectionExtensions
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddSessioned<HttpClientHandler>();
 
-        // The following code build chain of http message handlers, it uses HttpClientHandler to send requests to the server by default,
-        // but you can also use other http message handlers such as aspnetcore's test host's http message handler for integration tests.
+        // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
+        // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
+        // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
         services.TryAddTransient<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
         {
-            return ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [underlyingHttpMessageHandler])])])]);
+            return constructedHttpMessageHandler;
         });
         services.TryAddTransient(serviceProvider =>
         {
             var underlyingHttpMessageHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
-            return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>().Invoke(underlyingHttpMessageHandler);
+            var constructedHttpMessageHandler = serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>().Invoke(underlyingHttpMessageHandler);
+            return constructedHttpMessageHandler;
         });
 
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.

@@ -340,7 +340,7 @@ private static readonly List<BitNavItem> BitPlatformNavMenu =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitNav Items=""BitPlatformNavMenu"" FullWidth />";
+<BitNav Items=""BitPlatformNavMenu"" FitWidth />";
     private readonly string example2CsharpCode = @"
 private static readonly List<BitNavItem> BitPlatformNavMenu =
 [

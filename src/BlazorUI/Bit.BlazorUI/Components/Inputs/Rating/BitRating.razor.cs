@@ -136,8 +136,8 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task HandleOnClick(int index)
     {
-        if (IsEnabled is false || ReadOnly) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (ReadOnly) return;
         if (index > Max || index < (AllowZeroStars ? 0 : 1)) return;
 
         CurrentValue = index;

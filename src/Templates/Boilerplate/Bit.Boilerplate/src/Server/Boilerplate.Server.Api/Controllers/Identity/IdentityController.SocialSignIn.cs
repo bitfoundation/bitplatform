@@ -53,12 +53,12 @@ public partial class IdentityController
 
                 if (string.IsNullOrEmpty(email) is false)
                 {
-                    await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, email, cancellationToken);
+                    await userEmailStore.SetEmailAsync(user, email, cancellationToken);
                 }
 
                 if (string.IsNullOrEmpty(phoneNumber) is false)
                 {
-                    await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
+                    await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
                 var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
@@ -73,13 +73,13 @@ public partial class IdentityController
 
             if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
             {
-                await ((IUserEmailStore<User>)userStore).SetEmailConfirmedAsync(user, true, cancellationToken);
+                await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
             if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
-                await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
+                await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 

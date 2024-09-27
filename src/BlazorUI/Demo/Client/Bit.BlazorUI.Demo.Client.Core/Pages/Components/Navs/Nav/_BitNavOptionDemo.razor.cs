@@ -59,7 +59,7 @@ public partial class _BitNavOptionDemo
 </BitNav>";
 
     private readonly string example2RazorCode = @"
-<BitNav TItem=""BitNavOption"" FullWidth>
+<BitNav TItem=""BitNavOption"" FitWidth>
     <BitNavOption Text=""bit platform""
                   ExpandAriaLabel=""bit platform Expanded""
                   CollapseAriaLabel=""bit platform Collapsed"">

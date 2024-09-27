@@ -74,7 +74,7 @@ public partial class AppInitializer : AppComponentBase
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
-    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? userSessionId);
+    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, Guid? userSessionId);
 
     //#if (signalr == true)
     private async Task ConnectSignalR()
@@ -89,10 +89,10 @@ public partial class AppInitializer : AppComponentBase
         hubConnection = new HubConnectionBuilder()
             .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
             {
-                options.HttpMessageHandlerFactory = httpClientHandler =>
+                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
                     return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                        .Invoke(httpClientHandler);
+                        .Invoke(signalrHttpMessageHandler);
                 };
             })
             .Build();

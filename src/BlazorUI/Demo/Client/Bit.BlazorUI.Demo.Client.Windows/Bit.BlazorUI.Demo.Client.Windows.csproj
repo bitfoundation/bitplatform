@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -17,17 +17,17 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.1-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.11.1-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.82" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
-        <PackageReference Include="Velopack" Version="0.0.594" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.90" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+        <PackageReference Include="Velopack" Version="0.0.626" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
