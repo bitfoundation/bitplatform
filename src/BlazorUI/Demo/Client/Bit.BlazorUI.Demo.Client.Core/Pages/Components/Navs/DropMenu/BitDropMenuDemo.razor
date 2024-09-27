@@ -53,7 +53,21 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Template" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Responsive" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>Rendering the callout in responsive mode on small screens.</div><br />
+            <BitDropMenu Text="Responsive" Responsive>
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Template" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>Here is an example of customizing the drop menu.</div><br />
             <BitDropMenu Text="Add Icon" IconName="@BitIconName.Emoji2">
@@ -73,7 +87,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ComponentExampleBox Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <ExamplePreview>
             <div>Utilizing the drop menu OnClick event:</div><br />
             <BitDropMenu Text="@($"Click me ({clickCounter})")" OnClick="() => clickCounter++">
@@ -84,7 +98,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div>Further customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
@@ -126,7 +140,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>Use BitDropMenu in right-to-left (RTL).</div>
             <br />
