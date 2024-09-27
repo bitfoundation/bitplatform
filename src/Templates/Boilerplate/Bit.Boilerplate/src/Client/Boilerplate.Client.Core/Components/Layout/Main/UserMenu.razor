@@ -4,7 +4,7 @@
     var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
 }
 
-<BitDropMenu Transparent @bind-IsOpen="isOpen">
+<BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive>
     <Template>
         <BitPersona Class="persona"
                     ImageUrl="@imageUrl"
@@ -17,7 +17,7 @@
         <BitCard FullSize>
             @if (showCultures is false)
             {
-                <BitStack>
+                <BitStack AutoSize>
                     <BitPersona Class="persona"
                                 OnImageClick="GoToProfile"
                                 PrimaryText="@user.FullName"
@@ -60,7 +60,7 @@
             }
             else
             {
-                <BitStack HorizontalAlign="BitAlignment.Start">
+                <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                     <BitActionButton FullWidth
                                      Style="align-items:flex-end"
                                      OnClick="() => showCultures=false"
