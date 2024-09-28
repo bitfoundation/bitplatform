@@ -8,7 +8,7 @@ public partial class RootLayout : IDisposable
     private bool disposed;
     private BitDir? currentDir;
     private string? currentUrl;
-    private bool isAuthenticated;
+    private bool? isAuthenticated;
     private AppThemeType? currentTheme;
     private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
@@ -69,11 +69,13 @@ public partial class RootLayout : IDisposable
 
     private Type GetCurrentLayout()
     {
-        return isAuthenticated
-                ? typeof(MainLayout)
-                : currentUrl == Urls.HomePage
-                    ? typeof(EmptyLayout)
-                    : typeof(IdentityLayout);
+        return isAuthenticated is null
+                ? typeof(EmptyLayout)
+                : isAuthenticated is true
+                    ? typeof(MainLayout)
+                    : currentUrl == Urls.HomePage
+                        ? typeof(EmptyLayout)
+                        : typeof(IdentityLayout);
     }
 
     private void SetCurrentDir()
@@ -124,6 +126,7 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
+        unsubscribeThemeChange();
         unsubscribeCultureChange();
 
         disposed = true;
