@@ -1,0 +1,26 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<nav @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="navigation"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    <CascadingValue Value="this" IsFixed="true">
+        <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+    </CascadingValue>
+
+    <ul role="list" class="bit-nmn-ul">
+        @foreach (var item in _items)
+        {
+            <li class="bit-nmn-li" title="@GetTitle(item)">
+                <i class="bit-nmn-ico bit-icon bit-icon--@GetIconName(item)" />
+                <span class="bit-nmn-txt">@GetText(item)</span>
+            </li>
+        }
+    </ul>
+</nav>
