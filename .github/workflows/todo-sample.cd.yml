@@ -17,7 +17,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
@@ -31,7 +31,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
@@ -71,7 +71,7 @@ jobs:
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -125,7 +125,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
@@ -186,7 +186,7 @@ jobs:
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
   
     steps:
      
@@ -200,7 +200,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
@@ -270,7 +270,7 @@ jobs:
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macos-14
+    runs-on: macOS-15
   
     steps:
      
@@ -284,11 +284,11 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '15.4'
+        xcode-version: '16.4'
 
     - name: Create project from Boilerplate
       run: |

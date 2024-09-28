@@ -16,7 +16,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
@@ -37,7 +37,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -60,7 +60,7 @@ jobs:
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -103,7 +103,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -142,7 +142,7 @@ jobs:
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
   
     steps:
      
@@ -156,7 +156,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -192,7 +192,7 @@ jobs:
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macos-14
+    runs-on: macOS-15
   
     steps:
      
@@ -206,11 +206,11 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '15.4'
+        xcode-version: '16.4'
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
