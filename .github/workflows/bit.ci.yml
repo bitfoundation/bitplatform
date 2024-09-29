@@ -20,7 +20,7 @@ jobs:
       with:
         global-json-file: src/global.json
         
-    - name: Setup .NET
+    - name: Setup .NET 6,7
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: | 
@@ -59,7 +59,7 @@ jobs:
       with:
         global-json-file: src/global.json
         
-    - name: Setup .NET
+    - name: Setup .NET 6,7
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: | 
