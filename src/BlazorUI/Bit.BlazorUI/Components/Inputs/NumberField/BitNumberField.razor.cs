@@ -82,11 +82,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
 
     /// <summary>
-    /// Initial value of the number field.
-    /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
-
-    /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
     [Parameter] public string IconAriaLabel { get; set; } = string.Empty;
@@ -247,16 +242,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => _hasFocus ? Styles?.Focused : string.Empty);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (ValueHasBeenSet is false && DefaultValue is not null)
-        {
-            Value = DefaultValue;
-        }
-
-        await base.OnInitializedAsync();
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)

@@ -58,12 +58,6 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     [Parameter] public bool? DefaultIndeterminate { get; set; }
 
     /// <summary>
-    /// Default checkbox state
-    /// Use this if you want an uncontrolled component, meaning the Checkbox instance maintains its own state.
-    /// </summary>
-    [Parameter] public bool? DefaultValue { get; set; }
-
-    /// <summary>
     /// An indeterminate visual state for checkbox. 
     /// Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.
     /// </summary>
@@ -109,11 +103,6 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
         _inputId = $"BitCheckbox-{UniqueId}-input";
 
         OnValueChanged += HandleOnValueChanged;
-
-        if (ValueHasBeenSet is false && DefaultValue is not null)
-        {
-            Value = DefaultValue.Value;
-        }
 
         if (IndeterminateHasBeenSet is false && DefaultIndeterminate is not null)
         {
