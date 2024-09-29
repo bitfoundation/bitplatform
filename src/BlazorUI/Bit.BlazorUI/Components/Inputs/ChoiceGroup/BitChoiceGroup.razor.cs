@@ -135,10 +135,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         _oldItems = Items;
         _items = Items.ToList();
 
-        if (ValueHasBeenSet is false && DefaultValue is not null && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
-        {
-            Value = DefaultValue;
-        }
+        InitDefaultValue();
     }
 
     protected override string RootElementClass => "bit-chg";
@@ -166,10 +163,22 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private void InitDefaultValue()
     {
-        if (ValueHasBeenSet is false && DefaultValue is not null &&
-            _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+        if (ValueHasBeenSet)
         {
-            Value = DefaultValue;
+            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), Value));
+            if (item is not null)
+            {
+                SelectedItem(item);
+            }
+        }
+        else if (DefaultValue is not null)
+        {
+            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
+            if (item is not null)
+            {
+                SelectedItem(item);
+                Value = DefaultValue;
+            }
         }
     }
 
@@ -201,6 +210,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private async Task HandleChange(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
+
+        SelectedItem(item);
 
         CurrentValue = GetValue(item);
     }
@@ -597,5 +608,32 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (NameSelectors is null) return;
 
         item.SetValueToProperty(NameSelectors.Index, value);
+    }
+
+    private void SetIsSelected(TItem item, bool value)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            choiceGroupItem.IsSelected = value;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            choiceGroupOption.IsSelected = value;
+        }
+
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.IsSelected, value);
+    }
+
+    private void SelectedItem(TItem item)
+    {
+        foreach (var itm in _items)
+        {
+            SetIsSelected(itm, false);
+        }
+
+        SetIsSelected(item, true);
     }
 }
