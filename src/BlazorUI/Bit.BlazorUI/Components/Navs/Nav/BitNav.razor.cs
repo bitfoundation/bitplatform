@@ -169,13 +169,53 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public BitNavClassStyles? Styles { get; set; }
 
 
-
+    /// <summary>
+    /// Collapses all items and children.
+    /// </summary>
     public void CollapseAll()
     {
         foreach (var item in _items)
         {
             CollapseItemAndChildren(item);
         }
+    }
+
+    /// <summary>
+    /// Toggles an item.
+    /// </summary>
+    public async Task ToggleItem(TItem Item)
+    {
+        var isExpanded = GetItemExpanded(Item) is false;
+
+        if (SingleExpand)
+        {
+            if (isExpanded)
+            {
+                if (_currentItem is not null)
+                {
+                    ToggleItemAndParents(_items, _currentItem, false);
+                }
+            }
+
+            if (isExpanded)
+            {
+                ToggleItemAndParents(_items, Item, isExpanded);
+            }
+            else
+            {
+                SetItemExpanded(Item, isExpanded);
+            }
+
+            StateHasChanged();
+
+            _currentItem = Item;
+        }
+        else
+        {
+            SetItemExpanded(Item, isExpanded);
+        }
+
+        await OnItemToggle.InvokeAsync(Item);
     }
 
 
@@ -706,42 +746,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         return GetKey(item) ?? Guid.NewGuid().ToString();
     }
 
-    internal async Task ToggleItem(TItem Item)
-    {
-        var isExpanded = GetItemExpanded(Item) is false;
-
-        if (SingleExpand)
-        {
-            if (isExpanded)
-            {
-                if (_currentItem is not null)
-                {
-                    ToggleItemAndParents(_items, _currentItem, false);
-                }
-            }
-
-            if (isExpanded)
-            {
-                ToggleItemAndParents(_items, Item, isExpanded);
-            }
-            else
-            {
-                SetItemExpanded(Item, isExpanded);
-            }
-
-            StateHasChanged();
-
-            _currentItem = Item;
-        }
-        else
-        {
-            SetItemExpanded(Item, isExpanded);
-        }
-
-        await OnItemToggle.InvokeAsync(Item);
-    }
-
-    internal bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
+    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
     {
         foreach (var parent in items)
         {
