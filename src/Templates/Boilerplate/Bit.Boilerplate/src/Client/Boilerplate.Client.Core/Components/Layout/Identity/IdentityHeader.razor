@@ -34,6 +34,16 @@
         <BitDropdown Items="cultures"
                      FitWidth NoBorder Transparent
                      DefaultValue="@CultureInfo.CurrentUICulture.Name"
-                     OnChange="WrapHandled((string c) => OnCultureChanged(c))" />
+                     OnChange="WrapHandled((string c) => OnCultureChanged(c))">
+            <TextTemplate Context="item">
+                <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+            </TextTemplate>
+            <ItemTemplate Context="item">
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                    <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                    <BitText Typography="BitTypography.Body1">@item.Text</BitText>
+                </BitStack>
+            </ItemTemplate>
+        </BitDropdown>
     </BitStack>
 </header>

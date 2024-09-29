@@ -8,6 +8,7 @@ public partial class UserMenu
     private bool showSignOut;
     private bool showCultures;
     private UserDto user = new();
+    private string? currentCulture;
     private string? profileImageUrl;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -51,6 +52,7 @@ public partial class UserMenu
 
     private async Task OnCultureChanged(string? cultureName)
     {
+        currentCulture = cultureName;
         await cultureService.ChangeCulture(cultureName);
     }
 

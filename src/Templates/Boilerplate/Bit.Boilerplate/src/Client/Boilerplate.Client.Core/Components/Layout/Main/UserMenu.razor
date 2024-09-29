@@ -71,7 +71,14 @@
                     <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
                                     DefaultValue="@CultureInfo.CurrentUICulture.Name"
                                     OnChange="async (string? c) => await OnCultureChanged(c)"
-                                    Styles="@(new() { ItemLabel = "flex-grow:1", ItemLabelWrapper = "width:100%" })" />
+                                    Styles="@(new() { ItemLabel = "flex-grow:1", ItemLabelWrapper = "width:100%" })">
+                        <ItemTemplate Context="item">
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                                <BitText Typography="BitTypography.Body1" Style="@(item.Value == currentCulture ? "font-weight:bold" : "")">@item.Text</BitText>
+                            </BitStack>
+                        </ItemTemplate>
+                    </BitChoiceGroup>
                 </BitStack>
             }
         </BitCard>
