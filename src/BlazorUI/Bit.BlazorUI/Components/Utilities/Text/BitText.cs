@@ -96,23 +96,23 @@ public partial class BitText : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Align.HasValue is false ? null :
-        $"text-align:{Align switch
-        {
-            BitTextAlign.Start => "start",
-            BitTextAlign.End => "end",
-            BitTextAlign.Left => "left",
-            BitTextAlign.Right => "right",
-            BitTextAlign.Center => "center",
-            BitTextAlign.Justify => "justify",
-            BitTextAlign.JustifyAll => "justify-all",
-            BitTextAlign.MatchParent => "match-parent",
-            BitTextAlign.Inherit => "inherit",
-            BitTextAlign.Initial => "initial",
-            BitTextAlign.Revert => "revert",
-            BitTextAlign.RevertLayer => "revert-layer",
-            BitTextAlign.Unset => "unset",
-            _ => "start"
-        }}");
+            $"text-align:{Align switch
+            {
+                BitTextAlign.Start => "start",
+                BitTextAlign.End => "end",
+                BitTextAlign.Left => "left",
+                BitTextAlign.Right => "right",
+                BitTextAlign.Center => "center",
+                BitTextAlign.Justify => "justify",
+                BitTextAlign.JustifyAll => "justify-all",
+                BitTextAlign.MatchParent => "match-parent",
+                BitTextAlign.Inherit => "inherit",
+                BitTextAlign.Initial => "initial",
+                BitTextAlign.Revert => "revert",
+                BitTextAlign.RevertLayer => "revert-layer",
+                BitTextAlign.Unset => "unset",
+                _ => "start"
+            }}");
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
