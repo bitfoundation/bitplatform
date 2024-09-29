@@ -212,6 +212,21 @@ public partial class BitNavDemo
             Href = "#nav-class-styles",
         }
     ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "CollapseAll",
+            Type = "Action",
+            Description = "Collapses all items and children.",
+        },
+        new()
+        {
+            Name = "ToggleItem",
+            Type = "Func<Task, TItem>",
+            Description = "Toggles an item.",
+        },
+    ];
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
