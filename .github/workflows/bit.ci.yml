@@ -19,6 +19,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
 
     - uses: actions/setup-node@v4
       with:
@@ -51,6 +58,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
 
     - uses: actions/setup-node@v4
       with:
