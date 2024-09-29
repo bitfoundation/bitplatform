@@ -36,6 +36,15 @@ public partial class BitIcon : BitComponentBase
             BitColor.Warning => "bit-ico-wrn",
             BitColor.SevereWarning => "bit-ico-swr",
             BitColor.Error => "bit-ico-err",
+            BitColor.PrimaryBackground => "bit-ico-pbg",
+            BitColor.SecondaryBackground => "bit-ico-sbg",
+            BitColor.TertiaryBackground => "bit-ico-tbg",
+            BitColor.PrimaryForeground => "bit-ico-pfg",
+            BitColor.SecondaryForeground => "bit-ico-sfg",
+            BitColor.TertiaryForeground => "bit-ico-tfg",
+            BitColor.PrimaryBorder => "bit-ico-pbr",
+            BitColor.SecondaryBorder => "bit-ico-sbr",
+            BitColor.TertiaryBorder => "bit-ico-tbr",
             _ => "bit-ico-pri"
         });
 
