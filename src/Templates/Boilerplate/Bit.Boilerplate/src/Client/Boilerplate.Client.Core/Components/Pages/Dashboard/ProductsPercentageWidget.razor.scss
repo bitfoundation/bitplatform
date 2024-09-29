@@ -4,6 +4,7 @@
 
 .card {
     display: flex;
+    padding: 1rem;
     min-height: rem2(376px);
     width: calc(50% - 12px);
     align-items: flex-start;
@@ -11,18 +12,11 @@
     flex-flow: column nowrap;
     margin-bottom: rem2(24px);
     justify-content: flex-start;
-    padding: rem2(24px) rem2(16px) rem2(58px);
     background-color: $bit-color-background-primary;
     border: rem2(1px) solid $bit-color-border-secondary;
 
-    @include md {
-        padding: rem2(24px) rem2(16px) rem2(36px);
-    }
-
-    @include sm {
+    @include lt-md {
         width: 100%;
-        margin-bottom: rem2(16px);
-        padding: rem2(24px) rem2(8px) rem2(32px);
     }
 }
 

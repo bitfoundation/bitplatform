@@ -1,7 +1,7 @@
 ﻿
 namespace Boilerplate.Client.Core.Components.Pages;
 
-public abstract partial class BasePage : AppComponentBase
+public abstract partial class AppPageBase : AppComponentBase
 {
     protected abstract string? Title { get; }
     protected abstract string? Subtitle { get; }

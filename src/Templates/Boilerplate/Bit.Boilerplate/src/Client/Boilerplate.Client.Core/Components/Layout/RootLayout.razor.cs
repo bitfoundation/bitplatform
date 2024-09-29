@@ -73,9 +73,7 @@ public partial class RootLayout : IDisposable
                 ? typeof(EmptyLayout)
                 : isAuthenticated is true
                     ? typeof(MainLayout)
-                    : currentUrl == Urls.HomePage
-                        ? typeof(EmptyLayout)
-                        : typeof(IdentityLayout);
+                    : typeof(IdentityLayout);
     }
 
     private void SetCurrentDir()

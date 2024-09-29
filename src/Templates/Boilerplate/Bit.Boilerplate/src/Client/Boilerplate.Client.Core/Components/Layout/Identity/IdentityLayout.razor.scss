@@ -9,20 +9,34 @@ main {
 
 .panel1 {
     width: 30%;
+    padding: 2rem;
+    padding: 2rem;
     min-height: 100%;
+    min-width: 35rem;
     padding-top: 5rem;
-    padding-bottom: 2rem;
-    min-width: rem2(560px);
     background-color: $bit-color-background-secondary;
 
     @include lt-md {
         width: 100%;
         min-width: unset;
+        padding-inline: 1rem;
+
+        .form {
+            padding-inline: 1rem;
+        }
     }
 }
 
-::deep .panel2 {
+::deep {
     @include lt-md {
-        display:none;
+        .panel1 {
+            .form {
+                padding: 1rem;
+            }
+        }
+
+        .panel2 {
+            display: none;
+        }
     }
 }

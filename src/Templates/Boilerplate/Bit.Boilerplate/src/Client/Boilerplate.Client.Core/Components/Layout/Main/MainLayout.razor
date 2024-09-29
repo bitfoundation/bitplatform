@@ -1,14 +1,18 @@
 @inherits LayoutComponentBase
 
-<BitStack Horizontal AutoSize Gap="0">
-    <NavMenu />
+<main>
+    <BitStack Horizontal AutoSize Gap="0">
+        <NavPanel />
 
-    <BitStack Style="padding:1rem">
-        <MainHeader />
+        <BitStack Style="padding:1rem">
+            <MainHeader />
 
-        <main>
-            @Body
-        </main>
+            <div class="body">
+                @Body
+            </div>
+        </BitStack>
+
     </BitStack>
 
-</BitStack>
+    <NavMenu />
+</main>

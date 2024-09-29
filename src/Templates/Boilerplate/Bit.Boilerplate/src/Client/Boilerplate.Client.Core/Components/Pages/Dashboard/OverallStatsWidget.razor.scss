@@ -11,6 +11,10 @@
     margin-bottom: rem2(56px);
     justify-content: space-between;
 
+    @include lt-md {
+        gap: 1rem;
+    }
+
     @include md {
         margin-bottom: rem2(40px);
     }
@@ -25,8 +29,8 @@
     height: 100%;
     display: flex;
     padding: rem2(24px);
-    min-height: rem2(168px);
     width: calc(25% - 18px);
+    min-height: rem2(168px);
     align-items: flex-start;
     border-radius: rem2(8px);
     flex-flow: column nowrap;
@@ -39,8 +43,9 @@
     background-color: $bit-color-background-primary;
     border: rem2(1px) solid $bit-color-border-secondary;
 
-    @include sm {
-        height: 204px;
+    @include lt-md {
+        min-height: 13rem;
+        width: calc(50% - 12px);
     }
 
     .card-num {

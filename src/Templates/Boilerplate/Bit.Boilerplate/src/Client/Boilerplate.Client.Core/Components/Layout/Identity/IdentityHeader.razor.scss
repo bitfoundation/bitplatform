@@ -1,8 +1,10 @@
+@import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 header {
     width: 100%;
     padding: 1rem;
     position: absolute;
+    height: rem2(65px);
     z-index: $bit-zindex-base;
 }
