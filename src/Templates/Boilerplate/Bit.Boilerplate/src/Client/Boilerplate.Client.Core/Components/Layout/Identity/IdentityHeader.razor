@@ -2,7 +2,7 @@
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-        @if (IsHomePage)
+        @if (IsAnonymousPage is true)
         {
             <BitButton Href="@Urls.SignUpPage">
                 @Localizer[nameof(AppStrings.SignUp)]

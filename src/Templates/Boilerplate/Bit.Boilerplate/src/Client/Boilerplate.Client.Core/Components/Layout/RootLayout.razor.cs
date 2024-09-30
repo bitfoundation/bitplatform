@@ -9,6 +9,7 @@ public partial class RootLayout : IDisposable
     private BitDir? currentDir;
     private string? currentUrl;
     private bool? isAuthenticated;
+    private bool? isAnonymousPage;
     private AppThemeType? currentTheme;
     private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
@@ -84,6 +85,7 @@ public partial class RootLayout : IDisposable
     private void SetCurrentUrl()
     {
         currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
     }
 
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)

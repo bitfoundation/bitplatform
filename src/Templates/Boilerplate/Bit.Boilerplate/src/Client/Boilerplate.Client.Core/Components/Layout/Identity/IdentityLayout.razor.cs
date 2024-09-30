@@ -3,6 +3,5 @@
 public partial class IdentityLayout
 {
     [CascadingParameter(Name = Parameters.CurrentUrl)] private string? CurrentUrl { get; set; }
-
-    private bool IsHomePage => CurrentUrl == Urls.HomePage;
+    [CascadingParameter(Name = Parameters.IsAnonymousPage)] private bool? IsAnonymousPage { get; set; }
 }

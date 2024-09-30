@@ -41,4 +41,6 @@ public static partial class Urls
     //#endif
 
     public const string AboutPage = "/about";
+
+    public readonly static string[] AnonymousPages = [HomePage, TermsPage];
 }

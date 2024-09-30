@@ -4,9 +4,11 @@
     <BitStack>
         <IdentityHeader />
 
-        @if (IsHomePage)
+        @if (IsAnonymousPage is true)
         {
-            @Body
+            <div class="panel">
+                @Body
+            </div>
         }
         else
         {

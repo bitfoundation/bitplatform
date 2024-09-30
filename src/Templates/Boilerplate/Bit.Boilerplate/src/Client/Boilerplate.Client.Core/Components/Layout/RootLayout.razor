@@ -6,9 +6,11 @@
             <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
                 <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
                     <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
-                        <LayoutView Layout="GetCurrentLayout()">
-                            @Body
-                        </LayoutView>
+                        <CascadingValue Value="isAnonymousPage" Name="@Parameters.IsAnonymousPage">
+                            <LayoutView Layout="GetCurrentLayout()">
+                                @Body
+                            </LayoutView>
+                        </CascadingValue>
                     </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
