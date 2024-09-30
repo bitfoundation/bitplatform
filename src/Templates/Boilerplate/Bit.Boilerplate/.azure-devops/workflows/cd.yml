@@ -17,7 +17,7 @@ jobs:
   displayName: 'build api + blazor web'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
   - task: UseDotNet@2
@@ -28,7 +28,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
   # - task: Bash@3
@@ -89,7 +89,7 @@ jobs:
   displayName: 'deploy api + blazor'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
 
@@ -160,7 +160,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
   - task: FileTransform@2
@@ -208,7 +208,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
   - task: UseDotNet@2
@@ -219,7 +219,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
   - task: Bash@3

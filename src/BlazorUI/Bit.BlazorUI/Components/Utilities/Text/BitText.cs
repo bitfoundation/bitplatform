@@ -6,6 +6,11 @@ namespace Bit.BlazorUI;
 public partial class BitText : BitComponentBase
 {
     /// <summary>
+    /// Sets the horizontal alignment of the text content.
+    /// </summary>
+    [Parameter] public BitTextAlign? Align { get; set; }
+
+    /// <summary>
     /// The content of the Text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -86,6 +91,28 @@ public partial class BitText : BitComponentBase
             BitColorKind.Transparent => "bit-txt-rfg",
             _ => string.Empty
         });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Align.HasValue is false ? null :
+            $"text-align:{Align switch
+            {
+                BitTextAlign.Start => "start",
+                BitTextAlign.End => "end",
+                BitTextAlign.Left => "left",
+                BitTextAlign.Right => "right",
+                BitTextAlign.Center => "center",
+                BitTextAlign.Justify => "justify",
+                BitTextAlign.JustifyAll => "justify-all",
+                BitTextAlign.MatchParent => "match-parent",
+                BitTextAlign.Inherit => "inherit",
+                BitTextAlign.Initial => "initial",
+                BitTextAlign.Revert => "revert",
+                BitTextAlign.RevertLayer => "revert-layer",
+                BitTextAlign.Unset => "unset",
+                _ => "start"
+            }}");
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

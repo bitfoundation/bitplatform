@@ -101,7 +101,7 @@
                             {
                                 <BitAccordion Title=".NET 8 Sdk on Linux instructions">
                                     <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/db901b0a-3144-4d07-b8ab-6e7a43e7a791/4d9d1b39b879ad969c6c0ceb6d052381/dotnet-sdk-8.0.401-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/1ebffeb0-f090-4001-9f13-69f112936a70/5dbc249b375cca13ec4d97d48ea93b28/dotnet-sdk-8.0.402-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
@@ -148,8 +148,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.11.1-pre-04" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::8.11.1-pre-04</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.12.0-pre-01" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::8.12.0-pre-01</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {

@@ -1,14 +1,14 @@
 <Project>
   <ItemGroup>
     <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-    <PackageVersion Include="Bit.Butil" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.BlazorUI" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.BlazorUI.Icons" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.BlazorUI.Assets" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.BlazorUI.Extras" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.Bswup" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.CodeAnalyzers" Version="8.11.1-pre-04" />
-    <PackageVersion Include="Bit.SourceGenerators" Version="8.11.1-pre-04" />
+    <PackageVersion Include="Bit.Butil" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.BlazorUI" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.BlazorUI.Icons" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.BlazorUI.Assets" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.BlazorUI.Extras" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.Bswup" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.CodeAnalyzers" Version="8.12.0-pre-01" />
+    <PackageVersion Include="Bit.SourceGenerators" Version="8.12.0-pre-01" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
@@ -19,7 +19,7 @@
     <PackageVersion Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
     <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
     <PackageVersion Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.90" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.91" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
     <PackageVersion Include="Velopack" Version="0.0.626" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0" />
@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
     <!--/+:msbuild-conditional:noEmit -->
-    <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.11.1-pre-04" />
+    <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.12.0-pre-01" />
     <PackageVersion Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
     <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
@@ -39,7 +39,7 @@
     <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
     <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageVersion Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-    <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
     <PackageVersion Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.8" />
     <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.2.5" />
@@ -62,7 +62,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.8" />
     <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
     <PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
-    <PackageVersion Include="Twilio" Version="7.3.1" />
+    <PackageVersion Include="Twilio" Version="7.4.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.8" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />

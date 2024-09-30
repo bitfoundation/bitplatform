@@ -6,6 +6,13 @@ public partial class BitNavDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The accent color of the nav.",
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "string?",
             DefaultValue = "null",
@@ -26,6 +33,13 @@ public partial class BitNavDemo
             Description = "Custom CSS classes for different parts of the BitNav component.",
             LinkType = LinkType.Link,
             Href = "#nav-class-styles",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the nav.",
         },
         new()
         {
@@ -197,6 +211,21 @@ public partial class BitNavDemo
             LinkType = LinkType.Link,
             Href = "#nav-class-styles",
         }
+    ];
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "CollapseAll",
+            Type = "Action",
+            Description = "Collapses all items and children.",
+        },
+        new()
+        {
+            Name = "ToggleItem",
+            Type = "Func<Task, TItem>",
+            Description = "Toggles an item.",
+        },
     ];
     private readonly List<ComponentSubClass> componentSubClasses =
     [
