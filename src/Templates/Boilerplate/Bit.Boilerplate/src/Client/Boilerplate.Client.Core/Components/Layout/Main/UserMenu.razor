@@ -75,7 +75,7 @@
                         <ItemTemplate Context="item">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                 <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
-                                <BitText Typography="BitTypography.Body1" Style="@(item.Value == currentCulture ? "font-weight:bold" : "")">@item.Text</BitText>
+                                <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">@item.Text</BitText>
                             </BitStack>
                         </ItemTemplate>
                     </BitChoiceGroup>

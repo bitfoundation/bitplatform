@@ -2,8 +2,8 @@
 
 <div dir="@currentDir?.ToString().ToLower()" class="layout">
     <AppErrorBoundary>
-        <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
-            <CascadingValue Value="currentDir" Name="@Parameters.CurrentDir">
+        <CascadingValue Value="currentDir">
+            <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
                 <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
                     <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
                         <LayoutView Layout="GetCurrentLayout()">

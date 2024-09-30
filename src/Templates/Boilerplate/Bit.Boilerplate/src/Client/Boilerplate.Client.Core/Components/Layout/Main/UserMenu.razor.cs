@@ -19,7 +19,7 @@ public partial class UserMenu
     [AutoInject] private ICultureService cultureService { get; set; } = default!;
 
 
-    [CascadingParameter(Name = Parameters.CurrentDir)] private BitDir? currentDir { get; set; }
+    [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
 
 
