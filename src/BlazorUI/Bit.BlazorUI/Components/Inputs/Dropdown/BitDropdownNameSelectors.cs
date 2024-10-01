@@ -57,6 +57,8 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// </summary>
     public BitNameSelectorPair<TItem, TValue?> Value { get; set; } = new(nameof(BitDropdownItem<TValue>.Value));
 
+
+
     /// <summary>
     /// The setter function for updating Text property of custom item in Dynamic ComboBox mode upon new item addition.
     /// </summary>
@@ -66,4 +68,11 @@ public class BitDropdownNameSelectors<TItem, TValue>
     /// The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.
     /// </summary>
     public Action<TItem, TValue>? ValueSetter { get; set; }
+
+
+
+    /// <summary>
+    /// The IsSelected field name of the custom input class. This property's value is assigned by the component.
+    /// </summary>
+    public string IsSelected { get; set; } = nameof(BitDropdownItem<TValue>.IsSelected);
 }
