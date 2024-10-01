@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitBadge : BitComponentBase
 {
@@ -27,7 +25,9 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Content you want inside the badge. Supported types are string and integer.
     /// </summary>
-    [Parameter] public object? Content { get; set; }
+    [Parameter] 
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public object? Content { get; set; }
 
     /// <summary>
     /// Reduces the size of the badge and hide any of its content.
@@ -48,7 +48,9 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Max value to display when content is integer type.
     /// </summary>
-    [Parameter] public int? Max { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public int? Max { get; set; }
 
     /// <summary>
     /// Button click event if set.
@@ -145,7 +147,16 @@ public partial class BitBadge : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override void OnParametersSet()
+
+
+    private async Task HandleOnClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
+    }
+
+    private void HandleParameterChanges()
     {
         if (Content is string stringContent)
         {
@@ -166,14 +177,5 @@ public partial class BitBadge : BitComponentBase
         {
             _content = null;
         }
-    }
-
-
-
-    private async Task HandleOnClick(MouseEventArgs e)
-    {
-        if (IsEnabled is false) return;
-
-        await OnClick.InvokeAsync(e);
     }
 }
