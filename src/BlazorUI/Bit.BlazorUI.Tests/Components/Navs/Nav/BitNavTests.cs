@@ -62,15 +62,15 @@ public class BitNavTests : BunitTestContext
     {
         List<BitNavItem> navLinkItems = new()
         {
-            new BitNavItem()
+            new()
             {
                 Text = "Home",
                 CollapseAriaLabel = collapseAriaLabel,
                 ExpandAriaLabel = expandAriaLabel,
                 IsExpanded = isExpanded,
-                ChildItems = new List<BitNavItem>()
+                ChildItems = new()
                 {
-                    new BitNavItem() { Text = "Activity", Url = "http://msn.com", Title = "Activity" }
+                    new() { Text = "Activity", Url = "http://msn.com", Title = "Activity" }
                 }
             }
         };
@@ -81,7 +81,7 @@ public class BitNavTests : BunitTestContext
             parameters.Add(p => p.Mode, BitNavMode.Manual);
         });
 
-        var button = component.Find("button");
+        var button = component.Find(".bit-nav-cbt");
         var expectedResult = isExpanded ? collapseAriaLabel : expandAriaLabel;
 
         Assert.AreEqual(expectedResult, button.GetAttribute("aria-label"));
@@ -196,12 +196,12 @@ public class BitNavTests : BunitTestContext
             new() { Text = name, Title = title, IsExpanded = true }
         };
 
-        var componenet = RenderComponent<BitNavTest>(parameters =>
+        var component = RenderComponent<BitNavTest>(parameters =>
         {
             parameters.Add(p => p.Items, items);
         });
 
-        var navLinkItem = componenet.Find(".bit-nav-itm");
+        var navLinkItem = component.Find(".bit-nav-ict");
 
         if (title is null)
         {

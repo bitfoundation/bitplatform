@@ -17,6 +17,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
 
     /// <summary>
+    /// The accent color of the nav.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
     /// The custom icon name of the chevron-down element of the BitNav component.
     /// </summary>
     [Parameter] public string? ChevronDownIcon { get; set; }
@@ -30,6 +36,12 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// Custom CSS classes for different parts of the BitNav component.
     /// </summary>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The general color of the nav.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The initially selected item in manual mode.
@@ -157,13 +169,53 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public BitNavClassStyles? Styles { get; set; }
 
 
-
+    /// <summary>
+    /// Collapses all items and children.
+    /// </summary>
     public void CollapseAll()
     {
         foreach (var item in _items)
         {
             CollapseItemAndChildren(item);
         }
+    }
+
+    /// <summary>
+    /// Toggles an item.
+    /// </summary>
+    public async Task ToggleItem(TItem Item)
+    {
+        var isExpanded = GetItemExpanded(Item) is false;
+
+        if (SingleExpand)
+        {
+            if (isExpanded)
+            {
+                if (_currentItem is not null)
+                {
+                    ToggleItemAndParents(_items, _currentItem, false);
+                }
+            }
+
+            if (isExpanded)
+            {
+                ToggleItemAndParents(_items, Item, isExpanded);
+            }
+            else
+            {
+                SetItemExpanded(Item, isExpanded);
+            }
+
+            StateHasChanged();
+
+            _currentItem = Item;
+        }
+        else
+        {
+            SetItemExpanded(Item, isExpanded);
+        }
+
+        await OnItemToggle.InvokeAsync(Item);
     }
 
 
@@ -694,42 +746,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         return GetKey(item) ?? Guid.NewGuid().ToString();
     }
 
-    internal async Task ToggleItem(TItem Item)
-    {
-        var isExpanded = GetItemExpanded(Item) is false;
-
-        if (SingleExpand)
-        {
-            if (isExpanded)
-            {
-                if (_currentItem is not null)
-                {
-                    ToggleItemAndParents(_items, _currentItem, false);
-                }
-            }
-
-            if (isExpanded)
-            {
-                ToggleItemAndParents(_items, Item, isExpanded);
-            }
-            else
-            {
-                SetItemExpanded(Item, isExpanded);
-            }
-
-            StateHasChanged();
-
-            _currentItem = Item;
-        }
-        else
-        {
-            SetItemExpanded(Item, isExpanded);
-        }
-
-        await OnItemToggle.InvokeAsync(Item);
-    }
-
-    internal bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
+    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
     {
         foreach (var parent in items)
         {
@@ -756,6 +773,50 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         ClassBuilder.Register(() => FullWidth ? "bit-nav-flw" : string.Empty);
 
         ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nav-apri",
+            BitColor.Secondary => "bit-nav-asec",
+            BitColor.Tertiary => "bit-nav-ater",
+            BitColor.Info => "bit-nav-ainf",
+            BitColor.Success => "bit-nav-asuc",
+            BitColor.Warning => "bit-nav-awrn",
+            BitColor.SevereWarning => "bit-nav-aswr",
+            BitColor.Error => "bit-nav-aerr",
+            BitColor.PrimaryBackground => "bit-nav-apbg",
+            BitColor.SecondaryBackground => "bit-nav-asbg",
+            BitColor.TertiaryBackground => "bit-nav-atbg",
+            BitColor.PrimaryForeground => "bit-nav-apfg",
+            BitColor.SecondaryForeground => "bit-nav-asfg",
+            BitColor.TertiaryForeground => "bit-nav-atfg",
+            BitColor.PrimaryBorder => "bit-nav-apbr",
+            BitColor.SecondaryBorder => "bit-nav-asbr",
+            BitColor.TertiaryBorder => "bit-nav-atbr",
+            _ => "bit-nav-apbg",
+        });
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-nav-pri",
+            BitColor.Secondary => "bit-nav-sec",
+            BitColor.Tertiary => "bit-nav-ter",
+            BitColor.Info => "bit-nav-inf",
+            BitColor.Success => "bit-nav-suc",
+            BitColor.Warning => "bit-nav-wrn",
+            BitColor.SevereWarning => "bit-nav-swr",
+            BitColor.Error => "bit-nav-err",
+            BitColor.PrimaryBackground => "bit-nav-pbg",
+            BitColor.SecondaryBackground => "bit-nav-sbg",
+            BitColor.TertiaryBackground => "bit-nav-tbg",
+            BitColor.PrimaryForeground => "bit-nav-pfg",
+            BitColor.SecondaryForeground => "bit-nav-sfg",
+            BitColor.TertiaryForeground => "bit-nav-tfg",
+            BitColor.PrimaryBorder => "bit-nav-pbr",
+            BitColor.SecondaryBorder => "bit-nav-sbr",
+            BitColor.TertiaryBorder => "bit-nav-tbr",
+            _ => "bit-nav-pri",
+        });
     }
 
     protected override void RegisterCssStyles()

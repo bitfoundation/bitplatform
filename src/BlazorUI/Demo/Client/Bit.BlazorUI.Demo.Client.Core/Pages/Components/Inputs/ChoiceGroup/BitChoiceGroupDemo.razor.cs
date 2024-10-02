@@ -247,6 +247,13 @@ public partial class BitChoiceGroupDemo
                    Type = "int",
                    DefaultValue = "null",
                    Description = "Index of the BitChoiceGroup item. This property's value is set by the component at render.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the item is selected. This property's value is assigned by the component.",
                }
             ]
         },
@@ -360,6 +367,13 @@ public partial class BitChoiceGroupDemo
                    Type = "int",
                    DefaultValue = "null",
                    Description = "Index of the BitChoiceGroup option. This property's value is set by the component at render.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the option is selected. This property's value is assigned by the component.",
                }
             ]
         },
@@ -466,6 +480,13 @@ public partial class BitChoiceGroupDemo
                    Type = "string",
                    DefaultValue = "nameof(BitChoiceGroupItem<TValue>.Index))",
                    Description = "The Index field name of the custom input class. This property's value is set by the component at render.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "string",
+                   DefaultValue = "nameof(BitChoiceGroupItem<TValue>.IsSelected))",
+                   Description = "The IsSelected field name of the custom input class. This property's value is assigned by the component.",
                }
             ]
         },

@@ -2,9 +2,8 @@
 
 public abstract partial class BitComponentBase : ComponentBase
 {
+    private BitDir? _dir;
     private string _uniqueId = BitShortId.NewId();
-
-
 
     protected bool Rendered { get; private set; }
 
@@ -41,7 +40,12 @@ public abstract partial class BitComponentBase : ComponentBase
     /// <summary>
     /// Determines the component direction.
     /// </summary>
-    [Parameter] public BitDir? Dir { get; set; }
+    [Parameter]
+    public BitDir? Dir
+    {
+        get => _dir ?? CascadingDir;
+        set => _dir = value;
+    }
 
     /// <summary>
     /// Capture and render additional attributes in addition to the component's parameters.
@@ -79,7 +83,9 @@ public abstract partial class BitComponentBase : ComponentBase
             switch (parameter.Key)
             {
                 case nameof(CascadingDir):
-                    CascadingDir = (BitDir?)parameter.Value;
+                    var cascadingDir = (BitDir?)parameter.Value;
+                    if (CascadingDir != cascadingDir) ClassBuilder.Reset();
+                    CascadingDir = cascadingDir;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -153,8 +159,8 @@ public abstract partial class BitComponentBase : ComponentBase
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => (IsEnabled ? string.Empty : "bit-dis"))
-              .Register(() => (Dir == BitDir.Rtl ? "bit-rtl" : string.Empty));
+              .Register(() => IsEnabled ? string.Empty : "bit-dis")
+              .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty);
 
         RegisterCssClasses();
 

@@ -10,21 +10,13 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconOnly" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <ExamplePreview>
-        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
-        <br />
-        <BitNav Items="IconOnlyNavMenu" IconOnly="iconOnly" />
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Grouped" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <BitNav Items="CarNavMenu" RenderType="BitNavRenderType.Grouped" />
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Manual Mode" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>Basic</div><br />
         <BitNav Items="FoodNavMenu"
@@ -44,6 +36,14 @@
                          Items="FoodMenuDropdownItems"
                          OnSelectItem="(BitDropdownItem<string> item) => SelectedItemNav = Flatten(FoodNavMenu).First(i => i.Text == item.Value)" />
         </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
+        <br />
+        <BitNav Items="IconOnlyNavMenu" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
     </ExamplePreview>
 </ComponentExampleBox>
 
