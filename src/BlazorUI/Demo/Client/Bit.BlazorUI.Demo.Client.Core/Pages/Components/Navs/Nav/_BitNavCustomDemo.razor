@@ -16,18 +16,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconOnly" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <ExamplePreview>
-        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
-        <br />
-        <BitNav Items="CustomIconOnlyNavMenu" IconOnly="iconOnly"
-                NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
-                                         ChildItems =  { Name = nameof(Section.Links) },
-                                         Description =  { Name = nameof(Section.Comment) } })" />
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Grouped" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <BitNav Items="CustomCarNavMenu"
                 RenderType="BitNavRenderType.Grouped"
@@ -43,7 +32,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Manual Mode" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>Basic</div><br />
         <BitNav Items="CustomFoodNavMenu"
@@ -72,6 +61,17 @@
                          Items="FoodMenuDropdownItems"
                          OnSelectItem="(BitDropdownItem<string> item) => CustomSelectedFood = Flatten(CustomFoodNavMenu).Single(i => i.Name == item.Value)" />
         </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
+        <br />
+        <BitNav Items="CustomIconOnlyNavMenu" Mode="BitNavMode.Manual" IconOnly="iconOnly"
+                NameSelectors="@(new() { IconName =  { Name = nameof(Section.Icon) },
+                                         ChildItems =  { Name = nameof(Section.Links) },
+                                         Description =  { Name = nameof(Section.Comment) } })" />
     </ExamplePreview>
 </ComponentExampleBox>
 

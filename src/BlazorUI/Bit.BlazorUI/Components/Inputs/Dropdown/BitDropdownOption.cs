@@ -63,6 +63,14 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public TValue? Value { get; set; }
 
 
+
+    /// <summary>
+    /// Determines if the option is selected. This property's value is assigned by the component.
+    /// </summary>
+    public bool IsSelected { get; internal set; }
+
+
+
     protected override async Task OnInitializedAsync()
     {
         Parent.RegisterOption(this);
