@@ -1,78 +1,27 @@
-﻿@import '../../Styles/abstracts/_vars.scss';
-@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    top: 0;
-    height: 100vh;
-    padding: 1rem;
-    position: sticky;
-    overflow: hidden auto;
-    min-width: var(--nav-menu-width);
-    max-width: var(--nav-menu-width);
-
-    .bit-ios & {
-        top: calc(env(safe-area-inset-top));
-    }
-
-    &::-webkit-scrollbar {
-        width: 0;
-    }
-
-    @include lt-md {
-        z-index: 3;
-        padding: 0;
-        position: fixed;
-
-        .bit-ios & {
-            top: 0;
-            padding-top: calc(env(safe-area-inset-top));
-        }
-
-        &.closed {
-            display: none;
-        }
-    }
-}
-
-.menu-overlay {
-    inset: 0;
-    z-index: 2;
+    bottom: 0;
     width: 100%;
-    height: 100%;
+    display: flex;
+    height: 3.5rem;
     position: fixed;
-    min-height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    max-width: 100vw;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color: $bit-color-background-primary;
+    border-top: 1px solid $bit-color-border-tertiary;
 
     @include gt-sm {
         display: none;
     }
 }
 
-::deep {
-    .panel {
-        width: auto;
-        height: 100%;
-        padding: 0.5rem;
-        background-color: $bit-color-background-secondary;
-
-        @include lt-md {
-            padding: 1rem;
-        }
-    }
-
-    .toggle-btn {
-        @include lt-md {
-            display: none;
-        }
-    }
-
-    .persona {
-        width: 100%;
-    }
-
-    a {
-        text-decoration: none;
-    }
+a {
+    gap: 0.25rem;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-direction: column;
 }

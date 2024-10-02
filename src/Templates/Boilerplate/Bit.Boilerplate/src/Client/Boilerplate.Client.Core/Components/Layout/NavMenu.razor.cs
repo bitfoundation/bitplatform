@@ -1,87 +1,38 @@
-﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class NavMenu
+public partial class NavMenu : IDisposable
 {
-    private bool disposed;
-    private bool isMenuOpen;
-    private bool isMenuToggled;
-    private UserDto user = new();
-    private bool isSignOutModalOpen;
-    private string? profileImageUrl;
-    private List<BitNavItem> navItems = [];
-    private Action unsubOpenNavMenu = default!;
-    private Action unsubUserDataChange = default!;
+    private string? currentUrl;
 
-    [AutoInject] private NavigationManager navManager = default!;
-
-
-
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
-        CreateNavItems();
+        SetCurrentItem();
 
-        unsubOpenNavMenu = PubSubService.Subscribe(PubSubMessages.OPEN_NAV_MENU, async _ => {
-            isMenuOpen = true;
-            StateHasChanged();
-        });
+        NavigationManager.LocationChanged += OnLocationChanged;
 
-        unsubUserDataChange = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
-        {
-            if (payload is null) return;
-            user = (UserDto)payload;
-            StateHasChanged();
-        });
-
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
-
-        var serverAddress = Configuration.GetServerAddress();
-        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
-        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
+        return base.OnInitAsync();
     }
 
-
-    private async Task DoSignOut()
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        isSignOutModalOpen = true;
-        await CloseMenu();
+        SetCurrentItem();
+        StateHasChanged();
     }
 
-    private async Task GoToProfile()
+    private void SetCurrentItem()
     {
-        await CloseMenu();
-        navManager.NavigateTo(Urls.ProfilePage);
+        currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
     }
 
-    private async Task HandleNavItemClick(BitNavItem item)
+    private bool IsActive(string url)
     {
-        if (string.IsNullOrEmpty(item.Url)) return;
-
-        await CloseMenu();
+        return currentUrl == url;
     }
 
-    private async Task CloseMenu()
+    public void Dispose()
     {
-        isMenuOpen = false;
-    }
-
-    private async Task ToggleNavMenu()
-    {
-        isMenuToggled = !isMenuToggled;
-    }
-
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(disposing);
-
-        if (disposed || disposing is false) return;
-
-        unsubOpenNavMenu?.Invoke();
-        unsubUserDataChange?.Invoke();
-
-        disposed = true;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }

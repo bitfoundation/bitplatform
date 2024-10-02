@@ -1,13 +1,25 @@
 @inherits AppComponentBase
 
 <header>
-    <BitStack Horizontal Gap="0.5rem">
-        <BitLink NoUnderline Href="@Urls.HomePage">
-            <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-                <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
-                <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
-            </BitStack>
-        </BitLink>
+    <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+        @if (IsAnonymousPage is true)
+        {
+            <BitButton Href="@Urls.SignUpPage">
+                @Localizer[nameof(AppStrings.SignUp)]
+            </BitButton>
+            <BitButton Href="@Urls.SignInPage" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+                @Localizer[nameof(AppStrings.SignIn)]
+            </BitButton>
+        }
+        else
+        {
+            <BitLink NoUnderline Href="@Urls.HomePage">
+                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
+                </BitStack>
+            </BitLink>
+        }
 
         <BitSpacer />
 
@@ -22,6 +34,16 @@
         <BitDropdown Items="cultures"
                      FitWidth NoBorder Transparent
                      DefaultValue="@CultureInfo.CurrentUICulture.Name"
-                     OnChange="WrapHandled((string c) => OnCultureChanged(c))" />
+                     OnChange="WrapHandled((string c) => OnCultureChanged(c))">
+            <TextTemplate Context="item">
+                <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+            </TextTemplate>
+            <ItemTemplate Context="item">
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                    <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                    <BitText Typography="BitTypography.Body1">@item.Text</BitText>
+                </BitStack>
+            </ItemTemplate>
+        </BitDropdown>
     </BitStack>
 </header>

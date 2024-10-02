@@ -1,6 +1,7 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class NavMenu
+public partial class NavPanel
 {
     private void CreateNavItems()
     {

@@ -8,6 +8,7 @@ public partial class UserMenu
     private bool showSignOut;
     private bool showCultures;
     private UserDto user = new();
+    private string? currentCulture;
     private string? profileImageUrl;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -18,7 +19,7 @@ public partial class UserMenu
     [AutoInject] private ICultureService cultureService { get; set; } = default!;
 
 
-    [CascadingParameter(Name = Parameters.CurrentDir)] private BitDir? currentDir { get; set; }
+    [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
 
 
@@ -51,6 +52,7 @@ public partial class UserMenu
 
     private async Task OnCultureChanged(string? cultureName)
     {
+        currentCulture = cultureName;
         await cultureService.ChangeCulture(cultureName);
     }
 

@@ -1,0 +1,68 @@
+﻿@inherits AppComponentBase;
+
+@if (isMenuOpen)
+{
+    <div class="menu-overlay" @onclick=CloseMenu></div>
+}
+
+@{
+    var isToggled = !isMenuOpen && isMenuToggled;
+    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+}
+
+<section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isToggled ? "6rem" : "14rem")}")">
+    <BitCard Class="panel">
+        <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)">
+            <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
+                <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
+                          Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
+                <BitSpacer Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
+                <BitButton IconOnly FixedColor
+                           Class="toggle-btn"
+                           Size="BitSize.Large"
+                           OnClick="ToggleNavPanel"
+                           Variant="BitVariant.Text"
+                           Color="BitColor.TertiaryBackground"
+                           IconName="@BitIconName.ColumnRightTwoThirds" />
+            </BitStack>
+
+            <BitSeparator />
+
+            <BitPersona Class="persona"
+                        ImageUrl="@imageUrl"
+                        OnImageClick=GoToProfile
+                        PrimaryText="@user.FullName"
+                        SecondaryText="@user.DisplayName"
+                        HidePersonaDetails="isToggled"
+                        Presence="BitPersonaPresence.Online"
+                        Size="@(isToggled ? BitPersonaSize.Size40 : BitPersonaSize.Size48)">
+                <ImageOverlayTemplate>
+                    <span>@Localizer[nameof(AppStrings.Edit)]</span>
+                </ImageOverlayTemplate>
+            </BitPersona>
+
+            <BitSeparator />
+
+            <BitNav FullWidth
+                    Items="navItems"
+                    IconOnly="isToggled"
+                    DefaultSelectedItem="navItems[0]"
+                    Accent="BitColor.SecondaryBackground"
+                    OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
+                    Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })">
+            </BitNav>
+
+            <BitSpacer />
+
+            <BitActionButton OnClick="DoSignOut"
+                             IconOnly="isToggled"
+                             FullWidth="!isToggled"
+                             IconName="@BitIconName.SignOut"
+                             Title="@Localizer[nameof(AppStrings.SignOut)]">
+                @(isToggled ? "" : Localizer[nameof(AppStrings.SignOut)])
+            </BitActionButton>
+        </BitStack>
+    </BitCard>
+</section>
+
+<SignOutConfirmModal @bind-IsOpen=isSignOutModalOpen></SignOutConfirmModal>

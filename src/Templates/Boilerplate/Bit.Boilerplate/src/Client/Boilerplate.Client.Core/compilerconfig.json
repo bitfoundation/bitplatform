@@ -49,6 +49,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/NavPanel.razor.css",
+        "inputFile": "Components/Layout/NavPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/SignOutConfirmModal.razor.css",
         "inputFile": "Components/Layout/SignOutConfirmModal.razor.scss",
         "minify": { "enabled": false },

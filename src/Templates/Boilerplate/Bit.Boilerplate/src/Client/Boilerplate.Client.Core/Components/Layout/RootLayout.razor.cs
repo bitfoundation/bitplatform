@@ -8,7 +8,8 @@ public partial class RootLayout : IDisposable
     private bool disposed;
     private BitDir? currentDir;
     private string? currentUrl;
-    private bool isAuthenticated;
+    private bool? isAuthenticated;
+    private bool? isAnonymousPage;
     private AppThemeType? currentTheme;
     private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
@@ -69,10 +70,10 @@ public partial class RootLayout : IDisposable
 
     private Type GetCurrentLayout()
     {
-        return isAuthenticated
-                ? typeof(MainLayout)
-                : currentUrl == Urls.HomePage
-                    ? typeof(EmptyLayout)
+        return isAuthenticated is null
+                ? typeof(EmptyLayout)
+                : isAuthenticated is true
+                    ? typeof(MainLayout)
                     : typeof(IdentityLayout);
     }
 
@@ -84,6 +85,7 @@ public partial class RootLayout : IDisposable
     private void SetCurrentUrl()
     {
         currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
     }
 
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
@@ -124,6 +126,7 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
+        unsubscribeThemeChange();
         unsubscribeCultureChange();
 
         disposed = true;

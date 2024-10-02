@@ -21,7 +21,8 @@ header {
         max-width: rem2(180px);
     }
 
-    .persona-details {
+    .persona-details,
+    .menu-chevron {
         @include lt-sm {
             display: none;
         }

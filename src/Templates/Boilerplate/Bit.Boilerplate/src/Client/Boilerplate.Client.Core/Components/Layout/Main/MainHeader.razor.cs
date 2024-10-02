@@ -18,9 +18,9 @@ public partial class MainHeader : AppComponentBase
     }
 
 
-    private void OpenNavMenu()
+    private void OpenNavPanel()
     {
-        PubSubService.Publish(PubSubMessages.OPEN_NAV_MENU);
+        PubSubService.Publish(PubSubMessages.OPEN_NAV_PANEL);
     }
 
 

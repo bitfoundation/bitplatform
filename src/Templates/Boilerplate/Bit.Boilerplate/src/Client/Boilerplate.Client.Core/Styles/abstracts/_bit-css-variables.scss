@@ -102,6 +102,9 @@ $bit-color-foreground-primary-active: var(--bit-clr-fg-pri-active);
 $bit-color-foreground-secondary: var(--bit-clr-fg-sec);
 $bit-color-foreground-secondary-hover: var(--bit-clr-fg-sec-hover);
 $bit-color-foreground-secondary-active: var(--bit-clr-fg-sec-hover);
+$bit-color-foreground-tertiary: var(--bit-clr-fg-ter);
+$bit-color-foreground-tertiary-hover: var(--bit-clr-fg-ter-hover);
+$bit-color-foreground-tertiary-active: var(--bit-clr-fg-ter-hover);
 $bit-color-foreground-disabled: var(--bit-clr-fg-dis);
 
 //backgrounds
@@ -111,6 +114,9 @@ $bit-color-background-primary-active: var(--bit-clr-bg-pri-active);
 $bit-color-background-secondary: var(--bit-clr-bg-sec);
 $bit-color-background-secondary-hover: var(--bit-clr-bg-sec-hover);
 $bit-color-background-secondary-active: var(--bit-clr-bg-sec-active);
+$bit-color-background-tertiary: var(--bit-clr-bg-ter);
+$bit-color-background-tertiary-hover: var(--bit-clr-bg-ter-hover);
+$bit-color-background-tertiary-active: var(--bit-clr-bg-ter-active);
 $bit-color-background-disabled: var(--bit-clr-bg-dis);
 $bit-color-background-overlay: var(--bit-clr-bg-overlay);
 
@@ -121,6 +127,9 @@ $bit-color-border-primary-active: var(--bit-clr-brd-pri-active);
 $bit-color-border-secondary: var(--bit-clr-brd-sec);
 $bit-color-border-secondary-hover: var(--bit-clr-brd-sec-hover);
 $bit-color-border-secondary-active: var(--bit-clr-brd-sec-active);
+$bit-color-border-tertiary: var(--bit-clr-brd-ter);
+$bit-color-border-tertiary-hover: var(--bit-clr-brd-ter-hover);
+$bit-color-border-tertiary-active: var(--bit-clr-brd-ter-active);
 $bit-color-border-disabled: var(--bit-clr-brd-dis);
 
 //required
