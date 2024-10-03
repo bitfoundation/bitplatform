@@ -6,5 +6,7 @@
         <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
         <key>com.apple.security.get-task-allow</key>
         <true />
+        <key>aps-environment</key>
+        <string>development</string>
     </dict>
 </plist>
