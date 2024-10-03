@@ -18,7 +18,7 @@ public class PushNotificationService(IHttpContextAccessor httpContextAccessor,
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
-        if (httpContextAccessor.HttpContext!.User.IsAuthenticated() is false)
+        if (httpContextAccessor.HttpContext!.User.IsAuthenticated())
         {
             tags.Add(httpContextAccessor.HttpContext.User.GetUserId().ToString()); // To send push notification to a specific user
         }
