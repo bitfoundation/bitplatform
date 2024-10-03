@@ -190,6 +190,21 @@
     <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>Select language</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
   </data>
@@ -361,6 +376,9 @@
   </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>Oops, something went wrong...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>Back to home</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>User is locked out. Try again in {0}</value>
@@ -990,6 +1008,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Here's your analytic data</value>
   </data>
     <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
