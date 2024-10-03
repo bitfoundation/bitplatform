@@ -20,7 +20,7 @@ public static partial class IServiceCollectionExtensions
         services.TryAddSessioned<IPubSubService, PubSubService>();
         services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IStorageService, BrowserStorageService>();
-        services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
         services.TryAddTransient<RequestHeadersDelegationHandler>();
@@ -82,6 +82,9 @@ public static partial class IServiceCollectionExtensions
         services.AddTypedHttpClients();
 
         services.AddSharedProjectServices();
+
+        services.TryAddSessioned<IPushNotificationService, PushNotificationServiceBase>(); // Each platform has to extend PushNotificationServiceBase class and register its own implementation.
+
         return services;
     }
 

@@ -19,6 +19,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -66,6 +67,8 @@ public partial class AppInitializer : AppComponentBase
                 await ConnectSignalR();
             }
             //#endif
+
+            await pushNotificationService.RegisterDeviceAsync(CurrentCancellationToken);
         }
         catch (Exception exp)
         {

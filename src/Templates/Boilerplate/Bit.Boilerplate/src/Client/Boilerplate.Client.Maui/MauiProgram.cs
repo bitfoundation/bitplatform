@@ -1,11 +1,9 @@
 ﻿//-:cnd:noEmit
-using Maui.AppStores;
-using Maui.InAppReviews;
-using Maui.Android.InAppUpdates;
-using Microsoft.Maui.LifecycleEvents;
-using Boilerplate.Client.Core.Styles;
-using Boilerplate.Client.Maui.Services;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.LifecycleEvents;
+using Maui.AppStores;
+using Plugin.LocalNotification;
+using Boilerplate.Client.Core.Styles;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -39,9 +37,8 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseAndroidInAppUpdates()
-            .UseInAppReviews()
             .UseAppStoreInfo()
+            .UseLocalNotification()
             .Configuration.AddClientConfigurations();
 
         builder.ConfigureServices();

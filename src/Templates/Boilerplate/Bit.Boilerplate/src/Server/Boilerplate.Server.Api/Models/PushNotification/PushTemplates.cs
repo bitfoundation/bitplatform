@@ -4,7 +4,7 @@ public partial class PushTemplates
 {
     public partial class Generic
     {
-        public const string Android = "{ \"message\" : { \"notification\" : { \"title\" : \"PushDemo\", \"body\" : \"$(alertMessage)\"}, \"data\" : { \"action\" : \"$(alertAction)\" } } }";
+        public const string Android = "{ \"message\" : { \"notification\" : { \"title\" : \"Boilerplate\", \"body\" : \"$(alertMessage)\"}, \"data\" : { \"action\" : \"$(alertAction)\" } } }";
         public const string iOS = "{ \"aps\" : {\"alert\" : \"$(alertMessage)\"}, \"action\" : \"$(alertAction)\" }";
     }
 

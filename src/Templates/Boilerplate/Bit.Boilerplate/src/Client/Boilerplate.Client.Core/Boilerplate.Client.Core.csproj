@@ -18,7 +18,7 @@
 
         <PackageReference Include="Bit.Butil" />
         <PackageReference Include="Bit.BlazorUI" />
-        <PackageReference Include="Bit.BlazorUI.Icons"/>
+        <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
@@ -30,6 +30,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+        <PackageReference Include="Plugin.LocalNotification" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

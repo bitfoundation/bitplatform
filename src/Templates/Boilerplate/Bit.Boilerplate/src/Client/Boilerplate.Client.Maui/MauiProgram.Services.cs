@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Maui.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Boilerplate.Client.Maui.Services;
 
 namespace Boilerplate.Client.Maui;
 
@@ -29,7 +29,7 @@ public static partial class MauiProgram
             services.AddBlazorWebViewDeveloperTools();
         }
 
-        services.TryAddSingleton(sp =>
+        services.TryAddSessioned(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -82,13 +82,13 @@ public static partial class MauiProgram
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();
-        services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.TryAddSessioned<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
         services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
         if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
         {
-            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
+            services.TryAddSessioned<ILocalHttpServer, MauiLocalHttpServer>();
         }
 
         services.AddClientCoreProjectServices();

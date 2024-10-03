@@ -28,6 +28,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     //#if (signalr == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
 
     //#if (captcha == "reCaptcha")
     [AutoInject] private GoogleRecaptchaHttpClient googleRecaptchaHttpClient = default!;
@@ -302,6 +303,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (signalr == true)
         await appHubContext.Clients.User(user.Id.ToString()).SendAsync("TwoFactorToken", token, cancellationToken);
         //#endif
+
+        await pushNotificationService.RequestPush(new()
+        {
+            Text = Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
+            Tags = [user.Id.ToString()]
+        }, cancellationToken);
 
         await Task.WhenAll([SendEmail(), SendSms()]);
     }

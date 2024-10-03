@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
@@ -103,7 +104,7 @@ public partial class NavMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
+        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
 
         var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());

@@ -7,6 +7,7 @@ using Boilerplate.Shared.Dtos.Dashboard;
 using Boilerplate.Shared.Dtos.Products;
 //#endif
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -15,7 +16,10 @@ namespace Boilerplate.Shared.Dtos;
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(Dictionary<string, object>))]
+[JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(UserDto))]
+[JsonSerializable(typeof(DeviceInstallationDto))]
+[JsonSerializable(typeof(NotificationRequestDto))]
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]

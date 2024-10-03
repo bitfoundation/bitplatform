@@ -17,7 +17,7 @@ public static partial class Program
         var configuration = configurationBuilder.Build();
         services.TryAddTransient<IConfiguration>(sp => configuration);
 
-        services.TryAddSingleton(sp =>
+        services.TryAddSessioned(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -36,7 +36,7 @@ public static partial class Program
         services.TryAddTransient<IStorageService, WindowsStorageService>();
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
-        services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
+        services.TryAddSessioned<ILocalHttpServer, WindowsLocalHttpServer>();
 
         services.AddLogging(loggingBuilder =>
         {

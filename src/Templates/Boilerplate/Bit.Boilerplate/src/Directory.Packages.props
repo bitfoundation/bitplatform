@@ -14,6 +14,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" />
     <PackageVersion Include="EmbedIO" Version="3.5.2" />
+    <PackageVersion Include="Microsoft.Azure.NotificationHubs" Version="4.2.0" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
     <PackageVersion Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
@@ -21,6 +22,7 @@
     <PackageVersion Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.91" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+    <PackageVersion Include="Plugin.LocalNotification" Version="11.1.4" />
     <PackageVersion Include="Velopack" Version="0.0.626" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
@@ -57,7 +59,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.8" />
     <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
@@ -76,5 +78,16 @@
     <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.47.0" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.6.0" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Activity" Version="1.9.2.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.2.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Collection" Version="1.4.4" />
+    <PackageVersion Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.4" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.6" />
+    <PackageVersion Include="Xamarin.Firebase.Messaging" Version="124.0.1" />
   </ItemGroup>
 </Project>
