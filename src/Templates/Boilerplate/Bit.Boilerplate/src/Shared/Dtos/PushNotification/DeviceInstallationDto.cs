@@ -8,6 +8,7 @@ public partial class DeviceInstallationDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [AllowedValues("apns", "fcmv1")]
+    /// <example>fcmv1</example>
     public string? Platform { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]

@@ -16,13 +16,18 @@ public class PushNotificationService(IHttpContextAccessor httpContextAccessor,
 
     public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
     {
+        List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
+
+        if (httpContextAccessor.HttpContext!.User.IsAuthenticated() is false)
+        {
+            tags.Add(httpContextAccessor.HttpContext.User.GetUserId().ToString()); // To send push notification to a specific user
+        }
+
         var installation = new Installation()
         {
             InstallationId = deviceInstallation.InstallationId,
             PushChannel = deviceInstallation.PushChannel,
-            Tags = httpContextAccessor.HttpContext!.User.IsAuthenticated() is false
-                ? []
-                : [httpContextAccessor.HttpContext.User.GetUserId().ToString()]
+            Tags = tags
         };
 
         if (installationPlatform.TryGetValue(deviceInstallation.Platform!, out var platform))
