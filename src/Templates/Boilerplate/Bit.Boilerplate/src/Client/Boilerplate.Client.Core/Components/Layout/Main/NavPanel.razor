@@ -12,7 +12,7 @@
 
 <section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isToggled ? "6rem" : "14rem")}")">
     <BitCard Class="panel">
-        <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)">
+        <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)" Grows>
             <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
                           Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
