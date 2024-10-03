@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components;
 
 public partial class LoadingComponent
 {
