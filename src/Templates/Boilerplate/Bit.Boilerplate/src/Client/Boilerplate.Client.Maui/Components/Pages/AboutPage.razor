@@ -2,43 +2,30 @@
 @attribute [Route("{culture?}" + Urls.AboutPage)]
 @inherits AppComponentBase
 
-<div class="page-container">
-    <section class="page-section about-section">
-        <h1 class="about-section-title">About</h1>
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center" Gap="3rem">
+        <BitText Typography="BitTypography.H3">About</BitText>
 
-        <div class="about-section-desc">
+        <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
             For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
             <br />
             consider using Client/Maui project instead of placing them in Client/Core project.
             <br />
             This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
-        </div>
+        </BitText>
 
-        <BitStack VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceAround">
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>App Name:</BitLabel>
-                <BitLabel>@appName</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>App Version:</BitLabel>
-                <BitLabel>@appVersion</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>OS:</BitLabel>
-                <BitLabel>@os</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>OEM:</BitLabel>
-                <BitLabel>@oem</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>Environment:</BitLabel>
-                <BitLabel>@AppEnvironment.Current</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>Process Id:</BitLabel>
-                <BitLabel>@processId</BitLabel>
-            </BitStack>
+        <BitStack AutoWidth>
+            <div>App Name: <b>@appName</b></div>
+
+            <div>App Version: <b>@appVersion</b></div>
+
+            <div>OS: <b>@os</b></div>
+
+            <div>OEM: <b>@oem</b></div>
+
+            <div>Environment: <b>@AppEnvironment.Current</b></div>
+
+            <div>Process Id: <b>@processId</b></div>
         </BitStack>
-    </section>
-</div>
+    </BitStack>
+</section>
