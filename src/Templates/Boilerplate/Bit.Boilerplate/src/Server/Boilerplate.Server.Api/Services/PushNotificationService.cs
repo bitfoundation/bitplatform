@@ -71,7 +71,7 @@ public class PushNotificationService(IHttpContextAccessor httpContextAccessor,
             notificationRequest.Text!,
             notificationRequest.Action!);
 
-        if (notificationRequest.Tags.Any())
+        if (notificationRequest.Tags.Any() is false)
         {
             // This will broadcast to all users registered in the notification hub
             await SendPlatformNotificationsAsync(androidPayload, iOSPayload, cancellationToken);

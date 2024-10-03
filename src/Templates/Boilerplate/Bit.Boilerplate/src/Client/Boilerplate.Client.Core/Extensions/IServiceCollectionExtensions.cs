@@ -83,7 +83,7 @@ public static partial class IServiceCollectionExtensions
 
         services.AddSharedProjectServices();
 
-        services.TryAddSessioned<IPushNotificationService, PushNotificationServiceBase>(); // Each platform has to extend PushNotificationServiceBase class and register its own implementation.
+        services.TryAddSessioned<IPushNotificationService, PushNotificationServiceBase>();
 
         return services;
     }
