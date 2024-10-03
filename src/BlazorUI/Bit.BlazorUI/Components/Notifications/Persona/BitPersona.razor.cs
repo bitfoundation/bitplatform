@@ -28,6 +28,12 @@ public partial class BitPersona : BitComponentBase
     [Parameter] public BitPersonaClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The background color when the user's initials are displayed.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? CoinColor { get; set; }
+
+    /// <summary>
     /// Optional custom persona coin size in pixel.
     /// </summary>
     [Parameter] public int? CoinSize { get; set; }
@@ -36,11 +42,6 @@ public partial class BitPersona : BitComponentBase
     /// Custom persona coin's image template.
     /// </summary>
     [Parameter] public RenderFragment? CoinTemplate { get; set; }
-
-    /// <summary>
-    /// The background color when the user's initials are displayed.
-    /// </summary>
-    [Parameter] public string? Color { get; set; }
 
     /// <summary>
     /// Renders the persona in full width of its container element.
@@ -76,7 +77,7 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
     /// </summary>
-    [Parameter]
+    [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetImageUrl))]
     public string? ImageUrl { get; set; }
 
@@ -149,6 +150,12 @@ public partial class BitPersona : BitComponentBase
     public bool Unknown { get; set; }
 
     /// <summary>
+    /// The shape of the coin.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPersonaShape? Shape { get; set; }
+
+    /// <summary>
     /// Decides the size of the control.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -169,6 +176,11 @@ public partial class BitPersona : BitComponentBase
     /// Custom tertiary text template.
     /// </summary>
     [Parameter] public RenderFragment? TertiaryTextTemplate { get; set; }
+
+    /// <summary>
+    /// The variant of the coin.
+    /// </summary>
+    [Parameter] public BitVariant? Variant { get; set; }
 
 
 
@@ -194,9 +206,38 @@ public partial class BitPersona : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Unknown && Size is not BitPersonaSize.Size8 ? "bit-prs-unk" : string.Empty);
-
         ClassBuilder.Register(() => OnImageClick.HasDelegate ? "bit-prs-iac" : string.Empty);
+
+        ClassBuilder.Register(() => ImageUrl.HasValue() ? "bit-prs-him" : string.Empty);
+
+        ClassBuilder.Register(() => Size is BitPersonaSize.Size8 ? string.Empty : CoinColor switch
+        {
+            BitColor.Primary => "bit-prs-pri",
+            BitColor.Secondary => "bit-prs-sec",
+            BitColor.Tertiary => "bit-prs-ter",
+            BitColor.Info => "bit-prs-inf",
+            BitColor.Success => "bit-prs-suc",
+            BitColor.Warning => "bit-prs-wrn",
+            BitColor.SevereWarning => "bit-prs-swr",
+            BitColor.Error => "bit-prs-err",
+            BitColor.PrimaryBackground => "bit-prs-pbg",
+            BitColor.SecondaryBackground => "bit-prs-sbg",
+            BitColor.TertiaryBackground => "bit-prs-tbg",
+            BitColor.PrimaryForeground => "bit-prs-pfg",
+            BitColor.SecondaryForeground => "bit-prs-sfg",
+            BitColor.TertiaryForeground => "bit-prs-tfg",
+            BitColor.PrimaryBorder => "bit-prs-pbr",
+            BitColor.SecondaryBorder => "bit-prs-sbr",
+            BitColor.TertiaryBorder => "bit-prs-tbr",
+            _ => "bit-prs-inf"
+        });
+
+        ClassBuilder.Register(() => Shape switch
+        {
+            BitPersonaShape.Circular => "bit-prs-crl",
+            BitPersonaShape.Square => "bit-prs-sqr",
+            _ => "bit-prs-crl"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -224,8 +265,14 @@ public partial class BitPersona : BitComponentBase
     {
         if (CoinSize is null) return null;
 
+        string? position = null;
         var presentationSize = CoinSize.Value / 3D;
-        return $"width:{presentationSize}px;height:{presentationSize}px;{Styles?.Presence?.Trim(';')}";
+        if (Shape == BitPersonaShape.Square)
+        {
+            var presentationPosition = presentationSize / 3D;
+            position = $"right:-{presentationPosition}px;bottom:-{presentationPosition}px;";
+        }
+        return $"width:{presentationSize}px;height:{presentationSize}px;{position}{Styles?.Presence?.Trim(';')}";
     }
 
     private string? GetPresentationIcon()
@@ -240,12 +287,15 @@ public partial class BitPersona : BitComponentBase
         return null;
     }
 
-    private string? GetCoinBgColorStyle()
+    private string? GetCoinClass()
     {
-        if (Size is BitPersonaSize.Size8) return null;
-        if (Color.HasNoValue()) return null;
-
-        return $"background-color:{Color};";
+        return Variant switch
+        {
+            BitVariant.Fill => "bit-prs-fil",
+            BitVariant.Outline => "bit-prs-otl",
+            BitVariant.Text => "bit-prs-txt",
+            _ => "bit-prs-fil"
+        };
     }
 
     private string? GetCoinWidthStyle()
@@ -311,22 +361,14 @@ public partial class BitPersona : BitComponentBase
 
     private string? GetImageContainerClass()
     {
-        var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {Classes?.ImageContainer}".Trim();
+        var klass = $"{(CoinTemplate is null ? "bit-prs-imc" : null)} {GetCoinClass()} {Classes?.ImageContainer}".Trim();
         return klass.HasValue() ? klass : null;
     }
 
     private string? GetImageContainerStyle()
     {
         var coinWidthStyle = GetCoinWidthStyle();
-        var coinBgColorStyle = GetCoinBgColorStyle();
-        var style = $"{coinWidthStyle}{coinBgColorStyle}{Styles?.ImageContainer?.Trim(';')}";
-        return style.HasValue() ? style : null;
-    }
-
-    private string? GetImageOverlayStyle()
-    {
-        var coinBgColorStyle = GetCoinBgColorStyle();
-        var style = $"{coinBgColorStyle}{Styles?.ImageOverlay?.Trim(';')}";
+        var style = $"{coinWidthStyle}{Styles?.ImageContainer?.Trim(';')}";
         return style.HasValue() ? style : null;
     }
 
