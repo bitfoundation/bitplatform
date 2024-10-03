@@ -2,7 +2,7 @@
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-        @if (IsAnonymousPage is true)
+        @if (isAnonymousPage is true)
         {
             <BitButton Href="@Urls.SignUpPage">
                 @Localizer[nameof(AppStrings.SignUp)]
@@ -30,21 +30,24 @@
                    Color="BitColor.SecondaryBackground"
                    IconName="@(currentTheme == AppThemeType.Light ? BitIconName.Sunny : BitIconName.ClearNight)" />
 
-        <BitDropdown Items="cultures"
-                     FitWidth NoBorder Transparent
-                     DefaultValue="@CultureInfo.CurrentUICulture.Name"
-                     OnChange="WrapHandled((string c) => OnCultureChanged(c))">
-            <TextTemplate Context="item">
-                <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
-            </TextTemplate>
-            <ItemTemplate Context="item">
-                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+        @if (CultureInfoManager.MultilingualEnabled)
+        {
+            <BitDropdown Items="cultures"
+                         FitWidth NoBorder Transparent
+                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
+                         OnChange="WrapHandled((string c) => OnCultureChanged(c))">
+                <TextTemplate Context="item">
                     <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
-                    <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
-                        @item.Text
-                    </BitText>
-                </BitStack>
-            </ItemTemplate>
-        </BitDropdown>
+                </TextTemplate>
+                <ItemTemplate Context="item">
+                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                        <BitImage Src="@($"_content/Boilerplate.Client.Core/images/flags/{item.Value}.webp")" />
+                        <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                            @item.Text
+                        </BitText>
+                    </BitStack>
+                </ItemTemplate>
+            </BitDropdown>
+        }
     </BitStack>
 </header>

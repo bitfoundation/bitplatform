@@ -7,6 +7,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Profile;
 [Authorize]
 public partial class ProfilePage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.ProfileTitle)];
+    protected override string? Subtitle => string.Empty;
+
     private UserDto? user;
     private bool isLoading;
 

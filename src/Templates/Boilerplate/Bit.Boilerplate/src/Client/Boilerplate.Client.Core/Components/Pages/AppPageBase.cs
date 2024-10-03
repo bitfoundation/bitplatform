@@ -3,8 +3,8 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public abstract partial class AppPageBase : AppComponentBase
 {
-    protected abstract string? Title { get; }
-    protected abstract string? Subtitle { get; }
+    protected virtual string? Title { get; }
+    protected virtual string? Subtitle { get; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

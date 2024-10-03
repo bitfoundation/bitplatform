@@ -2,6 +2,7 @@
 
 public partial class ThemeService : IThemeService
 {
+    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IPubSubService pubSubService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
@@ -15,13 +16,21 @@ public partial class ThemeService : IThemeService
 
     public async Task<AppThemeType> ToggleTheme()
     {
-        var newTheme = await bitThemeManager.ToggleDarkLightAsync();
+        var newThemeName = await bitThemeManager.ToggleDarkLightAsync();
         
-        var isDark = newTheme == "dark";
+        var isDark = newThemeName == "dark";
         await bitDeviceCoordinator.ApplyTheme(isDark);
 
         var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
         pubSubService.Publish(PubSubMessages.THEME_CHANGED, theme);
+
+        await cookie.Set(new()
+        {
+            MaxAge = 30 * 24 * 3600,
+            Name = "bit.Theme",
+            Secure = AppEnvironment.IsDev() is false,
+            Value = Uri.EscapeDataString(newThemeName),
+        });
 
         return theme;
     }
