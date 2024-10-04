@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Boilerplate.Client.Core.Components;
+﻿namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {

@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Boilerplate.Shared.Controllers;
+﻿namespace Boilerplate.Shared.Controllers;
 
 public interface IMinimalApiController : IAppController
 {

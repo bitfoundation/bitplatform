@@ -1,7 +1,6 @@
 ﻿using System.IO.IsolatedStorage;
 using System.IO;
 using System.Windows;
-using System.Text.Json;
 using System.Collections;
 using Microsoft.Win32;
 using System.Windows.Media;

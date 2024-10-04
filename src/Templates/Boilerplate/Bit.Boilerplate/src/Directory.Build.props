@@ -45,6 +45,7 @@
     <ItemGroup>
         <Using Include="System.Globalization" />
         <Using Include="System.Net.Http" />
+        <Using Include="System.Text.Json" />
         <Using Include="System.Resources" />
         <Using Include="System.Security.Claims" />
         <Using Include="System.Text.Json.Serialization" />

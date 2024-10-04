@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Boilerplate.Shared.Controllers;
+﻿using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Core.Services;
