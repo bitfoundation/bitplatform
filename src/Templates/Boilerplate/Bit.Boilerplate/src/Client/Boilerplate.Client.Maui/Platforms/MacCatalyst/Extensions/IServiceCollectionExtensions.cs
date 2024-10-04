@@ -1,4 +1,5 @@
-﻿//#if (notification == true)
+﻿//+:cnd:noEmit
+//#if (notification == true)
 using Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 //#endif
 

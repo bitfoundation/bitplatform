@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using Maui.AppStores;
 //#if (notification == true)
 using Plugin.LocalNotification;
