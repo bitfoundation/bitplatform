@@ -43,7 +43,7 @@ public partial class AppTestServer : IAsyncDisposable
         return this;
     }
 
-    public async Task StartAsync()
+    public async Task Start()
     {
         if (AppEnvironment.IsDev())
         {

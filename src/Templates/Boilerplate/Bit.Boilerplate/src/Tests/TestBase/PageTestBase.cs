@@ -17,7 +17,7 @@ public partial class PageTestBase : PageTest
         await TestServer.Build(services =>
         {
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-        }).StartAsync();
+        }).Start();
 
         Services = TestServer.Services;
         ServerAddress = TestServer.ServerAddress;

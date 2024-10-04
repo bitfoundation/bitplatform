@@ -74,7 +74,7 @@ public partial class IdentityPagesTests : PageTestBase
         {
             var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
             services.Replace(descriptor);
-        }).StartAsync();
+        }).Start();
 
         var singupPage = new SingUpPage(Page, testServer.ServerAddress);
 
