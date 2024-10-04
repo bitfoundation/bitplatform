@@ -68,7 +68,10 @@ public partial class AppInitializer : AppComponentBase
             }
             //#endif
 
-            await pushNotificationService.RegisterDeviceAsync(CurrentCancellationToken);
+            if (InPrerenderSession is false)
+            {
+                await pushNotificationService.RegisterDeviceAsync(CurrentCancellationToken);
+            }
         }
         catch (Exception exp)
         {
