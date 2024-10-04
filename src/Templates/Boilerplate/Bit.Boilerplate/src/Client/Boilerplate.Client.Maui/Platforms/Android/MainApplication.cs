@@ -12,8 +12,6 @@ using Android.Runtime;
 [assembly: UsesPermission(Android.Manifest.Permission.Vibrate)]
 [assembly: UsesPermission(Android.Manifest.Permission.WakeLock)]
 [assembly: UsesPermission(Android.Manifest.Permission.ReceiveBootCompleted)]
-[assembly: UsesPermission(Android.Manifest.Permission.UseExactAlarm)]
-[assembly: UsesPermission(Android.Manifest.Permission.ScheduleExactAlarm)]
 //#endif
 //-:cnd:noEmit
 
