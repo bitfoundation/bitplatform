@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <IsTestProject>true</IsTestProject>
+        <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +17,7 @@
         <PackageReference Include="Microsoft.Playwright.MSTest" />
         <PackageReference Include="MSTest.TestAdapter" />
         <PackageReference Include="MSTest.TestFramework" />
+        <PackageReference Include="MsgReader" />
     </ItemGroup>
 
     <ItemGroup>

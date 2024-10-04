@@ -2,16 +2,18 @@
 using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
-public partial class AppTestServer : IAsyncDisposable
+public class AppTestServer : IAsyncDisposable
 {
     private WebApplication? webApp;
+
+    public Uri ServerAddress => new((webApp ?? throw new InvalidOperationException($"web app is null")).Urls.First());
+    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
+    public IConfiguration Configuration => (webApp ?? throw new InvalidOperationException("Web app is null.")).Configuration;
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
     {
@@ -21,7 +23,7 @@ public partial class AppTestServer : IAsyncDisposable
         var builder = WebApplication.CreateBuilder(options: new()
         {
             EnvironmentName = Environments.Development,
-            ApplicationName = typeof(Boilerplate.Server.Web.Program).Assembly.GetName().Name
+            ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
@@ -30,20 +32,18 @@ public partial class AppTestServer : IAsyncDisposable
 
         builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
-        configureTestServices?.Invoke(builder.Services);
-
         builder.AddTestProjectServices();
 
-        var app = webApp = builder.Build();
+        configureTestServices?.Invoke(builder.Services);
 
-        app.ConfiureMiddlewares();
+        webApp = builder.Build();
+
+        webApp.ConfiureMiddlewares();
 
         return this;
     }
 
-    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
-
-    public async Task Start()
+    public async Task StartAsync()
     {
         if (webApp == null)
             throw new InvalidOperationException($"Call {nameof(Build)} first.");
@@ -57,7 +57,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         await webApp.StartAsync();
 
-        webApp.Configuration["ServerAddress"] = GetServerAddress().ToString();
+        webApp.Configuration["ServerAddress"] = webApp.Urls.First();
     }
 
     public async ValueTask DisposeAsync()
@@ -66,14 +66,6 @@ public partial class AppTestServer : IAsyncDisposable
         {
             await webApp.DisposeAsync();
         }
-    }
-
-    internal Uri GetServerAddress()
-    {
-        if (webApp == null)
-            throw new InvalidOperationException($"web app is null");
-
-        return new Uri(webApp.Services.GetRequiredService<IServer>()
-            .Features.Get<IServerAddressesFeature>()!.Addresses.First());
+        GC.SuppressFinalize(this);
     }
 }
