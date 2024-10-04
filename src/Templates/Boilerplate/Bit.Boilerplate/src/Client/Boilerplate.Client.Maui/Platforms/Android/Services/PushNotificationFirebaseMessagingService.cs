@@ -45,8 +45,8 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
             {
                 await LocalNotificationCenter.Current.Show(new()
                 {
-                    Title = localizer[title],
-                    Description = localizer[body!]
+                    Title = title!,
+                    Description = body!
                 });
             }
         }

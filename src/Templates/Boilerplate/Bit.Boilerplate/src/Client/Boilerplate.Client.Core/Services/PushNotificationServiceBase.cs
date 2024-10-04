@@ -4,9 +4,9 @@ using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class PushNotificationServiceBase : IPushNotificationService
+public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
-    [AutoInject] protected IPushNotificationController pushNotificationController = default!;
+    [AutoInject] protected INotificationHubController pushNotificationController = default!;
     [AutoInject] protected IStorageService storageService = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 

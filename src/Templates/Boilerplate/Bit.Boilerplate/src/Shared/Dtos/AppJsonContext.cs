@@ -19,7 +19,6 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(UserDto))]
 [JsonSerializable(typeof(DeviceInstallationDto))]
-[JsonSerializable(typeof(NotificationRequestDto))]
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]

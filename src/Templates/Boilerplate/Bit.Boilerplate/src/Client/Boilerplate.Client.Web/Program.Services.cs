@@ -56,6 +56,7 @@ public static partial class Program
 
         services.TryAddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WebExceptionHandler>();
+        services.TryAddSessioned<IPushNotificationService, WebPushNotificationService>();
 
         services.AddClientCoreProjectServices();
     }

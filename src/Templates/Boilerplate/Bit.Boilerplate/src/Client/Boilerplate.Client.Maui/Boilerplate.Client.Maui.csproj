@@ -159,6 +159,7 @@
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
+        <PackageReference Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
     

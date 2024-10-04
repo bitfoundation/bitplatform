@@ -5,11 +5,13 @@ using Android.Runtime;
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.AccessNetworkState)]
 
-// https://github.com/thudugala/Plugin.LocalNotification/wiki/1.-Usage-10.0.0--.Net-MAUI#usage
+// https://github.com/thudugala/Plugin.LocalNotification/wiki/1.-Usage-10.0.0--.Net-MAUI#android-specific-setup
+[assembly: UsesPermission(Android.Manifest.Permission.PostNotifications)]
 [assembly: UsesPermission(Android.Manifest.Permission.Vibrate)]
 [assembly: UsesPermission(Android.Manifest.Permission.WakeLock)]
 [assembly: UsesPermission(Android.Manifest.Permission.ReceiveBootCompleted)]
-[assembly: UsesPermission("android.permission.POST_NOTIFICATIONS")]
+[assembly: UsesPermission(Android.Manifest.Permission.UseExactAlarm)]
+[assembly: UsesPermission(Android.Manifest.Permission.ScheduleExactAlarm)]
 
 namespace Boilerplate.Client.Maui.Platforms.Android;
 

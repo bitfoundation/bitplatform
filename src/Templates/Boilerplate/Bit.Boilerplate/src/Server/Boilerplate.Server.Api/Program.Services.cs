@@ -230,7 +230,7 @@ public static partial class Program
         });
         //#endif
 
-        services.TryAddTransient<PushNotificationService>();
+        services.TryAddTransient<AzureNotificationHubService>();
         if (appSettings.NotificationHub.Configured)
         {
             services.TryAddTransient(sp => new NotificationHubClient(appSettings.NotificationHub.ConnectionString, appSettings.NotificationHub.Name));

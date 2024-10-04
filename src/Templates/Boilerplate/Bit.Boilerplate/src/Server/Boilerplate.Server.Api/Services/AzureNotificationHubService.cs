@@ -4,7 +4,7 @@ using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Services;
 
-public class PushNotificationService(IHttpContextAccessor httpContextAccessor,
+public class AzureNotificationHubService(IHttpContextAccessor httpContextAccessor,
     AppSettings appSettings,
     NotificationHubClient? hub = null)
 {
@@ -49,45 +49,47 @@ public class PushNotificationService(IHttpContextAccessor httpContextAccessor,
         await hub!.DeleteInstallationAsync(installationId, cancellationToken);
     }
 
-    public async Task RequestPush([Required] NotificationRequestDto notificationRequest, CancellationToken cancellationToken)
+    public async Task RequestPush(string? text = null, string? action = null, string[]? tags = null, bool silent = false, CancellationToken cancellationToken = default)
     {
         if (appSettings.NotificationHub.Configured is false)
             return;
 
-        if ((notificationRequest.Silent && string.IsNullOrWhiteSpace(notificationRequest?.Action)) ||
-            (!notificationRequest.Silent && string.IsNullOrWhiteSpace(notificationRequest?.Text)))
+        tags ??= [];
+
+        if ((silent && string.IsNullOrWhiteSpace(action)) ||
+            (!silent && string.IsNullOrWhiteSpace(text)))
             throw new BadRequestException();
 
-        var androidPushTemplate = notificationRequest.Silent ?
+        var androidPushTemplate = silent ?
             PushTemplates.Silent.Android :
             PushTemplates.Generic.Android;
 
-        var iOSPushTemplate = notificationRequest.Silent ?
+        var iOSPushTemplate = silent ?
             PushTemplates.Silent.iOS :
             PushTemplates.Generic.iOS;
 
         var androidPayload = PrepareNotificationPayload(
             androidPushTemplate,
-            notificationRequest.Text!,
-            notificationRequest.Action!);
+            text!,
+            action!);
 
         var iOSPayload = PrepareNotificationPayload(
             iOSPushTemplate,
-            notificationRequest.Text!,
-            notificationRequest.Action!);
+            text!,
+            action!);
 
-        if (notificationRequest.Tags.Any() is false)
+        if (tags.Any() is false)
         {
             // This will broadcast to all users registered in the notification hub
             await SendPlatformNotificationsAsync(androidPayload, iOSPayload, cancellationToken);
         }
-        else if (notificationRequest.Tags.Length <= 20)
+        else if (tags.Length <= 20)
         {
-            await SendPlatformNotificationsAsync(androidPayload, iOSPayload, notificationRequest.Tags, cancellationToken);
+            await SendPlatformNotificationsAsync(androidPayload, iOSPayload, tags, cancellationToken);
         }
         else
         {
-            var notificationTasks = notificationRequest.Tags
+            var notificationTasks = tags
                 .Select((value, index) => (value, index))
             .GroupBy(g => g.index / 20, i => i.value)
                 .Select(tags => SendPlatformNotificationsAsync(androidPayload, iOSPayload, tags, cancellationToken));

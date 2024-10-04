@@ -6,9 +6,9 @@ namespace Boilerplate.Server.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
-public partial class PushNotificationController : AppControllerBase, IPushNotificationController
+public partial class NotificationHubController : AppControllerBase, INotificationHubController
 {
-    [AutoInject] PushNotificationService pushNotificationService = default!;
+    [AutoInject] AzureNotificationHubService pushNotificationService = default!;
 
     [HttpPost]
     public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
@@ -22,11 +22,11 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
         await pushNotificationService.DeleteInstallation(installationId, cancellationToken);
     }
 
-#if Development // This action is for testing purposes only within the swagger UI.
+#if Development // This action is for testing purposes only.
     [HttpPost]
-    public async Task RequestPush([Required] NotificationRequestDto notificationRequest, CancellationToken cancellationToken)
+    public async Task RequestPush([FromQuery] string? text = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, [FromQuery] bool silent = false, CancellationToken cancellationToken = default)
     {
-        await pushNotificationService.RequestPush(notificationRequest, cancellationToken);
+        await pushNotificationService.RequestPush(text, action, tags, silent, cancellationToken);
     }
 #endif
 }

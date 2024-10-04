@@ -83,8 +83,6 @@ public static partial class IServiceCollectionExtensions
 
         services.AddSharedProjectServices();
 
-        services.TryAddSessioned<IPushNotificationService, PushNotificationServiceBase>();
-
         return services;
     }
 

@@ -1,8 +1,7 @@
 ﻿//-:cnd:noEmit
 using Maui.AppStores;
-using System.Runtime.InteropServices;
 using Plugin.LocalNotification;
-using Plugin.LocalNotification.EventArgs;
+using System.Runtime.InteropServices;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -46,31 +45,7 @@ public partial class App
                 await LocalNotificationCenter.Current.RequestNotificationPermission();
             }
 
-            await Permissions.RequestAsync<Permissions.PostNotifications>();
-
-            LocalNotificationCenter.Current.NotificationActionTapped += OnNotificationActionTapped;
-
             await CheckForUpdates();
-        }
-        catch (Exception exp)
-        {
-            exceptionHandler.Handle(exp);
-        }
-    }
-
-    private async void OnNotificationActionTapped(NotificationActionEventArgs e)
-    {
-        try
-        {
-            if (e.IsTapped)
-            {
-                switch (e.Request.ReturningData)
-                {
-                    case nameof(AppStrings.NewVersionIsAvailable):
-                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
-                        break;
-                }
-            }
         }
         catch (Exception exp)
         {
@@ -90,12 +65,12 @@ public partial class App
                 {
                     await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
 
-                    await LocalNotificationCenter.Current.Show(new()
+                    // It's an opportune moment to request an update. (:
+                    // https://github.com/oscoreio/Maui.AppStoreInfo
+                    if (await App.Current!.MainPage!.DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
                     {
-                        Title = AppStrings.NewVersionIsAvailable,
-                        Description = AppStrings.UpdateToNewVersion,
-                        ReturningData = nameof(AppStrings.NewVersionIsAvailable) // See OnNotificationActionTapped
-                    });
+                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
+                    }
                 }
             }
         }
