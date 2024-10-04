@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Playwright;
-using Microsoft.Playwright.MSTest;
-
-namespace Boilerplate.Tests;
+﻿namespace Boilerplate.Tests;
 
 [TestClass]
 public partial class IdentityPagesTests : PageTest

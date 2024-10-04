@@ -29,8 +29,15 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="Boilerplate.Shared" />
         <Using Include="Boilerplate.Shared.Enums" />
+        <Using Include="Microsoft.AspNetCore.Http" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Microsoft.Playwright" />
+        <Using Include="Microsoft.Playwright.MSTest" />
+        <!-- TODO: if (IsInsideProjectTemplate) -->
+        <Using Include="Boilerplate.Tests.TestBase" />
+        <Using Include="Boilerplate.Tests.PageTests.PageModels" />
+        <!-- TODO: if (IsInsideProjectTemplate) -->
     </ItemGroup>
 
 </Project>

@@ -1,9 +1,5 @@
-﻿using Microsoft.Playwright;
-using Microsoft.AspNetCore.Http;
-using Boilerplate.Tests.Services;
-using Boilerplate.Tests.TestBase;
+﻿using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Tests.PageTests.PageModels;
 
 namespace Boilerplate.Tests.PageTests;
 

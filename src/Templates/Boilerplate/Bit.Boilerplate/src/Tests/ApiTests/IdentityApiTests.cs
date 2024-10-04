@@ -1,6 +1,5 @@
 ﻿using Boilerplate.Client.Core.Services;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Tests.TestBase;
 
 namespace Boilerplate.Tests.ApiTests;
 

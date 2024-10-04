@@ -1,6 +1,4 @@
-﻿using Microsoft.Playwright.MSTest;
-
-namespace Boilerplate.Tests.TestBase;
+﻿namespace Boilerplate.Tests.TestBase;
 
 [TestClass]
 public partial class PageTestBase : PageTest

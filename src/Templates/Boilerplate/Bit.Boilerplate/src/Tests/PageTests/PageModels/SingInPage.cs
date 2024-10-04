@@ -1,7 +1,4 @@
-﻿using Microsoft.Playwright;
-using Microsoft.AspNetCore.Http;
-
-namespace Boilerplate.Tests.PageTests.PageModels;
+﻿namespace Boilerplate.Tests.PageTests.PageModels;
 
 public partial class SingInPage(IPage page, Uri serverAddress)
 {
