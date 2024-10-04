@@ -82,7 +82,7 @@ public static partial class MauiProgram
 
         services.TryAddTransient<MainPage>();
         services.TryAddTransient<IStorageService, MauiStorageService>();
-        services.TryAddSessioned<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.TryAddTransient<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
         services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
