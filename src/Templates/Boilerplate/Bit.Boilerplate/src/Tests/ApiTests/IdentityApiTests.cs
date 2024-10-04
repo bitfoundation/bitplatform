@@ -5,7 +5,7 @@ using Boilerplate.Tests.TestBase;
 namespace Boilerplate.Tests.ApiTests;
 
 [TestClass]
-public class IdentityApiTests : ApiTestBase
+public partial class IdentityApiTests : ApiTestBase
 {
     [TestMethod]
     public async Task SignInTest()

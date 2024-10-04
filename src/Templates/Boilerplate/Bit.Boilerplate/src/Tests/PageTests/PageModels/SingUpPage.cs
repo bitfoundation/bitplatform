@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Boilerplate.Tests.PageTests.PageModels;
 
-public class SingUpPage(IPage page, Uri serverAddress)
+public partial class SingUpPage(IPage page, Uri serverAddress)
 {
     public async Task<IResponse> GotoAsync()
     {

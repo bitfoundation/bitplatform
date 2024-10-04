@@ -1,7 +1,7 @@
 ﻿namespace Boilerplate.Tests.TestBase;
 
 [TestClass]
-public class ApiTestBase
+public partial class ApiTestBase
 {
     private AppTestServer TestServer = null!;
 

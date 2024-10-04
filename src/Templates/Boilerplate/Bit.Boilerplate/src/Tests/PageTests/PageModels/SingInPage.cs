@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Boilerplate.Tests.PageTests.PageModels;
 
-public class SingInPage(IPage page, Uri serverAddress)
+public partial class SingInPage(IPage page, Uri serverAddress)
 {
     public bool IsSignedIn { get; private set; }
 

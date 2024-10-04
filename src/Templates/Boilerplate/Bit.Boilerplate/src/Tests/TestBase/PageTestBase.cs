@@ -3,7 +3,7 @@
 namespace Boilerplate.Tests.TestBase;
 
 [TestClass]
-public class PageTestBase : PageTest
+public partial class PageTestBase : PageTest
 {
     private AppTestServer TestServer = null!;
 

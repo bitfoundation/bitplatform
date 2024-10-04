@@ -8,7 +8,7 @@ using Boilerplate.Tests.PageTests.PageModels;
 namespace Boilerplate.Tests.PageTests;
 
 [TestClass]
-public class IdentityPagesTests : PageTestBase
+public partial class IdentityPagesTests : PageTestBase
 {
     private string signInText = "Sign in"; //TODO: multi-language test
     private string signOutText = "Sign out"; //TODO: multi-language test

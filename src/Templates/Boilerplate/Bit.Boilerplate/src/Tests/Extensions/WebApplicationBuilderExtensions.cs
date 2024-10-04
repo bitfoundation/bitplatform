@@ -4,7 +4,7 @@ using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Microsoft.AspNetCore.Builder;
 
-public static class WebApplicationBuilderExtensions
+public static partial class WebApplicationBuilderExtensions
 {
     public static void AddTestProjectServices(this WebApplicationBuilder builder)
     {

@@ -4,7 +4,7 @@ using Boilerplate.Shared.Controllers.Identity;
 namespace Boilerplate.Tests;
 
 [TestClass]
-public class IdentityApiTests
+public partial class IdentityApiTests
 {
     [TestMethod]
     public async Task SignInTest()

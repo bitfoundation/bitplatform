@@ -5,7 +5,7 @@ using Microsoft.Playwright.MSTest;
 namespace Boilerplate.Tests;
 
 [TestClass]
-public class IdentityPagesTests : PageTest
+public partial class IdentityPagesTests : PageTest
 {
     [TestMethod]
     public async Task UnauthorizedUser_Should_RedirectToSignInPage()
