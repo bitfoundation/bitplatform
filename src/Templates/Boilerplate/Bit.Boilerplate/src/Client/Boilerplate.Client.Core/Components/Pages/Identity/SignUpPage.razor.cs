@@ -7,8 +7,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 public partial class SignUpPage
 {
     private bool isWaiting;
-    private string? message;
-    private ElementReference messageRef = default!;
+    private BitSnackBar snackbarRef = default!;
     private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
 
 
@@ -24,8 +23,7 @@ public partial class SignUpPage
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            message = Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)];
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)]);
             return;
         }
 
@@ -33,8 +31,6 @@ public partial class SignUpPage
         //#endif
 
         isWaiting = true;
-        message = null;
-        StateHasChanged();
 
         try
         {
@@ -54,10 +50,10 @@ public partial class SignUpPage
         }
         catch (KnownException e)
         {
-            message = e is ResourceValidationException re
-                                    ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
-                                    : e.Message;
-            await messageRef.ScrollIntoView();
+            var message = e is ResourceValidationException re
+                                                ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
+                                                : e.Message;
+            await snackbarRef.Error(message);
 
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
@@ -69,28 +65,8 @@ public partial class SignUpPage
         }
     }
 
-    private async Task GoogleSignUp()
-    {
-        await SocialSignUp("Google");
-    }
-
-    private async Task GitHubSignUp()
-    {
-        await SocialSignUp("GitHub");
-    }
-
-    private async Task TwitterSignUp()
-    {
-        await SocialSignUp("Twitter");
-    }
-
     private async Task SocialSignUp(string provider)
     {
-        if (isWaiting) return;
-
-        isWaiting = true;
-        message = null;
-
         try
         {
             var port = localHttpServer.Start(CurrentCancellationToken);
@@ -101,17 +77,7 @@ public partial class SignUpPage
         }
         catch (KnownException e)
         {
-            isWaiting = false;
-
-            message = e.Message;
-
-            await messageRef.ScrollIntoView();
-        }
-        catch
-        {
-            isWaiting = false;
-
-            throw;
+            await snackbarRef.Error(e.Message);
         }
     }
 }
