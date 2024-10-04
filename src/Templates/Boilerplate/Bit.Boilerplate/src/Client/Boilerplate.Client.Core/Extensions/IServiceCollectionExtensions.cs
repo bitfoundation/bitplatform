@@ -17,10 +17,12 @@ public static partial class IServiceCollectionExtensions
 
         services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
 
+        services.TryAddSessioned<IThemeService, ThemeService>();
         services.TryAddSessioned<IPubSubService, PubSubService>();
-        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddSessioned<ICultureService, CultureService>();
         services.TryAddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
 
         services.TryAddTransient<RequestHeadersDelegationHandler>();
