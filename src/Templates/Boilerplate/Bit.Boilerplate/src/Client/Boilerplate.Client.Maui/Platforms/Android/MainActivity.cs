@@ -3,9 +3,7 @@ using Java.Net;
 using Android.OS;
 using Android.App;
 using Android.Content;
-using Android.Gms.Tasks;
 using Android.Content.PM;
-using Firebase.Messaging;
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Maui.Platforms.Android;
@@ -32,10 +30,8 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleInstance,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
-public partial class MainActivity : MauiAppCompatActivity, IOnSuccessListener
+public partial class MainActivity : MauiAppCompatActivity
 {
-    private IPushNotificationService PushNotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
-
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
@@ -45,9 +41,6 @@ public partial class MainActivity : MauiAppCompatActivity, IOnSuccessListener
         {
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
-
-        if (PushNotificationService.NotificationsSupported)
-            FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
     }
 
     protected override void OnNewIntent(Intent? intent)
@@ -60,10 +53,5 @@ public partial class MainActivity : MauiAppCompatActivity, IOnSuccessListener
         {
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
-    }
-
-    public void OnSuccess(Java.Lang.Object? result)
-    {
-        PushNotificationService.Token = result!.ToString();
     }
 }
