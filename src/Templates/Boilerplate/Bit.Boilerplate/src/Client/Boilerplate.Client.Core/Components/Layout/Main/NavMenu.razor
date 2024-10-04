@@ -16,6 +16,7 @@
             @Localizer[nameof(AppStrings.TodoTitle)]
         </BitText>
     </a>
+    @*#endif*@
 
     <a href="@Urls.TermsPage">
         <BitIcon IconName="@BitIconName.EntityExtraction" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
@@ -23,7 +24,6 @@
             @Localizer[nameof(AppStrings.TermsTitle)]
         </BitText>
     </a>
-    @*#endif*@
 
     @*#if (sample == "Admin")*@
     <a href="@Urls.DashboardPage">
