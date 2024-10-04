@@ -37,7 +37,9 @@ public static partial class Program
         services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
         services.TryAddSessioned<ILocalHttpServer, WindowsLocalHttpServer>();
+        //#if (notification == true)
         services.TryAddSessioned<IPushNotificationService, WindowsPushNotificationService>();
+        //#endif
 
         services.AddLogging(loggingBuilder =>
         {

@@ -81,17 +81,19 @@
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
-        <PackageReference Include="Xamarin.Firebase.Messaging" />
-        <PackageReference Include="Xamarin.AndroidX.Collection" />
-        <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Activity" />
-        <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
+        <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
@@ -159,7 +161,7 @@
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
-        <PackageReference Include="Plugin.LocalNotification" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
     

@@ -1,6 +1,8 @@
 ﻿//-:cnd:noEmit
 using Maui.AppStores;
+//#if (notification == true)
 using Plugin.LocalNotification;
+//#endif
 using System.Runtime.InteropServices;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -40,10 +42,12 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
+            //#if (notification == true)
             if (await LocalNotificationCenter.Current.AreNotificationsEnabled() == false)
             {
                 await LocalNotificationCenter.Current.RequestNotificationPermission();
             }
+            //#endif
 
             await CheckForUpdates();
         }

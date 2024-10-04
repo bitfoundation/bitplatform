@@ -9,7 +9,9 @@ public partial class AppSettings : IValidatableObject
 
     public SmsSettings Sms { get; set; } = default!;
 
+    //#if (notification == true)
     public NotificationHubOptions NotificationHub { get; set; } = default!;
+    //#endif
 
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
@@ -26,7 +28,9 @@ public partial class AppSettings : IValidatableObject
         Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
+        //#if (notification == true)
         Validator.TryValidateObject(NotificationHub, new ValidationContext(NotificationHub), validationResults, true);
+        //#endif
 
         return validationResults;
     }
@@ -92,6 +96,7 @@ public partial class SmsSettings
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
 }
 
+//#if (notification == true)
 public partial class NotificationHubOptions
 {
     public string? Name { get; set; }
@@ -101,3 +106,4 @@ public partial class NotificationHubOptions
     public bool Configured => string.IsNullOrEmpty(Name) is false &&
                           string.IsNullOrEmpty(ConnectionString) is false;
 }
+//#endif

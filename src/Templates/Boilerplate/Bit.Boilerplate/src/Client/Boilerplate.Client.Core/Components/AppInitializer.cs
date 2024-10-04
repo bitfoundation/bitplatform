@@ -12,6 +12,9 @@ public partial class AppInitializer : AppComponentBase
     private HubConnection? hubConnection;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
     [AutoInject] private MessageBoxService messageBoxService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -19,7 +22,6 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -68,10 +70,12 @@ public partial class AppInitializer : AppComponentBase
             }
             //#endif
 
+            //#if (notification == true)
             if (InPrerenderSession is false)
             {
                 await pushNotificationService.RegisterDeviceAsync(CurrentCancellationToken);
             }
+            //#endif
         }
         catch (Exception exp)
         {

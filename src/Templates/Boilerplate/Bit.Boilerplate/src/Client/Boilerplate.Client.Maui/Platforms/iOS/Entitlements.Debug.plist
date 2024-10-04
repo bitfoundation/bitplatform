@@ -6,7 +6,9 @@
 	<array>
         <string>applinks:use-your-server-url-here.com</string>
 	</array>
+    <!--#if (notification == true)-->
     <key>aps-environment</key>
     <string>development</string>
+    <!--#endif-->
 </dict>
 </plist>

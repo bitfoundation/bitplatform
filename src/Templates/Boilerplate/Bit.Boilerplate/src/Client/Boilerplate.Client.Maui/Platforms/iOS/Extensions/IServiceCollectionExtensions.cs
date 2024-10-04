@@ -1,4 +1,6 @@
-﻿using Boilerplate.Client.Maui.Platforms.iOS.Services;
+﻿//#if (notification == true)
+using Boilerplate.Client.Maui.Platforms.iOS.Services;
+//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +10,9 @@ public static partial class IServiceCollectionExtensions
     {
         // Services registered in this class can be injected in iOS.
 
+        //#if (notification == true)
         services.TryAddSessioned<IPushNotificationService, iOSPushNotificationService>();
+        //#endif
 
         return services;
     }

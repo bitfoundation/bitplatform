@@ -1,7 +1,9 @@
 ﻿using Foundation;
 using UIKit;
 using UserNotifications;
+//#if (notification == true)
 using Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
+//#endif
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst;
 
@@ -10,11 +12,14 @@ public partial class AppDelegate : MauiUIApplicationDelegate
 {
     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
+    //#if (notification == true)
     private IPushNotificationService NotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
 
     [Export("application:didFinishLaunchingWithOptions:")]
+    //#endif
     public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
     {
+        //#if (notification == true)
         if (NotificationService.NotificationsSupported)
         {
             UNUserNotificationCenter.Current.RequestAuthorization(
@@ -37,10 +42,12 @@ public partial class AppDelegate : MauiUIApplicationDelegate
         // Use the following code the get the action value from the push notification when the app is launched by tapping on the push notification.
         // using var userInfo = launchOptions?.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey) as NSDictionary;
         // var actionValue = userInfo?.ObjectForKey(new NSString("action")) as NSString;
+        //#endif
 
         return base.FinishedLaunching(application, launchOptions!);
     }
 
+    //#if (notification == true)
     [Export("application:didRegisterForRemoteNotificationsWithDeviceToken:")]
     public async void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
     {
@@ -60,4 +67,5 @@ public partial class AppDelegate : MauiUIApplicationDelegate
     {
         IPlatformApplication.Current!.Services.GetRequiredService<IExceptionHandler>().Handle(new InvalidOperationException(error.Description.ToString()));
     }
+    //#endif
 }

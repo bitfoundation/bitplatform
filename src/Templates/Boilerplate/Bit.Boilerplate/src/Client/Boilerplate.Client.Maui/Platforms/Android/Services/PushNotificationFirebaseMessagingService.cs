@@ -1,7 +1,9 @@
 ﻿using Android.App;
 using Android.Content;
 using Firebase.Messaging;
+//#if (notification == true)
 using Plugin.LocalNotification;
+//#endif
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 

@@ -2,7 +2,9 @@
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
 using Maui.AppStores;
+//#if (notification == true)
 using Plugin.LocalNotification;
+//#endif
 using Boilerplate.Client.Core.Styles;
 #if iOS || Mac
 using UIKit;
@@ -38,7 +40,9 @@ public static partial class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseAppStoreInfo()
+            //#if (notification == true)
             .UseLocalNotification()
+            //#endif
             .Configuration.AddClientConfigurations();
 
         builder.ConfigureServices();
