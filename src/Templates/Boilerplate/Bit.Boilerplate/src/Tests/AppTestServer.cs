@@ -7,17 +7,17 @@ using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
-public class AppTestServer : IAsyncDisposable
+public partial class AppTestServer : IAsyncDisposable
 {
-    private WebApplication? webApp;
-
-    public Uri ServerAddress => new((webApp ?? throw new InvalidOperationException($"web app is null")).Urls.First());
-    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
-    public IConfiguration Configuration => (webApp ?? throw new InvalidOperationException("Web app is null.")).Configuration;
+    private WebApplication? _webApp;
+    public WebApplication WebApp => _webApp ?? throw new InvalidOperationException($"WebApp is null. Call {nameof(Build)} method first.");
+    public Uri ServerAddress => new(WebApp.Urls.First());
+    public IServiceProvider Services => WebApp.Services;
+    public IConfiguration Configuration => WebApp.Configuration;
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
     {
-        if (webApp != null)
+        if (_webApp != null)
             throw new InvalidOperationException("Server is already built.");
 
         var builder = WebApplication.CreateBuilder(options: new()
@@ -36,35 +36,32 @@ public class AppTestServer : IAsyncDisposable
 
         configureTestServices?.Invoke(builder.Services);
 
-        webApp = builder.Build();
+        var app = _webApp = builder.Build();
 
-        webApp.ConfiureMiddlewares();
+        app.ConfiureMiddlewares();
 
         return this;
     }
 
     public async Task StartAsync()
     {
-        if (webApp == null)
-            throw new InvalidOperationException($"Call {nameof(Build)} first.");
-
         if (AppEnvironment.IsDev())
         {
-            await using var scope = webApp.Services.CreateAsyncScope();
+            await using var scope = WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.EnsureCreatedAsync();
         }
 
-        await webApp.StartAsync();
+        await WebApp.StartAsync();
 
-        webApp.Configuration["ServerAddress"] = webApp.Urls.First();
+        WebApp.Configuration["ServerAddress"] = ServerAddress.ToString();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (webApp != null)
+        if (_webApp != null)
         {
-            await webApp.DisposeAsync();
+            await _webApp.DisposeAsync();
         }
         GC.SuppressFinalize(this);
     }
