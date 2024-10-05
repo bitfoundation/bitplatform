@@ -2,7 +2,6 @@
 //#if (appInsights == true)
 using BlazorApplicationInsights;
 //#endif
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
@@ -29,7 +28,7 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.TryAddSingleton(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
+        services.TryAddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
 
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>
@@ -57,6 +56,9 @@ public static partial class Program
 
         services.TryAddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.TryAddTransient<IExceptionHandler, WebExceptionHandler>();
+        //#if (notification == true)
+        services.TryAddSessioned<IPushNotificationService, WebPushNotificationService>();
+        //#endif
 
         services.AddClientCoreProjectServices();
     }

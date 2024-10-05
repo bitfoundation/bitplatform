@@ -1,22 +1,24 @@
-//+:cnd:noEmit
-using System.IO.Compression;
-using Microsoft.AspNetCore.ResponseCompression;
-using Boilerplate.Server.Api.Services;
+﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
+using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Server.Api.Models.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.StaticFiles;
+//#if (notification == true)
+using Microsoft.Azure.NotificationHubs;
+//#endif
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.ResponseCompression;
+using Twilio;
 using FluentStorage;
 using FluentStorage.Blobs;
-using Twilio;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api;
 
@@ -229,6 +231,14 @@ public static partial class Program
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
+
+        //#if (notification == true)
+        services.TryAddTransient<AzureNotificationHubService>();
+        if (appSettings.NotificationHub.Configured)
+        {
+            services.TryAddTransient(sp => new NotificationHubClient(appSettings.NotificationHub.ConnectionString, appSettings.NotificationHub.Name));
+        }
+        //#endif
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
@@ -252,7 +262,7 @@ public static partial class Program
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
 
-        services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
+        services.TryAddTransient<IUserConfirmation<User>, AppUserConfirmation>();
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -261,10 +271,10 @@ public static partial class Program
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
-        services.AddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
+        services.TryAddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
 
-        services.AddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
-        services.AddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.TryAddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.TryAddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {

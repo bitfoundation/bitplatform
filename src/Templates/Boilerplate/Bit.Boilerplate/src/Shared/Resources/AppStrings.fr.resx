@@ -249,7 +249,7 @@
     <value>Modifier le profil hors ligne</value>
   </data>
     <!--#endif-->
-    <!--#if (signalr == true) -->
+    <!--#if (signalr == true || notification == true) -->
     <data name="TwoFactorTokenPushText" xml:space="preserve">
     <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
   </data>

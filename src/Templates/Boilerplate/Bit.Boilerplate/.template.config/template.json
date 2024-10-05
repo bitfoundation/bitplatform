@@ -114,7 +114,7 @@
             "displayName": "Captcha",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "reCaptcha",
+            "defaultValue": "None",
             "choices": [
                 {
                     "choice": "reCaptcha",
@@ -172,6 +172,13 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Add SignalR sample."
+        },
+        "notification": {
+            "displayName": "Add Azure Notifications Hub?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add Azure Notifications Hub."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",
@@ -402,6 +409,29 @@
                     "condition": "(signalr != true)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Hubs/**"
+                    ]
+                },
+                {
+                    "condition": "(notification != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/PushNotificationFirebaseMessagingService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Extensions/NSDataExtensions.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/AppUNUserNotificationCenterDelegate.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/MacCatalystPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Windows/Services/WindowsPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
+                        "src/Server/Boilerplate.Server.Api/Controllers/NotificationHubController.cs",
+                        "src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Services/AzureNotificationHubService.cs",
+                        "src/Shared/Controllers/INotificationHubController.cs",
+                        "src/Shared/Dtos/PushNotification/DeviceInstallationDto.cs"
                     ]
                 },
                 {
