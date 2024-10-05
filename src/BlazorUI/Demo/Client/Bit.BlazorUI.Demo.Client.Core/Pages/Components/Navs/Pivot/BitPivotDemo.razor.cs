@@ -567,7 +567,7 @@ private string detachedSelectedKey = ""Foo"";";
         <h1>Pivot #2: Bar</h1>
         <p>Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel.</p>
     </BitPivotItem>
-    <BitPivotItem HeaderText=""Bas"" Key=""aaa"">
+    <BitPivotItem HeaderText=""Bas"">
         <h1>Pivot #3: Bas</h1>
         <p>Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum.</p>
     </BitPivotItem>
