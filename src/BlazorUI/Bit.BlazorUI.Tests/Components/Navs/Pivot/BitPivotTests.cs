@@ -11,7 +11,7 @@ public class BitPivotTests : BunitTestContext
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
          DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu)
      ]
-    public void BitPivotShouldRespectLinkFormatClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
+    public void BitPivotShouldRespectParameterRelatedCssClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
