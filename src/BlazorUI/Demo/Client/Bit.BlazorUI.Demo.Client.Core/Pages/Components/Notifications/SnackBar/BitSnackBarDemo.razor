@@ -26,12 +26,24 @@
                              AutoDismiss="@basicSnackBarAutoDismiss"
                              AutoDismissTime="TimeSpan.FromSeconds(basicSnackBarDismissSeconds)" />
 
-                <BitChoiceGroup @bind-Value="basicSnackBarType" Label="Type" TItem="BitChoiceGroupOption<BitSnackBarType>" TValue="BitSnackBarType">
-                    <BitChoiceGroupOption Text="Info" Value="BitSnackBarType.Info" />
-                    <BitChoiceGroupOption Text="Success" Value="BitSnackBarType.Success" />
-                    <BitChoiceGroupOption Text="Warning" Value="BitSnackBarType.Warning" />
-                    <BitChoiceGroupOption Text="SevereWarning" Value="BitSnackBarType.SevereWarning" />
-                    <BitChoiceGroupOption Text="Error" Value="BitSnackBarType.Error" />
+                <BitChoiceGroup @bind-Value="basicSnackBarColor" Label="Type" TItem="BitChoiceGroupOption<BitColor>" TValue="BitColor">
+                    <BitChoiceGroupOption Text="Primary" Value="BitColor.Primary" />
+                    <BitChoiceGroupOption Text="Secondary" Value="BitColor.Secondary" />
+                    <BitChoiceGroupOption Text="Tertiary" Value="BitColor.Tertiary" />
+                    <BitChoiceGroupOption Text="Info" Value="BitColor.Info" />
+                    <BitChoiceGroupOption Text="Success" Value="BitColor.Success" />
+                    <BitChoiceGroupOption Text="Warning" Value="BitColor.Warning" />
+                    <BitChoiceGroupOption Text="SevereWarning" Value="BitColor.SevereWarning" />
+                    <BitChoiceGroupOption Text="Error" Value="BitColor.Error" />
+                    <BitChoiceGroupOption Text="PrimaryBackground" Value="BitColor.PrimaryBackground" />
+                    <BitChoiceGroupOption Text="SecondaryBackground" Value="BitColor.SecondaryBackground" />
+                    <BitChoiceGroupOption Text="TertiaryBackground" Value="BitColor.TertiaryBackground" />
+                    <BitChoiceGroupOption Text="PrimaryForeground" Value="BitColor.PrimaryForeground" />
+                    <BitChoiceGroupOption Text="SecondaryForeground" Value="BitColor.SecondaryForeground" />
+                    <BitChoiceGroupOption Text="TertiaryForeground" Value="BitColor.TertiaryForeground" />
+                    <BitChoiceGroupOption Text="PrimaryBorder" Value="BitColor.PrimaryBorder" />
+                    <BitChoiceGroupOption Text="SecondaryBorder" Value="BitColor.SecondaryBorder" />
+                    <BitChoiceGroupOption Text="TertiaryBorder" Value="BitColor.TertiaryBorder" />
                 </BitChoiceGroup>
 
                 <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
