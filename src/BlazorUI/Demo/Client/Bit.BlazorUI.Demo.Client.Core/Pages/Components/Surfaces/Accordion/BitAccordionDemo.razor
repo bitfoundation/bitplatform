@@ -137,6 +137,7 @@
 
     <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
+            <div class="example-desc">Use BitAccordion in right-to-left (RTL).</div>
             <div class="example-box">
                 <BitAccordion Dir="BitDir.Rtl" 
                               Title="تنظیمات" 
@@ -147,9 +148,3 @@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
-
-@code {
-    private byte controlledAccordionExpandedItem = 1;
-    private bool AccordionToggleIsEnabled;
-    private bool AccordionToggleIsExpanded;
-}

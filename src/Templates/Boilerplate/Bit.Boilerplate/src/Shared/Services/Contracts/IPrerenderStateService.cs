@@ -7,7 +7,7 @@ namespace Boilerplate.Shared.Services.Contracts;
 /// (explained in this documentation: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state).
 /// If your project does not require prerendering to be enabled, you can completely remove this service and its usages from your project.
 /// </summary>
-public interface IPrerenderStateService
+public interface IPrerenderStateService : IAsyncDisposable
 {
     /// <summary>
     /// Instead of using ApplicationState.TryTakeFromJson, ApplicationState.RegisterOnPersisting, 

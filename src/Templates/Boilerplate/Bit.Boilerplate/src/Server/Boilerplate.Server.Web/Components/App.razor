@@ -17,18 +17,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="@localizer[nameof(AppStrings.DescriptionMetaTagValue)]" />
 
-    <script>
+    <Script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
             (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
-    </script>
+    </Script>
 
     @*#if (captcha == "reCaptcha")*@
-    <link rel="preconnect" href="https://www.google.com">
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <Link rel="preconnect" href="https://www.google.com" />
+    <Link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     @*#endif*@
 
-    <link rel="preconnect" href="https://use-your-server-url-here.com">@* for PWA *@
+    <Link rel="preconnect" href="https://use-your-server-url-here.com" />@* for PWA *@
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
@@ -46,9 +46,9 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
-    <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
+    <Link rel="stylesheet" href="Boilerplate.Server.Web.styles.css" />
 
-    @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
+    @if (renderMode != null && (AppRenderMode.PrerenderEnabled is false || noPrerender))
     {
         <LoadingComponent />
     }

@@ -41,10 +41,17 @@
 }
 
 .bit-acb-con {
+    flex-grow: 1;
+    display: flex;
 }
 
 .bit-acb-rvi {
     flex-direction: row-reverse;
+}
+
+.bit-acb-fwi {
+    width: 100%;
+    justify-content: flex-start;
 }
 
 

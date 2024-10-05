@@ -1,5 +1,6 @@
 @attribute [Route(Urls.OfflineEditProfilePage)]
-@inherits AppComponentBase
+@attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
+@inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
 

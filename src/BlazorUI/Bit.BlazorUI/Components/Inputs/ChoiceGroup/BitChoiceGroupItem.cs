@@ -78,4 +78,9 @@ public class BitChoiceGroupItem<TValue>
     /// Index of the BitChoiceGroup item. This property's value is set by the component at render.
     /// </summary>
     public int Index { get; internal set; }
+
+    /// <summary>
+    /// Determines if the item is selected. This property's value is assigned by the component.
+    /// </summary>
+    public bool IsSelected { get; internal set; }
 }

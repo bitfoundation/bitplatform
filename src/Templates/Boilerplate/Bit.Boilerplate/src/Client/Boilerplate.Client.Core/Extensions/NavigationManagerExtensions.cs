@@ -20,7 +20,51 @@ public static partial class NavigationManagerExtensions
         string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
 
         return newQueryString.Count > 0
-            ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+            ? string.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
             : pagePathWithoutQueryString;
+    }
+
+    /// <summary>
+    /// Reads culture from either route segment or query string.
+    /// https://adminpanel.bitpaltform.dev/en-US/categories
+    /// https://adminpanel.bitpaltform.dev/categories?culture=en-US
+    /// </summary>
+    public static string? GetCultureFromUri(this NavigationManager navigationManager)
+    {
+        var url = navigationManager.Uri;
+
+        var uri = new Uri(url);
+
+        var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
+
+        if (string.IsNullOrEmpty(culture) is false)
+            return culture;
+
+        foreach (var segment in uri.Segments.Take(2))
+        {
+            var segmentValue = segment.Trim('/');
+            if (CultureInfoManager.SupportedCultures.Any(sc => string.Equals(sc.Culture.Name, segmentValue, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                return segmentValue;
+            }
+        }
+
+        return null;
+    }
+
+    public static string GetUriWithoutCulture(this NavigationManager navigationManager)
+    {
+        var uri = navigationManager.GetUriWithoutQueryParameter("culture");
+
+        var culture = navigationManager.GetCultureFromUri();
+
+        if (string.IsNullOrEmpty(culture) is false)
+        {
+            uri = uri
+                .Replace($"{culture}/", string.Empty)
+                .Replace(culture, string.Empty);
+        }
+
+        return uri;
     }
 }

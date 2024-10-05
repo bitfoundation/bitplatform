@@ -70,18 +70,24 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
     }
     private string GetItemContainerStyles()
     {
-        var classes = new List<string>();
+        var styles = new List<string>();
+
+        if (Nav.FitWidth && Nav.IconOnly is false)
+        {
+            styles.Add($"padding-inline-end:{Nav.IndentPadding}px;");
+        }
+
         if (Nav.Styles?.ItemContainer is not null)
         {
-            classes.Add(Nav.Styles.ItemContainer);
+            styles.Add(Nav.Styles.ItemContainer);
         }
 
         if (Nav.SelectedItem == Item && Nav.Styles?.SelectedItemContainer is not null)
         {
-            classes.Add(Nav.Styles?.SelectedItemContainer!);
+            styles.Add(Nav.Styles?.SelectedItemContainer!);
         }
 
-        return string.Join(" ", classes);
+        return string.Join(" ", styles);
     }
     private string GetItemClasses()
     {

@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+
+<div dir="@currentDir?.ToString().ToLower()" class="layout">
+    <AppErrorBoundary>
+        <CascadingValue Value="currentDir">
+            <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
+                <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
+                    <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
+                        <CascadingValue Value="isAnonymousPage" Name="@Parameters.IsAnonymousPage">
+                            <LayoutView Layout="GetCurrentLayout()">
+                                @Body
+                            </LayoutView>
+                        </CascadingValue>
+                    </CascadingValue>
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
+        <MessageBox />
+    </AppErrorBoundary>
+</div>

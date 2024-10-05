@@ -1,0 +1,64 @@
+﻿@inherits AppComponentBase
+
+<div @ref="messageRef" class="form-message-bar">
+    @if (string.IsNullOrEmpty(message) is false)
+    {
+        <BitMessage Multiline Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
+    }
+</div>
+
+<BitText Typography="BitTypography.H2" Style="text-align:center">
+    @Localizer[nameof(AppStrings.UserSessionsTitle)]
+</BitText>
+
+<br />
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <BitRingLoading />
+    </div>
+}
+else
+{
+    <BitStack>
+        @if (currentSession is not null)
+        {
+            <BitStack>
+                <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.CurrentSession)]</BitSeparator>
+                <BitPersona PrimaryText="@currentSession.Device"
+                            SecondaryText="@currentSession.Address"
+                            TertiaryText="@($"{currentSession.IP} - {currentSession.LastSeenOn}")"
+                            Size="BitPersonaSize.Size72"
+                            Style="width:100%;padding:8px"
+                            Presence="@GetPresence(currentSession.LastSeenOn)"
+                            Class="@BitCss.Class.Color.Background.Secondary"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="✓"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
+            </BitStack>
+        }
+        @if (otherSessions is not null && otherSessions.Any())
+        {
+            <BitSeparator Style="width:100%">@Localizer[nameof(AppStrings.OtherSessions)]</BitSeparator>
+
+            @foreach (var session in otherSessions)
+            {
+                <BitStack Horizontal Style="padding:8px" Class="@BitCss.Class.Color.Background.Secondary">
+                    <BitPersona PrimaryText="@session.Device"
+                                SecondaryText="@session.Address"
+                                TertiaryText="@($"{session.IP} - {session.LastSeenOn}")"
+                                Size="BitPersonaSize.Size72"
+                                Style="flex-grow:1"
+                                Presence="@GetPresence(session.LastSeenOn)"
+                                Styles="@(new() { Image = "width:50%;height:50%" })"
+                                ImageInitials="@(session.IsValid ? "✓" : "✘")"
+                                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
+                    <BitButton IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)"
+                               OnClick="() => RevokeSession(session)"
+                               Variant="BitVariant.Text" />
+                </BitStack>
+            }
+        }
+    </BitStack>
+}

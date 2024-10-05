@@ -359,7 +359,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected async Task SetCurrentValueAsync(TValue? value)
     {
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (InvalidValueBinding()) return;
 
         Value = value;
 
@@ -368,6 +368,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         EditContext?.NotifyFieldChanged(FieldIdentifier);
 
         await OnChange.InvokeAsync(value);
+    }
+
+    protected bool InvalidValueBinding()
+    {
+        return (ValueHasBeenSet &&
+                ValueChanged.HasDelegate is false &&
+                OnChange.HasDelegate is false);
     }
 
 

@@ -7,6 +7,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Categories;
 [Authorize]
 public partial class CategoriesPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.Categories)];
+    protected override string? Subtitle => string.Empty;
+
     [AutoInject] ICategoryController categoryController = default!;
 
     private bool isLoading;

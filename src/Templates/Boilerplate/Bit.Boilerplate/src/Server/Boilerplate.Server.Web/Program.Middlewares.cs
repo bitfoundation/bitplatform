@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
 using Boilerplate.Client.Core.Services;
 
@@ -17,7 +18,7 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    private static void ConfiureMiddlewares(this WebApplication app)
+    public static void ConfiureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
@@ -27,12 +28,15 @@ public static partial class Program
         if (CultureInfoManager.MultilingualEnabled)
         {
             var supportedCultures = CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).ToArray();
-            app.UseRequestLocalization(new RequestLocalizationOptions
+            var options = new RequestLocalizationOptions
             {
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures,
                 ApplyCurrentCultureToResponseHeaders = true
-            }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name));
+            };
+            options.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
+            options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
+            app.UseRequestLocalization(options);
         }
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
@@ -125,7 +129,7 @@ public static partial class Program
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
         if (AppRenderMode.PrerenderEnabled is false)
         {
@@ -141,7 +145,7 @@ public static partial class Program
             .ToList()!;
 
         urls = CultureInfoManager.MultilingualEnabled ?
-            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{url}?culture={sc.Culture.Name}"))).ToList() :
+            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToList() :
             urls;
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";

@@ -37,6 +37,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public bool Horizontal { get; set; }
 
     /// <summary>
+    /// Renders the icons and images in a single line with the items in the ChoiceGroup.
+    /// </summary>
+    [Parameter] public bool Inline { get; set; }
+
+    /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
@@ -70,6 +75,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitChoiceGroupNameSelectors<TItem, TValue>? NameSelectors { get; set; }
+
+    /// <summary>
+    /// Removes the circle from the start of each item.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoCircle { get; set; }
 
     /// <summary>
     /// Callback for when the option clicked.
@@ -124,10 +135,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         _oldItems = Items;
         _items = Items.ToList();
 
-        if (ValueHasBeenSet is false && DefaultValue is not null && _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
-        {
-            Value = DefaultValue;
-        }
+        InitDefaultValue();
     }
 
     protected override string RootElementClass => "bit-chg";
@@ -135,6 +143,10 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Inline ? "bit-chg-inl" : string.Empty);
+
+        ClassBuilder.Register(() => NoCircle ? "bit-chg-ncr" : "bit-chg-wcr");
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
     }
@@ -151,10 +163,22 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private void InitDefaultValue()
     {
-        if (ValueHasBeenSet is false && DefaultValue is not null &&
-            _items.Any(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue)))
+        if (ValueHasBeenSet)
         {
-            Value = DefaultValue;
+            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), Value));
+            if (item is not null)
+            {
+                SetIsSelectedForSelectedItem(item);
+            }
+        }
+        else if (DefaultValue is not null)
+        {
+            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
+            if (item is not null)
+            {
+                SetIsSelectedForSelectedItem(item);
+                Value = DefaultValue;
+            }
         }
     }
 
@@ -187,6 +211,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
+        SetIsSelectedForSelectedItem(item);
+
         CurrentValue = GetValue(item);
     }
 
@@ -216,8 +242,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private string GetItemContainerCssClasses(TItem item)
     {
-        StringBuilder cssClass = new(RootElementClass);
-        cssClass.Append("-icn");
+        StringBuilder cssClass = new("bit-chg-icn");
 
         if (string.IsNullOrEmpty(GetClass(item)) is false)
         {
@@ -233,10 +258,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         if (GetIsCheckedItem(item))
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ich");
-
+            cssClass.Append(' ').Append("bit-chg-ich");
             cssClass.Append(' ').Append(Classes?.ItemChecked);
         }
 
@@ -244,16 +266,12 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         if (IsEnabled is false || GetIsEnabled(item) is false)
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ids");
+            cssClass.Append(' ').Append("bit-chg-ids");
         }
 
         if (GetImageSrc(item).HasValue() || GetIconName(item).HasValue())
         {
-            cssClass.Append(' ')
-                    .Append(RootElementClass)
-                    .Append("-ihi");
+            cssClass.Append(' ').Append("bit-chg-ihi");
         }
 
         return cssClass.ToString();
@@ -262,7 +280,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     private string GetItemLabelWrapperCssClasses(TItem item)
     {
         var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIconName(item).HasValue();
-        return hasImageOrIcon && ItemLabelTemplate is null
+        return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
                 ? "bit-chg-ilwi"
                 : "bit-chg-ilw";
     }
@@ -590,5 +608,32 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (NameSelectors is null) return;
 
         item.SetValueToProperty(NameSelectors.Index, value);
+    }
+
+    private void SetIsSelected(TItem item, bool value)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            choiceGroupItem.IsSelected = value;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            choiceGroupOption.IsSelected = value;
+        }
+
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.IsSelected, value);
+    }
+
+    private void SetIsSelectedForSelectedItem(TItem item)
+    {
+        foreach (var itm in _items)
+        {
+            SetIsSelected(itm, false);
+        }
+
+        SetIsSelected(item, true);
     }
 }

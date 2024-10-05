@@ -7,6 +7,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Products;
 [Authorize]
 public partial class ProductsPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.Products)];
+    protected override string? Subtitle => string.Empty;
+
     [AutoInject] IProductController productController = default!;
 
     private bool isLoading;

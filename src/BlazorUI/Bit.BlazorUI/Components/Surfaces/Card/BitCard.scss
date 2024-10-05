@@ -1,0 +1,64 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-crd {
+    border: none;
+    width: fit-content;
+    color: $clr-fg-pri;
+    padding: spacing(2);
+    box-shadow: $box-shadow-callout;
+    border-radius: $shp-border-radius;
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+
+.bit-crd-pbg {
+    background-color: $clr-bg-pri;
+}
+
+.bit-crd-sbg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-crd-tbg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-crd-rbg {
+    box-shadow: none;
+    background-color: transparent;
+}
+
+
+.bit-crd-brd {
+    box-shadow: none;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+}
+
+.bit-crd-pbr {
+    border-color: $clr-brd-pri;
+}
+
+.bit-crd-sbr {
+    border-color: $clr-brd-sec;
+}
+
+.bit-crd-tbr {
+    border-color: $clr-brd-ter;
+}
+
+.bit-crd-rbr {
+    border-color: transparent;
+}
+
+
+.bit-crd-fhe {
+    height: 100%;
+}
+
+.bit-crd-fwi {
+    width: 100%;
+}

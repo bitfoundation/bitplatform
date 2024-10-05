@@ -10,8 +10,8 @@ public partial class AppInitializer : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
-
     [AutoInject] private MessageBoxService messageBoxService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -74,7 +74,7 @@ public partial class AppInitializer : AppComponentBase
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Authentication State: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
-    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, string? userSessionId);
+    private static partial void LogAuthenticationState(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, Guid? userSessionId);
 
     //#if (signalr == true)
     private async Task ConnectSignalR()
@@ -87,7 +87,14 @@ public partial class AppInitializer : AppComponentBase
         var access_token = await AuthTokenProvider.GetAccessTokenAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}")
+            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
+            {
+                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
+                {
+                    return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
+                        .Invoke(signalrHttpMessageHandler);
+                };
+            })
             .Build();
 
         hubConnection.On<string>("TwoFactorToken", async (token) =>
@@ -128,18 +135,10 @@ public partial class AppInitializer : AppComponentBase
             cssClasses.Add("bit-android");
         }
 
-        var cssVariables = new Dictionary<string, string>();
-        var statusBarHeight = bitDeviceCoordinator.GetStatusBarHeight();
-
-        if (AppPlatform.IsMacOS is false)
+        var cssVariables = new Dictionary<string, string>
         {
-            //For iOS this is handled in css using safe-area env() variables
-            //For Android there's an issue with keyboard in fullscreen mode. more info: https://github.com/bitfoundation/bitplatform/issues/5626
-            //For Windows there's an issue with TitleBar. more info: https://github.com/bitfoundation/bitplatform/issues/5695
-            statusBarHeight = 0;
-        }
+        };
 
-        cssVariables.Add("--bit-status-bar-height", $"{statusBarHeight.ToString("F3", CultureInfo.InvariantCulture)}px");
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 

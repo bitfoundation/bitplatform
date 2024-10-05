@@ -6,6 +6,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Dashboard;
 [Authorize]
 public partial class DashboardPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.Dashboard)];
+    protected override string? Subtitle => Localizer[nameof(AppStrings.DashboardSubtitle)];
+
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;

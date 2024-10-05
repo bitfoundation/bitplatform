@@ -1,6 +1,7 @@
 ﻿@attribute [Route(Urls.ProductsPage)]
+@attribute [Route("{culture?}" + Urls.ProductsPage)]
 @using Boilerplate.Shared.Dtos.Products
-@inherits AppComponentBase
+@inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>
 
@@ -16,7 +17,7 @@
             <BitDataGrid @ref="dataGrid" ItemsProvider="productsProvider" TGridItem="ProductDto" ResizableColumns="true" Pagination="pagination">
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]" Property="p => p!.Name" Sortable="true" Class="column1">
                     <ColumnOptions>
-                        <BitStack Horizontal Gap="8px">
+                        <BitStack Horizontal>
                             <BitSearchBox @bind-Value="ProductNameFilter"
                                           Immediate DebounceTime="500"
                                           Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
@@ -32,7 +33,7 @@
                 </BitDataGridPropertyColumn>
                 <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Category)]" Property="p => p!.CategoryName" Sortable="true" Align="BitDataGridAlign.Left">
                     <ColumnOptions>
-                        <BitStack Horizontal Gap="8px">
+                        <BitStack Horizontal>
                             <BitSearchBox @bind-Value="CategoryNameFilter"
                                           Immediate DebounceTime="500"
                                           Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"

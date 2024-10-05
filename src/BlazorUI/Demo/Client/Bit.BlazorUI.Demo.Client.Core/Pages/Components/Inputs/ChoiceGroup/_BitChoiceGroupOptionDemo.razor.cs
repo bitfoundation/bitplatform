@@ -28,6 +28,13 @@ public partial class _BitChoiceGroupOptionDemo
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""NoCircle"" NoCircle DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
     private readonly string example2RazorCode = @"
@@ -69,6 +76,34 @@ public partial class _BitChoiceGroupOptionDemo
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon Options""
+                DefaultValue=""@(""Day"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
+    <BitChoiceGroupOption Text=""Week"" Value=""@(""Week"")"" IconName=""@BitIconName.CalendarWeek"" />
+    <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
+</BitChoiceGroup>
+
+
+<BitChoiceGroup Label=""Image Options""
+                Inline
+                DefaultValue=""@(""Bar"")""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Bar""
+                          Value=""@(""Bar"")""
+                          ImageAlt=""Alt for Bar image""
+                          ImageSize=""@(new BitImageSize(20, 20))""
+                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
+                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
+    <BitChoiceGroupOption Text=""Pie""
+                          Value=""@(""Pie"")""
+                          ImageAlt=""Alt for Pie image""
+                          ImageSize=""@(new BitImageSize(20, 20))""
+                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
+                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Icon Options""
+                Inline
                 DefaultValue=""@(""Day"")""
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Day"" Value=""@(""Day"")"" IconName=""@BitIconName.CalendarDay"" />
@@ -139,7 +174,6 @@ public partial class _BitChoiceGroupOptionDemo
         width: 8px;
         height: 8px;
         border: none;
-        inset-block-start: 6px;
         inset-inline-start: 6px;
         background-color: whitesmoke;
     }

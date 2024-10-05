@@ -40,8 +40,7 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// Determines the opening state of the callout of the drop menu.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [Parameter, CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -49,6 +48,11 @@ public partial class BitDropMenu : BitComponentBase
     /// The callback is called when the drop menu is clicked.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Renders the drop menu in responsive mode on small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the drop menu.
@@ -70,6 +74,15 @@ public partial class BitDropMenu : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
+
+
+    [JSInvokable("CloseCallout")]
+    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        if (await AssignIsOpen(false) is false) return;
+
+        StateHasChanged();
+    }
 
 
 
@@ -99,6 +112,7 @@ public partial class BitDropMenu : BitComponentBase
 
         await base.OnInitializedAsync();
     }
+
 
 
     private async Task HandleOnClick()
@@ -134,7 +148,7 @@ public partial class BitDropMenu : BitComponentBase
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
                                 "",

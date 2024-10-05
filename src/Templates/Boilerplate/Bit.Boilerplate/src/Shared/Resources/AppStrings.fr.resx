@@ -190,6 +190,21 @@
     <data name="Date" xml:space="preserve">
     <value>Date</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>Sombre</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>Lumière</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>langue</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>Sélectionnez la langue</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profil</value>
   </data>
@@ -355,6 +370,15 @@
   </data>
     <data name="Home" xml:space="preserve">
     <value>Maison</value>
+  </data>
+    <data name="Refresh" xml:space="preserve">
+    <value>Rafraîchir</value>
+  </data>
+    <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Oups, quelque chose s'est mal passé...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>Retour à la maison</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>L'utilisateur est verrouillé. Réessayez dans {0}</value>
@@ -984,6 +1008,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Tableau de bord</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Voici vos données analytiques</value>
   </data>
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">

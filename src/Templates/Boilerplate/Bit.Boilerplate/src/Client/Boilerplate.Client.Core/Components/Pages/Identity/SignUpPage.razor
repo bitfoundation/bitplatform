@@ -1,5 +1,6 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.SignUpPage)]
+@attribute [Route("{culture?}" + Urls.SignUpPage)]
 @inherits AppComponentBase
 @using Boilerplate.Client.Core.Components.Pages.Identity.Components
 
@@ -20,7 +21,7 @@
             @Localizer[nameof(AppStrings.SignUp)]
         </BitText>
         <br /><br />
-        <BitStack Horizontal Gap="1rem">
+        <BitStack Horizontal Alignment="BitAlignment.Center">
             <BitButton IsLoading="isWaiting"
                        Size="BitSize.Small"
                        Variant="BitVariant.Text"

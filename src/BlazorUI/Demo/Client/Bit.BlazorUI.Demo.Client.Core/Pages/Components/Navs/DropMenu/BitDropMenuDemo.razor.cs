@@ -57,6 +57,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the drop menu in responsive mode on small screens."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitDropMenuClassStyles?",
             DefaultValue = "null",
@@ -108,6 +115,13 @@ public partial class BitDropMenuDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the opened callout state of the BitDropMenu."
+                },
+                new()
+                {
+                    Name = "Button",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button of the BitDropMenu."
                 },
                 new()
                 {

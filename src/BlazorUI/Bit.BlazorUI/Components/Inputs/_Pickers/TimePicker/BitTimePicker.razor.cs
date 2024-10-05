@@ -408,8 +408,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();

@@ -14,7 +14,7 @@ namespace Boilerplate.Server.Web;
 
 public static partial class Program
 {
-    private static void ConfigureServices(this WebApplicationBuilder builder)
+    public static void AddServerWebProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
 
@@ -24,7 +24,7 @@ public static partial class Program
         AddBlazor(builder);
 
         //#if (api == "Integrated")
-        builder.ConfigureApiServices();
+        builder.AddServerApiProjectServices();
         //#else
         services.AddOptions<ForwardedHeadersOptions>()
             .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
@@ -76,7 +76,7 @@ public static partial class Program
                 serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
             }
 
-            var httpClient = new HttpClient(sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler"))
+            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
                 BaseAddress = serverAddress
             };

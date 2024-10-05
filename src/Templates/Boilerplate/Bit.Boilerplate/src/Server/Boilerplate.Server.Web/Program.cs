@@ -27,7 +27,7 @@ public static partial class Program
             builder.WebHost.UseUrls("http://localhost:5030", "http://*:5030");
         }
 
-        builder.ConfigureServices();
+        builder.AddServerWebProjectServices();
 
         var app = builder.Build();
 

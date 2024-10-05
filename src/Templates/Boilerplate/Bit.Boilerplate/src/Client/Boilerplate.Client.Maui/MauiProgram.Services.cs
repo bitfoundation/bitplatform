@@ -31,7 +31,7 @@ public static partial class MauiProgram
 
         services.TryAddSingleton(sp =>
         {
-            var handler = sp.GetRequiredKeyedService<DelegatingHandler>("DefaultMessageHandler");
+            var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)

@@ -1,8 +1,12 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-tgl {
+    display: flex;
+    gap: spacing(1);
+    width: fit-content;
     font-size: inherit;
     font-weight: inherit;
+    flex-direction: column;
     font-family: $tg-font-family;
 
     &.bit-dis {
@@ -30,8 +34,8 @@
 
         &.bit-tgl-chk {
             .bit-tgl-btn {
-                justify-content: flex-end;
                 background: $clr-bg-dis;
+                justify-content: flex-end;
                 border: $shp-border-width $shp-border-style transparent;
             }
 
@@ -68,20 +72,33 @@
     }
 }
 
+.bit-tgl-inl {
+    align-items: center;
+    flex-direction: row;
+}
+
+.bit-tgl-fwi {
+    width: 100%;
+
+    &.bit-tgl-inl {
+        gap: 0;
+    }
+
+    label {
+        flex-grow: 1;
+    }
+}
+
 .bit-tgl-lbl {
-    margin: 0;
-    box-shadow: none;
+    cursor: pointer;
     font-weight: 600;
-    display: inline-block;
-    box-sizing: border-box;
-    font-size: spacing(1.75);
-    padding: spacing(0.625) 0;
-    overflow-wrap: break-word;
     color: $clr-fg-pri;
+    font-size: spacing(1.75);
 }
 
 .bit-tgl-cnt {
     display: flex;
+    gap: spacing(1);
     position: relative;
     align-items: center;
 }
@@ -97,10 +114,10 @@
     min-width: spacing(5);
     box-sizing: border-box;
     font-size: spacing(2.5);
-    padding: 0 spacing(0.375);
-    border-radius: spacing(1.25);
-    transition: all 0.1s ease 0s;
     background: $clr-bg-pri;
+    padding: 0 spacing(0.375);
+    transition: all 0.1s ease 0s;
+    border-radius: spacing(1.25);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -127,9 +144,9 @@
 
 .bit-tgl-stx {
     padding: 0;
+    cursor: pointer;
     font-weight: 400;
     user-select: none;
-    margin: 0 spacing(1);
 }
 
 .bit-tgl-chk {
@@ -156,18 +173,15 @@
     }
 }
 
-.bit-tgl-inl {
-    display: flex;
-    gap: spacing(2);
-    align-items: center;
-    flex-direction: row;
-}
-
 .bit-tgl-rvs {
     display: flex;
     flex-direction: column-reverse;
 
     &.bit-tgl-inl {
         flex-direction: row-reverse;
+    }
+
+    .bit-tgl-lbl {
+        text-align: end;
     }
 }
