@@ -37,13 +37,13 @@ public partial class BitPivot : BitComponentBase
     /// The type of the pivot header items.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitPivotHeaderType HeaderType { get; set; } = BitPivotHeaderType.Link;
+    public BitPivotHeaderType? HeaderType { get; set; }
 
     /// <summary>
     /// Overflow behavior when there is not enough room to display all of the links/tabs.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitPivotOverflowBehavior OverflowBehavior { get; set; }
+    public BitPivotOverflowBehavior? OverflowBehavior { get; set; }
 
     /// <summary>
     /// Callback for when the a pivot header item is clicked.
@@ -54,7 +54,7 @@ public partial class BitPivot : BitComponentBase
     /// Position of the pivot header.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitPivotPosition Position { get; set; }
+    public BitPivotPosition? Position { get; set; }
 
     /// <summary>
     /// Key of the selected pivot item.
@@ -87,31 +87,31 @@ public partial class BitPivot : BitComponentBase
             BitSize.Small => "bit-pvt-sm",
             BitSize.Medium => "bit-pvt-md",
             BitSize.Large => "bit-pvt-lg",
-            _ => string.Empty
+            _ => "bit-pvt-md"
         });
 
         ClassBuilder.Register(() => HeaderType switch
         {
-            BitPivotHeaderType.Link => "bit-pvt-links",
-            BitPivotHeaderType.Tab => "bit-pvt-tabs",
-            _ => string.Empty
+            BitPivotHeaderType.Link => "bit-pvt-lnk",
+            BitPivotHeaderType.Tab => "bit-pvt-tab",
+            _ => "bit-pvt-lnk"
         });
 
         ClassBuilder.Register(() => OverflowBehavior switch
         {
-            BitPivotOverflowBehavior.Menu => "bit-pvt-menu",
-            BitPivotOverflowBehavior.Scroll => "bit-pvt-scroll",
-            BitPivotOverflowBehavior.None => "bit-pvt-none",
-            _ => string.Empty
+            BitPivotOverflowBehavior.Menu => "bit-pvt-mnu",
+            BitPivotOverflowBehavior.Scroll => "bit-pvt-scr",
+            BitPivotOverflowBehavior.None => "bit-pvt-non",
+            _ => "bit-pvt-non"
         });
 
         ClassBuilder.Register(() => Position switch
         {
             BitPivotPosition.Top => "bit-pvt-top",
-            BitPivotPosition.Bottom => "bit-pvt-bottom",
-            BitPivotPosition.Left => "bit-pvt-left",
-            BitPivotPosition.Right => "bit-pvt-right",
-            _ => string.Empty
+            BitPivotPosition.Bottom => "bit-pvt-btm",
+            BitPivotPosition.Left => "bit-pvt-lft",
+            BitPivotPosition.Right => "bit-pvt-rgt",
+            _ => "bit-pvt-top"
         });
     }
 

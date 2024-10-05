@@ -49,15 +49,15 @@
     flex-flow: column;
 }
 
-.bit-pvt-bottom {
+.bit-pvt-btm {
     flex-flow: column-reverse;
 }
 
-.bit-pvt-left {
+.bit-pvt-lft {
     flex-flow: row;
 }
 
-.bit-pvt-right {
+.bit-pvt-rgt {
     flex-flow: row-reverse;
 }
 
@@ -69,7 +69,7 @@
     }
 }
 
-.bit-pvt-links {
+.bit-pvt-lnk {
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
@@ -96,7 +96,7 @@
     }
 }
 
-.bit-pvt-tabs {
+.bit-pvt-tab {
     .bit-pvti {
         @media(hover:hover) {
             &:hover {
@@ -113,7 +113,7 @@
     }
 }
 
-.bit-pvt-scroll {
+.bit-pvt-scr {
     .bit-pvt-hct {
         overflow-x: auto;
         overflow-y: hidden;

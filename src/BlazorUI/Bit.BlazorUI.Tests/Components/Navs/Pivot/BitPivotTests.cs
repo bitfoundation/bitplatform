@@ -11,23 +11,23 @@ public class BitPivotTests : BunitTestContext
          DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
          DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu)
      ]
-    public void BitPivotShouldRespectLinkFormatClasses(BitPivotHeaderType linkFormat, BitSize linkSize, BitPivotOverflowBehavior overflowBehavior)
+    public void BitPivotShouldRespectLinkFormatClasses(BitPivotHeaderType headerType, BitSize size, BitPivotOverflowBehavior overflowBehavior)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.HeaderType, linkFormat);
-            parameters.Add(p => p.Size, linkSize);
+            parameters.Add(p => p.Size, size);
+            parameters.Add(p => p.HeaderType, headerType);
             parameters.Add(p => p.OverflowBehavior, overflowBehavior);
         });
 
-        var linkSizeClass = $"bit-pvt-{linkSize switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
-        var linkFormatClass = $"bit-pvt-{linkFormat.ToString().ToLower()}";
-        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior.ToString().ToLower()}";
+        var sizeClass = $"bit-pvt-{size switch { BitSize.Small => "sm", BitSize.Medium => "md", BitSize.Large => "lg", _ => "md" }}";
+        var headerTypeClass = $"bit-pvt-{headerType switch { BitPivotHeaderType.Link => "lnk", BitPivotHeaderType.Tab => "tab", _ => "lnk" }}";
+        var overflowBehaviorClass = $"bit-pvt-{overflowBehavior switch { BitPivotOverflowBehavior.Menu => "mnu", BitPivotOverflowBehavior.Scroll => "scr", BitPivotOverflowBehavior.None => "non", _ => "non" }}";
 
         var bitPivot = component.Find(".bit-pvt");
 
-        Assert.IsTrue(bitPivot.ClassList.Contains(linkFormatClass));
-        Assert.IsTrue(bitPivot.ClassList.Contains(linkSizeClass));
+        Assert.IsTrue(bitPivot.ClassList.Contains(sizeClass));
+        Assert.IsTrue(bitPivot.ClassList.Contains(headerTypeClass));
         Assert.IsTrue(bitPivot.ClassList.Contains(overflowBehaviorClass));
     }
 
@@ -84,9 +84,9 @@ public class BitPivotTests : BunitTestContext
         var positionClass = position switch
         {
             BitPivotPosition.Top => "bit-pvt-top",
-            BitPivotPosition.Bottom => "bit-pvt-bottom",
-            BitPivotPosition.Left => "bit-pvt-left",
-            BitPivotPosition.Right => "bit-pvt-right",
+            BitPivotPosition.Bottom => "bit-pvt-btm",
+            BitPivotPosition.Left => "bit-pvt-lft",
+            BitPivotPosition.Right => "bit-pvt-rgt",
             _ => string.Empty
         };
 
