@@ -2,6 +2,8 @@
 
 .bit-spr {
     position: relative;
+    --bit-spr-bg: #{$clr-bg-pri};
+    --bit-spr-brd: #{$clr-brd-sec};
 }
 
 .bit-spr-cnt {

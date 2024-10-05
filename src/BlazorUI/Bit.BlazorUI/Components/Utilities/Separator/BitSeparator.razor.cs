@@ -56,7 +56,7 @@ public partial class BitSeparator : BitComponentBase
             BitColorKind.Secondary => "bit-spr-sbg",
             BitColorKind.Tertiary => "bit-spr-tbg",
             BitColorKind.Transparent => "bit-spr-rbg",
-            _ => "bit-spr-pbg"
+            _ => null
         });
 
         ClassBuilder.Register(() => Border switch
@@ -65,7 +65,7 @@ public partial class BitSeparator : BitComponentBase
             BitColorKind.Secondary => "bit-spr-sbr",
             BitColorKind.Tertiary => "bit-spr-tbr",
             BitColorKind.Transparent => "bit-spr-rbr",
-            _ => "bit-spr-sbr"
+            _ => null
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-spr-vrt" : "bit-spr-hrz");
