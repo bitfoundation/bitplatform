@@ -15,6 +15,18 @@ public partial class BitSeparator : BitComponentBase
     public bool AutoSize { get; set; }
 
     /// <summary>
+    /// The color kind of the background of the separator.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the border of the separator.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Border { get; set; }
+
+    /// <summary>
     /// The content of the Separator, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -31,14 +43,32 @@ public partial class BitSeparator : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Vertical ? "bit-spr-vrt" : "bit-spr-hrz");
-
         ClassBuilder.Register(() => AlignContent switch
         {
             BitSeparatorAlignContent.Start => "bit-spr-srt",
             BitSeparatorAlignContent.End => "bit-spr-end",
             _ => "bit-spr-ctr"
         });
+
+        ClassBuilder.Register(() => Background switch
+        {
+            BitColorKind.Primary => "bit-spr-pbg",
+            BitColorKind.Secondary => "bit-spr-sbg",
+            BitColorKind.Tertiary => "bit-spr-tbg",
+            BitColorKind.Transparent => "bit-spr-rbg",
+            _ => "bit-spr-pbg"
+        });
+
+        ClassBuilder.Register(() => Border switch
+        {
+            BitColorKind.Primary => "bit-spr-pbr",
+            BitColorKind.Secondary => "bit-spr-sbr",
+            BitColorKind.Tertiary => "bit-spr-tbr",
+            BitColorKind.Transparent => "bit-spr-rbr",
+            _ => "bit-spr-sbr"
+        });
+
+        ClassBuilder.Register(() => Vertical ? "bit-spr-vrt" : "bit-spr-hrz");
     }
 
     protected override void RegisterCssStyles()

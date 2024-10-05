@@ -112,6 +112,17 @@ public partial class BitSeparatorDemo
     <BitSeparator>Default</BitSeparator>
     <BitSeparator AutoSize>AutoSize</BitSeparator>
 </div>";
+
+    private readonly string example5RazorCode = @"
+<BitSeparator Background=""BitColorKind.Primary"">Primary</BitSeparator>
+<BitSeparator Background=""BitColorKind.Secondary"">Secondary</BitSeparator>
+<BitSeparator Background=""BitColorKind.Tertiary"">Tertiary</BitSeparator>
+<BitSeparator Background=""BitColorKind.Transparent"">Transparent</BitSeparator>
+
+<BitSeparator Border=""BitColorKind.Primary"">Primary</BitSeparator>
+<BitSeparator Border=""BitColorKind.Secondary"">Secondary</BitSeparator>
+<BitSeparator Border=""BitColorKind.Tertiary"">Tertiary</BitSeparator>
+<BitSeparator Border=""BitColorKind.Transparent"">Transparent</BitSeparator>";
 }
 
 
