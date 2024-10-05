@@ -45,6 +45,15 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "CoinShape",
+            Type = "BitPersonaCoinShape?",
+            DefaultValue = "null",
+            Description = "The shape of the coin.",
+            LinkType = LinkType.Link,
+            Href = "#shape-enum",
+        },
+        new()
+        {
             Name = "CoinSize",
             Type = "int?",
             DefaultValue = "",
@@ -56,6 +65,15 @@ public partial class BitPersonaDemo
             Type = "RenderFragment?",
             DefaultValue = "",
             Description = "Custom persona coin's image template.",
+        },
+        new()
+        {
+            Name = "CoinVariant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The variant of the coin.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
         },
         new()
         {
@@ -194,15 +212,6 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Shape",
-            Type = "BitPersonaShape?",
-            DefaultValue = "null",
-            Description = "The shape of the coin.",
-            LinkType = LinkType.Link,
-            Href = "#shape-enum",
-        },
-        new()
-        {
             Name = "Size",
             Type = "string?",
             DefaultValue = "null",
@@ -232,15 +241,6 @@ public partial class BitPersonaDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom tertiary text template.",
-        },
-        new()
-        {
-            Name = "Variant",
-            Type = "BitVariant?",
-            DefaultValue = "null",
-            Description = "The variant of the coin.",
-            LinkType = LinkType.Link,
-            Href = "#variant-enum",
         }
     ];
 
@@ -485,6 +485,26 @@ public partial class BitPersonaDemo
                 {
                     Name = "Size120",
                     Description = "Renders a 120px BitPersonaCoin.",
+                    Value = "",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "shape-enum",
+            Name = "BitPersonaCoinShape",
+            Items =
+            [
+                new()
+                {
+                    Name = "Circular",
+                    Description = "Represents the traditional round shape of a coin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Square",
+                    Description = "Represents a square-shaped coin.",
                     Value = "",
                 }
             ]
@@ -777,29 +797,29 @@ private bool isDetailsShown = true;";
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
-            Variant=""BitVariant.Fill"" />
+            CoinVariant=""BitVariant.Fill"" />
 
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
-            Variant=""BitVariant.Outline"" />
+            CoinVariant=""BitVariant.Outline"" />
 
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
-            Variant=""BitVariant.Text"" />";
+            CoinVariant=""BitVariant.Text"" />";
 
     private readonly string example5RazorCode = @"
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
-            Shape=""BitPersonaShape.Circular""
+            CoinShape=""BitPersonaCoinShape.Circular""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Saleh Xafan""
             SecondaryText=""Developer""
             Size=""BitPersonaSize.Size72""
-            Shape=""BitPersonaShape.Square""
+            CoinShape=""BitPersonaCoinShape.Square""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
 
     private readonly string example6RazorCode = @"
@@ -940,7 +960,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 </BitPersona>
 
 
-<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" Variant=""BitVariant.Text"">
+<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" CoinVariant=""BitVariant.Text"">
     <CoinTemplate>
         <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" width=""100px"" height=""100px"" class=""custom-coin"" />
     </CoinTemplate>

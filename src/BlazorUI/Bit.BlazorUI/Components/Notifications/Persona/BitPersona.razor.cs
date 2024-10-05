@@ -34,6 +34,12 @@ public partial class BitPersona : BitComponentBase
     public BitColor? CoinColor { get; set; }
 
     /// <summary>
+    /// The shape of the coin.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPersonaCoinShape? CoinShape { get; set; }
+
+    /// <summary>
     /// Optional custom persona coin size in pixel.
     /// </summary>
     [Parameter] public int? CoinSize { get; set; }
@@ -42,6 +48,11 @@ public partial class BitPersona : BitComponentBase
     /// Custom persona coin's image template.
     /// </summary>
     [Parameter] public RenderFragment? CoinTemplate { get; set; }
+
+    /// <summary>
+    /// The variant of the coin.
+    /// </summary>
+    [Parameter] public BitVariant? CoinVariant { get; set; }
 
     /// <summary>
     /// Renders the persona in full width of its container element.
@@ -150,12 +161,6 @@ public partial class BitPersona : BitComponentBase
     public bool Unknown { get; set; }
 
     /// <summary>
-    /// The shape of the coin.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitPersonaShape? Shape { get; set; }
-
-    /// <summary>
     /// Decides the size of the control.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -176,11 +181,6 @@ public partial class BitPersona : BitComponentBase
     /// Custom tertiary text template.
     /// </summary>
     [Parameter] public RenderFragment? TertiaryTextTemplate { get; set; }
-
-    /// <summary>
-    /// The variant of the coin.
-    /// </summary>
-    [Parameter] public BitVariant? Variant { get; set; }
 
 
 
@@ -232,10 +232,10 @@ public partial class BitPersona : BitComponentBase
             _ => "bit-prs-inf"
         });
 
-        ClassBuilder.Register(() => Shape switch
+        ClassBuilder.Register(() => CoinShape switch
         {
-            BitPersonaShape.Circular => "bit-prs-crl",
-            BitPersonaShape.Square => "bit-prs-sqr",
+            BitPersonaCoinShape.Circular => "bit-prs-crl",
+            BitPersonaCoinShape.Square => "bit-prs-sqr",
             _ => "bit-prs-crl"
         });
     }
@@ -267,7 +267,7 @@ public partial class BitPersona : BitComponentBase
 
         string? position = null;
         var presentationSize = CoinSize.Value / 3D;
-        if (Shape == BitPersonaShape.Square)
+        if (CoinShape == BitPersonaCoinShape.Square)
         {
             var presentationPosition = presentationSize / 3D;
             position = $"right:-{presentationPosition}px;bottom:-{presentationPosition}px;";
@@ -289,7 +289,7 @@ public partial class BitPersona : BitComponentBase
 
     private string? GetCoinClass()
     {
-        return Variant switch
+        return CoinVariant switch
         {
             BitVariant.Fill => "bit-prs-fil",
             BitVariant.Outline => "bit-prs-otl",
