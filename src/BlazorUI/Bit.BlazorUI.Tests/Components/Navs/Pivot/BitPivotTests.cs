@@ -7,16 +7,16 @@ namespace Bit.BlazorUI.Tests.Components.Navs.Pivot;
 public class BitPivotTests : BunitTestContext
 {
     [DataTestMethod,
-         DataRow(BitPivotLinkFormat.Links, BitSize.Large, BitPivotOverflowBehavior.None),
-         DataRow(BitPivotLinkFormat.Tabs, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
-         DataRow(BitPivotLinkFormat.Tabs, BitSize.Small, BitPivotOverflowBehavior.Menu)
+         DataRow(BitPivotHeaderType.Link, BitSize.Large, BitPivotOverflowBehavior.None),
+         DataRow(BitPivotHeaderType.Tab, BitSize.Medium, BitPivotOverflowBehavior.Scroll),
+         DataRow(BitPivotHeaderType.Tab, BitSize.Small, BitPivotOverflowBehavior.Menu)
      ]
-    public void BitPivotShouldRespectLinkFormatClasses(BitPivotLinkFormat linkFormat, BitSize linkSize, BitPivotOverflowBehavior overflowBehavior)
+    public void BitPivotShouldRespectLinkFormatClasses(BitPivotHeaderType linkFormat, BitSize linkSize, BitPivotOverflowBehavior overflowBehavior)
     {
         var component = RenderComponent<BitPivot>(parameters =>
         {
-            parameters.Add(p => p.LinkFormat, linkFormat);
-            parameters.Add(p => p.LinkSize, linkSize);
+            parameters.Add(p => p.HeaderType, linkFormat);
+            parameters.Add(p => p.Size, linkSize);
             parameters.Add(p => p.OverflowBehavior, overflowBehavior);
         });
 
