@@ -123,105 +123,105 @@ public partial class BitSnackBarDemo
             [
                 new()
                 {
-                    Name= "Primary",
-                    Description="Info Primary general color.",
-                    Value="0",
+                    Name = "Primary",
+                    Description = "Info Primary general color.",
+                    Value = "0",
                 },
                 new()
                 {
-                    Name= "Secondary",
-                    Description="Secondary general color.",
-                    Value="1",
+                    Name = "Secondary",
+                    Description = "Secondary general color.",
+                    Value = "1",
                 },
                 new()
                 {
-                    Name= "Tertiary",
-                    Description="Tertiary general color.",
-                    Value="2",
+                    Name = "Tertiary",
+                    Description = "Tertiary general color.",
+                    Value = "2",
                 },
                 new()
                 {
-                    Name= "Info",
-                    Description="Info general color.",
-                    Value="3",
+                    Name = "Info",
+                    Description = "Info general color.",
+                    Value = "3",
                 },
                 new()
                 {
-                    Name= "Success",
-                    Description="Success general color.",
-                    Value="4",
+                    Name = "Success",
+                    Description = "Success general color.",
+                    Value = "4",
                 },
                 new()
                 {
-                    Name= "Warning",
-                    Description="Warning general color.",
-                    Value="5",
+                    Name = "Warning",
+                    Description = "Warning general color.",
+                    Value = "5",
                 },
                 new()
                 {
-                    Name= "SevereWarning",
-                    Description="SevereWarning general color.",
-                    Value="6",
+                    Name = "SevereWarning",
+                    Description = "SevereWarning general color.",
+                    Value = "6",
                 },
                 new()
                 {
-                    Name= "Error",
-                    Description="Error general color.",
-                    Value="7",
+                    Name = "Error",
+                    Description = "Error general color.",
+                    Value = "7",
                 },
                 new()
                 {
-                    Name= "PrimaryBackground",
-                    Description="Primary background color.",
-                    Value="8",
+                    Name = "PrimaryBackground",
+                    Description = "Primary background color.",
+                    Value = "8",
                 },
                 new()
                 {
-                    Name= "SecondaryBackground",
-                    Description="Secondary background color.",
-                    Value="9",
+                    Name = "SecondaryBackground",
+                    Description = "Secondary background color.",
+                    Value = "9",
                 },
                 new()
                 {
-                    Name= "TertiaryBackground",
-                    Description="Tertiary background color.",
-                    Value="10",
+                    Name = "TertiaryBackground",
+                    Description = "Tertiary background color.",
+                    Value = "10",
                 },
                 new()
                 {
-                    Name= "PrimaryForeground",
-                    Description="Primary foreground color.",
-                    Value="11",
+                    Name = "PrimaryForeground",
+                    Description = "Primary foreground color.",
+                    Value = "11",
                 },
                 new()
                 {
-                    Name= "SecondaryForeground",
-                    Description="Secondary foreground color.",
-                    Value="12",
+                    Name = "SecondaryForeground",
+                    Description = "Secondary foreground color.",
+                    Value = "12",
                 },
                 new()
                 {
-                    Name= "TertiaryForeground",
-                    Description="Tertiary foreground color.",
-                    Value="13",
+                    Name = "TertiaryForeground",
+                    Description = "Tertiary foreground color.",
+                    Value = "13",
                 },
                 new()
                 {
-                    Name= "PrimaryBorder",
-                    Description="Primary border color.",
-                    Value="14",
+                    Name = "PrimaryBorder",
+                    Description = "Primary border color.",
+                    Value = "14",
                 },
                 new()
                 {
-                    Name= "SecondaryBorder",
-                    Description="Secondary border color.",
-                    Value="15",
+                    Name = "SecondaryBorder",
+                    Description = "Secondary border color.",
+                    Value = "15",
                 },
                 new()
                 {
-                    Name= "TertiaryBorder",
-                    Description="Tertiary border color.",
-                    Value="16",
+                    Name = "TertiaryBorder",
+                    Description = "Tertiary border color.",
+                    Value = "16",
                 }
             ]
         }
