@@ -86,7 +86,7 @@ public class BitSnackBarTests : BunitTestContext
         await com.Instance.Show("title");
 
         //Added a sec delay to be sure we are asserting after AutoDismissTime passed
-        await Task.Delay(com.Instance.AutoDismissTime + TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(4));
 
         var items = com.FindAll(".bit-snb-itm");
 
@@ -94,21 +94,21 @@ public class BitSnackBarTests : BunitTestContext
     }
 
     [DataTestMethod,
-     DataRow("title", BitSnackBarType.Info),
-     DataRow("title", BitSnackBarType.Warning),
-     DataRow("title", BitSnackBarType.Success),
-     DataRow("title", BitSnackBarType.Error),
-     DataRow("title", BitSnackBarType.SevereWarning),
+     DataRow("title", BitColor.Info),
+     DataRow("title", BitColor.Warning),
+     DataRow("title", BitColor.Success),
+     DataRow("title", BitColor.Error),
+     DataRow("title", BitColor.SevereWarning),
      DataRow("title", null)
     ]
     [TestMethod]
-    public async Task BitSnackBarTypeTest(string title, BitSnackBarType? type)
+    public async Task BitColorTest(string title, BitColor? color)
     {
         var com = RenderComponent<BitSnackBar>();
 
-        if (type.HasValue)
+        if (color.HasValue)
         {
-            await com.Instance.Show(title, type: type.Value);
+            await com.Instance.Show(title, color: color.Value);
         }
         else
         {
@@ -117,23 +117,23 @@ public class BitSnackBarTests : BunitTestContext
 
         var element = com.Find(".bit-snb-itm");
 
-        var typeClass = type switch
+        var colorClass = color switch
         {
-            BitSnackBarType.Info => $"bit-snb-info",
-            BitSnackBarType.Warning => $"bit-snb-warning",
-            BitSnackBarType.Success => $"bit-snb-success",
-            BitSnackBarType.Error => $"bit-snb-error",
-            BitSnackBarType.SevereWarning => $"bit-snb-severe-warning",
-            _ => string.Empty
+            BitColor.Info => "bit-snb-inf",
+            BitColor.Success => "bit-snb-suc",
+            BitColor.Warning => "bit-snb-wrn",
+            BitColor.SevereWarning => "bit-snb-swr",
+            BitColor.Error => "bit-snb-err",
+            _ => "bit-snb-inf"
         };
 
-        if (typeClass.IsNullOrEmpty())
+        if (colorClass.IsNullOrEmpty())
         {
             Assert.AreEqual(1, element.ClassList.Length);
         }
         else
         {
-            Assert.IsTrue(element.ClassList.Contains(typeClass));
+            Assert.IsTrue(element.ClassList.Contains(colorClass));
         }
     }
 
@@ -222,8 +222,7 @@ public class BitSnackBarTests : BunitTestContext
         var itemTemplateElement = com.Find(".bit-snb-itm");
 
         var expectedHtml = $@"<div diff:ignore></div>
-                              <p>{body}</p>
-                              <span diff:ignore></span>";
+                              <p>{body}</p>";
 
         itemTemplateElement.InnerHtml.MarkupMatches(expectedHtml);
     }

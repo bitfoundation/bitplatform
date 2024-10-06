@@ -15,19 +15,20 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
-        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
-
         services.TryAddSessioned<IPubSubService, PubSubService>();
-        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.TryAddTransient<IStorageService, BrowserStorageService>();
-        services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
-        services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
+        services.TryAddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.TryAddSessioned<HttpClientHandler>();
 
+        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.TryAddTransient<ICultureService, CultureService>();
+        services.TryAddTransient<IThemeService, ThemeService>();
+        services.TryAddTransient<IStorageService, BrowserStorageService>();
+        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
         services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<AuthDelegatingHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddSessioned<HttpClientHandler>();
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
@@ -82,6 +83,7 @@ public static partial class IServiceCollectionExtensions
         services.AddTypedHttpClients();
 
         services.AddSharedProjectServices();
+
         return services;
     }
 

@@ -3,20 +3,26 @@
 /// https://github.com/Necromancerx/media-queries-scss-mixins
 
 // media aliases and breakpoints
+$screen-sm-min: rem2(600px);
+$screen-md-min: rem2(960px);
+$screen-lg-min: rem2(1280px);
 $screen-xl-min: rem2(1920px);
+
+$screen-xs-max: rem2(599px);
+$screen-sm-max: rem2(959px);
+$screen-md-max: rem2(1279px);
+$screen-lg-max: rem2(1919px);
 $screen-xl-max: rem2(5000px);
 
-$screen-lg-min: rem2(1280px);
-$screen-lg-max: rem2(1919px);
-
-$screen-md-min: rem2(769px);
-$screen-md-max: rem2(1279px);
-
-$screen-sm-max: rem2(768px);
-
 // media devices
+@mixin xs {
+    @media screen and (max-width: #{$screen-xs-max}) {
+        @content;
+    }
+}
+
 @mixin sm {
-    @media screen and (max-width: #{$screen-sm-max}) {
+    @media screen and (min-width: #{$screen-sm-min}) and (max-width: #{$screen-sm-max}) {
         @content;
     }
 }
@@ -40,6 +46,12 @@ $screen-sm-max: rem2(768px);
 }
 
 // media lt queries
+@mixin lt-sm {
+    @media screen and (max-width: #{$screen-xs-max}) {
+        @content;
+    }
+}
+
 @mixin lt-md {
     @media screen and (max-width: #{$screen-sm-max}) {
         @content;
@@ -59,6 +71,12 @@ $screen-sm-max: rem2(768px);
 }
 
 // media gt queries
+@mixin gt-xs {
+    @media screen and (min-width: #{$screen-sm-min}) {
+        @content;
+    }
+}
+
 @mixin gt-sm {
     @media screen and (min-width: #{$screen-md-min}) {
         @content;

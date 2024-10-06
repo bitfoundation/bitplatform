@@ -6,6 +6,9 @@ namespace Boilerplate.Client.Core.Components.Pages.Categories;
 [Authorize]
 public partial class AddOrEditCategoryPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.Category)];
+    protected override string? Subtitle => string.Empty;
+
     [AutoInject] ICategoryController categoryController = default!;
 
     [Parameter] public Guid? Id { get; set; }

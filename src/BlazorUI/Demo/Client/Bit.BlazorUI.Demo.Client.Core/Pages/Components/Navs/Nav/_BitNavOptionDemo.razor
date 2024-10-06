@@ -66,22 +66,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconOnly" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-    <ExamplePreview>
-        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
-        <br />
-        <BitNav TItem="BitNavOption" IconOnly="iconOnly">
-            <BitNavOption Text="Home" IconName="@BitIconName.Home" Url="https://bitplatform.dev/" Target="_blank" />
-            <BitNavOption Text="Todo sample" IconName="@BitIconName.ToDoLogoOutline" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
-            <BitNavOption Text="AdminPanel sample" IconName="@BitIconName.LocalAdmin" Url="https://bitplatform.dev/templates/overview" Target="_blank" />
-            <BitNavOption Text="BlazorUI" IconName="@BitIconName.F12DevTools" Url="https://bitplatform.dev/components" Target="_blank" />
-            <BitNavOption Text="Bit academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
-            <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" Url="https://bitplatform.dev/contact-us" Target="_blank" />
-        </BitNav>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Grouped" RazorCode="@example4RazorCode" Id="example4">
+<ComponentExampleBox Title="Grouped" RazorCode="@example3RazorCode" Id="example3">
     <ExamplePreview>
         <BitNav TItem="BitNavOption" RenderType="BitNavRenderType.Grouped">
             <BitNavOption Text="Mercedes-Benz"
@@ -118,7 +103,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Manual Mode" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>Basic</div><br />
         <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
@@ -181,6 +166,21 @@
                          Label="Select Item"
                          Items="FoodMenuDropdownItems" />
         </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
+        <br />
+        <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" IconOnly="iconOnly">
+            <BitNavOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavOption Text="Todo sample" IconName="@BitIconName.ToDoLogoOutline" />
+            <BitNavOption Text="AdminPanel sample" IconName="@BitIconName.LocalAdmin" />
+            <BitNavOption Text="BlazorUI" IconName="@BitIconName.F12DevTools" />
+            <BitNavOption Text="Bit academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
+            <BitNavOption Text="Contact us" IconName="@BitIconName.Contact" />
+        </BitNav>
     </ExamplePreview>
 </ComponentExampleBox>
 

@@ -168,7 +168,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), Value));
             if (item is not null)
             {
-                SelectedItem(item);
+                SetIsSelectedForSelectedItem(item);
             }
         }
         else if (DefaultValue is not null)
@@ -176,7 +176,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
             if (item is not null)
             {
-                SelectedItem(item);
+                SetIsSelectedForSelectedItem(item);
                 Value = DefaultValue;
             }
         }
@@ -211,7 +211,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        SelectedItem(item);
+        SetIsSelectedForSelectedItem(item);
 
         CurrentValue = GetValue(item);
     }
@@ -627,7 +627,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         item.SetValueToProperty(NameSelectors.IsSelected, value);
     }
 
-    private void SelectedItem(TItem item)
+    private void SetIsSelectedForSelectedItem(TItem item)
     {
         foreach (var itm in _items)
         {

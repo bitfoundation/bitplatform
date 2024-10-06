@@ -38,8 +38,8 @@ public partial class Templates05CreateProjectPage
 
     private Parameter<string> captcha = new()
     {
-        Value = "reCaptcha",
-        Default = "reCaptcha",
+        Value = "None",
+        Default = "None",
         Items = [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },

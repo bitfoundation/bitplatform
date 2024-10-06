@@ -485,6 +485,13 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "The value of the dropdown item."
                },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the item is selected. This property's value is assigned by the component."
+               },
             ],
         },
         new()
@@ -578,6 +585,13 @@ public partial class BitDropdownDemo
                    Type = "TValue?",
                    DefaultValue = "null",
                    Description = "The value of the dropdown option."
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the option is selected. This property's value is assigned by the component."
                },
             ],
         },
@@ -697,6 +711,12 @@ public partial class BitDropdownDemo
                    Name = "ValueSetter",
                    Type = "Action<TItem, TItem>?",
                    Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "string",
+                   Description = "The IsSelected field name of the custom input class. This property's value is assigned by the component.",
                }
             ],
         },
@@ -918,7 +938,6 @@ public partial class BitDropdownDemo
             ],
         }
     ];
-
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -948,7 +967,6 @@ public partial class BitDropdownDemo
             ]
         },
     ];
-
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()

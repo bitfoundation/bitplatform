@@ -62,10 +62,10 @@
                 </BitButton>
             </div>
             <BitProgress Thickness="20" Style="margin-bottom: 30px" Indeterminate />
-            <BitPivot HeadersOnly
-                      LinkSize="@BitSize.Large"
+            <BitPivot HeaderOnly
+                      Size="@BitSize.Large"
                       DefaultSelectedKey="Overview"
-                      LinkFormat="@BitPivotLinkFormat.Links"
+                      HeaderType="@BitPivotHeaderType.Link"
                       OnItemClick="@(item => _pivotSelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                 <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>

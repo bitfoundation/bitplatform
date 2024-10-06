@@ -190,6 +190,21 @@
     <data name="Date" xml:space="preserve">
     <value>تاریخ</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>تیره</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>روشن</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>زبان</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>انتخاب زبان</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
   </data>
@@ -234,7 +249,7 @@
     <value>ویرایش پروفایل آفلاین</value>
   </data>
     <!--#endif-->
-    <!--#if (signalr == true) -->
+    <!--#if (signalr == true || notification == true) -->
     <data name="TwoFactorTokenPushText" xml:space="preserve">
     <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
@@ -361,6 +376,9 @@
   </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>اوه! به نظر مشکلی پیش اومده...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>بازگشت به خانه</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
@@ -990,6 +1008,9 @@
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>داشبورد</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>داده های تحلیلی شما</value>
   </data>
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">

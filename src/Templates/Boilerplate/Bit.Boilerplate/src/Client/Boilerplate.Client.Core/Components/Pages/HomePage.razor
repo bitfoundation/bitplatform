@@ -3,15 +3,21 @@
 @attribute [Route("en-GB" + Urls.HomePage)]
 @attribute [Route("fr-FR" + Urls.HomePage)]
 @attribute [Route("fa-IR" + Urls.HomePage)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
 
-<div class="page-container">
-    <section class="page-section hero-section">
-        <h1 class="hero-section-title">@Localizer[nameof(AppStrings.HomeTitle)]</h1>
+<section>
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem">
+        <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.HomeTitle)]
+        </BitText>
 
-        <div class="hero-section-desc">@Localizer[nameof(AppStrings.HomeMessage)]</div>
+        <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.HomeMessage)]
+        </BitText>
+
+        <br />
 
         <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate"
                    Target="_blank"
@@ -19,5 +25,5 @@
                    Title="@Localizer[nameof(AppStrings.GitHubRepo)]">
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
-    </section>
-</div>
+    </BitStack>
+</section>

@@ -24,21 +24,23 @@
     gap: spacing(1);
     position: relative;
     padding: spacing(1.25);
+    color: var(--bit-snb-fg);
     min-width: spacing(27.5);
     flex-flow: column nowrap;
     min-height: spacing(8.75);
     border-radius: spacing(0.375);
     justify-content: space-between;
-    color: $clr-fg-pri;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-snb-bg);
 }
 
-.bit-snb-pbr {
-    left: 0;
+.bit-snb-prb {
     bottom: 0;
     width: 100%;
     position: absolute;
-    height: spacing(0.625);
+    height: spacing(0.5);
+    inset-inline-start: 0;
+    animation-timing-function: linear;
+    background-color: var(--bit-snb-fg);
     animation-name: bit-snackbar-progress-animation;
 }
 
@@ -65,49 +67,101 @@
 
 .bit-snb-cbt {
     cursor: pointer;
+    color: var(--bit-snb-fg);
     background-color: inherit;
     border-radius: spacing(0.375);
 }
 
-.bit-snb-info {
-    background-color: $clr-inf;
-
-    .bit-snb-pbr {
-        background-color: $clr-inf;
-    }
+.bit-snb-pri {
+    --bit-snb-bg: #{$clr-pri};
+    --bit-snb-fg: #{$clr-pri-text};
 }
 
-.bit-snb-success {
-    background-color: $clr-suc;
-
-    .bit-snb-pbr {
-        background-color: $clr-suc;
-    }
+.bit-snb-sec {
+    --bit-snb-bg: #{$clr-sec};
+    --bit-snb-fg: #{$clr-sec-text};
 }
 
-.bit-snb-warning {
-    background-color: $clr-wrn;
-
-    .bit-snb-pbr {
-        background-color: $clr-wrn;
-    }
+.bit-snb-ter {
+    --bit-snb-bg: #{$clr-ter};
+    --bit-snb-fg: #{$clr-ter-text};
 }
 
-.bit-snb-severe-warning {
-    background-color: $clr-swr;
-
-    .bit-snb-pbr {
-        background-color: $clr-swr;
-    }
+.bit-snb-inf {
+    --bit-snb-bg: #{$clr-inf};
+    --bit-snb-fg: #{$clr-inf-text};
 }
 
-.bit-snb-error {
-    background-color: $clr-err;
-
-    .bit-snb-pbr {
-        background-color: $clr-err;
-    }
+.bit-snb-suc {
+    --bit-snb-bg: #{$clr-suc};
+    --bit-snb-fg: #{$clr-suc-text};
 }
+
+.bit-snb-wrn {
+    --bit-snb-bg: #{$clr-wrn};
+    --bit-snb-fg: #{$clr-wrn-text};
+}
+
+.bit-snb-swr {
+    --bit-snb-bg: #{$clr-swr};
+    --bit-snb-fg: #{$clr-swr-text};
+}
+
+.bit-snb-err {
+    --bit-snb-bg: #{$clr-err};
+    --bit-snb-fg: #{$clr-err-text};
+}
+
+.bit-snb-pbg {
+    --bit-snb-bg: #{$clr-bg-pri};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-pbg {
+    --bit-snb-bg: #{$clr-bg-pri};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-sbg {
+    --bit-snb-bg: #{$clr-bg-sec};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-tbg {
+    --bit-snb-bg: #{$clr-bg-ter};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-pfg {
+    --bit-snb-bg: #{$clr-fg-pri};
+    --bit-snb-fg: #{$clr-bg-pri};
+}
+
+.bit-snb-sfg {
+    --bit-snb-bg: #{$clr-fg-sec};
+    --bit-snb-fg: #{$clr-bg-pri};
+}
+
+.bit-snb-tfg {
+    --bit-snb-bg: #{$clr-fg-ter};
+    --bit-snb-fg: #{$clr-bg-pri};
+}
+
+.bit-snb-pbr {
+    --bit-snb-bg: #{$clr-brd-pri};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-sbr {
+    --bit-snb-bg: #{$clr-brd-sec};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
+.bit-snb-tbr {
+    --bit-snb-bg: #{$clr-brd-ter};
+    --bit-snb-fg: #{$clr-fg-pri};
+}
+
 
 .bit-snb-tlf {
     top: spacing(1);
