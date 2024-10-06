@@ -1,6 +1,20 @@
 // bit version: 8.12.0-pre-02
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
+self.addEventListener('push', function (event) {
+
+    const data = event.data.json();
+
+    self.registration.showNotification(data.notification.title, {
+
+        body: data.notification.body,
+
+        icon: '/images/icons/bit-icon-512.png'
+
+    });
+
+});
+
 self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,

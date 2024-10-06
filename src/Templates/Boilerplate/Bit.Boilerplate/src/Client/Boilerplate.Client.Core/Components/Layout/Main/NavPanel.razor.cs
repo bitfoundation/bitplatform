@@ -37,7 +37,7 @@ public partial class NavPanel
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
 
         var serverAddress = Configuration.GetServerAddress();
-        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
+        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessToken());
         profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 

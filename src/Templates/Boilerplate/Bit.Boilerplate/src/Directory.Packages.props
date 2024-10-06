@@ -40,7 +40,6 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.5.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Microsoft.Azure.NotificationHubs" Version="4.2.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.12.0-pre-02" />
         <PackageVersion Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />

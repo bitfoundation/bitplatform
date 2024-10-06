@@ -307,7 +307,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (notification == true)
-        await azureNotificationHubService.RequestPush(text: Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
+        await azureNotificationHubService.RequestPush(title: "Boilerplate", message: Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
             tags: [user.Id.ToString()], cancellationToken: cancellationToken);
         //#endif
 

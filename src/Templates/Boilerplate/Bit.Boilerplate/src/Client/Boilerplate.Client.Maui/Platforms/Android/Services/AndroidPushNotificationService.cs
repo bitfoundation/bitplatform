@@ -10,7 +10,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 
     public override string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
-    public override DeviceInstallationDto GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
         if (!NotificationsSupported)
             throw new InvalidOperationException(GetPlayServicesError());

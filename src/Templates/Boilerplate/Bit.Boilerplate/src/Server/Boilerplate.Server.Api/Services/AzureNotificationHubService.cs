@@ -1,116 +1,115 @@
-﻿using Microsoft.Azure.NotificationHubs;
+﻿using System.Web;
+using System.Text;
+using System.Security.Cryptography;
 using Boilerplate.Shared.Dtos.PushNotification;
-using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Services;
 
-public class AzureNotificationHubService(IHttpContextAccessor httpContextAccessor,
-    AppSettings appSettings,
-    NotificationHubClient? hub = null)
+public class AzureNotificationHubService(HttpClient httpClient,
+    IHttpContextAccessor httpContextAccessor,
+    AppSettings appSettings)
 {
-    private static readonly Dictionary<string, NotificationPlatform> installationPlatform = new()
-    {
-        { nameof(NotificationPlatform.Apns).ToLower(), NotificationPlatform.Apns},
-        { nameof(NotificationPlatform.FcmV1).ToLower(), NotificationPlatform.FcmV1 }
-    };
-
     public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
-        if (httpContextAccessor.HttpContext!.User.IsAuthenticated())
+        var installation = new
         {
-            tags.Add(httpContextAccessor.HttpContext.User.GetUserId().ToString()); // To send push notification to a specific user
-        }
-
-        var installation = new Installation()
-        {
-            InstallationId = deviceInstallation.InstallationId,
-            PushChannel = deviceInstallation.PushChannel,
-            Tags = tags
+            deviceInstallation.InstallationId,
+            PushChannel = deviceInstallation.Platform is "browser" ? new
+            {
+                deviceInstallation.Endpoint,
+                deviceInstallation.P256dh,
+                deviceInstallation.Auth
+            } as object : deviceInstallation.PushChannel,
+            ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime.ToString("yyyy-MM-ddTHH:mm:sszzz"), // 2024-10-06T20:20:43+02:00 1997-07-16T19:20+01:00
+            Tags = tags,
+            UserId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId().ToString() : null,
+            platform = deviceInstallation.Platform
         };
 
-        if (installationPlatform.TryGetValue(deviceInstallation.Platform!, out var platform))
-        {
-            installation.Platform = platform;
-        }
-
-        if (appSettings.NotificationHub.Configured is false)
-            return;
-
-        await hub!.CreateOrUpdateInstallationAsync(installation, cancellationToken);
+        using HttpRequestMessage request = BuildRequest(HttpMethod.Post, $"installations/{deviceInstallation.InstallationId}?api-version=2020-06");
+        (await httpClient.SendAsync(request, cancellationToken)).EnsureSuccessStatusCode();
     }
 
-    public async Task DeleteInstallation([Required] string installationId, CancellationToken cancellationToken)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, bool silent = false, CancellationToken cancellationToken = default)
     {
-        if (appSettings.NotificationHub.Configured is false)
-            return;
-
-        await hub!.DeleteInstallationAsync(installationId, cancellationToken);
-    }
-
-    public async Task RequestPush(string? text = null, string? action = null, string[]? tags = null, bool silent = false, CancellationToken cancellationToken = default)
-    {
-        if (appSettings.NotificationHub.Configured is false)
-            return;
-
         tags ??= [];
+        var tagsHeaderValue = string.Join(',', tags);
 
-        if ((silent && string.IsNullOrWhiteSpace(action)) ||
-            (!silent && string.IsNullOrWhiteSpace(text)))
-            throw new BadRequestException();
-
-        var androidPushTemplate = silent ?
-            PushTemplates.Silent.Android :
-            PushTemplates.Generic.Android;
-
-        var iOSPushTemplate = silent ?
-            PushTemplates.Silent.iOS :
-            PushTemplates.Generic.iOS;
-
-        var androidPayload = PrepareNotificationPayload(
-            androidPushTemplate,
-            text!,
-            action!);
-
-        var iOSPayload = PrepareNotificationPayload(
-            iOSPushTemplate,
-            text!,
-            action!);
-
-        if (tags.Any() is false)
+        using var apnsRequest = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
+        apnsRequest.Headers.Add("ServiceBusNotification-Format", "apple");
+        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        apnsRequest.Content = new StringContent(JsonSerializer.Serialize(new
         {
-            // This will broadcast to all users registered in the notification hub
-            await SendPlatformNotificationsAsync(androidPayload, iOSPayload, cancellationToken);
-        }
-        else if (tags.Length <= 20)
-        {
-            await SendPlatformNotificationsAsync(androidPayload, iOSPayload, tags, cancellationToken);
-        }
-        else
-        {
-            var notificationTasks = tags
-                .Select((value, index) => (value, index))
-            .GroupBy(g => g.index / 20, i => i.value)
-                .Select(tags => SendPlatformNotificationsAsync(androidPayload, iOSPayload, tags, cancellationToken));
+            // https://learn.microsoft.com/en-us/rest/api/notificationhubs/send-apns-native-notification#request-body
+            aps = new
+            {
+                alert = message,
+                sound = silent ? "" : "default",
+            },
+            action = action
+        }), Encoding.UTF8, "application/json");
 
-            await Task.WhenAll(notificationTasks);
-        }
+        using var fcm1Request = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
+        fcm1Request.Headers.Add("ServiceBusNotification-Format", "fcmV1");
+        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        fcm1Request.Content = new StringContent(JsonSerializer.Serialize(new
+        {
+            // https://learn.microsoft.com/en-us/azure/notification-hubs/firebase-migration-rest#option-3-fcmv1-native-notification-audience-send
+            message = new
+            {
+                notification = new
+                {
+                    title = title,
+                    body = message,
+                    sound = silent ? "" : "default"
+                },
+                data = new
+                {
+                    action
+                }
+            }
+        }), Encoding.UTF8, "application/json");
+
+        using var browserRequest = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
+        browserRequest.Headers.Add("ServiceBusNotification-Format", "browser");
+        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        browserRequest.Content = new StringContent(JsonSerializer.Serialize(new
+        {
+            title = title,
+            body = message
+        }), Encoding.UTF8, "application/json");
+
+        await Task.WhenAll(httpClient.SendAsync(apnsRequest, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()),
+            httpClient.SendAsync(fcm1Request, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()),
+            httpClient.SendAsync(browserRequest, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()));
     }
 
-    private string PrepareNotificationPayload(string template, string text, string action) => template
-        .Replace("$(alertMessage)", text, StringComparison.InvariantCulture)
-        .Replace("$(alertAction)", action, StringComparison.InvariantCulture);
-
-    private async Task SendPlatformNotificationsAsync(string androidPayload, string iOSPayload, CancellationToken cancellationToken)
+    private HttpRequestMessage BuildRequest(HttpMethod httpMethod, string requestUrl)
     {
-        await (hub!.SendFcmV1NativeNotificationAsync(androidPayload, cancellationToken),
-            hub.SendAppleNativeNotificationAsync(iOSPayload, cancellationToken));
-    }
+        if (appSettings.NotificationHub.Configured is false)
+            throw new InvalidOperationException("Notification hub is not configured.");
 
-    private async Task SendPlatformNotificationsAsync(string androidPayload, string iOSPayload, IEnumerable<string> tags, CancellationToken cancellationToken)
-    {
-        await (hub!.SendFcmV1NativeNotificationAsync(androidPayload, tags, cancellationToken),
-            hub.SendAppleNativeNotificationAsync(iOSPayload, tags, cancellationToken));
+        Dictionary<string, string> connectionStringKeyValues = appSettings.NotificationHub.ConnectionString!
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('=', 2))
+            .ToDictionary(split => split[0].Trim(), split => split[1].Trim());
+
+        var resourceUri = $"{connectionStringKeyValues["Endpoint"]}{appSettings.NotificationHub.Name}";
+
+        HttpRequestMessage request = new HttpRequestMessage(httpMethod, new Uri(new Uri(resourceUri.Replace("sb://", "https://")), requestUrl));
+
+        TimeSpan sinceEpoch = DateTimeOffset.UtcNow - new DateTime(1970, 1, 1);
+        const int week = 60 * 60 * 24 * 7;
+        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + week);
+        string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
+        using HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(connectionStringKeyValues["SharedAccessKey"]));
+        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+        var sasToken = FormattableString.Invariant($"SharedAccessSignature sr={HttpUtility.UrlEncode(resourceUri)}&sig={HttpUtility.UrlEncode(signature)}&se={expiry}&skn={connectionStringKeyValues["SharedAccessKeyName"]}");
+
+        request.Headers.Add("Authorization", sasToken);
+
+        return request;
     }
 }

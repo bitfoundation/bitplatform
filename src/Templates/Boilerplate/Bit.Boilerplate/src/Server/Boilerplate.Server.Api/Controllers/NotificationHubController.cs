@@ -17,17 +17,11 @@ public partial class NotificationHubController : AppControllerBase, INotificatio
         await pushNotificationService.CreateOrUpdateInstallation(deviceInstallation, cancellationToken);
     }
 
-    [HttpDelete("{installationId}")]
-    public async Task DeleteInstallation([Required] string installationId, CancellationToken cancellationToken)
-    {
-        await pushNotificationService.DeleteInstallation(installationId, cancellationToken);
-    }
-
 #if Development // This action is for testing purposes only.
     [HttpPost]
-    public async Task RequestPush([FromQuery] string? text = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, [FromQuery] bool silent = false, CancellationToken cancellationToken = default)
+    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, [FromQuery] bool silent = false, CancellationToken cancellationToken = default)
     {
-        await pushNotificationService.RequestPush(text, action, tags, silent, cancellationToken);
+        await pushNotificationService.RequestPush(title, message, action, tags, silent, cancellationToken);
     }
 #endif
 }

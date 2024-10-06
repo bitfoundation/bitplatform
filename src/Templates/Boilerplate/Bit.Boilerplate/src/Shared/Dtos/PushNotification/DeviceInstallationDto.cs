@@ -7,10 +7,15 @@ public partial class DeviceInstallationDto
     public string? InstallationId { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [AllowedValues("apns", "fcmv1")]
+    [AllowedValues("apns", "fcmv1", "browser")]
     /// <example>fcmv1</example>
     public string? Platform { get; set; }
 
-    [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? PushChannel { get; set; }
+
+    #region Web Push
+    public string? Endpoint { get; set; }
+    public string? P256dh { get; set; }
+    public string? Auth { get; set; }
+    #endregion
 }

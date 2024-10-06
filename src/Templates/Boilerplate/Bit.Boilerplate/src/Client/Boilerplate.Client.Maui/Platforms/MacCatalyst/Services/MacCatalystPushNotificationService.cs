@@ -9,7 +9,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
 
     public override string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 
-    public override DeviceInstallationDto GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
         if (!NotificationsSupported)
             throw new InvalidOperationException(GetPlayServicesError());

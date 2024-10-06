@@ -55,7 +55,7 @@ public partial class AppDelegate : MauiUIApplicationDelegate
         try
         {
             NotificationService.Token = deviceToken.ToHexString()!;
-            await NotificationService.RegisterDeviceAsync(default);
+            await NotificationService.RegisterDevice(default);
         }
         catch (Exception exp)
         {

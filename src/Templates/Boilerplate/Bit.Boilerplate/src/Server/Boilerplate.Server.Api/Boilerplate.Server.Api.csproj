@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -22,7 +22,6 @@
         <PackageReference Include="FluentEmail.Smtp" />
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" />
-        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Microsoft.Azure.NotificationHubs" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />

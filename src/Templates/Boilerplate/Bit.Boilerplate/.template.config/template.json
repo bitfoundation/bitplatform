@@ -428,7 +428,6 @@
                         "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
                         "src/Server/Boilerplate.Server.Api/Controllers/NotificationHubController.cs",
-                        "src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Services/AzureNotificationHubService.cs",
                         "src/Shared/Controllers/INotificationHubController.cs",
                         "src/Shared/Dtos/PushNotification/DeviceInstallationDto.cs"
