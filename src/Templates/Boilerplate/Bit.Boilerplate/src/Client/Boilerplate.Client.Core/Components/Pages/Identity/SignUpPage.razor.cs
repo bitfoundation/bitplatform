@@ -51,8 +51,9 @@ public partial class SignUpPage
         catch (KnownException e)
         {
             var message = e is ResourceValidationException re
-                                                ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
-                                                : e.Message;
+                            ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
+                            : e.Message;
+
             await snackbarRef.Error(message);
 
             //#if (captcha == "reCaptcha")
