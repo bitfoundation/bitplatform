@@ -139,6 +139,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Pages/Identity/Components/SocialRow.razor.css",
+        "inputFile": "Components/Pages/Identity/Components/SocialRow.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Pages/Identity/ConfirmPage.razor.css",
         "inputFile": "Components/Pages/Identity/ConfirmPage.razor.scss",
         "minify": { "enabled": false },
