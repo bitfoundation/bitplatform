@@ -6,10 +6,6 @@ namespace Boilerplate.Tests.PageTests;
 [TestClass]
 public partial class IdentityPagesTests : PageTestBase
 {
-    private string signInText = "Sign in"; //TODO: multi-language test
-    private string signOutText = "Sign out"; //TODO: multi-language test
-    private string invalidCredentials = "Invalid user credentials"; //TODO: multi-language test
-
     [TestMethod]
     public async Task UnauthorizedUser_Should_RedirectToSignInPage()
     {
@@ -22,51 +18,43 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Work_With_ValidCredentials()
+    [DataRow("fa-IR")]
+    [DataRow("en-US")]
+    public async Task SignIn_Should_Work_With_ValidCredentials(string culture)
     {
-        var singinPage = new SingInPage(Page, ServerAddress);
+        var signinPage = new SignInPage(Page, ServerAddress, culture);
 
-        await singinPage.GotoAsync();
-        await singinPage.SignInAsync();
-
-        await Expect(Page).ToHaveURLAsync(ServerAddress.ToString());
-        await Expect(Page.Locator(".persona")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".persona")).ToContainTextAsync("Boilerplate test account");
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = signOutText })).ToBeVisibleAsync();
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = signInText })).ToBeVisibleAsync(new() { Visible = false });
+        await signinPage.Goto();
+        await signinPage.SignIn();
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Fail_With_InvalidCredentials()
+    [DataRow("fa-IR")]
+    [DataRow("en-US")]
+    public async Task SignIn_Should_Fail_With_InvalidCredentials(string culture)
     {
-        var singinPage = new SingInPage(Page, ServerAddress);
+        var signinPage = new SignInPage(Page, ServerAddress, culture);
 
-        await singinPage.GotoAsync();
-        await singinPage.SignInAsync(password: "invalid_password");
-
-        await Expect(Page.GetByText(invalidCredentials)).ToBeVisibleAsync();
-        await Expect(Page.Locator(".persona")).ToBeVisibleAsync(new() { Visible = false });
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = signInText })).ToBeVisibleAsync();
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = signOutText })).ToBeVisibleAsync(new() { Visible = false });
+        await signinPage.Goto();
+        await signinPage.SignIn(password: "invalid", isValidCredentials: false);
     }
 
     [TestMethod]
-    public async Task SignOut_Should_WorkAsExpected()
+    [DataRow("fa-IR")]
+    [DataRow("en-US")]
+    public async Task SignOut_Should_WorkAsExpected(string culture)
     {
-        var singinPage = new SingInPage(Page, ServerAddress);
+        var signinPage = new SignInPage(Page, ServerAddress, culture);
 
-        await singinPage.GotoAsync();
-        await singinPage.SignInAsync();
-        await singinPage.SignOutAsync();
-
-        await Expect(Page).ToHaveURLAsync(ServerAddress.ToString());
-        await Expect(Page.Locator(".persona")).ToBeVisibleAsync(new() { Visible = false });
-        await Expect(Page.GetByRole(AriaRole.Link, new() { Name = signInText })).ToBeVisibleAsync();
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = signOutText })).ToBeVisibleAsync(new() { Visible = false });
+        await signinPage.Goto();
+        await signinPage.SignIn();
+        await signinPage.SignOut();
     }
 
     [TestMethod]
-    public async Task SignUp_Should_WorkAsExpected()
+    [DataRow("fa-IR")]
+    [DataRow("en-US")]
+    public async Task SignUp_Should_Work_With_MagicLink(string culture)
     {
         await using var testServer = new AppTestServer();
 
@@ -76,9 +64,28 @@ public partial class IdentityPagesTests : PageTestBase
             services.Replace(descriptor);
         }).Start();
 
-        var singupPage = new SingUpPage(Page, testServer.ServerAddress);
+        var signupPage = new SignUpPage(Page, testServer.ServerAddress, culture);
 
-        await singupPage.GotoAsync();
-        await singupPage.SingUpAsync();
+        await signupPage.Goto();
+        await signupPage.SignUp();
+    }
+
+    [TestMethod]
+    [DataRow("fa-IR")]
+    [DataRow("en-US")]
+    public async Task SignUp_Should_Work_With_OtpCode(string culture)
+    {
+        await using var testServer = new AppTestServer();
+
+        await testServer.Build(services =>
+        {
+            var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
+            services.Replace(descriptor);
+        }).Start();
+
+        var signupPage = new SignUpPage(Page, testServer.ServerAddress, culture);
+
+        await signupPage.Goto();
+        await signupPage.SignUp(usingMagicLink: false);
     }
 }
