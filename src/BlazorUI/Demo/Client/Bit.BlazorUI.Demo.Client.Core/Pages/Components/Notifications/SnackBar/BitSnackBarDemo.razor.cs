@@ -479,12 +479,12 @@ private bool basicSnackBarAutoDismiss = true;
 private BitSnackBar customizationRef = default!;
 private string basicSnackBarBody = ""This is body"";
 private string basicSnackBarTitle = ""This is title"";
-private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
+private BitColor basicSnackBarColor = BitColor.Info;
 private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
 
 private async Task OpenBasicSnackBar()
 {
-    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarType);
+    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
 }";
 
     private readonly string example3RazorCode = @"
@@ -547,7 +547,7 @@ private async Task OpenBodyTemplate()
     }
 
     .custom-progress {
-        background-color: gold;
+        background-color: red;
     }
 </style>
 
@@ -563,7 +563,7 @@ private async Task OpenBodyTemplate()
                                Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
 <BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
 
-<BitSnackBar @ref=""snackBarClassesRef"" 
+<BitSnackBar @ref=""snackBarClassesRef"" AutoDismiss
              Classes=""@(new() { Container = ""custom-container"",
                                 ProgressBar = ""custom-progress"" })"" />
 <BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";

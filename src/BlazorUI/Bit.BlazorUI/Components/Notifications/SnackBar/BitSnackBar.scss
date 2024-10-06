@@ -34,12 +34,13 @@
 }
 
 .bit-snb-prb {
-    left: 0;
     bottom: 0;
     width: 100%;
     position: absolute;
-    height: spacing(0.625);
-    background-color: var(--bit-snb-bg);
+    height: spacing(0.5);
+    inset-inline-start: 0;
+    animation-timing-function: linear;
+    background-color: var(--bit-snb-fg);
     animation-name: bit-snackbar-progress-animation;
 }
 
