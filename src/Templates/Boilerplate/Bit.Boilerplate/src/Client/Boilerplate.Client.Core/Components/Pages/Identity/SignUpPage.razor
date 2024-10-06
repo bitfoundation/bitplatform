@@ -11,13 +11,13 @@
 
         <SocialRow OnClick="SocialSignUp" />
 
-        <BitSeparator>@Localizer[AppStrings.Or]</BitSeparator>
+        <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary">@Localizer[AppStrings.Or]</BitSeparator>
 
         <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
             <AppDataAnnotationsValidator />
 
-            <BitStack Class="form-stack" Gap="2rem">
-                <BitStack Class="form-stack">
+            <BitStack FillContent Gap="2rem">
+                <BitStack FillContent>
                     <BitPivot Alignment="BitAlignment.Center">
                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
                             <BitTextField @bind-Value="signUpModel.Email"
@@ -53,7 +53,7 @@
                 </BitButton>
             </BitStack>
         </EditForm>
-
+        <br />
         <BitText Typography="BitTypography.Body2">
             @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
             <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>

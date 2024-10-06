@@ -8,14 +8,6 @@ section {
 
 ::deep {
     form {
-        //width: rem2(304px);
-        width: 100%;
-        max-width: 30rem;
-    }
-
-    .form-stack {
-        > * {
-            width: 100%;
-        }
+        width: rem2(304px);
     }
 }
