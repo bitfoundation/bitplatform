@@ -8,7 +8,7 @@
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
         <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignUp)]</BitText>
-        <br />
+
         <SocialRow OnClick="SocialSignUp" />
 
         <BitSeparator>@Localizer[AppStrings.Or]</BitSeparator>
@@ -16,31 +16,33 @@
         <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
             <AppDataAnnotationsValidator />
 
-            <BitStack Class="form-stack">
-                <BitPivot Alignment="BitAlignment.Center">
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
-                        <BitTextField @bind-Value="signUpModel.Email"
-                                      Type="BitInputType.Email"
-                                      Label="@Localizer[nameof(AppStrings.Email)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                        <ValidationMessage For="@(() => signUpModel.Email)" />
-                    </BitPivotItem>
+            <BitStack Class="form-stack" Gap="2rem">
+                <BitStack Class="form-stack">
+                    <BitPivot Alignment="BitAlignment.Center">
+                        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                            <BitTextField @bind-Value="signUpModel.Email"
+                                          Type="BitInputType.Email"
+                                          Label="@Localizer[nameof(AppStrings.Email)]"
+                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                            <ValidationMessage For="@(() => signUpModel.Email)" />
+                        </BitPivotItem>
 
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
-                        <BitTextField @bind-Value="signUpModel.PhoneNumber"
-                                      Type="BitInputType.Tel"
-                                      Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
-                        <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
-                    </BitPivotItem>
-                </BitPivot>
+                        <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
+                            <BitTextField @bind-Value="signUpModel.PhoneNumber"
+                                          Type="BitInputType.Tel"
+                                          Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                            <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
+                        </BitPivotItem>
+                    </BitPivot>
 
-                <BitTextField @bind-Value="signUpModel.Password" CanRevealPassword
-                              Type="BitInputType.Password"
-                              Label="@Localizer[nameof(AppStrings.Password)]"
-                              AutoComplete="@BitAutoCompleteValue.NewPassword"
-                              Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
-                <ValidationMessage For="@(() => signUpModel.Password)" />
+                    <BitTextField @bind-Value="signUpModel.Password" CanRevealPassword
+                                  Type="BitInputType.Password"
+                                  Label="@Localizer[nameof(AppStrings.Password)]"
+                                  AutoComplete="@BitAutoCompleteValue.NewPassword"
+                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
+                    <ValidationMessage For="@(() => signUpModel.Password)" />
+                </BitStack>
 
                 @*#if (captcha == "reCaptcha")*@
                 <GoogleRecaptcha />
