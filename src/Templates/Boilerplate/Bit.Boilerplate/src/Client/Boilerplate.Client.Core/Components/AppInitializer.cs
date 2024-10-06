@@ -12,6 +12,9 @@ public partial class AppInitializer : AppComponentBase
     private HubConnection? hubConnection;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
     [AutoInject] private MessageBoxService messageBoxService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -64,6 +67,13 @@ public partial class AppInitializer : AppComponentBase
             if (InPrerenderSession is false)
             {
                 await ConnectSignalR();
+            }
+            //#endif
+
+            //#if (notification == true)
+            if (InPrerenderSession is false)
+            {
+                await pushNotificationService.RegisterDeviceAsync(CurrentCancellationToken);
             }
             //#endif
         }

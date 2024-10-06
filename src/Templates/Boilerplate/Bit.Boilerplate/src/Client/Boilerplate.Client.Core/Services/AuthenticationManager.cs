@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
