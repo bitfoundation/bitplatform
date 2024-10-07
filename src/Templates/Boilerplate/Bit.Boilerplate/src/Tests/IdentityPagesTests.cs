@@ -40,8 +40,10 @@ public partial class IdentityPagesTests : PageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
 
         await Assertions.Expect(Page).ToHaveURLAsync(server.ServerAddress.ToString());
-        await Expect(Page.Locator(".persona")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".persona")).ToContainTextAsync("Boilerplate test account");
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Boilerplate test account" })).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByText("Boilerplate test account").First).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByText("Boilerplate test account").Nth(1)).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync(new() { Visible = false });
     }
 }

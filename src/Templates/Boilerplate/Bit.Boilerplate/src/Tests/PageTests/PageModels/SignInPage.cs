@@ -1,6 +1,4 @@
-﻿using Boilerplate.Tests.Services;
-
-namespace Boilerplate.Tests.PageTests.PageModels;
+﻿namespace Boilerplate.Tests.PageTests.PageModels;
 
 public partial class SignInPage(IPage page, Uri serverAddress)
 {
@@ -26,9 +24,9 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         if (isValidCredentials)
         {
             await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
-            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = "Ba Boilerplate test account" })).ToBeVisibleAsync();
-            await Assertions.Expect(page.GetByText("Boilerplate test account").First).ToBeVisibleAsync();
-            await Assertions.Expect(page.GetByText("Boilerplate test account").Nth(1)).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = expectedFullName })).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText(expectedFullName).First).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByText(expectedFullName).Nth(1)).ToBeVisibleAsync();
             await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
             await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync(new() { Visible = false });
 
@@ -45,7 +43,8 @@ public partial class SignInPage(IPage page, Uri serverAddress)
 
     public async Task SignOut()
     {
-        Assert.IsTrue(IsSignedIn, "You must sign-in first.");
+        if (IsSignedIn is false)
+            throw new InvalidOperationException("You must sign-in first.");
 
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
         await page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
