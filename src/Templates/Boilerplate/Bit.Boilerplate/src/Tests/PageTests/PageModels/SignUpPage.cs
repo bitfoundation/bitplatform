@@ -16,7 +16,7 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
         await Assertions.Expect(page).ToHaveTitleAsync(AppStrings.SingUpTitle);
 
         //Override behavior of the javascript recaptcha function on the browser
-        await page.WaitForFunctionAsync("window.grecaptcha !== undefined");
+        await page.WaitForFunctionAsync("window.grecaptcha?.getResponse !== undefined");
         await page.EvaluateAsync("window.grecaptcha.getResponse = () => 'not-empty';");
     }
 
