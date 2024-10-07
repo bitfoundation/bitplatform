@@ -1,21 +1,17 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
-public partial class SignInPage
+public partial class SignInPage : IDisposable
 {
     private bool isWaiting;
-    private bool isSendingOtp;
+    private bool isOtpSent;
     private bool requiresTwoFactor;
-    private bool isSendingTfaToken;
+    private BitSnackBar snackbarRef = default!;
     private readonly SignInRequestDto model = new();
-
-    private string? message;
-    private BitColor messageColor;
-    private BitOtpInput otpInputRef = default!;
-    private ElementReference messageRef = default!;
+    private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -66,8 +62,43 @@ public partial class SignInPage
 
         if (string.IsNullOrEmpty(ErrorQueryString) is false)
         {
-            message = ErrorQueryString;
-            messageColor = BitColor.Error;
+            await snackbarRef.Error(ErrorQueryString);
+        }
+
+        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
+        {
+            var source = (string?)payload;
+
+            if (source == "OTP")
+            {
+                isOtpSent = false;
+            }
+
+            if (source == "TFA")
+            {
+                requiresTwoFactor = false;
+            }
+
+            await InvokeAsync(StateHasChanged);
+
+            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
+        });
+    }
+
+
+    private async Task SocialSignIn(string provider)
+    {
+        try
+        {
+            var port = localHttpServer.Start(CurrentCancellationToken);
+
+            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+
+            await externalNavigationService.NavigateToAsync(redirectUrl);
+        }
+        catch (KnownException e)
+        {
+            await snackbarRef.Error(e.Message);
         }
     }
 
@@ -76,7 +107,6 @@ public partial class SignInPage
         if (isWaiting) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
@@ -91,12 +121,14 @@ public partial class SignInPage
             {
                 NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
             }
+            else
+            {
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "TFA");
+            }
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
@@ -106,104 +138,41 @@ public partial class SignInPage
 
     private async Task SendOtp()
     {
-        if (isSendingOtp) return;
-
-        isSendingOtp = true;
-        message = null;
+        if (model.Email is null && model.PhoneNumber is null) return;
 
         try
         {
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+
             await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
-            message = Localizer[nameof(AppStrings.OtpSentMessage)];
-            messageColor = BitColor.Success;
-            await messageRef.ScrollIntoView();
+            isOtpSent = true;
+
+            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "OTP");
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isSendingOtp = false;
-            await otpInputRef.FocusAsync();
+            await snackbarRef.Error(e.Message);
         }
     }
 
     private async Task SendTfaToken()
     {
-        if (isSendingTfaToken) return;
-
-        isSendingTfaToken = true;
-        message = null;
-
         try
         {
             await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
 
-            message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
-            messageColor = BitColor.Success;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isSendingTfaToken = false;
+            await snackbarRef.Error(e.Message);
         }
     }
 
-    private async Task GoogleSignIn()
+
+    public void Dispose()
     {
-        await SocialSignIn("Google");
-    }
-
-    private async Task GitHubSignIn()
-    {
-        await SocialSignIn("GitHub");
-    }
-
-    private async Task TwitterSignIn()
-    {
-        await SocialSignIn("Twitter");
-    }
-
-    private async Task SocialSignIn(string provider)
-    {
-        if (isWaiting) return;
-
-        isWaiting = true;
-        message = null;
-
-        try
-        {
-            var port = localHttpServer.Start(CurrentCancellationToken);
-
-            var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
-
-            await externalNavigationService.NavigateToAsync(redirectUrl);
-        }
-        catch (KnownException e)
-        {
-            isWaiting = false;
-
-            message = e.Message;
-            messageColor = BitColor.Error;
-
-            await messageRef.ScrollIntoView();
-        }
-        catch
-        {
-            isWaiting = false;
-
-            throw;
-        }
+        unsubscribeIdentityHeaderBackLinkClicked();
     }
 }

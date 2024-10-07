@@ -13,6 +13,7 @@ public partial class SignInRequestDto : IdentityRequestDto
     /// For either Otp or magic link
     /// </summary>
     /// <example>null</example>
+    [StringLength(6)]
     [Display(Name = nameof(AppStrings.Otp))]
     public string? Otp { get; set; }
 

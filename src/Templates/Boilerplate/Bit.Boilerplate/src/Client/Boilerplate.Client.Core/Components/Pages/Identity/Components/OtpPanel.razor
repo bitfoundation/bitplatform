@@ -1,0 +1,46 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center" Gap="3rem" FillContent>
+
+        <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.Otp)]</BitText>
+
+        <BitText Typography="BitTypography.Subtitle1" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.Otp)]</BitText>
+
+        <BitStack Class="container" FillContent Gap="2rem">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitOtpInput @bind-Value="Model.Otp"
+                             Length="6"
+                             Size="BitSize.Large"
+                             Type="BitInputType.Number"
+                             Style="justify-content:center"
+                             OnFill="WrapHandled(async (string? otp) => await OnSignIn.InvokeAsync(otp))" />
+                <ValidationMessage For="@(() => Model.Otp)" />
+            </BitStack>
+            <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+                @Localizer[nameof(AppStrings.SignIn)]
+            </BitButton>
+
+            <BitText Typography="BitTypography.Body2">
+                @Localizer[nameof(AppStrings.Otp)]
+                <BitLink OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Otp)]</BitLink>
+            </BitText>
+
+            <BitStack Horizontal Gap="2rem" HorizontalAlign="BitAlignment.Center">
+                <BitLink Href="https://www.gmail.com">
+                    <BitStack Horizontal>
+                        <BitImage Src="_content/Boilerplate.Client.Core/images/icons/gmail-icon.png" />
+                        <BitText>Open Gmail</BitText>
+                    </BitStack>
+                </BitLink>
+
+                <BitLink Href="https://www.outlook.com">
+                    <BitStack Horizontal>
+                        <BitImage Src="_content/Boilerplate.Client.Core/images/icons/outlook-icon.png" />
+                        <BitText>Open Outlook</BitText>
+                    </BitStack>
+                </BitLink>
+            </BitStack>
+        </BitStack>
+    </BitStack>
+</section>

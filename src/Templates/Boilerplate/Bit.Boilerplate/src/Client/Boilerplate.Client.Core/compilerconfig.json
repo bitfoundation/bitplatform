@@ -139,6 +139,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Pages/Identity/Components/OtpPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/Components/OtpPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/Components/SignInPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/Components/SignInPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Pages/Identity/Components/SocialRow.razor.css",
         "inputFile": "Components/Pages/Identity/Components/SocialRow.razor.scss",
         "minify": { "enabled": false },
