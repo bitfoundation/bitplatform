@@ -47,6 +47,10 @@
         {
             "id": "serverUrl",
             "isVisible": false
+        },
+        {
+            "id": "additionalTests",
+            "isVisible": false
         }
     ]
 }

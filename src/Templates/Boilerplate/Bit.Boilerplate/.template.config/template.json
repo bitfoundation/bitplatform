@@ -293,6 +293,13 @@
                 ]
             },
             "replaces": "use-your-server-url-here.com"
+        },
+        "additionalTests": {
+            "displayName": "Include additional automated tests?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Include additional automated tests."
         }
     },
     "postActions": [
@@ -471,6 +478,14 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                    ]
+                },
+                {
+                    "condition": "(additionalTests != true)",
+                    "exclude": [
+                        "src/Tests/ApiTests/**",
+                        "src/Tests/PageTests/**",
+                        "src/Tests/TestBase/**"
                     ]
                 }
             ]
