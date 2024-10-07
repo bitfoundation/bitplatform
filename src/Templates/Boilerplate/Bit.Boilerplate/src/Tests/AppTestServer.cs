@@ -1,6 +1,7 @@
 ﻿using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
 using Boilerplate.Server.Api.Data;
+using System.Data.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -47,9 +48,13 @@ public partial class AppTestServer : IAsyncDisposable
     {
         if (AppEnvironment.IsDev())
         {
-            await using var scope = WebApp.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
+            try
+            {
+                await using var scope = WebApp.Services.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await dbContext.Database.EnsureCreatedAsync();
+            }
+            catch (DbException) { }
         }
 
         await WebApp.StartAsync();
