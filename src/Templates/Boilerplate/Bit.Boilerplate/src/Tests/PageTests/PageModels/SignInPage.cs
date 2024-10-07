@@ -52,8 +52,8 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         IsSignedIn = false;
 
         await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
-        await Assertions.Expect(page.Locator(".persona")).ToBeVisibleAsync(new() { Visible = false });
         await Assertions.Expect(page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync(new() { Visible = false });
+        await Assertions.Expect(page.Locator(".persona")).ToBeVisibleAsync(new() { Visible = false });
     }
 }
