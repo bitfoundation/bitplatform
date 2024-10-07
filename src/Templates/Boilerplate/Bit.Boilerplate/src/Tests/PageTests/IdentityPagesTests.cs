@@ -18,43 +18,35 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    [DataRow("fa-IR")]
-    [DataRow("en-US")]
-    public async Task SignIn_Should_Work_With_ValidCredentials(string culture)
+    public async Task SignIn_Should_Work_With_ValidCredentials()
     {
-        var signinPage = new SignInPage(Page, ServerAddress, culture);
+        var signinPage = new SignInPage(Page, ServerAddress);
 
-        await signinPage.Goto();
+        await signinPage.Open();
         await signinPage.SignIn();
     }
 
     [TestMethod]
-    [DataRow("fa-IR")]
-    [DataRow("en-US")]
-    public async Task SignIn_Should_Fail_With_InvalidCredentials(string culture)
+    public async Task SignIn_Should_Fail_With_InvalidCredentials()
     {
-        var signinPage = new SignInPage(Page, ServerAddress, culture);
+        var signinPage = new SignInPage(Page, ServerAddress);
 
-        await signinPage.Goto();
+        await signinPage.Open();
         await signinPage.SignIn(password: "invalid", isValidCredentials: false);
     }
 
     [TestMethod]
-    [DataRow("fa-IR")]
-    [DataRow("en-US")]
-    public async Task SignOut_Should_WorkAsExpected(string culture)
+    public async Task SignOut_Should_WorkAsExpected()
     {
-        var signinPage = new SignInPage(Page, ServerAddress, culture);
+        var signinPage = new SignInPage(Page, ServerAddress);
 
-        await signinPage.Goto();
+        await signinPage.Open();
         await signinPage.SignIn();
         await signinPage.SignOut();
     }
 
     [TestMethod]
-    [DataRow("fa-IR")]
-    [DataRow("en-US")]
-    public async Task SignUp_Should_Work_With_MagicLink(string culture)
+    public async Task SignUp_Should_Work_With_MagicLink()
     {
         await using var testServer = new AppTestServer();
 
@@ -64,16 +56,14 @@ public partial class IdentityPagesTests : PageTestBase
             services.Replace(descriptor);
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.ServerAddress, culture);
+        var signupPage = new SignUpPage(Page, testServer.ServerAddress);
 
-        await signupPage.Goto();
+        await signupPage.Open();
         await signupPage.SignUp();
     }
 
     [TestMethod]
-    [DataRow("fa-IR")]
-    [DataRow("en-US")]
-    public async Task SignUp_Should_Work_With_OtpCode(string culture)
+    public async Task SignUp_Should_Work_With_OtpCode()
     {
         await using var testServer = new AppTestServer();
 
@@ -83,9 +73,9 @@ public partial class IdentityPagesTests : PageTestBase
             services.Replace(descriptor);
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.ServerAddress, culture);
+        var signupPage = new SignUpPage(Page, testServer.ServerAddress);
 
-        await signupPage.Goto();
+        await signupPage.Open();
         await signupPage.SignUp(usingMagicLink: false);
     }
 }

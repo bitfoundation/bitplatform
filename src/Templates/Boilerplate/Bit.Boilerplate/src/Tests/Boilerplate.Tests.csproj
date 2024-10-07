@@ -17,7 +17,6 @@
         <PackageReference Include="Microsoft.Playwright.MSTest" />
         <PackageReference Include="MSTest.TestAdapter" />
         <PackageReference Include="MSTest.TestFramework" />
-        <PackageReference Include="MsgReader" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,10 +34,14 @@
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
         <Using Include="Microsoft.Playwright" />
         <Using Include="Microsoft.Playwright.MSTest" />
-        <!-- TODO: if (IsInsideProjectTemplate) -->
+    </ItemGroup>
+
+    <!--/+:msbuild-conditional:noEmit -->
+    <ItemGroup Condition=" '$(InsideProjectTemplate)' == 'true' OR '$(InsideProjectTemplate)' == ''">
+        <PackageReference Include="MsgReader" />
         <Using Include="Boilerplate.Tests.TestBase" />
         <Using Include="Boilerplate.Tests.PageTests.PageModels" />
-        <!-- TODO: if (IsInsideProjectTemplate) -->
     </ItemGroup>
+    <!--/-:msbuild-conditional:noEmit -->
 
 </Project>

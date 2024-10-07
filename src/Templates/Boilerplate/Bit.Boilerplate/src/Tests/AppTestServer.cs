@@ -9,15 +9,15 @@ namespace Boilerplate.Tests;
 
 public partial class AppTestServer : IAsyncDisposable
 {
-    private WebApplication? _webApp;
-    public WebApplication WebApp => _webApp ?? throw new InvalidOperationException($"WebApp is null. Call {nameof(Build)} method first.");
+    private WebApplication? webApp;
+    public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"WebApp is null. Call {nameof(Build)} method first.");
     public Uri ServerAddress => new(WebApp.Urls.First());
     public IServiceProvider Services => WebApp.Services;
     public IConfiguration Configuration => WebApp.Configuration;
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
     {
-        if (_webApp != null)
+        if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
 
         var builder = WebApplication.CreateBuilder(options: new()
@@ -36,7 +36,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         configureTestServices?.Invoke(builder.Services);
 
-        var app = _webApp = builder.Build();
+        var app = webApp = builder.Build();
 
         app.ConfiureMiddlewares();
 
@@ -59,10 +59,9 @@ public partial class AppTestServer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_webApp != null)
+        if (webApp != null)
         {
-            await _webApp.DisposeAsync();
+            await webApp.DisposeAsync();
         }
-        GC.SuppressFinalize(this);
     }
 }

@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-  <Playwright>
-    <LaunchOptions>
-      <!--<Headless>true</Headless>-->
-      <!--<SlowMo>1000</SlowMo>-->
-    </LaunchOptions>
-    <!--<BrowserName>chromium</BrowserName>-->
-  </Playwright>
+    <Playwright>
+        <LaunchOptions>
+            <!--<Headless>true</Headless>-->
+            <!--<SlowMo>1000</SlowMo>-->
+        </LaunchOptions>
+        <!--<BrowserName>chromium</BrowserName>-->
+    </Playwright>
 
-  <MSTest>
-    <Parallelize>
-        <Workers>32</Workers>
-        <Scope>MethodLevel</Scope>
-    </Parallelize>
-  </MSTest>
+    <MSTest>
+        <Parallelize>
+            <Workers>32</Workers>
+            <Scope>MethodLevel</Scope>
+        </Parallelize>
+    </MSTest>
 
-  <RunConfiguration>
-    <EnvironmentVariables>
-      <!--<HEADED>1</HEADED>-->
-      <!--<PWDEBUG>1</PWDEBUG>-->
-    </EnvironmentVariables>
-  </RunConfiguration>
+    <RunConfiguration>
+        <EnvironmentVariables>
+            <!-- https://playwright.dev/docs/debug -->
+            <!--<HEADED>1</HEADED>-->
+            <!--<PWDEBUG>1</PWDEBUG>-->
+        </EnvironmentVariables>
+    </RunConfiguration>
 </RunSettings>

@@ -35,13 +35,13 @@ public partial class IdentityPagesTests : PageTest
         const string email = "test@bitplatform.dev";
         const string password = "123456";
 
-        await Page.GetByPlaceholder("Enter email address").FillAsync(email);
-        await Page.GetByPlaceholder("Enter password").FillAsync(password);
-        await Page.GetByRole(AriaRole.Button, new() { Name = "Sign in" }).ClickAsync();
+        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
 
         await Assertions.Expect(Page).ToHaveURLAsync(server.ServerAddress.ToString());
         await Expect(Page.Locator(".persona")).ToBeVisibleAsync();
         await Expect(Page.Locator(".persona")).ToContainTextAsync("Boilerplate test account");
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Sign Out" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
     }
 }

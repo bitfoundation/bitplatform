@@ -1,41 +1,19 @@
 ﻿using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Resources;
-using Boilerplate.Tests.Services;
 using MsgReader.Mime;
 
 namespace Boilerplate.Tests.PageTests.PageModels;
 
-public partial class SignUpPage(IPage page, Uri serverAddress, string culture)
+public partial class SignUpPage(IPage page, Uri serverAddress)
 {
-    #region Resources
-    private readonly IStringLocalizer<AppStrings> appLocalizer = StringLocalizerFactory.Create<AppStrings>(culture);
-    private readonly IStringLocalizer<EmailStrings> emailLocalizer = StringLocalizerFactory.Create<EmailStrings>(culture);
-
-    private string emailPlaceholder => appLocalizer[nameof(AppStrings.EmailPlaceholder)];
-    private string passwordPlaceholder => appLocalizer[nameof(AppStrings.PasswordPlaceholder)];
-    private string singUpTitle => appLocalizer[nameof(AppStrings.SingUpTitle)];
-    private string signUp => appLocalizer[nameof(AppStrings.SignUp)];
-    private string signIn => appLocalizer[nameof(AppStrings.SignIn)];
-    private string signOut => appLocalizer[nameof(AppStrings.SignOut)];
-    private string emailTokenConfirmButtonText => appLocalizer[nameof(AppStrings.EmailTokenConfirmButtonText)];
-    private string emailTokenPlaceholder => appLocalizer[nameof(AppStrings.EmailTokenPlaceholder)];
-    private string defaultFromName => emailLocalizer[nameof(EmailStrings.DefaultFromName)];
-    private string confirmationEmailSubject => emailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject)];
-    private string welcomeToApp => emailLocalizer[nameof(EmailStrings.WelcomeToApp)];
-    private string emailConfirmationMessageSubtitle => emailLocalizer[nameof(EmailStrings.EmailConfirmationMessageSubtitle)];
-    private string emailConfirmationMessageBodyToken => emailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBodyToken)];
-    private string emailConfirmationMessageBodyLink => emailLocalizer[nameof(EmailStrings.EmailConfirmationMessageBodyLink)];
-    #endregion
-
-    public async Task Goto()
+    public async Task Open()
     {
         var response = await page.GotoAsync(new Uri(serverAddress, Urls.SignUpPage).ToString());
 
         Assert.IsNotNull(response);
         Assert.AreEqual(StatusCodes.Status200OK, response.Status);
 
-        await page.ChangeCulture(culture);
-        await Assertions.Expect(page).ToHaveTitleAsync(singUpTitle);
+        await Assertions.Expect(page).ToHaveTitleAsync(AppStrings.SingUpTitle);
 
         //Override behavior of the javascript recaptcha function on the browser
         await page.WaitForFunctionAsync("window.grecaptcha !== undefined");
@@ -46,42 +24,43 @@ public partial class SignUpPage(IPage page, Uri serverAddress, string culture)
     {
         var email = $"{Guid.NewGuid()}@gmail.com";
 
-        await page.GetByPlaceholder(emailPlaceholder).FillAsync(email);
-        await page.GetByPlaceholder(passwordPlaceholder).FillAsync("password");
-        await page.GetByRole(AriaRole.Button, new() { Name = signUp, Exact = true }).ClickAsync();
+        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync("123456");
+        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true }).ClickAsync();
 
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = emailTokenConfirmButtonText })).ToBeVisibleAsync();
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
 
         var html = ReadEmlAndGetHtmlBody(email);
         var emailPage = await page.Context.NewPageAsync();
         await emailPage.SetContentAsync(html);
 
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(welcomeToApp);
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(new Regex(emailConfirmationMessageSubtitle.Replace("{0}", ".*")));
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(emailConfirmationMessageBodyToken);
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(emailConfirmationMessageBodyLink);
+        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.WelcomeToApp);
+        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(new Regex(EmailStrings.EmailConfirmationMessageSubtitle.Replace("{0}", ".*")));
+        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.EmailConfirmationMessageBodyToken);
+        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.EmailConfirmationMessageBodyLink);
 
-        IPage signedInPage;
+        IPage confirmPage;
         if (usingMagicLink)
         {
             var optLink = emailPage.GetByRole(AriaRole.Link, new() { Name = new Uri(serverAddress, Urls.ConfirmPage).ToString() });
             await Assertions.Expect(optLink).ToBeVisibleAsync();
             await optLink.ClickAsync();
-            signedInPage = emailPage;
+            confirmPage = emailPage;
         }
         else
         {
             var optCode = await emailPage.GetByText(new Regex("^\\d{6}$")).TextContentAsync();
-            await page.GetByPlaceholder(emailTokenPlaceholder).FillAsync(optCode!);
-            await page.GetByRole(AriaRole.Button, new() { Name = emailTokenConfirmButtonText }).ClickAsync();
-            signedInPage = page;
+            await page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(optCode!);
+            await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
+            confirmPage = page;
         }
 
-        await Assertions.Expect(signedInPage).ToHaveURLAsync(serverAddress.ToString());
-        await Assertions.Expect(signedInPage.Locator(".persona")).ToBeVisibleAsync();
-        await Assertions.Expect(signedInPage.Locator(".persona")).ToContainTextAsync(email);
-        await Assertions.Expect(signedInPage.GetByRole(AriaRole.Button, new() { Name = signOut })).ToBeVisibleAsync();
-        await Assertions.Expect(signedInPage.GetByRole(AriaRole.Button, new() { Name = signIn })).ToBeVisibleAsync(new() { Visible = false });
+        await Assertions.Expect(confirmPage).ToHaveURLAsync(serverAddress.ToString());
+        await Assertions.Expect(confirmPage.GetByRole(AriaRole.Button, new() { Name = email })).ToBeVisibleAsync();
+        await Assertions.Expect(confirmPage.GetByText(email).First).ToBeVisibleAsync();
+        await Assertions.Expect(confirmPage.GetByText(email).Nth(1)).ToBeVisibleAsync();
+        await Assertions.Expect(confirmPage.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
+        await Assertions.Expect(confirmPage.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync(new() { Visible = false });
 
         await emailPage.CloseAsync();
     }
@@ -92,8 +71,8 @@ public partial class SignUpPage(IPage page, Uri serverAddress, string culture)
 
         Assert.IsNotNull(email);
         Assert.AreEqual("info@Boilerplate.com", email.Headers.From.Address);
-        Assert.AreEqual(defaultFromName, email.Headers.From.DisplayName);
-        Assert.IsTrue(Regex.IsMatch(email.Headers.Subject, confirmationEmailSubject.Replace("{0}", "\\d{6}")), "Email subject does not match.");
+        Assert.AreEqual(EmailStrings.DefaultFromName, email.Headers.From.DisplayName);
+        Assert.IsTrue(Regex.IsMatch(email.Headers.Subject, EmailStrings.ConfirmationEmailSubject.Replace("{0}", "\\d{6}")), "Email subject does not match.");
 
         return email.HtmlBody.GetBodyAsText();
     }
