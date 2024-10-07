@@ -485,7 +485,10 @@
                     "exclude": [
                         "src/Tests/ApiTests/**",
                         "src/Tests/PageTests/**",
-                        "src/Tests/TestBase/**"
+                        "src/Tests/TestBase/**",
+                        "src/Tests/Extensions/PageExtensions.cs",
+                        "src/Tests/Services/CulturedStringLocalizer.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 }
             ]

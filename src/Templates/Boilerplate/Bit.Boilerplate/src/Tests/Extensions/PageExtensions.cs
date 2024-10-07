@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.Extensions;
+﻿namespace Microsoft.Playwright;
 
 public static class PageExtensions
 {
