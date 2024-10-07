@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.Services;
+﻿//+:cnd:noEmit
+using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
 
 namespace Boilerplate.Tests.PageTests;
@@ -52,8 +53,10 @@ public partial class IdentityPagesTests : PageTestBase
 
         await testServer.Build(services =>
         {
+            //#if (captcha == "reCaptcha")
             var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
             services.Replace(descriptor);
+            //#endif
         }).Start();
 
         var signupPage = new SignUpPage(Page, testServer.ServerAddress);
@@ -69,8 +72,10 @@ public partial class IdentityPagesTests : PageTestBase
 
         await testServer.Build(services =>
         {
+            //#if (captcha == "reCaptcha")
             var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
             services.Replace(descriptor);
+            //#endif
         }).Start();
 
         var signupPage = new SignUpPage(Page, testServer.ServerAddress);

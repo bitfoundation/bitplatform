@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿//+:cnd:noEmit
+using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Resources;
 using MsgReader.Mime;
 
@@ -15,9 +16,11 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
 
         await Assertions.Expect(page).ToHaveTitleAsync(AppStrings.SingUpTitle);
 
+        //#if (captcha == "reCaptcha")
         //Override behavior of the javascript recaptcha function on the browser
         await page.WaitForFunctionAsync("window.grecaptcha?.getResponse !== undefined");
         await page.EvaluateAsync("window.grecaptcha.getResponse = () => 'not-empty';");
+        //#endif
     }
 
     public async Task SignUp(bool usingMagicLink = true)

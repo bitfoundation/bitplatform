@@ -43,7 +43,7 @@ jobs:
 
     - name: Test Sqlite database option
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
+        dotnet new bit-bp --name TestSqlite --database Sqlite --additionalTests
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration

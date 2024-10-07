@@ -452,7 +452,8 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },
                 {
