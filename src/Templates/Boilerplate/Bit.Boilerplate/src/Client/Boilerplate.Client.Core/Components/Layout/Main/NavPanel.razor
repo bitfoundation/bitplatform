@@ -31,10 +31,10 @@
             <BitPersona Class="persona"
                         ImageUrl="@imageUrl"
                         OnImageClick=GoToProfile
-                        PrimaryText="@user.FullName"
-                        SecondaryText="@user.DisplayName"
                         HidePersonaDetails="isToggled"
+                        PrimaryText="@user.DisplayName"
                         Presence="BitPersonaPresence.Online"
+                        SecondaryText="@(user.Email ?? user.PhoneNumber)"
                         Size="@(isToggled ? BitPersonaSize.Size40 : BitPersonaSize.Size48)">
                 <ImageOverlayTemplate>
                     <span>@Localizer[nameof(AppStrings.Edit)]</span>
