@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
+        <ProjectReference Include="..\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
     </ItemGroup>
 
     <ItemGroup>
