@@ -139,14 +139,26 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Components/OtpPanel.razor.css",
-        "inputFile": "Components/Pages/Identity/Components/OtpPanel.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/OtpPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/OtpPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Components/SignInPanel.razor.css",
-        "inputFile": "Components/Pages/Identity/Components/SignInPanel.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/SignInPage.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/SignInPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/SignIn/SignInPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/SignInPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Identity/SignIn/TfaPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/TfaPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -171,12 +183,6 @@
     {
         "outputFile": "Components/Pages/Identity/ResetPasswordPage.razor.css",
         "inputFile": "Components/Pages/Identity/ResetPasswordPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Pages/Identity/SignInPage.razor.css",
-        "inputFile": "Components/Pages/Identity/SignInPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

@@ -1,5 +1,5 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
-@import '../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
 
 section {
     width: 100%;
@@ -16,8 +16,9 @@ section {
     gap: 4px;
 }
 
+
 ::deep {
-    .container {
-        width: rem2(304px);
+    form {
+        max-width: 460px;
     }
 }

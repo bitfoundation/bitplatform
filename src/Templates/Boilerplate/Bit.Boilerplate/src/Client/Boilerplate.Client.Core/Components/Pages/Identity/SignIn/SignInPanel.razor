@@ -1,17 +1,25 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignIn)]</BitText>
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
+        <br />
+
+        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignInPanelTitle)]</BitText>
+
+        <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+            @Localizer[nameof(AppStrings.SignInPanelSubtitle)]
+        </BitText>
+
+        <br />
 
         <SocialRow OnClick="OnSocialSignIn" />
 
         <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary">@Localizer[AppStrings.Or]</BitSeparator>
 
-        <BitStack FillContent Gap="2rem" Class="container">
+        <BitStack FillContent Gap="2rem">
             <BitStack FillContent>
-                <BitPivot Alignment="BitAlignment.Center">
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                <BitPivot Alignment="BitAlignment.Center" SelectedKey="@selectedKey" SelectedKeyChanged="OnSelectedKeyChanged">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey">
                         <BitTextField @bind-Value="Model.Email"
                                       Type="BitInputType.Email"
                                       Label="@Localizer[nameof(AppStrings.Email)]"
@@ -19,7 +27,7 @@
                         <ValidationMessage For="@(() => Model.Email)" />
                     </BitPivotItem>
 
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]" Key="@PhoneKey">
                         <BitTextField @bind-Value="Model.PhoneNumber"
                                       Type="BitInputType.Tel"
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
@@ -55,8 +63,8 @@
                        OnClick="WrapHandled(async () => await OnSendOtp.InvokeAsync())">
                 @Localizer[nameof(AppStrings.SendOtpButtonText)]
             </BitButton>
-            <br />
-            <BitText Typography="BitTypography.Body2">
+
+            <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
                 <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
             </BitText>

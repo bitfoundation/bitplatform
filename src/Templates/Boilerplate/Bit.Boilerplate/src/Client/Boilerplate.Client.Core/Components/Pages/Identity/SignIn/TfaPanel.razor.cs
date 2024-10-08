@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity.Components;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class TfaPanel
 {

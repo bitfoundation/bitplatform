@@ -2,7 +2,7 @@
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInPage : IDisposable
 {
@@ -136,7 +136,10 @@ public partial class SignInPage : IDisposable
         }
     }
 
-    private async Task SendOtp()
+    private Task ResendOtp() => SendOtp(true);
+    private Task SendOtp() => SendOtp(false);
+
+    private async Task SendOtp(bool resend)
     {
         if (model.Email is null && model.PhoneNumber is null) return;
 
@@ -144,17 +147,21 @@ public partial class SignInPage : IDisposable
         {
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+            //await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
-            isOtpSent = true;
+            if (resend is false)
+            {
+                isOtpSent = true;
 
-            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "OTP");
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "OTP");
+            }
         }
         catch (KnownException e)
         {
             await snackbarRef.Error(e.Message);
         }
     }
+
 
     private async Task SendTfaToken()
     {
