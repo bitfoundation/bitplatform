@@ -21,7 +21,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),
-            Platform = "fcmv1",
+            Platform = "fcmV1",
             PushChannel = Token
         };
 

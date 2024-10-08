@@ -19,9 +19,9 @@ public partial class NotificationHubController : AppControllerBase, INotificatio
 
 #if Development // This action is for testing purposes only.
     [HttpPost]
-    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, [FromQuery] bool silent = false, CancellationToken cancellationToken = default)
+    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, CancellationToken cancellationToken = default)
     {
-        await pushNotificationService.RequestPush(title, message, action, tags, silent, cancellationToken);
+        await pushNotificationService.RequestPush(title, message, action, tags, cancellationToken);
     }
 #endif
 }

@@ -13,77 +13,101 @@ public class AzureNotificationHubService(HttpClient httpClient,
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
-        var installation = new
-        {
-            deviceInstallation.InstallationId,
-            PushChannel = deviceInstallation.Platform is "browser" ? new
-            {
-                deviceInstallation.Endpoint,
-                deviceInstallation.P256dh,
-                deviceInstallation.Auth
-            } as object : deviceInstallation.PushChannel,
-            ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime.ToString("yyyy-MM-ddTHH:mm:sszzz"), // 2024-10-06T20:20:43+02:00 1997-07-16T19:20+01:00
-            Tags = tags,
-            UserId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId().ToString() : null,
-            platform = deviceInstallation.Platform
-        };
+        using HttpRequestMessage request = BuildRequest(HttpMethod.Put, $"installations/{deviceInstallation.InstallationId}");
 
-        using HttpRequestMessage request = BuildRequest(HttpMethod.Post, $"installations/{deviceInstallation.InstallationId}?api-version=2020-06");
-        (await httpClient.SendAsync(request, cancellationToken)).EnsureSuccessStatusCode();
+        var userId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId().ToString() : null;
+
+        if (userId is not null)
+        {
+            tags.Add(userId);
+        }
+
+        request.Content = new StringContent($@"{{
+            ""installationId"": ""{deviceInstallation.InstallationId}"",
+            ""userId"": {(userId is null ? "null" : $"\"{userId}\"")},
+            ""pushChannel"": {(deviceInstallation.Platform is "browser" ? deviceInstallation.PushChannel : $"\"{deviceInstallation.PushChannel}\"")},
+            ""pushChannelExpired"": null,
+            ""platform"": ""{deviceInstallation.Platform}"",
+            ""expirationTime"": ""{DateTimeOffset.UtcNow.AddMonths(1).DateTime:yyyy-MM-ddTHH:mm:sszzz}"",
+            ""tags"": [{string.Join(',', tags.Select(t => $"\"{t}\""))}] }}", Encoding.UTF8, "application/json");
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception exp)
+        {
+            throw new UnknownException(await response.Content.ReadAsStringAsync(cancellationToken), exp);
+        }
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, bool silent = false, CancellationToken cancellationToken = default)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, CancellationToken cancellationToken = default)
     {
         tags ??= [];
-        var tagsHeaderValue = string.Join(',', tags);
+        var tagsHeaderValue = string.Join("||", tags);
 
-        using var apnsRequest = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
+        using var apnsRequest = BuildRequest(HttpMethod.Post, "messages");
         apnsRequest.Headers.Add("ServiceBusNotification-Format", "apple");
-        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
-        apnsRequest.Content = new StringContent(JsonSerializer.Serialize(new
+        if (tags.Any())
         {
-            // https://learn.microsoft.com/en-us/rest/api/notificationhubs/send-apns-native-notification#request-body
-            aps = new
-            {
-                alert = message,
-                sound = silent ? "" : "default",
-            },
-            action = action
-        }), Encoding.UTF8, "application/json");
+            apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        }
+        // https://learn.microsoft.com/en-us/rest/api/notificationhubs/send-apns-native-notification#request-body
+        apnsRequest.Content = new StringContent($@"{{
+                ""message"": ""{message}"",
+                ""aps"":
+                {{
+                    ""content-available"": 1
+                }},
+                ""action"": ""{action}""
+            }}", Encoding.UTF8, "application/json");
 
-        using var fcm1Request = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
-        fcm1Request.Headers.Add("ServiceBusNotification-Format", "fcmV1");
-        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
-        fcm1Request.Content = new StringContent(JsonSerializer.Serialize(new
+        using var fcm1Request = BuildRequest(HttpMethod.Post, "messages");
+        fcm1Request.Headers.Add("ServiceBusNotification-Format", "fcmv1");
+        if (tags.Any())
         {
-            // https://learn.microsoft.com/en-us/azure/notification-hubs/firebase-migration-rest#option-3-fcmv1-native-notification-audience-send
-            message = new
-            {
-                notification = new
-                {
-                    title = title,
-                    body = message,
-                    sound = silent ? "" : "default"
-                },
-                data = new
-                {
-                    action
-                }
-            }
-        }), Encoding.UTF8, "application/json");
+            fcm1Request.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        }
+        // https://learn.microsoft.com/en-us/azure/notification-hubs/firebase-migration-rest#option-3-fcmv1-native-notification-audience-send
+        fcm1Request.Content = new StringContent($@"{{
+        ""message"":
+        {{
+            ""notification"":
+            {{
+                ""title"": ""{title}"",
+                ""body"": ""{message}""
+            }},
+            ""data"": {{ ""action"": ""{action}"" }}
+        }} }}", Encoding.UTF8, "application/json");
 
-        using var browserRequest = BuildRequest(HttpMethod.Post, "messages?api-version=2015-04");
+        using var browserRequest = BuildRequest(HttpMethod.Post, "messages");
         browserRequest.Headers.Add("ServiceBusNotification-Format", "browser");
-        apnsRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
-        browserRequest.Content = new StringContent(JsonSerializer.Serialize(new
+        if (tags.Any())
         {
-            title = title,
-            body = message
-        }), Encoding.UTF8, "application/json");
+            browserRequest.Headers.Add("ServiceBusNotification-Tags", tagsHeaderValue);
+        }
+        browserRequest.Content = new StringContent($@"{{
+            ""title"": ""{title}"",
+            ""body"": ""{message}""
+        }}", Encoding.UTF8, "application/json");
 
-        await Task.WhenAll(httpClient.SendAsync(apnsRequest, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()),
-            httpClient.SendAsync(fcm1Request, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()),
-            httpClient.SendAsync(browserRequest, cancellationToken).ContinueWith(_ => _.Result.EnsureSuccessStatusCode()));
+        var responses = await Task.WhenAll(httpClient.SendAsync(apnsRequest, cancellationToken),
+                     httpClient.SendAsync(fcm1Request, cancellationToken),
+                     httpClient.SendAsync(browserRequest, cancellationToken));
+
+        foreach (var response in responses)
+        {
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception exp)
+            {
+                throw new UnknownException(await response.Content.ReadAsStringAsync(cancellationToken), exp);
+            }
+        }
     }
 
     private HttpRequestMessage BuildRequest(HttpMethod httpMethod, string requestUrl)
@@ -96,20 +120,29 @@ public class AzureNotificationHubService(HttpClient httpClient,
             .Select(part => part.Split('=', 2))
             .ToDictionary(split => split[0].Trim(), split => split[1].Trim());
 
-        var resourceUri = $"{connectionStringKeyValues["Endpoint"]}{appSettings.NotificationHub.Name}";
-
-        HttpRequestMessage request = new HttpRequestMessage(httpMethod, new Uri(new Uri(resourceUri.Replace("sb://", "https://")), requestUrl));
-
-        TimeSpan sinceEpoch = DateTimeOffset.UtcNow - new DateTime(1970, 1, 1);
-        const int week = 60 * 60 * 24 * 7;
-        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + week);
-        string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
-        using HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(connectionStringKeyValues["SharedAccessKey"]));
-        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
-        var sasToken = FormattableString.Invariant($"SharedAccessSignature sr={HttpUtility.UrlEncode(resourceUri)}&sig={HttpUtility.UrlEncode(signature)}&se={expiry}&skn={connectionStringKeyValues["SharedAccessKeyName"]}");
+        var resourceUri = $"{connectionStringKeyValues["Endpoint"].Replace("sb://", "https://")}{appSettings.NotificationHub.Name}/{requestUrl}?api-version=2020-06";
+        HttpRequestMessage request = new HttpRequestMessage(httpMethod, new Uri(resourceUri));
+        request.Headers.TryAddWithoutValidation("User-Agent", "NHub/2020-06 (api-origin=DotNetSdk;os=Win32NT;os-version=10.0.22631.0)");
+        var normalizedResourceUri = request.RequestUri!.ToString().Replace("https://", "http://").Replace("?api-version=2020-06", "/");
+        var sasToken = CreateToken(normalizedResourceUri, connectionStringKeyValues["SharedAccessKeyName"], connectionStringKeyValues["SharedAccessKey"]);
 
         request.Headers.Add("Authorization", sasToken);
 
         return request;
+    }
+
+    /// <summary>
+    /// https://learn.microsoft.com/en-us/rest/api/eventhub/generate-sas-token#c
+    /// </summary>
+    private static string CreateToken(string resourceUri, string keyName, string key)
+    {
+        TimeSpan sinceEpoch = DateTimeOffset.UtcNow - new DateTime(1970, 1, 1);
+        var week = 60 * 60 * 24 * 7;
+        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + week);
+        string stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
+        using HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
+        var sasToken = FormattableString.Invariant($"SharedAccessSignature sr={HttpUtility.UrlEncode(resourceUri)}&sig={HttpUtility.UrlEncode(signature)}&se={expiry}&skn={keyName}");
+        return sasToken;
     }
 }
