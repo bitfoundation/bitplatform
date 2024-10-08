@@ -38,7 +38,7 @@
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
-    <ItemGroup Condition=" '$(additionalTests)' == 'true' OR '$(additionalTests)' == ''">
+    <ItemGroup Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''">
         <PackageReference Include="MsgReader" />
         <Using Include="Boilerplate.Tests.TestBase" />
         <Using Include="Boilerplate.Tests.PageTests.PageModels" />

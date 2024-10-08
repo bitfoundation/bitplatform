@@ -294,12 +294,12 @@
             },
             "replaces": "use-your-server-url-here.com"
         },
-        "additionalTests": {
-            "displayName": "Include additional automated tests?",
+        "advancedTests": {
+            "displayName": "Include advanced automated tests?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Include additional automated tests."
+            "description": "Include advanced automated tests."
         }
     },
     "postActions": [
@@ -482,7 +482,7 @@
                     ]
                 },
                 {
-                    "condition": "(additionalTests != true)",
+                    "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/Tests/ApiTests/**",
                         "src/Tests/PageTests/**",
@@ -490,6 +490,13 @@
                         "src/Tests/Extensions/PageExtensions.cs",
                         "src/Tests/Services/CulturedStringLocalizer.cs",
                         "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests == true)",
+                    "exclude": [
+                        "src/Tests/IdentityApiTests.cs",
+                        "src/Tests/IdentityPagesTests.cs"
                     ]
                 }
             ]

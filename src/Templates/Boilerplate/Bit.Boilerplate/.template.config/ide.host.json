@@ -49,7 +49,7 @@
             "isVisible": false
         },
         {
-            "id": "additionalTests",
+            "id": "advancedTests",
             "isVisible": false
         }
     ]

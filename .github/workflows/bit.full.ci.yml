@@ -50,8 +50,11 @@ jobs:
 
     - name: Test Sqlite database option
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite --additionalTests
+        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
         cd TestSqlite/src/Tests
+        dotnet build
+        sudo pwsh bin/Debug/net8.0/playwright.ps1 install-deps
+        sudo pwsh bin/Debug/net8.0/playwright.ps1 install
         dotnet test
 
     - name: Test SqlServer database option
