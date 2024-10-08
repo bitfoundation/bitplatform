@@ -20,7 +20,7 @@ public partial class DatabaseInitializer
         {
             await using var scope = testServer.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
+            await dbContext.Database.MigrateAsync();
         }
 
         await testServer.DisposeAsync();
