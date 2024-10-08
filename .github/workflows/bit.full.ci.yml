@@ -58,13 +58,13 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test
+        dotnet test --logger GitHubActions
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
       if: failure()
       with:
-        name: test-artifact
+        name: tests-artifact
         path: ./TestSqlite/src/Tests/TestResults
         retention-days: 14
 

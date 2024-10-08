@@ -28,7 +28,6 @@
 
     <LoggerRunSettings>
         <Loggers>
-            <Logger friendlyName="GitHubActions" enabled="True" />
             <Logger friendlyName="html" enabled="True">
                 <Configuration>
                     <LogFileName>testResults.html</LogFileName>
