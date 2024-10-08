@@ -25,4 +25,20 @@
             <!--<PWDEBUG>1</PWDEBUG>-->
         </EnvironmentVariables>
     </RunConfiguration>
+
+    <LoggerRunSettings>
+        <Loggers>
+            <Logger friendlyName="GitHubActions" enabled="True" />
+            <Logger friendlyName="html" enabled="True">
+                <Configuration>
+                    <LogFileName>testResults.html</LogFileName>
+                </Configuration>
+            </Logger>
+            <Logger friendlyName="trx" enabled="True">
+                <Configuration>
+                    <LogFileName>testResults.trx</LogFileName>
+                </Configuration>
+            </Logger>
+        </Loggers>
+    </LoggerRunSettings>
 </RunSettings>
