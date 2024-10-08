@@ -25,8 +25,11 @@ public partial class PageTestBase : PageTest
     }
 
     [TestCleanup]
-    public ValueTask CleanupTestServer()
+    public async ValueTask CleanupTestServer()
     {
-        return TestServer.DisposeAsync();
+        if (TestServer is not null)
+        {
+            await TestServer.DisposeAsync();
+        }
     }
 }

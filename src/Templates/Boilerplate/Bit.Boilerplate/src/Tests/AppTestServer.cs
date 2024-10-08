@@ -46,17 +46,6 @@ public partial class AppTestServer : IAsyncDisposable
 
     public async Task Start()
     {
-        if (AppEnvironment.IsDev())
-        {
-            try
-            {
-                await using var scope = WebApp.Services.CreateAsyncScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await dbContext.Database.EnsureCreatedAsync();
-            }
-            catch (DbException) { }
-        }
-
         await WebApp.StartAsync();
 
         WebApp.Configuration["ServerAddress"] = ServerAddress.ToString();
