@@ -16,6 +16,9 @@
     </MSTest>
 
     <RunConfiguration>
+        <!-- https://learn.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file -->
+        <!-- https://github.com/microsoft/vstest/blob/main/docs/configure.md -->
+        <CollectSourceInformation>true</CollectSourceInformation>
         <EnvironmentVariables>
             <!-- https://playwright.dev/docs/debug -->
             <!--<HEADED>1</HEADED>-->

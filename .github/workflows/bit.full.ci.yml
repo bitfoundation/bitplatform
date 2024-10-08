@@ -58,7 +58,7 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions -- RunConfiguration.CollectSourceInformation=true
+        dotnet test --logger GitHubActions
 
     # - name: Test SqlServer database option
     #   run: |
