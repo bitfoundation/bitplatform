@@ -106,4 +106,3 @@ public partial class NotificationHubOptions
     public bool Configured => string.IsNullOrEmpty(Name) is false &&
                           string.IsNullOrEmpty(ConnectionString) is false;
 }
-//#endif
