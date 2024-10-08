@@ -13,7 +13,8 @@ public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
 
         if (CultureInfoManager.MultilingualEnabled)
         {
-            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name ?? "en-US"));
+            var cultureName = string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) ? "en-US" : CultureInfo.CurrentUICulture.Name;
+            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
         }
 
         return await base.SendAsync(request, cancellationToken);
