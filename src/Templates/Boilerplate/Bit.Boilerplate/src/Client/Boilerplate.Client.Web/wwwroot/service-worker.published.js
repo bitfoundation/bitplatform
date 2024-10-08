@@ -5,9 +5,9 @@ self.addEventListener('push', function (event) {
 
     const data = event.data.json();
 
-    self.registration.showNotification(data.notification.title, {
+    self.registration.showNotification(data.title, {
 
-        body: data.notification.body,
+        body: data.body,
 
         icon: '/images/icons/bit-icon-512.png'
 
