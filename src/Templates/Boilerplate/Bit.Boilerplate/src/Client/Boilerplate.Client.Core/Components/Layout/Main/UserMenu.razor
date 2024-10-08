@@ -9,7 +9,7 @@
         <BitPersona Class="persona"
                     ImageUrl="@imageUrl"
                     Size=@BitPersonaSize.Size32
-                    PrimaryText="@user.FullName"
+                    PrimaryText="@user.DisplayName"
                     Classes="@(new() { DetailsContainer="persona-details" })" />
         <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
     </Template>
@@ -19,12 +19,12 @@
             {
                 <BitStack AutoSize>
                     <BitPersona Class="persona"
+                                ImageUrl="@imageUrl"
                                 OnImageClick="GoToProfile"
-                                PrimaryText="@user.FullName"
                                 Size="BitPersonaSize.Size48"
-                                SecondaryText="@user.DisplayName"
+                                PrimaryText="@user.DisplayName"
                                 Presence="BitPersonaPresence.Online"
-                                ImageUrl="@imageUrl">
+                                SecondaryText="@(user.Email ?? user.PhoneNumber)">
                         <ImageOverlayTemplate>
                             <span>@Localizer[nameof(AppStrings.Edit)]</span>
                         </ImageOverlayTemplate>
