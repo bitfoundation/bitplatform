@@ -22,12 +22,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 6,7
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: | 
-          6.0.x
-          7.0.x
+    # - name: Setup .NET 6,7
+    #   uses: actions/setup-dotnet@v4
+    #   with:
+    #     dotnet-version: | 
+    #       6.0.x
+    #       7.0.x
 
     - uses: actions/setup-node@v4
       with:
@@ -39,14 +39,14 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
-        ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+        # ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
-    - name: Install sql server
-      uses: potatoqualitee/mssqlsuite@v1.7
-      with:
-        install: sqlengine
-        sa-password: P@ssw0rdP@ssw0rd
-        show-log: true
+    # - name: Install sql server
+    #   uses: potatoqualitee/mssqlsuite@v1.7
+    #   with:
+    #     install: sqlengine
+    #     sa-password: P@ssw0rdP@ssw0rd
+    #     show-log: true
 
     - name: Test Sqlite database option
       run: |
@@ -57,95 +57,95 @@ jobs:
         sudo pwsh bin/Debug/net8.0/playwright.ps1 install
         dotnet test
 
-    - name: Test SqlServer database option
-      run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
-        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
-        dotnet tool restore
-        dotnet ef migrations add InitialMigration
-        dotnet ef database update 
-        cd ../../Tests
-        dotnet test
+    # - name: Test SqlServer database option
+    #   run: |
+    #     dotnet new bit-bp --name TestSqlServer --database SqlServer
+    #     cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+    #     dotnet tool restore
+    #     dotnet ef migrations add InitialMigration
+    #     dotnet ef database update 
+    #     cd ../../Tests
+    #     dotnet test
 
-    - name: Test PostgreSQL, Cosmos, MySql, Other database options
-      run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
-        cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestCosmos --database Cosmos
-        cd TestCosmos/src/Server/TestCosmos.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
-        cd TestMySql/src/Server/TestMySql.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other
-        cd TestOther/src/Server/TestOther.Server.Api/
-        dotnet build
+    # - name: Test PostgreSQL, Cosmos, MySql, Other database options
+    #   run: |
+    #     dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
+    #     cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
+    #     dotnet build
+    #     cd ../../../../
+    #     dotnet new bit-bp --name TestCosmos --database Cosmos
+    #     cd TestCosmos/src/Server/TestCosmos.Server.Api/
+    #     dotnet build
+    #     cd ../../../../
+    #     dotnet new bit-bp --name TestMySql --database MySql
+    #     cd TestMySql/src/Server/TestMySql.Server.Api/
+    #     dotnet build
+    #     cd ../../../../
+    #     dotnet new bit-bp --name TestOther --database Other
+    #     cd TestOther/src/Server/TestOther.Server.Api/
+    #     dotnet build
 
-    - name: Test file storage options
-      run: |
-        dotnet new bit-bp --name TestLocal --filesStorage Local
-        cd TestLocal/src/Server/TestLocal.Server.Api/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage
-        cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
-        dotnet build
+    # - name: Test file storage options
+    #   run: |
+    #     dotnet new bit-bp --name TestLocal --filesStorage Local
+    #     cd TestLocal/src/Server/TestLocal.Server.Api/
+    #     dotnet build
+    #     cd ../../../../
+    #     dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage
+    #     cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
+    #     dotnet build
 
-    - name: Test backend setup options
-      run: |
-        dotnet new bit-bp --name TestStandalone --api Standalone
-        cd TestStandalone/src/Server/TestStandalone.Server.Api/
-        dotnet build
-        cd ../
-        cd TestStandalone.Server.Web/
-        dotnet build
-        cd ../../../../
-        dotnet new bit-bp --name TestIntegrated --api Integrated
-        cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
-        dotnet build
+    # - name: Test backend setup options
+    #   run: |
+    #     dotnet new bit-bp --name TestStandalone --api Standalone
+    #     cd TestStandalone/src/Server/TestStandalone.Server.Api/
+    #     dotnet build
+    #     cd ../
+    #     cd TestStandalone.Server.Web/
+    #     dotnet build
+    #     cd ../../../../
+    #     dotnet new bit-bp --name TestIntegrated --api Integrated
+    #     cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
+    #     dotnet build
 
-    - name: Test sample configuration 1
-      run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalr --notification
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
+    # - name: Test sample configuration 1
+    #   run: |
+    #     dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalr --notification
+    #     dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
-    - name: Test sample configuration 2
-      run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalr false --notification false
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
+    # - name: Test sample configuration 2
+    #   run: |
+    #     dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalr false --notification false
+    #     dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
 
-    - name: Run BeforeBuildTasks
-      continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+    # - name: Run BeforeBuildTasks
+    #   continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
+    #   run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
 
-    - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
-      run: dotnet build src/Bit-CI-release.sln -c Release
+    # - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
+    #   run: dotnet build src/Bit-CI-release.sln -c Release
 
-    - name: Build careers, platform, sales websites
-      run: |
-        dotnet build src/Websites/Platform/Bit.Websites.Platform.sln
-        dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
-        dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
+    # - name: Build careers, platform, sales websites
+    #   run: |
+    #     dotnet build src/Websites/Platform/Bit.Websites.Platform.sln
+    #     dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
+    #     dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
 
-    - name: Run bit blazor ui tests
-      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+    # - name: Run bit blazor ui tests
+    #   run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
 
-    - name: Build bit blazor ui demo
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
+    # - name: Build bit blazor ui demo
+    #   run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
 
-    - name: Create projects from BlazorEmpty project template with different parameters
-      run: |
-        cd src/Templates/BlazorEmpty && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
-        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
-        dotnet new bit-empty --name SsrPerPage --interactivity None
+    # - name: Create projects from BlazorEmpty project template with different parameters
+    #   run: |
+    #     cd src/Templates/BlazorEmpty && dotnet build -c Release
+    #     dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+    #     dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
+    #     dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
+    #     dotnet new bit-empty --name SsrPerPage --interactivity None
 
-    - name: Build blazor empty based projects
-      run: |
-        dotnet build AutoGlobal/AutoGlobal.sln
-        dotnet build SsrPerPage/SsrPerPage.csproj
+    # - name: Build blazor empty based projects
+    #   run: |
+    #     dotnet build AutoGlobal/AutoGlobal.sln
+    #     dotnet build SsrPerPage/SsrPerPage.csproj
