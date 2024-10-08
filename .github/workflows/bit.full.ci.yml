@@ -25,7 +25,7 @@ jobs:
     # - name: Setup .NET 6,7
     #   uses: actions/setup-dotnet@v4
     #   with:
-    #     dotnet-version: | 
+    #     dotnet-version: |
     #       6.0.x
     #       7.0.x
 
@@ -51,15 +51,15 @@ jobs:
     - name: Test Sqlite database option
       run: |
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
-        cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
+        cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
-        dotnet ef database update 
+        dotnet ef database update
         cd ../../Tests
         dotnet build
         sudo pwsh bin/Debug/net8.0/playwright.ps1 install-deps
         sudo pwsh bin/Debug/net8.0/playwright.ps1 install
-        dotnet test
+        dotnet test --logger GitHubActions
 
     # - name: Test SqlServer database option
     #   run: |
@@ -67,7 +67,7 @@ jobs:
     #     cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
     #     dotnet tool restore
     #     dotnet ef migrations add InitialMigration
-    #     dotnet ef database update 
+    #     dotnet ef database update
     #     cd ../../Tests
     #     dotnet test
 
@@ -124,7 +124,7 @@ jobs:
 
     # - name: Run BeforeBuildTasks
     #   continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-    #   run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+    #   run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1
 
     # - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
     #   run: dotnet build src/Bit-CI-release.sln -c Release

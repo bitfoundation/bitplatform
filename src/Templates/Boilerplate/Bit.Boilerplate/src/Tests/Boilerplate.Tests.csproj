@@ -40,6 +40,7 @@
     <!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''">
         <PackageReference Include="MsgReader" />
+        <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
         <Using Include="Boilerplate.Tests.TestBase" />
         <Using Include="Boilerplate.Tests.PageTests.PageModels" />
     </ItemGroup>
