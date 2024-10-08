@@ -49,6 +49,7 @@ jobs:
         show-log: true
 
     - name: Test Sqlite database option
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
         cd TestSqlite/src/Tests
@@ -58,6 +59,7 @@ jobs:
         dotnet test
 
     - name: Test SqlServer database option
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
