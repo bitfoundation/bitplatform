@@ -48,6 +48,14 @@ jobs:
     #     sa-password: P@ssw0rdP@ssw0rd
     #     show-log: true
 
+    - name: Check for libicu
+      run: |
+        apt-cache policy libicu-dev
+    - name: Install libicu
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libicu-dev
+
     - name: Test Sqlite database option
       id: sqlite-test
       run: |
