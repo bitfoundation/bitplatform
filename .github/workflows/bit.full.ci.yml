@@ -57,7 +57,7 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        sudo pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions -- RunConfiguration.CollectSourceInformation=true
 
     # - name: Test SqlServer database option
