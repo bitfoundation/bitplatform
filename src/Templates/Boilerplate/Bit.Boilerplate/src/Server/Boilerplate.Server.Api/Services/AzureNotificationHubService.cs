@@ -122,7 +122,6 @@ public class AzureNotificationHubService(HttpClient httpClient,
 
         var resourceUri = $"{connectionStringKeyValues["Endpoint"].Replace("sb://", "https://")}{appSettings.NotificationHub.Name}/{requestUrl}?api-version=2020-06";
         HttpRequestMessage request = new HttpRequestMessage(httpMethod, new Uri(resourceUri));
-        request.Headers.TryAddWithoutValidation("User-Agent", "NHub/2020-06 (api-origin=DotNetSdk;os=Win32NT;os-version=10.0.22631.0)");
         var normalizedResourceUri = request.RequestUri!.ToString().Replace("https://", "http://").Replace("?api-version=2020-06", "/");
         var sasToken = CreateToken(normalizedResourceUri, connectionStringKeyValues["SharedAccessKeyName"], connectionStringKeyValues["SharedAccessKey"]);
 
