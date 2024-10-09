@@ -35,7 +35,7 @@
                 {
                     if (OnImageClick.HasDelegate)
                     {
-                        <div style="@GetImageOverlayStyle()" class="bit-prs-imo @Classes?.ImageOverlay">
+                        <div style="@Styles?.ImageOverlay" class="bit-prs-imo @GetCoinClass() @Classes?.ImageOverlay">
                             @if (ImageOverlayTemplate is not null)
                             {
                                 @ImageOverlayTemplate

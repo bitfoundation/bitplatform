@@ -35,10 +35,29 @@
     overflow: hidden;
     font-weight: 600;
     position: relative;
-    border-radius: 50%;
     align-items: center;
     justify-content: center;
-    background-color: $clr-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+}
+
+.bit-prs-him {
+    .bit-prs-imc {
+        border: none;
+        border-width: 0;
+    }
+}
+
+.bit-prs-crl {
+    .bit-prs-imc {
+        border-radius: 50%;
+    }
+}
+
+.bit-prs-sqr {
+    .bit-prs-imc {
+        border-radius: $shp-border-radius;
+    }
 }
 
 .bit-prs-imo {
@@ -50,8 +69,9 @@
     align-items: center;
     justify-content: center;
     font-size: spacing(1.75);
-    background-color: $clr-pri;
     transition: all 0.1s linear;
+    color: var(--bit-prs-coin-clr-txt);
+    background-color: var(--bit-prs-coin-clr-bg);
 }
 
 .bit-prs-img {
@@ -78,14 +98,6 @@
     forced-color-adjust: none;
     background-clip: border-box;
     border: spacing(0.125) $shp-border-style $clr-brd-sec;
-}
-
-.bit-prs-unk {
-    color: $clr-err;
-
-    .bit-prs-imc {
-        background-color: $clr-bg-sec;
-    }
 }
 
 .bit-prs-det {
@@ -298,6 +310,13 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.4);
+            bottom: spacing(-0.4);
+        }
+    }
 }
 
 .bit-prs-s48 {
@@ -342,6 +361,13 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.4);
+            bottom: spacing(-0.4);
+        }
+    }
 }
 
 .bit-prs-s56 {
@@ -385,6 +411,13 @@
 
     .bit-prs-otx {
         display: none;
+    }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.5);
+            bottom: spacing(-0.5);
+        }
     }
 }
 
@@ -431,6 +464,13 @@
 
     .bit-prs-otx {
         display: none;
+    }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1);
+            bottom: spacing(-1);
+        }
     }
 }
 
@@ -480,6 +520,13 @@
         font-weight: 400;
         font-size: spacing(1.75);
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1);
+            bottom: spacing(-1);
+        }
+    }
 }
 
 .bit-prs-s120 {
@@ -528,4 +575,115 @@
         font-weight: 400;
         font-size: spacing(1.75);
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1.5);
+            bottom: spacing(-1.5);
+        }
+    }
+}
+
+.bit-prs-fil {
+    color: var(--bit-prs-coin-clr-txt);
+    border-color: var(--bit-prs-coin-clr-bg);
+    background-color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-otl {
+    background-color: transparent;
+    color: var(--bit-prs-coin-clr-bg);
+    border-color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-txt {
+    border-color: transparent;
+    background-color: transparent;
+    color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-pri {
+    --bit-prs-coin-clr-bg: #{$clr-pri};
+    --bit-prs-coin-clr-txt: #{$clr-pri-text};
+}
+
+.bit-prs-sec {
+    --bit-prs-coin-clr-bg: #{$clr-sec};
+    --bit-prs-coin-clr-txt: #{$clr-sec-text};
+}
+
+.bit-prs-ter {
+    --bit-prs-coin-clr-bg: #{$clr-ter};
+    --bit-prs-coin-clr-txt: #{$clr-ter-text};
+}
+
+.bit-prs-inf {
+    --bit-prs-coin-clr-bg: #{$clr-inf};
+    --bit-prs-coin-clr-txt: #{$clr-inf-text};
+}
+
+.bit-prs-suc {
+    --bit-prs-coin-clr-bg: #{$clr-suc};
+    --bit-prs-coin-clr-txt: #{$clr-suc-text};
+}
+
+.bit-prs-wrn {
+    --bit-prs-coin-clr-bg: #{$clr-wrn};
+    --bit-prs-coin-clr-txt: #{$clr-wrn-text};
+}
+
+.bit-prs-swr {
+    --bit-prs-coin-clr-bg: #{$clr-swr};
+    --bit-prs-coin-clr-txt: #{$clr-swr-text};
+}
+
+.bit-prs-err {
+    --bit-prs-coin-clr-bg: #{$clr-err};
+    --bit-prs-coin-clr-txt: #{$clr-err-text};
+}
+
+
+.bit-prs-pbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-pri};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-sbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-sec};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-tbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-ter};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-pfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-pri};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-sfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-sec};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-tfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-ter};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-pbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-pri};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-sbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-sec};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-tbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-ter};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
 }
