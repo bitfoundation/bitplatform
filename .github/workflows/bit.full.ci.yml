@@ -33,11 +33,15 @@ jobs:
       with:
         node-version: 22
 
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      continue-on-error: true
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
     - name: Prepare environment
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        [env.ACT] && dotnet new uninstall Bit.Boilerplate
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
         # ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
