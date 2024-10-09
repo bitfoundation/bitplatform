@@ -9,10 +9,6 @@ public partial class AppSettings : IValidatableObject
 
     public SmsSettings Sms { get; set; } = default!;
 
-    //#if (notification == true)
-    public PushNotificationOptions PushNotification { get; set; } = default!;
-    //#endif
-
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
 
@@ -28,9 +24,6 @@ public partial class AppSettings : IValidatableObject
         Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
-        //#if (notification == true)
-        Validator.TryValidateObject(PushNotification, new ValidationContext(PushNotification), validationResults, true);
-        //#endif
 
         return validationResults;
     }
@@ -95,14 +88,3 @@ public partial class SmsSettings
                               string.IsNullOrEmpty(TwilioAccountSid) is false &&
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
 }
-
-//#if (notification == true)
-public partial class PushNotificationOptions
-{
-    public string? WebPushSubject { get; set; }
-
-    public string? WebPushVapidPrivateKey { get; set; }
-
-    public string? WebPushVapidPublicKey { get; set; }
-}
-//#endif

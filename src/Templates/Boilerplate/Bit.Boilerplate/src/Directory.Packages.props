@@ -56,7 +56,7 @@
     <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.2.5" />
     <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="WebPush" Version="1.0.12" />
+    <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
     <!--/-:msbuild-conditional:noEmit -->
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="QRCoder" Version="1.6.0" />

@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using FluentStorage;
 using FluentStorage.Blobs;
+//#if (notification == true)
+using AdsPush.Extensions;
+//#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
@@ -230,7 +233,8 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        services.AddHttpClient<PushNotificationService>();
+        services.AddAdsPush(configuration);
+        services.TryAddTransient<PushNotificationService>();
         //#endif
     }
 

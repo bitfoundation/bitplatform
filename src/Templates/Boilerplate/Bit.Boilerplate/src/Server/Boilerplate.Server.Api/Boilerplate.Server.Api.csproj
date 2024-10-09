@@ -40,7 +40,7 @@
         <PackageReference Include="AspNet.Security.OAuth.GitHub" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Twilio" />
-        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="WebPush" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" />
 
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
         <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />

@@ -1,6 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using AdsPush;
+using AdsPush.Vapid;
+using AdsPush.Abstraction;
+using System.Collections.Concurrent;
 using Boilerplate.Shared.Dtos.PushNotification;
-using WebPush;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -13,10 +15,11 @@ public class DeviceInstallation : DeviceInstallationDto
     public DateTimeOffset? ExpirationTime { get; set; }
 }
 
-public class PushNotificationService(HttpClient httpClient,
-    IHttpContextAccessor httpContextAccessor,
-    AppSettings appSettings)
+public partial class PushNotificationService
 {
+    [AutoInject] private IAdsPushSenderFactory adsPushSenderFactory = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+
     private static ConcurrentDictionary<string, DeviceInstallation> deviceInstallations = new();
 
     public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
@@ -50,6 +53,8 @@ public class PushNotificationService(HttpClient httpClient,
     {
         tags ??= [];
 
+        var sender = adsPushSenderFactory.GetSender("Primary");
+
         foreach (var deviceInstallation in deviceInstallations.Values)
         {
             if (tags.Any() && deviceInstallation.Tags.Any(dt => tags.Contains(dt)) is false)
@@ -58,11 +63,19 @@ public class PushNotificationService(HttpClient httpClient,
             if (deviceInstallation.Platform is not "browser")
                 continue;
 
-            var subscription = new PushSubscription(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth);
-            var vapidDetails = new VapidDetails(appSettings.PushNotification.WebPushSubject, appSettings.PushNotification.WebPushVapidPublicKey, appSettings.PushNotification.WebPushVapidPrivateKey);
+            var subscription = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth);
 
-            using var webPushClient = new WebPushClient();
-            await webPushClient.SendNotificationAsync(subscription, "{ \"title\": \"title2\", \"body\": \"body2\", \"action\": \"action\" }", vapidDetails, cancellationToken);
+            await sender.BasicSendAsync(AdsPushTarget.BrowserAndPwa, subscription.ToAdsPushToken(), new()
+            {
+                Title = AdsPushText.CreateUsingString(title),
+                Detail = AdsPushText.CreateUsingString(message),
+                Parameters = new Dictionary<string, object>()
+                {
+                    {
+                        "action", action ?? string.Empty
+                    }
+                }
+            }, cancellationToken);
         }
     }
 }
