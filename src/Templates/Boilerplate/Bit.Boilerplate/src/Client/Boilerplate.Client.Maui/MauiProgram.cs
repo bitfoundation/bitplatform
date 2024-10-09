@@ -106,20 +106,25 @@ public static partial class MauiProgram
 #if Windows
             webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
-            if (AppEnvironment.IsDev() is false)
-            {
-                webView.EnsureCoreWebView2Async()
-                    .AsTask()
-                    .ContinueWith(async _ =>
+            webView.EnsureCoreWebView2Async()
+                .AsTask()
+                .ContinueWith(async _ =>
+                {
+                    await Application.Current!.Dispatcher.DispatchAsync(() =>
                     {
-                        await Application.Current!.Dispatcher.DispatchAsync(() =>
+                        webView.CoreWebView2.PermissionRequested += async (sender, args) =>
+                        {
+                            args.Handled = true;
+                            args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
+                        };
+                        if (AppEnvironment.IsDev() is false)
                         {
                             var settings = webView.CoreWebView2.Settings;
                             settings.IsZoomControlEnabled = false;
                             settings.AreBrowserAcceleratorKeysEnabled = false;
-                        });
+                        }
                     });
-            }
+                });
 
 #elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();

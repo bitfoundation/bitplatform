@@ -38,7 +38,7 @@ public static partial class Program
         services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
         services.TryAddSessioned<ILocalHttpServer, WindowsLocalHttpServer>();
         //#if (notification == true)
-        services.TryAddSessioned<IPushNotificationService, WindowsPushNotificationService>();
+        services.TryAddScoped<IPushNotificationService, WindowsPushNotificationService>();
         //#endif
 
         services.AddLogging(loggingBuilder =>

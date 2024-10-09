@@ -8,7 +8,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 {
     public override bool NotificationsSupported => GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
 
-    public override string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
+    public string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
     public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {

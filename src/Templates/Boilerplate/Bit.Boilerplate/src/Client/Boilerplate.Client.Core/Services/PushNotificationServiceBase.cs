@@ -6,12 +6,16 @@ namespace Boilerplate.Client.Core.Services;
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
     [AutoInject] protected INotificationHubController pushNotificationController = default!;
+    [AutoInject] protected IConfiguration configuration = default!;
+    [AutoInject] protected IJSRuntime jsRuntime = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
     public virtual string Token { get; set; }
     public virtual bool NotificationsSupported => false;
-    public virtual string GetDeviceId() => throw new NotImplementedException();
-    public virtual Task<DeviceInstallationDto> GetDeviceInstallation() => throw new NotImplementedException();
+    public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
+    {
+        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("VapidPublicKey"));
+    }
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
