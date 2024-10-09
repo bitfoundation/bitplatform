@@ -702,10 +702,25 @@
     <value>Remember me?</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>Authenticator code</value>
+    <value>2FA code</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>2-Factor Authentication</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Get a new code from your authenticator app or use your recovery code.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Try another way</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>You can get a new code at your email or phone.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>

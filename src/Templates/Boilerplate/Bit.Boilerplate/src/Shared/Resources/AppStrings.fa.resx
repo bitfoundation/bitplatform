@@ -702,10 +702,28 @@
     <value>من رو به خاطر بسپار؟</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>کد احراز هویت</value>
+    <value>کد 2-عاملی</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>کد بازیابی</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>احراز هویت 2-عاملی</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>یک کد جدید از برنامه احراز هویت خود دریافت کنید یا از کد بازیابی خود استفاده کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>راه دیگری را آزمایش کنید</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>

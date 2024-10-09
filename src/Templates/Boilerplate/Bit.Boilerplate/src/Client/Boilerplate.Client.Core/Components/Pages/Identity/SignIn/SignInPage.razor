@@ -24,11 +24,11 @@
                 }
                 else
                 {
-                    <TfaPanel Model="model" OnSendTfaToken="SendTfaToken" />
+                    <TfaPanel IsWaiting="isWaiting" Model="model" OnSendTfaToken="SendTfaToken" />
                 }
             </BitStack>
         </EditForm>
     </BitStack>
 </section>
 
-<BitSnackBar @ref="snackbarRef" />
+<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />

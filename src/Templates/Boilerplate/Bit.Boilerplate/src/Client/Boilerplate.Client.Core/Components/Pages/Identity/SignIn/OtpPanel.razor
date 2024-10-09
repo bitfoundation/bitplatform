@@ -6,18 +6,13 @@
 }
 
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <br />
-
-        <BitText Typography="BitTypography.H4">@(string.Format(Localizer[nameof(AppStrings.OtpPanelTitle)], emailOrPhone))</BitText>
-
-        <br />
-
-        <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
-            @(string.Format(Localizer[nameof(AppStrings.OtpPanelSubtitle)], emailOrPhone, hasEmail ? Model.Email : Model.PhoneNumber))
-        </BitText>
-
-        <br />
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
+        <BitStack>
+            <BitText Typography="BitTypography.H4">@(string.Format(Localizer[nameof(AppStrings.OtpPanelTitle)], emailOrPhone))</BitText>
+            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+                @(string.Format(Localizer[nameof(AppStrings.OtpPanelSubtitle)], emailOrPhone, hasEmail ? Model.Email : Model.PhoneNumber))
+            </BitText>
+        </BitStack>
 
         <BitStack FillContent Gap="2rem">
             <BitStack HorizontalAlign="BitAlignment.Center">

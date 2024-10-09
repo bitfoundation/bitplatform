@@ -38,6 +38,10 @@ public partial class SignInPage : IDisposable
     public string? ErrorQueryString { get; set; }
 
 
+    private const string OtpPayload = nameof(OtpPayload);
+    private const string TfaPayload = nameof(TfaPayload);
+
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
@@ -69,12 +73,12 @@ public partial class SignInPage : IDisposable
         {
             var source = (string?)payload;
 
-            if (source == "OTP")
+            if (source == OtpPayload)
             {
                 isOtpSent = false;
             }
 
-            if (source == "TFA")
+            if (source == TfaPayload)
             {
                 requiresTwoFactor = false;
             }
@@ -110,10 +114,7 @@ public partial class SignInPage : IDisposable
 
         try
         {
-            if (requiresTwoFactor &&
-                string.IsNullOrWhiteSpace(model.TwoFactorCode) &&
-                string.IsNullOrWhiteSpace(model.TwoFactorRecoveryCode) &&
-                string.IsNullOrWhiteSpace(model.TwoFactorToken)) return;
+            if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
             requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
 
@@ -123,7 +124,7 @@ public partial class SignInPage : IDisposable
             }
             else
             {
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "TFA");
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
             }
         }
         catch (KnownException e)
@@ -147,13 +148,13 @@ public partial class SignInPage : IDisposable
         {
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            //await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
 
             if (resend is false)
             {
                 isOtpSent = true;
 
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, "OTP");
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
             }
         }
         catch (KnownException e)

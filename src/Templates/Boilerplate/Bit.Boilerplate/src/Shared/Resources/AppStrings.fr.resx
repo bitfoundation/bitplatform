@@ -702,10 +702,28 @@
     <value>Souviens-toi de moi?</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>Code d'authentification</value>
+    <value>Code 2FA</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>Code de récupération</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>Authentification à 2-Facteurs</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Obtenez un nouveau code depuis votre application d'authentification ou utilisez votre code de récupération.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Essayez une autre façon</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>Vous pouvez obtenir un nouveau code par e-mail ou par téléphone.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Obtenir le code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>

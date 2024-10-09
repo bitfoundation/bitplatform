@@ -1,33 +1,34 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.TwoFactorAuthTitle)]</BitText>
-        <BitText Gutter>@Localizer[nameof(AppStrings.TfaProtectedSignInSubtitle)]</BitText>
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
+        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.TfaPanelTitle)]</BitText>
 
-        <BitPivot>
-            <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorCode)]">
-                <BitTextField @bind-Value="Model.TwoFactorCode"
-                              Label="@Localizer[nameof(AppStrings.TfaEnterCodeInSignInMessage)]"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
-            </BitPivotItem>
+        <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelSubtitle)]</BitText>
 
-            <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]">
-                <BitTextField @bind-Value="Model.TwoFactorRecoveryCode"
-                              Label="@Localizer[nameof(AppStrings.TfaEnterRecoveryCodeInSignInMessage)]"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
-            </BitPivotItem>
-            <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TwoFactorToken)]">
-                <div>@Localizer[nameof(AppStrings.TfaTokenSignInTitle)]</div>
-                <BitButton ButtonType="BitButtonType.Button" OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
-                    @Localizer[nameof(AppStrings.TfaTokenGenerateButtonText)]
-                </BitButton>
-                <BitTextField @bind-Value="Model.TwoFactorToken" Style="flex-grow:1"
-                              AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                              Placeholder="@Localizer[nameof(AppStrings.TwoFactorToken)]" />
-            </BitPivotItem>
-        </BitPivot>
+        <BitTextField @bind-Value="Model.TwoFactorCode"
+                      Label="@Localizer[nameof(AppStrings.Code)]"
+                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                      Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
+
+        <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+            @Localizer[nameof(AppStrings.Continue)]
+        </BitButton>
+
+        <BitCard Border="BitColorKind.Secondary" FullWidth>
+            <BitStack Horizontal>
+                <BitIcon IconName="@BitIconName.SkypeCircleCheck" Color="BitColor.Info" />
+                <BitStack>
+                    <BitText>@Localizer[nameof(AppStrings.TfaPanelAnotherWayTitle)]</BitText>
+                    <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelAnotherWaySubtitle)]</BitText>
+                    <BitButton Color="BitColor.Tertiary"
+                               Variant="BitVariant.Outline"
+                               ButtonType="BitButtonType.Button"
+                               OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
+                        @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]
+                    </BitButton>
+                </BitStack>
+            </BitStack>
+        </BitCard>
     </BitStack>
 </section>
