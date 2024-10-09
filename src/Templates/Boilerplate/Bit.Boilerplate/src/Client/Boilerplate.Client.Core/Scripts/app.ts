@@ -26,8 +26,8 @@ class App {
         const pushChannel = subscription.toJSON();
         const p256dh = pushChannel.keys!["p256dh"];
         const auth = pushChannel.keys!["auth"];
-        return { installationId: `${p256dh}-${auth}`, platform: "browser", pushChannel: `{ "p256dh": "${p256dh}","auth": "${auth}", "endpoint": "${pushChannel.endpoint}" }` };
-    }
+        return { installationId: `${p256dh}-${auth}`, platform: "browser", p256dh: p256dh, auth: auth, endpoint: pushChannel.endpoint };
+    };
     //#endif
 }
 

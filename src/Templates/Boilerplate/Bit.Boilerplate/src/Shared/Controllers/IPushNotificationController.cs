@@ -3,7 +3,7 @@
 namespace Boilerplate.Shared.Controllers;
 
 [Route("api/[controller]/[action]/")]
-public interface INotificationHubController : IAppController
+public interface IPushNotificationController : IAppController
 {
     [HttpPost]
     Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken);

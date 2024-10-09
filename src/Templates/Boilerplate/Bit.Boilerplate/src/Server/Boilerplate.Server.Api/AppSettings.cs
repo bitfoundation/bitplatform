@@ -10,7 +10,7 @@ public partial class AppSettings : IValidatableObject
     public SmsSettings Sms { get; set; } = default!;
 
     //#if (notification == true)
-    public NotificationHubOptions NotificationHub { get; set; } = default!;
+    public PushNotificationOptions PushNotification { get; set; } = default!;
     //#endif
 
     [Required]
@@ -29,7 +29,7 @@ public partial class AppSettings : IValidatableObject
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
         //#if (notification == true)
-        Validator.TryValidateObject(NotificationHub, new ValidationContext(NotificationHub), validationResults, true);
+        Validator.TryValidateObject(PushNotification, new ValidationContext(PushNotification), validationResults, true);
         //#endif
 
         return validationResults;
@@ -97,12 +97,12 @@ public partial class SmsSettings
 }
 
 //#if (notification == true)
-public partial class NotificationHubOptions
+public partial class PushNotificationOptions
 {
-    public string? Name { get; set; }
+    public string? WebPushSubject { get; set; }
 
-    public string? ConnectionString { get; set; }
+    public string? WebPushVapidPrivateKey { get; set; }
 
-    public bool Configured => string.IsNullOrEmpty(Name) is false &&
-                          string.IsNullOrEmpty(ConnectionString) is false;
+    public string? WebPushVapidPublicKey { get; set; }
 }
+//#endif

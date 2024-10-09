@@ -7,9 +7,9 @@ namespace Boilerplate.Server.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]
-public partial class NotificationHubController : AppControllerBase, INotificationHubController
+public partial class PushNotificationController : AppControllerBase, IPushNotificationController
 {
-    [AutoInject] AzureNotificationHubService pushNotificationService = default!;
+    [AutoInject] PushNotificationService pushNotificationService = default!;
 
     [HttpPost]
     public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)

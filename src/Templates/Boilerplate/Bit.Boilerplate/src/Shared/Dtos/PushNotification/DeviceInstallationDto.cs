@@ -12,4 +12,7 @@ public partial class DeviceInstallationDto
     public string? Platform { get; set; }
 
     public string? PushChannel { get; set; }
+    public string? P256dh { get; set; }
+    public string? Auth { get; set; }
+    public string? Endpoint { get; set; }
 }

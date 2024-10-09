@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
-    [AutoInject] protected INotificationHubController pushNotificationController = default!;
+    [AutoInject] protected IPushNotificationController pushNotificationController = default!;
     [AutoInject] protected IConfiguration configuration = default!;
     [AutoInject] protected IJSRuntime jsRuntime = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
@@ -14,7 +14,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     public virtual bool NotificationsSupported => false;
     public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("VapidPublicKey"));
+        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AppSettings:PushNotification:WebPushVapidPublicKey"));
     }
 
     public async Task RegisterDevice(CancellationToken cancellationToken)

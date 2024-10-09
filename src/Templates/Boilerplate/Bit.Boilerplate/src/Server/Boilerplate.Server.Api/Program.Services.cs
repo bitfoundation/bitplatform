@@ -230,7 +230,7 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        services.AddHttpClient<AzureNotificationHubService>();
+        services.AddHttpClient<PushNotificationService>();
         //#endif
     }
 
