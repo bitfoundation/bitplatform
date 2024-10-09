@@ -20,6 +20,7 @@
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey">
                         <BitTextField @bind-Value="Model.Email"
                                       Type="BitInputType.Email"
+                                      Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.Email)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.Email)" />
@@ -28,6 +29,7 @@
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]" Key="@PhoneKey">
                         <BitTextField @bind-Value="Model.PhoneNumber"
                                       Type="BitInputType.Tel"
+                                      Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
@@ -58,7 +60,8 @@
 
             <BitButton Variant="BitVariant.Outline"
                        ButtonType="BitButtonType.Button"
-                       OnClick="WrapHandled(async () => await OnSendOtp.InvokeAsync())">
+                       OnClick="WrapHandled(async () => await OnSendOtp.InvokeAsync())"
+                       IsEnabled="@(Model.Email is not null || Model.PhoneNumber is not null)">
                 @Localizer[nameof(AppStrings.SendOtpButtonText)]
             </BitButton>
 
