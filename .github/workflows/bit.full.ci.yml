@@ -37,6 +37,7 @@ jobs:
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new uninstall Bit.Boilerplate
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
         # ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
@@ -63,7 +64,7 @@ jobs:
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
-      if: ${{ failure() && steps.sqlite-test.conclusion == 'failure' }}
+      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
       with:
         name: tests-artifact
         path: ./TestSqlite/src/Tests/TestResults
