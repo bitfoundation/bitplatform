@@ -682,92 +682,72 @@ public partial class BitPersonaDemo
     private readonly string example2RazorCode = @"
 <BitCheckbox @bind-Value=""isDetailsShown"" Label=""Include BitPersona details"" />
 
-<div>Size 8 Persona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size8""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 24 Persona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size24""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.None""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 32 Persona (Busy)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=@BitPersonaSize.Size32
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 40 Persona (Away)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size40""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Away""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 48 Persona (Blocked)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size48""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Blocked""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 56 Persona (Online)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size56""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 72 Persona (Busy)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             Size=""BitPersonaSize.Size72""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 100 Persona (Offline)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""Off""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size100""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Offline""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 120 Persona (Do Not Disturb)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 150 Persona (Do Not Disturb)</div>
-<BitPersona PrimaryText=""Annie Lindqvist""
+<BitPersona CoinSize=""150""
+            PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
-            CoinSize=""150""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
     private readonly string example2CsharpCode = @"
 private bool isDetailsShown = true;";
