@@ -590,6 +590,15 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
   </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>خوش آمدید</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>وارد حساب کاربری خود شوید با</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>ادامه</value>
+  </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
     <value>ورود سوشال</value>
   </data>
@@ -693,10 +702,28 @@
     <value>من رو به خاطر بسپار؟</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>کد احراز هویت</value>
+    <value>کد 2-عاملی</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>کد بازیابی</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>احراز هویت 2-عاملی</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>یک کد جدید از برنامه احراز هویت خود دریافت کنید یا از کد بازیابی خود استفاده کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>راه دیگری را آزمایش کنید</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
@@ -832,6 +859,21 @@
   </data>
     <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
+  </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>{0} خود را بررسی کنید</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>{0} خود را با ورود کد ارسال شده به {1} تایید کنید</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>کد</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>آیا کدی دریافت نکردید?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>ارسال دوباره</value>
   </data>
     <data name="OtpPlaceholder" xml:space="preserve">
     <value>رمز یکبار مصرف را وارد کنید</value>
