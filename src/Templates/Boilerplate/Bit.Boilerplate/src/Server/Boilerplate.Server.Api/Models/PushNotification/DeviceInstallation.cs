@@ -8,13 +8,14 @@ public class DeviceInstallation
     [Required, AllowedValues("apns", "fcmV1", "browser")]
     public string? Platform { get; set; }
 
+    [Required]
     public string? PushChannel { get; set; }
+
     public string? P256dh { get; set; }
     public string? Auth { get; set; }
     public string? Endpoint { get; set; }
 
     public Guid? UserId { get; set; }
-
     public string[] Tags { get; set; } = [];
 
     public DateTimeOffset? ExpirationTime { get; set; }

@@ -35,6 +35,11 @@ public partial class PushNotificationService
         deviceInstallation.Tags = [.. tags];
         deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime;
 
+        if (deviceInstallation.Platform is "browser")
+        {
+            deviceInstallation.PushChannel = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth).ToAdsPushToken();
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -52,7 +57,7 @@ public partial class PushNotificationService
 
         var devices = await dbContext.DeviceInstallations
             .WhereIf(tags.Any(), dev => dev.Tags.Any(t => tags.Contains(t)))
-            .OrderByIf(tags.Any() is false, _ => Guid.NewGuid())
+            .OrderByIf(tags.Any() is false, _ => EF.Functions.Random())
             .Take(100)
             .ToArrayAsync(cancellationToken);
 
@@ -68,29 +73,16 @@ public partial class PushNotificationService
             }
         };
 
-        var tasks = new List<Task>();
+        List<Task> tasks = [];
 
         foreach (var deviceInstallation in devices)
         {
-            switch (deviceInstallation.Platform)
-            {
-                case "browser":
-                    {
-                        var subscription = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth);
-                        tasks.Add(sender.BasicSendAsync(AdsPushTarget.BrowserAndPwa, subscription.ToAdsPushToken(), payload, cancellationToken));
-                        break;
-                    }
-                case "fcmV1":
-                    {
-                        break;
-                    }
-                case "apns":
-                    {
-                        break;
-                    }
-                default:
-                    throw new NotImplementedException();
-            }
+            var target = deviceInstallation.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
+                : deviceInstallation.Platform is "fcmV1" ? AdsPushTarget.Android
+                : deviceInstallation.Platform is "apns" ? AdsPushTarget.Ios
+                : throw new NotImplementedException();
+
+            tasks.Add(sender.BasicSendAsync(target, deviceInstallation.PushChannel, payload, cancellationToken));
         }
 
         await Task.WhenAll(tasks);
