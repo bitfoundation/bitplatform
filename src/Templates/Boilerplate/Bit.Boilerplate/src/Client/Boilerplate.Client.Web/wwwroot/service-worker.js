@@ -11,7 +11,7 @@ self.addEventListener('push', function (event) {
 
     self.registration.showNotification(data.title, {
 
-        body: data.body,
+        body: data.message,
 
         icon: '/images/icons/bit-icon-512.png'
 
