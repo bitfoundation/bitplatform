@@ -1,0 +1,81 @@
+@inherits AppComponentBase
+
+@{
+    var imageUrl = User?.ProfileImageName is null ? null : $"{profileImageUrl}&file={User.ProfileImageName}";
+}
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        <BitFileUpload Accept="image/*"
+                       AutoUploadEnabled
+                       MaxSize="1024 * 1024 * 10"
+                       ChunkedUploadEnabled="false"
+                       UploadUrl="@profileImageUploadUrl"
+                       OnUploading="() => isUploading = true"
+                       OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
+                       OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
+            <LabelTemplate>
+                <BitStack HorizontalAlign="BitAlignment.Center" Style="cursor:pointer">
+                    <BitPersona HidePersonaDetails
+                                ImageUrl="@imageUrl"
+                                Size=@BitPersonaSize.Size72 />
+                    <BitText Color="BitColor.Primary">
+                        @Localizer[nameof(AppStrings.UploadNewProfileImage)]
+                    </BitText>
+                </BitStack>
+            </LabelTemplate>
+            <FileViewTemplate Context="file">
+                @if (isUploading)
+                {
+                    <BitEllipsisLoading />
+                }
+            </FileViewTemplate>
+        </BitFileUpload>
+
+        @if (User?.ProfileImageName is not null)
+        {
+            <BitButton OnClick="RemoveProfileImage" Color="BitColor.Error">
+                @Localizer[nameof(AppStrings.Remove)]
+            </BitButton>
+        }
+        <br />
+        <EditForm Model="editUserDto" OnValidSubmit="WrapHandled(SaveProfile)">
+            <AppDataAnnotationsValidator />
+
+            <BitStack FillContent>
+                <BitTextField @bind-Value="editUserDto.FullName"
+                              Label="@Localizer[nameof(AppStrings.FullName)]"
+                              Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                <ValidationMessage For="@(() => editUserDto.FullName)" />
+
+                <BitDatePicker IsResponsive @bind-Value="editUserDto.BirthDate"
+                               Class="edit-profile-dtp"
+                               Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                               GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
+                               Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
+                <ValidationMessage For="@(() => editUserDto.BirthDate)" />
+
+                <BitChoiceGroup Horizontal
+                                @bind-Value="editUserDto.GenderAsString"
+                                TItem="BitChoiceGroupOption<string>" TValue="string"
+                                Label="@Localizer[nameof(AppStrings.Gender)]">
+                    <BitChoiceGroupOption Value="@Gender.Male.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderMale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Female.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                    <BitChoiceGroupOption Value="@Gender.Other.ToString()"
+                                          Text="@Localizer[nameof(AppStrings.GenderOther)]" />
+                </BitChoiceGroup>
+
+                <BitButton IsLoading="isSaving"
+                           ButtonType="BitButtonType.Submit"
+                           Title="@Localizer[nameof(AppStrings.Save)]">
+                    @Localizer[nameof(AppStrings.Save)]
+                </BitButton>
+            </BitStack>
+        </EditForm>
+        <br />
+    </BitStack>
+</section>
+
+<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />

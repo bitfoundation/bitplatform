@@ -205,8 +205,14 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>انتخاب زبان</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>داده های پروفایل خود را تغییر دهید</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل</value>
@@ -222,6 +228,12 @@
   </data>
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>جلسه ها</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>جلسه های فعال شما در دستگاههای مختلف</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>سشن‌های شما</value>
@@ -280,6 +292,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>ایمیل جدید را وارد کنید</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>تلفن</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>شماره تلفن</value>
@@ -481,6 +496,12 @@
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن حساب کاربری خود را تغییر دهید</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
@@ -700,6 +721,18 @@
   </data>
     <data name="RememberMe" xml:space="preserve">
     <value>من رو به خاطر بسپار؟</value>
+  </data>
+    <data name="Copy" xml:space="preserve">
+    <value>کپی</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>کپی شد</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>احراز هویت دو عاملی</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>احراز هویت چند عاملی حساب کاربری خود را مدیریت کنید</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
     <value>کد 2-عاملی</value>

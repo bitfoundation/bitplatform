@@ -11,7 +11,7 @@ public static partial class Urls
 
     public const string TermsPage = "/terms";
 
-    public const string ProfilePage = "/profile";
+    public const string SettingsPage = "/settings";
 
     public const string ConfirmPage = "/confirm";
 

@@ -27,14 +27,14 @@ public partial class NavPanel
             StateHasChanged();
         });
 
-        unsubUserDataChange = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
+        unsubUserDataChange = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
             user = (UserDto)payload;
             StateHasChanged();
         });
 
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
+        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
         var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
@@ -51,7 +51,7 @@ public partial class NavPanel
     private async Task GoToProfile()
     {
         await CloseMenu();
-        navManager.NavigateTo(Urls.ProfilePage);
+        navManager.NavigateTo(Urls.SettingsPage);
     }
 
     private async Task HandleNavItemClick(BitNavItem item)

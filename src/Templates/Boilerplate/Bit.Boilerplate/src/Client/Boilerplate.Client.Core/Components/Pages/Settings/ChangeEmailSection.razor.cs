@@ -1,24 +1,20 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ChangeEmailSection
 {
     private bool isWaiting;
-    private string? message;
-    private BitColor messageColor;
     private bool showConfirmation;
     private bool isEmailUnavailable = true;
-    private ElementReference messageRef = default!;
+    private BitSnackBar snackbarRef = default!;
     private readonly ChangeEmailRequestDto changeModel = new();
     private readonly SendEmailTokenRequestDto sendModel = new();
 
 
     [AutoInject] private IUserController userController = default!;
 
-
-    [Parameter] public bool Loading { get; set; }
 
     [Parameter] public string? Email { get; set; }
 
@@ -27,6 +23,7 @@ public partial class ChangeEmailSection
 
     [Parameter, SupplyParameterFromQuery(Name = "emailToken")]
     public string? EmailTokenQueryString { get; set; }
+
 
     protected override async Task OnInitAsync()
     {
@@ -55,7 +52,6 @@ public partial class ChangeEmailSection
         if (isWaiting || sendModel.Email == Email) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
@@ -65,15 +61,11 @@ public partial class ChangeEmailSection
             isEmailUnavailable = false;
             changeModel.Email = sendModel.Email;
 
-            messageColor = BitColor.Success;
-            message = Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)];
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Success(Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)]);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
@@ -86,19 +78,16 @@ public partial class ChangeEmailSection
         if (isWaiting) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo(Urls.ProfilePage);
+            NavigationManager.NavigateTo(Urls.SettingsPage);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
