@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
-using System.Reflection;
+//#if (notification == true)
+using Boilerplate.Shared.Dtos.PushNotification;
+//#endif
 
 namespace Microsoft.JSInterop;
 
@@ -24,6 +26,13 @@ public static partial class IJSRuntimeExtensions
     public static ValueTask<string> GoogleRecaptchaReset(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeAsync<string>("grecaptcha.reset");
+    }
+    //#endif
+
+    //#if (notification == true)
+    public static async ValueTask<DeviceInstallationDto> GetDeviceInstallation(this IJSRuntime jsRuntime, string vapidPublicKey)
+    {
+        return await jsRuntime.InvokeAsync<DeviceInstallationDto>("App.getDeviceInstallation", vapidPublicKey);
     }
     //#endif
 

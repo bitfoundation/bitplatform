@@ -1,4 +1,5 @@
-﻿using UserNotifications;
+﻿using Foundation;
+using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCenterDelegate
@@ -18,6 +19,6 @@ public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCen
             UNNotificationPresentationOptions.Sound);
 
         // Use the following code to get the action value from the push notification.
-        // var actionValue = response.Notification.Request.Content.UserInfo.ObjectForKey(new NSString("action")) as NSString;
+        // var actionValue = notification.Request.Content.UserInfo.ObjectForKey(new NSString("action")) as NSString;
     }
 }

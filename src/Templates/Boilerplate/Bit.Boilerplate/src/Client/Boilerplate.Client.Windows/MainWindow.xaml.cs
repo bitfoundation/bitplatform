@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebView.Wpf;
+﻿using Microsoft.Web.WebView2.Core;
+using Microsoft.AspNetCore.Components.WebView;
 
 namespace Boilerplate.Client.Windows;
 
@@ -26,6 +27,11 @@ public partial class MainWindow
         {
             AppWebView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml(App.Current.Resources["PrimaryBgColor"].ToString()!);
             await AppWebView.WebView.EnsureCoreWebView2Async();
+            AppWebView.WebView.CoreWebView2.PermissionRequested += async (sender, args) =>
+            {
+                args.Handled = true;
+                args.State = CoreWebView2PermissionState.Allow;
+            };
             var settings = AppWebView.WebView.CoreWebView2.Settings;
             if (AppEnvironment.IsDev() is false)
             {
@@ -37,5 +43,10 @@ public partial class MainWindow
                 await AppWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };
+    }
+
+    void BlazorWebViewInitializing(object sender, BlazorWebViewInitializingEventArgs e)
+    {
+        e.EnvironmentOptions = new() { AdditionalBrowserArguments = "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.0 --enable-notifications" };
     }
 }

@@ -47,6 +47,7 @@ jobs:
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools

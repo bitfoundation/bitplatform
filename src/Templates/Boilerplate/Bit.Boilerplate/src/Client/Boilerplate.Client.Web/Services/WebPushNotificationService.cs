@@ -2,5 +2,5 @@
 
 public partial class WebPushNotificationService : PushNotificationServiceBase
 {
-    public override bool NotificationsSupported => false;
+    public override bool NotificationsSupported => AppRenderMode.PwaEnabled;
 }

@@ -8,9 +8,9 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 {
     public override bool NotificationsSupported => GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) == ConnectionResult.Success;
 
-    public override string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
+    public string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
-    public override DeviceInstallationDto GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
         if (!NotificationsSupported)
             throw new InvalidOperationException(GetPlayServicesError());
@@ -21,7 +21,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),
-            Platform = "fcmv1",
+            Platform = "fcmV1",
             PushChannel = Token
         };
 

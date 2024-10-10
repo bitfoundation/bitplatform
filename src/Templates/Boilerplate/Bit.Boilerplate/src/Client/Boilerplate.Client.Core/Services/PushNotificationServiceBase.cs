@@ -1,45 +1,37 @@
-﻿using Boilerplate.Shared.Controllers;
+﻿using Boilerplate.Shared.Controllers.PushNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
 
 namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
-    [AutoInject] protected INotificationHubController pushNotificationController = default!;
-    [AutoInject] protected IStorageService storageService = default!;
+    [AutoInject] protected IPushNotificationController pushNotificationController = default!;
+    [AutoInject] protected IConfiguration configuration = default!;
+    [AutoInject] protected IJSRuntime jsRuntime = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
     public virtual string Token { get; set; }
     public virtual bool NotificationsSupported => false;
-    public virtual string GetDeviceId() => throw new NotImplementedException();
-    public virtual DeviceInstallationDto GetDeviceInstallation() => throw new NotImplementedException();
-
-    public async Task RegisterDeviceAsync(CancellationToken cancellationToken)
+    public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        if (NotificationsSupported is false)
-            return;
-
-        var deviceInstallation = GetDeviceInstallation();
-
-        await pushNotificationController.CreateOrUpdateInstallation(deviceInstallation, cancellationToken);
-
-        await storageService.SetItem("device_token", deviceInstallation.PushChannel);
+        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AdsPush:Primary:Vapid:PublicKey"));
     }
 
-    public async Task DeregisterDeviceAsync(CancellationToken cancellationToken)
+    public async Task RegisterDevice(CancellationToken cancellationToken)
     {
         if (NotificationsSupported is false)
             return;
 
-        var cachedToken = await storageService.GetItem("device_token");
+        var deviceInstallation = await GetDeviceInstallation();
 
-        if (cachedToken == null)
+        if (deviceInstallation is null)
             return;
 
-        var deviceId = GetDeviceId() ?? throw new InvalidOperationException("Unable to resolve an ID for the device.");
+        await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
+    }
 
-        await pushNotificationController.DeleteInstallation(deviceId, cancellationToken);
-
-        await storageService.RemoveItem("device_token");
+    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    {
+        await pushNotificationController.DeregisterDevice(deviceInstallationId, cancellationToken);
     }
 }

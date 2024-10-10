@@ -174,11 +174,11 @@
             "description": "Add SignalR sample."
         },
         "notification": {
-            "displayName": "Add Azure Notifications Hub?",
+            "displayName": "Add push notification?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add Azure Notifications Hub."
+            "description": "Add push notification."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",
@@ -427,11 +427,12 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
-                        "src/Server/Boilerplate.Server.Api/Controllers/NotificationHubController.cs",
-                        "src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
-                        "src/Server/Boilerplate.Server.Api/Services/AzureNotificationHubService.cs",
-                        "src/Shared/Controllers/INotificationHubController.cs",
-                        "src/Shared/Dtos/PushNotification/DeviceInstallationDto.cs"
+						"src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
+                        "src/Shared/Controllers/PushNotification/**",
+                        "src/Shared/Dtos/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs"
                     ]
                 },
                 {

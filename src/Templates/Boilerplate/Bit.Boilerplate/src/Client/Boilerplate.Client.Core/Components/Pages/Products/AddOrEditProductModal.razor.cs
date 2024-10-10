@@ -20,7 +20,7 @@ public partial class AddOrEditProductModal
 
     protected override async Task OnInitAsync()
     {
-        await LoadAllCategoriesAsync();
+        await LoadAllCategories();
     }
 
     public async Task ShowModal(ProductDto productToShow)
@@ -35,7 +35,7 @@ public partial class AddOrEditProductModal
         });
     }
 
-    private async Task LoadAllCategoriesAsync()
+    private async Task LoadAllCategories()
     {
         isLoading = true;
 

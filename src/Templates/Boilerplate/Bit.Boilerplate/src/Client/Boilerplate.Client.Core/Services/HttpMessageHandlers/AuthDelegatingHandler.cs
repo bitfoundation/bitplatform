@@ -13,7 +13,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
     {
         if (request.Headers.Authorization is null)
         {
-            var access_token = await tokenProvider.GetAccessTokenAsync();
+            var access_token = await tokenProvider.GetAccessToken();
             if (access_token is not null)
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
@@ -43,7 +43,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
             // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
             await authManager.RefreshToken();
 
-            var access_token = await tokenProvider.GetAccessTokenAsync();
+            var access_token = await tokenProvider.GetAccessToken();
 
             if (string.IsNullOrEmpty(access_token)) throw;
 

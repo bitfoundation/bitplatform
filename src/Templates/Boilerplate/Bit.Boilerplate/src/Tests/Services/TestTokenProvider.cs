@@ -6,7 +6,7 @@ public partial class TestTokenProvider : IAuthTokenProvider
 {
     [AutoInject] private IStorageService storageService = default!;
 
-    public async Task<string?> GetAccessTokenAsync()
+    public async Task<string?> GetAccessToken()
     {
         return await storageService.GetItem("access_token");
     }

@@ -16,7 +16,7 @@ public partial class ServerSideAuthTokenProvider : IAuthTokenProvider
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
-    public async Task<string?> GetAccessTokenAsync()
+    public async Task<string?> GetAccessToken()
     {
         if (jsRuntime.IsInitialized())
         {

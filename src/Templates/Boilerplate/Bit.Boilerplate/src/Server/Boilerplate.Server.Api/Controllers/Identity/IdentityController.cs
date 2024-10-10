@@ -9,7 +9,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -30,7 +29,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     //#if (notification == true)
-    [AutoInject] private AzureNotificationHubService azureNotificationHubService = default!;
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
 
     //#if (captcha == "reCaptcha")
@@ -317,7 +316,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (notification == true)
-        await azureNotificationHubService.RequestPush(text: Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
+        await pushNotificationService.RequestPush(title: "Boilerplate", message: Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
             tags: [user.Id.ToString()], cancellationToken: cancellationToken);
         //#endif
 

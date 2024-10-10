@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
 using Foundation;
 using UIKit;
-using UserNotifications;
 //#if (notification == true)
+using UserNotifications;
 using Boilerplate.Client.Maui.Platforms.iOS.Services;
 //#endif
 
@@ -55,7 +55,7 @@ public partial class AppDelegate : MauiUIApplicationDelegate
         try
         {
             NotificationService.Token = deviceToken.ToHexString()!;
-            await NotificationService.RegisterDeviceAsync(default);
+            await NotificationService.RegisterDevice(default);
         }
         catch (Exception exp)
         {

@@ -13,7 +13,8 @@
     <blazor:BlazorWebView
             x:Name="AppWebView"
             x:FieldModifier="public"
-            HostPage="wwwroot\index.html">
+            HostPage="wwwroot\index.html"
+            BlazorWebViewInitializing="BlazorWebViewInitializing">
         <blazor:BlazorWebView.RootComponents>
             <blazor:RootComponent ComponentType="{x:Type core:Routes}" Selector="#app-container" />
         </blazor:BlazorWebView.RootComponents>

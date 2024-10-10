@@ -45,6 +45,7 @@ jobs:
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
     - uses: actions/setup-node@v4
       with:
