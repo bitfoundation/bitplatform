@@ -1,22 +1,15 @@
 ﻿using Boilerplate.Client.Core.Services;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Tests;
+namespace Boilerplate.Tests.ApiTests;
 
 [TestClass]
-public partial class IdentityApiTests
+public partial class IdentityApiTests : ApiTestBase
 {
     [TestMethod]
     public async Task SignInTest()
     {
-        await using var server = new AppTestServer();
-
-        await server.Build(services =>
-        {
-            // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-        }).Start();
-
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
@@ -36,11 +29,7 @@ public partial class IdentityApiTests
     [TestMethod, ExpectedException(typeof(UnauthorizedException))]
     public async Task UnauthorizedAccessTest()
     {
-        await using var server = new AppTestServer();
-
-        await server.Build().Start();
-
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await using var scope = WebApp.Services.CreateAsyncScope();
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 

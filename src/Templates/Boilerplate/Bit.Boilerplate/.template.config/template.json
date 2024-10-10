@@ -293,6 +293,13 @@
                 ]
             },
             "replaces": "use-your-server-url-here.com"
+        },
+        "advancedTests": {
+            "displayName": "Include advanced automated tests?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Include advanced automated tests."
         }
     },
     "postActions": [
@@ -445,7 +452,8 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },
                 {
@@ -471,6 +479,24 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true)",
+                    "exclude": [
+                        "src/Tests/ApiTests/**",
+                        "src/Tests/PageTests/**",
+                        "src/Tests/TestBase/**",
+                        "src/Tests/Extensions/PageExtensions.cs",
+                        "src/Tests/Services/CulturedStringLocalizer.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests == true)",
+                    "exclude": [
+                        "src/Tests/IdentityApiTests.cs",
+                        "src/Tests/IdentityPagesTests.cs"
                     ]
                 }
             ]
