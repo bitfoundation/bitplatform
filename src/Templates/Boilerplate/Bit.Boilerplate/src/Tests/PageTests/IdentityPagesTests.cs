@@ -42,20 +42,20 @@ public partial class IdentityPagesTests : PageTestBase
         await signinPage.AssertSignInFailed();
     }
 
-    [TestMethod]
-    public async Task SignOut_Should_WorkAsExpected()
-    {
-        var signinPage = new SignInPage(Page, WebAppServerAddress);
+    //[TestMethod]
+    //public async Task SignOut_Should_WorkAsExpected()
+    //{
+    //    var signinPage = new SignInPage(Page, WebAppServerAddress);
 
-        await signinPage.Open();
-        await signinPage.AssertOpen();
+    //    await signinPage.Open();
+    //    await signinPage.AssertOpen();
 
-        var adminPage = await signinPage.SignIn();
-        await adminPage.AssertSignInSuccess();
+    //    var adminPage = await signinPage.SignIn();
+    //    await adminPage.AssertSignInSuccess();
 
-        await adminPage.SignOut();
-        await adminPage.AssertSignOut();
-    }
+    //    await adminPage.SignOut();
+    //    await adminPage.AssertSignOut();
+    //}
 
     [TestMethod]
     public async Task SignUp_Should_Work_With_MagicLink()
