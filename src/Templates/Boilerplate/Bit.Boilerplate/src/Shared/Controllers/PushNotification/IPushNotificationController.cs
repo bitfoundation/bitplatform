@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.PushNotification;
 
-namespace Boilerplate.Shared.Controllers;
+namespace Boilerplate.Shared.Controllers.PushNotification;
 
 [Route("api/[controller]/[action]/")]
 public interface IPushNotificationController : IAppController

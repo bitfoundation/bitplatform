@@ -1,9 +1,9 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Shared.Controllers;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Shared.Controllers.PushNotification;
 
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers.PushNotification;
 
 [Route("api/[controller]/[action]")]
 [ApiController, AllowAnonymous]

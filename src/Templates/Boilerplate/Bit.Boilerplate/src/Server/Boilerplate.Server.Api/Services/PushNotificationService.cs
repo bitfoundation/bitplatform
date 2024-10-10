@@ -3,17 +3,9 @@ using AdsPush.Vapid;
 using AdsPush.Abstraction;
 using System.Collections.Concurrent;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Services;
-
-public class DeviceInstallation : DeviceInstallationDto
-{
-    public Guid? UserId { get; set; }
-
-    public string[] Tags { get; set; } = [];
-
-    public DateTimeOffset? ExpirationTime { get; set; }
-}
 
 public partial class PushNotificationService
 {

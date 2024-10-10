@@ -427,9 +427,9 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
-                        "src/Server/Boilerplate.Server.Api/Controllers/PushNotificationController.cs",
+                        "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
-                        "src/Shared/Controllers/IPushNotificationController.cs",
+                        "src/Shared/Controllers/PushNotification/**",
                         "src/Shared/Dtos/PushNotification/DeviceInstallationDto.cs"
                     ]
                 },
