@@ -49,6 +49,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/Main/UserMenu.razor.css",
+        "inputFile": "Components/Layout/Main/UserMenu.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/AppErrorBoundary.razor.css",
         "inputFile": "Components/Layout/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },

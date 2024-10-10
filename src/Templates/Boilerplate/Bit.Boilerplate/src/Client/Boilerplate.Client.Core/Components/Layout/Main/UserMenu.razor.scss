@@ -1,0 +1,9 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep .callout {
+    @include lt-md {
+        height: unset;
+        bottom: var(--app-inset-bottom);
+        top: var(--app-inset-top) !important;
+    }
+}
