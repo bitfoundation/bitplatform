@@ -9,7 +9,7 @@ public partial class IdentityApiTests : ApiTestBase
     [TestMethod]
     public async Task SignInTest()
     {
-        await using var scope = Services.CreateAsyncScope();
+        await using var scope = WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
@@ -29,7 +29,7 @@ public partial class IdentityApiTests : ApiTestBase
     [TestMethod, ExpectedException(typeof(UnauthorizedException))]
     public async Task UnauthorizedAccessTest()
     {
-        await using var scope = Services.CreateAsyncScope();
+        await using var scope = WebApp.Services.CreateAsyncScope();
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 

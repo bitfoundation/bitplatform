@@ -1,13 +1,13 @@
-﻿namespace Boilerplate.Tests.TestBase;
+﻿using Microsoft.AspNetCore.Builder;
+
+namespace Boilerplate.Tests.TestBase;
 
 [TestClass]
 public partial class PageTestBase : PageTest
 {
     private AppTestServer TestServer = null!;
-
-    public Uri ServerAddress { get; private set; } = null!;
-    public IServiceProvider Services { get; private set; } = null!;
-    public IConfiguration Configuration { get; private set; } = null!;
+    public WebApplication WebApp => TestServer.WebApp;
+    public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
 
     [TestInitialize]
     public async Task InitializeTestServer()
@@ -18,10 +18,6 @@ public partial class PageTestBase : PageTest
         {
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
-
-        ServerAddress = TestServer.WebAppServerAddress;
-        Services = TestServer.WebApp.Services;
-        Configuration = TestServer.WebApp.Configuration;
     }
 
     [TestCleanup]
