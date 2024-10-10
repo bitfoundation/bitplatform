@@ -1,9 +1,7 @@
 ﻿using AdsPush;
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
-using System.Collections.Concurrent;
 using Boilerplate.Shared.Dtos.PushNotification;
-using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -11,10 +9,9 @@ public partial class PushNotificationService
 {
     [AutoInject] private IAdsPushSenderFactory adsPushSenderFactory = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private AppDbContext dbContext = default!;
 
-    private static ConcurrentDictionary<string, DeviceInstallation> deviceInstallations = new();
-
-    public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
+    public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
@@ -25,20 +22,20 @@ public partial class PushNotificationService
             tags.Add(userId.ToString()!);
         }
 
-        deviceInstallations.Remove(deviceInstallation.InstallationId!, out _);
+        var deviceInstallation = await dbContext.DeviceInstallations.FindAsync([dto.InstallationId], cancellationToken);
 
-        deviceInstallations.TryAdd(deviceInstallation.InstallationId!, new()
+        if (deviceInstallation is null)
         {
-            Auth = deviceInstallation.Auth,
-            Endpoint = deviceInstallation.Endpoint,
-            InstallationId = deviceInstallation.InstallationId,
-            P256dh = deviceInstallation.P256dh,
-            Platform = deviceInstallation.Platform,
-            PushChannel = deviceInstallation.PushChannel,
-            UserId = userId,
-            Tags = [.. tags],
-            ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime
-        });
+            dbContext.DeviceInstallations.Add(deviceInstallation = new() { InstallationId = dto.InstallationId });
+        }
+
+        dto.Patch(deviceInstallation);
+
+        deviceInstallation.UserId = userId;
+        deviceInstallation.Tags = [.. tags];
+        deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, CancellationToken cancellationToken = default)
@@ -47,27 +44,49 @@ public partial class PushNotificationService
 
         var sender = adsPushSenderFactory.GetSender("Primary");
 
-        foreach (var deviceInstallation in deviceInstallations.Values)
+        var devices = await dbContext.DeviceInstallations
+            .WhereIf(tags.Any(), dev => dev.Tags.Any(t => tags.Contains(t)))
+            .OrderByIf(tags.Any() is false, _ => Guid.NewGuid())
+            .Take(100)
+            .ToArrayAsync(cancellationToken);
+
+        var payload = new AdsPushBasicSendPayload()
         {
-            if (tags.Any() && deviceInstallation.Tags.Any(dt => tags.Contains(dt)) is false)
-                continue;
-
-            if (deviceInstallation.Platform is not "browser")
-                continue;
-
-            var subscription = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth);
-
-            await sender.BasicSendAsync(AdsPushTarget.BrowserAndPwa, subscription.ToAdsPushToken(), new()
+            Title = AdsPushText.CreateUsingString(title),
+            Detail = AdsPushText.CreateUsingString(message),
+            Parameters = new Dictionary<string, object>()
             {
-                Title = AdsPushText.CreateUsingString(title),
-                Detail = AdsPushText.CreateUsingString(message),
-                Parameters = new Dictionary<string, object>()
                 {
-                    {
-                        "action", action ?? string.Empty
-                    }
+                    "action", action ?? string.Empty
                 }
-            }, cancellationToken);
+            }
+        };
+
+        var tasks = new List<Task>();
+
+        foreach (var deviceInstallation in devices)
+        {
+            switch (deviceInstallation.Platform)
+            {
+                case "browser":
+                    {
+                        var subscription = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth);
+                        tasks.Add(sender.BasicSendAsync(AdsPushTarget.BrowserAndPwa, subscription.ToAdsPushToken(), payload, cancellationToken));
+                        break;
+                    }
+                case "fcmV1":
+                    {
+                        break;
+                    }
+                case "apns":
+                    {
+                        break;
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
         }
+
+        await Task.WhenAll(tasks);
     }
 }

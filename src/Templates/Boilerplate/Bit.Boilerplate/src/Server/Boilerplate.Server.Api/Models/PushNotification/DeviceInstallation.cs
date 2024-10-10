@@ -2,7 +2,7 @@
 
 public class DeviceInstallation
 {
-    [Required]
+    [Required, Key]
     public string? InstallationId { get; set; }
 
     [Required, AllowedValues("apns", "fcmV1", "browser")]
