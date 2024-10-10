@@ -73,7 +73,7 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
         await Assertions.Expect(page.GetByText(email).First).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByText(email).Nth(1)).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync(new() { Visible = false });
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 
     private static string ReadEmlAndGetHtmlBody(string toMailAddress)

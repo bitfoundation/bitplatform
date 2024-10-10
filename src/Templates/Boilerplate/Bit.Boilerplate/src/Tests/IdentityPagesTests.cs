@@ -31,17 +31,21 @@ public partial class IdentityPagesTests : PageTest
 
         Assert.IsNotNull(response);
         Assert.AreEqual(StatusCodes.Status200OK, response.Status);
+        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInTitle);
 
         const string email = "test@bitplatform.dev";
         const string password = "123456";
+        const string userFullName = "Boilerplate test account";
 
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
 
-        await Assertions.Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
-        await Expect(Page.Locator(".persona")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".persona")).ToContainTextAsync("Boilerplate test account");
+        await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
+        await Expect(Page.GetByText(userFullName).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(userFullName).Nth(1)).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 }

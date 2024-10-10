@@ -13,7 +13,7 @@ public partial class IdentityApiTests : ApiTestBase
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
-        var signInResponse = await authenticationManager.SignIn(new()
+        await authenticationManager.SignIn(new()
         {
             Email = "test@bitplatform.dev",
             Password = "123456"
@@ -26,13 +26,13 @@ public partial class IdentityApiTests : ApiTestBase
         Assert.AreEqual(Guid.Parse("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), user.Id);
     }
 
-    [TestMethod, ExpectedException(typeof(UnauthorizedException))]
+    [TestMethod]
     public async Task UnauthorizedAccessTest()
     {
         await using var scope = WebApp.Services.CreateAsyncScope();
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
-        var user = await userController.GetCurrentUser(default);
+        await Assert.ThrowsExceptionAsync<UnauthorizedException>(() => userController.GetCurrentUser(default));
     }
 }

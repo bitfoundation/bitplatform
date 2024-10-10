@@ -5,15 +5,13 @@ namespace Boilerplate.Tests.TestBase;
 [TestClass]
 public partial class PageTestBase : PageTest
 {
-    private AppTestServer TestServer = null!;
+    private readonly AppTestServer TestServer = new();
     public WebApplication WebApp => TestServer.WebApp;
     public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
-        TestServer = new AppTestServer();
-
         await TestServer.Build(services =>
         {
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
@@ -41,6 +39,14 @@ public partial class PageTestBase : PageTest
     {
         var options = base.ContextOptions();
         options.RecordVideoDir = GetVideoDirectory(TestContext);
+
+        var currentTestMethod = GetType().GetMethod(TestContext.ManagedMethod!);
+        var isAuthenticated = currentTestMethod!.GetCustomAttributes(typeof(AuthenticatedAttribute), false).Length > 0;
+        if (isAuthenticated)
+        {
+            options.StorageState = TestInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
+        }
+
         return options;
     }
 
@@ -50,3 +56,6 @@ public partial class PageTestBase : PageTest
         return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
     }
 }
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class AuthenticatedAttribute : Attribute;

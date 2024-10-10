@@ -26,8 +26,8 @@ public partial class IdentityPagesTests : PageTestBase
         await signinPage.Open();
         await signinPage.AssertOpen();
 
-        var adminPage = await signinPage.SignIn();
-        await adminPage.AssertSignInSuccess();
+        var signedInPage = await signinPage.SignIn();
+        await signedInPage.AssertSignInSuccess();
     }
 
     [TestMethod]
@@ -42,20 +42,18 @@ public partial class IdentityPagesTests : PageTestBase
         await signinPage.AssertSignInFailed();
     }
 
-    //[TestMethod]
-    //public async Task SignOut_Should_WorkAsExpected()
-    //{
-    //    var signinPage = new SignInPage(Page, WebAppServerAddress);
+    [TestMethod]
+    [Authenticated]
+    public async Task SignOut_Should_WorkAsExpected()
+    {
+        var homePage = new IdentityLayout(Page, WebAppServerAddress, Urls.HomePage, AppStrings.HomeTitle);
 
-    //    await signinPage.Open();
-    //    await signinPage.AssertOpen();
+        await homePage.Open();
+        await homePage.AssertOpen();
 
-    //    var adminPage = await signinPage.SignIn();
-    //    await adminPage.AssertSignInSuccess();
-
-    //    await adminPage.SignOut();
-    //    await adminPage.AssertSignOut();
-    //}
+        await homePage.SignOut();
+        await homePage.AssertSignOut();
+    }
 
     [TestMethod]
     public async Task SignUp_Should_Work_With_MagicLink()
@@ -65,8 +63,7 @@ public partial class IdentityPagesTests : PageTestBase
         await testServer.Build(services =>
         {
             //#if (captcha == "reCaptcha")
-            var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
-            services.Replace(descriptor);
+            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
             //#endif
         }).Start();
 
@@ -93,8 +90,7 @@ public partial class IdentityPagesTests : PageTestBase
         await testServer.Build(services =>
         {
             //#if (captcha == "reCaptcha")
-            var descriptor = ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
-            services.Replace(descriptor);
+            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
             //#endif
         }).Start();
 

@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Tests.PageTests.PageModels;
 
-public partial class AdminLayout(IPage page, Uri serverAddress, string pagePath, string pageTitle)
+public partial class IdentityLayout(IPage page, Uri serverAddress, string pagePath, string pageTitle)
     : MainLayout(page, serverAddress, pagePath, pageTitle)
 {
     public async Task AssertSignInSuccess(string userFullName = "Boilerplate test account")
@@ -10,7 +10,7 @@ public partial class AdminLayout(IPage page, Uri serverAddress, string pagePath,
         await Assertions.Expect(page.GetByText(userFullName).First).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByText(userFullName).Nth(1)).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync(new() { Visible = false });
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 
     public async Task SignOut()
@@ -23,7 +23,7 @@ public partial class AdminLayout(IPage page, Uri serverAddress, string pagePath,
     {
         await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
         await Assertions.Expect(page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync(new() { Visible = false });
-        await Assertions.Expect(page.Locator(".persona")).ToBeVisibleAsync(new() { Visible = false });
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeHiddenAsync();
+        await Assertions.Expect(page.Locator(".persona")).ToBeHiddenAsync();
     }
 }
