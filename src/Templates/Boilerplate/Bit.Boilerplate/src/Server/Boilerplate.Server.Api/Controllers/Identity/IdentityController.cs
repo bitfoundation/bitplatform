@@ -9,7 +9,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
