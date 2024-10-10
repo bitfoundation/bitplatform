@@ -9,6 +9,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -116,17 +117,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
             {
-                result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
-            {
-                result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
-            {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
+                result = await CheckTwoFactorCode(request.TwoFactorCode);
             }
             else
             {
@@ -151,6 +144,23 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
             throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    private async Task<Microsoft.AspNetCore.Identity.SignInResult> CheckTwoFactorCode(string code)
+    {
+        var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(code);
+
+        if (result.Succeeded is false)
+        {
+            result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, code, false, false);
+        }
+
+        if (result.Succeeded is false)
+        {
+            result = await signInManager.TwoFactorAuthenticatorSignInAsync(code, false, false);
+        }
+
+        return result;
     }
 
     /// <summary>

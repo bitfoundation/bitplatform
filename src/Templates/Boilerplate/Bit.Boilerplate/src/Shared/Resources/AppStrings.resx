@@ -552,7 +552,7 @@
     <value>Haven’t you received the confirmation email?</value>
   </data>
     <data name="Or" xml:space="preserve">
-    <value>Or</value>
+    <value>or</value>
   </data>
     <data name="ProfileImage" xml:space="preserve">
     <value>Profile Image</value>
@@ -589,6 +589,15 @@
   </data>
     <data name="SignInTitle" xml:space="preserve">
     <value>Sign in</value>
+  </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>Welcome back</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>Sign in to your account with</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>Continue</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
     <value>Social signed in</value>
@@ -693,10 +702,25 @@
     <value>Remember me?</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>Authenticator code</value>
+    <value>2FA code</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>Recovery code</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>2-Factor Authentication</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Get a new code from your authenticator app or use your recovery code.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Try another way</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>You can get a new code at your email or phone.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
@@ -832,6 +856,21 @@
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>
+  </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>Check your {0}</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>Confirm your {0} by entering the code sent to {1}</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>Didn't get the code?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>Resend</value>
   </data>
     <data name="OtpPlaceholder" xml:space="preserve">
     <value>Enter OTP</value>
