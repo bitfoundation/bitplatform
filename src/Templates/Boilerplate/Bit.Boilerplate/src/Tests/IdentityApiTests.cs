@@ -16,7 +16,7 @@ public partial class IdentityApiTests
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
 
-        await using var scope = server.Services.CreateAsyncScope();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
 
@@ -40,7 +40,7 @@ public partial class IdentityApiTests
 
         await server.Build().Start();
 
-        await using var scope = server.Services.CreateAsyncScope();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 

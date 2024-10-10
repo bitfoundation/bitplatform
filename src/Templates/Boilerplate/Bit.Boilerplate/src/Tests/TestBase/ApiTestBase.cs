@@ -19,9 +19,9 @@ public partial class ApiTestBase
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
 
-        Services = TestServer.Services;
-        ServerAddress = TestServer.ServerAddress;
-        Configuration = TestServer.Configuration;
+        ServerAddress = TestServer.WebAppServerAddress;
+        Services = TestServer.WebApp.Services;
+        Configuration = TestServer.WebApp.Configuration;
     }
 
     [TestCleanup]

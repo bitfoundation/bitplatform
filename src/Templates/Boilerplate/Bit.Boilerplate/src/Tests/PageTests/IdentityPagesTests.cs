@@ -59,7 +59,7 @@ public partial class IdentityPagesTests : PageTestBase
             //#endif
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.ServerAddress);
+        var signupPage = new SignUpPage(Page, testServer.WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.SignUp();
@@ -78,7 +78,7 @@ public partial class IdentityPagesTests : PageTestBase
             //#endif
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.ServerAddress);
+        var signupPage = new SignUpPage(Page, testServer.WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.SignUp(usingMagicLink: false);

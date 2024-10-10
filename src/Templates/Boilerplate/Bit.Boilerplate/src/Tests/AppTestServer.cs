@@ -1,7 +1,5 @@
 ﻿using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
-using Boilerplate.Server.Api.Data;
-using System.Data.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -11,12 +9,11 @@ namespace Boilerplate.Tests;
 public partial class AppTestServer : IAsyncDisposable
 {
     private WebApplication? webApp;
-    public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"WebApp is null. Call {nameof(Build)} method first.");
-    public Uri ServerAddress => new(WebApp.Urls.First());
-    public IServiceProvider Services => WebApp.Services;
-    public IConfiguration Configuration => WebApp.Configuration;
+    public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
+    public Uri WebAppServerAddress => new(WebApp.Urls.First());
 
-    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
+    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
+        Action<ConfigurationManager> configureTestConfigurations = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
@@ -33,6 +30,8 @@ public partial class AppTestServer : IAsyncDisposable
 
         builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
+        configureTestConfigurations?.Invoke(builder.Configuration);
+
         builder.AddTestProjectServices();
 
         configureTestServices?.Invoke(builder.Services);
@@ -48,7 +47,7 @@ public partial class AppTestServer : IAsyncDisposable
     {
         await WebApp.StartAsync();
 
-        WebApp.Configuration["ServerAddress"] = ServerAddress.ToString();
+        WebApp.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
     }
 
     public async ValueTask DisposeAsync()
