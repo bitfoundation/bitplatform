@@ -1,57 +1,35 @@
 @inherits AppComponentBase
 
-<div style="width:100%">
-    <div @ref="messageRef" class="form-message-bar">
-        @if (string.IsNullOrEmpty(message) is false)
-        {
-            <BitMessage Color="messageColor" OnDismiss="() => message = null">@message</BitMessage>
-        }
-    </div>
-
-    <BitText Typography="BitTypography.H2">
-        @Localizer[nameof(AppStrings.ChangePhoneNumberTitle)]
-    </BitText>
-
-    <br />
-
-    @if (Loading)
-    {
-        <div class="loading-container">
-            <BitRingLoading />
-        </div>
-    }
-    else
-    {
-        if (showConfirmation is false)
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        @if (showConfirmation is false)
         {
             <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" class="change-phone-form">
                 <AppDataAnnotationsValidator />
 
-                <div class="form-input-container">
-                    <BitLabel>@Localizer[nameof(AppStrings.CurrentPhoneNumber)]</BitLabel>
-                    <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Style="width:100%;max-width:unset" />
-                </div>
+                <BitStack FillContent>
+                    <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Color="BitColor.Info" />
 
-                <div class="form-input-container">
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
                                   Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.NewPhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.NewPhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => sendModel.PhoneNumber)" />
-                </div>
 
-                <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
-                    @Localizer[nameof(AppStrings.Submit)]
-                </BitButton>
-                <br />
-                <div>
-                    @Localizer[nameof(AppStrings.ConfirmMessageInProfile)]
-                    <BitButton ButtonType="BitButtonType.Button"
-                               Variant="BitVariant.Text"
-                               OnClick="() => showConfirmation = true">
-                        @Localizer[nameof(AppStrings.Confirm)]
+                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                        @Localizer[nameof(AppStrings.Submit)]
                     </BitButton>
-                </div>
+
+                    <div>
+                        @Localizer[nameof(AppStrings.ConfirmMessageInProfile)]
+                        <BitButton ButtonType="BitButtonType.Button"
+                                   Variant="BitVariant.Text"
+                                   OnClick="() => showConfirmation = true">
+                            @Localizer[nameof(AppStrings.Confirm)]
+                        </BitButton>
+                    </div>
+                    <br />
+                </BitStack>
             </EditForm>
         }
         else
@@ -61,46 +39,45 @@
                 <br />
                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
             </BitText>
-            <br />
-            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" class="change-phone-form">
+
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)">
                 <AppDataAnnotationsValidator />
 
-                <div class="form-input-container">
+                <BitStack FillContent>
                     <BitTextField @bind-Value="changeModel.PhoneNumber"
                                   IsEnabled="isPhoneNumberUnavailable"
                                   Type="BitInputType.Tel"
                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
-                </div>
 
-                <div class="form-input-container">
                     <BitTextField @bind-Value="changeModel.Token"
                                   Type="BitInputType.Number"
                                   Label="@Localizer[nameof(AppStrings.PhoneToken)]"
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
-                </div>
-                <br />
-                <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
-                    @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
-                </BitButton>
-                <br />
-                <BitButton ButtonType="BitButtonType.Button"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Back"
-                           OnClick="GoBack">
-                    @Localizer[nameof(AppStrings.GoBack)]
-                </BitButton>
+
+                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                        @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
+                    </BitButton>
+
+                    <div>
+                        <BitButton ButtonType="BitButtonType.Button"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Back"
+                                   OnClick="GoBack">
+                            @Localizer[nameof(AppStrings.GoBack)]
+                        </BitButton>
+                    </div>
+                </BitStack>
             </EditForm>
+
             @if (isPhoneNumberUnavailable is false)
             {
-                <br />
-                <br />
                 <BitText Typography="BitTypography.Body1" Gutter>
                     @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
                 </BitText>
-                <br />
+
                 <BitButton IsLoading="isWaiting"
                            ButtonType="BitButtonType.Button"
                            Variant="BitVariant.Outline"
@@ -108,6 +85,10 @@
                     @Localizer[nameof(AppStrings.ResendPhoneTokenButtonText)]
                 </BitButton>
             }
+            <br />
         }
-    }
-</div>
+    </BitStack>
+</section>
+
+<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />
+

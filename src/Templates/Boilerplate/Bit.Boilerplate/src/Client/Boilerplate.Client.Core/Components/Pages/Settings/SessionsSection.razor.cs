@@ -1,17 +1,15 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
-public partial class UserSessionsSection
+public partial class SessionsSection
 {
     private bool isLoading;
     private bool isWaiting;
-    private string? message;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private ElementReference messageRef = default!;
-    private BitColor messageColor = BitColor.Error;
+    private BitSnackBar snackbarRef = default!;
     private IEnumerable<UserSessionDto> otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
@@ -47,26 +45,21 @@ public partial class UserSessionsSection
         if (isWaiting || session.SessionUniqueId == currentSessionId) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
             await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
 
-            message = Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)];
-            messageColor = BitColor.Success;
-
+            await snackbarRef.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
             await LoadSessions();
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
             isWaiting = false;
-            await messageRef.ScrollIntoView();
         }
     }
 

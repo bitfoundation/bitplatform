@@ -16,7 +16,7 @@ public partial class IdentityPagesTests : PageTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
 
-        await Page.GotoAsync(new Uri(server.GetServerAddress(), Urls.ProfilePage).ToString());
+        await Page.GotoAsync(new Uri(server.GetServerAddress(), Urls.SettingsPage).ToString());
 
         await Expect(Page).ToHaveURLAsync(new Regex(@".*sign-in\?return-url=profile"));
     }

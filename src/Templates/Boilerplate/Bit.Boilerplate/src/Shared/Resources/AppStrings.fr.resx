@@ -205,8 +205,14 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Sélectionnez la langue</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profil</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>Modifier vos données de profil</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Editer le profil</value>
@@ -222,6 +228,12 @@
   </data>
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Le jeton de changement de numéro de téléphone vous a été envoyé</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>Your active sessions across multiple devices</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>Vos séances</value>
@@ -280,6 +292,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>Entrez un nouvel e-mail</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>Téléphone</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Numéro de téléphone</value>
@@ -481,6 +496,12 @@
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>Vous pouvez maintenant vous connecter avec votre compte.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>Compte</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>Changer l'e-mail ou le numéro de téléphone de votre compte</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Supprimer le compte</value>
@@ -700,6 +721,18 @@
   </data>
     <data name="RememberMe" xml:space="preserve">
     <value>Souviens-toi de moi?</value>
+  </data>
+    <data name="Copy" xml:space="preserve">
+    <value>Copie</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>Copié</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>Authentification à deux facteurs</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>Gérez l'authentification multifacteur de votre compte</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
     <value>Code 2FA</value>

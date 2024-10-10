@@ -1,0 +1,149 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack>
+        @if (isTwoFactorAuthEnabled is false)
+        {
+            <BitText>@Localizer[nameof(AppStrings.TfaConfigureAutAppTitle)]</BitText>
+
+            <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                @Localizer[nameof(AppStrings.TfaConfigureAutAppSubtitle)]
+            </BitText>
+
+            <ol style="padding-inline-start: 1rem;">
+                <li>
+                    @(new MarkupString(Localizer[nameof(AppStrings.TfaConfigureAutAppStep1),
+                        "<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en\">Android</a>",
+                        "<a href=\"https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8\">iOS</a>"]))
+                </li>
+                <br />
+                <li>
+                    <BitStack FillContent>
+                        @Localizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
+                        <a href="@authenticatorUri">
+                            <img src="data:image/png;base64,@qrCode" style="width:256px" />
+                        </a>
+                        <BitCard FullWidth>
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitText Typography="BitTypography.Button">@sharedKey</BitText>
+                                <BitSpacer />
+                                <BitButton IconOnly
+                                           Variant="BitVariant.Text"
+                                           OnClick="WrapHandled(CopySharedKeyToClipboard)"
+                                           IconName="@(isKeyCopiedShown ? BitIconName.Clipboard : BitIconName.Copy)"
+                                           Title="@Localizer[isKeyCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]" />
+                            </BitStack>
+                        </BitCard>
+                    </BitStack>
+                </li>
+                <br />
+                <li>
+                    @Localizer[nameof(AppStrings.TfaConfigureAutAppStep3)]
+                    <br />
+                    <br />
+                    <div>
+                        <BitTextField @bind-Value="verificationCode"
+                                      Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
+                                      AutoComplete="@BitAutoCompleteValue.Off"
+                                      Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
+                        <br />
+                        <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">
+                            @Localizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]
+                        </BitButton>
+                    </div>
+                </li>
+            </ol>
+        }
+        else
+        {
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
+                    @if (recoveryCodesLeft == 0)
+                    {
+                        <BitMessage Color="BitColor.Error" Multiline Style="margin-bottom:1rem">
+                            <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftTitle)]</strong>
+                            <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftSubtitle)]</p>
+                        </BitMessage>
+                    }
+                    else if (recoveryCodesLeft == 1)
+                    {
+                        <BitMessage Color="BitColor.SevereWarning" Multiline Style="margin-bottom:1rem">
+                            <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftTitle)]</strong>
+                            <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesOneLeftSubtitle)]</p>
+                        </BitMessage>
+                    }
+                    else if (recoveryCodesLeft <= 3)
+                    {
+                        <BitMessage Color="BitColor.Warning" Multiline Style="margin-bottom:1rem">
+                            <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftTitle), recoveryCodesLeft]</strong>
+                            <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftSubtitle)]</p>
+                        </BitMessage>
+                    }
+
+                    @if (recoveryCodes is null)
+                    {
+                        <BitMessage Color="BitColor.Warning" Multiline Style="margin-bottom:1rem">
+                            @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
+                        </BitMessage>
+
+                        <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
+                            @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
+                        </BitButton>
+                    }
+                    else
+                    {
+                        <BitStack>
+                            <BitMessage Color="BitColor.Warning" Multiline>
+                                <strong>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarningTitle)]</strong>
+                                <br />
+                                <p>@Localizer[nameof(AppStrings.TfaRecoveryCodesWarning)]</p>
+                            </BitMessage>
+
+                            <BitCard FullWidth>
+                                <BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText><b>@Localizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</b></BitText>
+                                        <BitSpacer />
+                                        <BitButton IconOnly
+                                                   Variant="BitVariant.Text"
+                                                   OnClick="WrapHandled(CopyRecoveryCodesToClipboard)"
+                                                   IconName="@(isCodesCopiedShown ? BitIconName.Clipboard : BitIconName.Copy)"
+                                                   Title="@Localizer[isCodesCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]" />
+                                    </BitStack>
+                                    @foreach (var recoveryCode in recoveryCodes)
+                                    {
+                                        <BitText Typography="BitTypography.Button">@recoveryCode</BitText>
+                                    }
+                                </BitStack>
+                            </BitCard>
+                        </BitStack>
+                    }
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaAuthAppHeader)]">
+                    <BitMessage Color="BitColor.Warning" Multiline Style="margin:1rem 0">
+                        <strong>@Localizer[nameof(AppStrings.TfaAuthAppWarningTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaAuthAppWarning)]</p>
+                    </BitMessage>
+
+                    <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">
+                        @Localizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
+                    </BitButton>
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.TfaDisable2faHeader)]">
+                    <BitMessage Color="BitColor.Warning" Multiline Style="margin:1rem 0">
+                        <strong>@Localizer[nameof(AppStrings.TfaDisable2faWarningTitle)]</strong>
+                        <p>@Localizer[nameof(AppStrings.TfaDisable2faWarning)]</p>
+                    </BitMessage>
+
+                    <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">
+                        @Localizer[nameof(AppStrings.TfaDisable2faButtonText)]
+                    </BitButton>
+                </BitPivotItem>
+            </BitPivot>
+        }
+    </BitStack>
+</section>
+
+<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />

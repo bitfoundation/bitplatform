@@ -2,16 +2,18 @@
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 [Authorize]
-public partial class ProfilePage
+public partial class SettingsPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.ProfileTitle)];
+    protected override string? Title => Localizer[nameof(AppStrings.Settings)];
     protected override string? Subtitle => string.Empty;
 
     private UserDto? user;
     private bool isLoading;
+    private int openedAccordion = 0;
+    private string? profileImageUrl;
 
     [AutoInject] private IUserController userController = default!;
 
@@ -23,6 +25,10 @@ public partial class ProfilePage
         try
         {
             user = await userController.GetCurrentUser(CurrentCancellationToken);
+
+            var serverAddress = Configuration.GetServerAddress();
+            var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
+            profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
         }
         finally
         {
