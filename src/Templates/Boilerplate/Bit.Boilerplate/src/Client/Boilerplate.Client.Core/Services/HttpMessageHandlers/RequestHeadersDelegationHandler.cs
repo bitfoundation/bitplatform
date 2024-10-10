@@ -13,11 +13,14 @@ public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
 
         if (CultureInfoManager.MultilingualEnabled)
         {
-            var cultureName = string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) ? "en-US" : CultureInfo.CurrentUICulture.Name;
-            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
+            var cultureName = CultureInfo.CurrentUICulture.Name;
+            if (string.IsNullOrWhiteSpace(cultureName))
+                cultureName = CultureInfoManager.DefaultCulture.Name;
+
+            if (string.IsNullOrWhiteSpace(cultureName) is false)
+                request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
         }
 
         return await base.SendAsync(request, cancellationToken);
     }
 }
-
