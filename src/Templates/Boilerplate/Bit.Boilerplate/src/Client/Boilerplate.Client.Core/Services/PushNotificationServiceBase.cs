@@ -27,6 +27,11 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
         if (deviceInstallation is null)
             return;
 
-        await pushNotificationController.CreateOrUpdateInstallation(deviceInstallation, cancellationToken);
+        await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
+    }
+
+    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    {
+        await pushNotificationController.DeregisterDevice(deviceInstallationId, cancellationToken);
     }
 }

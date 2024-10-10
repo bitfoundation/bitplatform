@@ -11,7 +11,7 @@ public partial class PushNotificationService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private AppDbContext dbContext = default!;
 
-    public async Task CreateOrUpdateInstallation([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
+    public async Task RegisterDevice([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
@@ -35,6 +35,12 @@ public partial class PushNotificationService
         deviceInstallation.Tags = [.. tags];
         deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime;
 
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    {
+        dbContext.DeviceInstallations.Remove(new() { InstallationId = deviceInstallationId });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

@@ -6,5 +6,8 @@ namespace Boilerplate.Shared.Controllers.PushNotification;
 public interface IPushNotificationController : IAppController
 {
     [HttpPost]
-    Task CreateOrUpdateInstallation([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken);
+    Task RegisterDevice([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken);
+
+    [HttpPost("{deviceId}")]
+    Task DeregisterDevice([Required] string deviceId, CancellationToken cancellationToken);
 }

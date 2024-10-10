@@ -430,7 +430,7 @@
                         "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
                         "src/Shared/Controllers/PushNotification/**",
-                        "src/Shared/Dtos/PushNotification/DeviceInstallationDto.cs",
+                        "src/Shared/Dtos/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs"
                     ]
                 },
