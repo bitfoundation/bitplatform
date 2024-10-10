@@ -18,5 +18,8 @@ public class DeviceInstallation
     public Guid? UserId { get; set; }
     public string[] Tags { get; set; } = [];
 
-    public DateTimeOffset? ExpirationTime { get; set; }
+    /// <summary>
+    /// Unix Time Seconds
+    /// </summary>
+    public long ExpirationTime { get; set; }
 }

@@ -33,7 +33,7 @@ public partial class PushNotificationService
 
         deviceInstallation.UserId = userId;
         deviceInstallation.Tags = [.. tags];
-        deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).DateTime;
+        deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
 
         if (deviceInstallation.Platform is "browser")
         {
@@ -55,8 +55,11 @@ public partial class PushNotificationService
 
         var sender = adsPushSenderFactory.GetSender("Primary");
 
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
         var devices = await dbContext.DeviceInstallations
             .WhereIf(tags.Any(), dev => dev.Tags.Any(t => tags.Contains(t)))
+            .Where(dev => dev.ExpirationTime > now)
             .OrderByIf(tags.Any() is false, _ => EF.Functions.Random())
             .Take(100)
             .ToArrayAsync(cancellationToken);
