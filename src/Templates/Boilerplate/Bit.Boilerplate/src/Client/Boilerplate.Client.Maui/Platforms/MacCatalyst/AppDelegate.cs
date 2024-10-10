@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
 using Foundation;
 using UIKit;
-using UserNotifications;
 //#if (notification == true)
+using UserNotifications;
 using Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 //#endif
 
