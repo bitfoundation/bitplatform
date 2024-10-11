@@ -44,6 +44,9 @@ jobs:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+#if (notifications == true)
+        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
+#endif
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools

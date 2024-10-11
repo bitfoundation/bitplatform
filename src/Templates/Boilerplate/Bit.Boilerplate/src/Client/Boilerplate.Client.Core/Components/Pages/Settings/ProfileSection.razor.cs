@@ -24,7 +24,7 @@ public partial class ProfileSection
 
     protected override async Task OnInitAsync()
     {
-        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
+        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
 
         removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
 

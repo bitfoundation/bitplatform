@@ -3,9 +3,9 @@ using Android.OS;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Java.Net;
 //#if (notification == true)
 using Android.Gms.Tasks;
-using Java.Net;
 using Firebase.Messaging;
 //#endif
 using Boilerplate.Client.Core;

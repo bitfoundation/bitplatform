@@ -43,7 +43,7 @@ public partial class UserMenu
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
         var serverAddress = Configuration.GetServerAddress();
-        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
+        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
         profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
 
         await base.OnInitAsync();

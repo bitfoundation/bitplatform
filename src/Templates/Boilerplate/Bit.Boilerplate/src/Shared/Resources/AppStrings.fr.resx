@@ -261,11 +261,6 @@
     <value>Modifier le profil hors ligne</value>
   </data>
     <!--#endif-->
-    <!--#if (signalr == true || notification == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
-  </data>
-    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>Nom et prénom</value>
   </data>
@@ -932,13 +927,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} est votre jeton de confirmation de numéro de téléphone dans Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} est votre mot de passe à usage unique dans Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} est votre jeton de réinitialisation de mot de passe dans Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
