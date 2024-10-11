@@ -8,14 +8,14 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-//#if (notification == true)
-using Microsoft.Azure.NotificationHubs;
-//#endif
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using FluentStorage;
 using FluentStorage.Blobs;
+//#if (notification == true)
+using AdsPush.Extensions;
+//#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
@@ -233,11 +233,8 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        services.TryAddTransient<AzureNotificationHubService>();
-        if (appSettings.NotificationHub.Configured)
-        {
-            services.TryAddTransient(sp => new NotificationHubClient(appSettings.NotificationHub.ConnectionString, appSettings.NotificationHub.Name));
-        }
+        services.AddAdsPush(configuration);
+        services.TryAddTransient<PushNotificationService>();
         //#endif
     }
 

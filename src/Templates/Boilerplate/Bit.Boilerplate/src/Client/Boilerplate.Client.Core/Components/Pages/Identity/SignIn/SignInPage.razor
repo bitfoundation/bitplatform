@@ -1,0 +1,34 @@
+﻿@*+:cnd:noEmit*@
+@attribute [Route(Urls.SignInPage)]
+@attribute [Route("{culture?}" + Urls.SignInPage)]
+@inherits AppComponentBase
+
+<PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
+        <EditForm OnValidSubmit="WrapHandled(DoSignIn)" Model="model">
+            <AppDataAnnotationsValidator />
+
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                @if (requiresTwoFactor is false)
+                {
+                    @if (isOtpSent is false)
+                    {
+                        <SignInPanel IsWaiting="isWaiting" Model="model" OnSocialSignIn="SocialSignIn" OnSendOtp="SendOtp" />
+                    }
+                    else
+                    {
+                        <OtpPanel IsWaiting="isWaiting" Model="model" OnSignIn="DoSignIn" OnResendOtp="ResendOtp" />
+                    }
+                }
+                else
+                {
+                    <TfaPanel IsWaiting="isWaiting" Model="model" OnSendTfaToken="SendTfaToken" />
+                }
+            </BitStack>
+        </EditForm>
+    </BitStack>
+</section>
+
+<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />

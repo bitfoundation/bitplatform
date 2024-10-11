@@ -30,7 +30,7 @@
                         </ImageOverlayTemplate>
                     </BitPersona>
                     <BitSeparator />
-                    <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
+                    <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.SettingsPage" FullWidth OnClick="() => isOpen=false">
                         @Localizer[nameof(AppStrings.ProfileTitle)]
                     </BitActionButton>
                     <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
@@ -50,7 +50,7 @@
                         </BitActionButton>
                         <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
                     </BitStack>
-                    <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
+                    <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.SettingsPage" FullWidth OnClick="() => isOpen=false">
                         @Localizer[nameof(AppStrings.Settings)]
                     </BitActionButton>
                     <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { showSignOut=true; isOpen=false; }">

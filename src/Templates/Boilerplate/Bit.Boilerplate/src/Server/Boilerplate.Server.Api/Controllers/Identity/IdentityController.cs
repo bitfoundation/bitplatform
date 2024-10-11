@@ -29,7 +29,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     //#if (notification == true)
-    [AutoInject] private AzureNotificationHubService azureNotificationHubService = default!;
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
     //#endif
 
     //#if (captcha == "reCaptcha")
@@ -116,17 +116,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (result.RequiresTwoFactor)
         {
-            if (string.IsNullOrEmpty(request.TwoFactorRecoveryCode) is false)
+            if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
             {
-                result = await signInManager.TwoFactorRecoveryCodeSignInAsync(request.TwoFactorRecoveryCode);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorToken) is false)
-            {
-                result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, request.TwoFactorToken, false, false);
-            }
-            else if (string.IsNullOrEmpty(request.TwoFactorCode) is false)
-            {
-                result = await signInManager.TwoFactorAuthenticatorSignInAsync(request.TwoFactorCode, false, false);
+                result = await CheckTwoFactorCode(request.TwoFactorCode);
             }
             else
             {
@@ -151,6 +143,23 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
             throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+    }
+
+    private async Task<Microsoft.AspNetCore.Identity.SignInResult> CheckTwoFactorCode(string code)
+    {
+        var result = await signInManager.TwoFactorRecoveryCodeSignInAsync(code);
+
+        if (result.Succeeded is false)
+        {
+            result = await signInManager.TwoFactorSignInAsync(TokenOptions.DefaultPhoneProvider, code, false, false);
+        }
+
+        if (result.Succeeded is false)
+        {
+            result = await signInManager.TwoFactorAuthenticatorSignInAsync(code, false, false);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -252,21 +261,29 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), url);
 
-        async Task SendEmail()
-        {
-            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+        List<Task> sendMessagesTasks = [];
 
-            await emailService.SendOtp(user, token, link, cancellationToken);
+        if (await userManager.IsEmailConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(emailService.SendOtp(user, token, link, cancellationToken));
         }
 
-        async Task SendSms()
-        {
-            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+        var message = Localizer[nameof(AppStrings.OtpShortText), token].ToString();
 
-            await smsService.SendSms(Localizer[nameof(AppStrings.OtpSmsText), token], user.PhoneNumber!, cancellationToken);
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(smsService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        await Task.WhenAll([SendEmail(), SendSms()]);
+        //#if (signalr == true)
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", message, cancellationToken));
+        //#endif
+
+        //#if (notification == true)
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
+        //#endif
+
+        await Task.WhenAll(sendMessagesTasks);
     }
 
     [HttpPost]
@@ -286,32 +303,29 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var token = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultPhoneProvider);
 
-        async Task SendEmail()
+        List<Task> sendMessagesTasks = [];
+
+        if (await userManager.IsEmailConfirmedAsync(user))
         {
-            if (await userManager.IsEmailConfirmedAsync(user))
-            {
-                await emailService.SendTwoFactorToken(user, token, cancellationToken);
-            }
+            sendMessagesTasks.Add(emailService.SendTwoFactorToken(user, token, cancellationToken));
         }
 
-        async Task SendSms()
+        var message = Localizer[nameof(AppStrings.TwoFactorTokenShortText), token].ToString();
+
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            if (await userManager.IsPhoneNumberConfirmedAsync(user))
-            {
-                await smsService.SendSms(Localizer[nameof(AppStrings.TwoFactorTokenSmsText), token], user.PhoneNumber!, cancellationToken);
-            }
+            sendMessagesTasks.Add(smsService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalr == true)
-        await appHubContext.Clients.User(user.Id.ToString()).SendAsync("TwoFactorToken", token, cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", message, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        await azureNotificationHubService.RequestPush(text: Localizer[nameof(AppStrings.TwoFactorTokenPushText), token],
-            tags: [user.Id.ToString()], cancellationToken: cancellationToken);
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
-        await Task.WhenAll([SendEmail(), SendSms()]);
+        await Task.WhenAll(sendMessagesTasks);
     }
 
     [HttpGet]

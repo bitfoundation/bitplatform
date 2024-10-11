@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data.Configurations;
+//#if (notification == true)
+using Boilerplate.Server.Api.Models.PushNotification;
+//#endif
 
 namespace Boilerplate.Server.Api.Data;
 
@@ -22,6 +25,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#elif (sample == "Admin")
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
+    //#endif
+    //#if (notification == true)
+    public DbSet<DeviceInstallation> DeviceInstallations { get; set; }
     //#endif
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -177,6 +183,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Product>()
             .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
         //#endif    
+
+        //#if (notification == true)
+        builder.Entity<DeviceInstallation>()
+            .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
+        //#endif
     }
     //#endif
 }

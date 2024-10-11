@@ -11,12 +11,21 @@
                 @Localizer[nameof(AppStrings.SignIn)]
             </BitButton>
         }
-        else
+        else if (backLinkPayload is null)
         {
             <BitLink NoUnderline Href="@Urls.HomePage">
                 <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
                     <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
                     <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
+                </BitStack>
+            </BitLink>
+        }
+        else
+        {
+            <BitLink NoUnderline OnClick="HandleBackLinkClick">
+                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.Back)]</BitText>
                 </BitStack>
             </BitLink>
         }
