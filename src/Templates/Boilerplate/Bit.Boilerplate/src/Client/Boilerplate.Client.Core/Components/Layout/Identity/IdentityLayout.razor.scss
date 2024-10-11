@@ -17,32 +17,24 @@ main {
 
 .panel1 {
     width: 30%;
-    padding: 2rem;
-    min-height: 100%;
+    padding: 4rem;
     min-width: 35rem;
+    min-height: 100%;
     padding-top: 5rem;
     background-color: $bit-color-background-secondary;
+    border-inline-end: 1px solid $bit-color-border-secondary;
 
     @include lt-md {
         width: 100%;
+        border: none;
         min-width: unset;
         padding-inline: 1rem;
-
-        .form {
-            padding-inline: 1rem;
-        }
     }
 }
 
 ::deep {
-    @include lt-md {
-        .panel1 {
-            .form {
-                padding: 1rem;
-            }
-        }
-
-        .panel2 {
+    .panel2 {
+        @include lt-md {
             display: none;
         }
     }

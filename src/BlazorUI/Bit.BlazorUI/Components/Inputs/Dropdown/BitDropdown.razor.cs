@@ -837,9 +837,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
             await AssignValues(tempValue);
 
-            if (addDynamic && Combo && Dynamic && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))) is false)
+            if (Combo)
             {
-                _selectedItems.Add(item);
+                if (addDynamic && Dynamic && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))) is false)
+                {
+                    _selectedItems.Add(item);
+                    ClassBuilder.Reset();
+                }
+                else if (addDynamic is false && isSelected is false && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item))))
+                {
+                    _selectedItems.Remove(item);
+                    ClassBuilder.Reset();
+                }
             }
 
             await OnSelectItem.InvokeAsync(item);
@@ -862,6 +871,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
                 }
 
                 _selectedItems.Add(item);
+
+                ClassBuilder.Reset();
             }
 
             await CloseCallout();
@@ -892,15 +903,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         var comparer = EqualityComparer<TValue>.Default;
         if (IsMultiSelect)
         {
-            if (Values is not null)
+            if (Values?.Any() ?? false)
             {
                 foreach (var item in items)
                 {
                     if (GetItemType(item) != BitDropdownItemType.Normal) continue;
                     if (Values.Any(v => comparer.Equals(v, GetValue(item))) is false) continue;
+                    if (ItemsProvider is not null && _selectedItems.Exists(si => EqualityComparer<TValue>.Default.Equals(GetValue(si), GetValue(item)))) continue;
 
                     _selectedItems.Add(item);
                 }
+            }
+            else
+            {
+                _selectedItems.Clear();
             }
         }
         else

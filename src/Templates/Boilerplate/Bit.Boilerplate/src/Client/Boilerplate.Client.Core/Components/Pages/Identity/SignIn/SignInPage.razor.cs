@@ -1,21 +1,17 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
-public partial class SignInPage
+public partial class SignInPage : IDisposable
 {
     private bool isWaiting;
-    private bool isSendingOtp;
+    private bool isOtpSent;
     private bool requiresTwoFactor;
-    private bool isSendingTfaToken;
+    private BitSnackBar snackbarRef = default!;
     private readonly SignInRequestDto model = new();
-
-    private string? message;
-    private BitColor messageColor;
-    private BitOtpInput otpInputRef = default!;
-    private ElementReference messageRef = default!;
+    private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
@@ -42,6 +38,10 @@ public partial class SignInPage
     public string? ErrorQueryString { get; set; }
 
 
+    private const string OtpPayload = nameof(OtpPayload);
+    private const string TfaPayload = nameof(TfaPayload);
+
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
@@ -66,122 +66,32 @@ public partial class SignInPage
 
         if (string.IsNullOrEmpty(ErrorQueryString) is false)
         {
-            message = ErrorQueryString;
-            messageColor = BitColor.Error;
+            await snackbarRef.Error(ErrorQueryString);
         }
-    }
 
-    private async Task DoSignIn()
-    {
-        if (isWaiting) return;
-
-        isWaiting = true;
-        message = null;
-
-        try
+        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
         {
-            if (requiresTwoFactor &&
-                string.IsNullOrWhiteSpace(model.TwoFactorCode) &&
-                string.IsNullOrWhiteSpace(model.TwoFactorRecoveryCode) &&
-                string.IsNullOrWhiteSpace(model.TwoFactorToken)) return;
+            var source = (string?)payload;
 
-            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
-
-            if (requiresTwoFactor is false)
+            if (source == OtpPayload)
             {
-                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+                isOtpSent = false;
             }
-        }
-        catch (KnownException e)
-        {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isWaiting = false;
-        }
+
+            if (source == TfaPayload)
+            {
+                requiresTwoFactor = false;
+            }
+
+            await InvokeAsync(StateHasChanged);
+
+            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
+        });
     }
 
-    private async Task SendOtp()
-    {
-        if (isSendingOtp) return;
-
-        isSendingOtp = true;
-        message = null;
-
-        try
-        {
-            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
-
-            message = Localizer[nameof(AppStrings.OtpSentMessage)];
-            messageColor = BitColor.Success;
-            await messageRef.ScrollIntoView();
-        }
-        catch (KnownException e)
-        {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isSendingOtp = false;
-            await otpInputRef.FocusAsync();
-        }
-    }
-
-    private async Task SendTfaToken()
-    {
-        if (isSendingTfaToken) return;
-
-        isSendingTfaToken = true;
-        message = null;
-
-        try
-        {
-            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
-
-            message = Localizer[nameof(AppStrings.TfaTokenSentMessage)];
-            messageColor = BitColor.Success;
-            await messageRef.ScrollIntoView();
-        }
-        catch (KnownException e)
-        {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isSendingTfaToken = false;
-        }
-    }
-
-    private async Task GoogleSignIn()
-    {
-        await SocialSignIn("Google");
-    }
-
-    private async Task GitHubSignIn()
-    {
-        await SocialSignIn("GitHub");
-    }
-
-    private async Task TwitterSignIn()
-    {
-        await SocialSignIn("Twitter");
-    }
 
     private async Task SocialSignIn(string provider)
     {
-        if (isWaiting) return;
-
-        isWaiting = true;
-        message = null;
-
         try
         {
             var port = localHttpServer.Start(CurrentCancellationToken);
@@ -192,18 +102,85 @@ public partial class SignInPage
         }
         catch (KnownException e)
         {
-            isWaiting = false;
-
-            message = e.Message;
-            messageColor = BitColor.Error;
-
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
-        catch
+    }
+
+    private async Task DoSignIn()
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+
+        try
+        {
+            if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
+
+            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
+
+            if (requiresTwoFactor is false)
+            {
+                NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
+            }
+            else
+            {
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+            }
+        }
+        catch (KnownException e)
+        {
+            await snackbarRef.Error(e.Message);
+        }
+        finally
         {
             isWaiting = false;
-
-            throw;
         }
+    }
+
+    private Task ResendOtp() => SendOtp(true);
+    private Task SendOtp() => SendOtp(false);
+
+    private async Task SendOtp(bool resend)
+    {
+        if (model.Email is null && model.PhoneNumber is null) return;
+
+        try
+        {
+            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+
+            if (resend is false)
+            {
+                isOtpSent = true;
+
+                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
+            }
+        }
+        catch (KnownException e)
+        {
+            await snackbarRef.Error(e.Message);
+        }
+    }
+
+
+    private async Task SendTfaToken()
+    {
+        try
+        {
+            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+
+            await snackbarRef.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
+        }
+        catch (KnownException e)
+        {
+            await snackbarRef.Error(e.Message);
+        }
+    }
+
+
+    public void Dispose()
+    {
+        unsubscribeIdentityHeaderBackLinkClicked();
     }
 }

@@ -552,7 +552,7 @@
     <value>Vous n'avez pas reçu l'e-mail de confirmation ?</value>
   </data>
     <data name="Or" xml:space="preserve">
-    <value>Ou</value>
+    <value>ou</value>
   </data>
     <data name="ProfileImage" xml:space="preserve">
     <value>Image de profil</value>
@@ -590,8 +590,17 @@
     <data name="SignInTitle" xml:space="preserve">
     <value>Se connecter</value>
   </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>Content de te revoir</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>Connectez-vous à votre compte avec</value>
+  </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
     <value>Connecté sociale</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>Continuer</value>
   </data>
     <data name="SocialSignedInMessageTitle" xml:space="preserve">
     <value>La connexion sociale est terminée</value>
@@ -693,10 +702,28 @@
     <value>Souviens-toi de moi?</value>
   </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>Code d'authentification</value>
+    <value>Code 2FA</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>Code de récupération</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>Authentification à 2-Facteurs</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>Obtenez un nouveau code depuis votre application d'authentification ou utilisez votre code de récupération.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>Essayez une autre façon</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>Vous pouvez obtenir un nouveau code par e-mail ou par téléphone.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Obtenir le code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
@@ -832,6 +859,21 @@
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>
+  </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>Vérifiez votre {0}</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>Confirmez votre {0} en saisissant le code envoyé à {1}</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>Vous n'avez pas reçu le code?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>Renvoyer</value>
   </data>
     <data name="OtpPlaceholder" xml:space="preserve">
     <value>Entrez OTP</value>

@@ -36,6 +36,24 @@ public partial class BitPersonaDemo
         },
         new()
         {
+            Name = "CoinColor",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The background color when the user's initials are displayed.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "CoinShape",
+            Type = "BitPersonaCoinShape?",
+            DefaultValue = "null",
+            Description = "The shape of the coin.",
+            LinkType = LinkType.Link,
+            Href = "#shape-enum",
+        },
+        new()
+        {
             Name = "CoinSize",
             Type = "int?",
             DefaultValue = "",
@@ -50,10 +68,12 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "string?",
+            Name = "CoinVariant",
+            Type = "BitVariant?",
             DefaultValue = "null",
-            Description = "The background color when the user's initials are displayed.",
+            Description = "The variant of the coin.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
         },
         new()
         {
@@ -130,7 +150,7 @@ public partial class BitPersonaDemo
             Name = "Presence",
             Type = "BitPersonaPresence",
             LinkType = LinkType.Link,
-            Href = "#precence-status",
+            Href = "#presence-enum",
             DefaultValue = "BitPersonaPresence.None",
             Description = "Presence of the person to display - will not display presence if undefined.",
         },
@@ -196,7 +216,7 @@ public partial class BitPersonaDemo
             Type = "string?",
             DefaultValue = "null",
             LinkType = LinkType.Link,
-            Href = "#bitpersona-size",
+            Href = "#size-enum",
             Description = "Decides the size of the control.",
         },
         new()
@@ -366,7 +386,7 @@ public partial class BitPersonaDemo
     [
         new()
         {
-            Id = "precence-status",
+            Id = "presence-enum",
             Name = "BitPersonaPresence",
             Items =
             [
@@ -409,7 +429,7 @@ public partial class BitPersonaDemo
         },
         new()
         {
-            Id = "bitpersona-size",
+            Id = "size-enum",
             Name = "BitPersonaSize",
             Items =
             [
@@ -469,6 +489,164 @@ public partial class BitPersonaDemo
                 }
             ]
         },
+        new()
+        {
+            Id = "shape-enum",
+            Name = "BitPersonaCoinShape",
+            Items =
+            [
+                new()
+                {
+                    Name = "Circular",
+                    Description = "Represents the traditional round shape of a coin.",
+                    Value = "",
+                },
+                new()
+                {
+                    Name = "Square",
+                    Description = "Represents a square-shaped coin.",
+                    Value = "",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "Primary general color.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "Secondary general color.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "Tertiary general color.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Info",
+                    Description = "Info general color.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Success",
+                    Description = "Success general color.",
+                    Value = "4",
+                },
+                new()
+                {
+                    Name = "Warning",
+                    Description = "Warning general color.",
+                    Value = "5",
+                },
+                new()
+                {
+                    Name = "SevereWarning",
+                    Description = "SevereWarning general color.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Error",
+                    Description = "Error general color.",
+                    Value = "7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name = "Fill",
+                    Description = "Fill styled variant.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Outline",
+                    Description = "Outline styled variant.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Text",
+                    Description = "Text styled variant.",
+                    Value = "2",
+                },
+            ]
+        },
     ];
 
 
@@ -502,111 +680,129 @@ public partial class BitPersonaDemo
             Unknown />";
 
     private readonly string example2RazorCode = @"
-<BitPersona PrimaryText=""Saleh Xafan""
-            SecondaryText=""Developer""
-            Size=""BitPersonaSize.Size72""
-            Color=""#038387"" />
-
-<BitPersona PrimaryText=""Annie Lindqvist""
-            Size=""BitPersonaSize.Size72""
-            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png""
-            OnImageClick=""() => {}""
-            Color=""#750b1c"" />";
-
-    private readonly string example3RazorCode = @"
 <BitCheckbox @bind-Value=""isDetailsShown"" Label=""Include BitPersona details"" />
 
-<div>Size 8 Persona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size8""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 24 Persona</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=""BitPersonaSize.Size24""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.None""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 32 Persona (Busy)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Secondary""
             Size=@BitPersonaSize.Size32
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 40 Persona (Away)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size40""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Away""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 48 Persona (Blocked)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size48""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Blocked""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 56 Persona (Online)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             Size=""BitPersonaSize.Size56""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Online""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 72 Persona (Busy)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             Size=""BitPersonaSize.Size72""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Busy""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 100 Persona (Offline)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""Off""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size100""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Offline""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 120 Persona (Do Not Disturb)</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 
-<div>Size 150 Persona (Do Not Disturb)</div>
-<BitPersona PrimaryText=""Annie Lindqvist""
+<BitPersona CoinSize=""150""
+            PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
             OptionalText=""Available at 4:00pm""
             Size=""BitPersonaSize.Size120""
-            CoinSize=""150""
             HidePersonaDetails=""!isDetailsShown""
-            Presence=""BitPersonaPresence.Dnd""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
-    private readonly string example3CsharpCode = @"
+    private readonly string example2CsharpCode = @"
 private bool isDetailsShown = true;";
 
+    private readonly string example3RazorCode = @"
+<BitPersona PrimaryText=""Primary"" CoinColor=""BitColor.Primary"" />
+<BitPersona PrimaryText=""Secondary"" CoinColor=""BitColor.Secondary"" />
+<BitPersona PrimaryText=""Tertiary"" CoinColor=""BitColor.Tertiary"" />
+<BitPersona PrimaryText=""Info"" SecondaryText=""(default)"" CoinColor=""BitColor.Info"" />
+<BitPersona PrimaryText=""Success"" CoinColor=""BitColor.Success"" />
+<BitPersona PrimaryText=""Warning"" CoinColor=""BitColor.Warning"" />
+<BitPersona PrimaryText=""SevereWarning"" CoinColor=""BitColor.SevereWarning"" />
+<BitPersona PrimaryText=""Error"" CoinColor=""BitColor.Error"" />
+
+<BitPersona PrimaryText=""PrimaryBackground"" CoinColor=""BitColor.PrimaryBackground"" />
+<BitPersona PrimaryText=""SecondaryBackground"" CoinColor=""BitColor.SecondaryBackground"" />
+<BitPersona PrimaryText=""TertiaryBackground"" CoinColor=""BitColor.TertiaryBackground"" />
+
+<BitPersona PrimaryText=""PrimaryForeground"" CoinColor=""BitColor.PrimaryForeground"" />
+<BitPersona PrimaryText=""SecondaryForeground"" CoinColor=""BitColor.SecondaryForeground"" />
+<BitPersona PrimaryText=""TertiaryForeground"" CoinColor=""BitColor.TertiaryForeground"" />
+<BitPersona PrimaryText=""PrimaryBorder"" CoinColor=""BitColor.PrimaryBorder"" />
+<BitPersona PrimaryText=""SecondaryBorder"" CoinColor=""BitColor.SecondaryBorder"" />
+<BitPersona PrimaryText=""TertiaryBorder"" CoinColor=""BitColor.TertiaryBorder"" />";
+
     private readonly string example4RazorCode = @"
+<BitPersona PrimaryText=""Saleh Xafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            CoinVariant=""BitVariant.Fill"" />
+
+<BitPersona PrimaryText=""Saleh Xafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            CoinVariant=""BitVariant.Outline"" />
+
+<BitPersona PrimaryText=""Saleh Xafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            CoinVariant=""BitVariant.Text"" />";
+
+    private readonly string example5RazorCode = @"
+<BitPersona PrimaryText=""Saleh Xafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            CoinShape=""BitPersonaCoinShape.Circular""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
+
+<BitPersona PrimaryText=""Saleh Xafan""
+            SecondaryText=""Developer""
+            Size=""BitPersonaSize.Size72""
+            CoinShape=""BitPersonaCoinShape.Square""
+            ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
+
+    private readonly string example6RazorCode = @"
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
             TertiaryText=""In a meeting""
@@ -627,11 +823,11 @@ private bool isDetailsShown = true;";
             OnImageClick=""() => imageClickCount++""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
 <p>Image Click Count: @imageClickCount</p>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private int imageClickCount = 0;
 private int actionClickCount = 0;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitPersona PrimaryText=""Saleh Khafan""
             Size=""BitPersonaSize.Size72""
             ShowInitialsUntilImageLoads
@@ -641,7 +837,7 @@ private int actionClickCount = 0;";
 
 <BitPersona Size=""BitPersonaSize.Size72"" PrimaryText=""Saleh Khafan"" ImageInitials=""S"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example8RazorCode = @"
 <div>None</div>
 <BitPersona PrimaryText=""Annie Lindqvist""
             SecondaryText=""Software Engineer""
@@ -696,7 +892,7 @@ private int actionClickCount = 0;";
             PresenceIcons=""_icons""
             Size=""BitPersonaSize.Size120""
             ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private Dictionary<BitPersonaPresence, string> _icons = new()
 {
     {BitPersonaPresence.Offline, BitIconName.UnavailableOffline},
@@ -707,7 +903,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
     {BitPersonaPresence.Busy, BitIconName.Blocked2Solid}
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .custom-ico {
         font-size: 14px;
@@ -744,13 +940,13 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
 </BitPersona>
 
 
-<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"">
+<BitPersona Size=""BitPersonaSize.Size100"" PrimaryText=""Annie Lindqvist"" SecondaryText=""Software Engineer"" Presence=""BitPersonaPresence.Online"" CoinVariant=""BitVariant.Text"">
     <CoinTemplate>
         <img src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" width=""100px"" height=""100px"" class=""custom-coin"" />
     </CoinTemplate>
 </BitPersona>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         padding: 1rem;
@@ -789,7 +985,7 @@ private Dictionary<BitPersonaPresence, string> _icons = new()
             Classes=""@(new() { ImageContainer = ""custom-img-container"",
                                PrimaryTextContainer = ""custom-primary-text"" })"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitPersona Dir=""BitDir.Rtl""
             PrimaryText=""صالح یوسف نژاد""
             SecondaryText=""مهندس نرم افزار""
