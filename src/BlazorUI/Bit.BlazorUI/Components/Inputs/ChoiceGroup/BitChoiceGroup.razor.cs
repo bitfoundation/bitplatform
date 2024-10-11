@@ -31,7 +31,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Default selected item for ChoiceGroup.
     /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
