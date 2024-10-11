@@ -19,6 +19,7 @@
 
         @if (otherSessions is not null && otherSessions.Any())
         {
+            <br />
             <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
 
             @foreach (var session in otherSessions)

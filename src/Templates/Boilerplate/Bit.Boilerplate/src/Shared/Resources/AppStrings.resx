@@ -804,7 +804,7 @@
     <value>Verify</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Recovery codes</value>
+    <value>Recovery</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>You have no recovery codes left.</value>
@@ -840,7 +840,7 @@
     <value>Recovery codes:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Authenticator app</value>
+    <value>Authenticator</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value>
@@ -852,7 +852,7 @@
     <value>Reset authenticator key</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Disable 2FA</value>
+    <value>Disable</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>This action only disables 2FA.</value>

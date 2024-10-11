@@ -807,7 +807,7 @@
     <value>تأیید</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>کدهای بازیابی</value>
+    <value>بازیابی</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>هیچ کد بازیابی ندارید.</value>
@@ -843,7 +843,7 @@
     <value>کدهای بازیابی:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>برنامه Authenticator</value>
+    <value>برنامه</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>اگر کلید احراز هویت خود را بازنشانی کنید، برنامه احراز هویت شما تا زمانی که آن را دوباره پیکربندی نکنید، کار نخواهد کرد.</value>
@@ -855,7 +855,7 @@
     <value>کلید احراز هویت را بازنشانی کنید</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>2FA را غیرفعال کنید</value>
+    <value>غیرفعالسازی</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>این عمل فقط 2FA را غیرفعال می کند.</value>

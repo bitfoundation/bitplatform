@@ -807,7 +807,7 @@
     <value>Vérifier</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Codes de récupération</value>
+    <value>Récupération</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>Vous n'avez plus de codes de récupération.</value>
@@ -843,7 +843,7 @@
     <value>Codes de récupération:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Application d'authentification</value>
+    <value>Authentificateur</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>Si vous réinitialisez votre clé d'authentification, votre application d'authentification ne fonctionnera pas tant que vous ne la reconfigurerez pas.</value>
@@ -855,7 +855,7 @@
     <value>Réinitialiser la clé d'authentification</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Désactiver 2FA</value>
+    <value>Désactiver</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>Cette action désactive uniquement 2FA.</value>
