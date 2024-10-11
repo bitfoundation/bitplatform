@@ -44,7 +44,7 @@ public partial class IdentityController
             sendMessagesTasks.Add(emailService.SendResetPasswordToken(user, token, link, cancellationToken));
         }
 
-        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token];
+        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token].ToString();
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {

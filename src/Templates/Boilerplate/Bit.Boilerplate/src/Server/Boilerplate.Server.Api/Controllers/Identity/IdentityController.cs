@@ -268,7 +268,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(emailService.SendOtp(user, token, link, cancellationToken));
         }
 
-        var message = Localizer[nameof(AppStrings.OtpShortText), token];
+        var message = Localizer[nameof(AppStrings.OtpShortText), token].ToString();
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
@@ -310,7 +310,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(emailService.SendTwoFactorToken(user, token, cancellationToken));
         }
 
-        var message = Localizer[nameof(AppStrings.TwoFactorTokenShortText), token];
+        var message = Localizer[nameof(AppStrings.TwoFactorTokenShortText), token].ToString();
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
