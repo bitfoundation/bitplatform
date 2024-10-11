@@ -19,11 +19,6 @@ public partial class PushNotificationService
 
         var userId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId() : (Guid?)null;
 
-        if (userId is not null)
-        {
-            tags.Add(userId.ToString()!);
-        }
-
         var deviceInstallation = await dbContext.DeviceInstallations.FindAsync([dto.InstallationId], cancellationToken);
 
         if (deviceInstallation is null)
@@ -51,21 +46,22 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
     {
-        tags ??= [];
-
         var sender = adsPushSenderFactory.GetSender("Primary");
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var devices = await dbContext.DeviceInstallations
-            .WhereIf(tags.Any(), dev => dev.Tags.Any(t => tags.Contains(t)))
+        var query = dbContext.DeviceInstallations
             .Where(dev => dev.ExpirationTime > now)
-            .WhereIf(customDeviceFilter is not null, customDeviceFilter!)
-            .OrderByIf(tags.Any() is false, _ => EF.Functions.Random())
-            .Take(100)
-            .ToArrayAsync(cancellationToken);
+            .WhereIf(customDeviceFilter is not null, customDeviceFilter!);
+
+        if (customDeviceFilter is null)
+        {
+            query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
+        }
+
+        var devices = await query.ToListAsync(cancellationToken);
 
         var payload = new AdsPushBasicSendPayload()
         {

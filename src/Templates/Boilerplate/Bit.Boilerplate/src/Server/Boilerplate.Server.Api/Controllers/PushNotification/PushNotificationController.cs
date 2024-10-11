@@ -25,9 +25,9 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
 
 #if Development // This action is for testing purposes only.
     [HttpPost]
-    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, [FromQuery(Name = "tags[]")] string[]? tags = null, CancellationToken cancellationToken = default)
+    public async Task RequestPush([FromQuery] string? title = null, [FromQuery] string? message = null, [FromQuery] string? action = null, CancellationToken cancellationToken = default)
     {
-        await pushNotificationService.RequestPush(title, message, action, tags, null, cancellationToken);
+        await pushNotificationService.RequestPush(title, message, action, null, cancellationToken);
     }
 #endif
 }
