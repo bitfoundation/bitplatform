@@ -32,7 +32,7 @@ jobs:
     displayName: 'Install Playwright'
     inputs:
       targetType: 'inline'
-      script: 'sudo pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install-deps && sudo pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install'
+      script: 'pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install-deps && pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install'
 
   - task: Bash@3
     displayName: 'Test'
