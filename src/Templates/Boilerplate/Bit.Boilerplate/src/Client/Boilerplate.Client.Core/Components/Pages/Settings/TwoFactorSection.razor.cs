@@ -1,7 +1,7 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class TwoFactorSection
 {
@@ -16,8 +16,7 @@ public partial class TwoFactorSection
     private string? verificationCode;
     private bool isTwoFactorAuthEnabled;
 
-    private string? message;
-    private ElementReference messageRef = default!;
+    private BitSnackBar snackbarRef = default!;
 
 
     [AutoInject] private Clipboard clipboard = default!;
@@ -42,8 +41,6 @@ public partial class TwoFactorSection
         var response = await SendTwoFactorAuthRequest(request);
 
         recoveryCodes = response?.RecoveryCodes;
-
-        await messageRef.ScrollIntoView();
     }
 
     private async Task DisableTwoFactorAuth()
@@ -76,7 +73,6 @@ public partial class TwoFactorSection
     {
         if (isWaiting) return null;
 
-        message = null;
         isWaiting = true;
 
         try
@@ -93,10 +89,7 @@ public partial class TwoFactorSection
         }
         catch (KnownException e)
         {
-            message = e.Message;
-
-            await messageRef.ScrollIntoView();
-
+            await snackbarRef.Error(e.Message);
             return null;
         }
         finally

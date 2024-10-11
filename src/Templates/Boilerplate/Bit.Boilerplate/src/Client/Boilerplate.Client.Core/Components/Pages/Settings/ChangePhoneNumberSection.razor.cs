@@ -1,24 +1,20 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ChangePhoneNumberSection
 {
     private bool isWaiting;
-    private string? message;
-    private BitColor messageColor;
     private bool showConfirmation;
+    private BitSnackBar snackbarRef = default!;
     private bool isPhoneNumberUnavailable = true;
-    private ElementReference messageRef = default!;
     private readonly SendPhoneTokenRequestDto sendModel = new();
     private readonly ChangePhoneNumberRequestDto changeModel = new();
 
 
     [AutoInject] private IUserController userController = default!;
 
-
-    [Parameter] public bool Loading { get; set; }
 
     [Parameter] public string? PhoneNumber { get; set; }
 
@@ -27,6 +23,7 @@ public partial class ChangePhoneNumberSection
 
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneNumberTokenQueryString { get; set; }
+
 
     protected override async Task OnInitAsync()
     {
@@ -55,7 +52,6 @@ public partial class ChangePhoneNumberSection
         if (isWaiting || sendModel.PhoneNumber == PhoneNumber) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
@@ -65,15 +61,11 @@ public partial class ChangePhoneNumberSection
             isPhoneNumberUnavailable = false;
             changeModel.PhoneNumber = sendModel.PhoneNumber;
 
-            messageColor = BitColor.Success;
-            message = Localizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)];
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Success(Localizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
@@ -86,19 +78,16 @@ public partial class ChangePhoneNumberSection
         if (isWaiting) return;
 
         isWaiting = true;
-        message = null;
 
         try
         {
             await userController.ChangePhoneNumber(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo(Urls.ProfilePage);
+            NavigationManager.NavigateTo(Urls.SettingsPage);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {

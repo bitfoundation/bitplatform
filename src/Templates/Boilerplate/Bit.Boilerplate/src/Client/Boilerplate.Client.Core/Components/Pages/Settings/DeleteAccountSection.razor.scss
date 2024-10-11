@@ -1,0 +1,13 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .delete-stack {
+        max-width: 27rem;
+    }
+}
