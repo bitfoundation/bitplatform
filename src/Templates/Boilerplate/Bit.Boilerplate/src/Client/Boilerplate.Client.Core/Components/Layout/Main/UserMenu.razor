@@ -6,7 +6,7 @@
 
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
-                 Classes="@(new() { Callout="callout" })">
+                 Classes="@(new() { Callout="user-menu-callout" })">
         <Template>
             <BitPersona Class="persona"
                         ImageUrl="@imageUrl"
@@ -16,7 +16,7 @@
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
         <Body>
-            <BitCard FullSize>
+            <BitCard FullSize Class="user-menu-card">
                 @if (showCultures is false)
                 {
                     <BitStack AutoSize>

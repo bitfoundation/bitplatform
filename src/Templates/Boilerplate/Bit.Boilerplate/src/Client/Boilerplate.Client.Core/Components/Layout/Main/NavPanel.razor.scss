@@ -35,7 +35,6 @@ section {
     height: 100%;
     position: fixed;
     min-height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
 
     @include gt-sm {
         display: none;
