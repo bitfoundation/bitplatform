@@ -249,11 +249,6 @@
     <value>ویرایش پروفایل آفلاین</value>
   </data>
     <!--#endif-->
-    <!--#if (signalr == true || notification == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
-  </data>
-    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>نام کامل</value>
   </data>
@@ -899,13 +894,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">

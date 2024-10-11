@@ -71,7 +71,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
+            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
             if (string.IsNullOrEmpty(access_token) && jsRuntime.IsInitialized())
             {

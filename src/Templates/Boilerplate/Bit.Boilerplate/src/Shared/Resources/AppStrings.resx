@@ -249,11 +249,6 @@
     <value>Offline Edit profile</value>
   </data>
     <!--#endif-->
-    <!--#if (signalr == true || notification == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} is your two factor token in Boilerplate.</value>
-  </data>
-    <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>
@@ -896,13 +891,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} is your confirm phone number token in Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} is your two factor token in Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} is your OTP in Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} is your reset password token in Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
