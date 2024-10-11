@@ -4,11 +4,14 @@
     <BitStack HorizontalAlign="BitAlignment.Center">
         @if (showConfirmation is false)
         {
-            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" class="change-phone-form">
+            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)">
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>
-                    <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Color="BitColor.Info" />
+                    @if (PhoneNumber is not null)
+                    {
+                        <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Color="BitColor.Info" />
+                    }
 
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
                                   Type="BitInputType.Tel"

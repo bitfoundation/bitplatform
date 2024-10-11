@@ -8,7 +8,10 @@
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>
-                    <BitTag Variant="BitVariant.Outline" Text="@Email" Color="BitColor.Info" />
+                    @if (Email is not null)
+                    {
+                        <BitTag Variant="BitVariant.Outline" Text="@Email" Color="BitColor.Info" />
+                    }
 
                     <BitTextField @bind-Value="sendModel.Email"
                                   Type="BitInputType.Email"

@@ -43,8 +43,9 @@
                     <br />
                     <div>
                         <BitTextField @bind-Value="verificationCode"
-                                      Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
+                                      Type="BitInputType.Number"
                                       AutoComplete="@BitAutoCompleteValue.Off"
+                                      Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
                                       Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
                         <br />
                         <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">
