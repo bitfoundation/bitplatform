@@ -2,6 +2,9 @@
 using Humanizer;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+//#if (signalr == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -34,24 +37,31 @@ public partial class IdentityController
         var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), url);
 
-        async Task SendEmail()
-        {
-            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+        List<Task> sendMessagesTasks = [];
 
-            await emailService.SendResetPasswordToken(user, token, link, cancellationToken);
+        if (await userManager.IsEmailConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(emailService.SendResetPasswordToken(user, token, link, cancellationToken));
         }
 
-        async Task SendSms()
-        {
-            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token];
 
-            await smsService.SendSms(Localizer[nameof(AppStrings.ResetPasswordTokenSmsText), token], user.PhoneNumber!, cancellationToken);
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(smsService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        await Task.WhenAll([SendEmail(), SendSms()]);
+        //#if (signalr == true)
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", message, cancellationToken));
+        //#endif
+
+        //#if (notification == true)
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message,
+            tags: [user.Id.ToString()], cancellationToken: cancellationToken));
+        //#endif
+
+        await Task.WhenAll(sendMessagesTasks);
     }
-
-
 
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)

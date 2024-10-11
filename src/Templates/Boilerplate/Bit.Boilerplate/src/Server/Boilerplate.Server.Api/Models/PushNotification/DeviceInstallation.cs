@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Server.Api.Models.PushNotification;
+﻿using Boilerplate.Server.Api.Models.Identity;
+
+namespace Boilerplate.Server.Api.Models.PushNotification;
 
 public class DeviceInstallation
 {
@@ -16,6 +18,10 @@ public class DeviceInstallation
     public string? Endpoint { get; set; }
 
     public Guid? UserId { get; set; }
+
+    [ForeignKey(nameof(UserId))]
+    public User? User { get; set; }
+
     public string[] Tags { get; set; } = [];
 
     /// <summary>

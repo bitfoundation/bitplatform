@@ -1,7 +1,9 @@
 ﻿using AdsPush;
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
+using System.Linq.Expressions;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Server.Api.Models.PushNotification;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -49,7 +51,7 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, CancellationToken cancellationToken = default)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null, string[]? tags = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
     {
         tags ??= [];
 
@@ -60,14 +62,15 @@ public partial class PushNotificationService
         var devices = await dbContext.DeviceInstallations
             .WhereIf(tags.Any(), dev => dev.Tags.Any(t => tags.Contains(t)))
             .Where(dev => dev.ExpirationTime > now)
+            .WhereIf(customDeviceFilter is not null, customDeviceFilter!)
             .OrderByIf(tags.Any() is false, _ => EF.Functions.Random())
             .Take(100)
             .ToArrayAsync(cancellationToken);
 
         var payload = new AdsPushBasicSendPayload()
         {
-            Title = AdsPushText.CreateUsingString(title),
-            Detail = AdsPushText.CreateUsingString(message),
+            Title = AdsPushText.CreateUsingString(title ?? "Boilerplate"),
+            Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
             Parameters = new Dictionary<string, object>()
             {
                 {

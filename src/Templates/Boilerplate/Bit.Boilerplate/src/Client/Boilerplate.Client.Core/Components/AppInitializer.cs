@@ -107,9 +107,9 @@ public partial class AppInitializer : AppComponentBase
             })
             .Build();
 
-        hubConnection.On<string>("TwoFactorToken", async (token) =>
+        hubConnection.On<string>("DisplayMessage", async (message) =>
         {
-            await messageBoxService.Show(Localizer[nameof(AppStrings.TwoFactorTokenPushText), token]);
+            await messageBoxService.Show(message);
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>
