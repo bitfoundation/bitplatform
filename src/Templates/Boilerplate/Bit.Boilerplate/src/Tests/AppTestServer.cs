@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Net;
-using Boilerplate.Server.Api;
+﻿using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,12 +9,12 @@ namespace Boilerplate.Tests;
 public partial class AppTestServer : IAsyncDisposable
 {
     private WebApplication? webApp;
+
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
-    //public Uri WebAppServerAddress => new(WebApp.Urls.First());
-    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+    public Uri WebAppServerAddress => new(WebApp.Urls.First());
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
-        Action<ConfigurationManager> configureTestConfigurations = null)
+        Action<ConfigurationManager>? configureTestConfigurations = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
@@ -27,14 +25,15 @@ public partial class AppTestServer : IAsyncDisposable
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
-        builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
-        builder.WebHost.UseUrls(WebAppServerAddress.OriginalString);
-
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
         builder.Configuration.AddClientConfigurations();
 
         configureTestConfigurations?.Invoke(builder.Configuration);
+
+        builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
+
+        configureTestServices?.Invoke(builder.Services);
 
         builder.AddTestProjectServices();
 
@@ -50,6 +49,7 @@ public partial class AppTestServer : IAsyncDisposable
     public async Task Start()
     {
         await WebApp.StartAsync();
+        WebApp.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
     }
 
     public async ValueTask DisposeAsync()
@@ -59,14 +59,5 @@ public partial class AppTestServer : IAsyncDisposable
             await webApp.StopAsync();
             await webApp.DisposeAsync();
         }
-    }
-
-    private static string GenerateServerUrl()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return $"http://127.0.0.1:{port}/";
     }
 }

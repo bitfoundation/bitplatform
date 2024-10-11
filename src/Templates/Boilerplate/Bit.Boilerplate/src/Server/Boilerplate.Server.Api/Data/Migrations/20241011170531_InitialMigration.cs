@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
-
-#nullable disable
+﻿#nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
@@ -130,6 +127,30 @@ public partial class InitialMigration : Migration
                     principalTable: "Roles",
                     principalColumn: "Id",
                     onDelete: ReferentialAction.Cascade);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "DeviceInstallations",
+            columns: table => new
+            {
+                InstallationId = table.Column<string>(type: "TEXT", nullable: false),
+                Platform = table.Column<string>(type: "TEXT", nullable: false),
+                PushChannel = table.Column<string>(type: "TEXT", nullable: false),
+                P256dh = table.Column<string>(type: "TEXT", nullable: true),
+                Auth = table.Column<string>(type: "TEXT", nullable: true),
+                Endpoint = table.Column<string>(type: "TEXT", nullable: true),
+                UserId = table.Column<Guid>(type: "TEXT", nullable: true),
+                Tags = table.Column<string>(type: "TEXT", nullable: false),
+                ExpirationTime = table.Column<long>(type: "INTEGER", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_DeviceInstallations", x => x.InstallationId);
+                table.ForeignKey(
+                    name: "FK_DeviceInstallations_Users_UserId",
+                    column: x => x.UserId,
+                    principalTable: "Users",
+                    principalColumn: "Id");
             });
 
         migrationBuilder.CreateTable(
@@ -286,6 +307,11 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateIndex(
+            name: "IX_DeviceInstallations_UserId",
+            table: "DeviceInstallations",
+            column: "UserId");
+
+        migrationBuilder.CreateIndex(
             name: "IX_Products_CategoryId",
             table: "Products",
             column: "CategoryId");
@@ -352,6 +378,9 @@ public partial class InitialMigration : Migration
     {
         migrationBuilder.DropTable(
             name: "DataProtectionKeys");
+
+        migrationBuilder.DropTable(
+            name: "DeviceInstallations");
 
         migrationBuilder.DropTable(
             name: "Products");

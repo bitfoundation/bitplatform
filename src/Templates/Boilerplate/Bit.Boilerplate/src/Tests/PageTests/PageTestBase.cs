@@ -1,21 +1,23 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Boilerplate.Tests.TestBase;
+namespace Boilerplate.Tests.PageTests;
 
 [TestClass]
 public partial class PageTestBase : PageTest
 {
-    private readonly AppTestServer TestServer = new();
+    protected AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
     public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
+
+    protected virtual bool AutoStartTestServer(string method) => true;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
-        await TestServer.Build(services =>
+        if (AutoStartTestServer(TestContext.ManagedMethod!))
         {
-            // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
-        }).Start();
+            await TestServer.Build().Start();
+        }
     }
 
     [TestCleanup]
@@ -39,14 +41,6 @@ public partial class PageTestBase : PageTest
     {
         var options = base.ContextOptions();
         options.RecordVideoDir = GetVideoDirectory(TestContext);
-
-        var currentTestMethod = GetType().GetMethod(TestContext.ManagedMethod!);
-        var isAuthenticated = currentTestMethod!.GetCustomAttributes(typeof(AuthenticatedAttribute), false).Length > 0;
-        if (isAuthenticated)
-        {
-            options.StorageState = TestInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
-        }
-
         return options;
     }
 
@@ -56,6 +50,3 @@ public partial class PageTestBase : PageTest
         return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
     }
 }
-
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class AuthenticatedAttribute : Attribute;

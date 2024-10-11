@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Tests.PageTests.PageModels.Layout;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 
 namespace Boilerplate.Tests.PageTests;
 
@@ -10,40 +12,39 @@ public partial class IdentityPagesTests : PageTestBase
     [TestMethod]
     public async Task UnauthorizedUser_Should_RedirectToSignInPage()
     {
-        var response = await Page.GotoAsync(new Uri(WebAppServerAddress, Urls.ProfilePage).ToString());
+        var response = await Page.GotoAsync(new Uri(WebAppServerAddress, Urls.SettingsPage).ToString());
 
         Assert.IsNotNull(response);
         Assert.AreEqual(StatusCodes.Status200OK, response.Status);
 
-        await Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, "/sign-in?return-url=profile").ToString());
+        await Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, "/sign-in?return-url=settings").ToString());
     }
 
     [TestMethod]
     public async Task SignIn_Should_Work_With_ValidCredentials()
     {
-        var signinPage = new SignInPage(Page, WebAppServerAddress);
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
 
-        await signinPage.Open();
-        await signinPage.AssertOpen();
+        await signInPage.Open();
+        await signInPage.AssertOpen();
 
-        var signedInPage = await signinPage.SignIn();
+        var signedInPage = await signInPage.SignIn();
         await signedInPage.AssertSignInSuccess();
     }
 
     [TestMethod]
     public async Task SignIn_Should_Fail_With_InvalidCredentials()
     {
-        var signinPage = new SignInPage(Page, WebAppServerAddress);
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
 
-        await signinPage.Open();
-        await signinPage.AssertOpen();
+        await signInPage.Open();
+        await signInPage.AssertOpen();
 
-        await signinPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
-        await signinPage.AssertSignInFailed();
+        await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
+        await signInPage.AssetNotSignedIn();
     }
 
     [TestMethod]
-    [Authenticated]
     public async Task SignOut_Should_WorkAsExpected()
     {
         var homePage = new IdentityLayout(Page, WebAppServerAddress, Urls.HomePage, AppStrings.HomeTitle);
@@ -58,16 +59,14 @@ public partial class IdentityPagesTests : PageTestBase
     [TestMethod]
     public async Task SignUp_Should_Work_With_MagicLink()
     {
-        await using var testServer = new AppTestServer();
-
-        await testServer.Build(services =>
+        await TestServer.Build(services =>
         {
             //#if (captcha == "reCaptcha")
             services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
             //#endif
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.WebAppServerAddress);
+        var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.AssertOpen();
@@ -85,16 +84,14 @@ public partial class IdentityPagesTests : PageTestBase
     [TestMethod]
     public async Task SignUp_Should_Work_With_OtpCode()
     {
-        await using var testServer = new AppTestServer();
-
-        await testServer.Build(services =>
+        await TestServer.Build(services =>
         {
             //#if (captcha == "reCaptcha")
             services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
             //#endif
         }).Start();
 
-        var signupPage = new SignUpPage(Page, testServer.WebAppServerAddress);
+        var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.AssertOpen();
@@ -108,4 +105,10 @@ public partial class IdentityPagesTests : PageTestBase
         await signupPage.ConfirmByOtp();
         await signupPage.AssertConfirm();
     }
+
+    protected override bool AutoStartTestServer(string method) => new string[]
+    {
+        nameof(SignUp_Should_Work_With_MagicLink),
+        nameof(SignUp_Should_Work_With_OtpCode)
+    }.Contains(method) is false;
 }

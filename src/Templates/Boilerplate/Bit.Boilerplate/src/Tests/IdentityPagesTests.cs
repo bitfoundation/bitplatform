@@ -13,12 +13,9 @@ public partial class IdentityPagesTests : PageTest
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
         }).Start();
 
-        var response = await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.ProfilePage).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SettingsPage).ToString());
 
-        Assert.IsNotNull(response);
-        Assert.AreEqual(StatusCodes.Status200OK, response.Status);
-
-        await Expect(Page).ToHaveURLAsync(new Uri(server.WebAppServerAddress, "/sign-in?return-url=profile").ToString());
+        await Expect(Page).ToHaveURLAsync(new Uri(server.WebAppServerAddress, "/sign-in?return-url=settings").ToString());
     }
 
     [TestMethod]
@@ -27,10 +24,8 @@ public partial class IdentityPagesTests : PageTest
         await using var server = new AppTestServer();
         await server.Build().Start();
 
-        var response = await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SignInPage).ToString());
+        await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SignInPage).ToString());
 
-        Assert.IsNotNull(response);
-        Assert.AreEqual(StatusCodes.Status200OK, response.Status);
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInTitle);
 
         const string email = "test@bitplatform.dev";

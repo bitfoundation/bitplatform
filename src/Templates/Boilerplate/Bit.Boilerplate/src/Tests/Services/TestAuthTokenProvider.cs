@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Tests.Services;
 
-public partial class TestTokenProvider : IAuthTokenProvider
+public partial class TestAuthTokenProvider : IAuthTokenProvider
 {
     [AutoInject] private IStorageService storageService = default!;
 

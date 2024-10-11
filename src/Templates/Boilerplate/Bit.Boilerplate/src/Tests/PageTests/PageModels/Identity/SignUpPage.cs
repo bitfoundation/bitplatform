@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
 using System.Text.RegularExpressions;
 using Boilerplate.Server.Api.Resources;
+using Boilerplate.Tests.PageTests.PageModels.Layout;
 using MsgReader.Mime;
 
-namespace Boilerplate.Tests.PageTests.PageModels;
+namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
 public partial class SignUpPage(IPage page, Uri serverAddress)
     : MainLayout(page, serverAddress, Urls.SignUpPage, AppStrings.SingUpTitle)

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
 <RunSettings>
     <Playwright>
         <LaunchOptions>
@@ -24,6 +25,7 @@
         </EnvironmentVariables>
     </RunConfiguration>
 
+    <!--#if (advancedTests == true) -->
     <!-- https://learn.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file -->
     <LoggerRunSettings>
         <Loggers>
@@ -39,4 +41,5 @@
             </Logger>
         </Loggers>
     </LoggerRunSettings>
+    <!--#if (advancedTests == true) -->
 </RunSettings>

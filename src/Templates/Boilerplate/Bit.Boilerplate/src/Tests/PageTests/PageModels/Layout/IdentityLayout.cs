@@ -1,4 +1,4 @@
-﻿namespace Boilerplate.Tests.PageTests.PageModels;
+﻿namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 
 public partial class IdentityLayout(IPage page, Uri serverAddress, string pagePath, string pageTitle)
     : MainLayout(page, serverAddress, pagePath, pageTitle)

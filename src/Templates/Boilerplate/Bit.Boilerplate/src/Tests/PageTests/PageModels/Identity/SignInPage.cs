@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Tests.PageTests.PageModels;
+﻿using Boilerplate.Tests.PageTests.PageModels.Layout;
+
+namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
 public partial class SignInPage(IPage page, Uri serverAddress)
     : MainLayout(page, serverAddress, Urls.SignInPage, AppStrings.SignInTitle)
@@ -13,7 +15,7 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         return new(page, serverAddress, Urls.HomePage, AppStrings.HomeTitle);
     }
 
-    public async Task AssertSignInFailed()
+    public async Task AssetNotSignedIn()
     {
         await Assertions.Expect(page.GetByText(AppStrings.InvalidUserCredentials)).ToBeVisibleAsync();
         await Assertions.Expect(page.Locator(".persona")).ToBeHiddenAsync();

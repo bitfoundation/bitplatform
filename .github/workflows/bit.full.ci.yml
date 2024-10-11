@@ -82,7 +82,7 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet test --logger GitHubActions
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |

@@ -11,7 +11,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
+        modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
             {
@@ -479,6 +479,49 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     });
             });
 
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+            {
+                b.Property<string>("InstallationId")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Auth")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Endpoint")
+                    .HasColumnType("TEXT");
+
+                b.Property<long>("ExpirationTime")
+                    .HasColumnType("INTEGER");
+
+                b.Property<string>("P256dh")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Platform")
+                    .IsRequired()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("PushChannel")
+                    .IsRequired()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Tags")
+                    .IsRequired()
+                    .HasColumnType("TEXT");
+
+                b.Property<Guid?>("UserId")
+                    .HasColumnType("TEXT");
+
+                b.HasKey("InstallationId");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("DeviceInstallations");
+
+                b
+                    .HasAnnotation("Cosmos:ContainerName", "DeviceInstallations")
+                    .HasAnnotation("Cosmos:PartitionKeyName", "Platform");
+            });
+
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
             {
                 b.Property<Guid>("Id")
@@ -658,6 +701,15 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .IsRequired();
 
                 b.Navigation("Category");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+            {
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId");
+
+                b.Navigation("User");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
