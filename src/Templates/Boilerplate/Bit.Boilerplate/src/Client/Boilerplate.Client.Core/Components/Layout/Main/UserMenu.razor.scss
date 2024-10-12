@@ -2,7 +2,7 @@
 
 ::deep {
     .user-menu-callout {
-        @include lt-md {
+        @include lt-sm {
             height: unset;
             box-shadow: none;
             bottom: var(--app-inset-bottom);
@@ -11,7 +11,7 @@
     }
 
     .user-menu-card {
-        @include lt-md {
+        @include lt-sm {
             box-shadow: none;
         }
     }

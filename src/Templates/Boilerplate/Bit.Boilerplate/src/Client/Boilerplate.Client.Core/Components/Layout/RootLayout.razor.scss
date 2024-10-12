@@ -5,10 +5,13 @@
 
 .layout {
     width: 100%;
-    height: 100%;
     background-color: $bit-color-background-primary;
     --app-inset-top: env(safe-area-inset-top);
     --app-inset-bottom: env(safe-area-inset-bottom);
+
+    @include lt-md {
+        height: 100%;
+    }
 }
 
 .inset-top {
@@ -17,46 +20,18 @@
 
 .inset-main {
     width: 100%;
-    overflow: auto;
-    position: relative;
-    scroll-behavior: smooth;
-    overscroll-behavior: none;
-    height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
+
+    @include lt-md {
+        overflow: auto;
+        position: relative;
+        scroll-behavior: smooth;
+        overscroll-behavior: none;
+        height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
+    }
 }
 
 .inset-bottom {
     height: var(--app-inset-bottom);
-}
-
-.bit-ios {
-    ::deep .form-message-bar {
-        scroll-margin-top: calc($headerHeight + env(safe-area-inset-top) + 1px);
-    }
-}
-
-.status-bar {
-    top: 0;
-    width: 100%;
-    z-index: 101;
-    display: none;
-    position: fixed;
-    overflow: hidden;
-    text-align: center;
-    align-items: center;
-    font-size: rem2(14px);
-    justify-content: center;
-    background-color: transparent;
-
-    .bit-ios & {
-        display: flex;
-        color: transparent;
-        height: env(safe-area-inset-top);
-    }
-
-    .bit-windows &, .bit-macos & {
-        display: flex;
-        height: var(--bit-status-bar-height);
-    }
 }
 
 ::deep {
