@@ -15,9 +15,9 @@ public partial class IdentityApiTests
 
         await server.Build(services =>
         {
-            services.TryAddScoped<IStorageService, TestStorageService>();
-            services.TryAddScoped<IAuthTokenProvider, TestAuthTokenProvider>();
             // Services registered in this test project will be used instead of the application's services, allowing you to fake certain behaviors during testing.
+            services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
+            services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
         }).Start();
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
@@ -44,8 +44,8 @@ public partial class IdentityApiTests
 
         await server.Build(services =>
         {
-            services.TryAddScoped<IStorageService, TestStorageService>();
-            services.TryAddScoped<IAuthTokenProvider, TestAuthTokenProvider>();
+            services.Replace(ServiceDescriptor.Scoped<IStorageService, TestStorageService>());
+            services.Replace(ServiceDescriptor.Transient<IAuthTokenProvider, TestAuthTokenProvider>());
         }).Start();
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
