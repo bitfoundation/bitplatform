@@ -82,6 +82,7 @@ public partial class SignInPage : IDisposable
             if (source == TfaPayload)
             {
                 requiresTwoFactor = false;
+                model.TwoFactorCode = null;
             }
 
             await InvokeAsync(StateHasChanged);
