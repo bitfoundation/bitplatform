@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
-using Boilerplate.Tests.PageTests.PageModels.Layout;
 using Boilerplate.Tests.PageTests.PageModels.Identity;
+using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Data;
 
 namespace Boilerplate.Tests.PageTests;
 
@@ -48,13 +49,42 @@ public partial class IdentityPagesTests : PageTestBase
     //[Authenticated]
     public async Task SignOut_Should_WorkAsExpected()
     {
-        var homePage = new IdentityLayout(Page, WebAppServerAddress, Urls.HomePage, AppStrings.HomeTitle);
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
 
-        await homePage.Open();
-        await homePage.AssertOpen();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await homePage.SignOut();
-        await homePage.AssertSignOut();
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        var user = new User
+        {
+            EmailConfirmed = true,
+            UserName = email,
+            NormalizedUserName = email.ToUpperInvariant(),
+            Email = email,
+            NormalizedEmail = email.ToUpperInvariant(),
+            SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
+            ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
+            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
+        };
+
+        dbContext.Users.Add(user);
+        await dbContext.SaveChangesAsync();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var signedInPage = await signInPage.SignIn(email);
+        await signedInPage.AssertSignInSuccess(email);
+
+        await dbContext.Entry(user).ReloadAsync();
+        Assert.AreEqual(1, user.Sessions.Count);
+
+        await signedInPage.SignOut();
+        await signedInPage.AssertSignOut();
+
+        await dbContext.Entry(user).ReloadAsync();
+        Assert.AreEqual(0, user.Sessions.Count);
     }
 
     [TestMethod]
@@ -100,7 +130,7 @@ public partial class IdentityPagesTests : PageTestBase
     public Task ConfigureTestServerForSignUp(AppTestServer testServer)
     {
         return testServer.Build(services =>
-    {
+        {
             //#if (captcha == "reCaptcha")
             services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
             //#endif

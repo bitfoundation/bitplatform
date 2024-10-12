@@ -62,6 +62,7 @@ public partial class AppTestServer : IAsyncDisposable
     }
 
     //TODO: #if advanced tests
+    //Pre-defined available port for the test server is required for restoring authentication state to the browser context
     private static string GenerateServerUrl()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
