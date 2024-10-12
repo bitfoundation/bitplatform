@@ -9,7 +9,7 @@ public partial class ForgotPasswordPage
     [AutoInject] IIdentityController identityController = default!;
 
     private bool isWaiting;
-    private string? errorMessage;
+    private BitSnackBar snackbarRef = default!;
     private readonly SendResetPasswordTokenRequestDto model = new();
 
     private async Task Submit()
@@ -17,7 +17,6 @@ public partial class ForgotPasswordPage
         if (isWaiting) return;
 
         isWaiting = true;
-        errorMessage = null;
 
         try
         {
@@ -37,7 +36,7 @@ public partial class ForgotPasswordPage
         }
         catch (KnownException e)
         {
-            errorMessage = e.Message;
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
