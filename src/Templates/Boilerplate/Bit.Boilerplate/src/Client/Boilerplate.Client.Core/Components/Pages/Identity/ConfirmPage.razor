@@ -138,6 +138,12 @@
                 </BitPivotItem>
             }
         </BitPivot>
+        <br />
+        <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
+            <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+            <BitText>@Localizer[nameof(AppStrings.Or)]</BitText>
+            <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+        </BitStack>
     </BitStack>
 </section>
 
