@@ -13,6 +13,7 @@ public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
 
         if (CultureInfoManager.MultilingualEnabled)
         {
+            //test
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
