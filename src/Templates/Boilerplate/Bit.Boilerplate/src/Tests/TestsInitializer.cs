@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
-using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 
 namespace Boilerplate.Tests;
 
 [TestClass]
 public partial class TestsInitializer
 {
-    public static string access_token { get; private set; } = null!;
+    public static string AuthenticationState { get; private set; } = null!;
 
     [AssemblyInitialize]
     public static async Task Initialize(TestContext _)
@@ -18,7 +18,7 @@ public partial class TestsInitializer
 
         await InitializeDatabase(testServer);
 
-        await GetTestAccessToken(testServer);
+        await InitializeAuthToken(testServer);
     }
 
     private static async Task InitializeDatabase(AppTestServer testServer)
@@ -31,17 +31,32 @@ public partial class TestsInitializer
         }
     }
 
-    private static async Task GetTestAccessToken(AppTestServer testServer)
+    private static async Task InitializeAuthToken(AppTestServer testServer)
     {
-        await using var scope = testServer.WebApp.Services.CreateAsyncScope();
+        var playwrightPage = new PageTest();
+        await playwrightPage.Setup();
+        await playwrightPage.BrowserSetup();
+        await playwrightPage.ContextSetup();
+        await playwrightPage.PageSetup();
 
-        testServer.WebApp.Configuration["AppSettings:BearerTokenExpiration"] = "0.24:00:00";
+        var signinPage = new SignInPage(playwrightPage.Page, testServer.WebAppServerAddress);
 
-        access_token = (await scope.ServiceProvider.GetRequiredService<IIdentityController>()
-            .SignIn(new()
-            {
-                Email = "test@bitplatform.dev",
-                Password = "123456"
-            }, default)).AccessToken!;
+        await signinPage.Open();
+        await signinPage.AssertOpen();
+
+        var signedInPage = await signinPage.SignIn();
+        await signedInPage.AssertSignInSuccess();
+
+        var state = await playwrightPage.Page.Context.StorageStateAsync();
+        if (string.IsNullOrEmpty(state))
+            throw new InvalidOperationException("Authentication state is null or empty.");
+
+        AuthenticationState = state.Replace(testServer.WebAppServerAddress.OriginalString.TrimEnd('/'), "[ServerAddress]");
+
+        if (playwrightPage.Page.Context.Browser is IBrowser browser)
+        {
+            await browser.CloseAsync();
+            await browser.DisposeAsync();
+        }
     }
 }
