@@ -1,25 +1,22 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ProfileSection
 {
+    [Parameter] public UserDto? User { get; set; }
+
+
+    [AutoInject] private IUserController userController = default!;
+
+
     private bool isSaving;
     private bool isUploading;
     private string? profileImageUrl;
     private string? profileImageUploadUrl;
     private string? removeProfileImageHttpUrl;
-
     private readonly EditUserDto editUserDto = new();
-
-    private BitSnackBar snackbarRef = default!;
-
-
-    [AutoInject] private IUserController userController = default!;
-
-    [Parameter]
-    public UserDto? User { get; set; }
 
 
     protected override async Task OnInitAsync()
@@ -57,11 +54,11 @@ public partial class ProfileSection
 
             PublishUserDataUpdated();
 
-            await snackbarRef.Success(Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
@@ -83,7 +80,7 @@ public partial class ProfileSection
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
     }
 
@@ -101,7 +98,7 @@ public partial class ProfileSection
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
@@ -112,7 +109,7 @@ public partial class ProfileSection
     private async Task HandleOnUploadFailed()
     {
         isUploading = false;
-        await snackbarRef.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
+        SnackBarService.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
     }
 
     private void PublishUserDataUpdated()

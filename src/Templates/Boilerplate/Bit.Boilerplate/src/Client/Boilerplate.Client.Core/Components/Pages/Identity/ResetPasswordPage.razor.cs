@@ -23,7 +23,6 @@ public partial class ResetPasswordPage
     private bool showPhone;
     private bool isTokenEntered;
     private bool isPasswordChanged;
-    private BitSnackBar snackbarRef = default!;
     private ResetPasswordRequestDto model = new();
 
     private const string EmailKey = nameof(EmailKey);
@@ -91,7 +90,7 @@ public partial class ResetPasswordPage
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {

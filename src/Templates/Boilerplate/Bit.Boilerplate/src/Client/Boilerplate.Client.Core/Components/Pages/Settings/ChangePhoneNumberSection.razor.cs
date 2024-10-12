@@ -1,21 +1,10 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ChangePhoneNumberSection
 {
-    private bool isWaiting;
-    private bool showConfirmation;
-    private BitSnackBar snackbarRef = default!;
-    private bool isPhoneNumberUnavailable = true;
-    private readonly SendPhoneTokenRequestDto sendModel = new();
-    private readonly ChangePhoneNumberRequestDto changeModel = new();
-
-
-    [AutoInject] private IUserController userController = default!;
-
-
     [Parameter] public string? PhoneNumber { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "phoneNumber")]
@@ -23,6 +12,16 @@ public partial class ChangePhoneNumberSection
 
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneNumberTokenQueryString { get; set; }
+
+
+    [AutoInject] private IUserController userController = default!;
+
+
+    private bool isWaiting;
+    private bool showConfirmation;
+    private bool isPhoneNumberUnavailable = true;
+    private readonly SendPhoneTokenRequestDto sendModel = new();
+    private readonly ChangePhoneNumberRequestDto changeModel = new();
 
 
     protected override async Task OnInitAsync()
@@ -47,6 +46,7 @@ public partial class ChangePhoneNumberSection
         await base.OnInitAsync();
     }
 
+
     private async Task SendToken()
     {
         if (isWaiting || sendModel.PhoneNumber == PhoneNumber) return;
@@ -61,11 +61,11 @@ public partial class ChangePhoneNumberSection
             isPhoneNumberUnavailable = false;
             changeModel.PhoneNumber = sendModel.PhoneNumber;
 
-            await snackbarRef.Success(Localizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
@@ -87,7 +87,7 @@ public partial class ChangePhoneNumberSection
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
