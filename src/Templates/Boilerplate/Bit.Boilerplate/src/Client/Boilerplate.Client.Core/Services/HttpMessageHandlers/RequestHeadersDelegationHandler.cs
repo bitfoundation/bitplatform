@@ -13,7 +13,7 @@ public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
 
         if (CultureInfoManager.MultilingualEnabled)
         {
-            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name ?? CultureInfoManager.DefaultCulture.Name));
+            request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
 
         return await base.SendAsync(request, cancellationToken);
