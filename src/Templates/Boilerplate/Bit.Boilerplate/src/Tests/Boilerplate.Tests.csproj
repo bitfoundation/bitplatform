@@ -35,12 +35,15 @@
         <Using Include="Microsoft.Playwright" />
         <Using Include="Microsoft.Playwright.MSTest" />
         <Using Include="FakeItEasy" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(pipeline)' == 'GitHub' OR '$(pipeline)' == ''" Include="GitHubActionsTestLogger" PrivateAssets="all" />
+        <PackageReference Condition=" '$(pipeline)' == 'Azure' " Include="AzurePipelines.TestLogger" />
+        <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''">
         <PackageReference Include="MsgReader" />
-        <PackageReference Include="GitHubActionsTestLogger" PrivateAssets="all" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
 

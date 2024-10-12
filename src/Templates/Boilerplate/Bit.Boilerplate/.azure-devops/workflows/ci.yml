@@ -21,7 +21,7 @@ jobs:
     inputs:
       versionSpec: '22.x'
     displayName: 'Install Node.js'
-  
+
   - task: Bash@3
     displayName: 'Build'
     inputs:
@@ -32,10 +32,19 @@ jobs:
     displayName: 'Install Playwright'
     inputs:
       targetType: 'inline'
-      script: 'pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install-deps && pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install'
+      script: 'pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install --with-deps'
 
   - task: Bash@3
+    name: test
     displayName: 'Test'
     inputs:
       targetType: 'inline'
-      script: 'dotnet test src/Tests/Boilerplate.Tests.csproj'
+      script: 'dotnet test src/Tests/Boilerplate.Tests.csproj --logger AzurePipelines'
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Upload Tests Artifact'
+    condition: failed()
+    dependsOn: test
+    inputs:
+      targetPath: 'src/Tests/TestResults'
+      artifactName: 'tests-artifact'

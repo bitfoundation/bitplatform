@@ -58,8 +58,9 @@
     <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
     <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''" Include="MsgReader" Version="5.6.5" />
-    <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == ''" Include="GitHubActionsTestLogger" Version="2.4.1" />
+    <PackageVersion Condition=" '$(pipeline)' == 'GitHub' OR '$(pipeline)' == '' " Include="GitHubActionsTestLogger" Version="2.4.1" />
+    <PackageVersion Condition=" '$(pipeline)' == 'Azure' " Include="AzurePipelines.TestLogger" Version="1.2.3" />
+    <PackageVersion Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="MsgReader" Version="5.6.5" />
     <!--/-:msbuild-conditional:noEmit -->
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="QRCoder" Version="1.6.0" />

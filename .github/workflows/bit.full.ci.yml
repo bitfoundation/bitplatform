@@ -75,6 +75,7 @@ jobs:
         retention-days: 14
 
     - name: Test SqlServer database option
+      id: sqlserver-test
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -83,6 +84,14 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet test --logger GitHubActions
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |

@@ -25,7 +25,6 @@
         </EnvironmentVariables>
     </RunConfiguration>
 
-    <!--#if (advancedTests == true) -->
     <!-- https://learn.microsoft.com/en-us/visualstudio/test/configure-unit-tests-by-using-a-dot-runsettings-file -->
     <LoggerRunSettings>
         <Loggers>
@@ -41,5 +40,4 @@
             </Logger>
         </Loggers>
     </LoggerRunSettings>
-    <!--#if (advancedTests == true) -->
 </RunSettings>
