@@ -26,6 +26,7 @@ public partial class AppTestServer : IAsyncDisposable
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
+        //TODO: #if advanced tests
         builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
         builder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
@@ -60,6 +61,7 @@ public partial class AppTestServer : IAsyncDisposable
         }
     }
 
+    //TODO: #if advanced tests
     private static string GenerateServerUrl()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
