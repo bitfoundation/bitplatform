@@ -1,4 +1,5 @@
 @import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 header {
@@ -7,4 +8,15 @@ header {
     position: absolute;
     height: rem2(65px);
     z-index: $bit-zindex-base;
+}
+
+::deep {
+    .identity-language-callout {
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            bottom: var(--app-inset-bottom);
+            top: var(--app-inset-top) !important;
+        }
+    }
 }
