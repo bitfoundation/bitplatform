@@ -45,6 +45,7 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
+    //[Authenticated]
     public async Task SignOut_Should_WorkAsExpected()
     {
         var homePage = new IdentityLayout(Page, WebAppServerAddress, Urls.HomePage, AppStrings.HomeTitle);
@@ -57,15 +58,10 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
+    //[AutoStartTestServer(false)]
+    [ConfigureTestServer(nameof(ConfigureTestServerForSignUp))]
     public async Task SignUp_Should_Work_With_MagicLink()
     {
-        await TestServer.Build(services =>
-        {
-            //#if (captcha == "reCaptcha")
-            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
-            //#endif
-        }).Start();
-
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
@@ -82,15 +78,10 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
+    //[AutoStartTestServer(false)]
+    [ConfigureTestServer(nameof(ConfigureTestServerForSignUp))]
     public async Task SignUp_Should_Work_With_OtpCode()
     {
-        await TestServer.Build(services =>
-        {
-            //#if (captcha == "reCaptcha")
-            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
-            //#endif
-        }).Start();
-
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
@@ -106,9 +97,13 @@ public partial class IdentityPagesTests : PageTestBase
         await signupPage.AssertConfirm();
     }
 
-    protected override bool AutoStartTestServer(string method) => new string[]
+    public Task ConfigureTestServerForSignUp(AppTestServer testServer)
     {
-        nameof(SignUp_Should_Work_With_MagicLink),
-        nameof(SignUp_Should_Work_With_OtpCode)
-    }.Contains(method) is false;
+        return testServer.Build(services =>
+    {
+            //#if (captcha == "reCaptcha")
+            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
+            //#endif
+        }).Start();
+    }
 }

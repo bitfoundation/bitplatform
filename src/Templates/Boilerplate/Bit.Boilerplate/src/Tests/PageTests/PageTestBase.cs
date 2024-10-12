@@ -1,20 +1,29 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Tests.PageTests;
 
 [TestClass]
 public partial class PageTestBase : PageTest
 {
-    protected AppTestServer TestServer { get; set; } = new();
+    public AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
     public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
-
-    protected virtual bool AutoStartTestServer(string method) => true;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
-        if (AutoStartTestServer(TestContext.ManagedMethod!))
+        var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
+
+        var configureTestServer = currentTestMethod!.GetCustomAttribute<ConfigureTestServerAttribute>();
+        if (configureTestServer is not null)
+        {
+            await (Task)GetType().GetMethod(configureTestServer.MethodName)!.Invoke(this, [TestServer])!;
+            return;
+        }
+
+        var autoStartTestServer = currentTestMethod!.GetCustomAttribute<AutoStartTestServerAttribute>();
+        if (autoStartTestServer is null || autoStartTestServer.AutoStart)
         {
             await TestServer.Build().Start();
         }
@@ -41,6 +50,21 @@ public partial class PageTestBase : PageTest
     {
         var options = base.ContextOptions();
         options.RecordVideoDir = GetVideoDirectory(TestContext);
+
+        var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
+
+        var isAuthenticated = currentTestMethod!.GetCustomAttribute<AuthenticatedAttribute>() is not null;
+        if (isAuthenticated)
+        {
+            options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
+        }
+
+        var configureBrowserContext = currentTestMethod!.GetCustomAttribute<ConfigureBrowserContextAttribute>();
+        if (configureBrowserContext is not null)
+        {
+            GetType().GetMethod(configureBrowserContext.MethodName)!.Invoke(this, [options]);
+        }
+
         return options;
     }
 
@@ -49,4 +73,25 @@ public partial class PageTestBase : PageTest
         var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
         return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
     }
+}
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class AuthenticatedAttribute : Attribute;
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class ConfigureBrowserContextAttribute(string methodName) : Attribute
+{
+    public string MethodName => methodName;
+}
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class ConfigureTestServerAttribute(string methodName) : Attribute
+{
+    public string MethodName => methodName;
+}
+
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class AutoStartTestServerAttribute(bool autoStart = true) : Attribute
+{
+    public bool AutoStart => autoStart;
 }
