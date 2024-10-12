@@ -12,6 +12,27 @@ public partial class ForgotPasswordPage
     private BitSnackBar snackbarRef = default!;
     private readonly SendResetPasswordTokenRequestDto model = new();
 
+    private const string EmailKey = nameof(EmailKey);
+    private const string PhoneKey = nameof(PhoneKey);
+
+    private string selectedKey = EmailKey;
+
+
+    private void OnSelectedKeyChanged(string key)
+    {
+        selectedKey = key;
+
+        if (key == EmailKey)
+        {
+            model.PhoneNumber = null;
+        }
+
+        if (key == PhoneKey)
+        {
+            model.Email = null;
+        }
+    }
+
     private async Task Submit()
     {
         if (isWaiting) return;
