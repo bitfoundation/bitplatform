@@ -7,7 +7,7 @@ namespace Boilerplate.Tests;
 [TestClass]
 public partial class TestsInitializer
 {
-    //TODO: #if advanced tests
+    //TODO: if advanced tests
     public static string AuthenticationState { get; private set; } = null!;
 
     [AssemblyInitialize]
@@ -19,7 +19,7 @@ public partial class TestsInitializer
 
         await InitializeDatabase(testServer);
 
-        //TODO: #if advanced tests
+        //TODO: if advanced tests
         await InitializeAuthToken(testServer);
     }
 
@@ -33,7 +33,7 @@ public partial class TestsInitializer
         }
     }
 
-    //TODO: #if advanced tests
+    //TODO: if advanced tests
     private static async Task InitializeAuthToken(AppTestServer testServer)
     {
         var playwrightPage = new PageTest();

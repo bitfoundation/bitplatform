@@ -26,7 +26,7 @@ public partial class AppTestServer : IAsyncDisposable
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
-        //TODO: #if advanced tests
+        //TODO: if advanced tests
         builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
         builder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
@@ -61,7 +61,7 @@ public partial class AppTestServer : IAsyncDisposable
         }
     }
 
-    //TODO: #if advanced tests
+    //TODO: if advanced tests
     //Pre-defined available port for the test server is required for restoring authentication state to the browser context
     private static string GenerateServerUrl()
     {
