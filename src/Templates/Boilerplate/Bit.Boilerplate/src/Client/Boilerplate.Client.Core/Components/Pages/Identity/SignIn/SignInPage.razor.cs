@@ -76,6 +76,7 @@ public partial class SignInPage : IDisposable
             if (source == OtpPayload)
             {
                 isOtpSent = false;
+                model.Otp = null;
             }
 
             if (source == TfaPayload)
@@ -109,6 +110,7 @@ public partial class SignInPage : IDisposable
     private async Task DoSignIn()
     {
         if (isWaiting) return;
+        if (isOtpSent && string.IsNullOrWhiteSpace(model.Otp)) return;
 
         isWaiting = true;
 
