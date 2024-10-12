@@ -1,46 +1,30 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Profile;
+namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
-public partial class UserDataSection
+public partial class ProfileSection
 {
     private bool isSaving;
-    private bool isRemoving;
     private bool isUploading;
     private string? profileImageUrl;
-    private string? profileImageError;
     private string? profileImageUploadUrl;
     private string? removeProfileImageHttpUrl;
 
-    private UserDto user = default!;
     private readonly EditUserDto editUserDto = new();
 
-    private string? message;
-    private BitColor messageColor;
-    private ElementReference messageRef = default!;
+    private BitSnackBar snackbarRef = default!;
 
 
     [AutoInject] private IUserController userController = default!;
 
-
-    [Parameter] public bool Loading { get; set; }
-
     [Parameter]
-    public UserDto User
-    {
-        get => user;
-        set
-        {
-            user = value;
-            user?.Patch(editUserDto);
-        }
-    }
+    public UserDto? User { get; set; }
 
 
     protected override async Task OnInitAsync()
     {
-        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessTokenAsync);
+        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
 
         removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
 
@@ -51,30 +35,33 @@ public partial class UserDataSection
         await base.OnInitAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        User?.Patch(editUserDto);
+
+        base.OnParametersSet();
+    }
+
+
     private async Task SaveProfile()
     {
-        if (isSaving) return;
+        if (isSaving || User is null) return;
 
         isSaving = true;
-        message = null;
 
         try
         {
-            editUserDto.Patch(user);
+            editUserDto.Patch(User);
 
-            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(user);
+            (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(User);
 
             PublishUserDataUpdated();
 
-            messageColor = BitColor.Success;
-            message = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Success(Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
@@ -84,45 +71,37 @@ public partial class UserDataSection
 
     private async Task RemoveProfileImage()
     {
-        if (isRemoving) return;
-
-        isRemoving = true;
+        if (isSaving || User is null) return;
 
         try
         {
             await HttpClient.DeleteAsync(removeProfileImageHttpUrl, CurrentCancellationToken);
 
-            user.ProfileImageName = null;
+            User.ProfileImageName = null;
 
             PublishUserDataUpdated();
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
-        }
-        finally
-        {
-            isRemoving = false;
+            await snackbarRef.Error(e.Message);
         }
     }
 
     private async Task HandleOnUploadComplete()
     {
+        if (User is null) return;
+
         try
         {
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
-            user.ProfileImageName = updatedUser.ProfileImageName;
+            User.ProfileImageName = updatedUser.ProfileImageName;
 
             PublishUserDataUpdated();
         }
         catch (KnownException e)
         {
-            message = e.Message;
-            messageColor = BitColor.Error;
-            await messageRef.ScrollIntoView();
+            await snackbarRef.Error(e.Message);
         }
         finally
         {
@@ -130,8 +109,14 @@ public partial class UserDataSection
         }
     }
 
+    private async Task HandleOnUploadFailed()
+    {
+        isUploading = false;
+        await snackbarRef.Error(Localizer[nameof(AppStrings.FileUploadFailed)]);
+    }
+
     private void PublishUserDataUpdated()
     {
-        PubSubService.Publish(PubSubMessages.USER_DATA_UPDATED, user);
+        PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, User);
     }
 }

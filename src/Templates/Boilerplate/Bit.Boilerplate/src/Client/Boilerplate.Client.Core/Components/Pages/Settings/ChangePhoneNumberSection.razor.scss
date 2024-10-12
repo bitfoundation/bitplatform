@@ -1,0 +1,10 @@
+section {
+    width: 100%;
+}
+
+::deep {
+    form {
+        width: 100%;
+        max-width: 27rem;
+    }
+}

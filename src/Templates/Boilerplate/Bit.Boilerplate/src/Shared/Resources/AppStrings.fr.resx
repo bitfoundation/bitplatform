@@ -205,8 +205,14 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Sélectionnez la langue</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profil</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>Modifier vos données de profil</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Editer le profil</value>
@@ -222,6 +228,12 @@
   </data>
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Le jeton de changement de numéro de téléphone vous a été envoyé</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>Your active sessions across multiple devices</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>Vos séances</value>
@@ -247,11 +259,6 @@
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Modifier le profil hors ligne</value>
-  </data>
-    <!--#endif-->
-    <!--#if (signalr == true || notification == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -280,6 +287,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>Entrez un nouvel e-mail</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>Téléphone</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Numéro de téléphone</value>
@@ -481,6 +491,12 @@
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>Vous pouvez maintenant vous connecter avec votre compte.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>Compte</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>Changer l'e-mail ou le numéro de téléphone de votre compte</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Supprimer le compte</value>
@@ -701,6 +717,18 @@
     <data name="RememberMe" xml:space="preserve">
     <value>Souviens-toi de moi?</value>
   </data>
+    <data name="Copy" xml:space="preserve">
+    <value>Copie</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>Copié</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>Authentification à deux facteurs</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>Gérez l'authentification multifacteur de votre compte</value>
+  </data>
     <data name="TwoFactorCode" xml:space="preserve">
     <value>Code 2FA</value>
   </data>
@@ -774,7 +802,7 @@
     <value>Vérifier</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Codes de récupération</value>
+    <value>Récupération</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>Vous n'avez plus de codes de récupération.</value>
@@ -810,7 +838,7 @@
     <value>Codes de récupération:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Application d'authentification</value>
+    <value>Authentificateur</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>Si vous réinitialisez votre clé d'authentification, votre application d'authentification ne fonctionnera pas tant que vous ne la reconfigurerez pas.</value>
@@ -822,7 +850,7 @@
     <value>Réinitialiser la clé d'authentification</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Désactiver 2FA</value>
+    <value>Désactiver</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>Cette action désactive uniquement 2FA.</value>
@@ -899,13 +927,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} est votre jeton de confirmation de numéro de téléphone dans Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} est votre jeton à deux facteurs dans Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} est votre mot de passe à usage unique dans Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} est votre jeton de réinitialisation de mot de passe dans Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">

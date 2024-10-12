@@ -8,7 +8,6 @@ public partial class UserMenu
     private bool showSignOut;
     private bool showCultures;
     private UserDto user = new();
-    private string? currentCulture;
     private string? profileImageUrl;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -32,7 +31,7 @@ public partial class UserMenu
                               .ToArray();
         }
 
-        unsubscribeUerDataUpdated = PubSubService.Subscribe(PubSubMessages.USER_DATA_UPDATED, async payload =>
+        unsubscribeUerDataUpdated = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
 
@@ -41,10 +40,10 @@ public partial class UserMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
+        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
 
         var serverAddress = Configuration.GetServerAddress();
-        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessTokenAsync());
+        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
         profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
 
         await base.OnInitAsync();
@@ -52,7 +51,6 @@ public partial class UserMenu
 
     private async Task OnCultureChanged(string? cultureName)
     {
-        currentCulture = cultureName;
         await cultureService.ChangeCulture(cultureName);
     }
 
@@ -63,7 +61,7 @@ public partial class UserMenu
 
     private async Task GoToProfile()
     {
-        NavigationManager.NavigateTo(Urls.ProfilePage);
+        NavigationManager.NavigateTo(Urls.SettingsPage);
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

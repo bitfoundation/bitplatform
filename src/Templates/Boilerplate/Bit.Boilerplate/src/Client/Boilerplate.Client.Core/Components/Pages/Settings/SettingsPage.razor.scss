@@ -1,0 +1,15 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .stack {
+        max-width: 40rem;
+    }
+}

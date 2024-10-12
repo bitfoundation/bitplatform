@@ -31,10 +31,9 @@
                                 <span>@Localizer[nameof(AppStrings.Edit)]</span>
                             </ImageOverlayTemplate>
                         </BitPersona>
+
                         <BitSeparator />
-                        <BitActionButton IconName="@BitIconName.Contact" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
-                            @Localizer[nameof(AppStrings.ProfileTitle)]
-                        </BitActionButton>
+
                         <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
                             <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
                                 @Localizer[nameof(AppStrings.Language)]
@@ -44,6 +43,7 @@
                                          IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
                             </BitStack>
                         </BitActionButton>
+
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"
                                              OnClick="ToggleTheme"
@@ -52,9 +52,11 @@
                             </BitActionButton>
                             <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
                         </BitStack>
-                        <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.ProfilePage" FullWidth OnClick="() => isOpen=false">
+
+                        <BitActionButton IconName="@BitIconName.Globe" Href="@Urls.SettingsPage" FullWidth OnClick="() => isOpen=false">
                             @Localizer[nameof(AppStrings.Settings)]
                         </BitActionButton>
+
                         <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { showSignOut=true; isOpen=false; }">
                             @Localizer[nameof(AppStrings.SignOut)]
                         </BitActionButton>
@@ -69,7 +71,9 @@
                                          IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SelectLanguage)]
                         </BitActionButton>
+
                         <BitSeparator />
+
                         <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
                                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
                                         OnChange="async (string? c) => await OnCultureChanged(c)"

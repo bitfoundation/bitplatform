@@ -3,9 +3,9 @@ using Android.OS;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Java.Net;
 //#if (notification == true)
 using Android.Gms.Tasks;
-using Java.Net;
 using Firebase.Messaging;
 //#endif
 using Boilerplate.Client.Core;
@@ -19,7 +19,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataPaths = ["/"],
                         DataPathPrefixes = [
                             "/en-US", "en-GB", "/fa-IR", "fr-FR",
-                            Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.ProfilePage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
+                            Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
                             //#if (sample == "Admin")
                             Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
                             //#elif (sample == "Todo")

@@ -205,8 +205,14 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Select language</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>Edit your profile data</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>Edit profile</value>
@@ -222,6 +228,12 @@
   </data>
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Change phone number token has been sent to you</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>Sessions</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>Your active sessions across multiple devices</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>Your sessions</value>
@@ -247,11 +259,6 @@
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Edit profile</value>
-  </data>
-    <!--#endif-->
-    <!--#if (signalr == true || notification == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} is your two factor token in Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -280,6 +287,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>Enter new email</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>Phone Number</value>
@@ -481,6 +491,12 @@
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>You can now login with your account.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>Account</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>Change your account email or phone number</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>Delete Account</value>
@@ -701,6 +717,18 @@
     <data name="RememberMe" xml:space="preserve">
     <value>Remember me?</value>
   </data>
+    <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>Two-factor authentication</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>Manage your account's multi-factor authentication</value>
+  </data>
     <data name="TwoFactorCode" xml:space="preserve">
     <value>2FA code</value>
   </data>
@@ -771,7 +799,7 @@
     <value>Verify</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>Recovery codes</value>
+    <value>Recovery</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>You have no recovery codes left.</value>
@@ -807,7 +835,7 @@
     <value>Recovery codes:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>Authenticator app</value>
+    <value>Authenticator</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value>
@@ -819,7 +847,7 @@
     <value>Reset authenticator key</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>Disable 2FA</value>
+    <value>Disable</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>This action only disables 2FA.</value>
@@ -896,13 +924,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} is your confirm phone number token in Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} is your two factor token in Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} is your OTP in Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} is your reset password token in Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">

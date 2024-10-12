@@ -7,9 +7,9 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
 {
     public override bool NotificationsSupported => true;
 
-    public override string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+    public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 
-    public override DeviceInstallationDto GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
         if (!NotificationsSupported)
             throw new InvalidOperationException(GetPlayServicesError());
