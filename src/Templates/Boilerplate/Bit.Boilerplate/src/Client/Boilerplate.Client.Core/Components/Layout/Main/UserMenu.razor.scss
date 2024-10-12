@@ -1,0 +1,18 @@
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .user-menu-callout {
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            bottom: var(--app-inset-bottom);
+            top: var(--app-inset-top) !important;
+        }
+    }
+
+    .user-menu-card {
+        @include lt-sm {
+            box-shadow: none;
+        }
+    }
+}

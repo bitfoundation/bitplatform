@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
         <BitStack>
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SignInPanelTitle)]</BitText>
 
@@ -9,7 +9,7 @@
                 @Localizer[nameof(AppStrings.SignInPanelSubtitle)]
             </BitText>
         </BitStack>
-
+        
         <SocialRow OnClick="OnSocialSignIn" />
 
         <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary">@Localizer[AppStrings.Or]</BitSeparator>

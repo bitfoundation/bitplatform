@@ -10,10 +10,6 @@ section {
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
 
-    .bit-ios & {
-        top: calc(env(safe-area-inset-top));
-    }
-
     &::-webkit-scrollbar {
         width: 0;
     }
@@ -21,12 +17,10 @@ section {
     @include lt-md {
         z-index: 3;
         padding: 0;
+        height: unset;
         position: fixed;
-
-        .bit-ios & {
-            top: 0;
-            padding-top: calc(env(safe-area-inset-top));
-        }
+        top: var(--app-inset-top);
+        bottom: var(--app-inset-bottom);
 
         &.closed {
             display: none;
@@ -41,7 +35,6 @@ section {
     height: 100%;
     position: fixed;
     min-height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
 
     @include gt-sm {
         display: none;
@@ -66,10 +59,6 @@ section {
         @include lt-md {
             display: none;
         }
-    }
-
-    .persona {
-        width: 100%;
     }
 
     a {

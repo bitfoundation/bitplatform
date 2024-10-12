@@ -40,7 +40,7 @@ public partial class NavPanel
             new()
             {
                 Text = Localizer[nameof(AppStrings.Settings)],
-                IconName = BitIconName.EditContact,
+                IconName = BitIconName.Equalizer,
                 Url = Urls.SettingsPage,
             },
             //#if (offlineDb == true)
