@@ -43,4 +43,29 @@ public partial class IdentityPagesTests : PageTest
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
+
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        var options = base.ContextOptions();
+        options.RecordVideoDir = GetVideoDirectory(TestContext);
+        return options;
+    }
+
+    [TestCleanup]
+    public async ValueTask Cleanup()
+    {
+        await Context.CloseAsync();
+        if (TestContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
+        {
+            var directory = GetVideoDirectory(TestContext);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
+        }
+    }
+
+    private static string GetVideoDirectory(TestContext testContext)
+    {
+        var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
+        return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
+    }
 }
