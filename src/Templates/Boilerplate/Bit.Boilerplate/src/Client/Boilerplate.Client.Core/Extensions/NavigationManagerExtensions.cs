@@ -31,9 +31,7 @@ public static partial class NavigationManagerExtensions
     /// </summary>
     public static string? GetCultureFromUri(this NavigationManager navigationManager)
     {
-        var url = navigationManager.Uri;
-
-        var uri = new Uri(url);
+        var uri = new Uri(navigationManager.Uri);
 
         var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
@@ -66,5 +64,11 @@ public static partial class NavigationManagerExtensions
         }
 
         return uri;
+    }
+
+    public static string GetPath(this NavigationManager navigationManager)
+    {
+        var uriBuilder = new UriBuilder(navigationManager.GetUriWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
+        return uriBuilder.Path;
     }
 }

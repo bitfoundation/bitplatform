@@ -30,9 +30,9 @@ public partial class AppTestServer : IAsyncDisposable
 
         builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
 
-        configureTestServices?.Invoke(builder.Services);
-
         builder.AddTestProjectServices();
+
+        configureTestServices?.Invoke(builder.Services);
 
         var app = webApp = builder.Build();
 

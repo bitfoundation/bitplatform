@@ -21,7 +21,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        AddBlazor(builder);
+        services.AddClientWebProjectServices();
 
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
@@ -52,7 +52,7 @@ public static partial class Program
         services.AddAntiforgery();
         //#endif
 
-        services.AddClientWebProjectServices();
+        AddBlazor(builder);
     }
 
     private static void AddBlazor(WebApplicationBuilder builder)
@@ -60,9 +60,9 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.TryAddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
 
-        services.TryAddTransient(sp =>
+        services.AddTransient(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
             // Key headers such as Authorization and AcceptLanguage headers are added in Client/Core/Services/HttpMessageHandlers. 

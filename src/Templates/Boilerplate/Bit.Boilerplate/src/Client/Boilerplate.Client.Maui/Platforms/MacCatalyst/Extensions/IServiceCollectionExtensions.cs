@@ -12,7 +12,7 @@ public static partial class IServiceCollectionExtensions
         // Services being registered here can get injected in Maui/macOS.
 
         //#if (notification == true)
-        services.TryAddSessioned<IPushNotificationService, MacCatalystPushNotificationService>();
+        services.AddSessioned<IPushNotificationService, MacCatalystPushNotificationService>();
         //#endif
 
         return services;
