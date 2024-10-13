@@ -22,9 +22,21 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET 6,7
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+
     - uses: actions/setup-node@v4
       with:
         node-version: 22
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      continue-on-error: true
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
 
     - name: Prepare environment
       run: |
@@ -42,24 +54,44 @@ jobs:
         show-log: true
 
     - name: Test Sqlite database option
+      id: sqlite-test
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
+        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlite/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test SqlServer database option
+      id: sqlserver-test
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
-        dotnet ef database update 
+        dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet test --logger GitHubActions
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |
@@ -114,7 +146,7 @@ jobs:
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1
 
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release

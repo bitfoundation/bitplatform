@@ -19,4 +19,3 @@ public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
         return await base.SendAsync(request, cancellationToken);
     }
 }
-

@@ -1,6 +1,10 @@
 ﻿using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Tests.Services;
+
+/// <summary>
+/// In UI tests, browser will uses its own storage, but for api tests, we need to fake the storage.
+/// </summary>
 public partial class TestStorageService : IStorageService
 {
     private readonly Dictionary<string, string?> tempStorage = [];
