@@ -6,19 +6,6 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInPage : IDisposable
 {
-    private bool isWaiting;
-    private bool isOtpSent;
-    private bool requiresTwoFactor;
-    private BitSnackBar snackbarRef = default!;
-    private readonly SignInRequestDto model = new();
-    private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
-
-
-    [AutoInject] private ILocalHttpServer localHttpServer = default!;
-    [AutoInject] private IIdentityController identityController = default!;
-    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
-
-
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
 
@@ -36,6 +23,18 @@ public partial class SignInPage : IDisposable
 
     [Parameter, SupplyParameterFromQuery(Name = "error")]
     public string? ErrorQueryString { get; set; }
+
+
+    [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+
+
+    private bool isWaiting;
+    private bool isOtpSent;
+    private bool requiresTwoFactor;
+    private readonly SignInRequestDto model = new();
+    private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
     private const string OtpPayload = nameof(OtpPayload);
@@ -66,7 +65,7 @@ public partial class SignInPage : IDisposable
 
         if (string.IsNullOrEmpty(ErrorQueryString) is false)
         {
-            await snackbarRef.Error(ErrorQueryString);
+            SnackBarService.Error(ErrorQueryString);
         }
 
         unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
@@ -76,11 +75,13 @@ public partial class SignInPage : IDisposable
             if (source == OtpPayload)
             {
                 isOtpSent = false;
+                model.Otp = null;
             }
 
             if (source == TfaPayload)
             {
                 requiresTwoFactor = false;
+                model.TwoFactorCode = null;
             }
 
             await InvokeAsync(StateHasChanged);
@@ -102,13 +103,14 @@ public partial class SignInPage : IDisposable
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
     }
 
     private async Task DoSignIn()
     {
         if (isWaiting) return;
+        if (isOtpSent && string.IsNullOrWhiteSpace(model.Otp)) return;
 
         isWaiting = true;
 
@@ -129,7 +131,7 @@ public partial class SignInPage : IDisposable
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
@@ -159,10 +161,9 @@ public partial class SignInPage : IDisposable
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
     }
-
 
     private async Task SendTfaToken()
     {
@@ -170,11 +171,11 @@ public partial class SignInPage : IDisposable
         {
             await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
 
-            await snackbarRef.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
     }
 

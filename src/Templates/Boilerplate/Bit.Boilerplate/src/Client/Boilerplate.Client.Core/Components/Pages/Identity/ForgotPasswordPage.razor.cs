@@ -9,15 +9,34 @@ public partial class ForgotPasswordPage
     [AutoInject] IIdentityController identityController = default!;
 
     private bool isWaiting;
-    private string? errorMessage;
     private readonly SendResetPasswordTokenRequestDto model = new();
+
+    private const string EmailKey = nameof(EmailKey);
+    private const string PhoneKey = nameof(PhoneKey);
+
+    private string selectedKey = EmailKey;
+
+
+    private void OnSelectedKeyChanged(string key)
+    {
+        selectedKey = key;
+
+        if (key == EmailKey)
+        {
+            model.PhoneNumber = null;
+        }
+
+        if (key == PhoneKey)
+        {
+            model.Email = null;
+        }
+    }
 
     private async Task Submit()
     {
         if (isWaiting) return;
 
         isWaiting = true;
-        errorMessage = null;
 
         try
         {
@@ -37,7 +56,7 @@ public partial class ForgotPasswordPage
         }
         catch (KnownException e)
         {
-            errorMessage = e.Message;
+            SnackBarService.Error(e.Message);
         }
         finally
         {

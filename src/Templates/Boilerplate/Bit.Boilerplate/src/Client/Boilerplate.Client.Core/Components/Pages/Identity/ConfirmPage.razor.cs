@@ -13,10 +13,6 @@ public partial class ConfirmPage
     private readonly ConfirmEmailRequestDto emailModel = new();
     private readonly ConfirmPhoneRequestDto phoneModel = new();
 
-    private string? errorMessage;
-    private ElementReference messageRef = default!;
-
-
     [AutoInject] private IIdentityController identityController = default!;
 
 
@@ -128,7 +124,6 @@ public partial class ConfirmPage
     private async Task WrapRequest(Func<Task> action)
     {
         isWaiting = true;
-        errorMessage = null;
 
         try
         {
@@ -136,8 +131,7 @@ public partial class ConfirmPage
         }
         catch (KnownException e)
         {
-            errorMessage = e.Message;
-            await messageRef.ScrollIntoView();
+            SnackBarService.Error(e.Message);
         }
         finally
         {
