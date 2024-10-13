@@ -65,10 +65,4 @@ public static partial class NavigationManagerExtensions
 
         return uri;
     }
-
-    public static string GetCurrentUrl(this NavigationManager navigationManager)
-    {
-        var uriBuilder = new UriBuilder(navigationManager.Uri) { Query = string.Empty, Fragment = string.Empty };
-        return uriBuilder.Path;
-    }
 }

@@ -67,26 +67,6 @@ public partial class RootLayout : IDisposable
     }
 
 
-    private Type GetCurrentLayout()
-    {
-        return isAuthenticated is null
-                ? typeof(EmptyLayout)
-                : isAuthenticated is true
-                    ? typeof(MainLayout)
-                    : typeof(IdentityLayout);
-    }
-
-    private void SetCurrentDir()
-    {
-        currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
-    }
-
-    private void SetCurrentUrl()
-    {
-        currentUrl = navigationManager.GetCurrentUrl();
-        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
-    }
-
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
@@ -107,6 +87,29 @@ public partial class RootLayout : IDisposable
     {
         SetCurrentUrl();
         StateHasChanged();
+    }
+
+
+    private Type GetCurrentLayout()
+    {
+        return isAuthenticated is null
+                ? typeof(EmptyLayout)
+                : isAuthenticated is true
+                    ? typeof(MainLayout)
+                    : typeof(IdentityLayout);
+    }
+
+    private void SetCurrentDir()
+    {
+        currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+    }
+
+    private void SetCurrentUrl()
+    {
+        var uriBuilder = new UriBuilder(navigationManager.Uri) { Query = string.Empty, Fragment = string.Empty };
+        currentUrl = uriBuilder.Path;
+
+        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
     }
 
 
