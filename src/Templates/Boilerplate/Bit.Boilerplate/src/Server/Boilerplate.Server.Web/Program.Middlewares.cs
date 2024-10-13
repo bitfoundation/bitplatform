@@ -158,7 +158,7 @@ public static partial class Program
 
     private static void UseSiteMap(this WebApplication app)
     {
-        var urls = Urls.AnonymousPages!;
+        var urls = Urls.All!;
 
         urls = CultureInfoManager.MultilingualEnabled ?
             urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
