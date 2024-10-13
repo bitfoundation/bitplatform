@@ -1,5 +1,5 @@
-﻿@attribute [Route(Urls.CategoriesPage)]
-@attribute [Route("{culture?}" + Urls.CategoriesPage)]
+﻿@attribute [Route($"{Urls.CategoriesPage}")]
+@attribute [Route($"{{culture?}}{Urls.CategoriesPage}")]
 @using Boilerplate.Shared.Dtos.Categories
 @inherits AppPageBase
 

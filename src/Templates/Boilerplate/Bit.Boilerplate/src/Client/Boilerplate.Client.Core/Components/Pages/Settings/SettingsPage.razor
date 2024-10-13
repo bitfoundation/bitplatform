@@ -1,6 +1,6 @@
 ﻿@*+:cnd:noEmit*@
-@attribute [Route(Urls.SettingsPage)]
-@attribute [Route("{culture?}" + Urls.SettingsPage)]
+@attribute [Route($"{Urls.SettingsPage}")]
+@attribute [Route($"{{culture?}}{Urls.SettingsPage}")]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.Settings)]</PageTitle>

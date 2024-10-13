@@ -1,6 +1,6 @@
 ﻿@*+:cnd:noEmit*@
-@attribute [Route(Urls.ConfirmPage)]
-@attribute [Route("{culture?}" + Urls.ConfirmPage)]
+@attribute [Route($"{Urls.ConfirmPage}")]
+@attribute [Route($"{{culture?}}{Urls.ConfirmPage}")]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ConfirmTitle)]</PageTitle>

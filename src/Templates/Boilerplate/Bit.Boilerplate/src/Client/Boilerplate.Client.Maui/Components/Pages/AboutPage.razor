@@ -1,5 +1,5 @@
 @attribute [Route(Urls.AboutPage)]
-@attribute [Route("{culture?}" + Urls.AboutPage)]
+@attribute [Route($"{{culture?}}{Urls.AboutPage}")]
 @inherits AppComponentBase
 
 <section>
