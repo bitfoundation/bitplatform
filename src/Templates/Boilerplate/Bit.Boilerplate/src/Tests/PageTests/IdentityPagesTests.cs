@@ -46,7 +46,6 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    //[Authenticated]
     public async Task SignOut_Should_WorkAsExpected()
     {
         await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
@@ -88,8 +87,6 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    //[AutoStartTestServer(false)]
-    [ConfigureTestServer(nameof(ConfigureTestServerForSignUp))]
     public async Task SignUp_Should_Work_With_MagicLink()
     {
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
@@ -101,15 +98,13 @@ public partial class IdentityPagesTests : PageTestBase
         await signupPage.AssertSignUp();
 
         await signupPage.OpenEmail();
-        await signupPage.AssertEmailContent();
+        await signupPage.AssertConfirmationEmailContent();
 
         await signupPage.ConfirmByMagicLink();
         await signupPage.AssertConfirm();
     }
 
     [TestMethod]
-    //[AutoStartTestServer(false)]
-    [ConfigureTestServer(nameof(ConfigureTestServerForSignUp))]
     public async Task SignUp_Should_Work_With_OtpCode()
     {
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
@@ -121,19 +116,9 @@ public partial class IdentityPagesTests : PageTestBase
         await signupPage.AssertSignUp();
 
         await signupPage.OpenEmail();
-        await signupPage.AssertEmailContent();
+        await signupPage.AssertConfirmationEmailContent();
 
         await signupPage.ConfirmByOtp();
         await signupPage.AssertConfirm();
-    }
-
-    public Task ConfigureTestServerForSignUp(AppTestServer testServer)
-    {
-        return testServer.Build(services =>
-        {
-            //#if (captcha == "reCaptcha")
-            services.Replace(ServiceDescriptor.Transient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>());
-            //#endif
-        }).Start();
     }
 }

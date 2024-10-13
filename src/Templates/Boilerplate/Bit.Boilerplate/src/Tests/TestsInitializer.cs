@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//+:cnd:noEmit
+using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
 using Boilerplate.Tests.PageTests.PageModels.Identity;
 
@@ -7,8 +8,9 @@ namespace Boilerplate.Tests;
 [TestClass]
 public partial class TestsInitializer
 {
-    //TODO: if advanced tests
+    //#if (advancedTests == true)
     public static string AuthenticationState { get; private set; } = null!;
+    //#endif
 
     [AssemblyInitialize]
     public static async Task Initialize(TestContext _)
@@ -19,8 +21,9 @@ public partial class TestsInitializer
 
         await InitializeDatabase(testServer);
 
-        //TODO: if advanced tests
-        await InitializeAuthToken(testServer);
+        //#if (advancedTests == true)
+        await InitializeAuthenticationState(testServer);
+        //#endif
     }
 
     private static async Task InitializeDatabase(AppTestServer testServer)
@@ -33,8 +36,8 @@ public partial class TestsInitializer
         }
     }
 
-    //TODO: if advanced tests
-    private static async Task InitializeAuthToken(AppTestServer testServer)
+    //#if (advancedTests == true)
+    private static async Task InitializeAuthenticationState(AppTestServer testServer)
     {
         var playwrightPage = new PageTest();
         await playwrightPage.Setup();
@@ -62,4 +65,5 @@ public partial class TestsInitializer
             await browser.DisposeAsync();
         }
     }
+    //#endif
 }

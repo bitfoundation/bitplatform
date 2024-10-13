@@ -53,7 +53,7 @@ public partial class PageTestBase : PageTest
 
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
-        var isAuthenticated = currentTestMethod!.GetCustomAttribute<AuthenticatedAttribute>() is not null;
+        var isAuthenticated = currentTestMethod!.GetCustomAttribute<AutoAuthenticateAttribute>() is not null;
         if (isAuthenticated)
         {
             options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
@@ -76,7 +76,7 @@ public partial class PageTestBase : PageTest
 }
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class AuthenticatedAttribute : Attribute;
+public class AutoAuthenticateAttribute : Attribute;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class ConfigureBrowserContextAttribute(string methodName) : Attribute

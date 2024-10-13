@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -14,6 +15,7 @@ public static partial class WebApplicationBuilderExtensions
 
         services.AddScoped<IStorageService, TestStorageService>();
         services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
+        services.AddTransient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
 
         services.AddTransient(sp =>
         {

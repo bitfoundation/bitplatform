@@ -11,6 +11,7 @@ namespace Boilerplate.Tests;
 public partial class AppTestServer : IAsyncDisposable
 {
     private WebApplication? webApp;
+
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
 
@@ -26,7 +27,6 @@ public partial class AppTestServer : IAsyncDisposable
             ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
 
-        //TODO: if advanced tests
         builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
         builder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
@@ -61,8 +61,6 @@ public partial class AppTestServer : IAsyncDisposable
         }
     }
 
-    //TODO: if advanced tests
-    //Pre-defined available port for the test server is required for restoring authentication state to the browser context
     private static string GenerateServerUrl()
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);

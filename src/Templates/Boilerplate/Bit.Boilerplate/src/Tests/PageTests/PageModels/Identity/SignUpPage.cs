@@ -44,7 +44,7 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
         await emailPage.SetContentAsync(html);
     }
 
-    public async Task AssertEmailContent()
+    public async Task AssertConfirmationEmailContent()
     {
         await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.WelcomeToApp);
         await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(new Regex(EmailStrings.EmailConfirmationMessageSubtitle.Replace("{0}", ".*")));
