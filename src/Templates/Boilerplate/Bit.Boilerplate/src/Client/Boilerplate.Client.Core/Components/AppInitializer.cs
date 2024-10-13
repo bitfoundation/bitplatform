@@ -15,7 +15,7 @@ public partial class AppInitializer : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
-    [AutoInject] private MessageBoxService messageBoxService = default!;
+    [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
@@ -109,7 +109,7 @@ public partial class AppInitializer : AppComponentBase
 
         hubConnection.On<string>("DisplayMessage", async (message) =>
         {
-            await messageBoxService.Show(message);
+            snackBarService.Show(message, "");
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>
