@@ -31,6 +31,15 @@ public partial class BitIconDemo
             LinkType = LinkType.Link,
             Href = "#icon-size-enum",
         },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the icon.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -172,6 +181,33 @@ public partial class BitIconDemo
                     Value = "2",
                 }
             ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name = "Fill",
+                    Description = "Fill styled variant.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Outline",
+                    Description = "Outline styled variant.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Text",
+                    Description = "Text styled variant.",
+                    Value = "2",
+                }
+            ]
         }
     ];
 
@@ -187,6 +223,13 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Pinned"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />";
+
+    private readonly string example3RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
@@ -199,7 +242,7 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Accept"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Pinned"" />
@@ -232,7 +275,7 @@ public partial class BitIconDemo
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .icon-class {
         padding: 4px;
