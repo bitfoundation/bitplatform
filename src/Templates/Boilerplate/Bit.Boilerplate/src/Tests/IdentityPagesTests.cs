@@ -18,6 +18,6 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.GetServerAddress(), Urls.SettingsPage).ToString());
 
-        await Expect(Page).ToHaveURLAsync(new Regex(@".*sign-in\?return-url=profile"));
+        await Expect(Page).ToHaveURLAsync(new Regex(@".*sign-in\?return-url=settings"));
     }
 }

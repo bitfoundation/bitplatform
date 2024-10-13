@@ -17,6 +17,8 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        services.AddClientWebProjectServices();
+
         configuration.AddClientConfigurations();
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
@@ -28,7 +30,7 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.TryAddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
+        services.AddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
 
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>
@@ -46,20 +48,18 @@ public static partial class Program
             });
         });
         //#endif
-
-        services.AddClientWebProjectServices();
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services)
     {
+        services.AddClientCoreProjectServices();
+
         // Services being registered here can get injected in both web project and server (during prerendering).
 
-        services.TryAddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
-        services.TryAddTransient<IExceptionHandler, WebExceptionHandler>();
+        services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddTransient<IExceptionHandler, WebExceptionHandler>();
         //#if (notification == true)
-        services.TryAddScoped<IPushNotificationService, WebPushNotificationService>();
+        services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
-
-        services.AddClientCoreProjectServices();
     }
 }
