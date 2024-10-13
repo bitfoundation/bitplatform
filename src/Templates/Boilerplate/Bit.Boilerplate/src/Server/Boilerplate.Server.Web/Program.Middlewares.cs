@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Web;
-using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
@@ -38,6 +37,25 @@ public static partial class Program
             options.RequestCultureProviders.Insert(1, new RouteDataRequestCultureProvider() { Options = options });
             app.UseRequestLocalization(options);
         }
+
+        app.Use(async (context, next) =>
+        {
+            // HomePage.razor is routed with the optional {culture?} parameter, so URLs like https://localhost:5030/en-US/ will correctly open the home page.
+            // For static file requests located in the root of wwwroot (e.g., https://localhost:5030/service-worker.js/), we need to check if the first segment of the URL matches a supported culture (e.g., fr-FR, en-US).
+            // If no match is found, we must disable endpoint routing to prevent ASP.NET Core 8 from incorrectly rendering HomePage.razor instead of serving the requested static file.
+
+            if (context.GetEndpoint() is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern?.RawText is "{culture?}/")
+            {
+                var culture = context.Request.RouteValues["culture"]?.ToString();
+
+                if (CultureInfoManager.SupportedCultures.Any(sc => sc.Culture.Name == culture) is false)
+                {
+                    context.SetEndpoint(null);
+                }
+            }
+
+            await next.Invoke();
+        });
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
@@ -124,7 +142,7 @@ public static partial class Program
         //#endif
 
         app.UseSiteMap();
-        
+
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
@@ -139,13 +157,10 @@ public static partial class Program
 
     private static void UseSiteMap(this WebApplication app)
     {
-        var urls = typeof(Urls)
-            .GetFields()
-            .Select(f => f.GetValue(null)!.ToString()!)
-            .ToList()!;
+        var urls = Urls.All!;
 
-        urls = CultureInfoManager.MultilingualEnabled ?
-            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToList() :
+       urls = CultureInfoManager.MultilingualEnabled ?
+            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
             urls;
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";

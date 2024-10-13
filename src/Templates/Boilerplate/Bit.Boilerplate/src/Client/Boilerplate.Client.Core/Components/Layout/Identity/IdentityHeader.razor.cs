@@ -12,7 +12,6 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
-    [CascadingParameter(Name = Parameters.CurrentUrl)] private string? currentUrl { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
     [CascadingParameter(Name = Parameters.IsAnonymousPage)] private bool? isAnonymousPage { get; set; }
 

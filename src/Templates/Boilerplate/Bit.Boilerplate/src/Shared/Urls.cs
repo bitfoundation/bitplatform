@@ -23,6 +23,8 @@ public static partial class Urls
 
     public const string SignUpPage = "/sign-up";
 
+    public const string AboutPage = "/about";
+
     //#if (sample == "Admin")
     public const string AddOrEditCategoryPage = "/add-edit-category";
 
@@ -40,7 +42,11 @@ public static partial class Urls
     public const string OfflineEditProfilePage = "/offline-edit-profile";
     //#endif
 
-    public const string AboutPage = "/about";
+    public static readonly string[] All = typeof(Urls)
+            .GetFields()
+            .Where(f => f.FieldType == typeof(string))
+            .Select(f => f.GetValue(null)!.ToString()!)
+            .ToArray()!;
 
     public readonly static string[] AnonymousPages = [HomePage, TermsPage];
 }

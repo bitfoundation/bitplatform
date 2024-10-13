@@ -50,12 +50,12 @@
 
                 <div>
                     <BitChoiceGroup @bind-Value="basicSnackBarPosition" Label="Position" TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
-                        <BitChoiceGroupOption Text="TopLeft" Value="BitSnackBarPosition.TopLeft" />
+                        <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
                         <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
-                        <BitChoiceGroupOption Text="TopRight" Value="BitSnackBarPosition.TopRight" />
-                        <BitChoiceGroupOption Text="BottomLeft" Value="BitSnackBarPosition.BottomLeft" />
+                        <BitChoiceGroupOption Text="TopEnd" Value="BitSnackBarPosition.TopEnd" />
+                        <BitChoiceGroupOption Text="BottomStart" Value="BitSnackBarPosition.BottomStart" />
                         <BitChoiceGroupOption Text="BottomCenter" Value="BitSnackBarPosition.BottomCenter" />
-                        <BitChoiceGroupOption Text="BottomRight" Value="BitSnackBarPosition.BottomRight" />
+                        <BitChoiceGroupOption Text="BottomEnd" Value="BitSnackBarPosition.BottomEnd" />
                     </BitChoiceGroup>
                     <br />
                     <BitChoiceGroup @bind-Value="direction" Label="Direction" TItem="BitChoiceGroupOption<BitDir>" TValue="BitDir">

@@ -8,8 +8,8 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
 
-        services.TryAddTransient<IDateTimeProvider, DateTimeProvider>();
-        services.TryAddTransient<CultureInfoManager>();
+        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+        services.AddTransient<CultureInfoManager>();
 
         // Define authorization policies here to seamlessly integrate them across various components,
         // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
@@ -22,9 +22,9 @@ public static partial class IServiceCollectionExtensions
 
         services.AddLocalization();
 
-        services.TryAddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
-        services.TryAddTransient<HtmlRenderer>();
-        services.TryAddTransient(sp => AppJsonContext.Default.Options);
+        services.AddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
+        services.AddTransient<HtmlRenderer>();
+        services.AddTransient(sp => AppJsonContext.Default.Options);
 
         return services;
     }
