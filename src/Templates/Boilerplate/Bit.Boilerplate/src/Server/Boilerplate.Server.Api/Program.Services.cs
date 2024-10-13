@@ -155,7 +155,7 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -194,36 +194,30 @@ public static partial class Program
             }
         }
 
-        services.TryAddTransient<EmailService>();
-        services.TryAddTransient<SmsService>();
+        services.AddTransient<EmailService>();
+        services.AddTransient<SmsService>();
         if (appSettings.Sms.Configured)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
         }
 
-        //#if (filesStorage == "Local")
-        services.TryAddSingleton(sp =>
+        services.AddSingleton<IBlobStorage>(sp =>
         {
+            //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(attachmentsDirPath);
             return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
-        });
-        //#elif (filesStorage == "AzureBlobStorage")
-        services.TryAddSingleton(sp =>
-        {
+            //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
             return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
                                  ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
                                  : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
-        });
-        //#else
-        services.TryAddSingleton<IBlobStorage>(sp =>
-        {
+            //#else
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
+            //#endif
         });
-        //#endif
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
@@ -234,7 +228,7 @@ public static partial class Program
 
         //#if (notification == true)
         services.AddAdsPush(configuration);
-        services.TryAddTransient<PushNotificationService>();
+        services.AddTransient<PushNotificationService>();
         //#endif
     }
 
@@ -259,7 +253,7 @@ public static partial class Program
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
 
-        services.TryAddTransient<IUserConfirmation<User>, AppUserConfirmation>();
+        services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -268,10 +262,10 @@ public static partial class Program
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
-        services.TryAddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
+        services.AddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
 
-        services.TryAddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
-        services.TryAddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {
