@@ -10,7 +10,6 @@ public partial class ConfirmPage
     private bool isPhoneConfirmed;
     private bool showEmailConfirmation;
     private bool showPhoneConfirmation;
-    private BitSnackBar snackbarRef = default!;
     private readonly ConfirmEmailRequestDto emailModel = new();
     private readonly ConfirmPhoneRequestDto phoneModel = new();
 
@@ -132,7 +131,7 @@ public partial class ConfirmPage
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
