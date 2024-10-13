@@ -31,6 +31,15 @@ public partial class BitIconDemo
             LinkType = LinkType.Link,
             Href = "#icon-size-enum",
         },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the icon.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -169,6 +178,33 @@ public partial class BitIconDemo
                 {
                     Name = "Large",
                     Description = "Display icon using large size.",
+                    Value = "2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name = "Fill",
+                    Description = "Fill styled variant.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Outline",
+                    Description = "Outline styled variant.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Text",
+                    Description = "Text styled variant.",
                     Value = "2",
                 }
             ]

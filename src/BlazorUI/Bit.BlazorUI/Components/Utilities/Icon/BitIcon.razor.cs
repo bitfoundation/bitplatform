@@ -20,6 +20,9 @@ public partial class BitIcon : BitComponentBase
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
+    /// <summary>
+    /// The visual variant of the icon.
+    /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
 
