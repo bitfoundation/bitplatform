@@ -2,5 +2,5 @@
 
 public partial class IdentityLayout
 {
-    [CascadingParameter(Name = Parameters.IsAnonymousPage)] private bool? isAnonymousPage { get; set; }
+    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
 }
