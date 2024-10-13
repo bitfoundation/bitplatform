@@ -7,7 +7,9 @@ public partial class SignInPage(IPage page, Uri serverAddress)
 {
     public async Task<IdentityLayout> SignIn(string email = "test@bitplatform.dev", string password = "123456")
     {
+        //Ensure the page is completely loaded
         await Assertions.Expect(page.GetByPlaceholder(AppStrings.EmailPlaceholder)).ToBeVisibleAsync();
+
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
