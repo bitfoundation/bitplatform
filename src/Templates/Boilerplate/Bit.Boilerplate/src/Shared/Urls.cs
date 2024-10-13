@@ -42,11 +42,13 @@ public static partial class Urls
     public const string OfflineEditProfilePage = "/offline-edit-profile";
     //#endif
 
-    public static readonly string[] All = typeof(Urls)
-            .GetFields()
-            .Where(f => f.FieldType == typeof(string))
-            .Select(f => f.GetValue(null)!.ToString()!)
-            .ToArray()!;
+    public static readonly string[] All = typeof(Urls).GetFields()
+                                                      .Where(f => f.FieldType == typeof(string))
+                                                      .Select(f => f.GetValue(null)!.ToString()!)
+                                                      .ToArray();
 
-    public readonly static string[] AnonymousPages = [HomePage, TermsPage];
+    /// <summary>
+    /// The pages that are getting rendered in multiple layouts (identity and main).
+    /// </summary>
+    public static readonly string[] CrossLayoutPages = [HomePage, TermsPage];
 }

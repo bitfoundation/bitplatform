@@ -13,7 +13,7 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
-    [CascadingParameter(Name = Parameters.IsAnonymousPage)] private bool? isAnonymousPage { get; set; }
+    [CascadingParameter(Name = Parameters.IsCrossLayoutPage)] private bool? isCrossLayoutPage { get; set; }
 
 
     protected override async Task OnInitAsync()
