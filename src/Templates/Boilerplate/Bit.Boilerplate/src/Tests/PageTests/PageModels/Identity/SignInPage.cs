@@ -20,7 +20,7 @@ public partial class SignInPage(IPage page, Uri serverAddress)
     public async Task AssetNotSignedIn()
     {
         await Assertions.Expect(page.GetByText(AppStrings.InvalidUserCredentials)).ToBeVisibleAsync();
-        await Assertions.Expect(page.Locator(".persona")).ToBeHiddenAsync();
+        await Assertions.Expect(page.Locator(".bit-prs")).ToBeHiddenAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeHiddenAsync();
     }

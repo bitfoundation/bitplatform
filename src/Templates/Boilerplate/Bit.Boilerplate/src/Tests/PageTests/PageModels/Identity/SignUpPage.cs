@@ -71,8 +71,8 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
     {
         await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = email })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByText(email).First).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByText(email).Nth(1)).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bit-prs").First).ToContainTextAsync(email);
+        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(email);
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }

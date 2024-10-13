@@ -7,8 +7,8 @@ public partial class IdentityLayout(IPage page, Uri serverAddress, string pagePa
     {
         await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByText(userFullName).First).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByText(userFullName).Nth(1)).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bit-prs").First).ToContainTextAsync(userFullName);
+        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(userFullName);
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
@@ -24,6 +24,6 @@ public partial class IdentityLayout(IPage page, Uri serverAddress, string pagePa
         await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
         await Assertions.Expect(page.GetByRole(AriaRole.Link, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeHiddenAsync();
-        await Assertions.Expect(page.Locator(".persona")).ToBeHiddenAsync();
+        await Assertions.Expect(page.Locator(".bit-prs")).ToBeHiddenAsync();
     }
 }
