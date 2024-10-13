@@ -31,15 +31,13 @@ public class BitSnackBarTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitSnackBarPosition.TopStart => "bit-snb-tlf",
+            BitSnackBarPosition.TopStart => "bit-snb-tst",
             BitSnackBarPosition.TopCenter => "bit-snb-tcn",
-            BitSnackBarPosition.TopEnd => "bit-snb-trt",
-
-            BitSnackBarPosition.BottomStart => "bit-snb-blf",
+            BitSnackBarPosition.TopEnd => "bit-snb-ten",
+            BitSnackBarPosition.BottomStart => "bit-snb-bst",
             BitSnackBarPosition.BottomCenter => "bit-snb-bcn",
-            BitSnackBarPosition.BottomEnd => "bit-snb-brt",
-
-            _ => "bit-snb-brt",
+            BitSnackBarPosition.BottomEnd => "bit-snb-ben",
+            _ => "bit-snb-ben",
         };
 
         Assert.IsTrue(element.ClassList.Contains(positionClass));
