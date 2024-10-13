@@ -1,5 +1,5 @@
-﻿@attribute [Route($"{Urls.DashboardPage}")]
-@attribute [Route($"{{culture?}}{Urls.DashboardPage}")]
+﻿@attribute [Route(Urls.DashboardPage)]
+@attribute [Route("{culture?}" + Urls.DashboardPage)]
 @inherits AppPageBase
 
 @if (isLoadingAssemblies)

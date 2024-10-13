@@ -1,5 +1,5 @@
-@attribute [Route($"{Urls.OfflineEditProfilePage}")]
-@attribute [Route($"{{culture?}}{Urls.OfflineEditProfilePage}")]
+@attribute [Route(Urls.OfflineEditProfilePage)]
+@attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>

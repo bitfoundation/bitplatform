@@ -1,5 +1,5 @@
 ﻿@attribute [Route(Urls.HomePage)]
-@attribute [Route($"{{culture?}}{Urls.HomePage}")]
+@attribute [Route("{culture?}" + Urls.HomePage)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>

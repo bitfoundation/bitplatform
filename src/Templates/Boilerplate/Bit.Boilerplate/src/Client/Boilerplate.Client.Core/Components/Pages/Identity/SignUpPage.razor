@@ -1,6 +1,6 @@
 ﻿@*+:cnd:noEmit*@
-@attribute [Route($"{Urls.SignUpPage}")]
-@attribute [Route($"{{culture?}}{Urls.SignUpPage}")]
+@attribute [Route(Urls.SignUpPage)]
+@attribute [Route("{culture?}" + Urls.SignUpPage)]
 @inherits AppComponentBase
 
 <PageTitle>@Localizer[nameof(AppStrings.SingUpTitle)]</PageTitle>
