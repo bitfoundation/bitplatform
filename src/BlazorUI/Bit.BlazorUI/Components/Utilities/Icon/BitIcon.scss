@@ -1,78 +1,121 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ico {
+    padding: spacing(0.5);
+    border-radius: $shp-border-radius;
+    border-style: $shp-border-style;
+    border-width: $shp-border-width;
+
     &.bit-dis {
         color: $clr-fg-dis;
     }
 }
 
 
+.bit-ico-fil {
+    color: var(--bit-ico-clr-txt);
+    border-color: var(--bit-ico-clr);
+    background-color: var(--bit-ico-clr);
+}
+
+.bit-ico-out {
+    color: var(--bit-ico-clr);
+    border-color: var(--bit-ico-clr);
+    background-color: transparent;
+}
+
+.bit-ico-txt {
+    color: var(--bit-ico-clr);
+    border-color: transparent;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+
+
 .bit-ico-pri {
-    color: $clr-pri;
+    --bit-ico-clr: #{$clr-pri};
+    --bit-ico-clr-txt: #{$clr-pri-text};
 }
 
 .bit-ico-sec {
-    color: $clr-sec;
+    --bit-ico-clr: #{$clr-sec};
+    --bit-ico-clr-txt: #{$clr-sec-text};
 }
 
 .bit-ico-ter {
-    color: $clr-ter;
+    --bit-ico-clr: #{$clr-ter};
+    --bit-ico-clr-txt: #{$clr-ter-text};
 }
 
 .bit-ico-inf {
-    color: $clr-inf;
+    --bit-ico-clr: #{$clr-inf};
+    --bit-ico-clr-txt: #{$clr-inf-text};
 }
 
 .bit-ico-suc {
-    color: $clr-suc;
+    --bit-ico-clr: #{$clr-suc};
+    --bit-ico-clr-txt: #{$clr-suc-text};
 }
 
 .bit-ico-wrn {
-    color: $clr-wrn;
+    --bit-ico-clr: #{$clr-wrn};
+    --bit-ico-clr-txt: #{$clr-wrn-text};
 }
 
 .bit-ico-swr {
-    color: $clr-swr;
+    --bit-ico-clr: #{$clr-swr};
+    --bit-ico-clr-txt: #{$clr-swr-text};
 }
 
 .bit-ico-err {
-    color: $clr-err;
+    --bit-ico-clr: #{$clr-err};
+    --bit-ico-clr-txt: #{$clr-err-text};
 }
 
 .bit-ico-pbg {
-    color: $clr-bg-pri;
+    --bit-ico-clr: #{$clr-bg-pri};
+    --bit-ico-clr-txt: #{$clr-fg-pri};
 }
 
 .bit-ico-sbg {
-    color: $clr-bg-sec;
+    --bit-ico-clr: #{$clr-bg-sec};
+    --bit-ico-clr-txt: #{$clr-fg-sec};
 }
 
 .bit-ico-tbg {
-    color: $clr-bg-ter;
+    --bit-ico-clr: #{$clr-bg-ter};
+    --bit-ico-clr-txt: #{$clr-fg-ter};
 }
 
 .bit-ico-pfg {
-    color: $clr-fg-pri;
+    --bit-ico-clr: #{$clr-fg-pri};
+    --bit-ico-clr-txt: #{$clr-bg-pri};
 }
 
 .bit-ico-sfg {
-    color: $clr-fg-sec;
+    --bit-ico-clr: #{$clr-fg-sec};
+    --bit-ico-clr-txt: #{$clr-bg-sec};
 }
 
 .bit-ico-tfg {
-    color: $clr-fg-ter;
+    --bit-ico-clr: #{$clr-fg-ter};
+    --bit-ico-clr-txt: #{$clr-bg-ter};
 }
 
 .bit-ico-pbr {
-    color: $clr-brd-pri;
+    --bit-ico-clr: #{$clr-bg-pri};
+    --bit-ico-clr-txt: #{$clr-fg-pri};
 }
 
 .bit-ico-sbr {
-    color: $clr-brd-sec;
+    --bit-ico-clr: #{$clr-bg-sec};
+    --bit-ico-clr-txt: #{$clr-fg-sec};
 }
 
 .bit-ico-tbr {
-    color: $clr-brd-ter;
+    --bit-ico-clr: #{$clr-bg-ter};
+    --bit-ico-clr-txt: #{$clr-fg-ter};
 }
 
 

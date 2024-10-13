@@ -187,6 +187,13 @@ public partial class BitIconDemo
 <BitIcon IconName=""@BitIconName.Pinned"" IsEnabled=""false"" />";
 
     private readonly string example2RazorCode = @"
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Fill"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Outline"" />
+
+<BitIcon IconName=""@BitIconName.Accept"" Variant=""BitVariant.Text"" />";
+
+    private readonly string example3RazorCode = @"
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Accept"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Small"" IconName=""@BitIconName.Pinned"" />
@@ -199,7 +206,7 @@ public partial class BitIconDemo
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Bus"" />
 <BitIcon Size=""BitSize.Large"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Accept"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Primary"" IconName=""@BitIconName.Pinned"" />
@@ -232,7 +239,7 @@ public partial class BitIconDemo
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Bus"" />
 <BitIcon Color=""BitColor.Error"" IconName=""@BitIconName.Pinned"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <style>
     .icon-class {
         padding: 4px;
