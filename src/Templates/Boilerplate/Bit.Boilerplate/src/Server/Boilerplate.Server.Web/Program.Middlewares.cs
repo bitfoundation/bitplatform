@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Web;
-using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
@@ -160,7 +159,7 @@ public static partial class Program
     {
         var urls = Urls.All!;
 
-        urls = CultureInfoManager.MultilingualEnabled ?
+       urls = CultureInfoManager.MultilingualEnabled ?
             urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
             urls;
 
