@@ -108,9 +108,14 @@ public partial class RootLayout : IDisposable
     {
         var path = navigationManager.GetPath();
 
-        currentUrl = Urls.All.SingleOrDefault(path.StartsWith);
+        currentUrl = Urls.All.SingleOrDefault(pageUrl =>
+        {
+            return pageUrl.Length == 1
+                    ? pageUrl == path
+                    : path.StartsWith(pageUrl);
+        });
 
-        isAnonymousPage = Urls.AnonymousPages.Any(ap => currentUrl == ap);
+        isAnonymousPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
     }
 
 
