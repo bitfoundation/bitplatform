@@ -13,7 +13,7 @@ public static partial class WebApplicationBuilderExtensions
         builder.AddServerWebProjectServices();
 
         services.AddScoped<IStorageService, TestStorageService>();
-        services.AddTransient<IAuthTokenProvider, TestTokenProvider>();
+        services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
 
         services.AddTransient(sp =>
         {
