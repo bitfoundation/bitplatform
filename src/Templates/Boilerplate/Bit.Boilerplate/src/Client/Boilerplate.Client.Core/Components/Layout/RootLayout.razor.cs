@@ -5,7 +5,6 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {
-    private bool disposed;
     private BitDir? currentDir;
     private string? currentUrl;
     private bool? isAuthenticated;
@@ -68,26 +67,6 @@ public partial class RootLayout : IDisposable
     }
 
 
-    private Type GetCurrentLayout()
-    {
-        return isAuthenticated is null
-                ? typeof(EmptyLayout)
-                : isAuthenticated is true
-                    ? typeof(MainLayout)
-                    : typeof(IdentityLayout);
-    }
-
-    private void SetCurrentDir()
-    {
-        currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
-    }
-
-    private void SetCurrentUrl()
-    {
-        currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
-        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
-    }
-
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
@@ -111,24 +90,37 @@ public partial class RootLayout : IDisposable
     }
 
 
-    public void Dispose()
+    private Type GetCurrentLayout()
     {
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
+        return isAuthenticated is null
+                ? typeof(EmptyLayout)
+                : isAuthenticated is true
+                    ? typeof(MainLayout)
+                    : typeof(IdentityLayout);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void SetCurrentDir()
     {
-        if (disposed || disposing is false) return;
+        currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+    }
 
+    private void SetCurrentUrl()
+    {
+        var path = navigationManager.GetPath();
+
+        currentUrl = Urls.All.SingleOrDefault(path.StartsWith);
+
+        isAnonymousPage = Urls.AnonymousPages.Any(ap => currentUrl == ap);
+    }
+
+
+    public void Dispose()
+    {
         navigationManager.LocationChanged -= NavigationManagerLocationChanged;
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         unsubscribeThemeChange();
         unsubscribeCultureChange();
-
-        disposed = true;
     }
 }
