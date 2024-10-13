@@ -48,7 +48,7 @@ public static partial class Urls
                                                       .ToArray();
 
     /// <summary>
-    /// 
+    /// The pages that are getting rendered in multiple layouts (identity and main).
     /// </summary>
     public static readonly string[] CrossLayoutPages = [HomePage, TermsPage];
 }
