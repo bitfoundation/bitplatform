@@ -121,13 +121,13 @@ public partial class BitSnackBar : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitSnackBarPosition.TopLeft => "bit-snb-tlf",
+            BitSnackBarPosition.TopStart => "bit-snb-tst",
             BitSnackBarPosition.TopCenter => "bit-snb-tcn",
-            BitSnackBarPosition.TopRight => "bit-snb-trt",
-            BitSnackBarPosition.BottomLeft => "bit-snb-blf",
+            BitSnackBarPosition.TopEnd => "bit-snb-ten",
+            BitSnackBarPosition.BottomStart => "bit-snb-bst",
             BitSnackBarPosition.BottomCenter => "bit-snb-bcn",
-            BitSnackBarPosition.BottomRight => "bit-snb-brt",
-            _ => "bit-snb-brt"
+            BitSnackBarPosition.BottomEnd => "bit-snb-ben",
+            _ => "bit-snb-ben"
         });
     }
 

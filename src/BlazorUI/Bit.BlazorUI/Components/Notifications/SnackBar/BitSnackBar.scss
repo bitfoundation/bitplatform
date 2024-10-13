@@ -161,9 +161,9 @@
 }
 
 
-.bit-snb-tlf {
+.bit-snb-tst {
     top: spacing(1);
-    left: spacing(1);
+    inset-inline-start: spacing(1);
 }
 
 .bit-snb-tcn {
@@ -172,14 +172,14 @@
     transform: translateX(-50%);
 }
 
-.bit-snb-trt {
+.bit-snb-ten {
     top: spacing(1);
-    right: spacing(1);
+    inset-inline-end: spacing(1);
 }
 
-.bit-snb-blf {
-    left: spacing(1);
+.bit-snb-bst {
     bottom: spacing(1);
+    inset-inline-start: spacing(1);
 }
 
 .bit-snb-bcn {
@@ -188,7 +188,7 @@
     transform: translateX(-50%);
 }
 
-.bit-snb-brt {
-    right: spacing(1);
+.bit-snb-ben {
     bottom: spacing(1);
+    inset-inline-end: spacing(1);
 }

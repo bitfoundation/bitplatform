@@ -52,7 +52,7 @@ public partial class BitSnackBarDemo
             Name = "Position",
             Type = "BitSnackBarPosition?",
             DefaultValue = "null",
-            Description = "The position of the snack bars to show (default is bottom right).",
+            Description = "The position of the snack bars to show.",
             LinkType = LinkType.Link,
             Href = "#snackbar-position-enum"
         },
@@ -84,7 +84,7 @@ public partial class BitSnackBarDemo
             [
                 new()
                 {
-                    Name = "TopLeft",
+                    Name = "TopStart",
                     Value = "0",
                 },
                 new()
@@ -94,12 +94,12 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
-                    Name = "TopRight",
+                    Name = "TopEnd",
                     Value = "2",
                 },
                 new()
                 {
-                    Name = "BottomLeft",
+                    Name = "BottomStart",
                     Value = "3",
                 },
                 new()
@@ -109,7 +109,7 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
-                    Name = "BottomRight",
+                    Name = "BottomEnd",
                     Value = "5",
                 },
             ]
@@ -378,7 +378,7 @@ public partial class BitSnackBarDemo
     private string basicSnackBarBody = "This is body";
     private string basicSnackBarTitle = "This is title";
     private BitColor basicSnackBarColor = BitColor.Info;
-    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
 
     private async Task OpenCustomizationSnackBar()
     {
@@ -451,12 +451,12 @@ private async Task OpenBasicSnackBar()
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackBarPosition.TopLeft"" />
+    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
     <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackBarPosition.TopRight"" />
-    <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitSnackBarPosition.BottomLeft"" />
+    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
+    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
     <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
+    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
@@ -480,7 +480,7 @@ private BitSnackBar customizationRef = default!;
 private string basicSnackBarBody = ""This is body"";
 private string basicSnackBarTitle = ""This is title"";
 private BitColor basicSnackBarColor = BitColor.Info;
-private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
 
 private async Task OpenBasicSnackBar()
 {
