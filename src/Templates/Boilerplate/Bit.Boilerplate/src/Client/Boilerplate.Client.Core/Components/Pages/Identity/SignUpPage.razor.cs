@@ -7,13 +7,13 @@ namespace Boilerplate.Client.Core.Components.Pages.Identity;
 public partial class SignUpPage
 {
     private bool isWaiting;
-    private BitSnackBar snackbarRef = default!;
     private readonly SignUpRequestDto signUpModel = new() { UserName = Guid.NewGuid().ToString() };
 
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+
 
     private async Task DoSignUp()
     {
@@ -23,7 +23,7 @@ public partial class SignUpPage
         var googleRecaptchaResponse = await JSRuntime.GoogleRecaptchaGetResponse();
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse))
         {
-            await snackbarRef.Error(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaChallenge)]);
             return;
         }
 
@@ -54,7 +54,7 @@ public partial class SignUpPage
                             ? string.Join(" ", re.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message))
                             : e.Message;
 
-            await snackbarRef.Error(message);
+            SnackBarService.Error(message);
 
             //#if (captcha == "reCaptcha")
             await JSRuntime.GoogleRecaptchaReset();
@@ -78,7 +78,7 @@ public partial class SignUpPage
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
     }
 }

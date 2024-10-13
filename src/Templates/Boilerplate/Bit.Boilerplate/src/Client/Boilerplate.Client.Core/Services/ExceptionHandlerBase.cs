@@ -8,7 +8,7 @@ namespace Boilerplate.Client.Core.Services;
 public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
     [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
-    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly SnackBarService SnackBarService = default!;
     [AutoInject] protected Bit.Butil.Console Console = default!;
     [AutoInject] protected ILogger<ExceptionHandlerBase> Logger = default!;
 
@@ -49,6 +49,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
             Logger.LogError(exception, exceptionMessage);
         }
 
-        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
+        SnackBarService.Error(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }
 }

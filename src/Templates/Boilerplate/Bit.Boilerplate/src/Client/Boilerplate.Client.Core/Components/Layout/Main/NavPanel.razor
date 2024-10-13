@@ -7,7 +7,6 @@
 
 @{
     var isToggled = !isMenuOpen && isMenuToggled;
-    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
 }
 
 <section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isToggled ? "6rem" : "14rem")}")">
@@ -25,21 +24,6 @@
                            Color="BitColor.TertiaryBackground"
                            IconName="@BitIconName.ColumnRightTwoThirds" />
             </BitStack>
-
-            <BitSeparator />
-
-            <BitPersona Class="persona"
-                        ImageUrl="@imageUrl"
-                        OnImageClick=GoToProfile
-                        HidePersonaDetails="isToggled"
-                        PrimaryText="@user.DisplayName"
-                        Presence="BitPersonaPresence.Online"
-                        SecondaryText="@(user.Email ?? user.PhoneNumber)"
-                        Size="@(isToggled ? BitPersonaSize.Size40 : BitPersonaSize.Size48)">
-                <ImageOverlayTemplate>
-                    <span>@Localizer[nameof(AppStrings.Edit)]</span>
-                </ImageOverlayTemplate>
-            </BitPersona>
 
             <BitSeparator />
 

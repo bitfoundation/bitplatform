@@ -1,16 +1,15 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class SessionsSection
 {
-    private bool isLoading;
     private bool isWaiting;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private BitSnackBar snackbarRef = default!;
     private IEnumerable<UserSessionDto> otherSessions = [];
+
 
     [AutoInject] private IUserController userController = default!;
 
@@ -22,9 +21,9 @@ public partial class SessionsSection
         await base.OnInitAsync();
     }
 
+
     private async Task LoadSessions()
     {
-        isLoading = true;
         List<UserSessionDto> userSessions = [];
         currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
 
@@ -34,7 +33,6 @@ public partial class SessionsSection
         }
         finally
         {
-            isLoading = false;
             otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId);
             currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId);
         }
@@ -50,12 +48,12 @@ public partial class SessionsSection
         {
             await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
 
-            await snackbarRef.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
             await LoadSessions();
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {

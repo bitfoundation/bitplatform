@@ -51,6 +51,7 @@ public static partial class IServiceCollectionExtensions
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
         services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
+        services.TryAddSessioned<SnackBarService>();
         services.TryAddSessioned<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
 

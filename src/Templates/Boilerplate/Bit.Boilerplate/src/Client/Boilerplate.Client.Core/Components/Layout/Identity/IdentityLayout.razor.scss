@@ -32,10 +32,14 @@ main {
     }
 }
 
-::deep {
-    .panel2 {
-        @include lt-md {
-            display: none;
-        }
+.panel2 {
+    width: 70%;
+    height: 100%;
+
+    @include lt-md {
+        display: none;
     }
+}
+
+::deep {
 }

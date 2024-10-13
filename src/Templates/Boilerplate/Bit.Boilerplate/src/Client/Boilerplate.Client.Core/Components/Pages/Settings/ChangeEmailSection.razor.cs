@@ -1,21 +1,10 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Controllers.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ChangeEmailSection
 {
-    private bool isWaiting;
-    private bool showConfirmation;
-    private bool isEmailUnavailable = true;
-    private BitSnackBar snackbarRef = default!;
-    private readonly ChangeEmailRequestDto changeModel = new();
-    private readonly SendEmailTokenRequestDto sendModel = new();
-
-
-    [AutoInject] private IUserController userController = default!;
-
-
     [Parameter] public string? Email { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
@@ -23,6 +12,16 @@ public partial class ChangeEmailSection
 
     [Parameter, SupplyParameterFromQuery(Name = "emailToken")]
     public string? EmailTokenQueryString { get; set; }
+
+
+    [AutoInject] private IUserController userController = default!;
+
+
+    private bool isWaiting;
+    private bool showConfirmation;
+    private bool isEmailUnavailable = true;
+    private readonly ChangeEmailRequestDto changeModel = new();
+    private readonly SendEmailTokenRequestDto sendModel = new();
 
 
     protected override async Task OnInitAsync()
@@ -47,6 +46,7 @@ public partial class ChangeEmailSection
         await base.OnInitAsync();
     }
 
+
     private async Task SendToken()
     {
         if (isWaiting || sendModel.Email == Email) return;
@@ -61,11 +61,11 @@ public partial class ChangeEmailSection
             isEmailUnavailable = false;
             changeModel.Email = sendModel.Email;
 
-            await snackbarRef.Success(Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)]);
+            SnackBarService.Success(Localizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)]);
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {
@@ -87,7 +87,7 @@ public partial class ChangeEmailSection
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
         }
         finally
         {

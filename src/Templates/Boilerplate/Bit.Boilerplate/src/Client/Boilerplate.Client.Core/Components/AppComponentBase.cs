@@ -34,6 +34,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
+    [AutoInject] protected SnackBarService SnackBarService = default!;
+
 
     private readonly CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
