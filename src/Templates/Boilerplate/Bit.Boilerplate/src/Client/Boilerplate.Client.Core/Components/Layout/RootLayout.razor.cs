@@ -5,7 +5,6 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {
-    private bool disposed;
     private BitDir? currentDir;
     private string? currentUrl;
     private bool? isAuthenticated;
@@ -84,7 +83,7 @@ public partial class RootLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        currentUrl = navigationManager.GetCurrentUrl();
         isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
     }
 
@@ -113,22 +112,11 @@ public partial class RootLayout : IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposed || disposing is false) return;
-
         navigationManager.LocationChanged -= NavigationManagerLocationChanged;
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         unsubscribeThemeChange();
         unsubscribeCultureChange();
-
-        disposed = true;
     }
 }
