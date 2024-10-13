@@ -23,6 +23,8 @@ public static partial class Urls
 
     public const string SignUpPage = "/sign-up";
 
+    public const string AboutPage = "/about";
+
     //#if (sample == "Admin")
     public const string AddOrEditCategoryPage = "/add-edit-category";
 
@@ -40,7 +42,18 @@ public static partial class Urls
     public const string OfflineEditProfilePage = "/offline-edit-profile";
     //#endif
 
-    public const string AboutPage = "/about";
+    public static readonly string[] All =
+    [
+        HomePage, NotAuthorizedPage, NotFoundPage, TermsPage, SettingsPage, ConfirmPage, ForgotPasswordPage, ResetPasswordPage, SignInPage, SignUpPage, AboutPage,
+        //#if (sample == "Admin")
+        AddOrEditCategoryPage, CategoriesPage, DashboardPage, ProductsPage, 
+        //#elif (sample == "Todo")
+        TodoPage, 
+        //#endif
+        //#if (offlineDb == true)
+        OfflineEditProfilePage,
+        //#endif
+    ];
 
-    public readonly static string[] AnonymousPages = [HomePage, TermsPage];
+    public static readonly string[] AnonymousPages = [HomePage, TermsPage];
 }

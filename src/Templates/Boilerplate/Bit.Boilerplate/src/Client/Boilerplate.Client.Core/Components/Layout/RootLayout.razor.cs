@@ -106,10 +106,11 @@ public partial class RootLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        var uriBuilder = new UriBuilder(navigationManager.Uri) { Query = string.Empty, Fragment = string.Empty };
-        currentUrl = uriBuilder.Path;
+        var path = navigationManager.GetPath();
 
-        isAnonymousPage = Urls.AnonymousPages.Any(p => currentUrl == p);
+        currentUrl = Urls.All.SingleOrDefault(path.StartsWith);
+
+        isAnonymousPage = Urls.AnonymousPages.Any(ap => currentUrl == ap);
     }
 
 

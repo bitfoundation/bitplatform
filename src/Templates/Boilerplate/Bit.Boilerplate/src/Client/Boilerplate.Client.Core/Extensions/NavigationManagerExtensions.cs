@@ -65,4 +65,10 @@ public static partial class NavigationManagerExtensions
 
         return uri;
     }
+
+    public static string GetPath(this NavigationManager navigationManager)
+    {
+        var uriBuilder = new UriBuilder(navigationManager.GetUriWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
+        return uriBuilder.Path;
+    }
 }
