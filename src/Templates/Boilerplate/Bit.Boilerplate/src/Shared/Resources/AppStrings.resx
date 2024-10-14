@@ -547,7 +547,22 @@
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
     <data name="HomeTitle" xml:space="preserve">
-    <value>Boilerplate Home</value>
+    <value>Build all of your apps</value>
+  </data>
+    <data name="HomeTitle2" xml:space="preserve">
+    <value>using what you already know and love</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>A set of tools for .NET developers across multiple platforms</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>A set of performant, easy-to-customize and beautiful Blazor components</value>
+  </data>
+    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <value>A feature-rich .NET project template that works everywhere seamlessly</value>
   </data>
     <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.</value>

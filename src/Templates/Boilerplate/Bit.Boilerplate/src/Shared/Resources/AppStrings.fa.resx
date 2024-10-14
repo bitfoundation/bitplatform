@@ -550,7 +550,22 @@
     <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
   </data>
     <data name="HomeTitle" xml:space="preserve">
-    <value>صفحه اصلی Boilerplate</value>
+    <value>تمام اپهای خود را بسازید</value>
+  </data>
+    <data name="HomeTitle2" xml:space="preserve">
+    <value>با استفاده چیزی که میدانید و دوستش دارید</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>بیشتر بدانید</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>ابزارهایی برای دولوپرهای دات نت در پلتفرهای گوناگون</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
+  </data>
+    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
   </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
     <value>به نظر می رسد لینک تایید نامعتبر است یا منقضی شده است.</value>
