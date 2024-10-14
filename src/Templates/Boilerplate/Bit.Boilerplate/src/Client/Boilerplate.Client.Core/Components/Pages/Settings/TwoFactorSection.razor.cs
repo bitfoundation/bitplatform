@@ -16,8 +16,6 @@ public partial class TwoFactorSection
     private string? verificationCode;
     private bool isTwoFactorAuthEnabled;
 
-    private BitSnackBar snackbarRef = default!;
-
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private IUserController userController = default!;
@@ -89,7 +87,7 @@ public partial class TwoFactorSection
         }
         catch (KnownException e)
         {
-            await snackbarRef.Error(e.Message);
+            SnackBarService.Error(e.Message);
             return null;
         }
         finally

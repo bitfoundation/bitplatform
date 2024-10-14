@@ -10,7 +10,7 @@
     <script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-        (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
+            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
     </script>
 
     <!--#if (captcha == "reCaptcha")-->
@@ -185,25 +185,23 @@
             }
         }
     </style>
-    <div>
-        <div id="app-container">
-            <div class="bit-lds-wrapper">
-                <div class="bit-lds-grid">
-                    <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-                </div>
-            </div>
-            <div id="bit-bswup">
-                <div class="bswup-progress-text"></div>
-                <svg class="bswup-container">
-                    <circle r="40%" cx="50%" cy="50%"></circle>
-                    <circle r="40%" cx="50%" cy="50%"></circle>
-                </svg>
+    <div id="app-container">
+        <div class="bit-lds-wrapper">
+            <div class="bit-lds-grid">
+                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
             </div>
         </div>
-        <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
-        set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
-        <!-- <button id="bit-bswup-reload">Update</button> -->
+        <div id="bit-bswup">
+            <div class="bswup-progress-text"></div>
+            <svg class="bswup-container">
+                <circle r="40%" cx="50%" cy="50%"></circle>
+                <circle r="40%" cx="50%" cy="50%"></circle>
+            </svg>
+        </div>
     </div>
+    <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
+    set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
+    <!-- <button id="bit-bswup-reload">Update</button> -->
     <script>
         const autoReload = true, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
         startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);

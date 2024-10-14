@@ -12,7 +12,7 @@ public partial class SettingsPage
 
     private UserDto? user;
     private bool isLoading;
-    private int openedAccordion = 0;
+    private int openedAccordion = 1;
     private string? profileImageUrl;
 
     [AutoInject] private IUserController userController = default!;
