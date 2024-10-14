@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
 using Boilerplate.Tests.PageTests.PageModels.Identity;
+//#if (database  == 'Sqlite')
+using Microsoft.Data.Sqlite;
+//#endif
 
 namespace Boilerplate.Tests;
 
@@ -26,12 +29,24 @@ public partial class TestsInitializer
         //#endif
     }
 
+    //#if (database  == 'Sqlite')
+    //SQLite database in in-memory mode only lives as long as at least one connection to it is open
+    //This connection is required to keep the database alive during the test run.
+    private static SqliteConnection connection = null!;
+    //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)
     {
         if (AppEnvironment.IsDev())
         {
             await using var scope = testServer.WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            //#if (database  == 'Sqlite')
+            if (dbContext.Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            {
+                connection = new SqliteConnection(dbContext.Database.GetConnectionString());
+                await connection.OpenAsync();
+            }
+            //#endif
             await dbContext.Database.MigrateAsync();
         }
     }
