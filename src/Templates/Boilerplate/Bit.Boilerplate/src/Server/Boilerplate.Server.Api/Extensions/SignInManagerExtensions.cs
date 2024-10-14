@@ -8,17 +8,21 @@ namespace Microsoft.AspNetCore.Identity;
 public static partial class SignInManagerExtensions
 {
     /// <summary>
-    /// The app calls <see cref="OtpSignInAsync"/> in following scenarios:
-    /// 1- When user wants to sign-in with 6 digit number provided through sms.
-    /// 2- When user wants to sign-in with 6 digit number provided through email containing magic link.
-    /// 3- Successful email confirmation after sign-up in order to auto sign in the confirmed user to improve UX.
-    /// 4- Successful phone number confirmation after sign-up in order to auto sign-in the confirmed the user to improve UX.
-    /// 5- Browser redirects to magic link created after social sign-in to auto sign-in the user.
-    /// 6- When user wants to sign-in with 6 digit number provided through SignalR (If configured).
-    /// 7- When user wants to sign-in with 6 digit number provided through push notification (If configured).
-    /// We need to clarify the authentication method that can be either Social, Sms, Email, SignalR or push notification,
-    /// in order not to send 2nd step to the same communication channel, so user has to use different authentication method to successfully complete 2 step authentication.
+    /// The app invokes <see cref="OtpSignInAsync"/> in the following scenarios:
+    /// 
+    /// 1. When the user opts to sign in using a 6-digit code received via SMS.
+    /// 2. When the user chooses to sign in using a 6-digit code sent via email, typically within a magic link.
+    /// 3. After a successful email confirmation post sign-up, to automatically sign in the confirmed user for an improved user experience.
+    /// 4. After a successful phone number confirmation post sign-up, to automatically sign in the confirmed user for a smoother user experience.
+    /// 5. When the browser is redirected to a magic link created after a social sign-in, to automatically authenticate the user.
+    /// 6. When the user opts to sign in using a 6-digit code delivered through SignalR (if configured).
+    /// 7. When the user opts to sign in using a 6-digit code delivered via push notification (if configured).
+    /// 
+    /// It's important to clarify the authentication method (e.g., Social, SMS, Email, SignalR, or Push Notification) 
+    /// to avoid sending a second step to the same communication channel. 
+    /// For successful two-step authentication, the user must use a different method for the second step.
     /// </summary>
+
     public static async Task<(SignInResult signInResult, string? authenticationMethod)> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otp)
     {
         var appSettings = signInManager.Context.RequestServices.GetRequiredService<AppSettings>();
