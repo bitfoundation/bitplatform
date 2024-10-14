@@ -5,10 +5,16 @@
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem">
-        <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
-            @Localizer[nameof(AppStrings.HomeTitle)]
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="home-stack">
+        <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
+            Build all of your apps
+            <br />
+            using what you already know and love
         </BitText>
+
+        @* <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
+        @Localizer[nameof(AppStrings.HomeTitle)]
+        </BitText> *@
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeMessage)]
@@ -16,11 +22,65 @@
 
         <br />
 
-        <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate"
-                   Target="_blank"
-                   Variant="BitVariant.Outline"
-                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]">
+        <BitButton Target="_blank"
+                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
+                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
+
+        <br />
+
+        <BitCard FullWidth Style="padding:4rem">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H5">bit platform</BitText>
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                    A set of tools for .NET developers across multiple platforms
+                </BitText>
+                <BitLink Href="https://bitplatform.dev" NoUnderline>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                        Learn more
+                        <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                    </BitStack>
+                </BitLink>
+            </BitStack>
+        </BitCard>
+
+        <BitStack Horizontal Gap="2rem" Class="home-products-stack">
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        A set of tools for .NET developers across multiple platforms
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
+                        Watch video
+                    </BitButton>
+                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            Learn more
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit Boilerplate</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        A set of tools for .NET developers across multiple platforms
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
+                        Watch video
+                    </BitButton>
+                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            Learn more
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+        </BitStack>
     </BitStack>
 </section>
