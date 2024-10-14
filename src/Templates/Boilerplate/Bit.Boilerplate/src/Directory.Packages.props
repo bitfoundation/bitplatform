@@ -78,7 +78,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.10" />
     <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
-    <PackageVersion Include="Riok.Mapperly" Version="4.0.0" />
+    <PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
     <PackageVersion Include="Twilio" Version="7.5.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.10" />
