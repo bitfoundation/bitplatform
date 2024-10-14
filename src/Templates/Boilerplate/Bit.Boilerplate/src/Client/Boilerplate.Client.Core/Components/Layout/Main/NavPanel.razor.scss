@@ -2,11 +2,11 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    top: 0;
     height: 100vh;
     padding: 1rem;
     position: sticky;
     overflow: hidden auto;
+    top: var(--app-inset-top);
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
 
@@ -17,14 +17,19 @@ section {
     @include lt-md {
         z-index: 3;
         padding: 0;
-        height: unset;
         position: fixed;
-        top: var(--app-inset-top);
+        height: unset !important;
         bottom: var(--app-inset-bottom);
 
         &.closed {
             display: none;
         }
+    }
+}
+
+.bit-macos {
+    section {
+        height: -webkit-fill-available;
     }
 }
 
@@ -48,6 +53,7 @@ section {
         padding: 0.5rem;
         min-height: 100%;
         flex-direction: column;
+        height: -webkit-fill-available;
         background-color: $bit-color-background-secondary;
 
         @include lt-md {
