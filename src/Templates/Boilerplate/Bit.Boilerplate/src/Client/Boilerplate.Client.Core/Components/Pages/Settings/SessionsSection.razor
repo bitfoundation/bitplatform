@@ -26,9 +26,9 @@
             {
                 <BitCard FullWidth>
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                        <BitPersona PrimaryText="@session.Device"
-                                    SecondaryText="@session.Address"
-                                    TertiaryText="@($"{session.IP} - {session.LastSeenOn}")"
+                        <BitPersona Class="session-persona"
+                                    PrimaryText="@session.Device"
+                                    SecondaryText="@($"{session.Address} ({session.IP}) - {session.LastSeenOn}")"
                                     Size="BitPersonaSize.Size48"
                                     Presence="@GetPresence(session.LastSeenOn)"
                                     Styles="@(new() { Image = "width:50%;height:50%" })"
