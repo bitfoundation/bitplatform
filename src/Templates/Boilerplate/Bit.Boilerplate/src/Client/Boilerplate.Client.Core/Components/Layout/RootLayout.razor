@@ -5,14 +5,16 @@
         <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
             <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
                 <CascadingValue Value="isAnonymousPage" Name="@Parameters.IsCrossLayoutPage">
-                    <div dir="@currentDir?.ToString().ToLower()" class="layout">
+                    <div class="layout">
                         <div class="inset-top"></div>
-                        <div class="inset-main">
+                        <div class="inset-main" dir="@currentDir?.ToString().ToLower()">
+                            <div class="inset-left"></div>
                             <AppErrorBoundary>
                                 <LayoutView Layout="GetCurrentLayout()">
                                     @Body
                                 </LayoutView>
                             </AppErrorBoundary>
+                            <div class="inset-right"></div>
                         </div>
                         <div class="inset-bottom"></div>
                     </div>
