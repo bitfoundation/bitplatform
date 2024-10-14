@@ -14,7 +14,7 @@
         <Accordion Index="1" @bind-Value="openedAccordion"
                    Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
-            <ProfileSection User="user" />
+            <ProfileSection Loading="isLoading" User="user" />
         </Accordion>
 
         <Accordion Index="2" @bind-Value="openedAccordion"
@@ -25,7 +25,7 @@
                     <ChangeEmailSection Email="@user?.Email" />
                 </BitPivotItem>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
-                    <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" Loading="isLoading" />
+                    <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" />
                 </BitPivotItem>
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Delete)]">
                     <DeleteAccountSection />

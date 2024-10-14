@@ -5,6 +5,7 @@ namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class ProfileSection
 {
+    [Parameter] public bool Loading { get; set; }
     [Parameter] public UserDto? User { get; set; }
 
 
