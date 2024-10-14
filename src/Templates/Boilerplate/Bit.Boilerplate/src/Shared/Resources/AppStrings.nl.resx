@@ -547,7 +547,22 @@
     <value>Creëer uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app eenvoudig in de kortste tijd ooit!</value>
   </data>
   <data name="HomeTitle" xml:space="preserve">
-    <value>Boilerplate Thuis</value>
+    <value>Bouw al uw apps</value>
+  </data>
+    <data name="HomeTitle2" xml:space="preserve">
+    <value>gebruik makend van wat je al kent en leuk vindt</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>Meer informatie</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>Een set tools voor .NET-ontwikkelaars op meerdere platforms</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>Een set krachtige, eenvoudig aan te passen en prachtige Blazor-componenten</value>
+  </data>
+    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <value>Een veelzijdige .NET-projectsjabloon die overal naadloos werkt</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>De Boilerplate is gebouwd met ASP.NET Core, Identity, Web API, EF Core en Blazor.</value>

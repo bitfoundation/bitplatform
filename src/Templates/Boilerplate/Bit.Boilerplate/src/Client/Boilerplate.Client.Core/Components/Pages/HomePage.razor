@@ -7,14 +7,10 @@
 <section>
     <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="home-stack">
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
-            Build all of your apps
+            @Localizer[nameof(AppStrings.HomeTitle)]
             <br />
-            using what you already know and love
+            @Localizer[nameof(AppStrings.HomeTitle2)]
         </BitText>
-
-        @* <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
-        @Localizer[nameof(AppStrings.HomeTitle)]
-        </BitText> *@
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeMessage)]
@@ -33,12 +29,10 @@
         <BitCard FullWidth Style="padding:4rem">
             <BitStack HorizontalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">bit platform</BitText>
-                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
-                    A set of tools for .NET developers across multiple platforms
-                </BitText>
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.BitPlatformMessage)]</BitText>
                 <BitLink Href="https://bitplatform.dev" NoUnderline>
                     <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
-                        Learn more
+                        @Localizer[nameof(AppStrings.LearnMore)]
                         <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
                     </BitStack>
                 </BitLink>
@@ -50,14 +44,14 @@
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
-                        A set of tools for .NET developers across multiple platforms
+                        @Localizer[nameof(AppStrings.BitBlazorUIMessage)]
                     </BitText>
                     <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
                         Watch video
                     </BitButton>
                     <BitLink Href="https://bitplatform.dev" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
-                            Learn more
+                            @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
                         </BitStack>
                     </BitLink>
@@ -68,14 +62,14 @@
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit Boilerplate</BitText>
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
-                        A set of tools for .NET developers across multiple platforms
+                        @Localizer[nameof(AppStrings.BitBoilerplateMessage)]
                     </BitText>
                     <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
                         Watch video
                     </BitButton>
                     <BitLink Href="https://bitplatform.dev" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
-                            Learn more
+                            @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
                         </BitStack>
                     </BitLink>
