@@ -34,6 +34,11 @@ public partial class AppTestServer : IAsyncDisposable
 
         builder.Configuration.AddClientConfigurations();
 
+        //#if (database  == 'Sqlite')
+        //Use in-memory Sqlite database for faster and more reliable testing
+        builder.Configuration["ConnectionStrings:SqliteConnectionString"] = "Data Source=BoilerplateDb;Mode=Memory;Cache=Shared;";
+        //#endif
+
         configureTestConfigurations?.Invoke(builder.Configuration);
 
         builder.AddTestProjectServices();

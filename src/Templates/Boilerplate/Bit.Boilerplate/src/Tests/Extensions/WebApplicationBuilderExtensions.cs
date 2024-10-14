@@ -15,7 +15,9 @@ public static partial class WebApplicationBuilderExtensions
 
         services.AddScoped<IStorageService, TestStorageService>();
         services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
+        //#if (captcha == "reCaptcha")
         services.AddTransient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
+        //#endif
 
         services.AddTransient(sp =>
         {
