@@ -163,7 +163,7 @@
     <value>Er is een onbekende fout opgetreden</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
-    <value>De record is gewijzigd door een andere gebruiker nadat u de originele gegevens hebt ontvangen. De operatie is geannuleerd.</value>
+    <value>De record is gewijzigd door een Anderse gebruiker nadat u de originele gegevens hebt ontvangen. De operatie is geannuleerd.</value>
   </data>
   <data name="ResourceNotFoundException" xml:space="preserve">
     <value>Bron niet gevonden</value>
@@ -242,7 +242,7 @@
     <value>Huidige sessie</value>
   </data>
   <data name="OtherSessions" xml:space="preserve">
-    <value>Andere sessies</value>
+    <value>Anderse sessies</value>
   </data>
   <data name="RemoveSession" xml:space="preserve">
     <value>Sessie verwijderen</value>
@@ -379,7 +379,7 @@
     <value>Weet je zeker dat je {0} wilt verwijderen?</value>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Thuis</value>
+    <value>Home</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>Opfrissen</value>
@@ -493,7 +493,7 @@
     <value>U kunt nu inloggen met uw account.</value>
   </data>
   <data name="AccountTitle" xml:space="preserve">
-    <value>Rekening</value>
+    <value>Account</value>
   </data>
   <data name="AccountSubtitle" xml:space="preserve">
     <value>Het e-mailadres of telefoonnummer van je account wijzigen</value>
@@ -529,13 +529,13 @@
     <value>Wachtwoord vergeten</value>
   </data>
   <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>Voer uw e-mailadres of telefoonnummer in, zodat we u een token voor het opnieuw instellen van uw wachtwoord kunnen sturen.</value>
+    <value>Voer je e-mailadres of telefoonnummer in, zodat we je een token voor het opnieuw instellen van je wachtwoord kunnen sturen. </value>
   </data>
   <data name="GenderMale" xml:space="preserve">
-    <value>Mannelijk</value>
+    <value>Man</value>
   </data>
   <data name="GenderOther" xml:space="preserve">
-    <value>Ander</value>
+    <value>Anders</value>
   </data>
   <data name="GitHubRepo" xml:space="preserve">
     <value>GitHub-opslagplaats</value>
@@ -544,7 +544,7 @@
     <value>Ga naar vandaag</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Creëer uw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor-app eenvoudig in de kortste tijd ooit!</value>
+    <value>Creëer eenvoudig jouw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app op de snelste manier ooit!</value>
   </data>
   <data name="HomeTitle" xml:space="preserve">
     <value>Bouw al uw apps</value>
@@ -601,7 +601,7 @@
     <value>We hebben een token naar je telefoon of e-mail gestuurd.</value>
   </data>
   <data name="ResetPasswordMessage" xml:space="preserve">
-    <value>Dien het token samen met uw nieuwe wachtwoord hier in.</value>
+    <value>Geef hier het token samen met je nieuwe wachtwoord hier door. </value>
   </data>
   <data name="ResetPasswordButtonText" xml:space="preserve">
     <value>Wachtwoord instellen</value>
@@ -616,22 +616,22 @@
     <value>Heb je al een token voor het opnieuw instellen van je wachtwoord?</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Redden</value>
+    <value>Opslaan</value>
   </data>
   <data name="SignInTitle" xml:space="preserve">
-    <value>Aanmelden</value>
+    <value>Inloggen</value>
   </data>
   <data name="SignInPanelTitle" xml:space="preserve">
-    <value>Setup voortzetten</value>
+    <value>Welkom terug!</value>
   </data>
   <data name="SignInPanelSubtitle" xml:space="preserve">
-    <value>Meld u aan bij uw account met</value>
+    <value>Log in bij jouw account met</value>
   </data>
   <data name="SocialSignedInTitle" xml:space="preserve">
     <value>Aangemeld bij social media</value>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Voortzetten</value>
+    <value>Verzenden</value>
   </data>
   <data name="SocialSignedInMessageTitle" xml:space="preserve">
     <value>De sociale aanmelding is voltooid</value>
@@ -643,16 +643,16 @@
     <value>Inloggen met Google</value>
   </data>
   <data name="GitHubSignInButtonText" xml:space="preserve">
-    <value>Aanmelden met GitHub</value>
+    <value>Inloggen met GitHub</value>
   </data>
   <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>Inloggen met Twitter (X)</value>
   </data>
   <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>Aanmelden met Google</value>
+    <value>Inloggen met Google</value>
   </data>
   <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>Aanmelden met GitHub</value>
+    <value>Inloggen met GitHub</value>
   </data>
   <data name="TwitterSignUpButtonText" xml:space="preserve">
     <value>Meld je aan met Twitter (X)</value>
@@ -661,13 +661,13 @@
     <value>Afmelden</value>
   </data>
   <data name="SignOutPrompt" xml:space="preserve">
-    <value>Weet u zeker dat u zich wilt afmelden?</value>
+    <value>Weet je zeker dat je je wilt afmelden?</value>
   </data>
   <data name="SignUp" xml:space="preserve">
-    <value>Inschrijven</value>
+    <value>Inloggen</value>
   </data>
   <data name="SingUpTitle" xml:space="preserve">
-    <value>Inschrijven</value>
+    <value>Inloggen</value>
   </data>
   <data name="Submit" xml:space="preserve">
     <value>Opslaan</value>
@@ -712,13 +712,13 @@
     <value>Legitimatiebewijs</value>
   </data>
   <data name="SignIn" xml:space="preserve">
-    <value>Aanmelden</value>
+    <value>Inloggen</value>
   </data>
   <data name="Confirm" xml:space="preserve">
     <value>Bevestigen</value>
   </data>
   <data name="SignInAsDifferentUser" xml:space="preserve">
-    <value>Aanmelden als andere gebruiker</value>
+    <value>Inloggen als Anderse gebruiker</value>
   </data>
   <data name="YouAreSignInAs" xml:space="preserve">
     <value>U meldt zich aan als</value>
@@ -727,10 +727,10 @@
     <value>Wachtwoord vergeten?</value>
   </data>
   <data name="GenderFemale" xml:space="preserve">
-    <value>Vrouwelijk</value>
+    <value>Vrouw</value>
   </data>
   <data name="RememberMe" xml:space="preserve">
-    <value>Herinner je me nog?</value>
+    <value>Onthoud mij.</value>
   </data>
   <data name="Copy" xml:space="preserve">
     <value>Kopiëren</value>
@@ -757,10 +757,10 @@
     <value>Haal een nieuwe code op via je authenticator-app of gebruik je herstelcode.</value>
   </data>
   <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
-    <value>Probeer een andere manier</value>
+    <value>Probeer een Anderse manier</value>
   </data>
   <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
-    <value>U kunt een nieuwe code krijgen via uw e-mail of telefoon.</value>
+    <value>Je kunt een nieuwe code krijgen via je e-mail of telefoon..</value>
   </data>
   <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Code ophalen</value>
@@ -871,7 +871,7 @@
     <value>Met deze actie wordt alleen 2FA uitgeschakeld.</value>
   </data>
   <data name="TfaDisable2faWarning" xml:space="preserve">
-    <value>Het uitschakelen van 2FA verandert niets aan de sleutels die worden gebruikt in authenticator-apps. Als u de sleutel wilt wijzigen die in een authenticator-app wordt gebruikt, moet u uw authenticatorsleutels in het vorige tabblad opnieuw instellen.</value>
+    <value>Het uitschakelen van 2FA verAnderst niets aan de sleutels die worden gebruikt in authenticator-apps. Als u de sleutel wilt wijzigen die in een authenticator-app wordt gebruikt, moet u uw authenticatorsleutels in het vorige tabblad opnieuw instellen.</value>
   </data>
   <data name="TfaDisable2faButtonText" xml:space="preserve">
     <value>Schakel 2FA uit</value>
@@ -958,7 +958,7 @@
     <value>Onlangs</value>
   </data>
   <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>Je kunt andere sessies op dit moment niet intrekken. Probeer het opnieuw in {0}</value>
+    <value>Je kunt Anderse sessies op dit moment niet intrekken. Probeer het opnieuw in {0}</value>
   </data>
   <data name="Update" xml:space="preserve">
     <value>Update</value>
@@ -974,7 +974,7 @@
   </data>
   <!--#if (sample == "Todo") -->
   <data name="TodoAddPlaceholder" xml:space="preserve">
-    <value>Een taak toevoegen</value>
+    <value>Een To do toevoegen</value>
   </data>
   <data name="NoTodos" xml:space="preserve">
     <value>Nog geen todo's</value>
@@ -986,7 +986,7 @@
     <value>Todo-item kan niet worden gevonden</value>
   </data>
   <data name="TodoTitle" xml:space="preserve">
-    <value>Taak</value>
+    <value>To do</value>
   </data>
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Takenitem verwijderen</value>
@@ -1032,7 +1032,7 @@
     <value>Verkoop van producten</value>
   </data>
   <data name="ProductSalesText" xml:space="preserve">
-    <value>Deze grafiek toont het verkoopnummer van elk product.</value>
+    <value>Deze grafiek toont het aantal verkochte items van elk product..</value>
   </data>
   <data name="SearchOnName" xml:space="preserve">
     <value>Zoeken op naam</value>
@@ -1095,7 +1095,7 @@
     <value>Dashboard</value>
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
-    <value>Dit zijn uw analytische gegevens</value>
+    <value>Dit zijn jouw analytische gegevens</value>
   </data>
   <!--#if (captcha == "reCaptcha") -->
   <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
