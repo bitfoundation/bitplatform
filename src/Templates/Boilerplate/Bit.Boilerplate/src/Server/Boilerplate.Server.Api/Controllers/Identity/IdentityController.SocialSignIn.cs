@@ -83,7 +83,7 @@ public partial class IdentityController
                 await userManager.UpdateAsync(user);
             }
 
-            (_, url) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+            (_, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
         {
