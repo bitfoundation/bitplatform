@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
-using Humanizer;
 using QRCoder;
+using Humanizer;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
@@ -18,7 +18,7 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
-    [AutoInject] private SmsService smsService = default!;
+    [AutoInject] private PhoneService phoneService = default!;
 
     [AutoInject] private EmailService emailService = default!;
 
@@ -218,6 +218,7 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenLifetime;
@@ -233,12 +234,13 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
-        await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
+        await phoneService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
     public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var expired = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;

@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Server.Api.Models.Identity;
 
-namespace Boilerplate.Server.Api.Services;
+namespace Boilerplate.Server.Api.Services.Identity;
 
 public partial class AppUserClaimsPrincipalFactory(UserManager<User> userManager, IOptions<IdentityOptions> optionsAccessor)
     : UserClaimsPrincipalFactory<User>(userManager, optionsAccessor)

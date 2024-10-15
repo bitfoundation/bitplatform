@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="libphonenumber-csharp" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Humanizer" />
         <PackageReference Include="QRCoder" />

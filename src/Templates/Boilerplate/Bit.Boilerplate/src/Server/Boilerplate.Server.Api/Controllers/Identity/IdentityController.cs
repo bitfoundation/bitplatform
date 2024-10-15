@@ -9,6 +9,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Server.Api.Services.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -43,6 +44,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SignUp(SignUpRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         //#if (captcha == "reCaptcha")
         if (await googleRecaptchaHttpClient.Verify(request.GoogleRecaptchaResponse, cancellationToken) is false)
             throw new BadRequestException(Localizer[nameof(AppStrings.InvalidGoogleRecaptchaResponse)]);
@@ -88,6 +90,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost, Produces<SignInResponseDto>()]
     public async Task SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
@@ -239,6 +242,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
@@ -264,7 +268,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
             var smsMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
-            sendMessagesTasks.Add(smsService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalr == true)
@@ -283,6 +287,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task SendTwoFactorToken(SignInRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         if (user.TwoFactorEnabled is false)
@@ -320,7 +325,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (firstStepAuthenticationMethod != "Sms" && await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(smsService.SendSms(message, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalr == true)
