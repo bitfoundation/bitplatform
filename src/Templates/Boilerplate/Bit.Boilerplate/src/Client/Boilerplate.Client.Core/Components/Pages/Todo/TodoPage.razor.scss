@@ -38,4 +38,13 @@ section {
             inset-inline-end: 0;
         }
     }
+
+    .todo-list {
+        width: 100%;
+        background-color: var(--bit-clr-bg-sec);
+
+        @include lt-md {
+            height: 300px;
+        }
+    }
 }

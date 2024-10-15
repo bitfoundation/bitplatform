@@ -38,23 +38,24 @@
                               OnClear="@(() => SearchTodoItems(""))"
                               Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]"
                               Styles="@(new() { InputContainer="border:none;background-color:var(--bit-clr-bg-sec)" })" />
-                <BitDropdown IsResponsive NoBorder FitWidth
-                             Class="todo-sort"
-                             DefaultValue="nameof(AppStrings.Alphabetical)"
-                             TItem="BitDropdownOption<string>" TValue="string"
-                             OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)"
-                             Styles="@(new() { Container="height:32px;background-color:var(--bit-clr-bg-sec)" })">
-                    <Options>
-                        <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
-                        <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
-                    </Options>
-                    <CaretDownTemplate>
-                        <BitIcon IconName="@BitIconName.Breadcrumb" />
-                    </CaretDownTemplate>
-                </BitDropdown>
-                <BitButton IconOnly Color="BitColor.SecondaryBackground"
-                           OnClick="() => { isDescendingSort = !isDescendingSort; FilterViewTodoItems(); }"
-                           IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+                <BitStack Class="todo-sort" Gap="2px" Horizontal AutoSize>
+                    <BitDropdown IsResponsive NoBorder FitWidth
+                                 DefaultValue="nameof(AppStrings.Alphabetical)"
+                                 TItem="BitDropdownOption<string>" TValue="string"
+                                 OnSelectItem="(BitDropdownOption<string> item) => SortTodoItems(item.Value)"
+                                 Styles="@(new() { Container="height:32px;background-color:var(--bit-clr-bg-sec)" })">
+                        <Options>
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Alphabetical)]" Value="nameof(AppStrings.Alphabetical)" />
+                            <BitDropdownOption Text="@Localizer[nameof(AppStrings.Date)]" Value="nameof(AppStrings.Date)" />
+                        </Options>
+                        <CaretDownTemplate>
+                            <BitIcon IconName="@BitIconName.Breadcrumb" />
+                        </CaretDownTemplate>
+                    </BitDropdown>
+                    <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                               OnClick="() => { isDescendingSort = !isDescendingSort; FilterViewTodoItems(); }"
+                               IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+                </BitStack>
             </BitStack>
 
             @if (isLoading)
@@ -65,9 +66,8 @@
             }
             else
             {
-                <BitBasicList Items="viewTodoItems"
-                              Style="width:100%;height:inherit;background-color:var(--bit-clr-bg-sec)"
-                              EnableVirtualization="true">
+                <BitBasicList Items="viewTodoItems" EnableVirtualization
+                              Class="todo-list">
                     <EmptyContent>
                         <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
                             <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />
@@ -75,7 +75,7 @@
                         </BitStack>
                     </EmptyContent>
                     <RowTemplate Context="todo">
-                        <BitStack Alignment="BitAlignment.Center" Style="padding:1rem 1rem 0">
+                        <BitStack Alignment="BitAlignment.Center" Style="padding:1rem 1rem 0" AutoHeight>
                             <BitStack Horizontal @key=@todo.Id VerticalAlign="BitAlignment.Center">
                                 @if (todo.IsInEditMode is false)
                                 {
@@ -103,7 +103,7 @@
                                 }
                                 else
                                 {
-                                    <BitTextField Class="todo-input" @bind-Value="underEditTodoItemTitle" />
+                                    <BitTextField Style="flex-grow:1" @bind-Value="underEditTodoItemTitle" />
 
                                     <BitButton Color="BitColor.TertiaryBackground"
                                                Title="@Localizer[nameof(AppStrings.Cancel)]"
