@@ -182,7 +182,7 @@
     <value>Alle</value>
   </data>
   <data name="Alphabetical" xml:space="preserve">
-    <value>Alfabetisch</value>
+    <value>A-Z</value>
   </data>
   <data name="Completed" xml:space="preserve">
     <value>Volbracht</value>
@@ -983,7 +983,7 @@
     <value>Nog geen todo's</value>
   </data>
   <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Zoek een todo...</value>
+    <value>Zoek todo...</value>
   </data>
   <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo-item kan niet worden gevonden</value>
