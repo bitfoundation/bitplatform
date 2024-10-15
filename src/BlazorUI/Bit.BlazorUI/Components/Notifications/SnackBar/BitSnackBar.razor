@@ -9,13 +9,13 @@
 
     @foreach (var item in _items)
     {
-        <div style="@Styles?.Container @item.CssStyle" class="bit-snb-itm @Classes?.Container @GetItemClasses(item)">
+        <div style="@Styles?.Container @item.CssStyle" class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass">
             <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
                 <button @onclick="() => Dismiss(item)"
                         type="button"
                         style="@Styles?.DismissButton"
                         class="bit-snb-cbt @Classes?.DismissButton">
-                    <i style="@Styles?.DismissIcon" class="bit-icon bit-icon--@DismissIconName @Classes?.DismissIcon" />
+                    <i style="@Styles?.DismissIcon" class="bit-icon bit-icon--@(DismissIconName ?? "Cancel") @Classes?.DismissIcon" />
                 </button>
 
                 @if (TitleTemplate is not null)
@@ -36,15 +36,16 @@
             }
             else if (item.Body.HasValue())
             {
-                <span style="@Styles?.Body" class="bit-snb-bdy @Classes?.Body">
+                <div style="@Styles?.Body" class="bit-snb-bdy @Classes?.Body">
                     @item.Body
-                </span>
+                </div>
             }
 
             @if (AutoDismiss)
             {
-                <span style="animation-duration: @(FormattableString.Invariant($"{AutoDismissTime.TotalSeconds}s")); @Styles?.ProgressBar"
-                      class="bit-snb-pbr @Classes?.ProgressBar"></span>
+                <span style="animation-duration:@GetDuration(); @Styles?.ProgressBar"
+                      class="bit-snb-prb @Classes?.ProgressBar">
+                </span>
             }
         </div>
     }

@@ -1,0 +1,59 @@
+@inherits AppComponentBase
+
+@{
+    var hasEmail = Model.Email is not null;
+    var emailOrPhone = Localizer[(hasEmail ? nameof(AppStrings.Email) : nameof(AppStrings.PhoneNumber))];
+}
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
+        <BitStack>
+            <BitText Typography="BitTypography.H4">@(string.Format(Localizer[nameof(AppStrings.OtpPanelTitle)], emailOrPhone))</BitText>
+            <BitText Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
+                @(string.Format(Localizer[nameof(AppStrings.OtpPanelSubtitle)], emailOrPhone, hasEmail ? Model.Email : Model.PhoneNumber))
+            </BitText>
+        </BitStack>
+
+        <BitStack FillContent Gap="2rem">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitOtpInput @bind-Value="Model.Otp"
+                             AutoFocus
+                             Length="6"
+                             Size="BitSize.Large"
+                             Type="BitInputType.Number"
+                             Style="justify-content:center"
+                             Label="@Localizer[nameof(AppStrings.Code)]"
+                             OnFill="WrapHandled(async (string? otp) => await OnSignIn.InvokeAsync(otp))" />
+                <ValidationMessage For="@(() => Model.Otp)" />
+            </BitStack>
+
+            <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+                @Localizer[nameof(AppStrings.Continue)]
+            </BitButton>
+
+            <BitText Typography="BitTypography.Body2">
+                @Localizer[nameof(AppStrings.OtpResendMessage)]
+                <BitLink OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Resend)]</BitLink>
+            </BitText>
+
+            @if (hasEmail)
+            {
+                <BitStack Horizontal Gap="2rem" HorizontalAlign="BitAlignment.Center">
+                    <BitLink Href="https://www.gmail.com">
+                        <BitStack Horizontal>
+                            <BitImage Src="_content/Boilerplate.Client.Core/images/icons/gmail-icon.png" />
+                            <BitText>Open Gmail</BitText>
+                        </BitStack>
+                    </BitLink>
+
+                    <BitLink Href="https://www.outlook.com">
+                        <BitStack Horizontal>
+                            <BitImage Src="_content/Boilerplate.Client.Core/images/icons/outlook-icon.png" />
+                            <BitText>Open Outlook</BitText>
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            }
+        </BitStack>
+    </BitStack>
+</section>

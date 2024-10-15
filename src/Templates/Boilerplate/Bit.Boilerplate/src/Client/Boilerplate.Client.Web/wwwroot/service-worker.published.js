@@ -1,5 +1,24 @@
-// bit version: 8.12.0-pre-02
+//+:cnd:noEmit
+// bit version: 8.12.0-pre-03
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
+
+//#if (notification == true)
+
+self.addEventListener('push', function (event) {
+
+    const data = event.data.json();
+
+    self.registration.showNotification(data.title, {
+
+        body: data.message,
+
+        icon: '/images/icons/bit-icon-512.png'
+
+    });
+
+});
+
+//#endif
 
 self.assetsInclude = [];
 self.assetsExclude = [

@@ -1,17 +1,13 @@
 ﻿@import '../../../Styles/abstracts/_functions.scss';
 @import '../../../Styles/abstracts/_media-queries.scss';
 
-.page-container {
+section {
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-flow: column nowrap;
 }
 
-::deep .confirm-form {
-    display: flex;
-    flex-flow: column;
-    align-items: center;
+::deep {
+    .confirm-pivot {
+        width: rem2(304px);
+    }
 }

@@ -49,6 +49,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
             Logger.LogError(exception, exceptionMessage);
         }
 
-        _ = MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
+        MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }
 }

@@ -15,26 +15,27 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
-        services.TryAddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddSharedProjectServices();
 
-        services.TryAddSessioned<IThemeService, ThemeService>();
-        services.TryAddSessioned<IPubSubService, PubSubService>();
-        services.TryAddSessioned<ICultureService, CultureService>();
-        services.TryAddSingleton<ILocalHttpServer, NoopLocalHttpServer>();
-        services.TryAddTransient<IStorageService, BrowserStorageService>();
-        services.TryAddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
-        services.TryAddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
+        services.AddSessioned<IPubSubService, PubSubService>();
+        services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.AddSessioned<HttpClientHandler>();
 
-        services.TryAddTransient<RequestHeadersDelegationHandler>();
-        services.TryAddTransient<AuthDelegatingHandler>();
-        services.TryAddTransient<RetryDelegatingHandler>();
-        services.TryAddTransient<ExceptionDelegatingHandler>();
-        services.TryAddSessioned<HttpClientHandler>();
+        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<ICultureService, CultureService>();
+        services.AddTransient<IThemeService, ThemeService>();
+        services.AddTransient<IStorageService, BrowserStorageService>();
+        services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.AddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
+        services.AddTransient<RequestHeadersDelegationHandler>();
+        services.AddTransient<AuthDelegatingHandler>();
+        services.AddTransient<RetryDelegatingHandler>();
+        services.AddTransient<ExceptionDelegatingHandler>();
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
         // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
-        services.TryAddTransient<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
+        services.AddTransient<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
         {
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
@@ -42,18 +43,19 @@ public static partial class IServiceCollectionExtensions
                         [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [underlyingHttpMessageHandler])])])]);
             return constructedHttpMessageHandler;
         });
-        services.TryAddTransient(serviceProvider =>
+        services.AddTransient(serviceProvider =>
         {
             var underlyingHttpMessageHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
             var constructedHttpMessageHandler = serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>().Invoke(underlyingHttpMessageHandler);
             return constructedHttpMessageHandler;
         });
 
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>(); // Use 'Add' instead of 'TryAdd' to override the aspnetcore's default AuthenticationStateProvider.
-        services.TryAddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
+        services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.TryAddSessioned<MessageBoxService>();
-        services.TryAddTransient<LazyAssemblyLoader>();
+        services.AddSessioned<SnackBarService>();
+        services.AddSessioned<MessageBoxService>();
+        services.AddTransient<LazyAssemblyLoader>();
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
@@ -83,7 +85,6 @@ public static partial class IServiceCollectionExtensions
 
         services.AddTypedHttpClients();
 
-        services.AddSharedProjectServices();
         return services;
     }
 
@@ -108,17 +109,16 @@ public static partial class IServiceCollectionExtensions
     /// <summary>
     /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
     /// </summary>
-    public static IServiceCollection TryAddSessioned<TService, TImplementation>(this IServiceCollection services)
-        where TImplementation : class, TService
+    public static IServiceCollection AddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
         if (AppPlatform.IsBlazorHybridOrBrowser)
         {
-            services.TryAddSingleton<TService, TImplementation>();
+            services.Add(ServiceDescriptor.Singleton(implementationFactory));
         }
         else
         {
-            services.TryAddScoped<TService, TImplementation>();
+            services.Add(ServiceDescriptor.Scoped(implementationFactory));
         }
 
         return services;
@@ -127,34 +127,16 @@ public static partial class IServiceCollectionExtensions
     /// <summary>
     /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
     /// </summary>
-    public static IServiceCollection TryAddSessioned<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+    public static void AddSessioned<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
         where TService : class
     {
         if (AppPlatform.IsBlazorHybridOrBrowser)
         {
-            services.TryAdd(ServiceDescriptor.Singleton(implementationFactory));
+            services.AddSingleton<TService, TService>();
         }
         else
         {
-            services.TryAdd(ServiceDescriptor.Scoped(implementationFactory));
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="AddSessioned{TService, TImplementation}(IServiceCollection)"/>
-    /// </summary>
-    public static void TryAddSessioned<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
-        where TService : class
-    {
-        if (AppPlatform.IsBlazorHybridOrBrowser)
-        {
-            services.TryAddSingleton<TService, TService>();
-        }
-        else
-        {
-            services.TryAddScoped<TService, TService>();
+            services.AddScoped<TService, TService>();
         }
     }
 }

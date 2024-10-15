@@ -12,12 +12,14 @@ public static partial class Program
     {
         // Services being registered here can get injected in windows project only.
 
+        services.AddClientCoreProjectServices();
+
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations();
         var configuration = configurationBuilder.Build();
-        services.TryAddTransient<IConfiguration>(sp => configuration);
+        services.AddTransient<IConfiguration>(sp => configuration);
 
-        services.TryAddSingleton(sp =>
+        services.AddSessioned(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -33,10 +35,13 @@ public static partial class Program
             services.AddBlazorWebViewDeveloperTools();
         }
 
-        services.TryAddTransient<IStorageService, WindowsStorageService>();
-        services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
-        services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
-        services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
+        services.AddTransient<IStorageService, WindowsStorageService>();
+        services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
+        services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddSessioned<ILocalHttpServer, WindowsLocalHttpServer>();
+        //#if (notification == true)
+        services.AddScoped<IPushNotificationService, WindowsPushNotificationService>();
+        //#endif
 
         services.AddLogging(loggingBuilder =>
         {
@@ -73,7 +78,5 @@ public static partial class Program
         services.AddOptions<WindowsUpdateSettings>()
             .Bind(configuration.GetRequiredSection(nameof(WindowsUpdateSettings)))
             .ValidateOnStart();
-
-        services.AddClientCoreProjectServices();
     }
 }

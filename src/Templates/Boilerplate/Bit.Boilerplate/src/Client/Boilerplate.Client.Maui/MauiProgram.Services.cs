@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Maui.Services;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Boilerplate.Client.Maui.Services;
 
 namespace Boilerplate.Client.Maui;
 
@@ -12,15 +12,7 @@ public static partial class MauiProgram
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-#if Android
-        services.AddClientMauiProjectAndroidServices();
-#elif iOS
-        services.AddClientMauiProjectIosServices();
-#elif Mac
-        services.AddClientMauiProjectMacCatalystServices();
-#elif Windows
-        services.AddClientMauiProjectWindowsServices();
-#endif
+        services.AddClientCoreProjectServices();
 
         services.AddMauiBlazorWebView();
 
@@ -29,7 +21,7 @@ public static partial class MauiProgram
             services.AddBlazorWebViewDeveloperTools();
         }
 
-        services.TryAddSingleton(sp =>
+        services.AddSessioned(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -80,17 +72,25 @@ public static partial class MauiProgram
         //#endif
         //-:cnd:noEmit
 
-        services.TryAddTransient<MainPage>();
-        services.TryAddTransient<IStorageService, MauiStorageService>();
-        services.TryAddSingleton<IBitDeviceCoordinator, MauiDeviceCoordinator>();
-        services.TryAddTransient<IExceptionHandler, MauiExceptionHandler>();
-        services.TryAddTransient<IExternalNavigationService, MauiExternalNavigationService>();
+        services.AddTransient<MainPage>();
+        services.AddTransient<IStorageService, MauiStorageService>();
+        services.AddTransient<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.AddTransient<IExceptionHandler, MauiExceptionHandler>();
+        services.AddTransient<IExternalNavigationService, MauiExternalNavigationService>();
 
         if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
         {
-            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
+            services.AddSessioned<ILocalHttpServer, MauiLocalHttpServer>();
         }
 
-        services.AddClientCoreProjectServices();
+#if Android
+        services.AddClientMauiProjectAndroidServices();
+#elif iOS
+        services.AddClientMauiProjectIosServices();
+#elif Mac
+        services.AddClientMauiProjectMacCatalystServices();
+#elif Windows
+        services.AddClientMauiProjectWindowsServices();
+#endif
     }
 }

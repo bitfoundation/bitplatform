@@ -12,7 +12,10 @@ public partial class AppInitializer : AppComponentBase
     private HubConnection? hubConnection;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
-    [AutoInject] private MessageBoxService messageBoxService = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
@@ -66,6 +69,13 @@ public partial class AppInitializer : AppComponentBase
                 await ConnectSignalR();
             }
             //#endif
+
+            //#if (notification == true)
+            if (InPrerenderSession is false)
+            {
+                await pushNotificationService.RegisterDevice(CurrentCancellationToken);
+            }
+            //#endif
         }
         catch (Exception exp)
         {
@@ -84,7 +94,7 @@ public partial class AppInitializer : AppComponentBase
             await hubConnection.DisposeAsync();
         }
 
-        var access_token = await AuthTokenProvider.GetAccessTokenAsync();
+        var access_token = await AuthTokenProvider.GetAccessToken();
 
         hubConnection = new HubConnectionBuilder()
             .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
@@ -97,9 +107,9 @@ public partial class AppInitializer : AppComponentBase
             })
             .Build();
 
-        hubConnection.On<string>("TwoFactorToken", async (token) =>
+        hubConnection.On<string>("DisplayMessage", async (message) =>
         {
-            await messageBoxService.Show(Localizer[nameof(AppStrings.TwoFactorTokenPushText), token]);
+            snackBarService.Show(message, "");
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>

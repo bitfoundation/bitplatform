@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿//-:cnd:noEmit
+using System.Diagnostics;
 
 namespace Boilerplate.Client.Maui.Components.Pages;
 

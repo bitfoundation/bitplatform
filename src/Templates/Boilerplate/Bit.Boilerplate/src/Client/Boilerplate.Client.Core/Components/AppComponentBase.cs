@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Boilerplate.Client.Core.Components;
+﻿namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
@@ -35,6 +33,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
+
+    [AutoInject] protected SnackBarService SnackBarService = default!;
 
 
     private readonly CancellationTokenSource cts = new();

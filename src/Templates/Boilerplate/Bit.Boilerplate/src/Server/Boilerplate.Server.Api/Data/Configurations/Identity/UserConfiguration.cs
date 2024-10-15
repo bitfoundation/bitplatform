@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using System.Text.Json;
 using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Data.Configurations.Identity;

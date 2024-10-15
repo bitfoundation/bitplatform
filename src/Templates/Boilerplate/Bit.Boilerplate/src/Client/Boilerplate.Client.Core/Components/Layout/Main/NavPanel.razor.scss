@@ -2,17 +2,13 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    top: 0;
     height: 100vh;
     padding: 1rem;
     position: sticky;
     overflow: hidden auto;
+    top: var(--app-inset-top);
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
-
-    .bit-ios & {
-        top: calc(env(safe-area-inset-top));
-    }
 
     &::-webkit-scrollbar {
         width: 0;
@@ -22,15 +18,18 @@ section {
         z-index: 3;
         padding: 0;
         position: fixed;
-
-        .bit-ios & {
-            top: 0;
-            padding-top: calc(env(safe-area-inset-top));
-        }
+        height: unset !important;
+        bottom: var(--app-inset-bottom);
 
         &.closed {
             display: none;
         }
+    }
+}
+
+.bit-macos {
+    section {
+        height: -webkit-fill-available;
     }
 }
 
@@ -41,7 +40,6 @@ section {
     height: 100%;
     position: fixed;
     min-height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
 
     @include gt-sm {
         display: none;
@@ -55,6 +53,7 @@ section {
         padding: 0.5rem;
         min-height: 100%;
         flex-direction: column;
+        height: -webkit-fill-available;
         background-color: $bit-color-background-secondary;
 
         @include lt-md {
@@ -66,10 +65,6 @@ section {
         @include lt-md {
             display: none;
         }
-    }
-
-    .persona {
-        width: 100%;
     }
 
     a {

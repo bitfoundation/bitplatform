@@ -21,9 +21,8 @@ public partial class CultureInfoManager
         ("English US", CreateCultureInfo("en-US")),
         ("English UK", CreateCultureInfo("en-GB")),
         ("Dutch", CreateCultureInfo("nl-NL")),
-        ("Française", CreateCultureInfo("fr-FR")),
         ("فارسی", CreateCultureInfo("fa-IR"))
-        // Adding new cultures requires changing HomePage.razor's routes and MainActivity's DataPathPrefixes.
+        // Adding new cultures requires changing MainActivity's DataPathPrefixes.
     ];
 
     public static CultureInfo CreateCultureInfo(string name)

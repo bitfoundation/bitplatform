@@ -114,7 +114,7 @@
             "displayName": "Captcha",
             "type": "parameter",
             "datatype": "choice",
-            "defaultValue": "reCaptcha",
+            "defaultValue": "None",
             "choices": [
                 {
                     "choice": "reCaptcha",
@@ -172,6 +172,13 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Add SignalR sample."
+        },
+        "notification": {
+            "displayName": "Add push notification?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add push notification."
         },
         "offlineDb": {
             "displayName": "Add Offline db?",
@@ -286,6 +293,13 @@
                 ]
             },
             "replaces": "use-your-server-url-here.com"
+        },
+        "advancedTests": {
+            "displayName": "Include advanced automated tests?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Include advanced automated tests."
         }
     },
     "postActions": [
@@ -405,6 +419,30 @@
                     ]
                 },
                 {
+                    "condition": "(notification != true)",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/PushNotificationFirebaseMessagingService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Extensions/NSDataExtensions.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/AppUNUserNotificationCenterDelegate.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/MacCatalystPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/Windows/Services/WindowsPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
+                        "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
+						"src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
+                        "src/Shared/Controllers/PushNotification/**",
+                        "src/Shared/Dtos/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs"
+                    ]
+                },
+                {
                     "condition": "(windows != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Windows/**"
@@ -415,7 +453,8 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },
                 {
@@ -441,6 +480,22 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true)",
+                    "exclude": [
+                        "src/Tests/PageTests/**",
+                        "src/Tests/TestInitializer.cs",
+                        "src/Tests/Services/CulturedStringLocalizer.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests == true)",
+                    "exclude": [
+                        "src/Tests/IdentityApiTests.cs",
+                        "src/Tests/IdentityPagesTests.cs"
                     ]
                 }
             ]

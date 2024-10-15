@@ -1,16 +1,15 @@
 ﻿@attribute [Route(Urls.HomePage)]
-@attribute [Route("en-US" + Urls.HomePage)]
-@attribute [Route("en-GB" + Urls.HomePage)]
-@attribute [Route("fr-FR" + Urls.HomePage)]
-@attribute [Route("fa-IR" + Urls.HomePage)]
+@attribute [Route("{culture?}" + Urls.HomePage)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem">
-        <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="home-stack">
+        <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeTitle)]
+            <br />
+            @Localizer[nameof(AppStrings.HomeTitle2)]
         </BitText>
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
@@ -19,11 +18,63 @@
 
         <br />
 
-        <BitButton Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate"
-                   Target="_blank"
-                   Variant="BitVariant.Outline"
-                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]">
+        <BitButton Target="_blank"
+                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
+                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
+
+        <br />
+
+        <BitCard FullWidth Style="padding:4rem">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H5">bit platform</BitText>
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.BitPlatformMessage)]</BitText>
+                <BitLink Href="https://bitplatform.dev" NoUnderline>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                        @Localizer[nameof(AppStrings.LearnMore)]
+                        <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                    </BitStack>
+                </BitLink>
+            </BitStack>
+        </BitCard>
+
+        <BitStack Horizontal Gap="2rem" Class="home-products-stack">
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.BitBlazorUIMessage)]
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
+                        Watch video
+                    </BitButton>
+                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            @Localizer[nameof(AppStrings.LearnMore)]
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit Boilerplate</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.BitBoilerplateMessage)]
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
+                        Watch video
+                    </BitButton>
+                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            @Localizer[nameof(AppStrings.LearnMore)]
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+        </BitStack>
     </BitStack>
 </section>

@@ -1,11 +1,10 @@
-﻿using Boilerplate.Server.Api;
+﻿using System.Net.Sockets;
+using System.Net;
+using Boilerplate.Server.Api;
 using Boilerplate.Server.Web;
-using Boilerplate.Server.Api.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
@@ -13,7 +12,11 @@ public partial class AppTestServer : IAsyncDisposable
 {
     private WebApplication? webApp;
 
-    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
+    public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
+    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+
+    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
@@ -21,18 +24,26 @@ public partial class AppTestServer : IAsyncDisposable
         var builder = WebApplication.CreateBuilder(options: new()
         {
             EnvironmentName = Environments.Development,
-            ApplicationName = typeof(Boilerplate.Server.Web.Program).Assembly.GetName().Name
+            ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
+
+        builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
+        builder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
         builder.Configuration.AddClientConfigurations();
 
-        builder.WebHost.UseUrls("http://127.0.0.1:0" /* 0 means random port */);
+        //#if (database  == 'Sqlite')
+        //Use in-memory Sqlite database for faster and more reliable testing
+        builder.Configuration["ConnectionStrings:SqliteConnectionString"] = "Data Source=BoilerplateDb;Mode=Memory;Cache=Shared;";
+        //#endif
 
-        configureTestServices?.Invoke(builder.Services);
+        configureTestConfigurations?.Invoke(builder.Configuration);
 
         builder.AddTestProjectServices();
+
+        configureTestServices?.Invoke(builder.Services);
 
         var app = webApp = builder.Build();
 
@@ -41,39 +52,26 @@ public partial class AppTestServer : IAsyncDisposable
         return this;
     }
 
-    public IServiceProvider Services => (webApp ?? throw new InvalidOperationException("Web app is null.")).Services;
-
     public async Task Start()
     {
-        if (webApp == null)
-            throw new InvalidOperationException($"Call {nameof(Build)} first.");
-
-        if (AppEnvironment.IsDev())
-        {
-            await using var scope = webApp.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
-        }
-
-        await webApp.StartAsync();
-
-        webApp.Configuration["ServerAddress"] = GetServerAddress().ToString();
+        await WebApp.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         if (webApp != null)
         {
+            await webApp.StopAsync();
             await webApp.DisposeAsync();
         }
     }
 
-    internal Uri GetServerAddress()
+    private static string GenerateServerUrl()
     {
-        if (webApp == null)
-            throw new InvalidOperationException($"web app is null");
-
-        return new Uri(webApp.Services.GetRequiredService<IServer>()
-            .Features.Get<IServerAddressesFeature>()!.Addresses.First());
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return $"http://127.0.0.1:{port}/";
     }
 }

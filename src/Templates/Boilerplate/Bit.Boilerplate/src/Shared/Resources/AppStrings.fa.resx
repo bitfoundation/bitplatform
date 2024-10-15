@@ -205,8 +205,14 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>انتخاب زبان</value>
   </data>
+    <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>داده های پروفایل خود را تغییر دهید</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل</value>
@@ -222,6 +228,12 @@
   </data>
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>جلسه ها</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>جلسه های فعال شما در دستگاههای مختلف</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>سشن‌های شما</value>
@@ -247,11 +259,6 @@
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
-  </data>
-    <!--#endif-->
-    <!--#if (signalr == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -280,6 +287,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>ایمیل جدید را وارد کنید</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>تلفن</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>شماره تلفن</value>
@@ -482,6 +492,12 @@
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
   </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن حساب کاربری خود را تغییر دهید</value>
+  </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
   </data>
@@ -534,7 +550,22 @@
     <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
   </data>
     <data name="HomeTitle" xml:space="preserve">
-    <value>صفحه اصلی Boilerplate</value>
+    <value>تمام اپهای خود را بسازید</value>
+  </data>
+    <data name="HomeTitle2" xml:space="preserve">
+    <value>با استفاده چیزی که میدانید و دوستش دارید</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>بیشتر بدانید</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>ابزارهایی برای دولوپرهای دات نت در پلتفرهای گوناگون</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
+  </data>
+    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
   </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
     <value>به نظر می رسد لینک تایید نامعتبر است یا منقضی شده است.</value>
@@ -589,6 +620,15 @@
   </data>
     <data name="SignInTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
+  </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>خوش آمدید</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>وارد حساب کاربری خود شوید با</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>ادامه</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
     <value>ورود سوشال</value>
@@ -692,11 +732,41 @@
     <data name="RememberMe" xml:space="preserve">
     <value>من رو به خاطر بسپار؟</value>
   </data>
+    <data name="Copy" xml:space="preserve">
+    <value>کپی</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>کپی شد</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>احراز هویت دو عاملی</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>احراز هویت چند عاملی حساب کاربری خود را مدیریت کنید</value>
+  </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>کد احراز هویت</value>
+    <value>کد 2-عاملی</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>کد بازیابی</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>احراز هویت 2-عاملی</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>یک کد جدید از برنامه احراز هویت خود دریافت کنید یا از کد بازیابی خود استفاده کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>راه دیگری را آزمایش کنید</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
@@ -747,7 +817,7 @@
     <value>تأیید</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>کدهای بازیابی</value>
+    <value>بازیابی</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>هیچ کد بازیابی ندارید.</value>
@@ -783,7 +853,7 @@
     <value>کدهای بازیابی:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>برنامه Authenticator</value>
+    <value>برنامه</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>اگر کلید احراز هویت خود را بازنشانی کنید، برنامه احراز هویت شما تا زمانی که آن را دوباره پیکربندی نکنید، کار نخواهد کرد.</value>
@@ -795,7 +865,7 @@
     <value>کلید احراز هویت را بازنشانی کنید</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>2FA را غیرفعال کنید</value>
+    <value>غیرفعالسازی</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>این عمل فقط 2FA را غیرفعال می کند.</value>
@@ -833,6 +903,21 @@
     <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
   </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>{0} خود را بررسی کنید</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>{0} خود را با ورود کد ارسال شده به {1} تایید کنید</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>کد</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>آیا کدی دریافت نکردید?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>ارسال دوباره</value>
+  </data>
     <data name="OtpPlaceholder" xml:space="preserve">
     <value>رمز یکبار مصرف را وارد کنید</value>
   </data>
@@ -857,13 +942,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">

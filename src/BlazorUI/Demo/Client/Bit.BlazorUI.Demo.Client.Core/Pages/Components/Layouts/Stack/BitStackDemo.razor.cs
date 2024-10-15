@@ -49,6 +49,13 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "FillContent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the direct children to occupy all of the root element's width."
+        },
+        new()
+        {
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",

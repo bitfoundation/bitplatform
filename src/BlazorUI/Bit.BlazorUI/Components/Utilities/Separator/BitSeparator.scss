@@ -2,13 +2,15 @@
 
 .bit-spr {
     position: relative;
+    --bit-spr-bg: #{$clr-bg-pri};
+    --bit-spr-brd: #{$clr-brd-sec};
 }
 
 .bit-spr-cnt {
     position: relative;
     color: $clr-fg-pri;
     display: inline-block;
-    background: $clr-bg-pri;
+    background: var(--bit-spr-bg);
 }
 
 .bit-spr-hrz {
@@ -22,7 +24,7 @@
         inset: 50% 0 0;
         position: absolute;
         height: $shp-border-width;
-        background-color: $clr-brd-sec;
+        background-color: var(--bit-spr-brd);
     }
 
     .bit-spr-cnt {
@@ -55,7 +57,7 @@
         inset: 0 0 0 50%;
         position: absolute;
         width: $shp-border-width;
-        background-color: $clr-brd-sec;
+        background-color: var(--bit-spr-brd);
     }
 
     .bit-spr-cnt {
@@ -73,4 +75,38 @@
     &.bit-spr-end {
         vertical-align: bottom;
     }
+}
+
+
+.bit-spr-pbg {
+    --bit-spr-bg: #{$clr-bg-pri};
+}
+
+.bit-spr-sbg {
+    --bit-spr-bg: #{$clr-bg-sec};
+}
+
+.bit-spr-tbg {
+    --bit-spr-bg: #{$clr-bg-ter};
+}
+
+.bit-spr-rbg {
+    --bit-spr-bg: transparent;
+}
+
+
+.bit-spr-pbr {
+    --bit-spr-brd: #{$clr-brd-pri};
+}
+
+.bit-spr-sbr {
+    --bit-spr-brd: #{$clr-brd-sec};
+}
+
+.bit-spr-tbr {
+    --bit-spr-brd: #{$clr-brd-ter};
+}
+
+.bit-spr-rbr {
+    --bit-spr-brd: transparent;
 }

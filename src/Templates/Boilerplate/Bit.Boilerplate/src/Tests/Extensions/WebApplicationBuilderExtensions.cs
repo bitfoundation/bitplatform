@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -10,17 +11,20 @@ public static partial class WebApplicationBuilderExtensions
     {
         var services = builder.Services;
 
-        services.TryAddScoped<IStorageService, TestStorageService>();
-        services.TryAddTransient<IAuthTokenProvider, TestTokenProvider>();
+        builder.AddServerWebProjectServices();
 
-        services.TryAddTransient(sp =>
+        services.AddScoped<IStorageService, TestStorageService>();
+        services.AddTransient<IAuthTokenProvider, TestAuthTokenProvider>();
+        //#if (captcha == "reCaptcha")
+        services.AddTransient<GoogleRecaptchaHttpClient, FakeGoogleRecaptchaHttpClient>();
+        //#endif
+
+        services.AddTransient(sp =>
         {
             return new HttpClient(sp.GetRequiredService<HttpMessageHandler>())
             {
                 BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>().GetServerAddress(), UriKind.Absolute)
             };
         });
-
-        builder.AddServerWebProjectServices();
     }
 }

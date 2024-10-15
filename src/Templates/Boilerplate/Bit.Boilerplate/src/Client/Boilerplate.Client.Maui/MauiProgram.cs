@@ -1,11 +1,13 @@
 ﻿//-:cnd:noEmit
-using Maui.AppStores;
-using Maui.InAppReviews;
-using Maui.Android.InAppUpdates;
-using Microsoft.Maui.LifecycleEvents;
-using Boilerplate.Client.Core.Styles;
-using Boilerplate.Client.Maui.Services;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.LifecycleEvents;
+using Maui.AppStores;
+//+:cnd:noEmit
+//#if (notification == true)
+using Plugin.LocalNotification;
+//#endif
+//-:cnd:noEmit
+using Boilerplate.Client.Core.Styles;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -39,9 +41,12 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseAndroidInAppUpdates()
-            .UseInAppReviews()
             .UseAppStoreInfo()
+            //+:cnd:noEmit
+            //#if (notification == true)
+            .UseLocalNotification()
+            //#endif
+            //-:cnd:noEmit
             .Configuration.AddClientConfigurations();
 
         builder.ConfigureServices();
@@ -101,20 +106,25 @@ public static partial class MauiProgram
 #if Windows
             webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
-            if (AppEnvironment.IsDev() is false)
-            {
-                webView.EnsureCoreWebView2Async()
-                    .AsTask()
-                    .ContinueWith(async _ =>
+            webView.EnsureCoreWebView2Async()
+                .AsTask()
+                .ContinueWith(async _ =>
+                {
+                    await Application.Current!.Dispatcher.DispatchAsync(() =>
                     {
-                        await Application.Current!.Dispatcher.DispatchAsync(() =>
+                        webView.CoreWebView2.PermissionRequested += async (sender, args) =>
+                        {
+                            args.Handled = true;
+                            args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
+                        };
+                        if (AppEnvironment.IsDev() is false)
                         {
                             var settings = webView.CoreWebView2.Settings;
                             settings.IsZoomControlEnabled = false;
                             settings.AreBrowserAcceleratorKeysEnabled = false;
-                        });
+                        }
                     });
-            }
+                });
 
 #elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();

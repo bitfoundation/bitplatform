@@ -227,5 +227,6 @@ custom.aprof
 /src/**/App_Data/*
 
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
+/src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
 
 .env

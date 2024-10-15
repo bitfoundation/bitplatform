@@ -1,0 +1,34 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
+        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.TfaPanelTitle)]</BitText>
+
+        <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelSubtitle)]</BitText>
+
+        <BitTextField @bind-Value="Model.TwoFactorCode"
+                      Label="@Localizer[nameof(AppStrings.Code)]"
+                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                      Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />
+
+        <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
+            @Localizer[nameof(AppStrings.Continue)]
+        </BitButton>
+
+        <BitCard Border="BitColorKind.Secondary" FullWidth>
+            <BitStack Horizontal>
+                <BitIcon IconName="@BitIconName.SkypeCircleCheck" Color="BitColor.Info" />
+                <BitStack>
+                    <BitText>@Localizer[nameof(AppStrings.TfaPanelAnotherWayTitle)]</BitText>
+                    <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelAnotherWaySubtitle)]</BitText>
+                    <BitButton Color="BitColor.Tertiary"
+                               Variant="BitVariant.Outline"
+                               ButtonType="BitButtonType.Button"
+                               OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
+                        @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]
+                    </BitButton>
+                </BitStack>
+            </BitStack>
+        </BitCard>
+    </BitStack>
+</section>

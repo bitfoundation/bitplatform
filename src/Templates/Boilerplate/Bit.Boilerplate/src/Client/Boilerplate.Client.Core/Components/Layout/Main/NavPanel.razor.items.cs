@@ -39,9 +39,9 @@ public partial class NavPanel
             //#endif
             new()
             {
-                Text = Localizer[nameof(AppStrings.ProfileTitle)],
-                IconName = BitIconName.EditContact,
-                Url = Urls.ProfilePage,
+                Text = Localizer[nameof(AppStrings.Settings)],
+                IconName = BitIconName.Equalizer,
+                Url = Urls.SettingsPage,
             },
             //#if (offlineDb == true)
             new()

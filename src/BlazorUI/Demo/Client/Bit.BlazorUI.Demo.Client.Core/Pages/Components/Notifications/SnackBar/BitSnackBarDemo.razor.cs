@@ -8,51 +8,51 @@ public partial class BitSnackBarDemo
         {
             Name = "AutoDismiss",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether or not to dismiss itself automatically.",
+            DefaultValue = "false",
+            Description = "Whether or not automatically dismiss the snack bar.",
         },
         new()
         {
             Name = "AutoDismissTime",
-            Type = "TimeSpan",
-            DefaultValue = "TimeSpan.FromSeconds(3)",
-            Description = "How long the SnackBar will automatically dismiss (default is 3 seconds).",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "How long does it take to automatically dismiss the snack bar (default is 3 seconds).",
         },
         new()
         {
             Name = "BodyTemplate",
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the Body is rendered.",
+            Description = "Used to customize how the content inside the body is rendered.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitSnackBarClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the snack bar.",
             LinkType = LinkType.Link,
             Href = "#snackbar-class-styles",
-            Description = "Custom CSS classes for different parts of the BitSnackBar.",
         },
         new()
         {
             Name = "DismissIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Dismiss Icon in SnackBar.",
+            Description = "The icon name of the dismiss button.",
         },
         new()
         {
             Name = "OnDismiss",
             Type = "EventCallback",
-            Description = "Callback for when the Dismissed.",
+            Description = "Callback for when any snack bar is dismissed.",
         },
         new()
         {
             Name = "Position",
-            Type = "BitSnackBarPosition",
-            DefaultValue = "BitSnackBarPosition.BottomRight",
-            Description = "The position of SnackBar to show.",
+            Type = "BitSnackBarPosition?",
+            DefaultValue = "null",
+            Description = "The position of the snack bars to show.",
             LinkType = LinkType.Link,
             Href = "#snackbar-position-enum"
         },
@@ -60,17 +60,17 @@ public partial class BitSnackBarDemo
         {
             Name = "Styles",
             Type = "BitSnackBarClassStyles?",
+            Description = "Custom CSS styles for different parts of the snack bar.",
             DefaultValue = "null",
             LinkType = LinkType.Link,
             Href = "#snackbar-class-styles",
-            Description = "Custom CSS styles for different parts of the BitSnackBar.",
         },
         new()
         {
             Name = "TitleTemplate",
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the Title is rendered. ",
+            Description = "Used to customize how content inside the title is rendered. ",
         },
     ];
 
@@ -84,7 +84,7 @@ public partial class BitSnackBarDemo
             [
                 new()
                 {
-                    Name = "TopLeft",
+                    Name = "TopStart",
                     Value = "0",
                 },
                 new()
@@ -94,12 +94,12 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
-                    Name = "TopRight",
+                    Name = "TopEnd",
                     Value = "2",
                 },
                 new()
                 {
-                    Name = "BottomLeft",
+                    Name = "BottomStart",
                     Value = "3",
                 },
                 new()
@@ -109,52 +109,119 @@ public partial class BitSnackBarDemo
                 },
                 new()
                 {
-                    Name = "BottomRight",
+                    Name = "BottomEnd",
                     Value = "5",
                 },
             ]
         },
         new()
         {
-            Id = "snackbar-type-enum",
-            Name = "BitSnackBarType",
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
             Items =
             [
                 new()
                 {
-                    Name = "None",
-                    Description = "None styled SnackBar",
+                    Name = "Primary",
+                    Description = "Info Primary general color.",
                     Value = "0",
                 },
                 new()
                 {
-                    Name = "Info",
-                    Description = "Info styled SnackBar",
+                    Name = "Secondary",
+                    Description = "Secondary general color.",
                     Value = "1",
                 },
                 new()
                 {
-                    Name = "Warning",
-                    Description = "Warning styled SnackBar",
+                    Name = "Tertiary",
+                    Description = "Tertiary general color.",
                     Value = "2",
                 },
                 new()
                 {
-                    Name = "Success",
-                    Description = "Success styled SnackBar",
+                    Name = "Info",
+                    Description = "Info general color.",
                     Value = "3",
                 },
                 new()
                 {
-                    Name = "Error",
-                    Description = "Error styled SnackBar",
+                    Name = "Success",
+                    Description = "Success general color.",
                     Value = "4",
                 },
                 new()
                 {
-                    Name = "SevereWarning",
-                    Description = "Severe Warning styled SnackBar",
+                    Name = "Warning",
+                    Description = "Warning general color.",
                     Value = "5",
+                },
+                new()
+                {
+                    Name = "SevereWarning",
+                    Description = "SevereWarning general color.",
+                    Value = "6",
+                },
+                new()
+                {
+                    Name = "Error",
+                    Description = "Error general color.",
+                    Value = "7",
+                },
+                new()
+                {
+                    Name = "PrimaryBackground",
+                    Description = "Primary background color.",
+                    Value = "8",
+                },
+                new()
+                {
+                    Name = "SecondaryBackground",
+                    Description = "Secondary background color.",
+                    Value = "9",
+                },
+                new()
+                {
+                    Name = "TertiaryBackground",
+                    Description = "Tertiary background color.",
+                    Value = "10",
+                },
+                new()
+                {
+                    Name = "PrimaryForeground",
+                    Description = "Primary foreground color.",
+                    Value = "11",
+                },
+                new()
+                {
+                    Name = "SecondaryForeground",
+                    Description = "Secondary foreground color.",
+                    Value = "12",
+                },
+                new()
+                {
+                    Name = "TertiaryForeground",
+                    Description = "Tertiary foreground color.",
+                    Value = "13",
+                },
+                new()
+                {
+                    Name = "PrimaryBorder",
+                    Description = "Primary border color.",
+                    Value = "14",
+                },
+                new()
+                {
+                    Name = "SecondaryBorder",
+                    Description = "Secondary border color.",
+                    Value = "15",
+                },
+                new()
+                {
+                    Name = "TertiaryBorder",
+                    Description = "Tertiary border color.",
+                    Value = "16",
                 }
             ]
         }
@@ -233,7 +300,7 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "Show",
-            Type = "async Task Show(string title, string? body = \"\", BitSnackBarType type = BitSnackBarType.None, string? cssClass = null, string? cssStyle = null)",
+            Type = "async Task Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null)",
             DefaultValue = "",
             Description = "Shows the snackbar.",
         },
@@ -242,28 +309,35 @@ public partial class BitSnackBarDemo
             Name = "Info",
             Type = "Task Info(string title, string? body = \"\")",
             DefaultValue = "",
-            Description = "Shows the snackbar with Info type.",
+            Description = "Shows the snackbar with Info color.",
         },
         new()
         {
             Name = "Success",
             Type = "Task Success(string title, string? body = \"\")",
             DefaultValue = "",
-            Description = "Shows the snackbar with Success type.",
+            Description = "Shows the snackbar with Success color.",
         },
         new()
         {
             Name = "Warning",
             Type = "Task Warning(string title, string? body = \"\")",
             DefaultValue = "",
-            Description = "Shows the snackbar with Warning type.",
+            Description = "Shows the snackbar with Warning color.",
+        },
+        new()
+        {
+            Name = "SevereWarning",
+            Type = "Task Warning(string title, string? body = \"\")",
+            DefaultValue = "",
+            Description = "Shows the snackbar with SevereWarning color.",
         },
         new()
         {
             Name = "Error",
             Type = "Task Error(string title, string? body = \"\")",
             DefaultValue = "",
-            Description = "Shows the snackbar with Error type.",
+            Description = "Shows the snackbar with Error color.",
         }
     ];
 
@@ -303,12 +377,12 @@ public partial class BitSnackBarDemo
     private BitSnackBar customizationRef = default!;
     private string basicSnackBarBody = "This is body";
     private string basicSnackBarTitle = "This is title";
-    private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
-    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+    private BitColor basicSnackBarColor = BitColor.Info;
+    private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
 
     private async Task OpenCustomizationSnackBar()
     {
-        await customizationRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarType);
+        await customizationRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
     }
 
 
@@ -356,21 +430,33 @@ private async Task OpenBasicSnackBar()
              AutoDismiss=""@basicSnackBarAutoDismiss""
              AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
 
-<BitChoiceGroup @bind-Value=""basicSnackBarType"" Label=""Type"" TItem=""BitChoiceGroupOption<BitSnackBarType>"" TValue=""BitSnackBarType"">
-    <BitChoiceGroupOption Text=""Info"" Value=""BitSnackBarType.Info"" />
-    <BitChoiceGroupOption Text=""Success"" Value=""BitSnackBarType.Success"" />
-    <BitChoiceGroupOption Text=""Warning"" Value=""BitSnackBarType.Warning"" />
-    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitSnackBarType.SevereWarning"" />
-    <BitChoiceGroupOption Text=""Error"" Value=""BitSnackBarType.Error"" />
+<BitChoiceGroup @bind-Value=""basicSnackBarColor"" Label=""Type"" TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
+    <BitChoiceGroupOption Text=""Primary"" Value=""BitColor.Primary"" />
+    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColor.Secondary"" />
+    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColor.Tertiary"" />
+    <BitChoiceGroupOption Text=""Info"" Value=""BitColor.Info"" />
+    <BitChoiceGroupOption Text=""Success"" Value=""BitColor.Success"" />
+    <BitChoiceGroupOption Text=""Warning"" Value=""BitColor.Warning"" />
+    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitColor.SevereWarning"" />
+    <BitChoiceGroupOption Text=""Error"" Value=""BitColor.Error"" />
+    <BitChoiceGroupOption Text=""PrimaryBackground"" Value=""BitColor.PrimaryBackground"" />
+    <BitChoiceGroupOption Text=""SecondaryBackground"" Value=""BitColor.SecondaryBackground"" />
+    <BitChoiceGroupOption Text=""TertiaryBackground"" Value=""BitColor.TertiaryBackground"" />
+    <BitChoiceGroupOption Text=""PrimaryForeground"" Value=""BitColor.PrimaryForeground"" />
+    <BitChoiceGroupOption Text=""SecondaryForeground"" Value=""BitColor.SecondaryForeground"" />
+    <BitChoiceGroupOption Text=""TertiaryForeground"" Value=""BitColor.TertiaryForeground"" />
+    <BitChoiceGroupOption Text=""PrimaryBorder"" Value=""BitColor.PrimaryBorder"" />
+    <BitChoiceGroupOption Text=""SecondaryBorder"" Value=""BitColor.SecondaryBorder"" />
+    <BitChoiceGroupOption Text=""TertiaryBorder"" Value=""BitColor.TertiaryBorder"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopLeft"" Value=""BitSnackBarPosition.TopLeft"" />
+    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
     <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopRight"" Value=""BitSnackBarPosition.TopRight"" />
-    <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitSnackBarPosition.BottomLeft"" />
+    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
+    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
     <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomRight"" Value=""BitSnackBarPosition.BottomRight"" />
+    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
@@ -393,12 +479,12 @@ private bool basicSnackBarAutoDismiss = true;
 private BitSnackBar customizationRef = default!;
 private string basicSnackBarBody = ""This is body"";
 private string basicSnackBarTitle = ""This is title"";
-private BitSnackBarType basicSnackBarType = BitSnackBarType.Info;
-private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomRight;
+private BitColor basicSnackBarColor = BitColor.Info;
+private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
 
 private async Task OpenBasicSnackBar()
 {
-    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarType);
+    await basicSnackBarRef.Show(basicSnackBarTitle, basicSnackBarBody, basicSnackBarColor);
 }";
 
     private readonly string example3RazorCode = @"
@@ -461,7 +547,7 @@ private async Task OpenBodyTemplate()
     }
 
     .custom-progress {
-        background-color: gold;
+        background-color: red;
     }
 </style>
 
@@ -477,7 +563,7 @@ private async Task OpenBodyTemplate()
                                Header = ""background-color: rebeccapurple; padding: 0.2rem;"" })"" />
 <BitButton OnClick=""OpenSnackBarStyles"">Custom styles</BitButton>
 
-<BitSnackBar @ref=""snackBarClassesRef"" 
+<BitSnackBar @ref=""snackBarClassesRef"" AutoDismiss
              Classes=""@(new() { Container = ""custom-container"",
                                 ProgressBar = ""custom-progress"" })"" />
 <BitButton OnClick=""OpenSnackBarClasses"">Custom classes</BitButton>";

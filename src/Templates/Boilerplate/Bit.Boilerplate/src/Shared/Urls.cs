@@ -11,7 +11,7 @@ public static partial class Urls
 
     public const string TermsPage = "/terms";
 
-    public const string ProfilePage = "/profile";
+    public const string SettingsPage = "/settings";
 
     public const string ConfirmPage = "/confirm";
 
@@ -22,6 +22,8 @@ public static partial class Urls
     public const string SignInPage = "/sign-in";
 
     public const string SignUpPage = "/sign-up";
+
+    public const string AboutPage = "/about";
 
     //#if (sample == "Admin")
     public const string AddOrEditCategoryPage = "/add-edit-category";
@@ -40,7 +42,13 @@ public static partial class Urls
     public const string OfflineEditProfilePage = "/offline-edit-profile";
     //#endif
 
-    public const string AboutPage = "/about";
+    public static readonly string[] All = typeof(Urls).GetFields()
+                                                      .Where(f => f.FieldType == typeof(string))
+                                                      .Select(f => f.GetValue(null)!.ToString()!)
+                                                      .ToArray();
 
-    public readonly static string[] AnonymousPages = [HomePage, TermsPage];
+    /// <summary>
+    /// The pages that are getting rendered in multiple layouts (identity and main).
+    /// </summary>
+    public static readonly string[] CrossLayoutPages = [HomePage, TermsPage, NotFoundPage];
 }

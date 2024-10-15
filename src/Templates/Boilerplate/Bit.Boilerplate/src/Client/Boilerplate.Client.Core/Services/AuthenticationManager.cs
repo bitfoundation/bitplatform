@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -17,6 +16,10 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService;
 
+    /// <summary>
+    /// Sign in and return whether the user requires two-factor authentication.
+    /// </summary>
+    /// <returns>true if the user requires two-factor authentication; otherwise, false.</returns>
     public async Task<bool> SignIn(SignInRequestDto request, CancellationToken cancellationToken)
     {
         var response = await identityController.SignIn(request, cancellationToken);
@@ -72,7 +75,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessTokenAsync());
+            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
             if (string.IsNullOrEmpty(access_token) && jsRuntime.IsInitialized())
             {

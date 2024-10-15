@@ -19,7 +19,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitChoiceGroup.
@@ -29,7 +31,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Default selected item for ChoiceGroup.
     /// </summary>
-    [Parameter] public TValue? DefaultValue { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
@@ -44,7 +48,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
-    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
+    [Parameter]
+    [CallOnSet(nameof(HandleParameterChanges))]
+    public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize the label for the Item Label content.
@@ -126,18 +132,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
-
-        _oldItems = Items;
-        _items = Items.ToList();
-
-        InitDefaultValue();
-    }
-
     protected override string RootElementClass => "bit-chg";
 
     protected override void RegisterCssClasses()
@@ -160,6 +154,17 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
+
+    private void HandleParameterChanges()
+    {
+        if (ChildContent is not null) return;
+        if (Items.Any() is false || Items == _oldItems) return;
+
+        _oldItems = Items;
+        _items = Items.ToList();
+
+        InitDefaultValue();
+    }
 
     private void InitDefaultValue()
     {

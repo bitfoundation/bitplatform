@@ -1,22 +1,24 @@
-//+:cnd:noEmit
-using System.IO.Compression;
-using Microsoft.AspNetCore.ResponseCompression;
-using Boilerplate.Server.Api.Services;
+﻿//+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
+using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography.X509Certificates;
-using Boilerplate.Server.Api.Models.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.ResponseCompression;
+using Twilio;
 using FluentStorage;
 using FluentStorage.Blobs;
-using Twilio;
+//#if (notification == true)
+using AdsPush.Extensions;
+//#endif
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api;
 
@@ -153,7 +155,7 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.TryAddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -192,42 +194,41 @@ public static partial class Program
             }
         }
 
-        services.TryAddTransient<EmailService>();
-        services.TryAddTransient<SmsService>();
+        services.AddTransient<EmailService>();
+        services.AddTransient<SmsService>();
         if (appSettings.Sms.Configured)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
         }
 
-        //#if (filesStorage == "Local")
-        services.TryAddSingleton(sp =>
+        services.AddSingleton<IBlobStorage>(sp =>
         {
+            //#if (filesStorage == "Local")
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
             Directory.CreateDirectory(attachmentsDirPath);
             return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
-        });
-        //#elif (filesStorage == "AzureBlobStorage")
-        services.TryAddSingleton(sp =>
-        {
+            //#elif (filesStorage == "AzureBlobStorage")
             var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
             return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
                                  ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
                                  : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
-        });
-        //#else
-        services.TryAddSingleton<IBlobStorage>(sp =>
-        {
+            //#else
             // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
+            //#endif
         });
-        //#endif
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
+        //#endif
+
+        //#if (notification == true)
+        services.AddAdsPush(configuration);
+        services.AddTransient<PushNotificationService>();
         //#endif
     }
 
