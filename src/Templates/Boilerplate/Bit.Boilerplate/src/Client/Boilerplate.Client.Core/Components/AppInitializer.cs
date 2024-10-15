@@ -22,6 +22,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -33,8 +34,9 @@ public partial class AppInitializer : AppComponentBase
         {
             if (CultureInfoManager.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(await storageService.GetItem("Culture") ?? // 1- User settings
-                                                     CultureInfo.CurrentUICulture.Name); // 2- OS settings
+                cultureInfoManager.SetCurrentCulture(new Uri(navigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                                                     await storageService.GetItem("Culture") ?? // 2- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
 
             await SetupBodyClasses();
