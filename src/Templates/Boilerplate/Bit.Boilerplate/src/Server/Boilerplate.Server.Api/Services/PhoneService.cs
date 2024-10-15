@@ -22,7 +22,7 @@ public partial class PhoneService
                          ? value.ToString()
                          : CultureInfoManager.MultilingualEnabled
                              ? new RegionInfo(CultureInfo.CurrentUICulture.Name).TwoLetterISORegionName
-        : APP_DEFAULT_REGION;
+                             : APP_DEFAULT_REGION;
 
         var parsedPhoneNumber = phoneNumberUtil.Parse(phoneNumber, region);
 
