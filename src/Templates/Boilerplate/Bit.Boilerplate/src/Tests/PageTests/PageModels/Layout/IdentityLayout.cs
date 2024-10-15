@@ -3,12 +3,15 @@
 public partial class IdentityLayout(IPage page, Uri serverAddress, string pagePath, string pageTitle)
     : MainLayout(page, serverAddress, pagePath, pageTitle)
 {
-    public async Task AssertSignInSuccess(string userFullName = "Boilerplate test account")
+    public async Task AssertSignInSuccess(string userEmail = "test@bitplatform.dev", string? userFullName = "Boilerplate test account")
     {
-        await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
-        await Assertions.Expect(page.Locator(".bit-prs").First).ToContainTextAsync(userFullName);
-        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(userFullName);
+        var displayName = string.IsNullOrWhiteSpace(userFullName) ? userEmail : userFullName;
+
+        await Assertions.Expect(page).ToHaveURLAsync(new Uri(serverAddress, pagePath).ToString());
+        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = displayName })).ToBeVisibleAsync();
+        await Assertions.Expect(page.Locator(".bit-prs").First).ToContainTextAsync(displayName);
+        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(displayName);
+        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(userEmail);
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }

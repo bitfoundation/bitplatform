@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.PageTests.PageModels.Identity;
-using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data;
+using Boilerplate.Tests.PageTests.PageModels.Layout;
+using Boilerplate.Tests.Services;
 
 namespace Boilerplate.Tests.PageTests;
 
@@ -20,51 +21,40 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Work_With_ValidCredentials()
+    [DataRow("ValidCredentials")]
+    [DataRow("InvalidCredentials")]
+    public async Task SignIn(string mode)
     {
         var signInPage = new SignInPage(Page, WebAppServerAddress);
 
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var signedInPage = await signInPage.SignIn();
-        await signedInPage.AssertSignInSuccess();
+        switch (mode)
+        {
+            case "ValidCredentials":
+                var signedInPage = await signInPage.SignIn();
+                await signedInPage.AssertSignInSuccess();
+                break;
+            case "InvalidCredentials":
+                await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
+                await signInPage.AssertSignInFailed();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Fail_With_InvalidCredentials()
-    {
-        var signInPage = new SignInPage(Page, WebAppServerAddress);
-
-        await signInPage.Open();
-        await signInPage.AssertOpen();
-
-        await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
-        await signInPage.AssetNotSignedIn();
-    }
-
-    [TestMethod]
-    public async Task SignOut_Should_WorkAsExpected()
+    public async Task SignOut()
     {
         await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
 
         var email = $"{Guid.NewGuid()}@gmail.com";
-        var user = new User
-        {
-            EmailConfirmed = true,
-            UserName = email,
-            NormalizedUserName = email.ToUpperInvariant(),
-            Email = email,
-            NormalizedEmail = email.ToUpperInvariant(),
-            SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
-            ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
-            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
-        };
-
-        dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync();
+        var user = await userService.AddUser(email);
 
         var signInPage = new SignInPage(Page, WebAppServerAddress);
 
@@ -72,7 +62,7 @@ public partial class IdentityPagesTests : PageTestBase
         await signInPage.AssertOpen();
 
         var signedInPage = await signInPage.SignIn(email);
-        await signedInPage.AssertSignInSuccess(email);
+        await signedInPage.AssertSignInSuccess(email, null);
 
         await dbContext.Entry(user).ReloadAsync();
         Assert.AreEqual(1, user.Sessions.Count);
@@ -85,38 +75,94 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    public async Task SignUp_Should_Work_With_MagicLink()
+    [DataRow("Token")]
+    [DataRow("MagicLink")]
+    public async Task SignUp(string mode)
     {
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.AssertOpen();
 
-        await signupPage.SignUp();
-        await signupPage.AssertSignUp();
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        var confirmPage = await signupPage.SignUp(email);
+        await confirmPage.AssertOpen();
 
-        await signupPage.OpenEmail();
-        await signupPage.AssertConfirmationEmailContent();
+        var confirmationEmail = await signupPage.OpenConfirmationEmail();
+        await confirmationEmail.AssertContent();
 
-        await signupPage.ConfirmByMagicLink();
-        await signupPage.AssertConfirm();
+        IdentityLayout signedInPage;
+        switch (mode)
+        {
+            case "Token":
+                var token = await confirmationEmail.GetToken();
+                signedInPage = await confirmPage.ConfirmByToken(email: null, token);
+                break;
+            case "MagicLink":
+                signedInPage = await confirmationEmail.OpenMagicLink();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
+
+        await signedInPage.AssertOpen();
+        await signedInPage.AssertSignInSuccess(email, userFullName: null);
     }
 
     [TestMethod]
-    public async Task SignUp_Should_Work_With_OtpCode()
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    public async Task ForgotPassword(string mode)
     {
-        var signupPage = new SignUpPage(Page, WebAppServerAddress);
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
 
-        await signupPage.Open();
-        await signupPage.AssertOpen();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        await userService.AddUser(email);
 
-        await signupPage.SignUp();
-        await signupPage.AssertSignUp();
+        var forgotPasswordPage = new ForgotPasswordPage(Page, WebAppServerAddress);
 
-        await signupPage.OpenEmail();
-        await signupPage.AssertConfirmationEmailContent();
+        await forgotPasswordPage.Open();
+        await forgotPasswordPage.AssertOpen();
 
-        await signupPage.ConfirmByOtp();
-        await signupPage.AssertConfirm();
+        var resetPasswordPage = await forgotPasswordPage.ForgotPassword(email);
+        await resetPasswordPage.AssertOpen();
+
+        var resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+        await resetPasswordEmail.AssertContent();
+
+        const string newPassword = "new_password";
+        switch (mode)
+        {
+            case "Token":
+                var token = await resetPasswordEmail.GetToken();
+                await resetPasswordPage.ContinueByToken(email: null, token);
+                break;
+            case "InvalidToken":
+                await resetPasswordPage.ContinueByToken(email: null, "111111");
+                await resetPasswordPage.SetPassword(newPassword);
+                await resetPasswordPage.AssertInvalidToken();
+                return;
+            case "MagicLink":
+                resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
+                await resetPasswordPage.Continue();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
+        await resetPasswordPage.AssertValidToken();
+
+        await resetPasswordPage.SetPassword(newPassword);
+        await resetPasswordPage.AssertSetPassword();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var signedInPage = await signInPage.SignIn(email, newPassword);
+        await signedInPage.AssertSignInSuccess(email, userFullName: null);
     }
 }

@@ -182,7 +182,7 @@
     <value>All</value>
   </data>
     <data name="Alphabetical" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>A-Z</value>
   </data>
     <data name="Completed" xml:space="preserve">
     <value>Completed</value>
@@ -551,6 +551,9 @@
   </data>
     <data name="HomeTitle2" xml:space="preserve">
     <value>using what you already know and love</value>
+  </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>Watch video</value>
   </data>
     <data name="LearnMore" xml:space="preserve">
     <value>Learn more</value>
@@ -977,7 +980,7 @@
     <value>No todos yet</value>
   </data>
     <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Search some todo...</value>
+    <value>Search todo...</value>
   </data>
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo item could not be found</value>

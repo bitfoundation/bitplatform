@@ -15,6 +15,14 @@ public partial class Routes
             }
         });
 
+        if (CultureInfoManager.MultilingualEnabled && forceLoad == false)
+        {
+            var currentCulture = CultureInfo.CurrentUICulture.Name;
+            var uri = new Uri(url);
+            var urlCulture = uri.GetCulture();
+            forceLoad = urlCulture is not null && currentCulture != urlCulture;
+        }
+
         universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
     }
 }
