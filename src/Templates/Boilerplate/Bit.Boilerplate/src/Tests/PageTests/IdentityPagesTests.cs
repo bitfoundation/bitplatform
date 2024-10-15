@@ -108,4 +108,61 @@ public partial class IdentityPagesTests : PageTestBase
         await signedInPage.AssertOpen();
         await signedInPage.AssertSignInSuccess(email, userFullName: null);
     }
+
+    [TestMethod]
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    public async Task ForgotPassword(string mode)
+    {
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        await userService.AddUser(email);
+
+        var forgotPasswordPage = new ForgotPasswordPage(Page, WebAppServerAddress);
+
+        await forgotPasswordPage.Open();
+        await forgotPasswordPage.AssertOpen();
+
+        var resetPasswordPage = await forgotPasswordPage.ForgotPassword(email);
+        await resetPasswordPage.AssertOpen();
+
+        var resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+        await resetPasswordEmail.AssertContent();
+
+        const string newPassword = "new_password";
+        switch (mode)
+        {
+            case "Token":
+                var token = await resetPasswordEmail.GetToken();
+                await resetPasswordPage.ContinueByToken(email: null, token);
+                break;
+            case "InvalidToken":
+                await resetPasswordPage.ContinueByToken(email: null, "111111");
+                await resetPasswordPage.SetPassword(newPassword);
+                await resetPasswordPage.AssertInvalidToken();
+                return;
+            case "MagicLink":
+                resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
+                await resetPasswordPage.Continue();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
+        await resetPasswordPage.AssertValidToken();
+
+        await resetPasswordPage.SetPassword(newPassword);
+        await resetPasswordPage.AssertSetPassword();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var signedInPage = await signInPage.SignIn(email, newPassword);
+        await signedInPage.AssertSignInSuccess(email, userFullName: null);
+    }
 }
