@@ -13,6 +13,7 @@ public partial class IdentityController
     [HttpPost]
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
@@ -48,7 +49,7 @@ public partial class IdentityController
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(smsService.SendSms(message, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalr == true)
@@ -65,6 +66,7 @@ public partial class IdentityController
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) > AppSettings.Identity.ResetPasswordTokenLifetime;

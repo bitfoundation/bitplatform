@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
+using PhoneNumbers;
 using FluentStorage;
 using FluentStorage.Blobs;
 //#if (notification == true)
@@ -19,6 +20,7 @@ using AdsPush.Extensions;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Server.Api.Services.Identity;
 
 namespace Boilerplate.Server.Api;
 
@@ -195,7 +197,7 @@ public static partial class Program
         }
 
         services.AddTransient<EmailService>();
-        services.AddTransient<SmsService>();
+        services.AddTransient<PhoneService>();
         if (appSettings.Sms.Configured)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
@@ -230,6 +232,8 @@ public static partial class Program
         services.AddAdsPush(configuration);
         services.AddTransient<PushNotificationService>();
         //#endif
+
+        services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)

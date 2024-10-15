@@ -8,11 +8,12 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 
 public partial class IdentityController
 {
-    [AutoInject] private SmsService smsService = default!;
+    [AutoInject] private PhoneService phoneService = default!;
 
     [HttpPost]
     public async Task SendConfirmPhoneToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
@@ -25,6 +26,7 @@ public partial class IdentityController
     [HttpPost, Produces<TokenResponseDto>()]
     public async Task ConfirmPhone(ConfirmPhoneRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByPhoneNumber(request.PhoneNumber!)
             ?? throw new BadRequestException(Localizer[nameof(AppStrings.UserNotFound)]);
 
@@ -77,6 +79,6 @@ public partial class IdentityController
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn?.ToUniversalTime()}"));
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
-        await smsService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);
+        await phoneService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);
     }
 }

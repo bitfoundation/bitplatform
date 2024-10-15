@@ -34,7 +34,7 @@ public partial class IdentityController
         try
         {
             var email = info.Principal.GetEmail();
-            var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
+            var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
             var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 

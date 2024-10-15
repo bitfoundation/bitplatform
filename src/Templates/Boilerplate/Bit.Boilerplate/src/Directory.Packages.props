@@ -9,6 +9,7 @@
     <PackageVersion Include="Bit.Bswup" Version="8.12.0-pre-03" />
     <PackageVersion Include="Bit.CodeAnalyzers" Version="8.12.0-pre-03" />
     <PackageVersion Include="Bit.SourceGenerators" Version="8.12.0-pre-03" />
+    <PackageVersion Include="libphonenumber-csharp" Version="8.13.47" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
