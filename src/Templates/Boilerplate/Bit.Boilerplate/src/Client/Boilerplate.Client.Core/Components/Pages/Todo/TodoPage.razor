@@ -60,9 +60,9 @@
 
             @if (isLoading)
             {
-                <div class="todo-list-spinner">
+                <BitStack Alignment="BitAlignment.Center">
                     <BitRingLoading />
-                </div>
+                </BitStack>
             }
             else
             {
@@ -98,7 +98,7 @@
                                                    Variant="BitVariant.Text"
                                                    IconName="@BitIconName.Delete"
                                                    Title="@Localizer[nameof(AppStrings.Remove)]"
-                                                   OnClick="WrapHandled(() => isDeleteDialogOpen = true)" />
+                                                   OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingTodoItem = todo; })" />
                                     </BitStack>
                                 }
                                 else
