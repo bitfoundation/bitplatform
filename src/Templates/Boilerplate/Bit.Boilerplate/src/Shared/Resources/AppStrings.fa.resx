@@ -567,7 +567,7 @@
     <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
   </data>
-    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
   </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">

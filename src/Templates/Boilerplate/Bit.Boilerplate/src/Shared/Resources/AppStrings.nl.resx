@@ -564,7 +564,7 @@
     <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Krachtige, eenvoudig aan te passen en mooie Blazor-componenten</value>
   </data>
-    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>Een veelzijdige .NET-projectsjabloon die overal naadloos werkt</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">

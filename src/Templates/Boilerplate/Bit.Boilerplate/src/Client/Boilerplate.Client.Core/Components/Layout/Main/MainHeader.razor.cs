@@ -28,6 +28,6 @@ public partial class MainHeader : AppComponentBase
     {
         await base.DisposeAsync(disposing);
 
-        unsubscribePageTitleChanged();
+        unsubscribePageTitleChanged?.Invoke();
     }
 }

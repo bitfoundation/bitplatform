@@ -54,6 +54,6 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
     public void Dispose()
     {
-        unsubscribeUpdateBackLink();
+        unsubscribeUpdateBackLink?.Invoke();
     }
 }
