@@ -16,9 +16,9 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataSchemes = ["https", "http"],
                         DataHosts = ["use-your-server-url-here.com"],
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
-                        DataPaths = ["/"],
+                        DataPaths = [Urls.HomePage],
                         DataPathPrefixes = [
-                            "/en-US", "en-GB", "/fa-IR", "fr-FR",
+                            "/en-US", "/en-GB", "/fa-IR", "/nl-NL",
                             Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
                             //#if (sample == "Admin")
                             Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,

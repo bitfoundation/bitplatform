@@ -2,7 +2,6 @@
 @inherits AppComponentBase;
 
 <section>
-    @*#if (sample == "Todo")*@
     <a href="@Urls.HomePage">
         <BitIcon IconName="@BitIconName.Home" Color="@(IsActive(Urls.HomePage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
         <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.HomePage) ? BitColor.Primary : BitColor.SecondaryForeground)">
@@ -10,17 +9,11 @@
         </BitText>
     </a>
 
+    @*#if (sample == "Todo")*@
     <a href="@Urls.TodoPage">
         <BitIcon IconName="@BitIconName.ToDoLogoOutline" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
         <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
             @Localizer[nameof(AppStrings.TodoTitle)]
-        </BitText>
-    </a>
-
-    <a href="@Urls.TermsPage">
-        <BitIcon IconName="@BitIconName.EntityExtraction" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.TermsTitle)]
         </BitText>
     </a>
     @*#endif*@
@@ -47,4 +40,11 @@
         </BitText>
     </a>
     @*#endif*@
+
+    <a href="@Urls.TermsPage">
+        <BitIcon IconName="@BitIconName.EntityExtraction" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
+        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
+            @Localizer[nameof(AppStrings.TermsTitle)]
+        </BitText>
+    </a>
 </section>
