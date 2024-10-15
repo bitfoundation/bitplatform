@@ -1,15 +1,11 @@
 ﻿using System.Web;
 
-namespace Microsoft.AspNetCore.Components;
+namespace System;
 
-public static partial class NavigationManagerExtensions
+public static partial class UriExtensions
 {
-    public static string GetUriWithoutQueryParameter(this NavigationManager navigationManager, string key)
+    public static string GetWithoutQueryParameter(this Uri uri, string key)
     {
-        var url = navigationManager.Uri;
-
-        var uri = new Uri(url);
-
         // this gets all the query string key value pairs as a collection
         var newQueryString = HttpUtility.ParseQueryString(uri.Query);
 
@@ -29,10 +25,8 @@ public static partial class NavigationManagerExtensions
     /// https://adminpanel.bitpaltform.dev/en-US/categories
     /// https://adminpanel.bitpaltform.dev/categories?culture=en-US
     /// </summary>
-    public static string? GetCultureFromUri(this NavigationManager navigationManager)
+    public static string? GetCulture(this Uri uri)
     {
-        var uri = new Uri(navigationManager.Uri);
-
         var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
         if (string.IsNullOrEmpty(culture) is false)
@@ -50,25 +44,25 @@ public static partial class NavigationManagerExtensions
         return null;
     }
 
-    public static string GetUriWithoutCulture(this NavigationManager navigationManager)
+    public static string GetWithoutCulture(this Uri uri)
     {
-        var uri = navigationManager.GetUriWithoutQueryParameter("culture");
+        uri = new Uri(uri.GetWithoutQueryParameter("culture"));
 
-        var culture = navigationManager.GetCultureFromUri();
+        var culture = uri.GetCulture();
 
         if (string.IsNullOrEmpty(culture) is false)
         {
-            uri = uri
+            uri = new Uri(uri.ToString()
                 .Replace($"{culture}/", string.Empty)
-                .Replace(culture, string.Empty);
+                .Replace(culture, string.Empty));
         }
 
-        return uri;
+        return uri.ToString();
     }
 
-    public static string GetPath(this NavigationManager navigationManager)
+    public static string GetPath(this Uri uri)
     {
-        var uriBuilder = new UriBuilder(navigationManager.GetUriWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
+        var uriBuilder = new UriBuilder(uri.GetWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
         return uriBuilder.Path;
     }
 }

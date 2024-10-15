@@ -106,7 +106,7 @@ public partial class RootLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        var path = navigationManager.GetPath();
+        var path = new Uri(navigationManager.Uri).GetPath();
 
         currentUrl = Urls.All.SingleOrDefault(pageUrl =>
         {
