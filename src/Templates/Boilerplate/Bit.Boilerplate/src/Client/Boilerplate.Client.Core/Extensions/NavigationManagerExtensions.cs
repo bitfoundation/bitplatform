@@ -4,7 +4,7 @@ public static partial class NavigationManagerExtensions
 {
     public static string GetUriWithoutQueryParameter(this NavigationManager navigationManager, string key)
     {
-        return new Uri(navigationManager.Uri).GetWithoutQueryParameter(key);
+        return new Uri(navigationManager.Uri).GetUrlWithoutQueryParameter(key);
     }
 
     public static string GetUriPath(this NavigationManager navigationManager)

@@ -27,6 +27,6 @@ public partial class CultureService : ICultureService
             });
         }
 
-        navigationManager.NavigateTo(new Uri(navigationManager.Uri).GetWithoutCulture(), forceLoad: true, replace: true);
+        navigationManager.NavigateTo(new Uri(navigationManager.Uri).GetUrlWithoutCulture(), forceLoad: true, replace: true);
     }
 }

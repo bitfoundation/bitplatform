@@ -4,7 +4,7 @@ namespace System;
 
 public static partial class UriExtensions
 {
-    public static string GetWithoutQueryParameter(this Uri uri, string key)
+    public static string GetUrlWithoutQueryParameter(this Uri uri, string key)
     {
         // this gets all the query string key value pairs as a collection
         var newQueryString = HttpUtility.ParseQueryString(uri.Query);
@@ -44,9 +44,9 @@ public static partial class UriExtensions
         return null;
     }
 
-    public static string GetWithoutCulture(this Uri uri)
+    public static string GetUrlWithoutCulture(this Uri uri)
     {
-        uri = new Uri(uri.GetWithoutQueryParameter("culture"));
+        uri = new Uri(uri.GetUrlWithoutQueryParameter("culture"));
 
         var culture = uri.GetCulture();
 
@@ -62,7 +62,7 @@ public static partial class UriExtensions
 
     public static string GetPath(this Uri uri)
     {
-        var uriBuilder = new UriBuilder(uri.GetWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
+        var uriBuilder = new UriBuilder(uri.GetUrlWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
         return uriBuilder.Path;
     }
 }
