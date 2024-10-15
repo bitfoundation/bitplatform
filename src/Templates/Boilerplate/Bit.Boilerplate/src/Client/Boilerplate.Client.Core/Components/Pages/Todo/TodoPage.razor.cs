@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Shared.Controllers.Todo;
 using Boilerplate.Shared.Dtos.Todo;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Components.Pages.Todo;
 
@@ -15,13 +16,16 @@ public partial class TodoPage
     private bool isLoading;
     private string? searchText;
     private string? selectedSort;
+    private bool isDescendingSort;
     private string? selectedFilter;
+    private bool isDeleteDialogOpen;
+    private TodoItemDto? deletingTodoItem;
     private string? underEditTodoItemTitle;
     private string newTodoTitle = string.Empty;
-    private ConfirmMessageBox confirmMessageBox = default!;
     private IList<TodoItemDto> allTodoItems = [];
     private IList<TodoItemDto> viewTodoItems = default!;
     private BitSearchBox searchBox = default!;
+    private BitTextField newTodoInput = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -53,11 +57,18 @@ public partial class TodoPage
 
     private void FilterViewTodoItems()
     {
-        viewTodoItems = allTodoItems
-            .Where(t => TodoItemIsVisible(t))
-            .OrderByIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
-            .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.Date!)
-            .ToList();
+        var items = allTodoItems.Where(TodoItemIsVisible);
+        if (isDescendingSort)
+        {
+            items = items.OrderByDescendingIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
+                         .OrderByDescendingIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+        }
+        else
+        {
+            items = items.OrderByIf(selectedSort == nameof(AppStrings.Alphabetical), t => t.Title!)
+                         .OrderByIf(selectedSort == nameof(AppStrings.Date), t => t.Date!);
+        }
+        viewTodoItems = items.ToList();
     }
 
     private bool TodoItemIsVisible(TodoItemDto todoItem)
@@ -107,6 +118,8 @@ public partial class TodoPage
 
     private async Task AddTodoItem()
     {
+        if (string.IsNullOrWhiteSpace(newTodoTitle)) return;
+
         var addedTodoItem = await todoItemController.Create(new() { Title = newTodoTitle }, CurrentCancellationToken);
 
         allTodoItems.Add(addedTodoItem!);
@@ -117,29 +130,29 @@ public partial class TodoPage
         }
 
         newTodoTitle = "";
+        await newTodoInput.FocusAsync();
     }
 
-    private async Task DeleteTodoItem(TodoItemDto todoItem)
+    private async Task OnInputKeyDown(KeyboardEventArgs args)
     {
-        if (isLoading) return;
+        if (args.Key == "Enter")
+        {
+            await AddTodoItem();
+        }
+    }
+
+    private async Task DeleteTodoItem()
+    {
+        if (isLoading || deletingTodoItem is null) return;
+
+        isLoading = true;
 
         try
         {
-            var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDelete), todoItem.Title!),
-                                                     Localizer[nameof(AppStrings.DeleteTodoItem)]);
+            await todoItemController.Delete(deletingTodoItem.Id, CurrentCancellationToken);
 
-            if (confirmed)
-            {
-                isLoading = true;
-
-                StateHasChanged();
-
-                await todoItemController.Delete(todoItem.Id, CurrentCancellationToken);
-
-                allTodoItems.Remove(todoItem);
-
-                viewTodoItems.Remove(todoItem);
-            }
+            allTodoItems.Remove(deletingTodoItem);
+            viewTodoItems.Remove(deletingTodoItem);
         }
         finally
         {

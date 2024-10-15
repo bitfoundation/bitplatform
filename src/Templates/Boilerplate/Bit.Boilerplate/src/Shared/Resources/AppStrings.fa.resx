@@ -182,7 +182,7 @@
     <value>همه</value>
   </data>
     <data name="Alphabetical" xml:space="preserve">
-    <value>الفبایی</value>
+    <value>ا-ی</value>
   </data>
     <data name="Completed" xml:space="preserve">
     <value>تمام شده</value>
@@ -980,7 +980,7 @@
     <value>هنوز کاری ثبت نشده</value>
   </data>
     <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>جستجو در کارها...</value>
+    <value>جستجوی کارها...</value>
   </data>
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>کار پیدا نشد</value>

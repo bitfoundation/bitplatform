@@ -9,7 +9,9 @@
 
     @foreach (var item in _items)
     {
-        <div style="@Styles?.Container @item.CssStyle" class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass">
+        <div @key="@item.Id"
+            style="@Styles?.Container @item.CssStyle"
+             class="bit-snb-itm @GetItemClasses(item) @Classes?.Container @item.CssClass">
             <div style="@Styles?.Header" class="bit-snb-hdr @Classes?.Header">
                 <button @onclick="() => Dismiss(item)"
                         type="button"
