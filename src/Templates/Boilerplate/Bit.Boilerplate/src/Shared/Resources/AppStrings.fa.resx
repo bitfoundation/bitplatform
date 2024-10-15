@@ -555,6 +555,9 @@
     <data name="HomeTitle2" xml:space="preserve">
     <value>با استفاده چیزی که میدانید و دوستش دارید</value>
   </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>مشاهده ویدئو</value>
+  </data>
     <data name="LearnMore" xml:space="preserve">
     <value>بیشتر بدانید</value>
   </data>
