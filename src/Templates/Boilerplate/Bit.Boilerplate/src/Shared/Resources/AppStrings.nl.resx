@@ -552,14 +552,17 @@
     <data name="HomeTitle2" xml:space="preserve">
     <value>gebruik makend van wat je al kent en leuk vindt</value>
   </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>Bekijk video</value>
+  </data>
     <data name="LearnMore" xml:space="preserve">
     <value>Meer informatie</value>
   </data>
     <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Een set tools voor .NET-ontwikkelaars op meerdere platforms</value>
+    <value>Handige tools voor .NET-ontwikkelaars op meerdere platforms</value>
   </data>
     <data name="BitBlazorUIMessage" xml:space="preserve">
-    <value>Een set krachtige, eenvoudig aan te passen en prachtige Blazor-componenten</value>
+    <value>Krachtige, eenvoudig aan te passen en mooie Blazor-componenten</value>
   </data>
     <data name="BitBoilerplateMessage" xml:space="preserve">
     <value>Een veelzijdige .NET-projectsjabloon die overal naadloos werkt</value>
