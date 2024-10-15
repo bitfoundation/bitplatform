@@ -564,7 +564,7 @@
     <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>A set of performant, easy-to-customize and beautiful Blazor components</value>
   </data>
-    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>A feature-rich .NET project template that works everywhere seamlessly</value>
   </data>
     <data name="DescriptionMetaTagValue" xml:space="preserve">

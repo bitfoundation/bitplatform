@@ -68,6 +68,6 @@ public partial class UserMenu
     {
         await base.DisposeAsync(disposing);
 
-        unsubscribeUerDataUpdated();
+        unsubscribeUerDataUpdated?.Invoke();
     }
 }

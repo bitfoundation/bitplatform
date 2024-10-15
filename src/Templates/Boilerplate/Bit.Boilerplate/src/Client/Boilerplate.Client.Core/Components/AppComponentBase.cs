@@ -201,8 +201,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         if (disposing)
         {
             await PrerenderStateService.DisposeAsync();
-            cts.Cancel();
-            cts.Dispose();
+            cts?.Cancel();
+            cts?.Dispose();
         }
     }
 }

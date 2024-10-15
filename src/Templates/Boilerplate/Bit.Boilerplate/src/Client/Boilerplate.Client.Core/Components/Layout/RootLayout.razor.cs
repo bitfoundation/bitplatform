@@ -125,7 +125,7 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        unsubscribeThemeChange();
-        unsubscribeCultureChange();
+        unsubscribeThemeChange?.Invoke();
+        unsubscribeCultureChange?.Invoke();
     }
 }

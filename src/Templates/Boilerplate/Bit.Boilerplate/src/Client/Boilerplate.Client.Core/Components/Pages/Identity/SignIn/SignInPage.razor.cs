@@ -182,6 +182,6 @@ public partial class SignInPage : IDisposable
 
     public void Dispose()
     {
-        unsubscribeIdentityHeaderBackLinkClicked();
+        unsubscribeIdentityHeaderBackLinkClicked?.Invoke();
     }
 }
