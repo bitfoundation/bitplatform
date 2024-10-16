@@ -33,6 +33,7 @@
 
     @include lt-md {
         overflow: auto;
+        min-height: unset;
         position: relative;
         scroll-behavior: smooth;
         overscroll-behavior: none;

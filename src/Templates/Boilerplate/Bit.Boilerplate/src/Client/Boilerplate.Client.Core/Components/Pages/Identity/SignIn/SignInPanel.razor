@@ -9,7 +9,7 @@
                 @Localizer[nameof(AppStrings.SignInPanelSubtitle)]
             </BitText>
         </BitStack>
-        
+
         <SocialRow OnClick="OnSocialSignIn" />
 
         <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary">@Localizer[AppStrings.Or]</BitSeparator>
@@ -58,7 +58,8 @@
                 @Localizer[nameof(AppStrings.SignIn)]
             </BitButton>
 
-            <BitButton Variant="BitVariant.Outline"
+            <BitButton AutoLoading
+                       Variant="BitVariant.Outline"
                        ButtonType="BitButtonType.Button"
                        OnClick="WrapHandled(async () => await OnSendOtp.InvokeAsync())"
                        IsEnabled="@(Model.Email is not null || Model.PhoneNumber is not null)">
