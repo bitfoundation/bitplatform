@@ -20,12 +20,10 @@ public partial class DashboardPage
             if (AppPlatform.IsBrowser)
             {
                 await lazyAssemblyLoader.LoadAssembliesAsync([
-                    //#if (sample == "Admin" && offlineDb == false)
+                    //#if (offlineDb == false)
                     "System.Private.Xml.wasm", "System.Data.Common.wasm",
                     //#endif
-                    //#if (sample == "Admin")
                     "Newtonsoft.Json.wasm"]
-                    //#endif
                     );
             }
         }

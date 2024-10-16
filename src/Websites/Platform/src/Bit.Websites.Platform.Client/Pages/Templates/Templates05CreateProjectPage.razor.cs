@@ -23,6 +23,12 @@ public partial class Templates05CreateProjectPage
         Value = false,
         Default = false,
     };
+    
+    private Parameter<bool> notification = new()
+    {
+        Value = false,
+        Default = false,
+    };
 
     private Parameter<bool> appInsight = new()
     {
@@ -152,6 +158,11 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetOfflineDbCommand());
         }
 
+        if (notification.IsModified)
+        {
+            finalCommand.Append(GetNotificationCommand());
+        }
+
         if (appInsight.IsModified)
         {
             finalCommand.Append(GetAppInsightsCommand());
@@ -213,6 +224,11 @@ public partial class Templates05CreateProjectPage
     private string GetOfflineDbCommand()
     {
         return $"--offlineDb {offlineDb.Value.ToString().ToLowerInvariant()} ";
+    }
+
+    private string GetNotificationCommand()
+    {
+        return $"--notification {notification.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetAppInsightsCommand()

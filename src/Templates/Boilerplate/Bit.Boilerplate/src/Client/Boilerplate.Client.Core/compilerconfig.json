@@ -253,12 +253,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Main/Dashboard/ProductsSalesWidget.razor.css",
-        "inputFile": "Components/Pages/Main/Dashboard/ProductsSalesWidget.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Pages/Main/Products/AddOrEditProductModal.razor.css",
         "inputFile": "Components/Pages/Main/Products/AddOrEditProductModal.razor.scss",
         "minify": { "enabled": false },
