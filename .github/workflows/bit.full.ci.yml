@@ -22,12 +22,11 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 6,7
+    - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.x
-          7.0.x
+          8.0.x
 
     - uses: actions/setup-node@v4
       with:
@@ -43,7 +42,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-        dotnet workload install maui-tizen maui-android wasm-tools
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Install sql server
@@ -56,7 +55,7 @@ jobs:
     - name: Test Sqlite database option
       id: sqlite-test
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
+        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests --framework net9.0
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -99,7 +98,7 @@ jobs:
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestCosmos --database Cosmos
+        dotnet new bit-bp --name TestCosmos --database Cosmos --framework net9.0
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
         dotnet build
         cd ../../../../
@@ -107,7 +106,7 @@ jobs:
         cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other
+        dotnet new bit-bp --name TestOther --database Other --framework net9.0
         cd TestOther/src/Server/TestOther.Server.Api/
         dotnet build
 

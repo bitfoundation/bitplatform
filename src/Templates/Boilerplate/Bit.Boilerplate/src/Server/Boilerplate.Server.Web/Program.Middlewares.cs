@@ -38,6 +38,7 @@ public static partial class Program
             app.UseRequestLocalization(options);
         }
 
+        //#if (framework == 'net8.0')
         app.Use(async (context, next) =>
         {
             // HomePage.razor is routed with the optional {culture?} parameter, so URLs like https://localhost:5030/en-US/ will correctly open the home page.
@@ -56,6 +57,7 @@ public static partial class Program
 
             await next.Invoke();
         });
+        //#endif
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
@@ -144,6 +146,9 @@ public static partial class Program
         app.UseSiteMap();
 
         // Handle the rest of requests with blazor
+        //#if (framework == 'net9.0')
+        app.MapStaticAssets();
+        //#endif
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
