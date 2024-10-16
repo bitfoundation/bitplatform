@@ -21,7 +21,8 @@
                 <BitStack>
                     <BitText>@Localizer[nameof(AppStrings.TfaPanelAnotherWayTitle)]</BitText>
                     <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelAnotherWaySubtitle)]</BitText>
-                    <BitButton Color="BitColor.Tertiary"
+                    <BitButton AutoLoading
+                               Color="BitColor.Tertiary"
                                Variant="BitVariant.Outline"
                                ButtonType="BitButtonType.Button"
                                OnClick="WrapHandled(async () => await OnSendTfaToken.InvokeAsync())">
