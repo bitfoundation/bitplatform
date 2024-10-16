@@ -229,6 +229,9 @@
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Change phone number token has been sent to you</value>
   </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>The token has been sent to you</value>
+  </data>
     <data name="SessionsTitle" xml:space="preserve">
     <value>Sessions</value>
   </data>
@@ -477,7 +480,7 @@
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
   </data>
-    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>Haven’t you received the token on your phone?</value>
   </data>
     <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
@@ -582,8 +585,8 @@
     <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
-    <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
-    <value>Haven’t you received the confirmation email?</value>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>Haven’t you received the email?</value>
   </data>
     <data name="Or" xml:space="preserve">
     <value>or</value>

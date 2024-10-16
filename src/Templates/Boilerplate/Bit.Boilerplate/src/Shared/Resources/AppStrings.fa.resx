@@ -229,6 +229,9 @@
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
   </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>توکن برای شما ارسال شد</value>
+  </data>
     <data name="SessionsTitle" xml:space="preserve">
     <value>جلسه ها</value>
   </data>
@@ -477,7 +480,7 @@
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تایید شماره تلفن</value>
   </data>
-    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>آیا توکن تلفن خود را دریافت نکرده اید؟</value>
   </data>
     <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
@@ -582,8 +585,8 @@
     <data name="No" xml:space="preserve">
     <value>نه</value>
   </data>
-    <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
-    <value>ایمیل تایید را دریافت نکرده اید؟</value>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>ایمیلی دریافت نکرده اید؟</value>
   </data>
     <data name="Or" xml:space="preserve">
     <value>یا</value>
