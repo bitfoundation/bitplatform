@@ -50,6 +50,8 @@ public partial class ResetPasswordPage
             showEmail = showPhone = true;
         }
 
+        HandleContinue();
+
         await base.OnInitAsync();
     }
 
@@ -87,6 +89,30 @@ public partial class ResetPasswordPage
             await identityController.ResetPassword(model, CurrentCancellationToken);
 
             isPasswordChanged = true;
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isWaiting = false;
+        }
+    }
+
+    private async Task Resend()
+    {
+        if (isWaiting) return;
+
+        isWaiting = true;
+
+        try
+        {
+            var resendModel = new SendResetPasswordTokenRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
+
+            await identityController.SendResetPasswordToken(resendModel, CurrentCancellationToken);
+
+            SnackBarService.Success(Localizer[nameof(AppStrings.SuccessfulSendTokenMessage)]);
         }
         catch (KnownException e)
         {
