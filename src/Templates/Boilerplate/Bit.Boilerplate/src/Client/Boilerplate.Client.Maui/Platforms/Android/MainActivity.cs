@@ -8,7 +8,7 @@ using Java.Net;
 using Android.Gms.Tasks;
 using Firebase.Messaging;
 //#endif
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Platforms.Android;
 

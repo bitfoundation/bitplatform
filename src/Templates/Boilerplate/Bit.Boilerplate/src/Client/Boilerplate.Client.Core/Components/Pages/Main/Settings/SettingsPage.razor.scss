@@ -1,0 +1,11 @@
+﻿section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .stack {
+        max-width: 40rem;
+    }
+}
