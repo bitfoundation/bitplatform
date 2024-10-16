@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
 //#if (database  == 'Sqlite')
 using Microsoft.Data.Sqlite;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#endif
 //#if (advancedTests == true)
 using Boilerplate.Tests.PageTests.PageModels.Identity;
