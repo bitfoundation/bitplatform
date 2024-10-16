@@ -30,7 +30,6 @@ namespace Boilerplate.Shared.Dtos;
 //#elif (sample == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
-[JsonSerializable(typeof(List<ProductSaleStatResponseDto>))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
 [JsonSerializable(typeof(ProductDto))]
 [JsonSerializable(typeof(PagedResult<ProductDto>))]
