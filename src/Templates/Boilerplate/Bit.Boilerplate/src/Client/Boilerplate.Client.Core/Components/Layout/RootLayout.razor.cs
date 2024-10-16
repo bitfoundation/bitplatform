@@ -8,7 +8,7 @@ public partial class RootLayout : IDisposable
     private BitDir? currentDir;
     private string? currentUrl;
     private bool? isAuthenticated;
-    private bool? isAnonymousPage;
+    private bool? isCrossLayoutPage;
     private AppThemeType? currentTheme;
     private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
@@ -115,7 +115,7 @@ public partial class RootLayout : IDisposable
                     : path.StartsWith(pageUrl);
         });
 
-        isAnonymousPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
+        isCrossLayoutPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
     }
 
 

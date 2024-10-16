@@ -1,0 +1,11 @@
+section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+::deep {
+    .delete-stack {
+        max-width: 27rem;
+    }
+}
