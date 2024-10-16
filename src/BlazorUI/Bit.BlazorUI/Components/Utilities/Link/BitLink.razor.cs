@@ -2,6 +2,10 @@
 
 public partial class BitLink : BitComponentBase
 {
+    private string? _rel;
+
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -26,6 +30,13 @@ public partial class BitLink : BitComponentBase
     /// Callback for when the link clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(HandleRelChanges))]
+    public BitAnchorRel? Rel { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link.
@@ -61,5 +72,21 @@ public partial class BitLink : BitComponentBase
         if (IsEnabled is false) return;
 
         await _js.ScrollElementIntoView(Href![1..]);
+    }
+
+    private void HandleRelChanges()
+    {
+        if (Rel.HasValue is false) return;
+
+        List<string> relationships = [];
+
+        foreach (Enum rel in Enum.GetValues(typeof(BitAnchorRel)))
+        {
+            if (Rel.Value.HasFlag(rel) is false) continue;
+
+            relationships.Add(rel.ToString().ToLower());
+        }
+
+        _rel = string.Join(" ", relationships);
     }
 }
