@@ -38,10 +38,9 @@
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
 
         <Using Include="Microsoft.JSInterop" />
-        <Using Include="Boilerplate.Client.Core" />
-        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
-        <Using Include="Boilerplate.Client.Core.Components.Layout" />
+        <Using Include="Boilerplate.Client.Core.Components" />
+        <Using Include="Boilerplate.Client.Core.Services.Contracts" />
     </ItemGroup>
 
     <!--/+:msbuild-conditional:noEmit -->

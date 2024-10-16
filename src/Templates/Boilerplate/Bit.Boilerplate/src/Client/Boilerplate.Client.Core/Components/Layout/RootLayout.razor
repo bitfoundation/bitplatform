@@ -4,15 +4,22 @@
     <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
         <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
             <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
-                <CascadingValue Value="isAnonymousPage" Name="@Parameters.IsCrossLayoutPage">
+                <CascadingValue Value="isCrossLayoutPage" Name="@Parameters.IsCrossLayoutPage">
                     <div class="layout">
                         <div class="inset-top"></div>
                         <div class="inset-main" dir="@currentDir?.ToString().ToLower()">
                             <div class="inset-left"></div>
                             <AppErrorBoundary>
-                                <LayoutView Layout="GetCurrentLayout()">
+                                @if (isCrossLayoutPage is true)
+                                {
+                                    <LayoutView Layout="GetCurrentLayout()">
+                                        @Body
+                                    </LayoutView>
+                                }
+                                else
+                                {
                                     @Body
-                                </LayoutView>
+                                }
                             </AppErrorBoundary>
                             <div class="inset-right"></div>
                         </div>
