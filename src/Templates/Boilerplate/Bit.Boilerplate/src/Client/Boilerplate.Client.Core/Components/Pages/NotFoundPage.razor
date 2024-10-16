@@ -2,9 +2,10 @@
 @attribute [Route("{culture?}" + Urls.NotFoundPage)]
 @inherits AppPageBase
 
-<div class="main">
-    <h1 class="title">404</h1>
-    <div class="description">
-        @Localizer[nameof(AppStrings.NotFoundText)]
-    </div>
-</div>
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        <BitImage Src="_content/Boilerplate.Client.Core/images/404.svg" Width="100%" Style="max-width:600px" />
+        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.NotFoundText)]</BitText>
+        <BitButton Href="@Urls.HomePage">@Localizer[nameof(AppStrings.BackToHome)]</BitButton>
+    </BitStack>
+</section>
