@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using EmbedIO;
 using EmbedIO.Actions;
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Services;
 
