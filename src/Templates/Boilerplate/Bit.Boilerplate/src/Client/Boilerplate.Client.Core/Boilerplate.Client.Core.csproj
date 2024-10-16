@@ -81,10 +81,4 @@
         <None Include="tsconfig.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Update="Components\Pages\Main\_Imports.razor">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-    </ItemGroup>
-
 </Project>
