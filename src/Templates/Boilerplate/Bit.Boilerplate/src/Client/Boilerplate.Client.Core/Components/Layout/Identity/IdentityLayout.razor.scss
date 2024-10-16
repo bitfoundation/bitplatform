@@ -5,6 +5,7 @@
 main {
     width: 100%;
     min-height: 100%;
+    height: fit-content;
 }
 
 .panel {
@@ -12,7 +13,6 @@ main {
     padding: 2rem;
     min-height: 100%;
     padding-top: 5rem;
-    background-color: $bit-color-background-secondary;
 }
 
 .panel1 {
