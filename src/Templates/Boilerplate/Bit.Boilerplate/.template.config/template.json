@@ -389,9 +389,9 @@
                         "src/Shared/Controllers/Categories/**",
                         "src/Shared/Controllers/Products/**",
                         "src/Shared/Controllers/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Products/**"
                     ]
                 },
                 {
@@ -402,14 +402,14 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
                         "src/Shared/Controllers/Todo/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Todo/**"
                     ]
                 },
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Offline/**"
                     ]
                 },
                 {
@@ -488,7 +488,9 @@
                         "src/Tests/PageTests/**",
                         "src/Tests/TestInitializer.cs",
                         "src/Tests/Services/CulturedStringLocalizer.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
+                        "src/Tests/Services/EmailReaderService.cs",
+                        "src/Tests/Services/UserService.cs"
                     ]
                 },
                 {

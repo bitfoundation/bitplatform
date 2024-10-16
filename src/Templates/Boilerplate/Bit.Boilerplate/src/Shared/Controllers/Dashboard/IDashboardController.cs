@@ -12,8 +12,5 @@ public interface IDashboardController : IAppController
     Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
-    Task<List<ProductSaleStatResponseDto>> GetProductsSalesStats(CancellationToken cancellationToken) => default!;
-
-    [HttpGet]
     Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken);
 }
