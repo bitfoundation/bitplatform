@@ -134,7 +134,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
 
     - uses: actions/setup-node@v4
       with:
