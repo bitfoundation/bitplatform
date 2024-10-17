@@ -38,8 +38,8 @@ public partial class IdentityPagesTests : PageTest
 
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
-        await Expect(Page.Locator(".bit-prs").First).ToContainTextAsync(userFullName);
-        await Expect(Page.Locator(".bit-prs").Last).ToContainTextAsync(userFullName);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(userFullName);
+        await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }

@@ -1,8 +1,8 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Tests.PageTests.PageModels.Identity;
 using Boilerplate.Server.Api.Data;
-using Boilerplate.Tests.PageTests.PageModels.Layout;
 using Boilerplate.Tests.Services;
+using Boilerplate.Tests.PageTests.PageModels;
 
 namespace Boilerplate.Tests.PageTests;
 
@@ -33,8 +33,8 @@ public partial class IdentityPagesTests : PageTestBase
         switch (mode)
         {
             case "ValidCredentials":
-                var signedInPage = await signInPage.SignIn();
-                await signedInPage.AssertSignInSuccess();
+                var identityHomePage = await signInPage.SignIn();
+                await identityHomePage.AssertSignInSuccess();
                 break;
             case "InvalidCredentials":
                 await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
@@ -61,14 +61,14 @@ public partial class IdentityPagesTests : PageTestBase
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var signedInPage = await signInPage.SignIn(email);
-        await signedInPage.AssertSignInSuccess(email, null);
+        var identityHomePage = await signInPage.SignIn(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
         await dbContext.Entry(user).ReloadAsync();
         Assert.AreEqual(1, user.Sessions.Count);
 
-        await signedInPage.SignOut();
-        await signedInPage.AssertSignOut();
+        var mainHomePage = await identityHomePage.SignOut();
+        await mainHomePage.AssertSignOut();
 
         await dbContext.Entry(user).ReloadAsync();
         Assert.AreEqual(0, user.Sessions.Count);
@@ -76,6 +76,7 @@ public partial class IdentityPagesTests : PageTestBase
 
     [TestMethod]
     [DataRow("Token")]
+    [DataRow("InvalidToken")]
     [DataRow("MagicLink")]
     public async Task SignUp(string mode)
     {
@@ -91,22 +92,26 @@ public partial class IdentityPagesTests : PageTestBase
         var confirmationEmail = await signupPage.OpenConfirmationEmail();
         await confirmationEmail.AssertContent();
 
-        IdentityLayout signedInPage;
+        IdentityHomePage identityHomePage;
         switch (mode)
         {
             case "Token":
                 var token = await confirmationEmail.GetToken();
-                signedInPage = await confirmPage.ConfirmByToken(email: null, token);
+                identityHomePage = await confirmPage.ConfirmByToken(token);
                 break;
+            case "InvalidToken":
+                await confirmPage.ConfirmByToken("111111");
+                await confirmPage.AssertInvalidToken();
+                return;
             case "MagicLink":
-                signedInPage = await confirmationEmail.OpenMagicLink();
+                identityHomePage = await confirmationEmail.OpenMagicLink<IdentityHomePage>();
                 break;
             default:
                 throw new NotSupportedException();
         }
 
-        await signedInPage.AssertOpen();
-        await signedInPage.AssertSignInSuccess(email, userFullName: null);
+        await identityHomePage.AssertOpen();
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
     }
 
     [TestMethod]
@@ -138,16 +143,15 @@ public partial class IdentityPagesTests : PageTestBase
         {
             case "Token":
                 var token = await resetPasswordEmail.GetToken();
-                await resetPasswordPage.ContinueByToken(email: null, token);
+                await resetPasswordPage.ContinueByToken(token);
                 break;
             case "InvalidToken":
-                await resetPasswordPage.ContinueByToken(email: null, "111111");
+                await resetPasswordPage.ContinueByToken("111111");
                 await resetPasswordPage.SetPassword(newPassword);
                 await resetPasswordPage.AssertInvalidToken();
                 return;
             case "MagicLink":
                 resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
-                await resetPasswordPage.Continue();
                 break;
             default:
                 throw new NotSupportedException();
@@ -162,7 +166,72 @@ public partial class IdentityPagesTests : PageTestBase
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var signedInPage = await signInPage.SignIn(email, newPassword);
-        await signedInPage.AssertSignInSuccess(email, userFullName: null);
+        var identityHomePage = await signInPage.SignIn(email, newPassword);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+    }
+
+    [TestMethod]
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    public async Task ChangeEmail(string mode)
+    {
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        await userService.AddUser(email);
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var identityHomePage = await signInPage.SignIn(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+
+        var settinsPage = new SettingsPage(Page, WebAppServerAddress);
+
+        await settinsPage.Open();
+        await settinsPage.AssertOpen();
+
+        await settinsPage.ExpandAccount();
+        await settinsPage.AssertExpandAccount(email);
+
+        var newEmail = $"{Guid.NewGuid()}@gmail.com";
+        await settinsPage.ChangeEmail(newEmail);
+        await settinsPage.AssertChangeEmail();
+
+        var confirmationEmail = await settinsPage.OpenConfirmationEmail();
+        await confirmationEmail.AssertContent();
+
+        switch (mode)
+        {
+            case "Token":
+                var token = await confirmationEmail.GetToken();
+                await settinsPage.ConfirmByToken(token);
+                break;
+            case "InvalidToken":
+                await settinsPage.ConfirmByToken("111111");
+                await settinsPage.AssertInvalidToken();
+                return;
+            case "MagicLink":
+                settinsPage = await confirmationEmail.OpenMagicLink();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
+        await settinsPage.AssertConfirmSuccess();
+
+        signInPage = await settinsPage.SignOut();
+        await signInPage.AssertOpen();
+        await signInPage.AssertSignOut();
+
+        await signInPage.SignIn(email);
+        await signInPage.AssertSignInFailed();
+
+        settinsPage = await signInPage.SignIn<SettingsPage>(newEmail);
+        await settinsPage.AssertSignInSuccess(newEmail, userFullName: null);
     }
 }

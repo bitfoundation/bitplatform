@@ -11,7 +11,7 @@
 
     <MSTest>
         <Parallelize>
-            <Workers>32</Workers>
+            <Workers>3</Workers>
             <Scope>MethodLevel</Scope>
         </Parallelize>
     </MSTest>
