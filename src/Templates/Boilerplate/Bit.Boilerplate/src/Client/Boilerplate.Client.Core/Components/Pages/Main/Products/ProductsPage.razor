@@ -12,7 +12,7 @@
             @Localizer[nameof(AppStrings.AddProduct)]
         </BitButton>
         <div style="overflow:auto;width:100%">
-            <BitStack Gap="0" FillContent Style="width:fit-content">
+            <BitStack Gap="0" FillContent Style="min-width:fit-content">
                 <BitDataGrid @ref="dataGrid"
                              Class="products-grid"
                              TGridItem="ProductDto"

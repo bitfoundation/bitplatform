@@ -9,11 +9,12 @@ section {
 ::deep {
     .products-grid {
         width: 100%;
+        height: 484px;
         border-spacing: 0;
         background-color: $bit-color-background-secondary;
 
         .name-col {
-            //width: 100%;
+            padding-inline-start: 16px;
         }
 
         .category-col {
@@ -29,18 +30,18 @@ section {
         }
 
         thead {
-            height: 2.5rem;
+            height: 44px;
             background-color: $bit-color-background-tertiary;
         }
 
         td {
-            height: 2.5rem;
+            height: 44px;
             white-space: nowrap;
             border-bottom: 1px solid $bit-color-border-tertiary;
         }
 
         .col-options {
-            padding: 0.5rem;
+            padding: 8px;
         }
 
         .col-options-button {
@@ -62,8 +63,9 @@ section {
     }
 
     .bitdatagrid-paginator {
+        padding: 8px;
         font-size: 14px;
-        padding: 0.5rem;
+        padding-inline-start: 16px;
         background-color: $bit-color-background-secondary;
 
         button {
