@@ -1,4 +1,5 @@
-﻿using Boilerplate.Server.Web;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Web;
 using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Client.Core.Services.Contracts;
