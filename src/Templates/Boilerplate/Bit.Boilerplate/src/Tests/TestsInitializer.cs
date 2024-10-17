@@ -1,9 +1,14 @@
 ﻿//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
-using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#if (database  == 'Sqlite')
 using Microsoft.Data.Sqlite;
+//#endif
+//#if (advancedTests == true)
+using Boilerplate.Tests.PageTests.PageModels.Identity;
+//#endif
+//#if (advancedTests == true)
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#endif
 
 namespace Boilerplate.Tests;

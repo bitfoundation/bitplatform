@@ -44,10 +44,10 @@ The following apps are our open-source projects powered by the bit platform show
 | AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
 | bitplatform | [![SPA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251395129-71a5a79c-af74-4d4e-a0f7-ed9a15cf2e46.png)](https://bitplatform.dev)|
 
-1. [bitplatform.dev](https://bitplatform.dev): Pre-rendered SPA with Blazor WebAssembly
-2. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): Pre-rendered PWA with Blazor Auto
-3. [todo.bitplatform.dev](https://todo.bitplatform.dev): Pre-rendered PWA with Blazor WebAssembly
-5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
+1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered SPA with Blazor WebAssembly
+2. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly
+3. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 8 Pre-rendered PWA with Blazor WebAssembly
+5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
 
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
 

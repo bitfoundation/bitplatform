@@ -1031,7 +1031,7 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>Voer de productnaam in</value>
   </data>
-  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Aantal categorieën met product</value>
   </data>
     <data name="ProductSales" xml:space="preserve">
