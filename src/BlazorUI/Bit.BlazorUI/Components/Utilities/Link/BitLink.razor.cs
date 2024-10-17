@@ -18,7 +18,9 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// URL the link points to.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnParameterSet))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// Styles the link to have no underline at any state.
@@ -35,7 +37,7 @@ public partial class BitLink : BitComponentBase
     /// If Href provided, specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleRelChanges))]
+    [CallOnSet(nameof(OnParameterSet))]
     public BitAnchorRel? Rel { get; set; }
 
     /// <summary>
@@ -74,19 +76,14 @@ public partial class BitLink : BitComponentBase
         await _js.ScrollElementIntoView(Href![1..]);
     }
 
-    private void HandleRelChanges()
+    private void OnParameterSet()
     {
-        if (Rel.HasValue is false) return;
-
-        List<string> relationships = [];
-
-        foreach (Enum rel in Enum.GetValues(typeof(BitAnchorRel)))
+        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
         {
-            if (Rel.Value.HasFlag(rel) is false) continue;
-
-            relationships.Add(rel.ToString().ToLower());
+            _rel = null;
+            return;
         }
 
-        _rel = string.Join(" ", relationships);
+        _rel = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(rel => Rel.Value.HasFlag(rel)).Select(rel => rel.ToString().ToLower()));
     }
 }
