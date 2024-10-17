@@ -3,18 +3,21 @@
 @inherits AppPageBase
 
 
-<div class="page-container">
-    <OverallStatsWidget />
-    @if (isLoadingAssemblies)
-    {
-        <BitRingLoading />
-    }
-    else
-    {
-        <div class="page-row">
-            <ProductsCountPerCategoryWidget />
-            <ProductsPercentageWidget />
-        </div>
-    }
-</div>
+<section>
+    <BitStack Gap="3rem">
+        <OverallStatsWidget />
+
+        @if (isLoadingAssemblies)
+        {
+            <BitRingLoading />
+        }
+        else
+        {
+            <BitStack Horizontal Wrap>
+                <ProductsCountPerCategoryWidget />
+                <ProductsPercentageWidget />
+            </BitStack>
+        }
+    </BitStack>
+</section>
 

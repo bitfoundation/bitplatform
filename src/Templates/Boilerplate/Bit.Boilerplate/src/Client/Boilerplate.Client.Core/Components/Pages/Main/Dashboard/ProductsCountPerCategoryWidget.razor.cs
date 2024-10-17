@@ -7,7 +7,6 @@ public partial class ProductsCountPerCategoryWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChart? chart;
     private BitChartBarConfig config = default!;
 
     protected override async Task OnInitAsync()
@@ -29,10 +28,10 @@ public partial class ProductsCountPerCategoryWidget
 
     private async Task GetData()
     {
+        isLoading = true;
+
         try
         {
-            isLoading = true;
-
             var data = await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken);
 
             BitChartBarDataset<int> chartDataSet = [.. data.Select(d => d.ProductCount)];
