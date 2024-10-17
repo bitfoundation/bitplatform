@@ -10,17 +10,21 @@ public partial class ProductsPage
     protected override string? Title => Localizer[nameof(AppStrings.Products)];
     protected override string? Subtitle => string.Empty;
 
+
     [AutoInject] IProductController productController = default!;
 
+
     private bool isLoading;
+    private bool isDeleteDialogOpen;
+    private ProductDto? deletingProduct;
     private AddOrEditProductModal? modal;
     private string productNameFilter = string.Empty;
     private string categoryNameFilter = string.Empty;
 
-    private ConfirmMessageBox confirmMessageBox = default!;
     private BitDataGrid<ProductDto>? dataGrid;
     private BitDataGridItemsProvider<ProductDto> productsProvider = default!;
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
+
 
     string ProductNameFilter
     {
@@ -41,6 +45,7 @@ public partial class ProductsPage
             _ = RefreshData();
         }
     }
+
 
     protected override async Task OnInitAsync()
     {
@@ -109,17 +114,17 @@ public partial class ProductsPage
         await modal!.ShowModal(product);
     }
 
-    private async Task DeleteProduct(ProductDto product)
+    private async Task DeleteProduct()
     {
-        var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), product.Name ?? string.Empty),
-                                                     Localizer[nameof(AppStrings.DeleteProduct)]);
+        if (deletingProduct is null) return;
 
-        if (confirmed)
-        {
-            await productController.Delete(product.Id, CurrentCancellationToken);
+        var id = deletingProduct.Id;
 
-            await RefreshData();
-        }
+        deletingProduct = null;
+
+        await productController.Delete(id, CurrentCancellationToken);
+
+        await RefreshData();
     }
 }
 
