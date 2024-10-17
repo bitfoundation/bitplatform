@@ -4,12 +4,17 @@ namespace Boilerplate.Client.Windows.Components.Pages;
 
 public partial class AboutPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.AboutTitle)];
+    protected override string? Subtitle => string.Empty;
+
+
     private string appName = default!;
     private string appVersion = default!;
     private string os = default!;
     private string processId = default!;
 
-    protected async override Task OnInitAsync()
+
+    protected override async Task OnInitAsync()
     {
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
