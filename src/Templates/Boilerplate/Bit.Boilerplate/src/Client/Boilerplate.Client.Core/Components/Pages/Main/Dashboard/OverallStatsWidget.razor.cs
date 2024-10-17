@@ -8,7 +8,7 @@ public partial class OverallStatsWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private OverallAnalyticsStatsDataResponseDto data = new();
+    private OverallAnalyticsStatsDataResponseDto dto = new();
 
     protected override async Task OnInitAsync()
     {
@@ -21,7 +21,7 @@ public partial class OverallStatsWidget
 
         try
         {
-            data = await dashboardController.GetOverallAnalyticsStatsData(CurrentCancellationToken);
+            dto = await dashboardController.GetOverallAnalyticsStatsData(CurrentCancellationToken);
         }
         finally
         {

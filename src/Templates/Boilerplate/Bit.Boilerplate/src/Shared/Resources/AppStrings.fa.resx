@@ -1031,8 +1031,8 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>نام محصول را وارد کنید</value>
   </data>
-    <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>تعداد دسته های ۳۰ روز گذشته</value>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>تعداد دسته های دارای محصول</value>
   </data>
     <data name="ProductSales" xml:space="preserve">
     <value>فروش محصولات</value>

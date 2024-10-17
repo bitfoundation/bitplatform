@@ -15,21 +15,23 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
 
         result.TotalProducts = await DbContext.Products.CountAsync(cancellationToken);
         result.Last30DaysProductCount = await DbContext.Products.CountAsync(p => p.CreatedOn > last30DaysDate, cancellationToken);
+
         result.TotalCategories = await DbContext.Categories.CountAsync(cancellationToken);
+        result.CategoriesWithProductCount = await DbContext.Categories.CountAsync(c => c.Products.Count > 0, cancellationToken);
 
         return result;
     }
 
     [HttpGet]
-    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
+    public async Task<IQueryable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats()
     {
         return DbContext.Categories
-            .Select(c => new ProductsCountPerCategoryResponseDto()
-            {
-                CategoryName = c.Name,
-                CategoryColor = c.Color,
-                ProductCount = c.Products!.Count()
-            });
+                        .Select(c => new ProductsCountPerCategoryResponseDto()
+                        {
+                            CategoryName = c.Name,
+                            CategoryColor = c.Color,
+                            ProductCount = c.Products!.Count()
+                        });
     }
 
 
@@ -38,17 +40,14 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     {
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
-        if (productsTotalCount == 0)
-        {
-            return [];
-        }
+        if (productsTotalCount == 0) return [];
 
         return await DbContext.Categories
-             .Select(c => new ProductPercentagePerCategoryResponseDto()
-             {
-                 CategoryName = c!.Name,
-                 CategoryColor = c.Color,
-                 ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
-             }).ToListAsync(cancellationToken);
+                              .Select(c => new ProductPercentagePerCategoryResponseDto()
+                              {
+                                  CategoryName = c!.Name,
+                                  CategoryColor = c.Color,
+                                  ProductPercentage = (float)decimal.Divide(c.Products!.Count(), productsTotalCount) * 100
+                              }).ToListAsync(cancellationToken);
     }
 }
