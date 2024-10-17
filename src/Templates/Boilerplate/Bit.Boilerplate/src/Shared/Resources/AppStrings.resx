@@ -1025,8 +1025,8 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>Enter product name</value>
   </data>
-    <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>Last 30 days category count</value>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>Categories with product count</value>
   </data>
     <data name="ProductSales" xml:space="preserve">
     <value>Product sales</value>

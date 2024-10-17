@@ -1028,8 +1028,8 @@
   <data name="EnterProductName" xml:space="preserve">
     <value>Voer de productnaam in</value>
   </data>
-  <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>Aantal categorieën in de afgelopen 30 dagen</value>
+  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>Aantal categorieën met product</value>
   </data>
   <data name="ProductSales" xml:space="preserve">
     <value>Verkoop van producten</value>
