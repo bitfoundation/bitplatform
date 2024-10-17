@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bunit;
-using System;
 using System.Linq;
+using System;
+using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Link;
 
