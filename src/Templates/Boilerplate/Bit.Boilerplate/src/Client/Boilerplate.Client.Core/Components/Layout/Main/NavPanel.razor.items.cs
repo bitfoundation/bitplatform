@@ -69,7 +69,7 @@ public partial class NavPanel
             navItems.Add(new()
             {
                 Text = Localizer[nameof(AppStrings.AboutTitle)],
-                IconName = BitIconName.HelpMirrored,
+                IconName = BitIconName.Info,
                 Url = Urls.AboutPage,
             });
         }

@@ -50,5 +50,5 @@ public static partial class Urls
     /// <summary>
     /// The pages that are getting rendered in multiple layouts (identity and main).
     /// </summary>
-    public static readonly string[] CrossLayoutPages = [HomePage, TermsPage, NotFoundPage];
+    public static readonly string[] CrossLayoutPages = [HomePage, TermsPage, NotFoundPage, AboutPage];
 }
