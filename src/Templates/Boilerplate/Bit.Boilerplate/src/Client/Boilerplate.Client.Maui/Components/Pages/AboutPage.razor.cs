@@ -5,6 +5,10 @@ namespace Boilerplate.Client.Maui.Components.Pages;
 
 public partial class AboutPage
 {
+    protected override string? Title => Localizer[nameof(AppStrings.AboutTitle)];
+    protected override string? Subtitle => string.Empty;
+
+
     private string appName = default!;
     private string appVersion = default!;
     private string processId = default!;

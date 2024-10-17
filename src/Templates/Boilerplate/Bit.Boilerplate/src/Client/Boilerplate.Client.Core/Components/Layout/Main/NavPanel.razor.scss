@@ -30,6 +30,10 @@ section {
 .bit-macos {
     section {
         height: -webkit-fill-available;
+
+        ::deep .panel {
+            height: -webkit-fill-available;
+        }
     }
 }
 
@@ -52,8 +56,8 @@ section {
         display: flex;
         padding: 0.5rem;
         min-height: 100%;
+        height: fit-content;
         flex-direction: column;
-        height: -webkit-fill-available;
         background-color: $bit-color-background-secondary;
 
         @include lt-md {
