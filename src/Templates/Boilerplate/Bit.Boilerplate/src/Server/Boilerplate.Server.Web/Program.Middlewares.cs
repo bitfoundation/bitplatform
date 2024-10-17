@@ -38,12 +38,11 @@ public static partial class Program
             app.UseRequestLocalization(options);
         }
 
-        //#if (framework == 'net8.0')
         app.Use(async (context, next) =>
         {
-            // HomePage.razor is routed with the optional {culture?} parameter, so URLs like https://localhost:5030/en-US/ will correctly open the home page.
-            // For static file requests located in the root of wwwroot (e.g., https://localhost:5030/service-worker.js/), we need to check if the first segment of the URL matches a supported culture (e.g., nl-NL, en-US).
-            // If no match is found, we must disable endpoint routing to prevent ASP.NET Core 8 from incorrectly rendering HomePage.razor instead of serving the requested static file.
+            // Because Blazor router doesn't support regex, the HomePage.razor's route '/{culture?}/' captures some irrelevant routes
+            // such as /service-worker.js (root files of wwwroot) and some non existing routes like /some-invalid-url as well.
+            // We need to make sure that the first segment of the route is a valid culture name.
 
             if (context.GetEndpoint() is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern?.RawText is "{culture?}/")
             {
@@ -57,7 +56,6 @@ public static partial class Program
 
             await next.Invoke();
         });
-        //#endif
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
