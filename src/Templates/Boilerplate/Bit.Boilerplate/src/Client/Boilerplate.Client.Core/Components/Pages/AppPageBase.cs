@@ -10,6 +10,9 @@ public abstract partial class AppPageBase : AppComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        PubSubService.Publish(PubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle));
+        if (firstRender)
+        {
+            PubSubService.Publish(PubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle));
+        }
     }
 }

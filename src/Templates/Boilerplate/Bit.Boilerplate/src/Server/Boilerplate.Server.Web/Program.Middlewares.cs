@@ -38,25 +38,6 @@ public static partial class Program
             app.UseRequestLocalization(options);
         }
 
-        app.Use(async (context, next) =>
-        {
-            // Because Blazor router doesn't support regex, the HomePage.razor's route '/{culture?}/' captures some irrelevant routes
-            // such as /service-worker.js (root files of wwwroot) and some non existing routes like /some-invalid-url as well.
-            // We need to make sure that the first segment of the route is a valid culture name.
-
-            if (context.GetEndpoint() is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern?.RawText is "{culture?}/")
-            {
-                var culture = context.Request.RouteValues["culture"]?.ToString();
-
-                if (CultureInfoManager.SupportedCultures.Any(sc => sc.Culture.Name == culture) is false)
-                {
-                    context.SetEndpoint(null);
-                }
-            }
-
-            await next.Invoke();
-        });
-
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
         if (env.IsDevelopment())
