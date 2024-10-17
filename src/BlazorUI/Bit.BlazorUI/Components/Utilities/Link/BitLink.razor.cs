@@ -84,6 +84,6 @@ public partial class BitLink : BitComponentBase
             return;
         }
 
-        _rel = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(rel => Rel.Value.HasFlag(rel)).Select(rel => rel.ToString().ToLower()));
+        _rel = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(r => Rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
     }
 }
