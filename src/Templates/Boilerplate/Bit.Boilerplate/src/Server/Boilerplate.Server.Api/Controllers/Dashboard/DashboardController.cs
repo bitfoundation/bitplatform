@@ -25,8 +25,6 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public async Task<IQueryable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats()
     {
-        await Task.Delay(2000);
-
         return DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
                         {
@@ -40,8 +38,6 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
-        await Task.Delay(1000);
-
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
         if (productsTotalCount == 0) return [];
