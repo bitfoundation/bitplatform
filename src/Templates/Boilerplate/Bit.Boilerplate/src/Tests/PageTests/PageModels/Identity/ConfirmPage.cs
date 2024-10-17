@@ -2,18 +2,22 @@
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
-public partial class ConfirmPage(IPage page, Uri serverAddress, string? emailAddress)
-    : MainLayout(page, serverAddress, Urls.ConfirmPage, AppStrings.ConfirmTitle)
+public partial class ConfirmPage(IPage page, Uri serverAddress)
+    : MainLayout(page, serverAddress)
 {
+    public override string PagePath => Urls.ConfirmPage;
+    public override string PageTitle => AppStrings.ConfirmTitle;
+    public string? EmailAddress { private get; init; }
+
     public override async Task AssertOpen()
     {
         await base.AssertOpen();
 
-        await Assertions.Expect(page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmTitle);
-        await Assertions.Expect(page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmEmailSubtitle);
-        await Assertions.Expect(page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmEmailMessage);
-        var emailInput = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
-        if (emailAddress is null)
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmTitle);
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmEmailSubtitle);
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ConfirmEmailMessage);
+        var emailInput = Page.GetByPlaceholder(AppStrings.EmailPlaceholder);
+        if (EmailAddress is null)
         {
             await Assertions.Expect(emailInput).ToBeVisibleAsync();
             await Assertions.Expect(emailInput).ToBeEnabledAsync();
@@ -25,24 +29,29 @@ public partial class ConfirmPage(IPage page, Uri serverAddress, string? emailAdd
             await Assertions.Expect(emailInput).ToBeDisabledAsync();
             await Assertions.Expect(emailInput).ToBeEditableAsync(new() { Editable = false });
         }
-        await Assertions.Expect(page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedEmailMessage);
-        await Assertions.Expect(page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.CheckSpamMailMessage);
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendEmailTokenButtonText })).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedEmailMessage);
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.CheckSpamMailMessage);
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendEmailTokenButtonText })).ToBeVisibleAsync();
     }
 
-    public async Task<IdentityLayout> ConfirmByToken(string? email, string token)
+    public async Task<IdentityHomePage> ConfirmByToken(string token, string? email = null)
     {
-        Assert.IsTrue(emailAddress is not null || email is not null, "Either email address from query string or email input is required");
-        Assert.IsTrue(emailAddress is null || email is null, "Both email address from query string and email input cannot be used at the same time");
+        Assert.IsTrue(EmailAddress is not null || email is not null, "Either email address from query string or email input is required");
+        Assert.IsTrue(EmailAddress is null || email is null, "Both email address from query string and email input cannot be used at the same time");
 
         if (email is not null)
-            await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+            await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
 
-        await page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
+        await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
 
-        return new(page, serverAddress, Urls.HomePage, AppStrings.HomeTitle);
+        return new(Page, WebAppServerAddress);
+    }
+
+    public async Task AssertInvalidToken()
+    {
+        await Assertions.Expect(Page.GetByText(AppStrings.InvalidToken)).ToBeVisibleAsync();
     }
 }
