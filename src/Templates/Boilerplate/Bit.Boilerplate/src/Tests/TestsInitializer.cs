@@ -7,9 +7,6 @@ using Microsoft.Data.Sqlite;
 //#if (advancedTests == true)
 using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#endif
-//#if (advancedTests == true)
-using Boilerplate.Tests.PageTests.PageModels.Identity;
-//#endif
 
 namespace Boilerplate.Tests;
 
