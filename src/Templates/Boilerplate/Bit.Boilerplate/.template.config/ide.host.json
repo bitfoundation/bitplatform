@@ -12,6 +12,9 @@
             "id": "helpUrl"
         },
         {
+            "framework": "framework"
+        },
+        {
             "id": "database"
         },
         {
@@ -43,6 +46,9 @@
         },
         {
             "id": "appCenter"
+        },
+        {
+            "notification": "notification"
         },
         {
             "id": "serverUrl",
