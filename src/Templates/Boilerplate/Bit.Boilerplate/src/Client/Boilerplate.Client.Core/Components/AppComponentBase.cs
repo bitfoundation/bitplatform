@@ -12,8 +12,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected JsonSerializerOptions JsonSerializerOptions = default!;
 
-    [Parameter] public string? culture { get; set; }
-
     /// <summary>
     /// <inheritdoc cref="IPrerenderStateService"/>
     /// </summary>
@@ -99,16 +97,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         {
             try
             {
-                if (string.IsNullOrEmpty(culture) is false)
-                {
-                    if (CultureInfoManager.MultilingualEnabled is false || CultureInfoManager.SupportedCultures.Any(sc => string.Equals(sc.Culture.Name, culture, StringComparison.InvariantCultureIgnoreCase)) is false)
-                    {
-                        // Because Blazor router doesn't support regex, the '/{culture?}/' captures some irrelevant routes
-                        // such as non existing routes like /some-invalid-url, we need to make sure that the first segment of the route is a valid culture name.
-                        NavigationManager.NavigateTo($"{Urls.NotFoundPage}?url={NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
-                    }
-                }
-
                 await OnAfterFirstRenderAsync();
             }
             catch (Exception exp)

@@ -62,6 +62,8 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -80,6 +82,8 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -152,6 +156,9 @@ jobs:
         dotnet build src/Websites/Platform/Bit.Websites.Platform.sln
         dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
         dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
+
+    - name: Run bit blazor ui tests
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
 
     - name: Build bit blazor ui demo
       run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
