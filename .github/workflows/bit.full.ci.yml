@@ -82,7 +82,6 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
         dotnet test --logger GitHubActions
 
     - name: Upload Tests Artifact
