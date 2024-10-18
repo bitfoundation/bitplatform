@@ -271,13 +271,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
+        //#if (signalr == true || notification == true)
+        var pushMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Push,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
+        //#endif
+
         //#if (signalr == true)
-        var signalrMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_SignalR,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", signalrMessage, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        var pushMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Push,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
         sendMessagesTasks.Add(pushNotificationService.RequestPush(message: pushMessage, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
