@@ -13,10 +13,10 @@ public partial class CategoriesPage
     [AutoInject] ICategoryController categoryController = default!;
 
     private bool isLoading;
-    private string categoryNameFilter = string.Empty;
-
-    private ConfirmMessageBox confirmMessageBox = default!;
+    private bool isDeleteDialogOpen;
+    private CategoryDto? deletingCategory;
     private BitDataGrid<CategoryDto>? dataGrid;
+    private string categoryNameFilter = string.Empty;
     private BitDataGridItemsProvider<CategoryDto> categoriesProvider = default!;
     private BitDataGridPaginationState pagination = new() { ItemsPerPage = 10 };
 
@@ -92,17 +92,17 @@ public partial class CategoriesPage
         NavigationManager.NavigateTo($"{Urls.AddOrEditCategoryPage}/{category.Id}");
     }
 
-    private async Task DeleteCategory(CategoryDto category)
+    private async Task DeleteCategory()
     {
-        var confirmed = await confirmMessageBox.Show(Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteCategory), category.Name ?? string.Empty),
-                                                     Localizer[nameof(AppStrings.DeleteCategory)]);
+        if (deletingCategory is null) return;
 
-        if (confirmed)
-        {
-            await categoryController.Delete(category.Id, CurrentCancellationToken);
+        var id = deletingCategory.Id;
 
-            await RefreshData();
-        }
+        deletingCategory = null;
+
+        await categoryController.Delete(id, CurrentCancellationToken);
+
+        await RefreshData();
     }
 }
 
