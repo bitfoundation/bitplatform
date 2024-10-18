@@ -1,6 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout.Main;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class MainHeader : AppComponentBase
+public partial class AuthenticatedHeader : AppComponentBase
 {
     private string? pageTitle;
     private string? pageSubtitle;
