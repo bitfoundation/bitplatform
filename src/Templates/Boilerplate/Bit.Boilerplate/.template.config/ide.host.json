@@ -48,6 +48,9 @@
             "id": "appCenter"
         },
         {
+            "notification": "notification"
+        },
+        {
             "id": "serverUrl",
             "isVisible": false
         },
