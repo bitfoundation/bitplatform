@@ -4,6 +4,7 @@
         <Router AppAssembly="@GetType().Assembly"
                 AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
             <Found Context="routeData">
+                <RouteDataPublisher RouteData="@routeData" />
                 <AuthorizeRouteView RouteData="@routeData">
                     <Authorizing>
                         <LoadingComponent />

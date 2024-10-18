@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
 
-namespace Boilerplate.Client.Core.Components.Layout.Main;
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class NavMenu : IDisposable
 {

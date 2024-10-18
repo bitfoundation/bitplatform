@@ -2,7 +2,7 @@
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
-namespace Boilerplate.Client.Core.Components.Pages.Identity;
+namespace Boilerplate.Client.Core.Components.Pages.Identity.SignUp;
 
 public partial class SignUpPage
 {

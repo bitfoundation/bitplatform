@@ -7,17 +7,13 @@
     <BitStack Gap="3rem">
         <OverallStatsWidget />
 
-        @if (isLoadingAssemblies)
-        {
-            <BitRingLoading />
-        }
-        else
-        {
-            <BitStack Horizontal Wrap>
+        <BitStack Horizontal Wrap>
+            @if (isLoadingAssemblies is false)
+            {
                 <ProductsCountPerCategoryWidget />
                 <ProductsPercentageWidget />
-            </BitStack>
-        }
+            }
+        </BitStack>
     </BitStack>
 </section>
 
