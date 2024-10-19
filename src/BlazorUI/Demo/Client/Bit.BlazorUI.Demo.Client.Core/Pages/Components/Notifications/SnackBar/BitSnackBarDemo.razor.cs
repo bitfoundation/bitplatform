@@ -43,6 +43,13 @@ public partial class BitSnackBarDemo
         },
         new()
         {
+            Name = "Multiline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the multiline mode of both title and body.",
+        },
+        new()
+        {
             Name = "OnDismiss",
             Type = "EventCallback",
             Description = "Callback for when any snack bar is dismissed.",
@@ -372,8 +379,9 @@ public partial class BitSnackBarDemo
 
 
     private BitDir direction;
+    private bool basicSnackBarMultiline;
+    private bool basicSnackBarAutoDismiss;
     private int basicSnackBarDismissSeconds = 3;
-    private bool basicSnackBarAutoDismiss = true;
     private BitSnackBar customizationRef = default!;
     private string basicSnackBarBody = "This is body";
     private string basicSnackBarTitle = "This is title";
@@ -430,6 +438,8 @@ private async Task OpenBasicSnackBar()
              AutoDismiss=""@basicSnackBarAutoDismiss""
              AutoDismissTime=""TimeSpan.FromSeconds(basicSnackBarDismissSeconds)"" />
 
+<BitButton OnClick=""OpenBasicSnackBar"">Show</BitButton>
+
 <BitChoiceGroup @bind-Value=""basicSnackBarColor"" Label=""Type"" TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
     <BitChoiceGroupOption Text=""Primary"" Value=""BitColor.Primary"" />
     <BitChoiceGroupOption Text=""Secondary"" Value=""BitColor.Secondary"" />
@@ -465,17 +475,18 @@ private async Task OpenBasicSnackBar()
     <BitChoiceGroupOption Text=""Auto"" Value=""BitDir.Auto"" />
 </BitChoiceGroup>
 
-<BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
-<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" DefaultValue=""This is a body!"" />
-
 <BitToggle @bind-Value=""basicSnackBarAutoDismiss"" Label=""Auto Dismiss"" />
 <BitNumberField @bind-Value=""basicSnackBarDismissSeconds"" Step=""1"" Min=""1"" Label=""Dismiss Time (based on second)"" />
 
-<BitButton OnClick=""OpenBasicSnackBar"">Show</BitButton>";
+<BitToggle @bind-Value=""basicSnackBarMultiline"" Label=""Multiline"" Inline />
+
+<BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
+<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" DefaultValue=""This is a body!"" />";
     private readonly string example2CsharpCode = @"
 private BitDir direction;
+private bool basicSnackBarMultiline;
+private bool basicSnackBarAutoDismiss;
 private int basicSnackBarDismissSeconds = 3;
-private bool basicSnackBarAutoDismiss = true;
 private BitSnackBar customizationRef = default!;
 private string basicSnackBarBody = ""This is body"";
 private string basicSnackBarTitle = ""This is title"";
