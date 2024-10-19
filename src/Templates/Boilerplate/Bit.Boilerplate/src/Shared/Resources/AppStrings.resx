@@ -1028,6 +1028,12 @@
     <value>Delete todo item</value>
   </data>
     <!--#elif (sample == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>Admin panel</value>
+  </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>Nothing found!</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Products count</value>
   </data>

@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using static System.Net.Mime.MediaTypeNames;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -7,12 +7,12 @@ public partial class NavPanel
     private bool disposed;
     private bool isMenuOpen;
     private bool isMenuToggled;
-    private UserDto user = new();
     private bool isSignOutModalOpen;
-    private string? profileImageUrl;
-    private List<BitNavItem> navItems = [];
+    private List<BitNavItem> allNavItems = [];
     private Action unsubOpenNavPanel = default!;
     private Action unsubUserDataChange = default!;
+    private List<BitNavItem> flatNavItemList = [];
+    private List<BitNavItem> filteredNavItems = [];
 
     [AutoInject] private NavigationManager navManager = default!;
 
@@ -21,24 +21,15 @@ public partial class NavPanel
     protected override async Task OnInitAsync()
     {
         CreateNavItems();
+        flatNavItemList = Flatten(allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
 
-        unsubOpenNavPanel = PubSubService.Subscribe(PubSubMessages.OPEN_NAV_PANEL, async _ => {
+        SearchNavItems(null);
+
+        unsubOpenNavPanel = PubSubService.Subscribe(PubSubMessages.OPEN_NAV_PANEL, async _ =>
+        {
             isMenuOpen = true;
             StateHasChanged();
         });
-
-        unsubUserDataChange = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
-        {
-            if (payload is null) return;
-            user = (UserDto)payload;
-            StateHasChanged();
-        });
-
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", AppJsonContext.Default.UserDto, CurrentCancellationToken)))!;
-
-        var serverAddress = Configuration.GetServerAddress();
-        var access_token = await PrerenderStateService.GetValue(() => AuthTokenProvider.GetAccessToken());
-        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
     }
 
 
@@ -48,15 +39,11 @@ public partial class NavPanel
         await CloseMenu();
     }
 
-    private async Task GoToProfile()
-    {
-        await CloseMenu();
-        navManager.NavigateTo(Urls.SettingsPage);
-    }
-
     private async Task HandleNavItemClick(BitNavItem item)
     {
         if (string.IsNullOrEmpty(item.Url)) return;
+
+        filteredNavItems = allNavItems;
 
         await CloseMenu();
     }
@@ -70,6 +57,29 @@ public partial class NavPanel
     {
         isMenuToggled = !isMenuToggled;
     }
+
+    private void SearchNavItems(string? searchText)
+    {
+        filteredNavItems = allNavItems;
+        if (searchText is null) return;
+
+        filteredNavItems = allNavItems;
+        if (string.IsNullOrEmpty(searchText)) return;
+
+        var mainItems = flatNavItemList
+                            .FindAll(item => searchText.Split(' ')
+                                                 .Where(t => string.IsNullOrEmpty(t) is false)
+                                                 .Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
+
+        var subItems = flatNavItemList
+                            .FindAll(item => searchText.Split(' ')
+                                                 .Where(t => string.IsNullOrEmpty(t) is false)
+                                                 .Any(t => item.Data?.ToString()?.Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
+
+        filteredNavItems = [.. mainItems, .. subItems];
+    }
+
+    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
 
 
     protected override async ValueTask DisposeAsync(bool disposing)
