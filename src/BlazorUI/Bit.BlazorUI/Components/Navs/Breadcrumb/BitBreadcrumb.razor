@@ -3,7 +3,7 @@
 @typeparam TItem
 
 <CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@ChildContent</div>
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
 </CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -25,32 +25,72 @@
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button id="@_overflowAnchorId"
-                                type="button"
-                                class="bit-brc-obt"
-                                aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
-                            <span class="bit-brc-oic">
-                                <i class="bit-icon bit-icon--@OverflowIconName" />
-                            </span>
+                        type="button"
+                        class="bit-brc-obt"
+                        aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
+                            @if(OverflowIconTemplate is not null)
+                            {
+                                @OverflowIconTemplate
+                            }
+                            else
+                            {
+                                <span class="bit-brc-oic">
+                                    <i class="bit-icon bit-icon--@OverflowIconName" />
+                                </span>
+                            }
                         </button>
                     }
                     else
                     {
+                        var template = GetTemplate(item);
                         if (GetItemHref(item).HasValue())
                         {
                             <a href="@GetItemHref(item)"
-                               aria-current="@(GetIsSelected(item) ? "page" : null)"
-                               style="@GetStyles(item)"
-                               class="bit-brc-itm @GetClasses(item)">
-                                @GetItemText(item)
+                            aria-current="@(GetIsSelected(item) ? "page" : null)"
+                            style="@GetStyles(item)"
+                            class="bit-brc-itm @GetClasses(item)">
+                                @if (template is not null)
+                                {
+                                    @template(item)
+                                }
+                                else if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    var iconName = GetIconName(item);
+                                    @if (iconName.HasValue())
+                                    {
+                                        <i class="bit-icon bit-icon--@iconName" />
+                                    }
+                                    <span>@GetItemText(item)</span>
+                                }
                             </a>
                         }
                         else
                         {
                             <button type="button"
-                                    aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                    style="@GetStyles(item)"
-                                    class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                                @GetItemText(item)
+                            aria-current="@(GetIsSelected(item) ? "page" : null)"
+                            style="@GetStyles(item)"
+                            class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
+                                @if (template is not null)
+                                {
+                                    @template(item)
+                                }
+                                else if (ItemTemplate is not null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    var iconName = GetIconName(item);
+                                    @if (iconName.HasValue())
+                                    {
+                                        <i class="bit-icon bit-icon--@iconName" />
+                                    }
+                                    <span>@GetItemText(item)</span>
+                                }
                             </button>
                         }
                     }
@@ -58,7 +98,14 @@
 
                 @if (index != _displayItems.Count - 1)
                 {
-                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIconName ?? _internalDividerIconName)" />
+                    @if (DividerIconTemplate is not null)
+                    {
+                        @DividerIconTemplate
+                    }
+                    else
+                    {
+                        <i class="bit-brc-sep bit-icon bit-icon--@(DividerIconName ?? "ChevronRight")" />
+                    }
                 }
             }
         </ul>
@@ -71,6 +118,7 @@
         <ul id="@_scrollContainerId" class="bit-brc-scn">
             @foreach (var item in _overflowItems)
             {
+                var overflowTemplate = GetOverflowTemplate(item);
                 <li @key="GetKey(item)">
                     @if (GetItemHref(item).HasValue())
                     {
@@ -78,7 +126,23 @@
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetStyles(item)"
                            class="bit-brc-oitm @GetClasses(item)">
-                            @GetItemText(item)
+                            @if (overflowTemplate is not null)
+                            {
+                                @overflowTemplate(item)
+                            }
+                            else if (OverflowTemplate is not null)
+                            {
+                                @OverflowTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i class="bit-icon bit-icon--@iconName" />
+                                }
+                                <span>@GetItemText(item)</span>
+                            }
                         </a>
                     }
                     else
@@ -87,7 +151,23 @@
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 style="@GetStyles(item)"
                                 class="bit-brc-oitm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                            @GetItemText(item)
+                            @if (overflowTemplate is not null)
+                            {
+                                @overflowTemplate(item)
+                            }
+                            else if (OverflowTemplate is not null)
+                            {
+                                @OverflowTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i class="bit-icon bit-icon--@iconName" />
+                                }
+                                <span>@GetItemText(item)</span>
+                            }
                         </button>
                     }
                 </li>

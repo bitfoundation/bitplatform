@@ -20,10 +20,31 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "DividerIconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template content to render divider icon."
+        },
+        new()
+        {
+            Name = "EndIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the positions of the icon and the item text of the item content."
+        },
+        new()
+        {
             Name = "Items",
             Type = "IList<TItem>",
-            DefaultValue = "new List<TItem>()",
-            Description = "Collection of breadcrumbs to render"
+            DefaultValue = "[]",
+            Description = "Collection of BreadLists to render."
+        },
+        new()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template content to render each item."
         },
         new()
         {
@@ -40,6 +61,19 @@ public partial class BitBreadcrumbDemo
             Description = "Names and selectors of the custom input type properties.",
             LinkType = LinkType.Link,
             Href = "#name-selectors"
+        },
+        new()
+        {
+            Name = "OnItemClick",
+            Type = "EventCallback<TItem>",
+            Description = "Callback for when the breadcrumb item clicked."
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of the ChildContent."
         },
         new()
         {
@@ -64,9 +98,17 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "OnItemClick",
-            Type = "EventCallback<TItem>",
-            Description = "Callback for when the breadcrumb item clicked."
+            Name = "OverflowIconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue= "null",
+            Description = "The custom template content to render each overflow icon."
+        },
+        new()
+        {
+            Name = "OverflowTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue= "null",
+            Description = "The custom template content to render each item in overflow list."
         },
         new()
         {
@@ -124,6 +166,18 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "string?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new()
+               {
+                   Name = "EndIcon",
+                   Type = "bool?",
+                   Description = "Reverses the positions of the icon and the item text of the item content.",
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the item as the selected item.",
@@ -140,6 +194,18 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "Action<BitBreadcrumbItem>?",
                    Description = "Click event handler of the breadcrumb item.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item in overflow list.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item.",
                }
             ]
         },
@@ -181,6 +247,18 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "string?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new()
+               {
+                   Name = "EndIcon",
+                   Type = "bool?",
+                   Description = "Reverses the positions of the icon and the item text of the item content.",
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the breadcrumb option as the selected option.",
@@ -197,6 +275,18 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "EventCallback<BitBreadcrumbOption>",
                    Description = "Click event handler of the breadcrumb option.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item in overflow list.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item.",
                }
             ]
         },
@@ -253,6 +343,24 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconName))",
+                   Description = "The IconName field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "EndIcon",
+                   Type = "BitNameSelectorPair<TItem, bool?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.EndIcon))",
+                   Description = "The EndIcon field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "BitNameSelectorPair<TItem, bool>",
                    DefaultValue = "new(nameof(BitBreadcrumbItem.IsSelected))",
@@ -274,6 +382,24 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "Action<TItem>?",
                    Description = "Click event handler of the item.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.OverflowTemplate))",
+                   Description = "The OverflowTemplate field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Template))",
+                   Description = "The Template field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
                }
             ],
         },
