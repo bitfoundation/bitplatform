@@ -675,8 +675,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>ثبت نام</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpTitle" xml:space="preserve">
     <value>ثبت نام</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>امروز آغاز کنید</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>یک اکانت جدید بسازید با</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>ارسال</value>

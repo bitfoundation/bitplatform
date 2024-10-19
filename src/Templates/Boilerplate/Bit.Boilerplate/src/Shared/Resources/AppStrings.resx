@@ -675,8 +675,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>Sign up</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpTitle" xml:space="preserve">
     <value>Sign up</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Get started today</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Create new account with</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>Submit</value>
