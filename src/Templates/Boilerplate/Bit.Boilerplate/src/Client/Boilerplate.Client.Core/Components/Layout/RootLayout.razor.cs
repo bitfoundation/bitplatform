@@ -1,7 +1,4 @@
-﻿using Boilerplate.Client.Core.Components.Layout.Identity;
-using Boilerplate.Client.Core.Components.Layout.Main;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {

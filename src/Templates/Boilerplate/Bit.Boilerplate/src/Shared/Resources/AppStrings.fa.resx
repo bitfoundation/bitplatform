@@ -387,6 +387,9 @@
     <data name="Refresh" xml:space="preserve">
     <value>تلاش مجدد</value>
   </data>
+    <data name="Recover" xml:space="preserve">
+    <value>بازیابی</value>
+  </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>اوه! به نظر مشکلی پیش اومده...</value>
   </data>
