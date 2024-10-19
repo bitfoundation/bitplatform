@@ -22,6 +22,7 @@
 .bit-snb-itm {
     display: flex;
     gap: spacing(1);
+    width: fit-content;
     position: relative;
     padding: spacing(1.25);
     color: var(--bit-snb-fg);
