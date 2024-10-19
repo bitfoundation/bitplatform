@@ -25,9 +25,9 @@
                     @if (_overflowItems.Any() && index == _internalOverflowIndex)
                     {
                         <button id="@_overflowAnchorId"
-                        type="button"
-                        class="bit-brc-obt"
-                        aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
+                                type="button"
+                                class="bit-brc-obt"
+                                aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
                             @if(OverflowIconTemplate is not null)
                             {
                                 @OverflowIconTemplate
@@ -46,9 +46,9 @@
                         if (GetItemHref(item).HasValue())
                         {
                             <a href="@GetItemHref(item)"
-                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            style="@GetStyles(item)"
-                            class="bit-brc-itm @GetClasses(item)">
+                               aria-current="@(GetIsSelected(item) ? "page" : null)"
+                               style="@GetStyles(item)"
+                               class="bit-brc-itm @GetClasses(item)">
                                 @if (template is not null)
                                 {
                                     @template(item)
@@ -71,9 +71,9 @@
                         else
                         {
                             <button type="button"
-                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            style="@GetStyles(item)"
-                            class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
+                                    aria-current="@(GetIsSelected(item) ? "page" : null)"
+                                    style="@GetStyles(item)"
+                                    class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
                                 @if (template is not null)
                                 {
                                     @template(item)
