@@ -675,8 +675,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>Inloggen</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpTitle" xml:space="preserve">
     <value>Inloggen</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Ga vandaag nog aan de slag</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Maak een nieuw account aan bij</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>Opslaan</value>
