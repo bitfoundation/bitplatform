@@ -32,7 +32,7 @@ public partial class NavPanel
             //#elif (sample == "Todo")
             new()
             {
-                Text = Localizer[nameof(AppStrings.TodoTitle)],
+                Text = Localizer[nameof(AppStrings.Todo)],
                 IconName = BitIconName.ToDoLogoOutline,
                 Url = Urls.TodoPage,
             },
@@ -53,7 +53,7 @@ public partial class NavPanel
             //#endif
             new()
             {
-                Text = Localizer[nameof(AppStrings.TermsTitle)],
+                Text = Localizer[nameof(AppStrings.Terms)],
                 IconName = BitIconName.EntityExtraction,
                 Url = Urls.TermsPage,
             }

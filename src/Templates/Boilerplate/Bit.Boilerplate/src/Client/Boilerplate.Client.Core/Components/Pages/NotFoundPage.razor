@@ -2,6 +2,8 @@
 @attribute [Route("{culture?}" + Urls.NotFoundPage)]
 @inherits AppPageBase
 
+<PageTitle>@Localizer[nameof(AppStrings.NotFoundPageTitle)]</PageTitle>
+
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
         <BitImage Src="_content/Boilerplate.Client.Core/images/404.svg" Width="100%" Style="max-width:600px" />
