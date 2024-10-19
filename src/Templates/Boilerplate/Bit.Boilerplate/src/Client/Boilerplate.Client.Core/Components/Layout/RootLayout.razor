@@ -10,7 +10,7 @@
         <div class="root">
             @if (isAuthenticated is false)
             {
-                <UnauthenticatedHeader />
+                <IdentityHeader />
             }
             else if (isAuthenticated is true)
             {
@@ -20,7 +20,7 @@
             <div class="stack">
                 @if (isAuthenticated is true)
                 {
-                    <AuthenticatedHeader />
+                    <AuthorizedHeader />
                 }
 
                 <div class="body">
@@ -38,7 +38,7 @@
 
         @if (isAuthenticated is true)
         {
-            <NavMenu />
+            <NavBar />
         }
     </main>
 </RootContainer>
