@@ -15,7 +15,8 @@ using PhoneNumbers;
 using FluentStorage;
 using FluentStorage.Blobs;
 //#if (notification == true)
-using AdsPush.Extensions;
+using AdsPush;
+using AdsPush.Abstraction;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
@@ -235,7 +236,30 @@ public static partial class Program
         //#endif
 
         //#if (notification == true)
-        services.AddAdsPush(configuration);
+        services.AddScoped(_ =>
+        {
+            var adsPushSenderBuilder = new AdsPushSenderBuilder();
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
+            {
+                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase?.PrivateKey.Replace(@"\n", string.Empty);
+
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
+            }
+
+            return adsPushSenderBuilder
+                .BuildSender();
+        });
         services.AddTransient<PushNotificationService>();
         //#endif
 

@@ -1,4 +1,8 @@
 ﻿//+:cnd:noEmit
+//#if (notification == true)
+using AdsPush.Abstraction.Settings;
+//#endif
+
 namespace Boilerplate.Server.Api;
 
 public partial class AppSettings : IValidatableObject
@@ -15,6 +19,14 @@ public partial class AppSettings : IValidatableObject
     //#if (captcha == "reCaptcha")
     [Required]
     public string GoogleRecaptchaSecretKey { get; set; } = default!;
+    //#endif
+
+    //#if (notification == true)
+    public AdsPushVapidSettings? AdsPushVapid { get; set; } = default!;
+
+    public AdsPushFirebaseSettings? AdsPushFirebase { get; set; } = default!;
+
+    public AdsPushAPNSSettings? AdsPushAPNS { get; set; } = default!;
     //#endif
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
