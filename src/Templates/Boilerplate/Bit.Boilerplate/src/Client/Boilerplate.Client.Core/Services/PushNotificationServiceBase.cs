@@ -14,7 +14,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     public virtual bool NotificationsSupported => false;
     public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AdsPush:Primary:Vapid:PublicKey"));
+        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AppSettings:AdsPushVapid:PublicKey"));
     }
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
