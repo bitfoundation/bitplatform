@@ -19,7 +19,7 @@
     </BitStack>
 </section>
 
-<BitDialog OnOk="DeleteAccount"
+<BitDialog OnOk="WrapHandled(DeleteAccount)"
            @bind-IsOpen="isDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"

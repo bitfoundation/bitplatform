@@ -125,7 +125,7 @@
     </BitStack>
 </section>
 
-<BitDialog OnOk="DeleteTodoItem"
+<BitDialog OnOk="WrapHandled(DeleteTodoItem)"
            @bind-IsOpen="isDeleteDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"

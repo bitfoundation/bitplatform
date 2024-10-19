@@ -1,33 +1,15 @@
 ﻿@import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
-.main {
+main {
     width: 100%;
-    display: flex;
-    padding: rem2(8px);
-    text-align: center;
-    max-width: rem2(800px);
-    max-height: rem2(600px);
-    flex-direction: column;
-    border-radius: rem2(4px);
-    background-color: $bit-color-background-primary;
-}
-
-.header {
-    text-align: end;
-}
-
-.title {
-    color: $bit-color-error;
+    height: 100%;
 }
 
 .exception {
+    width: 90%;
     overflow: auto;
     white-space: pre;
     text-align: start;
     margin: rem2(24px);
-}
-
-.buttons {
-    margin-bottom: rem2(24px);
 }
