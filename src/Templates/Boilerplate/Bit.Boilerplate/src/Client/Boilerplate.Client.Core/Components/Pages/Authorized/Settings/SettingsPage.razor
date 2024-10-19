@@ -4,7 +4,7 @@
 @attribute [Authorize]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.Settings)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.SettingsPageTitle)]</PageTitle>
 
 @{
     var imageUrl = user?.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";

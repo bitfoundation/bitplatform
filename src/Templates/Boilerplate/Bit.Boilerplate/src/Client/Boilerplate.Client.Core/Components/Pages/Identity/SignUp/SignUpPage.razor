@@ -3,7 +3,7 @@
 @attribute [Route("{culture?}" + Urls.SignUpPage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.SignUpTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.SignUpPageTitle)]</PageTitle>
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
@@ -69,7 +69,7 @@
             </BitLink>
         </BitText>
         <BitText Typography="BitTypography.Body2">
-            By signing up, you agree to our <BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.TermsTitle)]</BitLink>
+            By signing up, you agree to our <BitLink Href="@Urls.TermsPage">@Localizer[nameof(AppStrings.Terms)]</BitLink>
         </BitText>
     </BitStack>
 </section>
