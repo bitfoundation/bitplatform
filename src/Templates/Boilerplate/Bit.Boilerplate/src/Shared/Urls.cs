@@ -46,9 +46,4 @@ public static partial class Urls
                                                       .Where(f => f.FieldType == typeof(string))
                                                       .Select(f => f.GetValue(null)!.ToString()!)
                                                       .ToArray();
-
-    /// <summary>
-    /// The pages that are getting rendered in multiple layouts (identity and main).
-    /// </summary>
-    public static readonly string[] CrossLayoutPages = [HomePage, TermsPage, NotFoundPage, AboutPage];
 }

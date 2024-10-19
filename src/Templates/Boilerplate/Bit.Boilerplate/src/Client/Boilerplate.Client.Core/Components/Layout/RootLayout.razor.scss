@@ -1,128 +1,108 @@
-﻿@import '../../Styles/abstracts/_vars.scss';
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
-.layout {
+main {
     width: 100%;
-    height: 100%;
-    background-color: $bit-color-background-primary;
-    --app-inset-top: env(safe-area-inset-top);
-    --app-inset-bottom: env(safe-area-inset-bottom);
-    --app-inset-left: env(safe-area-inset-left);
-    --app-inset-right: env(safe-area-inset-right);
-
-    @include lt-md {
-        height: 100%;
-    }
-}
-
-.inset-top {
-    height: var(--app-inset-top);
-}
-
-.inset-left {
-    height: 100%;
-    width: var(--app-inset-left);
-}
-
-.inset-main {
-    width: 100%;
-    display: flex;
     min-height: 100%;
 
     @include lt-md {
-        overflow: auto;
-        min-height: unset;
-        position: relative;
-        scroll-behavior: smooth;
-        overscroll-behavior: none;
-        width: calc(100% - var(--app-inset-left) - var(--app-inset-right));
-        height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
+        height: unset;
+        min-height: 100vh;
     }
-}
 
-.inset-right {
-    height: 100%;
-    width: var(--app-inset-right);
-}
+    &.unauthenticated {
+        .root {
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
 
-.inset-bottom {
-    height: var(--app-inset-bottom);
+        &.cross-layout {
+            .body {
+                width: 100%;
+                padding: 2rem;
+                min-height: 100%;
+                padding-top: 5rem;
+            }
+        }
+
+        .stack {
+            width: auto;
+            flex-grow: 1;
+            flex-direction: row;
+        }
+
+        .panel {
+            width: 70%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            @include lt-md {
+                display: none;
+            }
+        }
+
+        .body {
+            width: 30%;
+            padding: 4rem;
+            min-width: 35rem;
+            min-height: 100%;
+            padding-top: 5rem;
+            background-color: $bit-color-background-secondary;
+            border-inline-end: 1px solid $bit-color-border-secondary;
+
+            @include lt-md {
+                width: 100%;
+                border: none;
+                min-width: unset;
+                padding-inline: 1rem;
+            }
+        }
+    }
+
+    &.authenticated {
+        .root {
+            width: auto;
+            height: auto;
+            flex-direction: row;
+        }
+
+        .body {
+            width: 100%;
+            height: 100%;
+            background-color: $bit-color-background-primary;
+
+            @include lt-md {
+                height: unset;
+                min-height: 100vh;
+            }
+        }
+
+        .stack {
+            gap: 2rem;
+            flex-grow: 1;
+            padding: 1rem;
+            flex-direction: column;
+        }
+    }
+
+    .root {
+        display: flex;
+    }
+
+    .stack {
+        width: 100%;
+        display: flex;
+    }
 }
 
 ::deep {
-    .form {
-        width: 100%;
-        display: flex;
-        padding: 2rem;
-        position: relative;
-        text-align: center;
-        align-items: center;
-        max-width: rem2(450px);
-        justify-content: center;
-        flex-flow: column nowrap;
-        border-radius: rem2(4px);
-        box-shadow: $bit-box-shadow-callout;
-        background-color: $bit-color-background-primary;
-    }
-
-    .form-title {
-        font-weight: 600;
-        font-size: rem2(28px);
-        line-height: rem2(44px);
-        margin-bottom: rem2(25px);
-
-        @include lg {
-            font-size: rem2(24px);
-            line-height: rem2(36px);
-        }
-
-        @include md {
-            font-size: rem2(22px);
-            line-height: rem2(36px);
-        }
-
-        @include sm {
-            font-size: rem2(20px);
-            line-height: rem2(32px);
-        }
-    }
-
-    .form-input-container {
-        width: 100%;
-        display: flex;
-        text-align: start;
-        max-width: rem2(300px);
-        flex-flow: column nowrap;
-        margin-bottom: rem2(21px);
-    }
-
-    .form-input-error,
     .validation-message {
+        font-size: 12px;
         text-align: start;
-        font-size: rem2(12px);
-        line-height: rem2(16px);
+        line-height: 16px;
         color: $bit-color-error;
-    }
-
-    .form-submit-button {
-        width: 100%;
-        max-width: rem2(300px);
-        margin-bottom: rem2(10px);
-    }
-
-    .form-message-bar {
-        width: 100%;
-        position: absolute;
-        text-align: center;
-        inset-block-start: 0;
-        inset-inline-start: 0;
-        border-radius: rem2(4px) rem2(4px) 0 0;
-        scroll-margin-top: calc($headerHeight + var(--bit-status-bar-height) + 1px);
-    }
-
-    .loading-container {
-        text-align: center;
     }
 }

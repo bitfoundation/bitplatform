@@ -1,0 +1,33 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+
+.modal-body {
+    display: flex;
+    position: relative;
+    align-items: center;
+    padding: 28px 110px;
+    justify-content: center;
+    flex-flow: column nowrap;
+
+    @include lt-lg {
+        padding: 28px 47px;
+    }
+}
+
+.modal-close-btn-container {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 0;
+}
+
+.modal-title {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 40px;
+    margin-bottom: 12px;
+}
+
+.modal-desc {
+    font-size: 18px;
+    line-height: 24px;
+    margin-bottom: 36px;
+}

@@ -1,5 +1,4 @@
-﻿using Boilerplate.Client.Core.Components.Layout.Identity;
-using Boilerplate.Client.Core.Components.Layout.Main;
+﻿using System.Reflection;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -10,8 +9,10 @@ public partial class RootLayout : IDisposable
     private bool? isAuthenticated;
     private bool? isCrossLayoutPage;
     private AppThemeType? currentTheme;
+    private RouteData? currentRouteData;
     private Action unsubscribeThemeChange = default!;
     private Action unsubscribeCultureChange = default!;
+    private Action unsubscribeRouteDataUpdated = default!;
 
 
     [AutoInject] private IThemeService themeService = default!;
@@ -40,6 +41,12 @@ public partial class RootLayout : IDisposable
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
+                StateHasChanged();
+            });
+            unsubscribeRouteDataUpdated = pubSubService.Subscribe(PubSubMessages.ROUTE_DATA_UPDATED, async payload =>
+            {
+                currentRouteData = (RouteData?)payload;
+                SetIsCrossLayout();
                 StateHasChanged();
             });
 
@@ -90,15 +97,6 @@ public partial class RootLayout : IDisposable
     }
 
 
-    private Type GetCurrentLayout()
-    {
-        return isAuthenticated is null
-                ? typeof(EmptyLayout)
-                : isAuthenticated is true
-                    ? typeof(MainLayout)
-                    : typeof(IdentityLayout);
-    }
-
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
@@ -110,12 +108,49 @@ public partial class RootLayout : IDisposable
 
         currentUrl = Urls.All.SingleOrDefault(pageUrl =>
         {
-            return pageUrl.Length == 1
+            return pageUrl == Urls.HomePage
                     ? pageUrl == path
                     : path.StartsWith(pageUrl);
         });
+    }
 
-        isCrossLayoutPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
+    private void SetIsCrossLayout()
+    {
+        // The cross-layout pages are the pages that are getting rendered in multiple layouts (authenticated and unauthenticated).
+
+        if (currentRouteData is null)
+        {
+            isCrossLayoutPage = true;
+            return;
+        }
+
+        var type = currentRouteData.PageType;
+
+        if (type.GetCustomAttribute<AuthorizeAttribute>() is not null)
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        isCrossLayoutPage = true;
+    }
+
+
+    private string GetMainCssClass()
+    {
+        var authClass = isAuthenticated is false ? "unauthenticated"
+                      : isAuthenticated is true ? "authenticated"
+                      : string.Empty;
+
+        var crossClass = isCrossLayoutPage is true ? " cross-layout" : string.Empty;
+
+        return authClass + crossClass;
     }
 
 
@@ -127,5 +162,6 @@ public partial class RootLayout : IDisposable
 
         unsubscribeThemeChange?.Invoke();
         unsubscribeCultureChange?.Invoke();
+        unsubscribeRouteDataUpdated?.Invoke();
     }
 }

@@ -1,0 +1,20 @@
+﻿@attribute [Route(Urls.DashboardPage)]
+@attribute [Route("{culture?}" + Urls.DashboardPage)]
+@attribute [Authorize]
+@inherits AppPageBase
+
+
+<section>
+    <BitStack Gap="3rem">
+        <OverallStatsWidget />
+
+        <BitStack Horizontal Wrap>
+            @if (isLoadingAssemblies is false)
+            {
+                <ProductsCountPerCategoryWidget />
+                <ProductsPercentageWidget />
+            }
+        </BitStack>
+    </BitStack>
+</section>
+
