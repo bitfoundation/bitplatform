@@ -387,6 +387,9 @@
     <data name="Refresh" xml:space="preserve">
     <value>Opfrissen</value>
   </data>
+    <data name="Recover" xml:space="preserve">
+    <value>Herstellen</value>
+  </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>Oeps, er is iets misgegaan...</value>
   </data>
