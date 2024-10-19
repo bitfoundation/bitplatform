@@ -26,7 +26,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetItemsAndChildContent))]
+    [CallOnSet(nameof(OnSetParameters))]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -48,7 +48,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// Collection of BreadLists to render.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetItemsAndChildContent))]
+    [CallOnSet(nameof(OnSetParameters))]
     public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
@@ -75,7 +75,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// Alias of the ChildContent.
     /// </summary>
-    [Parameter] public RenderFragment? Options { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -153,7 +155,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        OnSetItemsAndChildContent();
+        OnSetParameters();
 
         return base.OnInitializedAsync();
     }
@@ -181,9 +183,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         }
     }
 
-    private void OnSetItemsAndChildContent()
+    private void OnSetParameters()
     {
-        if (ChildContent is null)
+        if (ChildContent is null && Options is null)
         {
             _items = [.. Items];
         }
