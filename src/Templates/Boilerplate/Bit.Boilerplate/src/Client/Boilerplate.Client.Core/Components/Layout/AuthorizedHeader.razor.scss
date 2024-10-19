@@ -1,0 +1,29 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+header {
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    position: sticky;
+    background-color: $bit-color-background-primary;
+}
+
+::deep {
+    .menu-btn {
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    .persona {
+        max-width: 180px;
+    }
+
+    .persona-details,
+    .menu-chevron {
+        @include lt-sm {
+            display: none;
+        }
+    }
+}

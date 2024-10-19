@@ -1,0 +1,49 @@
+﻿@*+:cnd:noEmit*@
+@attribute [Route(Urls.SettingsPage)]
+@attribute [Route("{culture?}" + Urls.SettingsPage)]
+@attribute [Authorize]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.Settings)]</PageTitle>
+
+@{
+    var imageUrl = user?.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
+}
+
+<section>
+    <BitStack Class="stack">
+        <Accordion Index="1" @bind-Value="openedAccordion"
+                   Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
+                   Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
+            <ProfileSection Loading="isLoading" User="user" />
+        </Accordion>
+
+        <Accordion Index="2" @bind-Value="openedAccordion"
+                   Title="@Localizer[nameof(AppStrings.AccountTitle)]"
+                   Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
+            <BitPivot Alignment="BitAlignment.Center">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
+                    <ChangeEmailSection Email="@user?.Email" />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
+                    <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" />
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Delete)]">
+                    <DeleteAccountSection />
+                </BitPivotItem>
+            </BitPivot>
+        </Accordion>
+
+        <Accordion Index="3" @bind-Value="openedAccordion"
+                   Title="@Localizer[nameof(AppStrings.TfaTitle)]"
+                   Subtitle="@Localizer[nameof(AppStrings.TfaSubtitle)]">
+            <TwoFactorSection />
+        </Accordion>
+
+        <Accordion Index="4" @bind-Value="openedAccordion"
+                   Title="@Localizer[nameof(AppStrings.SessionsTitle)]"
+                   Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
+            <SessionsSection />
+        </Accordion>
+    </BitStack>
+</section>

@@ -1,0 +1,69 @@
+@attribute [Route(Urls.OfflineEditProfilePage)]
+@attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
+@attribute [Authorize]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
+
+<div class="page-container">
+    <div class="content-container profile-panel">
+        @if (string.IsNullOrEmpty(editProfileMessage) is false)
+        {
+            <BitMessage Class="form-message-bar" Color="editProfileMessageColor" OnDismiss="() => editProfileMessage = null">
+                @editProfileMessage
+            </BitMessage>
+        }
+
+        <BitText Typography="BitTypography.H2" Gutter>
+            @Localizer[nameof(AppStrings.EditProfileTitle)]
+        </BitText>
+
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <BitRingLoading />
+            </div>
+        }
+        else
+        {
+            <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" class="edit-profile-form">
+                <AppDataAnnotationsValidator />
+
+                <div class="form-input-container">
+                    <BitTextField @bind-Value="userToEdit.FullName"
+                                  Label="@Localizer[nameof(AppStrings.FullName)]"
+                                  Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                    <ValidationMessage For="@(() => userToEdit.FullName)" />
+                </div>
+
+                <div class="form-input-container">
+                    <BitDatePicker IsResponsive @bind-Value="userToEdit.BirthDate"
+                                   Class="edit-profile-dtp"
+                                   Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                                   GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
+                                   Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
+                    <ValidationMessage For="@(() => userToEdit.BirthDate)" />
+                </div>
+
+                <div class="form-choice-container">
+                    <BitChoiceGroup Horizontal
+                                    @bind-Value="userToEdit.GenderAsString"
+                                    TItem="BitChoiceGroupOption<string>" TValue="string"
+                                    Label="@Localizer[nameof(AppStrings.Gender)]">
+                        <BitChoiceGroupOption Value="@Gender.Male.ToString()"
+                                              Text="@Localizer[nameof(AppStrings.GenderMale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Female.ToString()"
+                                              Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Other.ToString()"
+                                              Text="@Localizer[nameof(AppStrings.GenderOther)]" />
+                    </BitChoiceGroup>
+                </div>
+
+                <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit" Title="@Localizer[nameof(AppStrings.Save)]">
+                    @Localizer[nameof(AppStrings.Save)]
+                </BitButton>
+            </EditForm>
+
+        }
+    </div>
+</div>
