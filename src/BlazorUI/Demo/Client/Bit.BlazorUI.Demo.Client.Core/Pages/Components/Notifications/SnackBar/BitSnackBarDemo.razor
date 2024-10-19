@@ -21,8 +21,9 @@
         <ExamplePreview>
             <BitSnackBar @ref="customizationRef"
                          Dir="direction"
-                         Position="@basicSnackBarPosition"
-                         AutoDismiss="@basicSnackBarAutoDismiss"
+                         Position="basicSnackBarPosition"
+                         Multiline="basicSnackBarMultiline"
+                         AutoDismiss="basicSnackBarAutoDismiss"
                          AutoDismissTime="TimeSpan.FromSeconds(basicSnackBarDismissSeconds)" />
 
             <BitButton OnClick="OpenCustomizationSnackBar">Show</BitButton>
@@ -68,6 +69,8 @@
                 <div>
                     <BitToggle @bind-Value="basicSnackBarAutoDismiss" Label="Auto Dismiss" Inline />
                     <BitNumberField @bind-Value="basicSnackBarDismissSeconds" IsEnabled="basicSnackBarAutoDismiss" Step="1" Min="1" Label="Dismiss Time (based on second)" />
+                    <br /><br />
+                    <BitToggle @bind-Value="basicSnackBarMultiline" Label="Multiline" Inline />
                     <br /><br />
                     <BitTextField @bind-Value="basicSnackBarTitle" Label="Title" DefaultValue="Title" />
                     <BitTextField @bind-Value="basicSnackBarBody" Label="Body" IsMultiline="true" Rows="6" DefaultValue="This is a body!" />
