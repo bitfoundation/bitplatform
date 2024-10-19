@@ -260,7 +260,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        _ = OnClose.InvokeAsync(e);
+        await OnClose.InvokeAsync(e);
 
         await DismissDialog(e);
     }
@@ -272,7 +272,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
         _tcs?.SetResult(Result);
         _tcs = null;
 
-        _ = OnCancel.InvokeAsync(e);
+        await OnCancel.InvokeAsync(e);
 
         await DismissDialog(e);
     }
@@ -284,7 +284,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
         _tcs?.SetResult(Result);
         _tcs = null;
 
-        _ = OnOk.InvokeAsync(e);
+        await OnOk.InvokeAsync(e);
 
         await DismissDialog(e);
     }
