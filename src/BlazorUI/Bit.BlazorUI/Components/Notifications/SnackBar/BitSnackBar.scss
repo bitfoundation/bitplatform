@@ -3,10 +3,10 @@
 .bit-snb {
     display: flex;
     position: fixed;
-    max-width: 100%;
     gap: spacing(1.25);
     flex-flow: column nowrap;
     z-index: $zindex-snackbar;
+    max-width: calc(100% - spacing(1));
 
     @keyframes bit-snackbar-progress-animation {
         from {
@@ -42,12 +42,6 @@
     animation-name: bit-snackbar-progress-animation;
 }
 
-.bit-snb-bdy {
-    overflow: auto;
-    white-space: pre;
-    font-size: spacing(1.5);
-}
-
 .bit-snb-hdr {
     display: flex;
     gap: spacing(1.25);
@@ -56,10 +50,17 @@
 }
 
 .bit-snb-ttl {
-    overflow: hidden;
     font-weight: 500;
-    white-space: nowrap;
     font-size: spacing(2);
+}
+
+.bit-snb-bdy {
+    font-size: spacing(1.5);
+}
+
+.bit-snb-elp {
+    overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 
@@ -174,6 +175,7 @@
 
 .bit-snb-ten {
     top: spacing(1);
+    align-items: flex-end;
     inset-inline-end: spacing(1);
 }
 
@@ -190,5 +192,6 @@
 
 .bit-snb-ben {
     bottom: spacing(1);
+    align-items: flex-end;
     inset-inline-end: spacing(1);
 }
