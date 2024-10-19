@@ -73,12 +73,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/ConfirmMessageBox.razor.css",
-        "inputFile": "Components/ConfirmMessageBox.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Pages/HomePage.razor.css",
         "inputFile": "Components/Pages/HomePage.razor.scss",
         "minify": { "enabled": false },
