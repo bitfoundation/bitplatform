@@ -9,6 +9,9 @@ using Boilerplate.Server.Api;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
+using Boilerplate.Shared;
+using Microsoft.AspNetCore.Identity;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Server.Web;
 
@@ -30,6 +33,19 @@ public static partial class Program
             .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddOptions<SharedAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<ClientAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
         services.AddResponseCaching();
 

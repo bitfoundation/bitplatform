@@ -96,7 +96,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Configuration.GetValue<string?>("WebClientUrl");
+        var webClientUrl = Configuration.Get<ServerApiAppSettings?>()!.WebClientUrl;
         if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }

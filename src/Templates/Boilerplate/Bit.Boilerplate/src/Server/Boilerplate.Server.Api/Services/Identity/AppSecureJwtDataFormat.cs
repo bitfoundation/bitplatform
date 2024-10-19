@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services.Identity;
 /// <summary>
 /// Stores bearer token in jwt format
 /// </summary>
-public partial class AppSecureJwtDataFormat(AppSettings appSettings, TokenValidationParameters validationParameters)
+public partial class AppSecureJwtDataFormat(ServerApiAppSettings appSettings, TokenValidationParameters validationParameters)
     : ISecureDataFormat<AuthenticationTicket>
 {
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);

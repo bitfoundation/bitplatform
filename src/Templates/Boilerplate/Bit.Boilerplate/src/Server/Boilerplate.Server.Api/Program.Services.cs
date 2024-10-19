@@ -37,11 +37,6 @@ public static partial class Program
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();
@@ -60,7 +55,7 @@ public static partial class Program
         services.AddApplicationInsightsTelemetry(configuration);
         //#endif
 
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.Get<ServerApiAppSettings>()!;
 
         services.AddCors(builder =>
         {
@@ -71,7 +66,7 @@ public static partial class Program
                     policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
                 }
 
-                var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+                var webClientUrl = configuration.Get<ServerApiAppSettings>()!.WebClientUrl;
 
                 policy.SetIsOriginAllowed(origin =>
                             LocalhostOriginRegex().IsMatch(origin) ||
@@ -148,17 +143,28 @@ public static partial class Program
             //#endif
         };
 
-        services.AddOptions<AppSettings>()
-            .Bind(configuration.GetRequiredSection(nameof(AppSettings)))
+        services.AddOptions<ForwardedHeadersOptions>()
+            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<SharedAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<ServerApiAppSettings>()
+            .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
         services.AddOptions<IdentityOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(AppSettings)).GetRequiredSection(nameof(AppSettings.Identity)))
+            .Bind(configuration.GetRequiredSection(nameof(ServerApiAppSettings.Identity)))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ServerApiAppSettings>>().Value);
 
         services.AddEndpointsApiExplorer();
 
@@ -265,17 +271,11 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
         var env = builder.Environment;
-        var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
+        var appSettings = configuration.Get<ServerApiAppSettings>()!;
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
         var certificate = new X509Certificate2(certificatePath, configuration.GetRequiredValue<string>("DataProtectionCertificatePassword"), OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
-
-        bool isTestCertificate = certificate.Thumbprint is "55140A8C935AB5202949071E5781E6946CD60606"; // The default test certificate is still in use
-        if (isTestCertificate && env.IsDevelopment() is false)
-        {
-            throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path DataProtectionCertificate.pfx --password P@ssw0rdP@ssw0rd' command (or your preferred method for generating PFX files) in the server project's folder.");
-        }
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()

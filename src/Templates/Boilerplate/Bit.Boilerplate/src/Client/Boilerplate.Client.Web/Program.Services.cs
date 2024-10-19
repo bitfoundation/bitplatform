@@ -5,6 +5,9 @@ using BlazorApplicationInsights;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
+using Boilerplate.Shared;
+using Boilerplate.Client.Core;
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Web;
 
@@ -35,7 +38,11 @@ public static partial class Program
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>
         {
-            x.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+            if (string.IsNullOrEmpty(connectionString) is false)
+            {
+                x.ConnectionString = connectionString;
+            }
         },
         async appInsights =>
         {
@@ -48,6 +55,17 @@ public static partial class Program
             });
         });
         //#endif
+
+        services.AddOptions<SharedAppSettings>()
+            .Bind(configuration)
+            .ValidateOnStart();
+
+        services.AddOptions<ClientAppSettings>()
+            .Bind(configuration)
+            .ValidateOnStart();
+
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services)
