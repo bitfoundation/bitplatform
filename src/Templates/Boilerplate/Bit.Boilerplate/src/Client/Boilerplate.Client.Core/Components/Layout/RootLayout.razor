@@ -1,35 +1,47 @@
 ﻿@inherits LayoutComponentBase
 
-<CascadingValue Value="currentDir">
-    <CascadingValue Value="currentTheme" Name="@Parameters.CurrentTheme">
-        <CascadingValue Value="currentUrl" Name="@Parameters.CurrentUrl">
-            <CascadingValue Value="isAuthenticated" Name="@Parameters.IsAuthenticated">
-                <CascadingValue Value="isCrossLayoutPage" Name="@Parameters.IsCrossLayoutPage">
-                    <div class="layout">
-                        <div class="inset-top"></div>
-                        <div class="inset-main" dir="@currentDir?.ToString().ToLower()">
-                            <div class="inset-left"></div>
-                            <AppErrorBoundary>
-                                @if (isCrossLayoutPage is true)
-                                {
-                                    <LayoutView Layout="GetCurrentLayout()">
-                                        @Body
-                                    </LayoutView>
-                                }
-                                else
-                                {
-                                    @Body
-                                }
-                            </AppErrorBoundary>
-                            <div class="inset-right"></div>
-                        </div>
-                        <div class="inset-bottom"></div>
+<RootContainer CurrentDir="currentDir"
+               CurrentUrl="@currentUrl"
+               CurrentTheme="currentTheme"
+               IsAuthenticated="isAuthenticated"
+               CurrentRouteData="currentRouteData"
+               IsCrossLayoutPage="isCrossLayoutPage">
+    <main class="@GetMainCssClass()">
+        <div class="root">
+            @if (isAuthenticated is false)
+            {
+                <UnauthenticatedHeader />
+            }
+            else if (isAuthenticated is true)
+            {
+                <NavPanel />
+            }
+
+            <div class="stack">
+                @if (isAuthenticated is true)
+                {
+                    <AuthenticatedHeader />
+                }
+
+                <div class="body">
+                    @Body
+                </div>
+
+                @if (isAuthenticated is false && isCrossLayoutPage is false)
+                {
+                    <div class="panel">
+                        <BitImage Width="70%" Src="_content/Boilerplate.Client.Core/images/identitylayout-image.webp" />
                     </div>
-                </CascadingValue>
-            </CascadingValue>
-        </CascadingValue>
-    </CascadingValue>
-</CascadingValue>
+                }
+            </div>
+        </div>
+
+        @if (isAuthenticated is true)
+        {
+            <NavMenu />
+        }
+    </main>
+</RootContainer>
 
 <SnackBar />
 <MessageBox />
