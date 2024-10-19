@@ -71,7 +71,7 @@
     </BitStack>
 </section>
 
-<BitDialog OnOk="DeleteCategory"
+<BitDialog OnOk="WrapHandled(DeleteCategory)"
            @bind-IsOpen="isDeleteDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"
