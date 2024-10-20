@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components.Layout;
+﻿using System.Reflection;
+
+namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class RootLayout : IDisposable
 {
@@ -44,6 +46,7 @@ public partial class RootLayout : IDisposable
             unsubscribeRouteDataUpdated = pubSubService.Subscribe(PubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
+                SetIsCrossLayout();
                 StateHasChanged();
             });
 
@@ -109,8 +112,33 @@ public partial class RootLayout : IDisposable
                     ? pageUrl == path
                     : path.StartsWith(pageUrl);
         });
+    }
 
-        isCrossLayoutPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
+    private void SetIsCrossLayout()
+    {
+        // The cross-layout pages are the pages that are getting rendered in multiple layouts (authenticated and unauthenticated).
+
+        if (currentRouteData is null)
+        {
+            isCrossLayoutPage = true;
+            return;
+        }
+
+        var type = currentRouteData.PageType;
+
+        if (type.GetCustomAttribute<AuthorizeAttribute>() is not null)
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        isCrossLayoutPage = true;
     }
 
 

@@ -1,0 +1,25 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+header {
+    width: 100%;
+    height: 65px;
+    padding: 1rem;
+    position: absolute;
+<<<<<<<< HEAD:src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Components/Layout/UnauthenticatedHeader.razor.scss
+    height: 65px;
+========
+>>>>>>>> 196d1ef14557dc3d723cd6ce6f8c73456bfd7ec4:src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Components/Layout/IdentityHeader.razor.scss
+    z-index: $bit-zindex-base;
+}
+
+::deep {
+    .identity-language-callout {
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            bottom: var(--app-inset-bottom);
+            top: var(--app-inset-top) !important;
+        }
+    }
+}

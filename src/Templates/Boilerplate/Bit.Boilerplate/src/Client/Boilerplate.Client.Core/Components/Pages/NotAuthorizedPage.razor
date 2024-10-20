@@ -2,6 +2,8 @@
 @attribute [Route("{culture?}" + Urls.NotAuthorizedPage)]
 @inherits AppPageBase
 
+<PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
+
 <AuthorizeView>
     <section>
         <BitStack HorizontalAlign="BitAlignment.Center">

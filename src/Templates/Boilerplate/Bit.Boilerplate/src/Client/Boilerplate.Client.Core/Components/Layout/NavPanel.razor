@@ -25,16 +25,30 @@
                            IconName="@BitIconName.ColumnRightTwoThirds" />
             </BitStack>
 
-            <BitSeparator />
+            @if (isToggled is false)
+            {
+                <BitSearchBox Underlined Immediate DebounceTime="500"
+                              OnChange="WrapHandled<string?>(SearchNavItems)"
+                              Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
+            }
 
-            <BitNav FullWidth
-                    Items="navItems"
-                    IconOnly="isToggled"
-                    DefaultSelectedItem="navItems[0]"
-                    Accent="BitColor.SecondaryBackground"
-                    OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
-                    Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })">
-            </BitNav>
+            @if (filteredNavItems.Count == 0)
+            {
+                if (isToggled is false)
+                {
+                    <BitText>@Localizer[nameof(AppStrings.NothingFound)]</BitText>
+                }
+            }
+            else
+            {
+                <BitNav FullWidth
+                        IconOnly="isToggled"
+                        Items="filteredNavItems"
+                        Accent="BitColor.SecondaryBackground"
+                        DefaultSelectedItem="filteredNavItems[0]"
+                        OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
+                        Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })" />
+            }
 
             <BitSpacer />
 
