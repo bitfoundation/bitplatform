@@ -1,4 +1,4 @@
-﻿
+﻿//+:cnd:noEmit
 namespace Boilerplate.Client.Core;
 
 public partial class ClientAppSettings : SharedAppSettings
@@ -6,9 +6,11 @@ public partial class ClientAppSettings : SharedAppSettings
     /// <summary>
     /// If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly
     /// </summary>
+    [Required]
     public string? ServerAddress { get; set; }
 
     //#if (captcha == "reCaptcha")
+    [Required]
     public string? GoogleRecaptchaSiteKey { get; set; }
     //#endif
 
@@ -63,6 +65,7 @@ public class AdsPushVapidOptions
     /// <summary>
     /// Web push's vapid. More info at https://vapidkeys.com/
     /// </summary>
-    [Required] public string? PublicKey { get; set; }
+    [Required]
+    public string? PublicKey { get; set; }
 }
 //#endif

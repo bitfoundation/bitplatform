@@ -7,7 +7,8 @@ public partial class ServerApiAppSettings : SharedAppSettings
     /// <summary>
     /// It can also be configured using: dotnet user-secrets set 'DataProtectionCertificatePassword' '@nyPassw0rd'
     /// </summary>
-    [Required] public string? DataProtectionCertificatePassword { get; set; }
+    [Required]
+    public string? DataProtectionCertificatePassword { get; set; }
 
     public AppIdentityOptions Identity { get; set; } = default!;
 
@@ -15,10 +16,12 @@ public partial class ServerApiAppSettings : SharedAppSettings
 
     public SmsOptions Sms { get; set; } = default!;
 
-    [Required] public string UserProfileImagesDir { get; set; } = default!;
+    [Required]
+    public string UserProfileImagesDir { get; set; } = default!;
 
     //#if (captcha == "reCaptcha")
-    [Required] public string GoogleRecaptchaSecretKey { get; set; } = default!;
+    [Required]
+    public string GoogleRecaptchaSecretKey { get; set; } = default!;
     //#endif
 
     //#if (notification == true)
@@ -48,7 +51,7 @@ public partial class ServerApiAppSettings : SharedAppSettings
             if (DataProtectionCertificatePassword is "P@ssw0rdP@ssw0rd")
             {
                 throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path DataProtectionCertificate.pfx --password @nyPassw0rd'
-command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with the new password (for example @nyPassw0rd");
+command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with the new password.");
             }
 
             //#if (captcha == "reCaptcha")
@@ -59,7 +62,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
             //#endif
 
             //#if (notification == true)
-            if (AdsPushVapid.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid.Subject is "mailto: <test@bitplatform.dev>")
+            if (AdsPushVapid!.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid.Subject is "mailto: <test@bitplatform.dev>")
             {
                 throw new InvalidOperationException("The AdsPushVapid's PrivateKey and PublicKey are not set. Please set them in the server's appsettings.json file.");
             }
@@ -73,14 +76,16 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
 public partial class AppIdentityOptions : IdentityOptions
 {
     /// <summary>
-    /// BearerTokenExpiration used as jwt's expiration claim, access token's expires in and cookie's max age.
+    /// BearerTokenExpiration used as JWT's expiration claim, access token's expires in and cookie's max age.
     /// </summary>
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
 
-    [Required] public string Issuer { get; set; } = default!;
+    [Required]
+    public string Issuer { get; set; } = default!;
 
-    [Required] public string Audience { get; set; } = default!;
+    [Required]
+    public string Audience { get; set; } = default!;
 
     /// <summary>
     /// To either confirm and/or change email
@@ -103,17 +108,20 @@ public partial class AppIdentityOptions : IdentityOptions
 
 public partial class EmailOptions
 {
-    [Required] public string Host { get; set; } = default!;
+    [Required]
+    public string Host { get; set; } = default!;
     /// <summary>
     /// If true, the web app tries to store emails as .eml file in the App_Data/sent-emails folder instead of sending them using smtp server (recommended for testing purposes only).
     /// </summary>
     public bool UseLocalFolderForEmails => Host is "LocalFolder";
 
-    [Range(1, 65535)] public int Port { get; set; }
+    [Range(1, 65535)]
+    public int Port { get; set; }
     public string? UserName { get; set; }
     public string? Password { get; set; }
 
-    [Required] public string DefaultFromEmail { get; set; } = default!;
+    [Required]
+    public string DefaultFromEmail { get; set; } = default!;
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 

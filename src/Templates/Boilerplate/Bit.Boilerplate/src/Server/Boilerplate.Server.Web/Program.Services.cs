@@ -10,7 +10,6 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 using Boilerplate.Shared;
-using Microsoft.AspNetCore.Identity;
 using Boilerplate.Client.Core;
 
 namespace Boilerplate.Server.Web;
