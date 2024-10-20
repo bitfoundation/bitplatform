@@ -30,7 +30,7 @@ public partial class BitBreadcrumbOption : BitComponentBase, IDisposable
     /// <summary>
     /// Reverses the positions of the icon and the item text of the item content.
     /// </summary>
-    [Parameter] public bool? EndIcon { get; set; }
+    [Parameter] public bool? ReversedIcon { get; set; }
 
     /// <summary>
     /// Display the breadcrumb option as the selected option.

@@ -75,7 +75,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIconName=""@BitIconName.CollapseMenu"" EndIcon>
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" OverflowIconName=""@BitIconName.CollapseMenu"" ReversedIcon>
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />

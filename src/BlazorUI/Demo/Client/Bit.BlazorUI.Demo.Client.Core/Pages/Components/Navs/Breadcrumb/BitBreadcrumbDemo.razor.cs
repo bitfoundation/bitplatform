@@ -27,13 +27,6 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "EndIcon",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the positions of the icon and the item text of the item content."
-        },
-        new()
-        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
@@ -112,6 +105,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the positions of the icon and the item text of the item content."
+        },
+        new()
+        {
             Name = "SelectedItemClass",
             Type = "string?",
             DefaultValue = "null",
@@ -172,7 +172,7 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "EndIcon",
+                   Name = "ReversedIcon",
                    Type = "bool?",
                    Description = "Reverses the positions of the icon and the item text of the item content.",
                },
@@ -253,7 +253,7 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "EndIcon",
+                   Name = "ReversedIcon",
                    Type = "bool?",
                    Description = "Reverses the positions of the icon and the item text of the item content.",
                },
@@ -352,10 +352,10 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
-                   Name = "EndIcon",
+                   Name = "ReversedIcon",
                    Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitBreadcrumbItem.EndIcon))",
-                   Description = "The EndIcon field name and selector of the custom input class.",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.ReversedIcon))",
+                   Description = "The ReversedIcon field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },

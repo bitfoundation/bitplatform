@@ -33,9 +33,9 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitBreadcrumbItem.IconName));
 
     /// <summary>
-    /// The EndIcon field name and selector of the custom input class.
+    /// The ReversedIcon field name and selector of the custom input class.
     /// </summary>
-    public BitNameSelectorPair<TItem, bool?> EndIcon { get; set; } = new(nameof(BitBreadcrumbItem.EndIcon));
+    public BitNameSelectorPair<TItem, bool?> ReversedIcon { get; set; } = new(nameof(BitBreadcrumbItem.ReversedIcon));
 
     /// <summary>
     /// The IsSelected field name and selector of the custom input class.

@@ -40,11 +40,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     [Parameter] public RenderFragment? DividerIconTemplate { get; set; }
 
     /// <summary>
-    /// Reverses the positions of the icon and the item text of the item content.
-    /// </summary>
-    [Parameter] public bool EndIcon { get; set; }
-
-    /// <summary>
     /// Collection of BreadLists to render.
     /// </summary>
     [Parameter]
@@ -103,6 +98,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// The custom template content to render each item in overflow list.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? OverflowTemplate { get; set; }
+
+    /// <summary>
+    /// Reverses the positions of the icon and the item text of the item content.
+    /// </summary>
+    [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// The class HTML attribute for Selected Item.
@@ -261,7 +261,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
             classes.Add("bit-brc-disi");
         }
 
-        if (GetEndIcon(item))
+        if (GetReversedIcon(item))
         {
             classes.Add("bit-brc-rvi");
         }
@@ -418,26 +418,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
     }
 
-    private bool GetEndIcon(TItem item)
+    private bool GetReversedIcon(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
-            return breadcrumbItem.EndIcon ?? EndIcon;
+            return breadcrumbItem.ReversedIcon ?? ReversedIcon;
         }
 
         if (item is BitBreadcrumbOption bitBreadcrumbOption)
         {
-            return bitBreadcrumbOption.EndIcon ?? EndIcon;
+            return bitBreadcrumbOption.ReversedIcon ?? ReversedIcon;
         }
 
         if (NameSelectors is null) return true;
 
-        if (NameSelectors.EndIcon.Selector is not null)
+        if (NameSelectors.ReversedIcon.Selector is not null)
         {
-            return NameSelectors.EndIcon.Selector!(item) ?? EndIcon;
+            return NameSelectors.ReversedIcon.Selector!(item) ?? ReversedIcon;
         }
 
-        return item.GetValueFromProperty(NameSelectors.EndIcon.Name, EndIcon);
+        return item.GetValueFromProperty(NameSelectors.ReversedIcon.Name, ReversedIcon);
     }
 
     private bool GetIsSelected(TItem item)

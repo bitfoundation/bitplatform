@@ -36,7 +36,7 @@ public class BitBreadcrumbItem
     /// <summary>
     /// Reverses the positions of the icon and the item text of the item content.
     /// </summary>
-    public bool? EndIcon { get; set; }
+    public bool? ReversedIcon { get; set; }
 
     /// <summary>
     /// Display the breadcrumb item as the selected item.

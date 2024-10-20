@@ -57,7 +57,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
                OverflowIconName=""@BitIconName.CollapseMenu""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
-               EndIcon />";
+               ReversedIcon />";
     private readonly string example3CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWitIcon =
 [

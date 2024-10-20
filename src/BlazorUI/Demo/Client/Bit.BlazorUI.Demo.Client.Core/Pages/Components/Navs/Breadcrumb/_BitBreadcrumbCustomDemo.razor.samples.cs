@@ -125,7 +125,7 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OverflowIconName=""@BitIconName.CollapseMenu""
-               EndIcon />";
+               ReversedIcon />";
     private readonly string example3CsharpCode = @"
 public class PageInfo
 {
