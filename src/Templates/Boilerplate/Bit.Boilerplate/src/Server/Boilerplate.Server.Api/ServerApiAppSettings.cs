@@ -1,4 +1,5 @@
-﻿using AdsPush.Abstraction.Settings;
+﻿//+:cnd:noEmit
+using AdsPush.Abstraction.Settings;
 
 namespace Boilerplate.Server.Api;
 
@@ -40,10 +41,7 @@ public partial class ServerApiAppSettings : SharedAppSettings
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
         //#if (notification == true)
-        if (AdsPushVapid is not null)
-        {
-            Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
-        }
+        Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
         //#endif
 
         if (AppEnvironment.IsDev() is false)
@@ -62,7 +60,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
             //#endif
 
             //#if (notification == true)
-            if (AdsPushVapid!.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid.Subject is "mailto: <test@bitplatform.dev>")
+            if (AdsPushVapid!.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid!.Subject is "mailto: <test@bitplatform.dev>")
             {
                 throw new InvalidOperationException("The AdsPushVapid's PrivateKey and Subject are not set. Please set them in the server's appsettings.json file.");
             }
