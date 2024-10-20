@@ -15,9 +15,7 @@ public partial class AddOrEditCategoryPage
 
     private bool isLoading;
     private bool isSaving;
-    private string? saveMessage;
     private bool isColorPickerOpen;
-    private BitColor saveMessageColor;
     private CategoryDto category = new();
 
     protected override async Task OnInitAsync()
@@ -72,14 +70,11 @@ public partial class AddOrEditCategoryPage
         }
         catch (ResourceValidationException e)
         {
-            saveMessageColor = BitColor.Error;
-
-            saveMessage = string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message));
+            SnackBarService.Error(string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message)));
         }
         catch (KnownException e)
         {
-            saveMessage = e.Message;
-            saveMessageColor = BitColor.Error;
+            SnackBarService.Error(e.Message);
         }
         finally
         {
