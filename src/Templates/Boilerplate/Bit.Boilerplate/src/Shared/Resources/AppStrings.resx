@@ -147,6 +147,9 @@
     <data name="ConflictException" xml:space="preserve">
     <value>Request could not be processed because of conflict in the request</value>
   </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
   </data>
@@ -189,6 +192,9 @@
   </data>
     <data name="Date" xml:space="preserve">
     <value>Date</value>
+  </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Settings</value>
   </data>
     <data name="Settings" xml:space="preserve">
     <value>Settings</value>
@@ -253,6 +259,9 @@
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
   </data>
@@ -267,7 +276,10 @@
     <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>
-    <data name="TermsTitle" xml:space="preserve">
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
     <value>Terms</value>
   </data>
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
@@ -438,6 +450,9 @@
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your email address.</value>
   </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
     <data name="ConfirmTitle" xml:space="preserve">
     <value>Confirm your account</value>
   </data>
@@ -528,7 +543,7 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgotPassword" xml:space="preserve">
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>Forgot password</value>
   </data>
     <data name="ForgotPasswordTitle" xml:space="preserve">
@@ -552,10 +567,13 @@
     <data name="HomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
-    <data name="HomeTitle" xml:space="preserve">
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>Home</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
     <value>Build all of your apps</value>
   </data>
-    <data name="HomeTitle2" xml:space="preserve">
+    <data name="HomePanelSubtitle" xml:space="preserve">
     <value>using what you already know and love</value>
   </data>
     <data name="WatchVideo" xml:space="preserve">
@@ -603,6 +621,12 @@
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>Resend Email Token</value>
   </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
   </data>
@@ -627,7 +651,7 @@
     <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
-    <data name="SignInTitle" xml:space="preserve">
+    <data name="SignInPageTitle" xml:space="preserve">
     <value>Sign in</value>
   </data>
     <data name="SignInPanelTitle" xml:space="preserve">
@@ -675,8 +699,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>Sign up</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpPageTitle" xml:space="preserve">
     <value>Sign up</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Get started today</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Create new account with</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>Submit</value>
@@ -692,9 +722,6 @@
   </data>
     <data name="SelectBirthDate" xml:space="preserve">
     <value>Select your birth date</value>
-  </data>
-    <data name="ResetPassword" xml:space="preserve">
-    <value>Reset password</value>
   </data>
     <data name="Action" xml:space="preserve">
     <value>Action</value>
@@ -991,7 +1018,10 @@
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo item could not be found</value>
   </data>
-    <data name="TodoTitle" xml:space="preserve">
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
     <value>Todo</value>
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
@@ -1096,6 +1126,9 @@
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Edit product</value>
+  </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>Dashboard</value>
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>

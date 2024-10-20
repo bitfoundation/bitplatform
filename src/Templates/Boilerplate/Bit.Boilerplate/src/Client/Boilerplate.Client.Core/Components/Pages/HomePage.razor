@@ -2,14 +2,14 @@
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
 
 <section>
     <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="home-stack">
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
-            @Localizer[nameof(AppStrings.HomeTitle)]
+            @Localizer[nameof(AppStrings.HomePanelTitle)]
             <br />
-            @Localizer[nameof(AppStrings.HomeTitle2)]
+            @Localizer[nameof(AppStrings.HomePanelSubtitle)]
         </BitText>
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">

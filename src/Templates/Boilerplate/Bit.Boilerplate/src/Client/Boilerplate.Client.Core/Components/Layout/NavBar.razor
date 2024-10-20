@@ -13,7 +13,7 @@
     <a href="@Urls.TodoPage">
         <BitIcon IconName="@BitIconName.ToDoLogoOutline" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
         <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.TodoTitle)]
+            @Localizer[nameof(AppStrings.Todo)]
         </BitText>
     </a>
     @*#endif*@
@@ -44,7 +44,7 @@
     <a href="@Urls.TermsPage">
         <BitIcon IconName="@BitIconName.EntityExtraction" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
         <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.TermsTitle)]
+            @Localizer[nameof(AppStrings.Terms)]
         </BitText>
     </a>
 </section>

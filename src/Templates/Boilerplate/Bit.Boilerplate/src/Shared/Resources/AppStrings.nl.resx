@@ -147,6 +147,9 @@
     <data name="ConflictException" xml:space="preserve">
     <value>Aanvraag kan niet worden verwerkt vanwege een conflict in de aanvraag</value>
   </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>Toegang tot de gevraagde bron is verboden</value>
   </data>
@@ -189,6 +192,9 @@
   </data>
     <data name="Date" xml:space="preserve">
     <value>Datum</value>
+  </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Instellingen</value>
   </data>
     <data name="Settings" xml:space="preserve">
     <value>Instellingen</value>
@@ -253,6 +259,9 @@
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Sessie succesvol verwijderd</value>
   </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>Er is hier niets.</value>
   </data>
@@ -267,7 +276,10 @@
     <data name="FullName" xml:space="preserve">
     <value>Volledige naam</value>
   </data>
-    <data name="TermsTitle" xml:space="preserve">
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>Voorwaarde</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
     <value>Voorwaarde</value>
   </data>
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
@@ -438,6 +450,9 @@
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>We hebben een bevestigingstoken naar uw e-mailadres gestuurd.</value>
   </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>Bevestigen</value>
+  </data>
     <data name="ConfirmTitle" xml:space="preserve">
     <value>Bevestig je account</value>
   </data>
@@ -528,7 +543,7 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>Er is een fout opgetreden tijdens het uploaden van het bestand</value>
   </data>
-    <data name="ForgotPassword" xml:space="preserve">
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>Wachtwoord vergeten</value>
   </data>
     <data name="ForgotPasswordTitle" xml:space="preserve">
@@ -552,10 +567,13 @@
     <data name="HomeMessage" xml:space="preserve">
     <value>Creëer eenvoudig jouw multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app op de snelste manier ooit!</value>
   </data>
-    <data name="HomeTitle" xml:space="preserve">
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>Thuis</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
     <value>Bouw al uw apps</value>
   </data>
-    <data name="HomeTitle2" xml:space="preserve">
+    <data name="HomePanelSubtitle" xml:space="preserve">
     <value>gebruik makend van wat je al kent en leuk vindt</value>
   </data>
     <data name="WatchVideo" xml:space="preserve">
@@ -603,6 +621,12 @@
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>E-mailtoken opnieuw verzenden</value>
   </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>Wachtwoord opnieuw instellen</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>Wachtwoord opnieuw instellen</value>
+  </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Wachtwoord opnieuw instellen</value>
   </data>
@@ -627,7 +651,7 @@
     <data name="Save" xml:space="preserve">
     <value>Opslaan</value>
   </data>
-    <data name="SignInTitle" xml:space="preserve">
+    <data name="SignInPageTitle" xml:space="preserve">
     <value>Inloggen</value>
   </data>
     <data name="SignInPanelTitle" xml:space="preserve">
@@ -675,8 +699,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>Inloggen</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpPageTitle" xml:space="preserve">
     <value>Inloggen</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Ga vandaag nog aan de slag</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Maak een nieuw account aan bij</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>Opslaan</value>
@@ -692,9 +722,6 @@
   </data>
     <data name="SelectBirthDate" xml:space="preserve">
     <value>Selecteer je geboortedatum</value>
-  </data>
-    <data name="ResetPassword" xml:space="preserve">
-    <value>Wachtwoord opnieuw instellen</value>
   </data>
     <data name="Action" xml:space="preserve">
     <value>Actie</value>
@@ -994,7 +1021,10 @@
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo-item kan niet worden gevonden</value>
   </data>
-    <data name="TodoTitle" xml:space="preserve">
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>To do</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
     <value>To do</value>
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
@@ -1099,6 +1129,9 @@
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Product bewerken</value>
+  </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>Dashboard</value>
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
