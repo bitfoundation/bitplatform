@@ -1,59 +1,5 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
-
-.page-container {
-    width: 100%;
-    height: 100%;
-    flex-grow: 1;
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-}
-
-.page-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: rem2(37px);
-
-    @include sm {
-        margin-bottom: rem2(29px);
-    }
-}
-
-::deep .back-btn {
-    margin-inline-end: rem2(12px);
-
-    &[dir=rtl] {
-        transform: scale(-1);
-    }
-}
-
-.page-title {
-    margin: 0;
-    font-weight: 700;
-    font-size: rem2(24px);
-    line-height: rem2(32px);
-
-    @include md {
-        font-weight: 600;
-        font-size: rem2(20px);
-        line-height: rem2(28px);
-    }
-
-    @include sm {
-        font-weight: 600;
-        font-size: rem2(18px);
-        line-height: rem2(24px);
-    }
-}
-
-.form-input-container {
-    width: 100%;
-    min-width: rem2(270px);
-    margin-bottom: rem2(24px);
-}
 
 .color-btn {
     border: none;
@@ -82,6 +28,16 @@
     }
 }
 
-::deep .validation-message {
-    color: $bit-color-error;
+::deep {
+    .back-btn {
+        margin-inline-end: rem2(12px);
+
+        &[dir=rtl] {
+            transform: scale(-1);
+        }
+    }
+
+    .validation-message {
+        color: $bit-color-error;
+    }
 }
