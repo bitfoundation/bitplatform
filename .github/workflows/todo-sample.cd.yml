@@ -51,7 +51,7 @@ jobs:
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -149,7 +149,7 @@ jobs:
         files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
+        WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret

@@ -1,17 +1,21 @@
 ﻿//+:cnd:noEmit
-//#if (notification == true)
 using AdsPush.Abstraction.Settings;
-//#endif
 
 namespace Boilerplate.Server.Api;
 
-public partial class AppSettings : IValidatableObject
+public partial class ServerApiAppSettings : SharedAppSettings
 {
-    public IdentitySettings Identity { get; set; } = default!;
+    /// <summary>
+    /// It can also be configured using: dotnet user-secrets set 'DataProtectionCertificatePassword' '@nyPassw0rd'
+    /// </summary>
+    [Required]
+    public string? DataProtectionCertificatePassword { get; set; }
 
-    public EmailSettings Email { get; set; } = default!;
+    public AppIdentityOptions Identity { get; set; } = default!;
 
-    public SmsSettings Sms { get; set; } = default!;
+    public EmailOptions Email { get; set; } = default!;
+
+    public SmsOptions Sms { get; set; } = default!;
 
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
@@ -22,27 +26,56 @@ public partial class AppSettings : IValidatableObject
     //#endif
 
     //#if (notification == true)
-    public AdsPushVapidSettings? AdsPushVapid { get; set; } = default!;
+    public AdsPushVapidSettings AdsPushVapid { get; set; } = default!;
 
-    public AdsPushFirebaseSettings? AdsPushFirebase { get; set; } = default!;
+    public AdsPushFirebaseSettings AdsPushFirebase { get; set; } = default!;
 
-    public AdsPushAPNSSettings? AdsPushAPNS { get; set; } = default!;
+    public AdsPushAPNSSettings AdsPushAPNS { get; set; } = default!;
     //#endif
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        var validationResults = new List<ValidationResult>();
+        var validationResults = base.Validate(validationContext).ToList();
 
         Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
         Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
+        //#if (notification == true)
+        Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
+        //#endif
+
+        if (AppEnvironment.IsDev() is false)
+        {
+            if (DataProtectionCertificatePassword is "P@ssw0rdP@ssw0rd")
+            {
+                throw new InvalidOperationException(@"The default test certificate is still in use. Please replace it with a new one by running the 'dotnet dev-certs https --export-path DataProtectionCertificate.pfx --password @nyPassw0rd'
+command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with the new password.");
+            }
+
+            //#if (captcha == "reCaptcha")
+            if (GoogleRecaptchaSecretKey is "6LdMKr4pAAAAANvngWNam_nlHzEDJ2t6SfV6L_DS")
+            {
+                throw new InvalidOperationException("The GoogleRecaptchaSecretKey is not set. Please set it in the server's appsettings.json file.");
+            }
+            //#endif
+
+            //#if (notification == true)
+            if (AdsPushVapid!.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid!.Subject is "mailto: <test@bitplatform.dev>")
+            {
+                throw new InvalidOperationException("The AdsPushVapid's PrivateKey and Subject are not set. Please set them in the server's appsettings.json file.");
+            }
+            //#endif
+        }
 
         return validationResults;
     }
 }
 
-public partial class IdentitySettings : IdentityOptions
+public partial class AppIdentityOptions : IdentityOptions
 {
+    /// <summary>
+    /// BearerTokenExpiration used as JWT's expiration claim, access token's expires in and cookie's max age.
+    /// </summary>
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
 
@@ -71,7 +104,7 @@ public partial class IdentitySettings : IdentityOptions
     public TimeSpan RevokeUserSessionsDelay { get; set; }
 }
 
-public partial class EmailSettings
+public partial class EmailOptions
 {
     [Required]
     public string Host { get; set; } = default!;
@@ -90,7 +123,7 @@ public partial class EmailSettings
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 
-public partial class SmsSettings
+public partial class SmsOptions
 {
     public string? FromPhoneNumber { get; set; }
     public string? TwilioAccountSid { get; set; }

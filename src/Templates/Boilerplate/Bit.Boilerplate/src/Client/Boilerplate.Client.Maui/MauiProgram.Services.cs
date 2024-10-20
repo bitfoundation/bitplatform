@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Boilerplate.Client.Core;
 using Boilerplate.Client.Maui.Services;
+using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Maui;
 
@@ -60,7 +62,7 @@ public static partial class MauiProgram
         builder.Logging.AddApplicationInsights(config =>
         {
             config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
-            var connectionString = configuration["ApplicationInsights:ConnectionString"];
+            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
             if (string.IsNullOrEmpty(connectionString) is false)
             {
                 config.ConnectionString = connectionString;
@@ -82,6 +84,17 @@ public static partial class MauiProgram
         {
             services.AddSessioned<ILocalHttpServer, MauiLocalHttpServer>();
         }
+
+        services.AddOptions<SharedAppSettings>()
+            .Bind(configuration)
+            .ValidateOnStart();
+
+        services.AddOptions<ClientAppSettings>()
+            .Bind(configuration)
+            .ValidateOnStart();
+
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
 #if Android
         services.AddClientMauiProjectAndroidServices();

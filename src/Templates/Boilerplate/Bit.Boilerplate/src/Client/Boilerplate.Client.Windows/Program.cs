@@ -1,5 +1,4 @@
-﻿using Boilerplate.Client.Windows.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Boilerplate.Client.Core;
 using Velopack;
 
 namespace Boilerplate.Client.Windows;
@@ -27,7 +26,7 @@ public partial class Program
             var services = await App.Current.Dispatcher.InvokeAsync(() => ((MainWindow)App.Current.MainWindow).AppWebView.Services);
             try
             {
-                var windowsUpdateSettings = services.GetRequiredService<IOptionsSnapshot<WindowsUpdateSettings>>().Value;
+                var windowsUpdateSettings = services.GetRequiredService<ClientAppSettings>().WindowsUpdate;
                 if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
                 {
                     return;
