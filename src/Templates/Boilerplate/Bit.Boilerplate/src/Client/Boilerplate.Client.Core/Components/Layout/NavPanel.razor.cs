@@ -56,6 +56,10 @@ public partial class NavPanel
     private async Task ToggleNavPanel()
     {
         isMenuToggled = !isMenuToggled;
+        if (isMenuToggled)
+        {
+            SearchNavItems(null);
+        }
     }
 
     private void SearchNavItems(string? searchText)
