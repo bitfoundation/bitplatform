@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Shared.Controllers.PushNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Microsoft.JSInterop;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -9,12 +10,13 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected IConfiguration configuration = default!;
     [AutoInject] protected IJSRuntime jsRuntime = default!;
     [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
+    [AutoInject] protected ClientAppSettings ClientAppSettings = default!;
 
     public virtual string Token { get; set; }
     public virtual bool NotificationsSupported => false;
     public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AdsPush:Primary:Vapid:PublicKey"));
+        return await jsRuntime.GetDeviceInstallation(ClientAppSettings.AdsPushVapid!.PublicKey!);
     }
 
     public async Task RegisterDevice(CancellationToken cancellationToken)

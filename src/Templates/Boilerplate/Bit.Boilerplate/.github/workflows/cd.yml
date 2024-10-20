@@ -45,7 +45,7 @@ jobs:
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 #if (notifications == true)
-        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
+        AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
     - name: Install wasm
@@ -152,7 +152,7 @@ jobs:
         files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Shared\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+        WindowsUpdate.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release

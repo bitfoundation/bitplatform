@@ -45,7 +45,7 @@ jobs:
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
+        AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
     - uses: actions/setup-node@v4
       with:
@@ -153,7 +153,7 @@ jobs:
         files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json, AdminPanel\src\Shared\appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
+        WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Generate CSS/JS files

@@ -1,4 +1,6 @@
 ﻿//-:cnd:noEmit
+using Boilerplate.Shared;
+
 namespace Microsoft.Extensions.Configuration;
 public static partial class IConfigurationExtensions
 {
@@ -25,9 +27,10 @@ public static partial class IConfigurationExtensions
             : throw new InvalidOperationException($"Api server address {serverAddress} is invalid");
     }
 
+    /// <inheritdoc cref="SharedAppSettings.WebClientUrl"/>
     public static string GetWebClientUrl(this IConfiguration configuration)
     {
-        var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+        var webClientUrl = configuration.Get<SharedAppSettings>()!.WebClientUrl;
 
         return string.IsNullOrEmpty(webClientUrl) is false ? webClientUrl : configuration.GetServerAddress();
     }

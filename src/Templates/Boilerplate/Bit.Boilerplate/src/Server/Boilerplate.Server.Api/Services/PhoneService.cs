@@ -5,7 +5,7 @@ namespace Boilerplate.Server.Api.Services;
 
 public partial class PhoneService
 {
-    [AutoInject] private readonly AppSettings appSettings = default!;
+    [AutoInject] private readonly ServerApiAppSettings appSettings = default!;
     [AutoInject] private readonly ILogger<PhoneService> logger = default!;
     [AutoInject] private readonly IHostEnvironment hostEnvironment = default!;
     [AutoInject] private readonly IHttpContextAccessor httpContextAccessor = default!;
