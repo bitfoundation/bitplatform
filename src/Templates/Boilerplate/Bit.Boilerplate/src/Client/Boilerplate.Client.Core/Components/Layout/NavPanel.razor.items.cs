@@ -5,7 +5,7 @@ public partial class NavPanel
 {
     private void CreateNavItems()
     {
-        navItems =
+        allNavItems =
         [
             new()
             {
@@ -14,20 +14,28 @@ public partial class NavPanel
                 Url = Urls.HomePage,
             },
             //#if (sample == "Admin")
-            new() {
-                Text = Localizer[nameof(AppStrings.Dashboard)],
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = Urls.DashboardPage,
-            },
-            new() {
-                Text = Localizer[nameof(AppStrings.Products)],
-                IconName = BitIconName.Product,
-                Url = Urls.ProductsPage,
-            },
-            new() {
-                Text = Localizer[nameof(AppStrings.Categories)],
-                IconName = BitIconName.BuildQueue,
-                Url = Urls.CategoriesPage,
+            new()
+            {
+                Text = Localizer[nameof(AppStrings.AdminPanel)],
+                IconName = BitIconName.Admin,
+                ChildItems =
+                [
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Dashboard)],
+                        IconName = BitIconName.BarChartVerticalFill,
+                        Url = Urls.DashboardPage,
+                    },
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Categories)],
+                        IconName = BitIconName.BuildQueue,
+                        Url = Urls.CategoriesPage,
+                    },
+                    new() {
+                        Text = Localizer[nameof(AppStrings.Products)],
+                        IconName = BitIconName.Product,
+                        Url = Urls.ProductsPage,
+                    }
+                ]
             },
             //#elif (sample == "Todo")
             new()
@@ -66,7 +74,7 @@ public partial class NavPanel
             // dependency injection (DI) or publish-subscribe patterns, the "About" page is integrated within Blazor
             // hybrid projects like Client/Maui.
 
-            navItems.Add(new()
+            allNavItems.Add(new()
             {
                 Text = Localizer[nameof(AppStrings.AboutTitle)],
                 IconName = BitIconName.Info,

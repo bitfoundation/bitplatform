@@ -1031,6 +1031,12 @@
     <value>Takenitem verwijderen</value>
   </data>
     <!--#elif (sample == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>Beheerderspaneel</value>
+  </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>Niets gevonden!</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Aantal producten</value>
   </data>
