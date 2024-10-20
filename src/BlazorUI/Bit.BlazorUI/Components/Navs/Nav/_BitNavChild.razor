@@ -128,7 +128,7 @@
                                       AriaCurrent="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (childItems.Any())
+                        @if (childItems.Any() && Nav.IconOnly is false)
                         {
                             <button @onclick="ToggleItem"
                                     @onclick:preventDefault="true"

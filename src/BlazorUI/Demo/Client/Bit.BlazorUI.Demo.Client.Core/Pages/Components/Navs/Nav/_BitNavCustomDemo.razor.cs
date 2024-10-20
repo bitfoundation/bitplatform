@@ -51,8 +51,17 @@ public partial class _BitNavCustomDemo
     private static readonly List<Section> CustomIconOnlyNavMenu =
     [
         new() { Text = "Home", Icon = BitIconName.Home },
-        new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline },
-        new() { Text = "AdminPanel sample", Icon = BitIconName.LocalAdmin },
+        new() {
+            Text = "AdminPanel sample",
+            Icon = BitIconName.LocalAdmin,
+            Links =
+            [
+                new() { Text = "Dashboard", Icon = BitIconName.ViewDashboard },
+                new() { Text = "Categories", Icon = BitIconName.BuildQueue },
+                new() { Text = "Products", Icon = BitIconName.Product },
+            ]
+        },
+        new() { Text = "Todo sample", Icon = BitIconName.ToDoLogoOutline},
         new() { Text = "BlazorUI", Icon = BitIconName.F12DevTools },
         new() { Text = "Bit academy", Icon = BitIconName.LearningTools, IsEnabled = false },
         new() { Text = "Contact us", Icon = BitIconName.Contact },
@@ -626,8 +635,17 @@ public class Section
 private static readonly List<Section> CustomIconOnlyNavMenu =
 [
     new() { Text = ""Home"", Icon = BitIconName.Home },
-    new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline },
-    new() { Text = ""AdminPanel sample"", Icon = BitIconName.LocalAdmin },
+    new() {
+        Text = ""AdminPanel sample"",
+        Icon = BitIconName.LocalAdmin,
+        Links =
+        [
+            new() { Text = ""Dashboard"", Icon = BitIconName.ViewDashboard },
+            new() { Text = ""Categories"", Icon = BitIconName.BuildQueue },
+            new() { Text = ""Products"", Icon = BitIconName.Product },
+        ]
+    },
+    new() { Text = ""Todo sample"", Icon = BitIconName.ToDoLogoOutline},
     new() { Text = ""BlazorUI"", Icon = BitIconName.F12DevTools },
     new() { Text = ""Bit academy"", Icon = BitIconName.LearningTools, IsEnabled = false },
     new() { Text = ""Contact us"", Icon = BitIconName.Contact },

@@ -51,8 +51,17 @@ public partial class _BitNavItemDemo
     private static readonly List<BitNavItem> IconOnlyNavMenu =
     [
         new() { Text = "Home", IconName = BitIconName.Home },
-        new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline },
-        new() { Text = "AdminPanel sample", IconName = BitIconName.LocalAdmin },
+        new() { 
+            Text = "AdminPanel sample", 
+            IconName = BitIconName.LocalAdmin,
+            ChildItems = 
+            [
+                new() { Text = "Dashboard", IconName = BitIconName.ViewDashboard },
+                new() { Text = "Categories", IconName = BitIconName.BuildQueue },
+                new() { Text = "Products", IconName = BitIconName.Product },
+            ]
+        },
+        new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline},
         new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools },
         new() { Text = "Bit academy", IconName = BitIconName.LearningTools, IsEnabled = false },
         new() { Text = "Contact us", IconName = BitIconName.Contact },
@@ -605,8 +614,17 @@ private bool iconOnly;
 private static readonly List<BitNavItem> IconOnlyNavMenu =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home },
-    new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline },
-    new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin },
+    new() { 
+        Text = ""AdminPanel sample"", 
+        IconName = BitIconName.LocalAdmin,
+        ChildItems = 
+        [
+            new() { Text = ""Dashboard"", IconName = BitIconName.ViewDashboard },
+            new() { Text = ""Categories"", IconName = BitIconName.BuildQueue },
+            new() { Text = ""Products"", IconName = BitIconName.Product },
+        ]
+    },
+    new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline},
     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools },
     new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, IsEnabled = false },
     new() { Text = ""Contact us"", IconName = BitIconName.Contact },
