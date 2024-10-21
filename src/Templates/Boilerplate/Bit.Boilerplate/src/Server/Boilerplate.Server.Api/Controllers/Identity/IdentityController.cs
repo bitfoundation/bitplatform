@@ -169,7 +169,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
-            Device = device ?? Localizer[nameof(AppStrings.UnknwonDevice)],
+            Device = device,
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             StartedOn = DateTimeOffset.UtcNow
         };

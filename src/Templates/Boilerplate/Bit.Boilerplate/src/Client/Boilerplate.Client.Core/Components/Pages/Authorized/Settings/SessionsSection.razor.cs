@@ -63,9 +63,12 @@ public partial class SessionsSection
 
     private static string GetImageUrl(string? device)
     {
-        var d = device?.ToLower() ?? "";
+        if (device is null || device is "Swagger UI")
+            return "unknown.png";
 
-        if (d.Contains("windows")) return "windows.png";
+        var d = device?.ToLowerInvariant() ?? "";
+
+        if (d.Contains("windows") || d.Contains("win32")) return "windows.png";
 
         if (d.Contains("android")) return "android.png";
 
