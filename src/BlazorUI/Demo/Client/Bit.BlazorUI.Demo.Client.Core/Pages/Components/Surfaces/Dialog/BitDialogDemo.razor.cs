@@ -23,7 +23,7 @@ public partial class BitDialogDemo
             Name = "Body",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Alias for childcontent."
+            Description = "Alias for child content."
         },
         new()
         {
@@ -281,6 +281,13 @@ public partial class BitDialogDemo
                 },
                 new()
                 {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner of the ok button of the BitDialog."
+                },
+                new()
+                {
                     Name = "OkButton",
                     Type = "string?",
                     DefaultValue = "null",
@@ -322,6 +329,7 @@ public partial class BitDialogDemo
 
 
     private bool IsOpen = false;
+    private bool IsOpenEvent = false;
 
     private BitDialog dialogRef = default!;
     private BitDialog customDialogRef = default!;
@@ -375,6 +383,15 @@ private BitDialog dialogRef;
 ";
 
     private readonly string example3RazorCode = @"
+<BitButton OnClick=""@(() => IsOpenEvent = true)"">Open Dialog</BitButton>
+<BitDialog @bind-IsOpen=""IsOpenEvent""
+           Title=""Missing Subject""
+           Message=""Do you want to send this message without a subject?""
+           OnOk=""async () => await Task.Delay(1000)"" />";
+    private readonly string example3CsharpCode = @"
+private bool IsOpenEvent = false;";
+
+    private readonly string example4RazorCode = @"
 <style>
     .dialog-title {
         display: flex;
@@ -441,13 +458,13 @@ private BitDialog dialogRef;
         </div>
     </FooterTemplate>
 </BitDialog>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool IsOpen2 = false;
 private string? optionValue;
 private bool IsOpen3 = false;
 ";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitButton OnClick=""@(() => IsOpen4 = true)"">Open Dialog (IsBlocking = true)</BitButton>
 <BitButton OnClick=""@(() => IsOpen5 = true)"">Open Dialog (AutoToggleScroll = false)</BitButton>
 
@@ -460,11 +477,11 @@ private bool IsOpen3 = false;
            @bind-IsOpen=""IsOpen5""
            Title=""Missing Subject""
            Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool IsOpen4 = false;
 private bool IsOpen5 = false;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .relative-container {
         width: 100%;
@@ -530,11 +547,11 @@ private bool IsOpen5 = false;";
     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
     efficitur.
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private bool IsOpen6 = false;
 private bool IsOpen7 = false;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopLeft)"">Top Left</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.TopRight)"">Top Right</BitButton>
 <BitButton OnClick=""() => OpenDialogInPosition(BitDialogPosition.BottomLeft)"">Bottom Left</BitButton>
@@ -544,7 +561,7 @@ private bool IsOpen7 = false;";
            Position=""position""
            Title=""Missing Subject""
            Message=""Do you want to send this message without a subject?"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private bool IsOpenInPosition = false;
 private BitDialogPosition position;
 
@@ -554,7 +571,7 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
     position = positionValue;
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .dialog-title {
         display: flex;
@@ -600,13 +617,13 @@ private void OpenDialogInPosition(BitDialogPosition positionValue)
         </p>
     </div>
 </BitDialog>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool IsDraggable = false;
 private bool IsOpen8 = false;
 private bool IsOpen9 = false;
 ";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" OnClick=""@(() => IsOpen10 = true)"">باز کردن پنجره پیام</BitButton>
 <BitDialog @bind-IsOpen=""IsOpen10"" 
            Dir=""BitDir.Rtl""
@@ -614,6 +631,6 @@ private bool IsOpen9 = false;
            OkText=""تایید""
            CancelText=""انصراف""
            Message=""آیا می خواهید این پیام را بدون موضوع ارسال کنید؟"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool IsOpen10 = false;";
 }
