@@ -22,7 +22,12 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        app.UseForwardedHeaders();
+        if (app.Environment.IsDevelopment() 
+            || configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders!.AllowedHosts.Any())
+        {
+            // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+            app.UseForwardedHeaders(configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders);
+        }
 
         if (CultureInfoManager.MultilingualEnabled)
         {
@@ -143,9 +148,9 @@ public static partial class Program
     {
         var urls = Urls.All!;
 
-       urls = CultureInfoManager.MultilingualEnabled ?
-            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
-            urls;
+        urls = CultureInfoManager.MultilingualEnabled ?
+             urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
+             urls;
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
