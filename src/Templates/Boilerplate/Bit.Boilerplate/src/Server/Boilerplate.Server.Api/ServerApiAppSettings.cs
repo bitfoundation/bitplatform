@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
+//#if (notification == true)
 using AdsPush.Abstraction.Settings;
+//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -33,6 +35,8 @@ public partial class ServerApiAppSettings : SharedAppSettings
     public AdsPushAPNSSettings AdsPushAPNS { get; set; } = default!;
     //#endif
 
+    public ForwardedHeadersOptions ForwardedHeaders { get; set; } = default!;
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -43,6 +47,7 @@ public partial class ServerApiAppSettings : SharedAppSettings
         //#if (notification == true)
         Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
         //#endif
+        Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
 
         if (AppEnvironment.IsDev() is false)
         {

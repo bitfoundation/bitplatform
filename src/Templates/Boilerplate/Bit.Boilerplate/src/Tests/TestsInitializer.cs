@@ -7,6 +7,7 @@ using Microsoft.Data.Sqlite;
 //#if (advancedTests == true)
 using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#endif
+using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
@@ -38,7 +39,7 @@ public partial class TestsInitializer
     //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)
     {
-        if (AppEnvironment.IsDev())
+        if (testServer.WebApp.Environment.IsDevelopment())
         {
             await using var scope = testServer.WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
