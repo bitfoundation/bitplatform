@@ -117,13 +117,16 @@ public partial class ProductsPage
     {
         if (deletingProduct is null) return;
 
-        var id = deletingProduct.Id;
+        try
+        {
+            await productController.Delete(deletingProduct.Id, CurrentCancellationToken);
 
-        deletingProduct = null;
-
-        await productController.Delete(id, CurrentCancellationToken);
-
-        await RefreshData();
+            await RefreshData();
+        }
+        finally
+        {
+            deletingProduct = null;
+        }
     }
 }
 

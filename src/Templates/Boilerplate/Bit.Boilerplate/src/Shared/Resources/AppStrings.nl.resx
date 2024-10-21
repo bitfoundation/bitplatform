@@ -265,7 +265,7 @@
     <data name="NotFoundText" xml:space="preserve">
     <value>Er is hier niets.</value>
   </data>
-    <data name="UnknwonDevice" xml:space="preserve">
+    <data name="UnknownDevice" xml:space="preserve">
     <value>Onbekend apparaat</value>
   </data>
     <!--#if (offlineDb == true) -->
