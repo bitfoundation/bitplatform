@@ -9,7 +9,7 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
 {
     private string? email;
     public override string PagePath => Urls.SignUpPage;
-    public override string PageTitle => AppStrings.SingUpTitle;
+    public override string PageTitle => AppStrings.SignUpPageTitle;
 
     public override async Task Open()
     {

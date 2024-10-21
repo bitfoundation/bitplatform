@@ -14,7 +14,7 @@ public partial class ForgotPasswordPage(IPage page, Uri serverAddress)
     {
         await base.AssertOpen();
 
-        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ForgotPassword);
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ForgotPasswordTitle);
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.ForgotPasswordMessage);
         await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Submit })).ToBeVisibleAsync();
