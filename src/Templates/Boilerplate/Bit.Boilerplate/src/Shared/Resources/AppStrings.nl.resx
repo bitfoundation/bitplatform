@@ -1008,6 +1008,9 @@
     <data name="AboutTitle" xml:space="preserve">
     <value>Over</value>
   </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>Niets gevonden!</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Een To do toevoegen</value>
@@ -1033,9 +1036,6 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Beheerderspaneel</value>
-  </data>
-    <data name="NothingFound" xml:space="preserve">
-    <value>Niets gevonden!</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Aantal producten</value>

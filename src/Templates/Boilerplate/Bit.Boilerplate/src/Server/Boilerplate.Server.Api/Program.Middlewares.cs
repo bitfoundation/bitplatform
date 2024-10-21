@@ -14,7 +14,12 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        app.UseForwardedHeaders();
+        if (app.Environment.IsDevelopment() 
+            || configuration.Get<ServerApiAppSettings>()!.ForwardedHeaders.AllowedHosts.Any())
+        {
+            // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+            app.UseForwardedHeaders(configuration.Get<ServerApiAppSettings>()!.ForwardedHeaders);
+        }
 
         if (CultureInfoManager.MultilingualEnabled)
         {
@@ -32,7 +37,7 @@ public static partial class Program
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
-        if(env.IsDevelopment() is false)
+        if (env.IsDevelopment() is false)
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();

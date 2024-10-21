@@ -389,9 +389,9 @@
                         "src/Shared/Controllers/Categories/**",
                         "src/Shared/Controllers/Products/**",
                         "src/Shared/Controllers/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
                     ]
                 },
                 {
@@ -402,14 +402,14 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
                         "src/Shared/Controllers/Todo/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Todo/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Todo/**"
                     ]
                 },
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Main/Offline/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Offline/**"
                     ]
                 },
                 {
@@ -453,7 +453,7 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
                         "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },

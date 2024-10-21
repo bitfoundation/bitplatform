@@ -30,4 +30,3 @@ public class ApplicationInsightsOptions
 {
     public string? ConnectionString { get; set; }
 }
-//#endif

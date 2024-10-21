@@ -28,23 +28,13 @@ public static partial class Program
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-        services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
 
         services.AddOptions<SharedAppSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
         services.AddResponseCaching();
 
@@ -66,6 +56,19 @@ public static partial class Program
 
         services.AddAntiforgery();
         //#endif
+
+        services.AddOptions<ServerWebAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<ClientAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ServerWebAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
         AddBlazor(builder);
     }
@@ -96,7 +99,7 @@ public static partial class Program
                 BaseAddress = serverAddress
             };
 
-            var forwardedHeadersOptions = sp.GetRequiredService<IOptionsSnapshot<ForwardedHeadersOptions>>().Value;
+            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebAppSettings>().ForwardedHeaders;
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {

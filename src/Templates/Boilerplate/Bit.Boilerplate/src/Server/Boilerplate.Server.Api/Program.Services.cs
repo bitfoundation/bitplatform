@@ -143,11 +143,6 @@ public static partial class Program
             //#endif
         };
 
-        services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         services.AddOptions<SharedAppSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()

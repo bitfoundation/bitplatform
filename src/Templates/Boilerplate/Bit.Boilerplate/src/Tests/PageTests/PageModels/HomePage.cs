@@ -6,14 +6,14 @@ public partial class MainHomePage(IPage page, Uri serverAddress)
     : MainLayout(page, serverAddress)
 {
     public override string PagePath => Urls.HomePage;
-    public override string PageTitle => AppStrings.HomeTitle;
+    public override string PageTitle => AppStrings.HomePageTitle;
 }
 
 public partial class IdentityHomePage(IPage page, Uri serverAddress)
     : IdentityLayout(page, serverAddress)
 {
     public override string PagePath => Urls.HomePage;
-    public override string PageTitle => AppStrings.HomeTitle;
+    public override string PageTitle => AppStrings.HomePageTitle;
 
     public async Task<MainHomePage> SignOut()
     {
