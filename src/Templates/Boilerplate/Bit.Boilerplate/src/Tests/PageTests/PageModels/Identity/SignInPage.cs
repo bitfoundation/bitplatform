@@ -7,7 +7,7 @@ public partial class SignInPage(IPage page, Uri serverAddress)
     : MainLayout(page, serverAddress)
 {
     public override string PagePath => Urls.SignInPage;
-    public override string PageTitle => AppStrings.SignInTitle;
+    public override string PageTitle => AppStrings.SignInPageTitle;
     public string? ReturnUrl { private get; init; }
 
     public override async Task AssertOpen()

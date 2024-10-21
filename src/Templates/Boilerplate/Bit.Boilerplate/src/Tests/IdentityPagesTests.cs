@@ -26,7 +26,7 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SignInPage).ToString());
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInTitle);
+        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 
         const string email = "test@bitplatform.dev";
         const string password = "123456";
