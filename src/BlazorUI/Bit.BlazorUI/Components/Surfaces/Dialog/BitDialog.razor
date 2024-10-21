@@ -58,18 +58,25 @@
                             <div style="@Styles?.ButtonsContainer" class="bit-dlg-bct @Classes?.ButtonsContainer">
                                 @if (ShowOkButton)
                                 {
-                                    <button style="@Styles?.OkButton"
-                                            class="bit-dlg-okb @Classes?.OkButton"
-                                            @onclick="HandleOnOkClick">
-                                        @OkText
+                                    <button @onclick="HandleOnOkClick"
+                                            style="@Styles?.OkButton"
+                                            class="bit-dlg-okb @Classes?.OkButton">
+                                        @if (_isLoading)
+                                        {
+                                            <div style="@Styles?.Spinner" class="bit-dlg-spn @Classes?.Spinner"></div>
+                                        }
+                                        else
+                                        {
+                                            @OkText
+                                        }
                                     </button>
                                 }
 
                                 @if (ShowCancelButton)
                                 {
-                                    <button style="@Styles?.CancelButton"
-                                            class="bit-dlg-cnb @Classes?.CancelButton"
-                                            @onclick="HandleOnCancelClick">
+                                    <button @onclick="HandleOnCancelClick"
+                                            style="@Styles?.CancelButton"
+                                            class="bit-dlg-cnb @Classes?.CancelButton">
                                         @CancelText
                                     </button>
                                 }

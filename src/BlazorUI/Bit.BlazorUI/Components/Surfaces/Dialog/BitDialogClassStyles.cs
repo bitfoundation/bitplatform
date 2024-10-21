@@ -43,6 +43,11 @@ public class BitDialogClassStyles
     public string? ButtonsContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the loading spinner of the ok button of the BitDialog.
+    /// </summary>
+    public string? Spinner { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the ok button of the BitDialog.
     /// </summary>
     public string? OkButton { get; set; }
