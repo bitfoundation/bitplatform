@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class UnauthenticatedHeader : AppComponentBase, IDisposable
+public partial class IdentityHeader : AppComponentBase, IDisposable
 {
     private string? backLinkPayload;
     private BitDropdownItem<string>[] cultures = default!;

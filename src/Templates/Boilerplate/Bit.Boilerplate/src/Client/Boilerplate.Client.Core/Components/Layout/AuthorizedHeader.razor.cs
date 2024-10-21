@@ -1,10 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-<<<<<<<< HEAD:src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Components/Layout/AuthenticatedHeader.razor.cs
-public partial class AuthenticatedHeader : AppComponentBase
-========
 public partial class AuthorizedHeader : AppComponentBase
->>>>>>>> 196d1ef14557dc3d723cd6ce6f8c73456bfd7ec4:src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Components/Layout/AuthorizedHeader.razor.cs
 {
     private string? pageTitle;
     private string? pageSubtitle;
