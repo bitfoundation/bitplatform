@@ -68,4 +68,3 @@ public class AdsPushVapidOptions
     [Required]
     public string? PublicKey { get; set; }
 }
-//#endif
