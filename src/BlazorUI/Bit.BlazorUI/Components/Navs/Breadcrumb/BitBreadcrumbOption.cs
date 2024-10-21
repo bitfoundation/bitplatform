@@ -23,6 +23,16 @@ public partial class BitBreadcrumbOption : BitComponentBase, IDisposable
     [Parameter] public string? Href { get; set; }
 
     /// <summary>
+    /// Name of an icon to render next to the item text.
+    /// </summary>
+    [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Reverses the positions of the icon and the item text of the item content.
+    /// </summary>
+    [Parameter] public bool? ReversedIcon { get; set; }
+
+    /// <summary>
     /// Display the breadcrumb option as the selected option.
     /// </summary>
     [Parameter] public bool IsSelected { get; set; }
@@ -31,6 +41,16 @@ public partial class BitBreadcrumbOption : BitComponentBase, IDisposable
     /// Click event handler of the breadcrumb option.
     /// </summary>
     [Parameter] public EventCallback<BitBreadcrumbOption> OnClick { get; set; }
+
+    /// <summary>
+    /// The custom template for the option in overflow list.
+    /// </summary>
+    [Parameter] public RenderFragment<BitBreadcrumbOption>? OverflowTemplate { get; set; }
+
+    /// <summary>
+    /// The custom template for the option.
+    /// </summary>
+    [Parameter] public RenderFragment<BitBreadcrumbOption>? Template { get; set; }
 
     protected override string RootElementClass => "bit-bro";
 
