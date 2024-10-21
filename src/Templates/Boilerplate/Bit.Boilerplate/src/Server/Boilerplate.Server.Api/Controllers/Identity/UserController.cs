@@ -59,6 +59,8 @@ public partial class UserController : AppControllerBase, IUserController
 
                 dto.IsValid = DateTimeOffset.UtcNow - lastSeenDateTime < AppSettings.Identity.RefreshTokenExpiration;
 
+                dto.Device ??= Localizer[nameof(AppStrings.UnknwonDevice)];
+
                 return dto;
             })
         .ToList();

@@ -10,6 +10,7 @@ public partial class SessionsSection
     private UserSessionDto? currentSession;
     private IEnumerable<UserSessionDto> otherSessions = [];
 
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     [AutoInject] private IUserController userController = default!;
 
@@ -61,11 +62,14 @@ public partial class SessionsSection
         }
     }
 
-    private static string GetImageUrl(string? device)
+    private string GetImageUrl(string? device)
     {
-        var d = device?.ToLower() ?? "";
+        if (device == localizer[nameof(AppStrings.UnknwonDevice)])
+            return "unknown.png";
 
-        if (d.Contains("windows")) return "windows.png";
+        var d = device?.ToLowerInvariant() ?? "";
+
+        if (d.Contains("windows") || d.Contains("win32")) return "windows.png";
 
         if (d.Contains("android")) return "android.png";
 

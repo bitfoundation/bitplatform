@@ -44,9 +44,7 @@ public class _BitBasicListVirtualize<TItem> : ComponentBase
         builder.AddAttribute(seq++, nameof(Virtualize<TItem>.ItemContent),
             (RenderFragment<TItem>)(item => b => b.AddContent(seq++, (ItemContent ?? ChildContent)?.Invoke(item))));
 
-#if NET8_0_OR_GREATER
         builder.AddAttribute(seq++, nameof(Virtualize<TItem>.EmptyContent), (RenderFragment)(b => b.AddContent(seq++, EmptyContent)));
-#endif
 
         builder.AddComponentReferenceCapture(seq++, v => _virtualizeRef = (Virtualize<TItem>)v);
 
