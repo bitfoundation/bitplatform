@@ -10,6 +10,7 @@ public partial class SessionsSection
     private UserSessionDto? currentSession;
     private IEnumerable<UserSessionDto> otherSessions = [];
 
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     [AutoInject] private IUserController userController = default!;
 
@@ -61,9 +62,9 @@ public partial class SessionsSection
         }
     }
 
-    private static string GetImageUrl(string? device)
+    private string GetImageUrl(string? device)
     {
-        if (device is null || device is "Swagger UI")
+        if (device == localizer[nameof(AppStrings.UnknwonDevice)])
             return "unknown.png";
 
         var d = device?.ToLowerInvariant() ?? "";
