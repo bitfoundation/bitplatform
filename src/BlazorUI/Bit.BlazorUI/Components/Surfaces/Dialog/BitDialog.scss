@@ -9,6 +9,16 @@
     z-index: $zindex-modal;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
+
+    @keyframes bit-dlg-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-dlg-nta {
@@ -134,14 +144,6 @@
     }
 }
 
-.bit-dlg-ldc {
-    display: flex;
-    gap: spacing(1);
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
-}
-
 .bit-dlg-spn {
     border-radius: 50%;
     width: spacing(2.5);
@@ -149,8 +151,8 @@
     border-color: $clr-brd-sec;
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
-    border-top-color: var(--bit-btn-clr-spn);
-    animation: bit-btn-spinner-animation 1.3s linear infinite;
+    border-top-color: $clr-pri-dark;
+    animation: bit-dlg-spinner-animation 1.3s linear infinite;
     animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
