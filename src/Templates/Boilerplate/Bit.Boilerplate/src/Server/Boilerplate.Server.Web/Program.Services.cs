@@ -34,13 +34,7 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
         services.AddResponseCaching();
 
@@ -68,7 +62,13 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<ClientAppSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ServerWebAppSettings>>().Value);
+        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
         AddBlazor(builder);
     }
