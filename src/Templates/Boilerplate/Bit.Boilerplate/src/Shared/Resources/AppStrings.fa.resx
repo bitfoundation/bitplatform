@@ -1008,6 +1008,9 @@
     <data name="AboutTitle" xml:space="preserve">
     <value>درباره</value>
   </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>چیزی پیدا نشد!</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>افزودن یک کار</value>
@@ -1033,9 +1036,6 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
-  </data>
-    <data name="NothingFound" xml:space="preserve">
-    <value>چیزی پیدا نشد!</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>تعداد محصولات</value>
