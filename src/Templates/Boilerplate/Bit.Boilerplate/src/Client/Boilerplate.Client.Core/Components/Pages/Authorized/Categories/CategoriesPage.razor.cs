@@ -95,13 +95,16 @@ public partial class CategoriesPage
     {
         if (deletingCategory is null) return;
 
-        var id = deletingCategory.Id;
+        try
+        {
+            await categoryController.Delete(deletingCategory.Id, CurrentCancellationToken);
 
-        deletingCategory = null;
-
-        await categoryController.Delete(id, CurrentCancellationToken);
-
-        await RefreshData();
+            await RefreshData();
+        }
+        finally
+        {
+            deletingCategory = null;
+        }
     }
 }
 
