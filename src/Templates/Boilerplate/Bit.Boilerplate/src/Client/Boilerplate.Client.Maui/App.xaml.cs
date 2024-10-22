@@ -1,8 +1,5 @@
 ﻿//+:cnd:noEmit
 using Maui.AppStores;
-//#if (notification == true)
-using Plugin.LocalNotification;
-//#endif
 using System.Runtime.InteropServices;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -42,13 +39,6 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
-            //#if (notification == true)
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() == false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
-            //#endif
-
             await CheckForUpdates();
         }
         catch (Exception exp)
@@ -71,7 +61,7 @@ public partial class App
 
                     // It's an opportune moment to request an update. (:
                     // https://github.com/oscoreio/Maui.AppStoreInfo
-                    if (await App.Current!.MainPage!.DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
+                    if (await App.Current!.Windows.First().Page!.DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
                     {
                         await AppStoreInfo.Current.OpenApplicationInStoreAsync();
                     }

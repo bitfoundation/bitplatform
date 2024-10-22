@@ -34,6 +34,7 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+        <UseNativeHttpHandler>false</UseNativeHttpHandler>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
@@ -107,7 +108,7 @@
     </ItemGroup>
 
     <ItemGroup>
-
+        
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />

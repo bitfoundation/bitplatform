@@ -126,9 +126,6 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui';",
             command:"code --install-extension ms-dotnettools.dotnet-maui;"),
-
-            (text:@"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
-            command:"code --install-extension DominicVonk.vscode-resx-editor;"),
         ],
         [CommandGroup.Virtualization] =
         [

@@ -37,7 +37,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 public partial class MainActivity : MauiAppCompatActivity
     //#if (notification == true)
     , IOnSuccessListener
-    //#endif
+//#endif
 {
     //#if (notification == true)
     private IPushNotificationService PushNotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
@@ -53,8 +53,13 @@ public partial class MainActivity : MauiAppCompatActivity
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
         //#if (notification == true)
-        if (PushNotificationService.NotificationsSupported)
-            FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+        PushNotificationService.NotificationsSupported().ContinueWith(task =>
+        {
+            if (task.Result)
+            {
+                FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+            }
+        });
         //#endif
     }
 

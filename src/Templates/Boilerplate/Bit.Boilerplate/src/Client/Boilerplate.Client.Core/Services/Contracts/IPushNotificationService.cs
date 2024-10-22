@@ -5,7 +5,7 @@ namespace Boilerplate.Client.Core.Services.Contracts;
 public interface IPushNotificationService
 {
     string Token { get; set; }
-    bool NotificationsSupported { get; }
+    Task<bool> NotificationsSupported();
     Task<DeviceInstallationDto> GetDeviceInstallation();
     Task RegisterDevice(CancellationToken cancellationToken);
 }
