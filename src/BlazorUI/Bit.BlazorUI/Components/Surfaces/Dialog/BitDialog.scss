@@ -9,6 +9,16 @@
     z-index: $zindex-modal;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
+
+    @keyframes bit-dlg-spinner-animation {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }
 
 .bit-dlg-nta {
@@ -98,12 +108,14 @@
     background-color: $clr-bg-pri;
 
     button {
+        display: flex;
         cursor: pointer;
         text-decoration: none;
         min-width: spacing(8);
         min-height: spacing(4);
         box-sizing: border-box;
         margin: 0 spacing(0.5);
+        justify-content: center;
         font-size: spacing(1.75);
         padding: spacing(0.5) spacing(2);
         border-width: $shp-border-width;
@@ -130,6 +142,18 @@
         border-color: $clr-pri-active;
         background-color: $clr-pri-active;
     }
+}
+
+.bit-dlg-spn {
+    border-radius: 50%;
+    width: spacing(2.5);
+    height: spacing(2.5);
+    border-color: $clr-brd-sec;
+    border-width: spacing(0.2125);
+    border-style: $shp-border-style;
+    border-top-color: $clr-pri-dark;
+    animation: bit-dlg-spinner-animation 1.3s linear infinite;
+    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
 }
 
 .bit-dlg-cnb {

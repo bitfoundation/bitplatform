@@ -6,7 +6,7 @@
         {
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
-                <BitPersona PrimaryText="@currentSession.Device"
+                <BitPersona PrimaryText="@(currentSession.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
                             SecondaryText="@currentSession.Address"
                             TertiaryText="@($"{currentSession.IP} - {currentSession.LastSeenOn}")"
                             Size="BitPersonaSize.Size48"
@@ -27,7 +27,7 @@
                 <BitCard FullWidth>
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                         <BitPersona Class="session-persona"
-                                    PrimaryText="@session.Device"
+                                    PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
                                     SecondaryText="@($"{session.Address} ({session.IP}) - {session.LastSeenOn}")"
                                     Size="BitPersonaSize.Size48"
                                     Presence="@GetPresence(session.LastSeenOn)"
