@@ -25,9 +25,6 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 
     public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        if (string.IsNullOrWhiteSpace(Token))
-            throw new InvalidOperationException("Unable to resolve token for FCMv1.");
-
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),

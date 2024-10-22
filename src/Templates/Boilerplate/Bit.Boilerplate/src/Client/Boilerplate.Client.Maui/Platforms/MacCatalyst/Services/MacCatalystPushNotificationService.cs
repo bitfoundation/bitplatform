@@ -23,9 +23,6 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
 
     public override async Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        if (string.IsNullOrWhiteSpace(Token))
-            throw new InvalidOperationException("Unable to resolve token for APNS.");
-
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),

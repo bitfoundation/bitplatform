@@ -108,7 +108,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        
+
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />

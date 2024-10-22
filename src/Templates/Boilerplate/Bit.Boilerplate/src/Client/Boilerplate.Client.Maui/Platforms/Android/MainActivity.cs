@@ -37,7 +37,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
 public partial class MainActivity : MauiAppCompatActivity
     //#if (notification == true)
     , IOnSuccessListener
-//#endif
+    //#endif
 {
     //#if (notification == true)
     private IPushNotificationService PushNotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
