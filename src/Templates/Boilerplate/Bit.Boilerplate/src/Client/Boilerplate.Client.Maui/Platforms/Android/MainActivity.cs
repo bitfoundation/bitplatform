@@ -53,8 +53,13 @@ public partial class MainActivity : MauiAppCompatActivity
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
         //#if (notification == true)
-        if (PushNotificationService.NotificationsSupported)
-            FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+        PushNotificationService.IsNotificationSupported().ContinueWith(task =>
+        {
+            if (task.Result)
+            {
+                FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+            }
+        });
         //#endif
     }
 

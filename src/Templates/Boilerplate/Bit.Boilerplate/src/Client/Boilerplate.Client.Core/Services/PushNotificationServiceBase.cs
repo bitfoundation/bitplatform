@@ -1,33 +1,33 @@
-﻿using Boilerplate.Shared.Controllers.PushNotification;
-using Boilerplate.Shared.Dtos.PushNotification;
-using Microsoft.JSInterop;
+﻿using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Shared.Controllers.PushNotification;
 
 namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
-    [AutoInject] protected IConfiguration configuration = default!;
-    [AutoInject] protected IJSRuntime jsRuntime = default!;
-    [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
-    [AutoInject] protected ClientAppSettings ClientAppSettings = default!;
 
     public virtual string Token { get; set; }
-    public virtual bool NotificationsSupported => false;
-    public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
-    {
-        return await jsRuntime.GetDeviceInstallation(ClientAppSettings.AdsPushVapid!.PublicKey!);
-    }
+    public virtual Task<bool> IsNotificationSupported() => Task.FromResult(false);
+    public abstract Task<DeviceInstallationDto> GetDeviceInstallation();
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
-        if (NotificationsSupported is false)
+        if (await IsNotificationSupported() is false)
             return;
+
+        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+        while (string.IsNullOrEmpty(Token))
+        {
+            // After the NotificationsSupported Task completes with a result of true,
+            // we use FirebaseMessaging.Instance.GetToken and UNUserNotificationCenter.Current.Delegate.
+            // Those methods are asynchronous and we need to wait for them to complete.
+            await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+        }
 
         var deviceInstallation = await GetDeviceInstallation();
-
-        if (deviceInstallation is null)
-            return;
 
         await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
     }
