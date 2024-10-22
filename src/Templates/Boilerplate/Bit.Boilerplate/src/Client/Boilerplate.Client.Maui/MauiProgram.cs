@@ -42,12 +42,16 @@ public static partial class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseAppStoreInfo()
+            .Configuration.AddClientConfigurations();
+
             //+:cnd:noEmit
             //#if (notification == true)
-            .UseLocalNotification()
+        if (AppPlatform.IsWindows is false)
+        {
+            builder.UseLocalNotification();
+        }
             //#endif
             //-:cnd:noEmit
-            .Configuration.AddClientConfigurations();
 
         builder.ConfigureServices();
 

@@ -99,8 +99,12 @@ public partial class AppInitializer : AppComponentBase
         var access_token = await AuthTokenProvider.GetAccessToken();
 
         hubConnection = new HubConnectionBuilder()
+            .WithAutomaticReconnect()
             .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
             {
+                options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+                // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
+                // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
                 options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
                     return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()

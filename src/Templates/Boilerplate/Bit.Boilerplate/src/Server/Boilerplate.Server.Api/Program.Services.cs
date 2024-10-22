@@ -98,7 +98,10 @@ public static partial class Program
             });
 
         //#if (signalr == true)
-        services.AddSignalR();
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = env.IsDevelopment();
+        });
         //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
