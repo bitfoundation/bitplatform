@@ -21,7 +21,7 @@ public partial class AppDelegate : MauiUIApplicationDelegate
     public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
     {
         //#if (notification == true)
-        NotificationService.NotificationsSupported().ContinueWith(task =>
+        NotificationService.IsNotificationSupported().ContinueWith(task =>
         {
             if (task.Result)
             {

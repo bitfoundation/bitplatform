@@ -8,12 +8,12 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
     public virtual string Token { get; set; }
-    public virtual Task<bool> NotificationsSupported() => Task.FromResult(false);
+    public virtual Task<bool> IsNotificationSupported() => Task.FromResult(false);
     public abstract Task<DeviceInstallationDto> GetDeviceInstallation();
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
-        if (await NotificationsSupported() is false)
+        if (await IsNotificationSupported() is false)
             return;
 
         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
