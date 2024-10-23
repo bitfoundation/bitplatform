@@ -585,4 +585,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             _step = (TValue)(object)1;
         }
     }
+
+    private string GetInputMode()
+    {
+        return (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float))
+            ? "decimal"
+            : "numeric";
+    }
 }
