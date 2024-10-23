@@ -1,7 +1,6 @@
 ﻿//-:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
-using Maui.AppStores;
 //+:cnd:noEmit
 //#if (notification == true)
 using Plugin.LocalNotification;
@@ -41,7 +40,6 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseAppStoreInfo()
             .Configuration.AddClientConfigurations();
 
             //+:cnd:noEmit

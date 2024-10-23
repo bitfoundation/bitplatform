@@ -16,6 +16,8 @@ class App {
         const registration = await navigator.serviceWorker.ready;
         if (!registration) return null;
         const pushManager = registration.pushManager;
+        if (pushManager == null)
+            return;
         let subscription = await pushManager.getSubscription();
         if (subscription == null) {
             subscription = await pushManager.subscribe({

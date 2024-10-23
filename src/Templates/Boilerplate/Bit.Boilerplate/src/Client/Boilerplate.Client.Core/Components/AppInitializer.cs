@@ -158,15 +158,17 @@ public partial class AppInitializer : AppComponentBase
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
-    //#if (signalr == true)
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+
+        //#if (signalr == true)
         if (hubConnection is not null)
         {
             await hubConnection.DisposeAsync();
         }
+        //#endif
 
         await base.DisposeAsync(disposing);
     }
-    //#endif
 }

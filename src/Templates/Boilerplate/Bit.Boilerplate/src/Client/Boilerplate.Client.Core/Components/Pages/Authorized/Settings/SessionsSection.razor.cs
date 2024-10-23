@@ -66,7 +66,7 @@ public partial class SessionsSection
 
         var d = device.ToLowerInvariant();
 
-        if (d.Contains("windows") || d.Contains("win32")) return "windows.png";
+        if (d.Contains("win") /*Windows, WinUI, Win32*/) return "windows.png";
 
         if (d.Contains("android")) return "android.png";
 

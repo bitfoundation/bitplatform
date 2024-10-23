@@ -413,6 +413,6 @@ public static partial class Program
     /// <summary>
     /// For either Blazor Hybrid web view or localhost in dev environment.
     /// </summary>
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
     private static partial Regex LocalhostOriginRegex();
 }
