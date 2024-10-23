@@ -19,12 +19,6 @@
             color: $clr-fg-dis;
         }
     }
-
-    &.bit-rtl {
-        .bit-brc-sep {
-            transform: scaleX(-1);
-        }
-    }
 }
 
 .bit-brc-iwp {
@@ -47,8 +41,12 @@
     }
 }
 
-.bit-brc-sep {
+.bit-brc-div {
     color: $clr-fg-sec;
+}
+
+.bit-brc-rdi {
+    transform: scaleX(-1);
 }
 
 .bit-brc-obt {

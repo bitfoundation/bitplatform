@@ -104,7 +104,7 @@
                     }
                     else
                     {
-                        <i class="bit-brc-sep bit-icon bit-icon--@(DividerIconName ?? "ChevronRight")" />
+                        <i class="bit-brc-div bit-icon bit-icon--@(DividerIconName ?? "ChevronRight") @(Dir == BitDir.Rtl && DividerIconName is null ? "bit-brc-rdi" : "")" />
                     }
                 }
             }
