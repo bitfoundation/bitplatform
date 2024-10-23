@@ -272,7 +272,7 @@
     <value>Please update webview through google play.</value>
   </data>
     <data name="Ok" xml:space="preserve">
-    <value>باشه</value>
+    <value>Ok</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
