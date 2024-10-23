@@ -10,11 +10,11 @@ public partial class AddOrEditProductModal
     [AutoInject] IProductController productController = default!;
 
     private bool isOpen;
-    private bool isLoading;
     private bool isSaving;
+    private bool isLoading;
     private ProductDto product = new();
+    private string selectedCategoryId = string.Empty;
     private List<BitDropdownItem<string>> allCategoryList = [];
-    private string selectedCategoyId = string.Empty;
 
     [Parameter] public EventCallback OnSave { get; set; }
 
@@ -29,7 +29,7 @@ public partial class AddOrEditProductModal
         {
             isOpen = true;
             product = productToShow;
-            selectedCategoyId = (product.CategoryId ?? default).ToString();
+            selectedCategoryId = (product.CategoryId ?? default).ToString();
 
             StateHasChanged();
         });
@@ -83,7 +83,7 @@ public partial class AddOrEditProductModal
         }
     }
 
-    private async Task OnCloseClick()
+    private async Task CloseModal()
     {
         isOpen = false;
     }
