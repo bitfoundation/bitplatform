@@ -6,6 +6,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 {
     private bool _isOpen;
     private bool _disposed;
+    private string? _inputMode;
     private bool _inputHasFocus;
     private int _selectedIndex = -1;
     private string _inputId = string.Empty;
@@ -63,6 +64,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     /// The icon name for the icon shown at the beginning of the search box.
     /// </summary>
     [Parameter] public string IconName { get; set; } = "Search";
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the input element.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(SetInputMode))]
+    public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// The maximum number of items or suggestions that will be displayed.
@@ -201,6 +209,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     }
 
 
+    private void SetInputMode()
+    {
+        _inputMode = InputMode?.ToString().ToLower();
+    }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {

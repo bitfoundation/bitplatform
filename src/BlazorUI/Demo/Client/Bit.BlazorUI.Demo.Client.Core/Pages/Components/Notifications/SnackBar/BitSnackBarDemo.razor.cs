@@ -481,7 +481,7 @@ private async Task OpenBasicSnackBar()
 <BitToggle @bind-Value=""basicSnackBarMultiline"" Label=""Multiline"" Inline />
 
 <BitTextField @bind-Value=""basicSnackBarTitle"" Label=""Title"" DefaultValue=""Title"" />
-<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" IsMultiline=""true"" Rows=""6"" DefaultValue=""This is a body!"" />";
+<BitTextField @bind-Value=""basicSnackBarBody"" Label=""Body"" Multiline Rows=""6"" DefaultValue=""This is a body!"" />";
     private readonly string example2CsharpCode = @"
 private BitDir direction;
 private bool basicSnackBarMultiline;
