@@ -692,6 +692,12 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
                 await _dropZoneRef.DisposeAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException ex)
+            {
+                // it seems it's safe to just ignore this exception here.
+                // otherwise it will blow up the MAUI app in a page refresh for example.
+                Console.WriteLine(ex.Message);
+            }
         }
 
         if (_dotnetObj is not null)
