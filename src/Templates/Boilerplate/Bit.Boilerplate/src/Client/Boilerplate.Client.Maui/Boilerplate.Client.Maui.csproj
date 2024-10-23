@@ -16,7 +16,6 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.template</ApplicationId>
-        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -108,7 +107,7 @@
     </ItemGroup>
 
     <ItemGroup>
-
+        
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
@@ -142,7 +141,6 @@
     <ItemGroup>
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -153,7 +151,6 @@
         <PackageReference Include="EmbedIO" />
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-        <PackageReference Include="Oscore.Maui.AppStoreInfo" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
