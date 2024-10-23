@@ -19,7 +19,7 @@ public partial class AboutPage
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
         appVersion = asm.GetName().Version!.ToString();
-        os = AppPlatform.OSDescription;
+        os = $"{AppPlatform.OSDescription} EdgeWebView2: {Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString()}";
         processId = Environment.ProcessId.ToString();
 
         await base.OnInitAsync();

@@ -1,5 +1,4 @@
 ﻿//-:cnd:noEmit
-using System.Diagnostics;
 
 namespace Boilerplate.Client.Maui.Components.Pages;
 
@@ -18,16 +17,17 @@ public partial class AboutPage
     protected async override Task OnInitAsync()
     {
         appName = AppInfo.Name;
+        appVersion = AppInfo.Version.ToString();
+        processId = Environment.ProcessId.ToString();
+        os = $"{DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}";
 #if Android
         // You have direct access to the Android, iOS, macOS, and Windows SDK features along with the ability to
         // call third-party Java, Kotlin, Swift, and Objective-C libraries.
         // https://stackoverflow.com/a/2941199/2720104
-        appVersion = MauiApplication.Current.PackageManager!.GetPackageInfo(MauiApplication.Current.PackageName!, 0)!.VersionName!;
-#else
-        appVersion = AppInfo.Version.ToString();
+        os += $" {Android.Webkit.WebView.CurrentWebViewPackage?.PackageName}: {Android.Webkit.WebView.CurrentWebViewPackage?.VersionName}";
+#elif Windows
+        os += $" EdgeWebView2: {Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString()}";
 #endif
-        processId = Environment.ProcessId.ToString();
-        os = $"{DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}";
         oem = DeviceInfo.Current.Manufacturer;
 
         await base.OnInitAsync();
