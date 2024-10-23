@@ -41,8 +41,12 @@
     }
 }
 
-.bit-brc-sep {
+.bit-brc-div {
     color: $clr-fg-sec;
+}
+
+.bit-brc-rdi {
+    transform: scaleX(-1);
 }
 
 .bit-brc-obt {
@@ -58,18 +62,25 @@
 }
 
 .bit-brc-itm {
+    display: flex;
+    gap: spacing(1);
     cursor: pointer;
     font-weight: 400;
+    color: $clr-fg-pri;
     padding: 0 spacing(1);
     font-size: spacing(2.5);
     line-height: spacing(4.5);
-    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
             background-color: $clr-bg-pri-hover;
         }
     }
+}
+
+.bit-brc-rvi {
+    flex-direction: row-reverse;
+    justify-content: space-between;
 }
 
 .bit-brc-oic {
@@ -109,6 +120,7 @@
 .bit-brc-oitm {
     width: 100%;
     display: flex;
+    gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
     text-align: left;

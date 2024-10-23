@@ -23,6 +23,14 @@ public partial class _BitBreadcrumbItemDemo
         new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true }
     ];
 
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWitIcon =
+    [
+        new() { Text = "Item 1", Href = "/components/breadcrumb", IconName = BitIconName.AdminELogoInverse32 },
+        new() { Text = "Item 2", Href = "/components/breadcrumb", IconName = BitIconName.AppsContent },
+        new() { Text = "Item 3", Href = "/components/breadcrumb", IconName = BitIconName.AzureIcon },
+        new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true, IconName = BitIconName.ClassNotebookLogo16 }
+    ];
+
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb", Class = "custom-item" },
