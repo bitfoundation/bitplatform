@@ -89,7 +89,7 @@
     <div id="@_calloutId"
          style="@Styles?.Callout"
          class="bit-mnb-cal @Classes?.Callout">
-        <ul role="presentation" class="bit-mnb-cul">
+        <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
             @foreach (TItem item in _items)
             {
                 if (Sticky && item == SelectedItem) continue;

@@ -378,6 +378,13 @@ public partial class BitMenuButtonDemo
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "CalloutContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the callout container of the BitMenuButton."
                },
                new()
