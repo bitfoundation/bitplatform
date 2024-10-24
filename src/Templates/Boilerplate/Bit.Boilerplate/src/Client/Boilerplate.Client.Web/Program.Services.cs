@@ -1,7 +1,4 @@
 ﻿//+:cnd:noEmit
-//#if (appInsights == true)
-using BlazorApplicationInsights;
-//#endif
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
@@ -20,7 +17,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddClientWebProjectServices();
+        services.AddClientWebProjectServices(configuration);
 
         configuration.AddClientConfigurations();
 
@@ -35,27 +32,6 @@ public static partial class Program
 
         services.AddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
 
-        //#if (appInsights == true)
-        services.AddBlazorApplicationInsights(x =>
-        {
-            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
-            if (string.IsNullOrEmpty(connectionString) is false)
-            {
-                x.ConnectionString = connectionString;
-            }
-        },
-        async appInsights =>
-        {
-            await appInsights.AddTelemetryInitializer(new()
-            {
-                Tags = new Dictionary<string, object?>()
-                {
-                    { "ai.application.ver", typeof(Program).Assembly.GetName().Version!.ToString() }
-                }
-            });
-        });
-        //#endif
-
         services.AddOptions<SharedAppSettings>()
             .Bind(configuration)
             .ValidateOnStart();
@@ -68,9 +44,9 @@ public static partial class Program
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
     }
 
-    public static void AddClientWebProjectServices(this IServiceCollection services)
+    public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddClientCoreProjectServices();
+        services.AddClientCoreProjectServices(configuration);
 
         // Services being registered here can get injected in both web project and server (during prerendering).
 

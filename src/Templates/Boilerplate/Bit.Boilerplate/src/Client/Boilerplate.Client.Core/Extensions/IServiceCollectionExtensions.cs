@@ -3,15 +3,20 @@
 using Boilerplate.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 //#endif
+//#if (appInsights == true)
+using BlazorApplicationInsights;
+//#endif
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services)
+    public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
@@ -81,6 +86,27 @@ public static partial class IServiceCollectionExtensions
             options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());
         });
+        //#endif
+
+        //#if (appInsights == true)
+        services.AddBlazorApplicationInsights(x =>
+        {
+            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+            if (string.IsNullOrEmpty(connectionString) is false)
+            {
+                x.ConnectionString = connectionString;
+            }
+        },
+        async appInsights =>
+        {
+            await appInsights.AddTelemetryInitializer(new()
+            {
+                Tags = new Dictionary<string, object?>()
+                {
+                    { "ai.application.ver", typeof(Routes).Assembly.GetName().Version!.ToString() }
+                }
+            });
+        }, addWasmLogger: AppPlatform.IsBrowser);
         //#endif
 
         services.AddTypedHttpClients();

@@ -11,8 +11,8 @@
                    OnClick="CreateCategory">
             @Localizer[nameof(AppStrings.AddCategory)]
         </BitButton>
-        <div style="overflow:auto;width:100%">
-            <BitStack Gap="0" FillContent Style="min-width:fit-content">
+        <BitStack Gap="0" FillContent>
+            <div style="overflow:auto">
                 <BitDataGrid @ref="dataGrid"
                              Class="categories-grid"
                              TGridItem="CategoryDto"
@@ -65,9 +65,9 @@
                                    OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingCategory = category; })" />
                     </BitDataGridTemplateColumn>
                 </BitDataGrid>
-                <BitDataGridPaginator Value="pagination" />
-            </BitStack>
-        </div>
+            </div>
+            <BitDataGridPaginator Value="pagination" />
+        </BitStack>
     </BitStack>
 </section>
 

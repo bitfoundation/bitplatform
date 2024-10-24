@@ -1,4 +1,4 @@
-// bit version: 8.12.0-pre-05
+// bit version: 8.12.0-pre-06
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
