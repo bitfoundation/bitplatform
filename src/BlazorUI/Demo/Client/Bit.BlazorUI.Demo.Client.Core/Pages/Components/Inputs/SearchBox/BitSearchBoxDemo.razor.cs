@@ -18,9 +18,9 @@ public partial class BitSearchBoxDemo
             Name = "Classes",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitSearchBox.",
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
-            Description = "Custom CSS classes for different parts of the BitSearchBox.",
         },
         new()
         {
@@ -63,6 +63,15 @@ public partial class BitSearchBoxDemo
             Type = "string",
             DefaultValue = "Search",
             Description = "The icon name for the icon shown at the beginning of the search box.",
+        },
+        new()
+        {
+            Name = "InputMode",
+            Type = "BitInputMode?",
+            DefaultValue = "null",
+            Description = "Sets the inputmode html attribute of the input element.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode",
         },
         new()
         {
@@ -162,6 +171,7 @@ public partial class BitSearchBoxDemo
             Description = "Whether or not the SearchBox is underlined.",
         },
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -169,8 +179,8 @@ public partial class BitSearchBoxDemo
             Id = "searchbox-class-styles",
             Title = "BitSearchBoxClassStyles",
             Description = "",
-            Parameters = new()
-            {
+            Parameters =
+            [
                 new()
                 {
                     Name = "Root",
@@ -241,9 +251,71 @@ public partial class BitSearchBoxDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the search box's search icon container.",
                 }
-            }
+            ]
         }
     ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "input-mode",
+            Name = "BitInputMode",
+            Description = "This allows a browser to display an appropriate virtual keyboard.",
+            Items =
+            [
+                new()
+                {
+                    Name= "None",
+                    Description="The input expects text characters.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Standard input keyboard for the user's current locale.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Decimal",
+                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Numeric",
+                    Description="Numeric input keyboard, but only requires the digits 0–9.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Tel",
+                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Search",
+                    Description="A virtual keyboard optimized for search input.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Email",
+                    Description="A virtual keyboard optimized for entering email addresses.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Url",
+                    Description="A keypad optimized for entering URLs.",
+                    Value="7",
+                }
+            ]
+        }
+    ];
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
