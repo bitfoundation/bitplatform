@@ -11,8 +11,8 @@
                    OnClick="WrapHandled(CreateProduct)">
             @Localizer[nameof(AppStrings.AddProduct)]
         </BitButton>
-        <div style="overflow:auto;width:100%">
-            <BitStack Gap="0" FillContent Style="min-width:fit-content">
+        <BitStack Gap="0" FillContent>
+            <div style="overflow:auto">
                 <BitDataGrid @ref="dataGrid"
                              Class="products-grid"
                              TGridItem="ProductDto"
@@ -77,9 +77,9 @@
                                    OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingProduct = product; })" />
                     </BitDataGridTemplateColumn>
                 </BitDataGrid>
-                <BitDataGridPaginator Value="pagination" />
-            </BitStack>
-        </div>
+            </div>
+            <BitDataGridPaginator Value="pagination" />
+        </BitStack>
     </BitStack>
 </section>
 

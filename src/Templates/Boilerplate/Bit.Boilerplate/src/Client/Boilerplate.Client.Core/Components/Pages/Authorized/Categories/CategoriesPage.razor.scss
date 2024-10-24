@@ -59,6 +59,7 @@ section {
     .bitdatagrid-paginator {
         padding: 8px;
         font-size: 14px;
+        flex-wrap: nowrap;
         padding-inline-start: 16px;
         background-color: $bit-color-background-secondary;
 
