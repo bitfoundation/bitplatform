@@ -23,7 +23,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddClientWebProjectServices();
+        services.AddClientWebProjectServices(configuration);
 
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();

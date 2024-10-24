@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.WebView2.Core;
+﻿//+:cnd:noEmit
+using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.WebView;
 
 namespace Boilerplate.Client.Windows;
@@ -11,6 +12,13 @@ public partial class MainWindow
         var services = new ServiceCollection();
         services.AddClientWindowsProjectServices();
         InitializeComponent();
+        //#if (appInsights == true)
+        AppWebView.RootComponents.Add(new()
+        {
+            ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
+            Selector = "head::after"
+        });
+        //#endif
         AppWebView.Services = services.BuildServiceProvider();
         if (CultureInfoManager.MultilingualEnabled)
         {

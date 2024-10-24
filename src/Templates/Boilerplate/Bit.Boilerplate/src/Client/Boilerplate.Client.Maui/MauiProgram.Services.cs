@@ -14,7 +14,7 @@ public static partial class MauiProgram
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddClientCoreProjectServices();
+        services.AddClientCoreProjectServices(builder.Configuration);
 
         services.AddMauiBlazorWebView();
 
