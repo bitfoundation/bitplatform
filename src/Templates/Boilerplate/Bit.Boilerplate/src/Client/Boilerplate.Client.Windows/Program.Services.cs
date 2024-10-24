@@ -13,12 +13,12 @@ public static partial class Program
     {
         // Services being registered here can get injected in windows project only.
 
-        services.AddClientCoreProjectServices();
-
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations();
         var configuration = configurationBuilder.Build();
         services.AddTransient<IConfiguration>(sp => configuration);
+
+        services.AddClientCoreProjectServices(configuration);
 
         services.AddSessioned(sp =>
         {

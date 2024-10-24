@@ -28,7 +28,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" />
         <!--/-:msbuild-conditional:noEmit -->
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />

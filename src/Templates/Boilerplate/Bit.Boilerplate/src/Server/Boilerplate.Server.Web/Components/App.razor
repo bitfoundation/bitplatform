@@ -32,6 +32,9 @@
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
+    @*#if (appInsights == true)*@
+    <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
+    @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     @if (AppRenderMode.PwaEnabled)
     {

@@ -21,13 +21,12 @@ public static partial class Program
             // The following is only required for blazor webassembly standalone.
             builder.RootComponents.Add<Routes>("#app-container");
             builder.RootComponents.Add<HeadOutlet>("head::after");
+            //+:cnd:noEmit
+            //#if (appInsights == true)
+            builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
+            //#endif
+            //-:cnd:noEmit
         }
-
-        //+:cnd:noEmit
-        //#if (appInsights == true)
-        builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
-        //#endif
-        //-:cnd:noEmit
 
         builder.ConfigureServices();
 
