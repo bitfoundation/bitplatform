@@ -24,9 +24,9 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         parameters ??= new Dictionary<string, object?>();
 
-        parameters.Add(nameof(lineNumber), lineNumber);
-        parameters.Add(nameof(memberName), memberName);
         parameters.Add(nameof(filePath), filePath);
+        parameters.Add(nameof(memberName), memberName);
+        parameters.Add(nameof(lineNumber), lineNumber);
 
         Handle(exp, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
