@@ -8,8 +8,7 @@ namespace Boilerplate.Server.Web.Components;
 public partial class App
 {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
-    [CascadingParameter] ClientAppSettings ClientAppSettings { get; set; } = default!;
-
+    [AutoInject] ClientAppSettings clientAppSettings { get; set; } = default!;
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
 
     protected override void OnInitialized()
