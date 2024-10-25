@@ -56,7 +56,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            HandleException(exp);
         }
     }
 
@@ -78,7 +78,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
         catch (Exception exp)
         {
-            ExceptionHandler.Handle(exp);
+            HandleException(exp);
         }
     }
 
@@ -101,7 +101,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                HandleException(exp);
             }
         }
 
@@ -130,7 +130,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                HandleException(exp);
             }
         };
     }
@@ -148,7 +148,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                HandleException(exp);
             }
         };
     }
@@ -166,7 +166,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                HandleException(exp);
             }
         };
     }
@@ -184,7 +184,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                ExceptionHandler.Handle(exp);
+                HandleException(exp);
             }
         };
     }
@@ -204,5 +204,15 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             cts?.Cancel();
             cts?.Dispose();
         }
+    }
+
+    protected void HandleException(Exception exp, Dictionary<string, object?>? parameters = null)
+    {
+        parameters ??= [];
+
+        parameters["ComponentType"] = GetType().FullName;
+        parameters["Url"] = NavigationManager.Uri;
+
+        ExceptionHandler.Handle(exp, parameters);
     }
 }
