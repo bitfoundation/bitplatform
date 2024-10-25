@@ -58,6 +58,11 @@ public class BitMenuButtonClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for each item wrapper of the BitMenuButton.
+    /// </summary>
+    public string? ItemWrapper { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for each item of the BitMenuButton.
     /// </summary>
     public string? ItemButton { get; set; }
