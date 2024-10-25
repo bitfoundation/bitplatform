@@ -97,13 +97,13 @@ public static partial class MauiProgram
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
 
 #if Android
-        services.AddClientMauiProjectAndroidServices();
+        services.AddClientMauiProjectAndroidServices(builder.Configuration);
 #elif iOS
-        services.AddClientMauiProjectIosServices();
+        services.AddClientMauiProjectIosServices(builder.Configuration);
 #elif Mac
-        services.AddClientMauiProjectMacCatalystServices();
+        services.AddClientMauiProjectMacCatalystServices(builder.Configuration);
 #elif Windows
-        services.AddClientMauiProjectWindowsServices();
+        services.AddClientMauiProjectWindowsServices(builder.Configuration);
 #endif
     }
 }

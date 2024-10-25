@@ -83,7 +83,7 @@ public partial class ChangePhoneNumberSection
         {
             await userController.ChangePhoneNumber(changeModel, CurrentCancellationToken);
 
-            NavigationManager.NavigateTo(Urls.SettingsPage);
+            NavigationManager.Refresh(forceReload: true);
         }
         catch (KnownException e)
         {

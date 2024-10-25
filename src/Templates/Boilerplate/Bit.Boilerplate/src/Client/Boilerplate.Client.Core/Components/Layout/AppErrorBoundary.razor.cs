@@ -30,6 +30,6 @@ public partial class AppErrorBoundary
 
     private void GoHome()
     {
-        navigationManager.NavigateTo(Urls.HomePage, true);
+        navigationManager.NavigateTo(Urls.HomePage, forceLoad: true);
     }
 }

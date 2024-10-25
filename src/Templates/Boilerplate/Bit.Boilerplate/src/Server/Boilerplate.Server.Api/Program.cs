@@ -17,7 +17,7 @@ public static partial class Program
             builder.WebHost.UseUrls("http://localhost:5031", "http://*:5031");
         }
 
-        builder.Services.AddSharedProjectServices();
+        builder.Services.AddSharedProjectServices(builder.Configuration);
         builder.AddServerApiProjectServices();
 
         var app = builder.Build();
