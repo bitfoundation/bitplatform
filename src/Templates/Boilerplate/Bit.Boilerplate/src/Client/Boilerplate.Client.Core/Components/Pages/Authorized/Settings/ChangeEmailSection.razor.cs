@@ -83,7 +83,7 @@ public partial class ChangeEmailSection
         {
             await userController.ChangeEmail(changeModel, CurrentCancellationToken);
 
-            NavigationManager.Refresh();
+            NavigationManager.Refresh(forceReload: true);
         }
         catch (KnownException e)
         {
