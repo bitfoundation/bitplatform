@@ -79,8 +79,7 @@ public partial class SettingsPage(IPage page, Uri serverAddress)
     public async Task AssertConfirmSuccess()
     {
         //TODO: Remove the two lines below when the problem with refreshing page is solved.
-        await Page.ReloadAsync();
-        await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, PagePath).ToString());
+        await Page.RunAndWaitForNavigationAsync(() => Page.ReloadAsync(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         await Assertions.Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(newEmail);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.AccountSubtitle }).ClickAsync();
