@@ -21,15 +21,11 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
-    [AutoInject] private ILogger<AppInitializer> appInitializerLogger = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
 
     protected async override Task OnInitAsync()
     {
         AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
-
-        LogApplicationStarting(appInitializerLogger, AppPlatform.OSDescription, typeof(AppInitializer).Assembly.GetName().Version!.ToString());
 
         AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
 
@@ -62,12 +58,6 @@ public partial class AppInitializer : AppComponentBase
     {
         try
         {
-            var user = (await task).User;
-
-            var (isUserAuthenticated, userId, userName, email, sessionId) = user.IsAuthenticated() ? (user.IsAuthenticated(), user.GetUserId().ToString(), user.GetUserName(), user.GetEmail(), user.GetSessionId()) : default;
-
-            LogAuthenticationStateChanged(authLogger, isUserAuthenticated, userId, userName, email, sessionId);
-
             //#if (signalr == true)
             if (InPrerenderSession is false)
             {
@@ -87,12 +77,6 @@ public partial class AppInitializer : AppComponentBase
             ExceptionHandler.Handle(exp);
         }
     }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Authentication state changed: {IsUserAuthenticated}, {UserId}, {UserName}, {Email}, {UserSessionId}")]
-    private static partial void LogAuthenticationStateChanged(ILogger logger, bool isUserAuthenticated, string userId, string userName, string? email, Guid? userSessionId);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Application starting: {OS}, {AppVersion}")]
-    private static partial void LogApplicationStarting(ILogger logger, string os, string appVersion);
 
     //#if (signalr == true)
     private async Task ConnectSignalR()

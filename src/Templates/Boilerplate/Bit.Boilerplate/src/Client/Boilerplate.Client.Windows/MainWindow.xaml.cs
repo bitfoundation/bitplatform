@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.WebView;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Windows;
 
@@ -10,14 +11,21 @@ public partial class MainWindow
     {
         AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
-        services.AddClientWindowsProjectServices();
+        ConfigurationBuilder configurationBuilder = new();
+        configurationBuilder.AddClientConfigurations();
+        var configuration = configurationBuilder.Build();
+        services.AddClientWindowsProjectServices(configuration);
         InitializeComponent();
         //#if (appInsights == true)
-        AppWebView.RootComponents.Add(new()
+        var clientAppSettings = configuration.Get<ClientAppSettings>()!;
+        if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights.ConnectionString) is false)
         {
-            ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
-            Selector = "head::after"
-        });
+            AppWebView.RootComponents.Add(new()
+            {
+                ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
+                Selector = "head::after"
+            });
+        }
         //#endif
         AppWebView.Services = services.BuildServiceProvider();
         if (CultureInfoManager.MultilingualEnabled)

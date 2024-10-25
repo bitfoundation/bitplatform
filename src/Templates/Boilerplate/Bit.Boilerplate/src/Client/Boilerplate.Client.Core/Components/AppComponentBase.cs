@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components;
+﻿using System.Runtime.CompilerServices;
+
+namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
@@ -206,13 +208,12 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected void HandleException(Exception exp, Dictionary<string, object?>? parameters = null)
+    private void HandleException(Exception exp,
+        Dictionary<string, object?>? parameters = null,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
-        parameters ??= [];
-
-        parameters["ComponentType"] = GetType().FullName;
-        parameters["Url"] = NavigationManager.Uri;
-
-        ExceptionHandler.Handle(exp, parameters);
+        ExceptionHandler.Handle(exp, parameters, lineNumber, memberName, filePath);
     }
 }

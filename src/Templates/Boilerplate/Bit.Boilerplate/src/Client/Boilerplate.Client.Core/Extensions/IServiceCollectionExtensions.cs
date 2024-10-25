@@ -89,14 +89,24 @@ public static partial class IServiceCollectionExtensions
         //#endif
 
         //#if (appInsights == true)
-        services.AddBlazorApplicationInsights(x =>
+        var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+        if (string.IsNullOrEmpty(connectionString) is false)
         {
-            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
-            if (string.IsNullOrEmpty(connectionString) is false)
+            services.AddBlazorApplicationInsights(x =>
             {
                 x.ConnectionString = connectionString;
-            }
-        });
+            },
+            async appInsights =>
+            {
+                await appInsights.AddTelemetryInitializer(new()
+                {
+                    Tags = new()
+                    {
+                        { "ai.application.ver", typeof(Routes).Assembly.GetName().Version!.ToString() }
+                    }
+                });
+            }, addWasmLogger: true, options => options.IncludeScopes = true);
+        }
         //#endif
 
         services.AddTypedHttpClients();

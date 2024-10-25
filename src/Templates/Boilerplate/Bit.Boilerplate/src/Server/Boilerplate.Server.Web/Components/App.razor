@@ -27,16 +27,17 @@
     <Link rel="preconnect" href="https://www.google.com" />
     <Link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     @*#endif*@
-    @*#if (appInsights == true)*@
-    <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
-    @*#endif*@
 
     <Link rel="preconnect" href="https://use-your-server-url-here.com" />@* for PWA *@
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
     @*#if (appInsights == true)*@
-    <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
+    @if (string.IsNullOrEmpty(ClientAppSettings.ApplicationInsights.ConnectionString) is false)
+    {
+        <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+        <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
+    }
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     @if (AppRenderMode.PwaEnabled)

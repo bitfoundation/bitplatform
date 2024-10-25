@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Boilerplate.Client.Core;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 
 namespace Boilerplate.Server.Web.Components;
@@ -7,6 +8,7 @@ namespace Boilerplate.Server.Web.Components;
 public partial class App
 {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter] ClientAppSettings ClientAppSettings { get; set; } = default!;
 
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
 
