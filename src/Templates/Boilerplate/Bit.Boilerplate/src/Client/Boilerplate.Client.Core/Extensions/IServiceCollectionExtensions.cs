@@ -95,17 +95,7 @@ public static partial class IServiceCollectionExtensions
             services.AddBlazorApplicationInsights(x =>
             {
                 x.ConnectionString = connectionString;
-            },
-            async appInsights =>
-            {
-                await appInsights.AddTelemetryInitializer(new()
-                {
-                    Tags = new()
-                    {
-                        { "ai.application.ver", typeof(Routes).Assembly.GetName().Version!.ToString() }
-                    }
-                });
-            }, addWasmLogger: true, options => options.IncludeScopes = true);
+            });
         }
         //#endif
 
