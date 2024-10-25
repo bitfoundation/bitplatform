@@ -1,18 +1,13 @@
 ﻿//-:cnd:noEmit
-using Boilerplate.Shared;
+
+using Boilerplate.Client.Core;
 
 namespace Microsoft.Extensions.Configuration;
 public static partial class IConfigurationExtensions
 {
-    public static T GetRequiredValue<T>(this IConfiguration configuration, string name)
-    {
-        return (configuration ?? throw new ArgumentNullException(nameof(configuration)))
-            .GetValue<T>(name ?? throw new ArgumentNullException(nameof(name))) ?? throw new InvalidOperationException($"{name} config could not be found");
-    }
-
     public static string GetServerAddress(this IConfiguration configuration)
     {
-        var serverAddress = configuration.GetRequiredValue<string>("ServerAddress");
+        var serverAddress = configuration.Get<ClientAppSettings>().ServerAddress;
 
         if (AppEnvironment.IsDev() &&
             serverAddress.Contains("localhost", StringComparison.InvariantCultureIgnoreCase) &&
@@ -25,13 +20,5 @@ public static partial class IConfigurationExtensions
         return Uri.TryCreate(serverAddress, UriKind.RelativeOrAbsolute, out _)
             ? serverAddress.TrimEnd('/')
             : throw new InvalidOperationException($"Api server address {serverAddress} is invalid");
-    }
-
-    /// <inheritdoc cref="SharedAppSettings.WebClientUrl"/>
-    public static string GetWebClientUrl(this IConfiguration configuration)
-    {
-        var webClientUrl = configuration.Get<SharedAppSettings>()!.WebClientUrl;
-
-        return string.IsNullOrEmpty(webClientUrl) is false ? webClientUrl : configuration.GetServerAddress();
     }
 }

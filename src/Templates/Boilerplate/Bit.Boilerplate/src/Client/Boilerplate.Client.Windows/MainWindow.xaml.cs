@@ -18,7 +18,7 @@ public partial class MainWindow
         InitializeComponent();
         //#if (appInsights == true)
         var clientAppSettings = configuration.Get<ClientAppSettings>()!;
-        if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights.ConnectionString) is false)
+        if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
         {
             AppWebView.RootComponents.Add(new()
             {

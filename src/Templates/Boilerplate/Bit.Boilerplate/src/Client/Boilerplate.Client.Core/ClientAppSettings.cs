@@ -7,24 +7,27 @@ public partial class ClientAppSettings : SharedAppSettings
     /// If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly
     /// </summary>
     [Required]
-    public string? ServerAddress { get; set; }
+    public string ServerAddress { get; set; } = default!;
 
     //#if (captcha == "reCaptcha")
     [Required]
-    public string? GoogleRecaptchaSiteKey { get; set; }
+    public string GoogleRecaptchaSiteKey { get; set; } = default!;
     //#endif
 
-    public WindowsUpdateOptions WindowsUpdate { get; set; } = default!;
+    public WindowsUpdateOptions? WindowsUpdate { get; set; }
 
     //#if (notification == true)
-    public AdsPushVapidOptions AdsPushVapid { get; set; } = default!;
+    public AdsPushVapidOptions? AdsPushVapid { get; set; }
     //#endif
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
 
-        Validator.TryValidateObject(WindowsUpdate, new ValidationContext(WindowsUpdate), validationResults, true);
+        if (WindowsUpdate is not null)
+        {
+            Validator.TryValidateObject(WindowsUpdate, new ValidationContext(WindowsUpdate), validationResults, true);
+        }
 
         //#if (notification == true)
         if (AdsPushVapid is not null)
@@ -66,5 +69,5 @@ public class AdsPushVapidOptions
     /// Web push's vapid. More info at https://vapidkeys.com/
     /// </summary>
     [Required]
-    public string? PublicKey { get; set; }
+    public string PublicKey { get; set; } = default!;
 }

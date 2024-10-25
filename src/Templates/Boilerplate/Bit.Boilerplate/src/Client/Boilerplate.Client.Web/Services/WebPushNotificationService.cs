@@ -10,8 +10,9 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
 
     public async override Task<DeviceInstallationDto> GetDeviceInstallation()
     {
-        return await jSRuntime.GetDeviceInstallation(clientAppSettings.AdsPushVapid!.PublicKey!);
+        return await jSRuntime.GetDeviceInstallation(clientAppSettings.AdsPushVapid!.PublicKey);
     }
 
-    public override async Task<bool> IsNotificationSupported() => AppRenderMode.PwaEnabled;
+    public override async Task<bool> IsNotificationSupported() => AppRenderMode.PwaEnabled
+        && string.IsNullOrEmpty(clientAppSettings.AdsPushVapid?.PublicKey) is false;
 }

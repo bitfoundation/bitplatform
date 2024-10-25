@@ -33,7 +33,7 @@
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
     @*#if (appInsights == true)*@
-    @if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights.ConnectionString) is false)
+    @if (string.IsNullOrEmpty(serverWebAppSettings.ApplicationInsights?.ConnectionString) is false)
     {
         <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
         <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />

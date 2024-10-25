@@ -27,7 +27,7 @@ public static partial class Program
             //+:cnd:noEmit
             //#if (appInsights == true)
             var clientAppSettings = builder.Configuration.Get<ClientAppSettings>()!;
-            if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights.ConnectionString) is false)
+            if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
             {
                 builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
             }

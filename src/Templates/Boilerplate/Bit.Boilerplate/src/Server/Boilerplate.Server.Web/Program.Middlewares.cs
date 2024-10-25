@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
+using Boilerplate.Server.Api;
 using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
@@ -22,11 +23,13 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        if (app.Environment.IsDevelopment() 
-            || configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders!.AllowedHosts.Any())
+        var forwarededHeadersOptions = configuration.Get<ServerApiAppSettings>()!.ForwardedHeaders;
+
+        if (forwarededHeadersOptions is not null
+            && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
         {
             // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-            app.UseForwardedHeaders(configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders);
+            app.UseForwardedHeaders(forwarededHeadersOptions);
         }
 
         if (CultureInfoManager.MultilingualEnabled)
