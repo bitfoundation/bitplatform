@@ -33,11 +33,11 @@ public partial class IdentityPagesTests : PageTestBase
         switch (mode)
         {
             case "ValidCredentials":
-                var identityHomePage = await signInPage.SignIn();
+                var identityHomePage = await signInPage.SignInWithEmail();
                 await identityHomePage.AssertSignInSuccess();
                 break;
             case "InvalidCredentials":
-                await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
+                await signInPage.SignInWithEmail(email: "invalid@bitplatform.dev", password: "invalid");
                 await signInPage.AssertSignInFailed();
                 break;
             default:
@@ -61,7 +61,7 @@ public partial class IdentityPagesTests : PageTestBase
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var identityHomePage = await signInPage.SignIn(email);
+        var identityHomePage = await signInPage.SignInWithEmail(email);
         await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
         await dbContext.Entry(user).ReloadAsync();
@@ -120,12 +120,7 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("MagicLink")]
     public async Task ForgotPassword(string mode)
     {
-        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
-
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var userService = new UserService(dbContext);
-        var email = $"{Guid.NewGuid()}@gmail.com";
-        await userService.AddUser(email);
+        var email = await CreateNewUser();
 
         var forgotPasswordPage = new ForgotPasswordPage(Page, WebAppServerAddress);
 
@@ -166,7 +161,7 @@ public partial class IdentityPagesTests : PageTestBase
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var identityHomePage = await signInPage.SignIn(email, newPassword);
+        var identityHomePage = await signInPage.SignInWithEmail(email, newPassword);
         await identityHomePage.AssertSignInSuccess(email, userFullName: null);
     }
 
@@ -176,19 +171,14 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("MagicLink")]
     public async Task ChangeEmail(string mode)
     {
-        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
-
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var userService = new UserService(dbContext);
-        var email = $"{Guid.NewGuid()}@gmail.com";
-        await userService.AddUser(email);
+        var email = await CreateNewUser();
 
         var signInPage = new SignInPage(Page, WebAppServerAddress);
 
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var identityHomePage = await signInPage.SignIn(email);
+        var identityHomePage = await signInPage.SignInWithEmail(email);
         await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
         var settinsPage = new SettingsPage(Page, WebAppServerAddress);
@@ -210,11 +200,11 @@ public partial class IdentityPagesTests : PageTestBase
         {
             case "Token":
                 var token = await confirmationEmail.GetToken();
-                await settinsPage.ConfirmByToken(token);
+                await settinsPage.ConfirmEmailByToken(token);
                 break;
             case "InvalidToken":
-                await settinsPage.ConfirmByToken("111111");
-                await settinsPage.AssertInvalidToken();
+                await settinsPage.ConfirmEmailByToken("111111");
+                await settinsPage.AssertEmailInvalidToken();
                 return;
             case "MagicLink":
                 settinsPage = await confirmationEmail.OpenMagicLink();
@@ -222,16 +212,82 @@ public partial class IdentityPagesTests : PageTestBase
             default:
                 throw new NotSupportedException();
         }
-        await settinsPage.AssertConfirmSuccess();
+        await settinsPage.AssertConfirmEmailSuccess();
 
         signInPage = await settinsPage.SignOut();
         await signInPage.AssertOpen();
         await signInPage.AssertSignOut();
 
-        await signInPage.SignIn(email);
+        await signInPage.SignInWithEmail(email);
         await signInPage.AssertSignInFailed();
 
-        settinsPage = await signInPage.SignIn<SettingsPage>(newEmail);
+        settinsPage = await signInPage.SignInWithEmail<SettingsPage>(newEmail);
         await settinsPage.AssertSignInSuccess(newEmail, userFullName: null);
+    }
+
+    [TestMethod]
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    public async Task ChangePhone(string mode)
+    {
+        var email = await CreateNewUser();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var identityHomePage = await signInPage.SignInWithEmail(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+
+        var settingsPage = new SettingsPage(Page, WebAppServerAddress);
+
+        await settingsPage.Open();
+        await settingsPage.AssertOpen();
+
+        await settingsPage.ExpandAccount();
+        await settingsPage.ClickOnPhoneTab();
+        await settingsPage.AssertPhoneTab(null);
+
+        var phone = "+981234567890";
+        await settingsPage.ChangePhone(phone);
+        await settingsPage.AssertChangePhone();
+
+        switch (mode)
+        {
+            case "Token":
+                var token = FakePhoneService.GetLastOtpFor(phone);
+                await settingsPage.ConfirmPhoneByToken(token);
+                break;
+            case "InvalidToken":
+                await settingsPage.ConfirmPhoneByToken("111111");
+                await settingsPage.AssertPhoneInvalidToken();
+                return;
+            default:
+                throw new NotSupportedException();
+        }
+        await settingsPage.AssertConfirmPhoneSuccess();
+
+        signInPage = await settingsPage.SignOut();
+        await signInPage.AssertOpen();
+        await signInPage.AssertSignOut();
+
+        await signInPage.ClickOnPhoneTab();
+        await signInPage.AssertPhoneTab();
+
+        settingsPage = await signInPage.SignInWithPhone<SettingsPage>(phone);
+        await settingsPage.AssertSignInSuccess(email, userFullName: null);
+    }
+
+    private async Task<string> CreateNewUser()
+    {
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        await userService.AddUser(email);
+
+        return email;
     }
 }
