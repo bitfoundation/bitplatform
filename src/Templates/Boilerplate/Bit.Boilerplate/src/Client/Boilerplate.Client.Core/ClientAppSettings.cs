@@ -73,8 +73,8 @@ public partial class WebAppRenderOptions
 public enum BlazorWebAppMode
 {
     BlazorAuto,
-    BlazorWebAssembly,
     BlazorServer,
+    BlazorWebAssembly,
     /// <summary>
     /// Pre-rendering without interactivity
     /// </summary>
