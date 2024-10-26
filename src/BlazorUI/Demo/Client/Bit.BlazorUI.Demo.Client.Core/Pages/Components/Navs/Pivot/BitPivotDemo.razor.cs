@@ -54,20 +54,28 @@ public partial class BitPivotDemo
         },
         new()
         {
+            Name = "OnItemClick",
+            Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the a pivot item is clicked.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
+            Name = "OnChange",
+            Type = "EventCallback<BitPivotItem>",
+            Description = "Callback for when the selected pivot item changes.",
+            LinkType = LinkType.Link,
+            Href = "#pivot-item",
+        },
+        new()
+        {
             Name = "OverflowBehavior",
             Type = "BitOverflowBehavior",
             DefaultValue = "BitOverflowBehavior.None",
             Description = "Overflow behavior when there is not enough room to display all of the links/tabs.",
             LinkType = LinkType.Link,
             Href = "#overflowBehavior-enum",
-        },
-        new()
-        {
-            Name = "OnItemClick",
-            Type = "EventCallback<BitPivotItem>",
-            Description = "Callback for when the a pivot item is clicked.",
-            LinkType = LinkType.Link,
-            Href = "#pivotItem",
         },
         new()
         {
@@ -109,7 +117,7 @@ public partial class BitPivotDemo
     [
         new()
         {
-            Id = "pivotItem",
+            Id = "pivot-item",
             Title = "BitPivotItem",
             Parameters =
             [
