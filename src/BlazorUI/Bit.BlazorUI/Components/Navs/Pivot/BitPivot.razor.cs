@@ -40,15 +40,21 @@ public partial class BitPivot : BitComponentBase
     public BitPivotHeaderType? HeaderType { get; set; }
 
     /// <summary>
+    /// Callback for when a pivot header item is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the selected pivot item changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BitPivotItem> OnChange { get; set; }
+
+    /// <summary>
     /// Overflow behavior when there is not enough room to display all of the links/tabs.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPivotOverflowBehavior? OverflowBehavior { get; set; }
-
-    /// <summary>
-    /// Callback for when the a pivot header item is clicked.
-    /// </summary>
-    [Parameter] public EventCallback<BitPivotItem> OnItemClick { get; set; }
 
     /// <summary>
     /// Position of the pivot header.
@@ -147,7 +153,7 @@ public partial class BitPivot : BitComponentBase
 
     internal int GetPivotItemTabIndex(BitPivotItem item) => item.IsSelected ? 0 : _allItems.FindIndex(i => i == item) == 0 ? 0 : -1;
 
-    internal void SelectItem(BitPivotItem item)
+    internal async void SelectItem(BitPivotItem item)
     {
         if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
@@ -156,6 +162,8 @@ public partial class BitPivot : BitComponentBase
 
         _selectedItem = item;
         _ = AssignSelectedKey(item.Key);
+
+        await OnChange.InvokeAsync(item);
 
         StateHasChanged();
     }
