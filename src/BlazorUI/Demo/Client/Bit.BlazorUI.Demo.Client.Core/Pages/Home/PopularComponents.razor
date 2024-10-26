@@ -23,7 +23,7 @@
                 </button>
             }
         </div>
-        <BitCarousel Class="component-carousel" ShowNextPrev="false" OnChange="index => SelectComponent(Components[index])">
+        <BitCarousel Class="component-carousel" HideNextPrev OnChange="index => SelectComponent(Components[index])">
             @foreach (var com in Components)
             {
                 <BitCarouselItem Style="width: 100%">
@@ -59,22 +59,21 @@
                 <br />
                 @if (SelectedComponent?.Name == "ColorPicker")
                 {
-                    <BitColorPicker ShowAlphaSlider="true" ShowPreview="true" @bind-Alpha="Alpha" @bind-Color="@Color" />
+                    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Alpha="Alpha" @bind-Color="@Color" />
                     <br />
                     <div>Alpha: @Alpha</div>
                     <div>Color: @Color</div>
                 }
                 else if (SelectedComponent?.Name == "DatePicker")
                 {
-                    <BitDatePicker @bind-Value="SelectedDate" Placeholder="Select a date" Style="width: 300px" ShowWeekNumbers="true" />
+                    <BitDatePicker @bind-Value="SelectedDate" Placeholder="Select a date" Style="width: 300px" ShowWeekNumbers />
                     <br />
                     <div>Selected Date: <b>@SelectedDate?.ToString("dd MMM yyyy")</b></div>
                 }
                 else if (SelectedComponent?.Name == "FileUpload")
                 {
-                    <BitFileUpload MultiSelect="true"
+                    <BitFileUpload MultiSelect AutoUpload
                                    Label="Select files"
-                                   AutoUpload="true"
                                    UploadUrl="@UploadUrl"
                                    RemoveUrl="@RemoveUrl"
                                    MaxSize="1024 * 1024 * 500" />
@@ -82,10 +81,10 @@
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
                     <BitDropdown Label="Multi-select Dropdown"
+                                 IsMultiSelect
                                  Items="DropdownItems"
                                  @bind-Values="SelectedDropdownValues"
                                  Placeholder="Select options"
-                                 IsMultiSelect="true"
                                  Style="width:290px" />
                     <br />
                     <div>Selected Items: @string.Join(", ", SelectedDropdownValues)</div>
@@ -115,8 +114,7 @@
                 @if (SelectedComponent?.Name == "ColorPicker")
                 {
                     <pre class="code">
-                    <code class="language-cshtml">&ltBitColorPicker ShowPreview="true"
-                ShowAlphaSlider="true"
+                    <code class="language-cshtml">&ltBitColorPicker ShowPreview ShowAlphaSlider
                 @@bind-Alpha="Alpha"
                 @@bind-Color="@@Color" /&gt
 &ltdiv&gtAlpha: @@Alpha&lt/div&gt
@@ -133,7 +131,7 @@
                     <code class="language-cshtml">&ltBitDatePicker @@bind-Value="SelectedDate" 
                Placeholder="Select a date"
                Style="width: 300px"
-               ShowWeekNumbers="true" /&gt
+               ShowWeekNumbers /&gt
 &ltdiv&gtSelected Date: &ltb&gt@@SelectedDate?.ToString("dd MMM yyyy")&lt/b&gt&lt/div&gt
                     </code><br /><code class="language-csharp">
 @@code {
@@ -144,7 +142,7 @@
                 {
                     <pre class="code">
                     <code class="language-cshtml">&ltBitFileUpload Label="Select files"
-               IsMultiSelect="true"    
+               MultiSelect
                UploadUrl="@@UploadUrl"
                RemoveUrl="@@RemoveUrl"
                Style="flex-grow:1; max-width:none;" /&gt
@@ -158,10 +156,10 @@
                 {
                     <pre class="code">
                     <code class="language-cshtml">&ltBitDropdown Label="Multi-select Dropdown"
+             IsMultiSelect
              Items="DropdownItems"
              @@bind-Values="SelectedDropdownValues"
              Placeholder="Select options"
-             IsMultiSelect="true"
              Style="width:290px" /&gt
 &ltdiv>Selected Items: @@string.Join(", ", SelectedDropdownValues)&lt/div>
                     </code><br /><code class="language-csharp">

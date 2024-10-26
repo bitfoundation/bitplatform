@@ -5,8 +5,8 @@ public partial class PopularComponents
     private bool showCode;
     private DateTimeOffset? SelectedDate;
 
-    private List<PopularComponent> Components = new()
-    {
+    private List<PopularComponent> Components =
+    [
         new()
         {
             Name = "ColorPicker",
@@ -37,7 +37,7 @@ public partial class PopularComponents
             Description = "The Nav (TreeList) component provides links to the main areas of an app or site.",
             Url = "/components/nav"
         }
-    };
+    ];
 
     private PopularComponent? SelectedComponent;
 
@@ -68,9 +68,9 @@ public partial class PopularComponents
 
 
 
-    private ICollection<string?> SelectedDropdownValues = new List<string?>() { "f-app", "f-ban" };
-    private static List<BitDropdownItem<string>> DropdownItems = new()
-    {
+    private ICollection<string?> SelectedDropdownValues = ["f-app", "f-ban"];
+    private static List<BitDropdownItem<string>> DropdownItems =
+    [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
         new() { Text = "Apple", Value = "f-app" },
         new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
@@ -78,29 +78,29 @@ public partial class PopularComponents
         new() { ItemType = BitDropdownItemType.Divider },
         new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
         new() { Text = "Broccoli", Value = "v-bro" }
-    };
+    ];
 
 
 
     private BitNavItem SelectedNavItem = NavItems[2];
-    private static List<BitNavItem> NavItems = new()
-    {
+    private static List<BitNavItem> NavItems =
+    [
         new()
         {
             Text = "Home",
             ExpandAriaLabel = "Expand Home section",
             CollapseAriaLabel = "Collapse Home section",
             IsExpanded = true,
-            ChildItems = new()
-            {
+            ChildItems =
+            [
                 new() { Text = "Activity" },
                 new() { Text = "MSN", IsEnabled = false }
-            }
+            ]
         },
         new() { Text = "Documents", IsExpanded = true },
         new() { Text = "Pages" },
         new() { Text = "Notebook", IsEnabled = false },
         new() { Text = "Communication and Media" },
         new() { Text = "News", Title = "News", IconName = BitIconName.News },
-    };
+    ];
 }
