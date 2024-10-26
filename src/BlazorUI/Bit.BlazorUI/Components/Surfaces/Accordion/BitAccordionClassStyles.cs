@@ -38,6 +38,11 @@ public class BitAccordionClassStyles
     public string? ChevronDownIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the content container of the BitAccordion.
+    /// </summary>
+    public string? ContentContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the content of the BitAccordion.
     /// </summary>
     public string? Content { get; set; }
