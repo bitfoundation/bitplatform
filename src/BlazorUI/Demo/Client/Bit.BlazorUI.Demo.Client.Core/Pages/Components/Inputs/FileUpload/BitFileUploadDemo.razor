@@ -24,8 +24,8 @@
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
-                               AutoUploadEnabled="true"
+                <BitFileUpload MultiSelect="true"
+                               AutoUpload="true"
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />
@@ -37,8 +37,8 @@
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with limited size.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
-                               AutoUploadEnabled="true"
+                <BitFileUpload MultiSelect="true"
+                               AutoUpload="true"
                                MaxSize="1024 * 1024 * 100"
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl" />
@@ -50,8 +50,8 @@
         <ExamplePreview>
             <div class="example-desc">Single or multiple file uploading limited only by file extensions, which in this case the allowed file extensions include gif, jpg and mp4.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
-                               AutoUploadEnabled="false"
+                <BitFileUpload MultiSelect="true"
+                               AutoUpload="false"
                                AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })"
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
@@ -64,7 +64,7 @@
         <ExamplePreview>
             <div class="example-desc">Single or multiple file uploading with remove functionality enabled.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
+                <BitFileUpload MultiSelect="true"
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                RemoveUrl="@RemoveUrl"
@@ -78,8 +78,8 @@
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload automatically with calling all upload complete event.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
-                               AutoUploadEnabled="true"
+                <BitFileUpload MultiSelect="true"
+                               AutoUpload="true"
                                MaxSize="1024 * 1024 * 500"
                                UploadUrl="@ChunkedUploadUrl"
                                Label="Select or drag and drop files"
@@ -94,7 +94,7 @@
         <ExamplePreview>
             <div class="example-desc">Multiple files can be selected to upload and remove with custom http headers and query strings.</div>
             <div>
-                <BitFileUpload IsMultiSelect="true"
+                <BitFileUpload MultiSelect="true"
                                Label="Select or drag and drop files"
                                UploadUrl="@ChunkedUploadUrl"
                                UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
@@ -112,7 +112,7 @@
             <div class="example-desc">Files can be uploaded automatically after selecting them.</div>
             <div>
                 <BitFileUpload Label="Select or drag and drop files"
-                               ChunkedUploadEnabled="false"
+                               ChunkedUpload="false"
                                UploadUrl="@NonChunkedUploadUrl"
                                MaxSize="1024 * 1024 * 500" />
             </div>

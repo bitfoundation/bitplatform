@@ -26,7 +26,7 @@
            type="file"
            disabled="@(IsEnabled is false)"
            aria-labelledby="@(Label.HasValue() ? Label : null)"
-           multiple="@IsMultiSelect"
+           multiple="@MultiSelect"
            accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
 
     @if (Files is not null)

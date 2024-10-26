@@ -72,9 +72,9 @@
                 }
                 else if (SelectedComponent?.Name == "FileUpload")
                 {
-                    <BitFileUpload IsMultiSelect="true"
+                    <BitFileUpload MultiSelect="true"
                                    Label="Select files"
-                                   AutoUploadEnabled="true"
+                                   AutoUpload="true"
                                    UploadUrl="@UploadUrl"
                                    RemoveUrl="@RemoveUrl"
                                    MaxSize="1024 * 1024 * 500" />

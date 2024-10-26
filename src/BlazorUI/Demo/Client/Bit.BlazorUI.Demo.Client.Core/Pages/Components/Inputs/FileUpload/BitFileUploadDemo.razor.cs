@@ -15,28 +15,28 @@ public partial class BitFileUploadDemo
         {
             Name = "AllowedExtensions",
             Type = "IReadOnlyCollection<string>",
-            DefaultValue = "new List<string> { \"*\" }",
+            DefaultValue = "[\"*\"]",
             Description = "Filters files by extension.",
         },
         new()
         {
-            Name = "AutoChunkSizeEnabled",
+            Name = "AutoChunkSize",
             Type = "bool",
             DefaultValue = "false",
             Description = "Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB."
         },
         new()
         {
-            Name = "AutoUploadEnabled",
+            Name = "AutoUpload",
             Type = "bool",
             DefaultValue = "false",
             Description = "Automatically starts the upload file(s) process immediately after selecting the file(s)."
         },
         new()
         {
-            Name = "ChunkedUploadEnabled",
+            Name = "ChunkedUpload",
             Type = "bool",
-            DefaultValue = "true",
+            DefaultValue = "false",
             Description = "Enables or disables the chunked upload feature."
         },
         new()
@@ -48,7 +48,7 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "IsMultiSelect",
+            Name = "MultiSelect",
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables multi-file select & upload."
@@ -92,49 +92,65 @@ public partial class BitFileUploadDemo
         {
             Name = "OnAllUploadsComplete",
             Type = "EventCallback<BitFileInfo[]>",
-            Description = "Callback for when all files are uploaded."
+            Description = "Callback for when all files are uploaded.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnChange",
             Type = "EventCallback<BitFileInfo[]>",
-            Description = "Callback for when file or files status change."
+            Description = "Callback for when file or files status change.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnProgress",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when the file upload is progressed."
+            Description = "Callback for when the file upload is progressed.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnRemoveComplete",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when a remove file is done."
+            Description = "Callback for when a remove file is done.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnRemoveFailed",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when a remove file is failed."
+            Description = "Callback for when a remove file is failed.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnUploading",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when a file upload is about to start."
+            Description = "Callback for when a file upload is about to start.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnUploadComplete",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when a file upload is done."
+            Description = "Callback for when a file upload is done.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
             Name = "OnUploadFailed",
             Type = "EventCallback<BitFileInfo>",
-            Description = "Callback for when an upload file is failed."
+            Description = "Callback for when an upload file is failed.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
         },
         new()
         {
@@ -212,10 +228,10 @@ public partial class BitFileUploadDemo
     [
         new()
         {
-            Id = "nav-class-styles",
+            Id = "file-info",
             Title = "BitFileInfo",
-            Parameters = new()
-            {
+            Parameters =
+            [
                new()
                {
                    Name = "ContentType",
@@ -275,7 +291,7 @@ public partial class BitFileUploadDemo
                    DefaultValue = "Pending",
                    Description = "The status of the file in the BitFileUpload.",
                    LinkType = LinkType.Link,
-                   Href = "#uploadstatus-enum"
+                   Href = "#upload-status-enum"
                },
                new()
                {
@@ -284,7 +300,7 @@ public partial class BitFileUploadDemo
                    DefaultValue = "null",
                    Description = "The HTTP header at upload file."
                }
-            }
+            ]
         }
     ];
 
@@ -292,7 +308,7 @@ public partial class BitFileUploadDemo
     [
         new()
         {
-            Id = "uploadstatus-enum",
+            Id = "upload-status-enum",
             Name = "BitFileUploadStatus",
             Description = "",
             Items =
