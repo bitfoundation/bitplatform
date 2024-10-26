@@ -99,6 +99,8 @@ public static partial class IServiceCollectionExtensions
         }
         //#endif
 
+        services.AddSingleton<WebAppRenderMode>();
+
         services.AddTypedHttpClients();
 
         return services;

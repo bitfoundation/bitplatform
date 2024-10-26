@@ -16,6 +16,9 @@ public partial class ClientAppSettings : SharedAppSettings
 
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
 
+    [Required]
+    public WebAppRenderOptions WebAppRender { get; set; } = default!;
+
     //#if (notification == true)
     public AdsPushVapidOptions? AdsPushVapid { get; set; }
     //#endif
@@ -23,6 +26,11 @@ public partial class ClientAppSettings : SharedAppSettings
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
+
+        if (WebAppRender is null)
+            throw new InvalidOperationException("WebAppRender is required. Please set WebAppRender in Client.Core's appsettings.json");
+
+        Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
 
         if (WindowsUpdate is not null)
         {
@@ -50,6 +58,27 @@ public partial class ClientAppSettings : SharedAppSettings
 
         return validationResults;
     }
+}
+
+public partial class WebAppRenderOptions
+{
+    public bool PreRenderEnabled { get; set; }
+
+    public BlazorWebAppMode BlazorMode { get; set; }
+}
+
+/// <summary>
+/// https://learn.microsoft.com/en-us/aspnet/core/blazor/components/render-modes#render-modes
+/// </summary>
+public enum BlazorWebAppMode
+{
+    BlazorAuto,
+    BlazorWebAssembly,
+    BlazorServer,
+    /// <summary>
+    /// Pre-rendering without interactivity
+    /// </summary>
+    BlazorSsr,
 }
 
 public partial class WindowsUpdateOptions

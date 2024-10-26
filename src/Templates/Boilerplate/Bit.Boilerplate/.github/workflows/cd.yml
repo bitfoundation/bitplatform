@@ -35,15 +35,13 @@ jobs:
       with:
         node-version: 22
 
-    # - name: Enable pre rendering
-    #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
-        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: BlazorAuto
 #if (notifications == true)
         AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif

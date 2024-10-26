@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Boilerplate.Client.Core.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 
 namespace Boilerplate.Server.Web.Components;
@@ -7,8 +8,10 @@ namespace Boilerplate.Server.Web.Components;
 public partial class App
 {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
-    [AutoInject] ServerWebAppSettings serverWebAppSettings { get; set; } = default!;
+
+    [AutoInject] WebAppRenderMode webAppRenderMode = default!;
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] ServerWebAppSettings serverWebAppSettings = default!;
 
     protected override void OnInitialized()
     {

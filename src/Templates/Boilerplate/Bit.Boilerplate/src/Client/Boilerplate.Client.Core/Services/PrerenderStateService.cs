@@ -9,18 +9,20 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public partial class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
+    [AutoInject] private readonly WebAppRenderMode webAppRenderMode = default!;
+    
     private PersistingComponentStateSubscription? subscription;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    private static bool noPersistant = AppRenderMode.Current == AppRenderMode.StaticSsr ||
-                                       AppRenderMode.PrerenderEnabled is false ||
+    private bool NoPersistant => webAppRenderMode.Current is null /*Ssr*/ ||
+                                       webAppRenderMode.PrerenderEnabled is false ||
                                        AppPlatform.IsBlazorHybrid;
 
     public PrerenderStateService(PersistentComponentState? persistentComponentState = null)
     {
-        if (noPersistant) return;
-        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, AppRenderMode.Current);
+        if (NoPersistant) return;
+        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, webAppRenderMode.Current);
         this.persistentComponentState = persistentComponentState;
     }
 
@@ -29,7 +31,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
     {
-        if (noPersistant) return await factory();
+        if (NoPersistant) return await factory();
 
         string key = $"{filePath.Split('\\').LastOrDefault()} {memberName} {lineNumber}";
 
@@ -38,7 +40,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (noPersistant) return await factory();
+        if (NoPersistant) return await factory();
 
         if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
 
@@ -49,7 +51,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     void Persist<T>(string key, T value)
     {
-        if (noPersistant || AppPlatform.IsBlazorHybridOrBrowser) return;
+        if (NoPersistant || AppPlatform.IsBlazorHybridOrBrowser) return;
 
         values.TryRemove(key, out object? _);
         values.TryAdd(key, value);
@@ -65,7 +67,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     public async ValueTask DisposeAsync()
     {
-        if (noPersistant) return;
+        if (NoPersistant) return;
 
         subscription?.Dispose();
     }
