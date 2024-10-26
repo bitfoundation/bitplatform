@@ -461,8 +461,7 @@ public partial class BitFileUploadDemo
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example2RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
-               AutoUploadEnabled=""true""
+<BitFileUpload MultiSelect AutoUpload
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
     private readonly string example2CsharpCode = @"
@@ -470,29 +469,25 @@ private string UploadUrl = $""/Upload"";
 private string RemoveUrl = $""/Remove"";";
 
     private readonly string example3RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
-               AutoUploadEnabled=""true""
+<BitFileUpload MultiSelect AutoUpload
                MaxSize=""1024 * 1024 * 100""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example4RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
-               AutoUploadEnabled=""false""
+<BitFileUpload MultiSelect
                AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })""
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl"" />";
 
     private readonly string example5RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
+<BitFileUpload MultiSelect ShowRemoveButton
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl""
-               ShowRemoveButton=""true"" />";
+               RemoveUrl=""@RemoveUrl"" />";
 
     private readonly string example6RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
-               AutoUploadEnabled=""true""
+<BitFileUpload MultiSelect AutoUpload
                MaxSize=""1024 * 1024 * 500"" 
                UploadUrl=""@ChunkedUploadUrl""
                Label=""Select or drag and drop files""
@@ -500,7 +495,7 @@ private string RemoveUrl = $""/Remove"";";
                OnUploading=""@(info => info.HttpHeaders = new Dictionary<string, string> { {""key1"", ""value1""} })"" />";
 
     private readonly string example7RazorCode = @"
-<BitFileUpload IsMultiSelect=""true""
+<BitFileUpload MultiSelect
                Label=""Select or drag and drop files""
                UploadUrl=""@UploadUrl""
                UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
