@@ -1,5 +1,4 @@
-﻿@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 main {
     width: 100%;
@@ -8,8 +7,8 @@ main {
 
 .exception {
     width: 90%;
+    margin: 1.5rem;
     overflow: auto;
     white-space: pre;
     text-align: start;
-    margin: rem2(24px);
 }

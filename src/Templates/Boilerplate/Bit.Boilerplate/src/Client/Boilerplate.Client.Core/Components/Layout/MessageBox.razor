@@ -1,16 +1,28 @@
 ﻿@inherits AppComponentBase
 
 <BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">
-    <div class="main">
-        <div class="header">
-            <span class="title">@title</span>
-            <BitButton IconName="@BitIconName.ChromeClose" OnClick="OnCloseClick" Variant="BitVariant.Text" />
-        </div>
-        <div class="body">
-            @body
-        </div>
-        <div class="footer">
-            <BitButton OnClick="OnOkClick">OK</BitButton>
-        </div>
-    </div>
+    <section>
+        <BitStack>
+            <BitStack Horizontal>
+                <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">
+                    @title
+                </BitText>
+                <BitSpacer />
+                <BitButton OnClick="OnCloseClick"
+                           Color="BitColor.Tertiary"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.ChromeClose" />
+            </BitStack>
+
+            <BitText Color="BitColor.Tertiary" Class="body">
+                @body
+            </BitText>
+
+            <BitStack Alignment="BitAlignment.Center">
+                <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+                    @Localizer[AppStrings.Ok]
+                </BitButton>
+            </BitStack>
+        </BitStack>
+    </section>
 </BitModal>
