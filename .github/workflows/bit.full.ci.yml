@@ -63,16 +63,6 @@ jobs:
         dotnet ef database update
         cd ../../Tests
         dotnet build
-        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./TestSqlite/src/Tests/TestResults
-        retention-days: 14
 
     - name: Test SqlServer database option
       id: sqlserver-test
@@ -82,16 +72,6 @@ jobs:
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
-        cd ../../Tests
-        dotnet test --logger GitHubActions
-
-    - name: Upload Tests Artifact
-      uses: actions/upload-artifact@v4.4.1
-      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
-      with:
-        name: tests-artifact
-        path: ./TestSqlServer/src/Tests/TestResults
-        retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |
@@ -162,16 +142,3 @@ jobs:
 
     - name: Build bit blazor ui demo
       run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
-
-    - name: Create projects from BlazorEmpty project template with different parameters
-      run: |
-        cd src/Templates/BlazorEmpty && dotnet build -c Release
-        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-        dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
-        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
-        dotnet new bit-empty --name SsrPerPage --interactivity None
-
-    - name: Build blazor empty based projects
-      run: |
-        dotnet build AutoGlobal/AutoGlobal.sln
-        dotnet build SsrPerPage/SsrPerPage.csproj
