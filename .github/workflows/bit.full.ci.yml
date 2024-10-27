@@ -175,6 +175,5 @@ jobs:
 
     - name: Build blazor empty based projects
       run: |
-        cd src/Templates/BlazorEmpty
         dotnet build AutoGlobal/AutoGlobal.sln
         dotnet build SsrPerPage/SsrPerPage.csproj
