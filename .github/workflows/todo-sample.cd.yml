@@ -43,7 +43,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.Production.json, TodoSample/src/Shared/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WebAppRender.BlazorMode: BlazorWebAssembly
