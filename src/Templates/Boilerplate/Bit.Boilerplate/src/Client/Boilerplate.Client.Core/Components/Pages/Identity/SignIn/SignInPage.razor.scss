@@ -1,5 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
 
 section {
     width: 100%;
@@ -7,9 +6,9 @@ section {
 }
 
 .form-forgot-password {
-    font-size: rem2(14px);
-    line-height: rem2(24px);
-    margin-bottom: rem2(20px);
+    font-size: 14px;
+    line-height: 24px;
+    margin-bottom: 20px;
 }
 
 .tfa-otp-container {

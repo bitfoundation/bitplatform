@@ -55,8 +55,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/SignOutConfirmModal.razor.css",
-        "inputFile": "Components/Layout/SignOutConfirmModal.razor.scss",
+        "outputFile": "Components/Layout/SignOutConfirmDialog.razor.css",
+        "inputFile": "Components/Layout/SignOutConfirmDialog.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
