@@ -96,7 +96,7 @@
 
                 var template = GetTemplate(item);
                 var isEnabled = GetIsEnabled(item);
-                <li role="presentation" @key="GetKey(item)">
+                <li role="presentation" @key="GetKey(item)" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
                             type="@_buttonType.GetValue()"

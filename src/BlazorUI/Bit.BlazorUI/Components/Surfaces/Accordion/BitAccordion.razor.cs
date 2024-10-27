@@ -3,35 +3,46 @@
 public partial class BitAccordion : BitComponentBase
 {
     /// <summary>
-    /// Custom CSS classes for different parts of the BitAccordion.
+    /// Alias for the ChildContent parameter.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the accordion.
     /// </summary>
     [Parameter] public BitAccordionClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The content of the Accordion.
+    /// The content of the accordion.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Default value of the IsExpanded.
+    /// Default value for the IsExpanded parameter.
     /// </summary>
     [Parameter] public bool? DefaultIsExpanded { get; set; }
 
     /// <summary>
-    /// A short description in the header of Accordion.
+    /// A short description in the header of the accordion.
     /// </summary>
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Used to customize how the header inside the Accordion is rendered.
+    /// Used to customize the header of the accordion.
     /// </summary>
     [Parameter] public RenderFragment<bool>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// Determines whether the accordion is expanding or collapses.
+    /// Determines whether the accordion is expanded or collapsed.
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsExpanded { get; set; }
+
+    /// <summary>
+    /// Removes the default border of the accordion and gives a background color to the body.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
 
     /// <summary>
     /// Callback that is called when the header is clicked.
@@ -44,14 +55,15 @@ public partial class BitAccordion : BitComponentBase
     [Parameter] public EventCallback<bool> OnChange { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitAccordion.
+    /// Custom CSS styles for different parts of the accordion.
     /// </summary>
     [Parameter] public BitAccordionClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Title in the header of Accordion.
+    /// Title in the header of accordion.
     /// </summary>
     [Parameter] public string? Title { get; set; }
+
 
 
     protected override string RootElementClass => "bit-acd";
@@ -61,6 +73,8 @@ public partial class BitAccordion : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => IsExpanded ? Classes?.Expanded : string.Empty);
+
+        ClassBuilder.Register(() => NoBorder ? "bit-acd-nbd" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

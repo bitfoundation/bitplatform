@@ -417,6 +417,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item wrapper of the BitMenuButton."
+               },
+               new()
+               {
                    Name = "ItemButton",
                    Type = "string?",
                    DefaultValue = "null",

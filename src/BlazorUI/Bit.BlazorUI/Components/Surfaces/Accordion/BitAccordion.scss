@@ -4,13 +4,13 @@
     width: 100%;
     display: flex;
     font-weight: 400;
+    color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: spacing(1.75);
     flex-flow: column nowrap;
-    color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
+    border-radius: $shp-border-radius;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &.bit-dis {
@@ -24,14 +24,23 @@
     }
 }
 
+.bit-acd-nbd {
+    border: none;
+    background-color: $clr-bg-sec;
+
+    .bit-acd-cnt {
+        background-color: $clr-bg-sec;
+    }
+}
+
 .bit-acd-hdr {
     display: flex;
     cursor: pointer;
     text-align: start;
+    color: $clr-fg-pri;
     align-items: center;
     padding: spacing(1.5);
     background-color: transparent;
-    color: $clr-fg-pri;
 }
 
 .bit-acd-hic {
@@ -51,12 +60,12 @@
 }
 
 .bit-acd-ttl {
-    min-width: 30%;
     font-weight: 600;
     font-size: spacing(2);
 }
 
 .bit-acd-des {
+    flex-grow: 1;
     color: $clr-fg-sec;
 }
 
