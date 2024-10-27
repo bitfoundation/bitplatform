@@ -137,7 +137,7 @@ public partial class _BitBreadcrumbOptionDemo
 </BitBreadcrumb>";
 
     private readonly string example5RazorCode = @"
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" SelectedItemStyle=""color: dodgerblue;"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"">
     <BitBreadcrumbOption Text=""Option 1"" IsSelected=""@(SelectedOptionNumber == 1)"" OnClick=""() => SelectedOptionNumber = 1"" />
     <BitBreadcrumbOption Text=""Option 2"" IsSelected=""@(SelectedOptionNumber == 2)"" OnClick=""() => SelectedOptionNumber = 2"" />
     <BitBreadcrumbOption Text=""Option 3"" IsSelected=""@(SelectedOptionNumber == 3)"" OnClick=""() => SelectedOptionNumber = 3"" />
@@ -172,51 +172,87 @@ private int CustomizedSelectedOptionNumber = 4;";
 
     private readonly string example7RazorCode = @"
 <style>
+    .custom-class {
+        font-style: italic;
+        text-shadow: dodgerblue 0 0 0.5rem;
+        border-bottom: 1px solid dodgerblue;
+    }
+
     .custom-item {
         color: #ffcece;
+
+        &:hover {
+            color: #ff6868;
+            background: transparent;
+        }
     }
 
-    .custom-item:hover {
-        color: #ff6868;
-        background: transparent;
+    .custom-item-1 {
+        color: #b6ff00;
+
+        &:hover {
+            color: #2aff00;
+            background: transparent;
+        }
     }
 
+    .custom-item-2 {
+        color: #ffd800;
+
+        &:hover {
+            color: #ff6a00;
+            background: transparent;
+        }
+    }
 
     .custom-selected-item {
         color: blueviolet;
-    }
 
-    .custom-selected-item:hover {
-        color: blueviolet;
-        background: transparent;
-        text-shadow: blueviolet 0 0 1rem;
+        &:hover {
+            color: blueviolet;
+            background: transparent;
+            text-shadow: blueviolet 0 0 1rem;
+        }
     }
 </style>
 
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Class=""custom-item"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Class=""custom-item"" IsSelected />
-</BitBreadcrumb>
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"">
-    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
-    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" IsSelected />
-</BitBreadcrumb>
-
-
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemClass=""custom-selected-item"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Class=""custom-class"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Style=""font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+</BitBreadcrumb>
+            
+<BitBreadcrumb TItem=""BitBreadcrumbOption"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Class=""custom-item-1"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Class=""custom-item-2"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Class=""custom-item-1"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Class=""custom-item-2"" IsSelected />
+</BitBreadcrumb>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" Style=""color: aqua; text-shadow: aqua 0 0 1rem;"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" Style=""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" Style=""color: aqua; text-shadow: aqua 0 0 1rem;"" IsSelected />
+</BitBreadcrumb>
+            
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Classes=""@(new() { Item = ""custom-item"", SelectedItem = ""custom-selected-item"" })"">
+    <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />
+    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+</BitBreadcrumb>
+
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" Styles=""@(new() { Item = ""color: green;"", SelectedItem = ""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" })"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />

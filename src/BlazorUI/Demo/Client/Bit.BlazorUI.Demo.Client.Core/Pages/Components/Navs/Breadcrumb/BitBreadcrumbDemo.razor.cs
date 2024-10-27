@@ -13,6 +13,15 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitBreadcrumbClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "DividerIconName",
             Type = "string?",
             DefaultValue = "null",
@@ -112,17 +121,12 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "SelectedItemClass",
-            Type = "string?",
+            Name = "Styles",
+            Type = "BitBreadcrumbClassStyles?",
             DefaultValue = "null",
-            Description = "The CSS class attribute for the selected item."
-        },
-        new()
-        {
-            Name = "SelectedItemStyle",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The style attribute for selected item."
+            Description = "Custom CSS styles for different parts of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         }
     ];
 
@@ -289,6 +293,147 @@ public partial class BitBreadcrumbDemo
                    Description = "The custom template for the item.",
                }
             ]
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitBreadcrumbClassStyles",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitBreadcrumb.",
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitBreadcrumb.",
+               },
+               new()
+               {
+                   Name = "ItemContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item container of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow button of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow button icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item wrapper of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Item",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item text of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "SelectedItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the selected item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Divider",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the divider of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "DividerIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the divider icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Callout",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout element of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "CalloutContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout container of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow item wrapper of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item text of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowSelectedItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow selected item of the BitBreadcrumb."
+               }
+            ],
         },
         new()
         {
