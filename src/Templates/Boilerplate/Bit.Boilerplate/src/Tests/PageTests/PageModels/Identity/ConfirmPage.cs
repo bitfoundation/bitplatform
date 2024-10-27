@@ -6,7 +6,7 @@ public partial class ConfirmPage(IPage page, Uri serverAddress)
     : MainLayout(page, serverAddress)
 {
     public override string PagePath => Urls.ConfirmPage;
-    public override string PageTitle => AppStrings.ConfirmTitle;
+    public override string PageTitle => AppStrings.ConfirmPageTitle;
     public string? EmailAddress { private get; init; }
 
     public override async Task AssertOpen()
