@@ -19,20 +19,19 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
-        
-    - name: Setup .NET 6,7
+
+    - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: | 
-          6.0.x
-          7.0.x
+        dotnet-version: |
+          8.0.x
 
     - uses: actions/setup-node@v4
       with:
         node-version: 22
       
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
@@ -58,20 +57,19 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
-        
-    - name: Setup .NET 6,7
+
+    - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: | 
-          6.0.x
-          7.0.x
+        dotnet-version: |
+          8.0.x
 
     - uses: actions/setup-node@v4
       with:
         node-version: 22
 
     - name: Install wasm and maui
-      run:  cd src && dotnet workload install maui-android wasm-tools
+      run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8
 
     - name: Install Android Sdk platform tools
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
