@@ -1,36 +1,35 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .color-btn {
+    width: 2rem;
+    height: 2rem;
     border: none;
     outline: none;
     cursor: pointer;
-    width: rem2(32px);
-    height: rem2(32px);
-    border-radius: rem2(2px);
+    border-radius: 2px;
 }
 
 .color-btn--active {
-    background-size: rem2(20px);
+    background-size: 20px;
     background-position: center;
     background-repeat: no-repeat;
     background-image: url('images/icons/checkmark-icon.svg');
 }
 
 .color-square {
-    width: rem2(32px);
-    height: rem2(32px);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 2px;
     display: inline-block;
-    border-radius: rem2(2px);
 
     &.selected {
-        width: rem2(80px);
+        width: 80px;
     }
 }
 
 ::deep {
     .back-btn {
-        margin-inline-end: rem2(12px);
+        margin-inline-end: 12px;
 
         &[dir=rtl] {
             transform: scale(-1);

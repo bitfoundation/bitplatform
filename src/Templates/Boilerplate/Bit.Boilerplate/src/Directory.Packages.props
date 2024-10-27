@@ -9,7 +9,7 @@
         <PackageVersion Include="Bit.Bswup" Version="8.12.0-pre-06" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="8.12.0-pre-06" />
         <PackageVersion Include="Bit.SourceGenerators" Version="8.12.0-pre-06" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.47" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.48" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
@@ -20,7 +20,7 @@
         <PackageVersion Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
         <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
         <PackageVersion Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.91" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.92" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
         <PackageVersion Include="Velopack" Version="0.0.626" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
@@ -29,8 +29,8 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.1" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.2.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.2.1" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.3" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" Version="1.4.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.6" />
@@ -53,7 +53,7 @@
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
         <PackageVersion Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') OR ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.10" />
-        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
         <PackageVersion Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.10" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
@@ -74,7 +74,7 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.10" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
