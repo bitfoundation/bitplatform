@@ -29,6 +29,7 @@ public partial class SignInPage : IDisposable
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
+
     private bool isWaiting;
     private bool isOtpSent;
     private bool requiresTwoFactor;
