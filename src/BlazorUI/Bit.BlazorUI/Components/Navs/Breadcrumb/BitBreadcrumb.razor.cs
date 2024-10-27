@@ -30,6 +30,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the breadcrumb.
+    /// </summary>
+    [Parameter] public BitBreadcrumbClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Render a custom divider in place of the default chevron >
     /// </summary>
     [Parameter] public string? DividerIconName { get; set; }
@@ -87,7 +92,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
     /// </summary>
-    [Parameter] public string OverflowIconName { get; set; } = "More";
+    [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
     /// The custom template content to render each overflow icon.
@@ -105,14 +110,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
-    /// The class HTML attribute for Selected Item.
+    /// Custom CSS styles for different parts of the breadcrumb.
     /// </summary>
-    [Parameter] public string? SelectedItemClass { get; set; }
-
-    /// <summary>
-    /// The style HTML attribute for Selected Item.
-    /// </summary>
-    [Parameter] public string? SelectedItemStyle { get; set; }
+    [Parameter] public BitBreadcrumbClassStyles? Styles { get; set; }
 
 
 
@@ -146,6 +146,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
 
     protected override string RootElementClass => "bit-brc";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override Task OnInitializedAsync()
     {
@@ -237,38 +247,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         }
     }
 
-    private string GetClasses(TItem item)
-    {
-        var classes = new List<string>();
-
-        if (GetItemClass(item).HasValue())
-        {
-            classes.Add(GetItemClass(item)!);
-        }
-
-        if (GetIsSelected(item))
-        {
-            classes.Add("bit-brc-sel");
-        }
-
-        if (GetIsSelected(item) && SelectedItemClass.HasValue())
-        {
-            classes.Add(SelectedItemClass!);
-        }
-
-        if (GetIsEnabled(item) is false)
-        {
-            classes.Add("bit-brc-disi");
-        }
-
-        if (GetReversedIcon(item))
-        {
-            classes.Add("bit-brc-rvi");
-        }
-
-        return string.Join(" ", classes);
-    }
-
     private string? GetKey(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
@@ -291,25 +269,99 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
-    private string GetStyles(TItem item)
+    private string GetClasses(TItem item, bool isOverflowItem)
+    {
+        var classes = new List<string>();
+
+        if (GetItemClass(item).HasValue())
+        {
+            classes.Add(GetItemClass(item)!);
+        }
+
+        if (GetIsSelected(item))
+        {
+            classes.Add("bit-brc-sel");
+        }
+
+        if (isOverflowItem)
+        {
+            if (Classes?.OverflowItem.HasValue() ?? false)
+            {
+                classes.Add(Classes.OverflowItem!);
+            }
+
+            if (GetIsSelected(item) && (Classes?.OverflowSelectedItem.HasValue() ?? false))
+            {
+                classes.Add(Classes.OverflowSelectedItem!);
+            }
+        }
+        else
+        {
+            if (Classes?.Item.HasValue() ?? false)
+            {
+                classes.Add(Classes.Item!);
+            }
+
+            if (GetIsSelected(item) && (Classes?.SelectedItem.HasValue() ?? false))
+            {
+                classes.Add(Classes.SelectedItem!);
+            }
+        }
+
+        if (GetIsEnabled(item) is false)
+        {
+            classes.Add("bit-brc-dis");
+        }
+
+        if (GetReversedIcon(item))
+        {
+            classes.Add("bit-brc-rvi");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetStyles(TItem item, bool isOverflowItem)
     {
         var styles = new List<string>();
 
         if (GetItemStyle(item).HasValue())
         {
-            styles.Add(GetItemStyle(item)!);
+            styles.Add(GetItemStyle(item)!.Trim(';'));
         }
 
-        if (GetIsSelected(item) && SelectedItemStyle.HasValue())
+        if (isOverflowItem)
         {
-            styles.Add(SelectedItemStyle!);
+            if (Styles?.OverflowItem.HasValue() ?? false)
+            {
+                styles.Add(Styles.OverflowItem!.Trim(';'));
+            }
+
+            if (GetIsSelected(item) && (Styles?.OverflowSelectedItem.HasValue() ?? false))
+            {
+                styles.Add(Styles.OverflowSelectedItem!.Trim(';'));
+            }
+        }
+        else
+        {
+            if (Styles?.Item.HasValue() ?? false)
+            {
+                styles.Add(Styles.Item!.Trim(';'));
+            }
+
+            if (GetIsSelected(item) && (Styles?.SelectedItem.HasValue() ?? false))
+            {
+                styles.Add(Styles.SelectedItem!.Trim(';'));
+            }
         }
 
-        return string.Join(" ", styles);
+        return string.Join(';', styles);
     }
 
     private string? GetItemHref(TItem item)
     {
+        if (GetIsEnabled(item) is false) return null;
+
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
             return breadcrumbItem.Href;
@@ -464,6 +516,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
     private bool GetIsEnabled(TItem item)
     {
+        if (IsEnabled is false) return false;
+
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
             return breadcrumbItem.IsEnabled;

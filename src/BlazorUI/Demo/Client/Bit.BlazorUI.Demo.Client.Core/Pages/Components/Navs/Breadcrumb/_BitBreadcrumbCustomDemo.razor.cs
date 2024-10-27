@@ -32,18 +32,18 @@ public partial class _BitBreadcrumbCustomDemo
 
     private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
     [
-        new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlClass = "custom-item", IsCurrent = true }
+        new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlClass = "custom-item-2" },
+        new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlClass = "custom-item-2", IsCurrent = true }
     ];
 
     private readonly List<PageInfo> CustomBreadcrumbItemsWithStyle =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlStyle = "color: aqua; text-shadow: aqua 0 0 1rem;" },
         new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;", IsCurrent = true }
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlStyle = "color: aqua; text-shadow: aqua 0 0 1rem;", IsCurrent = true }
     ];
 
     private readonly List<PageInfo> CustomBreadcrumbItemsWithControlled =
