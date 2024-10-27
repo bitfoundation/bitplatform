@@ -71,7 +71,7 @@ public partial class PageTestBase : PageTest
     private static string GetVideoDirectory(TestContext testContext)
     {
         var testMethodDsiplayName = GetTestMethodDisplayName(testContext);
-        char[] invalidChars = [.. Path.GetInvalidPathChars(), .. Path.GetInvalidFileNameChars(), ')'];
+        char[] invalidChars = [.. Path.GetInvalidPathChars(), .. Path.GetInvalidFileNameChars(), ')', '"', '<', '>', '|', '*', '?', '\r', '\n'];
         testMethodDsiplayName = new string(testMethodDsiplayName.Where(ch => !invalidChars.Contains(ch)).Select(ch => ch is '(' or ',' ? '_' : ch).ToArray());
         var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testMethodDsiplayName}";
         var dir = Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);

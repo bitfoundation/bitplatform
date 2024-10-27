@@ -20,7 +20,7 @@ public static partial class IServiceCollectionExtensions
     {
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
 
-        services.AddSharedProjectServices();
+        services.AddSharedProjectServices(configuration);
 
         services.AddSessioned<IPubSubService, PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
@@ -96,17 +96,7 @@ public static partial class IServiceCollectionExtensions
             {
                 x.ConnectionString = connectionString;
             }
-        },
-        async appInsights =>
-        {
-            await appInsights.AddTelemetryInitializer(new()
-            {
-                Tags = new Dictionary<string, object?>()
-                {
-                    { "ai.application.ver", typeof(Routes).Assembly.GetName().Version!.ToString() }
-                }
-            });
-        }, addWasmLogger: AppPlatform.IsBrowser);
+        });
         //#endif
 
         services.AddTypedHttpClients();

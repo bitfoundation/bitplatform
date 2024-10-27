@@ -4,7 +4,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddSharedProjectServices(this IServiceCollection services)
+    public static IServiceCollection AddSharedProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
 
