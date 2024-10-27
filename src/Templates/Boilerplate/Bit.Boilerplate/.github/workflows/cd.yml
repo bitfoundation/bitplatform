@@ -41,7 +41,6 @@ jobs:
         files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WebAppRender.BlazorMode: BlazorAuto
 #if (notifications == true)
         AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
