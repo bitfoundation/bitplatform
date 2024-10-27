@@ -126,7 +126,7 @@ public partial class RootLayout : IDisposable
 
         var type = currentRouteData.PageType;
 
-        if (type.GetCustomAttribute<AuthorizeAttribute>() is not null)
+        if (type.GetCustomAttribute<AuthorizeAttribute>(inherit: true) is not null)
         {
             isCrossLayoutPage = false;
             return;

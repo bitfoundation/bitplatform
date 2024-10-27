@@ -21,6 +21,11 @@ public partial class IdentityRequestDto : IValidatableObject
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
-            yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideUserNameOrEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);
+        {
+            yield return new ValidationResult(
+                errorMessage: nameof(AppStrings.EitherProvideUserNameOrEmailOrPhoneNumber),
+                memberNames: [nameof(UserName), nameof(Email), nameof(PhoneNumber)]
+            );
+        }
     }
 }

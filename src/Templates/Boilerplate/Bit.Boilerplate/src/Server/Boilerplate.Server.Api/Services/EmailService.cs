@@ -116,7 +116,7 @@ public partial class EmailService
     {
         var emailResult = await fluentEmail.To(toEmailAddress, toName)
                                            .Subject(subject)
-                                           .SetFrom(appSettings.Email.DefaultFromEmail, emailLocalizer[nameof(EmailStrings.DefaultFromName)])
+                                           .SetFrom(appSettings.Email!.DefaultFromEmail, emailLocalizer[nameof(EmailStrings.DefaultFromName)])
                                            .Body(body, isHtml: true)
                                            .SendAsync(cancellationToken);
 

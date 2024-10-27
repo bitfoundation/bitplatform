@@ -348,9 +348,6 @@
     <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
-    <data name="TermsAccepted" xml:space="preserve">
-    <value>Is accept terms?</value>
-  </data>
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>You must agree to our terms.</value>
   </data>

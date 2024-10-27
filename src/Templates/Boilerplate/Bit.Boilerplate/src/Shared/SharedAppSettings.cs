@@ -10,7 +10,7 @@ public partial class SharedAppSettings : IValidatableObject
     public string? WebClientUrl { get; set; }
 
     //#if (appInsights == true)
-    public ApplicationInsightsOptions ApplicationInsights { get; set; } = default!;
+    public ApplicationInsightsOptions? ApplicationInsights { get; set; }
     //#endif
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -18,7 +18,10 @@ public partial class SharedAppSettings : IValidatableObject
         var validationResults = new List<ValidationResult>();
 
         //#if (appInsights == true)
-        Validator.TryValidateObject(ApplicationInsights, new ValidationContext(ApplicationInsights), validationResults, true);
+        if (ApplicationInsights is not null)
+        {
+            Validator.TryValidateObject(ApplicationInsights, new ValidationContext(ApplicationInsights), validationResults, true);
+        }
         //#endif
 
         return validationResults;

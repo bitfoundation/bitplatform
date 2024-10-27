@@ -11,13 +11,15 @@ public partial class ServerApiAppSettings : SharedAppSettings
     /// It can also be configured using: dotnet user-secrets set 'DataProtectionCertificatePassword' '@nyPassw0rd'
     /// </summary>
     [Required]
-    public string? DataProtectionCertificatePassword { get; set; }
+    public string DataProtectionCertificatePassword { get; set; } = default!;
 
+    [Required]
     public AppIdentityOptions Identity { get; set; } = default!;
 
+    [Required]
     public EmailOptions Email { get; set; } = default!;
 
-    public SmsOptions Sms { get; set; } = default!;
+    public SmsOptions? Sms { get; set; }
 
     [Required]
     public string UserProfileImagesDir { get; set; } = default!;
@@ -28,26 +30,40 @@ public partial class ServerApiAppSettings : SharedAppSettings
     //#endif
 
     //#if (notification == true)
-    public AdsPushVapidSettings AdsPushVapid { get; set; } = default!;
+    public AdsPushVapidSettings? AdsPushVapid { get; set; }
 
-    public AdsPushFirebaseSettings AdsPushFirebase { get; set; } = default!;
+    public AdsPushFirebaseSettings? AdsPushFirebase { get; set; }
 
-    public AdsPushAPNSSettings AdsPushAPNS { get; set; } = default!;
+    public AdsPushAPNSSettings? AdsPushAPNS { get; set; }
     //#endif
 
-    public ForwardedHeadersOptions ForwardedHeaders { get; set; } = default!;
+    public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
 
+        if (Identity is null)
+            throw new InvalidOperationException("Identity configuration is required.");
+        if (Email is null)
+            throw new InvalidOperationException("Email configuration is required.");
+
         Validator.TryValidateObject(Identity, new ValidationContext(Identity), validationResults, true);
         Validator.TryValidateObject(Email, new ValidationContext(Email), validationResults, true);
-        Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
+        if (Sms is not null)
+        {
+            Validator.TryValidateObject(Sms, new ValidationContext(Sms), validationResults, true);
+        }
         //#if (notification == true)
-        Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
+        if (AdsPushVapid is not null)
+        {
+            Validator.TryValidateObject(AdsPushVapid, new ValidationContext(AdsPushVapid), validationResults, true);
+        }
         //#endif
-        Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
+        if (ForwardedHeaders is not null)
+        {
+            Validator.TryValidateObject(ForwardedHeaders, new ValidationContext(ForwardedHeaders), validationResults, true);
+        }
 
         if (AppEnvironment.IsDev() is false)
         {
@@ -65,7 +81,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
             //#endif
 
             //#if (notification == true)
-            if (AdsPushVapid!.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid!.Subject is "mailto: <test@bitplatform.dev>")
+            if (AdsPushVapid?.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid?.Subject is "mailto: <test@bitplatform.dev>")
             {
                 throw new InvalidOperationException("The AdsPushVapid's PrivateKey and Subject are not set. Please set them in the server's appsettings.json file.");
             }

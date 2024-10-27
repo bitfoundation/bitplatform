@@ -33,11 +33,11 @@ public partial class PhoneService
             LogSendSms(logger, messageText, phoneNumber);
         }
 
-        if (appSettings.Sms.Configured is false) return;
+        if (appSettings.Sms?.Configured is false) return;
 
         var messageOptions = new CreateMessageOptions(new(phoneNumber))
         {
-            From = new(appSettings.Sms.FromPhoneNumber),
+            From = new(appSettings.Sms!.FromPhoneNumber),
             Body = messageText
         };
 

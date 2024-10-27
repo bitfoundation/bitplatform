@@ -40,7 +40,7 @@ public static partial class Program
         }
         //#endif
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         await app.RunAsync();
     }

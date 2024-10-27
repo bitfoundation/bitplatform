@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components;
+﻿using System.Runtime.CompilerServices;
+
+namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
@@ -120,7 +122,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
-    public virtual Action WrapHandled(Action action)
+    public virtual Action WrapHandled(Action action,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
         return () =>
         {
@@ -130,7 +135,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp);
+                HandleException(exp, null, lineNumber, memberName, filePath);
             }
         };
     }
@@ -138,7 +143,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Executes passed action while catching all possible exceptions to prevent app crash.
     /// </summary>
-    public virtual Action<T> WrapHandled<T>(Action<T> func)
+    public virtual Action<T> WrapHandled<T>(Action<T> func,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
         return (e) =>
         {
@@ -148,7 +156,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp);
+                HandleException(exp, null, lineNumber, memberName, filePath);
             }
         };
     }
@@ -156,7 +164,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Executes passed function while catching all possible exceptions to prevent app crash.
     /// </summary>
-    public virtual Func<Task> WrapHandled(Func<Task> func)
+    public virtual Func<Task> WrapHandled(Func<Task> func,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
         return async () =>
         {
@@ -166,7 +177,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp);
+                HandleException(exp, null, lineNumber, memberName, filePath);
             }
         };
     }
@@ -174,7 +185,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Executes passed function while catching all possible exceptions to prevent app crash.
     /// </summary>
-    public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func)
+    public virtual Func<T, Task> WrapHandled<T>(Func<T, Task> func,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
         return async (e) =>
         {
@@ -184,7 +198,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                HandleException(exp);
+                HandleException(exp, null, lineNumber, memberName, filePath);
             }
         };
     }
@@ -206,13 +220,16 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected void HandleException(Exception exp, Dictionary<string, object?>? parameters = null)
+    private void HandleException(Exception exp,
+        Dictionary<string, object?>? parameters = null,
+        [CallerLineNumber] int lineNumber = 0,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "")
     {
         parameters ??= [];
 
         parameters["ComponentType"] = GetType().FullName;
-        parameters["Url"] = NavigationManager.Uri;
 
-        ExceptionHandler.Handle(exp, parameters);
+        ExceptionHandler.Handle(exp, parameters, lineNumber, memberName, filePath);
     }
 }

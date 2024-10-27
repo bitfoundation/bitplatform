@@ -59,18 +59,18 @@ public static partial class MauiProgram
         //#endif
 
         //#if (appInsights == true)
-        builder.Logging.AddApplicationInsights(config =>
+        var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+        if (string.IsNullOrEmpty(connectionString) is false)
         {
-            config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
-            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
-            if (string.IsNullOrEmpty(connectionString) is false)
+            builder.Logging.AddApplicationInsights(config =>
             {
+                config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
                 config.ConnectionString = connectionString;
-            }
-        }, options =>
-        {
-            options.IncludeScopes = true;
-        });
+            }, options =>
+            {
+                options.IncludeScopes = true;
+            });
+        }
         //#endif
         //-:cnd:noEmit
 

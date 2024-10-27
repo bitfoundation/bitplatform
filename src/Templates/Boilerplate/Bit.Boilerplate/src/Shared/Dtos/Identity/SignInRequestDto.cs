@@ -37,7 +37,10 @@ public partial class SignInRequestDto : IdentityRequestDto
 
         if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(Otp))
         {
-            result.Add(new ValidationResult(errorMessage: nameof(AppStrings.EitherProvidePasswordOrOtp), [nameof(Password), nameof(Otp)]));
+            result.Add(new ValidationResult(
+                errorMessage: nameof(AppStrings.EitherProvidePasswordOrOtp),
+                memberNames: [nameof(Password), nameof(Otp)]
+            ));
         }
 
         return result;
