@@ -45,7 +45,7 @@ public partial class SettingsPage
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendEmailTokenButtonText })).ToBeVisibleAsync();
     }
 
-    public async Task AssertTooManyRequestForChangeEmail()
+    public async Task AssertTooManyRequestsForChangeEmail()
     {
         var pattern = new Regex(AppStrings.WaitForEmailTokenRequestResendDelay.Replace("{0}", ".*"));
         await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();

@@ -51,7 +51,7 @@ public partial class SettingsPage
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendPhoneTokenButtonText })).ToBeVisibleAsync();
     }
 
-    public async Task AssertTooManyRequestForChangePhone()
+    public async Task AssertTooManyRequestsForChangePhone()
     {
         var pattern = new Regex(AppStrings.WaitForPhoneNumberTokenRequestResendDelay.Replace("{0}", ".*"));
         await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();

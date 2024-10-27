@@ -118,7 +118,7 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("Token")]
     [DataRow("InvalidToken")]
     [DataRow("MagicLink")]
-    [DataRow("TooManyRequest")]
+    [DataRow("TooManyRequests")]
     [DataRow("NotExisted")]
     public async Task ForgotPassword(string mode)
     {
@@ -157,10 +157,10 @@ public partial class IdentityPagesTests : PageTestBase
                 await resetPasswordPage.SetPassword(newPassword);
                 await resetPasswordPage.AssertInvalidToken();
                 return;
-            case "TooManyRequest":
+            case "TooManyRequests":
                 await Page.GoBackAsync();
                 await forgotPasswordPage.ForgotPassword(email);
-                await forgotPasswordPage.AssertTooManyRequest();
+                await forgotPasswordPage.AssertTooManyRequests();
                 return;
             default:
                 throw new NotSupportedException();
@@ -183,7 +183,7 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("Token")]
     [DataRow("InvalidToken")]
     [DataRow("MagicLink")]
-    [DataRow("TooManyRequest")]
+    [DataRow("TooManyRequests")]
     public async Task ChangeEmail(string mode)
     {
         var email = await CreateNewUser();
@@ -224,11 +224,11 @@ public partial class IdentityPagesTests : PageTestBase
                 await settingsPage.ConfirmEmailByToken("111111");
                 await settingsPage.AssertEmailInvalidToken();
                 return;
-            case "TooManyRequest":
+            case "TooManyRequests":
                 await settingsPage.ClickOnPhoneTab();
                 await settingsPage.ClickOnEmailTab();
                 await settingsPage.ChangeEmail(newEmail);
-                await settingsPage.AssertTooManyRequestForChangeEmail();
+                await settingsPage.AssertTooManyRequestsForChangeEmail();
                 return;
             default:
                 throw new NotSupportedException();
@@ -249,7 +249,7 @@ public partial class IdentityPagesTests : PageTestBase
     [TestMethod]
     [DataRow("Token")]
     [DataRow("InvalidToken")]
-    [DataRow("TooManyRequest")]
+    [DataRow("TooManyRequests")]
     public async Task ChangePhone(string mode)
     {
         var email = await CreateNewUser();
@@ -297,11 +297,11 @@ public partial class IdentityPagesTests : PageTestBase
                 await settingsPage.ConfirmPhoneByToken("111111");
                 await settingsPage.AssertPhoneInvalidToken();
                 return;
-            case "TooManyRequest":
+            case "TooManyRequests":
                 await settingsPage.ClickOnEmailTab();
                 await settingsPage.ClickOnPhoneTab();
                 await settingsPage.ChangePhone(phone);
-                await settingsPage.AssertTooManyRequestForChangePhone();
+                await settingsPage.AssertTooManyRequestsForChangePhone();
                 return;
             default:
                 throw new NotSupportedException();

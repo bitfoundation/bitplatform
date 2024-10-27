@@ -39,7 +39,7 @@ public partial class ForgotPasswordPage(IPage page, Uri serverAddress)
         await Assertions.Expect(Page.GetByText(AppStrings.UserNotFound)).ToBeVisibleAsync();
     }
 
-    public async Task AssertTooManyRequest()
+    public async Task AssertTooManyRequests()
     {
         var pattern = new Regex(AppStrings.WaitForResetPasswordTokenRequestResendDelay.Replace("{0}", ".*"));
         await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();
