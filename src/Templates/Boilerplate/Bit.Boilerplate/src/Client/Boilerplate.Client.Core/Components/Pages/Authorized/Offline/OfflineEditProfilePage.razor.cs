@@ -13,8 +13,6 @@ public partial class OfflineEditProfilePage
 
     private bool isSaving;
     private bool isLoading = true;
-    private string? editProfileMessage;
-    private BitColor editProfileMessageColor;
     private UserDto user = new();
     private readonly EditUserDto userToEdit = new();
 
@@ -53,7 +51,6 @@ public partial class OfflineEditProfilePage
         if (isSaving) return;
 
         isSaving = true;
-        editProfileMessage = null;
 
         try
         {
@@ -63,14 +60,11 @@ public partial class OfflineEditProfilePage
             dbContext.Users.Update(user);
             await dbContext.SaveChangesAsync(CurrentCancellationToken);
 
-            editProfileMessageColor = BitColor.Success;
-            editProfileMessage = Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)];
+            SnackBarService.Success(Localizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
         }
         catch (KnownException e)
         {
-            editProfileMessageColor = BitColor.Error;
-
-            editProfileMessage = e.Message;
+            SnackBarService.Error(e.Message);
         }
         finally
         {

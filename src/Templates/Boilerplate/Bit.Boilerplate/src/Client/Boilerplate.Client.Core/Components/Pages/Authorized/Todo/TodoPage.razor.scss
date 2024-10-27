@@ -1,5 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
@@ -24,7 +23,7 @@ section {
     }
 
     .todo-search {
-        width: rem2(192px);
+        width: 192px;
 
         @include lt-sm {
             width: 100%;

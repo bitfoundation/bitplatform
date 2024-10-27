@@ -29,6 +29,7 @@ public partial class SignInPage : IDisposable
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
+    [AutoInject] private MessageBoxService _MessageBoxService = default!;
 
     private bool isWaiting;
     private bool isOtpSent;

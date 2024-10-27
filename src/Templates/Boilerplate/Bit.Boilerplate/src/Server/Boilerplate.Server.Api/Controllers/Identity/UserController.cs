@@ -67,6 +67,8 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
+        throw new Exception("heheheheh");
+
         var userId = User.GetUserId();
 
         var user = await userManager.FindByIdAsync(userId.ToString())
