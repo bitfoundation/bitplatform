@@ -159,8 +159,8 @@ jobs:
         dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
         dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
 
-    # - name: Run bit blazor ui tests
-    #   run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
+    - name: Run bit blazor ui tests
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
 
     - name: Build bit blazor ui demo
       run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
