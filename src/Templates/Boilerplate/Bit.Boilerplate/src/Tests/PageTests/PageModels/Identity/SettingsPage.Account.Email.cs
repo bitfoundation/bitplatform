@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.PageTests.PageModels.Email;
+﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.PageTests.PageModels.Email;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
@@ -42,6 +43,12 @@ public partial class SettingsPage
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedEmailMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.CheckSpamMailMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendEmailTokenButtonText })).ToBeVisibleAsync();
+    }
+
+    public async Task AssertTooManyRequestForChangeEmail()
+    {
+        var pattern = new Regex(AppStrings.WaitForEmailTokenRequestResendDelay.Replace("{0}", ".*"));
+        await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();
     }
 
     public async Task<ConfirmationEmail<SettingsPage>> OpenConfirmationEmail()

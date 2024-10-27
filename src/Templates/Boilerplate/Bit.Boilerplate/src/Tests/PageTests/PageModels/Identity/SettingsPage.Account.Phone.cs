@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.Services;
+﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.Services;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
@@ -48,6 +49,12 @@ public partial class SettingsPage
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.PhoneTokenConfirmButtonText })).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedPhoneMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendPhoneTokenButtonText })).ToBeVisibleAsync();
+    }
+
+    public async Task AssertTooManyRequestForChangePhone()
+    {
+        var pattern = new Regex(AppStrings.WaitForPhoneNumberTokenRequestResendDelay.Replace("{0}", ".*"));
+        await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();
     }
 
     public string GetPhoneToken()

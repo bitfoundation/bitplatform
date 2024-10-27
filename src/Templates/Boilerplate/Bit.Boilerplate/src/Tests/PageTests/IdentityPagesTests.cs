@@ -118,6 +118,8 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("Token")]
     [DataRow("InvalidToken")]
     [DataRow("MagicLink")]
+    [DataRow("TooManyRequest")]
+    [DataRow("NotExisted")]
     public async Task ForgotPassword(string mode)
     {
         var email = await CreateNewUser();
@@ -126,6 +128,13 @@ public partial class IdentityPagesTests : PageTestBase
 
         await forgotPasswordPage.Open();
         await forgotPasswordPage.AssertOpen();
+
+        if (mode is "NotExisted")
+        {
+            await forgotPasswordPage.ForgotPassword("not-existed@bitplatform.dev");
+            await forgotPasswordPage.AssertUserNotFound();
+            return;
+        }
 
         var resetPasswordPage = await forgotPasswordPage.ForgotPassword(email);
         await resetPasswordPage.AssertOpen();
@@ -140,14 +149,19 @@ public partial class IdentityPagesTests : PageTestBase
                 var token = await resetPasswordEmail.GetToken();
                 await resetPasswordPage.ContinueByToken(token);
                 break;
+            case "MagicLink":
+                resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
+                break;
             case "InvalidToken":
                 await resetPasswordPage.ContinueByToken("111111");
                 await resetPasswordPage.SetPassword(newPassword);
                 await resetPasswordPage.AssertInvalidToken();
                 return;
-            case "MagicLink":
-                resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
-                break;
+            case "TooManyRequest":
+                await Page.GoBackAsync();
+                await forgotPasswordPage.ForgotPassword(email);
+                await forgotPasswordPage.AssertTooManyRequest();
+                return;
             default:
                 throw new NotSupportedException();
         }
@@ -169,6 +183,7 @@ public partial class IdentityPagesTests : PageTestBase
     [DataRow("Token")]
     [DataRow("InvalidToken")]
     [DataRow("MagicLink")]
+    [DataRow("TooManyRequest")]
     public async Task ChangeEmail(string mode)
     {
         var email = await CreateNewUser();
@@ -181,53 +196,60 @@ public partial class IdentityPagesTests : PageTestBase
         var identityHomePage = await signInPage.SignInWithEmail(email);
         await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
-        var settinsPage = new SettingsPage(Page, WebAppServerAddress);
+        var settingsPage = new SettingsPage(Page, WebAppServerAddress);
 
-        await settinsPage.Open();
-        await settinsPage.AssertOpen();
+        await settingsPage.Open();
+        await settingsPage.AssertOpen();
 
-        await settinsPage.ExpandAccount();
-        await settinsPage.AssertExpandAccount(email);
+        await settingsPage.ExpandAccount();
+        await settingsPage.AssertExpandAccount(email);
 
         var newEmail = $"{Guid.NewGuid()}@gmail.com";
-        await settinsPage.ChangeEmail(newEmail);
-        await settinsPage.AssertChangeEmail();
+        await settingsPage.ChangeEmail(newEmail);
+        await settingsPage.AssertChangeEmail();
 
-        var confirmationEmail = await settinsPage.OpenConfirmationEmail();
+        var confirmationEmail = await settingsPage.OpenConfirmationEmail();
         await confirmationEmail.AssertContent();
 
         switch (mode)
         {
             case "Token":
                 var token = await confirmationEmail.GetToken();
-                await settinsPage.ConfirmEmailByToken(token);
+                await settingsPage.ConfirmEmailByToken(token);
+                break;
+            case "MagicLink":
+                settingsPage = await confirmationEmail.OpenMagicLink();
                 break;
             case "InvalidToken":
-                await settinsPage.ConfirmEmailByToken("111111");
-                await settinsPage.AssertEmailInvalidToken();
+                await settingsPage.ConfirmEmailByToken("111111");
+                await settingsPage.AssertEmailInvalidToken();
                 return;
-            case "MagicLink":
-                settinsPage = await confirmationEmail.OpenMagicLink();
-                break;
+            case "TooManyRequest":
+                await settingsPage.ClickOnPhoneTab();
+                await settingsPage.ClickOnEmailTab();
+                await settingsPage.ChangeEmail(newEmail);
+                await settingsPage.AssertTooManyRequestForChangeEmail();
+                return;
             default:
                 throw new NotSupportedException();
         }
-        await settinsPage.AssertConfirmEmailSuccess();
+        await settingsPage.AssertConfirmEmailSuccess();
 
-        signInPage = await settinsPage.SignOut();
+        signInPage = await settingsPage.SignOut();
         await signInPage.AssertOpen();
         await signInPage.AssertSignOut();
 
         await signInPage.SignInWithEmail(email);
         await signInPage.AssertSignInFailed();
 
-        settinsPage = await signInPage.SignInWithEmail<SettingsPage>(newEmail);
-        await settinsPage.AssertSignInSuccess(newEmail, userFullName: null);
+        settingsPage = await signInPage.SignInWithEmail<SettingsPage>(newEmail);
+        await settingsPage.AssertSignInSuccess(newEmail, userFullName: null);
     }
 
     [TestMethod]
     [DataRow("Token")]
     [DataRow("InvalidToken")]
+    [DataRow("TooManyRequest")]
     public async Task ChangePhone(string mode)
     {
         var email = await CreateNewUser();
@@ -249,7 +271,7 @@ public partial class IdentityPagesTests : PageTestBase
         await settingsPage.ClickOnPhoneTab();
         await settingsPage.AssertPhoneTab(null);
 
-        var phone = "+981234567890";
+        var phone = $"+1{Random.Shared.Next(1111111111, int.MaxValue)}";
         await settingsPage.ChangePhone(phone);
         await settingsPage.AssertChangePhone();
 
@@ -258,25 +280,32 @@ public partial class IdentityPagesTests : PageTestBase
             case "Token":
                 var token = settingsPage.GetPhoneToken();
                 await settingsPage.ConfirmPhoneByToken(token);
-                break;
+
+                await settingsPage.AssertConfirmPhoneSuccess();
+
+                signInPage = await settingsPage.SignOut();
+                await signInPage.AssertOpen();
+                await signInPage.AssertSignOut();
+
+                await signInPage.ClickOnPhoneTab();
+                await signInPage.AssertPhoneTab();
+
+                settingsPage = await signInPage.SignInWithPhone<SettingsPage>(phone);
+                await settingsPage.AssertSignInSuccess(email, userFullName: null);
+                return;
             case "InvalidToken":
                 await settingsPage.ConfirmPhoneByToken("111111");
                 await settingsPage.AssertPhoneInvalidToken();
                 return;
+            case "TooManyRequest":
+                await settingsPage.ClickOnEmailTab();
+                await settingsPage.ClickOnPhoneTab();
+                await settingsPage.ChangePhone(phone);
+                await settingsPage.AssertTooManyRequestForChangePhone();
+                return;
             default:
                 throw new NotSupportedException();
         }
-        await settingsPage.AssertConfirmPhoneSuccess();
-
-        signInPage = await settingsPage.SignOut();
-        await signInPage.AssertOpen();
-        await signInPage.AssertSignOut();
-
-        await signInPage.ClickOnPhoneTab();
-        await signInPage.AssertPhoneTab();
-
-        settingsPage = await signInPage.SignInWithPhone<SettingsPage>(phone);
-        await settingsPage.AssertSignInSuccess(email, userFullName: null);
     }
 
     private async Task<string> CreateNewUser()
