@@ -32,7 +32,7 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true })).ToBeVisibleAsync();
     }
 
-    public async Task<ConfirmPage> SignUp(string email, string password = "123456")
+    public async Task<ConfirmPage> SignUp(string email, string password = TestData.DefaultTestPassword)
     {
         this.email = email;
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);

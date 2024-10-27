@@ -9,12 +9,7 @@ public partial class SettingsPage
         await Page.GetByRole(AriaRole.Tab, new() { Name = AppStrings.Email }).ClickAsync();
     }
 
-    public async Task AssertExpandAccount(string userEmail = "test@bitplatform.dev")
-    {
-        await AssertEmailTab(userEmail);
-    }
-
-    public async Task AssertEmailTab(string userEmail = "test@bitplatform.dev")
+    public async Task AssertEmailTab(string userEmail = TestData.DefaultTestEmail)
     {
         var emailInput = Page.GetByLabel(AppStrings.Email, new() { Exact = true }).Locator("span");
         await Assertions.Expect(emailInput).ToBeVisibleAsync();
@@ -40,7 +35,7 @@ public partial class SettingsPage
         var emailInput = Page.GetByPlaceholder(AppStrings.EmailPlaceholder);
         await Assertions.Expect(emailInput).ToBeVisibleAsync();
         await Assertions.Expect(emailInput).ToBeDisabledAsync();
-        await Assertions.Expect(emailInput).ToBeEditableAsync(new() { Editable = false });
+        await Assertions.Expect(emailInput).Not.ToBeEditableAsync();
         await Assertions.Expect(emailInput).ToHaveValueAsync(newEmail);
         await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();

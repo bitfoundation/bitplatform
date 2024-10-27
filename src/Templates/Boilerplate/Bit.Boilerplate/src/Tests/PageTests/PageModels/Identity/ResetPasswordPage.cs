@@ -27,7 +27,7 @@ public partial class ResetPasswordPage(IPage page, Uri serverAddress)
         {
             await Assertions.Expect(emailInput).ToBeVisibleAsync();
             await Assertions.Expect(emailInput).ToBeDisabledAsync();
-            await Assertions.Expect(emailInput).ToBeEditableAsync(new() { Editable = false });
+            await Assertions.Expect(emailInput).Not.ToBeEditableAsync();
         }
         await Assertions.Expect(Page.GetByPlaceholder(AppStrings.TokenPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue })).ToBeVisibleAsync();

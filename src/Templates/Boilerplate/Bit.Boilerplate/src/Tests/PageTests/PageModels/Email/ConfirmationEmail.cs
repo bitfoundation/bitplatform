@@ -9,7 +9,7 @@ public partial class ConfirmationEmail<TPage>(IBrowserContext context, Uri serve
     where TPage : RootLayout
 {
     protected override bool WaitForRedirectOnMagicLink => false;
-    protected override string EmailSubject => EmailStrings.ConfirmationEmailSubject.Replace("{0}", "\\d{6}");
+    protected override string EmailSubject => EmailStrings.ConfirmationEmailSubject.Replace("{0}", @"\b\d{6}\b");
 
     protected override async Task AssertContentCore()
     {

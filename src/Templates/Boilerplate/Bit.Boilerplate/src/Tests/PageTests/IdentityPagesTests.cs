@@ -256,7 +256,7 @@ public partial class IdentityPagesTests : PageTestBase
         switch (mode)
         {
             case "Token":
-                var token = FakePhoneService.GetLastOtpFor(phone);
+                var token = settingsPage.GetPhoneToken();
                 await settingsPage.ConfirmPhoneByToken(token);
                 break;
             case "InvalidToken":

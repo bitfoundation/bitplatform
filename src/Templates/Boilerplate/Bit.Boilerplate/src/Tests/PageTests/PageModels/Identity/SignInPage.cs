@@ -59,23 +59,23 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         await Assertions.Expect(Page.GetByLabel(AppStrings.RememberMe)).ToBeCheckedAsync();
     }
 
-    public async Task<IdentityHomePage> SignInWithEmail(string email = "test@bitplatform.dev", string password = "123456")
+    public async Task<IdentityHomePage> SignInWithEmail(string email = TestData.DefaultTestEmail, string password = TestData.DefaultTestPassword)
     {
         return await SignInWithEmail<IdentityHomePage>(email, password);
     }
 
-    public async Task<TPage> SignInWithEmail<TPage>(string email = "test@bitplatform.dev", string password = "123456")
+    public async Task<TPage> SignInWithEmail<TPage>(string email = TestData.DefaultTestEmail, string password = TestData.DefaultTestPassword)
         where TPage : IdentityLayout
     {
         return await SignInCore<TPage>(Tab.Email, email, password);
     }
 
-    public async Task<IdentityHomePage> SignInWithPhone(string phone, string password = "123456")
+    public async Task<IdentityHomePage> SignInWithPhone(string phone, string password = TestData.DefaultTestPassword)
     {
         return await SignInWithPhone<IdentityHomePage>(phone, password);
     }
 
-    public async Task<TPage> SignInWithPhone<TPage>(string phone, string password = "123456")
+    public async Task<TPage> SignInWithPhone<TPage>(string phone, string password = TestData.DefaultTestPassword)
         where TPage : IdentityLayout
     {
         return await SignInCore<TPage>(Tab.Phone, phone, password);

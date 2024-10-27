@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Tests.PageTests.PageModels.Identity;
+﻿using Boilerplate.Tests.Services;
+
+namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
 public partial class SettingsPage
 {
@@ -40,12 +42,18 @@ public partial class SettingsPage
         var phoneInput = Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder);
         await Assertions.Expect(phoneInput).ToBeVisibleAsync();
         await Assertions.Expect(phoneInput).ToBeDisabledAsync();
-        await Assertions.Expect(phoneInput).ToBeEditableAsync(new() { Editable = false });
+        await Assertions.Expect(phoneInput).Not.ToBeEditableAsync();
         await Assertions.Expect(phoneInput).ToHaveValueAsync(newPhone);
         await Assertions.Expect(Page.GetByPlaceholder(AppStrings.PhoneTokenPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.PhoneTokenConfirmButtonText })).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.NotReceivedPhoneMessage);
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.ResendPhoneTokenButtonText })).ToBeVisibleAsync();
+    }
+
+    public string GetPhoneToken()
+    {
+        var pattern = AppStrings.ChangePhoneNumberTokenSmsText.Replace("{0}", @"\b\d{6}\b");
+        return FakePhoneService.GetLastOtpFor(newPhone, pattern);
     }
 
     public async Task ConfirmPhoneByToken(string token)

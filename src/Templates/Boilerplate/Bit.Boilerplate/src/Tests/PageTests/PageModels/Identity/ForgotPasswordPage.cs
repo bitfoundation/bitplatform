@@ -24,7 +24,7 @@ public partial class ForgotPasswordPage(IPage page, Uri serverAddress)
         await Assertions.Expect(resetPasswordLink).ToHaveAttributeAsync("href", Urls.ResetPasswordPage);
     }
 
-    public async Task<ResetPasswordPage> ForgotPassword(string email = "test@bitplatform.dev")
+    public async Task<ResetPasswordPage> ForgotPassword(string email = TestData.DefaultTestEmail)
     {
         this.email = email;
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);

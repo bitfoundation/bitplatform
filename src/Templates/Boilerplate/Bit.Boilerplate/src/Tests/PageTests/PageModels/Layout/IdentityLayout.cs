@@ -5,7 +5,7 @@ namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 public abstract partial class IdentityLayout(IPage page, Uri serverAddress)
     : RootLayout(page, serverAddress)
 {
-    public async Task AssertSignInSuccess(string userEmail = "test@bitplatform.dev", string? userFullName = "Boilerplate test account")
+    public async Task AssertSignInSuccess(string userEmail = TestData.DefaultTestEmail, string? userFullName = TestData.DefaultTestFullName)
     {
         var displayName = string.IsNullOrWhiteSpace(userFullName) ? userEmail : userFullName;
 

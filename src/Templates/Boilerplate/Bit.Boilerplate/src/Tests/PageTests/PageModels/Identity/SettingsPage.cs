@@ -28,4 +28,9 @@ public partial class SettingsPage(IPage page, Uri serverAddress)
         if (isExpanded is false)
             await accountButton.ClickAsync();
     }
+
+    public async Task AssertExpandAccount(string userEmail = TestData.DefaultTestEmail)
+    {
+        await AssertEmailTab(userEmail);
+    }
 }
