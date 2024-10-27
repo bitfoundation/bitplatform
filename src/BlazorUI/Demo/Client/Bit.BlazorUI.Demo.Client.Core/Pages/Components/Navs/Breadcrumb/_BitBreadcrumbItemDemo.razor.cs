@@ -33,18 +33,18 @@ public partial class _BitBreadcrumbItemDemo
 
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass =
     [
-        new() { Text = "Item 1", Href = "/components/breadcrumb", Class = "custom-item" },
-        new() { Text = "Item 2", Href = "/components/breadcrumb", Class = "custom-item" },
-        new() { Text = "Item 3", Href = "/components/breadcrumb", Class = "custom-item" },
-        new() { Text = "Item 4", Href = "/components/breadcrumb", Class = "custom-item", IsSelected = true }
+        new() { Text = "Item 1", Href = "/components/breadcrumb", Class = "custom-item-1" },
+        new() { Text = "Item 2", Href = "/components/breadcrumb", Class = "custom-item-2" },
+        new() { Text = "Item 3", Href = "/components/breadcrumb", Class = "custom-item-1" },
+        new() { Text = "Item 4", Href = "/components/breadcrumb", Class = "custom-item-2", IsSelected = true }
     ];
         
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Text = "Item 2", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Text = "Item 2", Href = "/components/breadcrumb", Style = "color: aqua; text-shadow: aqua 0 0 1rem;" },
         new() { Text = "Item 3", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Text = "Item 4", Href = "/components/breadcrumb", Style = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;", IsSelected = true }
+        new() { Text = "Item 4", Href = "/components/breadcrumb", Style = "color: aqua; text-shadow: aqua 0 0 1rem;", IsSelected = true }
     ];
 
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithControlled =

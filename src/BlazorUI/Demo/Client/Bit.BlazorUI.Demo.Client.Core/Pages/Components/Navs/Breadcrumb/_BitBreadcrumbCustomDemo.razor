@@ -155,7 +155,7 @@
                            MaxDisplayedItems="3"
                            OverflowIndex="2"
                            OnItemClick="(PageInfo model) => HandleOnCustomClick(model)"
-                           SelectedItemStyle="color: dodgerblue;" />
+                           Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -193,27 +193,34 @@
         <br /><br />
         <div class="example-box">
             <div>
-                <div>Items Class</div>
+                <div>Component's Style & Class:</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors" 
+                               Class="custom-class" />
+                <br />
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors" 
+                               Style="font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;" />
+            </div>
+            <br />
+            <div>
+                <div>Item's Style & Class:</div>
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
                                NameSelectors="nameSelectors" />
-            </div>
-            <div>
-                <div>Items Style</div>
+                <br />
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
                                NameSelectors="nameSelectors" />
             </div>
             <br />
             <div>
-                <div>Selected Item Class</div>
+                <div>Styles & Classes:</div>
                 <BitBreadcrumb Items="CustomBreadcrumbItems"
                                NameSelectors="nameSelectors"
-                               SelectedItemClass="custom-selected-item" />
-            </div>
-            <div>
-                <div>Selected Item Style</div>
+                               Classes="@(new() { Item = "custom-item", SelectedItem = "custom-selected-item" })" />
+                <br />
                 <BitBreadcrumb Items="CustomBreadcrumbItems"
                                NameSelectors="nameSelectors"
-                               SelectedItemStyle="color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" />
+                               Styles="@(new() { Item = "color: green;", SelectedItem = "color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" })" />
             </div>
         </div>
     </ExamplePreview>

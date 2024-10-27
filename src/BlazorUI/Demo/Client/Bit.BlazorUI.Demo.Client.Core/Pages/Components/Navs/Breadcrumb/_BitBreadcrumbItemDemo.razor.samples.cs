@@ -134,7 +134,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemTemplateItems =
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OnItemClick=""(BitBreadcrumbItem item) => HandleOnItemClick(item)""
-               SelectedItemStyle=""color: dodgerblue;"" />";
+               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"" />";
     private readonly string example5CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithControlled =
 [
@@ -209,38 +209,64 @@ private void RemoveCustomItem()
 
     private readonly string example7RazorCode = @"
 <style>
+    .custom-class {
+        font-style: italic;
+        text-shadow: dodgerblue 0 0 0.5rem;
+        border-bottom: 1px solid dodgerblue;
+    }
+
     .custom-item {
         color: #ffcece;
+
+        &:hover {
+            color: #ff6868;
+            background: transparent;
+        }
     }
 
-    .custom-item:hover {
-        color: #ff6868;
-        background: transparent;
+    .custom-item-1 {
+        color: #b6ff00;
+
+        &:hover {
+            color: #2aff00;
+            background: transparent;
+        }
     }
 
+    .custom-item-2 {
+        color: #ffd800;
+
+        &:hover {
+            color: #ff6a00;
+            background: transparent;
+        }
+    }
 
     .custom-selected-item {
         color: blueviolet;
-    }
 
-    .custom-selected-item:hover {
-        color: blueviolet;
-        background: transparent;
-        text-shadow: blueviolet 0 0 1rem;
+        &:hover {
+            color: blueviolet;
+            background: transparent;
+            text-shadow: blueviolet 0 0 1rem;
+        }
     }
 </style>
 
+
+<BitBreadcrumb Items=""BreadcrumbItems"" Class=""custom-class"" />
+
+<BitBreadcrumb Items=""BreadcrumbItems"" Style=""font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithClass"" />
 
 <BitBreadcrumb Items=""BreadcrumbItemsWithStyle"" />
 
+<BitBreadcrumb Items=""BreadcrumbItems""
+               Classes=""@(new() { Item = ""custom-item"", SelectedItem = ""custom-selected-item"" })"" />
 
 <BitBreadcrumb Items=""BreadcrumbItems""
-               SelectedItemClass=""custom-selected-item"" />
-
-<BitBreadcrumb Items=""BreadcrumbItems""
-               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
+               Styles=""@(new() { Item = ""color: green;"", SelectedItem = ""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" })"" />";
     private readonly string example7CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [
@@ -252,18 +278,18 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithClass =
 [
-    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", Class = ""custom-item"" },
-    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Class = ""custom-item"", IsSelected = true }
+    new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", Class = ""custom-item-1"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Class = ""custom-item-2"" },
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", Class = ""custom-item-1"" },
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Class = ""custom-item-2"", IsSelected = true }
 ];
-
+        
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithStyle =
 [
     new() { Text = ""Item 1"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Text = ""Item 2"", Href = ""/components/breadcrumb"", Style = ""color: aqua; text-shadow: aqua 0 0 1rem;"" },
     new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Style = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsSelected = true }
+    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", Style = ""color: aqua; text-shadow: aqua 0 0 1rem;"", IsSelected = true }
 ];";
 
     private readonly string example8RazorCode = @"

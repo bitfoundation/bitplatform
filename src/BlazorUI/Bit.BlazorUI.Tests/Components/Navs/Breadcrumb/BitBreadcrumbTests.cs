@@ -26,7 +26,7 @@ public class BitBreadcrumbTests : BunitTestContext
     [DataTestMethod,
       DataRow((uint)0),
       DataRow((uint)3)
-   ]
+    ]
     public void BitBreadcrumbShouldRespectMaxDisplayItems(uint maxDisplayedItems)
     {
         var breadcrumbItems = GetBreadcrumbItems();
@@ -37,11 +37,11 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc ul.bit-brc-icn li a");
 
         if (maxDisplayedItems > 0)
         {
-            Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
+            Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
         }
         else
         {
@@ -63,15 +63,14 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbOverflowIcon = component.Find(".bit-brc ul li button span i");
+        var breadcrumbOverflowIcon = component.Find(".bit-brc ul.bit-brc-icn li button i");
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc .bit-brc-iwp ul li");
+        var breadcrumbElements = component.FindAll(".bit-brc ul.bit-brc-icn li a");
         var overflowItem = breadcrumbElements[(int)overflowIndex];
 
-        Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems + 1);
-        Assert.IsTrue(overflowItem.InnerHtml.Contains("button"));
+        Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
     }
 
     [DataTestMethod]

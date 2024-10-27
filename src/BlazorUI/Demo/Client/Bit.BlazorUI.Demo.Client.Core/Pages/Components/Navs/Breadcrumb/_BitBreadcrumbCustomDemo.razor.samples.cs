@@ -263,7 +263,7 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OnItemClick=""(PageInfo model) => HandleOnCustomClick(model)""
-               SelectedItemStyle=""color: dodgerblue;"" />";
+               Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"" />";
     private readonly string example5CsharpCode = @"
 public class PageInfo
 {
@@ -387,27 +387,57 @@ private void RemoveCustomItem()
 
     private readonly string example7RazorCode = @"
 <style>
+    .custom-class {
+        font-style: italic;
+        text-shadow: dodgerblue 0 0 0.5rem;
+        border-bottom: 1px solid dodgerblue;
+    }
+
     .custom-item {
         color: #ffcece;
+
+        &:hover {
+            color: #ff6868;
+            background: transparent;
+        }
     }
 
-    .custom-item:hover {
-        color: #ff6868;
-        background: transparent;
+    .custom-item-1 {
+        color: #b6ff00;
+
+        &:hover {
+            color: #2aff00;
+            background: transparent;
+        }
     }
 
+    .custom-item-2 {
+        color: #ffd800;
+
+        &:hover {
+            color: #ff6a00;
+            background: transparent;
+        }
+    }
 
     .custom-selected-item {
         color: blueviolet;
-    }
 
-    .custom-selected-item:hover {
-        color: blueviolet;
-        background: transparent;
-        text-shadow: blueviolet 0 0 1rem;
+        &:hover {
+            color: blueviolet;
+            background: transparent;
+            text-shadow: blueviolet 0 0 1rem;
+        }
     }
 </style>
 
+<BitBreadcrumb Items=""CustomBreadcrumbItems""
+               NameSelectors=""nameSelectors"" 
+               Class=""custom-class"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems""
+               NameSelectors=""nameSelectors"" 
+               Style=""font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
                NameSelectors=""nameSelectors"" />
@@ -415,14 +445,13 @@ private void RemoveCustomItem()
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithStyle""
                NameSelectors=""nameSelectors"" />
 
+<BitBreadcrumb Items=""CustomBreadcrumbItems""
+               NameSelectors=""nameSelectors""
+               Classes=""@(new() { Item = ""custom-item"", SelectedItem = ""custom-selected-item"" })"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
-               SelectedItemClass=""custom-selected-item"" />
-
-<BitBreadcrumb Items=""CustomBreadcrumbItems""
-               NameSelectors=""nameSelectors""
-               SelectedItemStyle=""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" />";
+               Styles=""@(new() { Item = ""color: green;"", SelectedItem = ""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" })"" />";
     private readonly string example7CsharpCode = @"
 public class PageInfo
 {
@@ -449,18 +478,18 @@ private readonly List<PageInfo> CustomBreadcrumbItems =
 
 private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
 [
-    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"" },
-    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item"", IsCurrent = true }
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item-1"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item-2"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item-1"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item-2"", IsCurrent = true }
 ];
 
 private readonly List<PageInfo> CustomBreadcrumbItemsWithStyle =
 [
     new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: aqua; text-shadow: aqua 0 0 1rem;"" },
     new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"" },
-    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;"", IsCurrent = true }
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", HtmlStyle = ""color: aqua; text-shadow: aqua 0 0 1rem;"", IsCurrent = true }
 ];
 
 private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
