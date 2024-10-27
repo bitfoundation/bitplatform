@@ -35,7 +35,7 @@ public abstract partial class TokenMagicLinkEmail<TPage>(IBrowserContext context
     {
         Assert.IsNotNull(Page, OpenEmailFirstMessage);
 
-        var token = await Page.GetByText(new Regex("^\\d{6}$")).TextContentAsync();
+        var token = await Page.GetByText(new Regex(@"^\d{6}$")).TextContentAsync();
         Assert.IsNotNull(token, "Confirmation token not found in email");
         return token;
     }

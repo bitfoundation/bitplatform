@@ -8,7 +8,7 @@ public partial class ResetPasswordEmail(IBrowserContext context, Uri serverAddre
     : TokenMagicLinkEmail<ResetPasswordPage>(context, serverAddress)
 {
     protected override bool WaitForRedirectOnMagicLink => false;
-    protected override string EmailSubject => EmailStrings.ResetPasswordEmailSubject.Replace("{0}", "\\d{6}");
+    protected override string EmailSubject => EmailStrings.ResetPasswordEmailSubject.Replace("{0}", @"\b\d{6}\b");
 
     protected override async Task AssertContentCore()
     {

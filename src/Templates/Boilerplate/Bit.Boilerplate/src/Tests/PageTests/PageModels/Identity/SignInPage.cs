@@ -13,10 +13,44 @@ public partial class SignInPage(IPage page, Uri serverAddress)
     public override async Task AssertOpen()
     {
         await base.AssertOpen();
+        await AssertTab(Tab.Email);
+    }
 
+    public async Task ClickOnEmailTab()
+    {
+        await Page.GetByRole(AriaRole.Tab, new() { Name = AppStrings.Email }).ClickAsync();
+    }
+
+    public async Task ClickOnPhoneTab()
+    {
+        await Page.GetByRole(AriaRole.Tab, new() { Name = AppStrings.PhoneNumber }).ClickAsync();
+    }
+
+    public async Task AssertEmailTab()
+    {
+        await AssertTab(Tab.Email);
+    }
+
+    public async Task AssertPhoneTab()
+    {
+        await AssertTab(Tab.Phone);
+    }
+
+    private async Task AssertTab(Tab tab)
+    {
         AssertReturnUrl();
         await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.SignInPanelSubtitle);
-        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailPlaceholder)).ToBeVisibleAsync();
+        switch (tab)
+        {
+            case Tab.Email:
+                await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailPlaceholder)).ToBeVisibleAsync();
+                break;
+            case Tab.Phone:
+                await Assertions.Expect(Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder)).ToBeVisibleAsync();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+        }
         await Assertions.Expect(Page.GetByPlaceholder(AppStrings.PasswordPlaceholder)).ToBeVisibleAsync();
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeVisibleAsync();
         var forgotPassswordLink = Page.GetByRole(AriaRole.Link, new() { Name = AppStrings.ForgotPasswordLink });
@@ -25,15 +59,42 @@ public partial class SignInPage(IPage page, Uri serverAddress)
         await Assertions.Expect(Page.GetByLabel(AppStrings.RememberMe)).ToBeCheckedAsync();
     }
 
-    public async Task<IdentityHomePage> SignIn(string email = "test@bitplatform.dev", string password = "123456")
+    public async Task<IdentityHomePage> SignInWithEmail(string email = TestData.DefaultTestEmail, string password = TestData.DefaultTestPassword)
     {
-        return await SignIn<IdentityHomePage>(email, password);
+        return await SignInWithEmail<IdentityHomePage>(email, password);
     }
 
-    public async Task<TPage> SignIn<TPage>(string email = "test@bitplatform.dev", string password = "123456")
+    public async Task<TPage> SignInWithEmail<TPage>(string email = TestData.DefaultTestEmail, string password = TestData.DefaultTestPassword)
         where TPage : IdentityLayout
     {
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        return await SignInCore<TPage>(Tab.Email, email, password);
+    }
+
+    public async Task<IdentityHomePage> SignInWithPhone(string phone, string password = TestData.DefaultTestPassword)
+    {
+        return await SignInWithPhone<IdentityHomePage>(phone, password);
+    }
+
+    public async Task<TPage> SignInWithPhone<TPage>(string phone, string password = TestData.DefaultTestPassword)
+        where TPage : IdentityLayout
+    {
+        return await SignInCore<TPage>(Tab.Phone, phone, password);
+    }
+
+    private async Task<TPage> SignInCore<TPage>(Tab tab, string emailOrPhone, string password)
+        where TPage : IdentityLayout
+    {
+        switch (tab)
+        {
+            case Tab.Email:
+                await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(emailOrPhone);
+                break;
+            case Tab.Phone:
+                await Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder).FillAsync(emailOrPhone);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+        }
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
 
@@ -70,5 +131,11 @@ public partial class SignInPage(IPage page, Uri serverAddress)
             Assert.AreEqual(string.Empty, returnUrl);
         else
             Assert.AreEqual(ReturnUrl, returnUrl);
+    }
+
+    private enum Tab
+    {
+        Email,
+        Phone
     }
 }

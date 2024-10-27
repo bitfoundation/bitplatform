@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.PageTests.PageModels.Email;
+﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.PageTests.PageModels.Email;
 using Boilerplate.Tests.PageTests.PageModels.Layout;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
@@ -24,13 +25,24 @@ public partial class ForgotPasswordPage(IPage page, Uri serverAddress)
         await Assertions.Expect(resetPasswordLink).ToHaveAttributeAsync("href", Urls.ResetPasswordPage);
     }
 
-    public async Task<ResetPasswordPage> ForgotPassword(string email = "test@bitplatform.dev")
+    public async Task<ResetPasswordPage> ForgotPassword(string email = TestData.DefaultTestEmail)
     {
         this.email = email;
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Submit }).ClickAsync();
 
         return new(Page, WebAppServerAddress) { EmailAddress = email };
+    }
+
+    public async Task AssertUserNotFound()
+    {
+        await Assertions.Expect(Page.GetByText(AppStrings.UserNotFound)).ToBeVisibleAsync();
+    }
+
+    public async Task AssertTooManyRequests()
+    {
+        var pattern = new Regex(AppStrings.WaitForResetPasswordTokenRequestResendDelay.Replace("{0}", ".*"));
+        await Assertions.Expect(Page.GetByText(pattern)).ToBeVisibleAsync();
     }
 
     public async Task<ResetPasswordEmail> OpenResetPasswordEmail()
