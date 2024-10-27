@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
-using Boilerplate.Server.Api;
+
 
 namespace Boilerplate.Server.Web;
 
@@ -22,7 +22,7 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwarededHeadersOptions = configuration.Get<ServerApiAppSettings>()!.ForwardedHeaders;
+        var forwarededHeadersOptions = configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders;
 
         if (forwarededHeadersOptions is not null
             && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
