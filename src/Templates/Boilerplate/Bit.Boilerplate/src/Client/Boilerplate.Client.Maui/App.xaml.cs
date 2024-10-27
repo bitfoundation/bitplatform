@@ -1,6 +1,4 @@
-﻿using Android.Webkit;
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace Boilerplate.Client.Maui;
 
