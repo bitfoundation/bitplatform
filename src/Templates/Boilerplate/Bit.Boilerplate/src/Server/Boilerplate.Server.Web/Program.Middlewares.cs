@@ -138,7 +138,9 @@ public static partial class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        if (WebAppRenderMode.PrerenderEnabled is false)
+        var webAppRenderMode = configuration.Get<ServerWebAppSettings>()!;
+
+        if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
         {
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }

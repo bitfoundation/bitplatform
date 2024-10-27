@@ -3,7 +3,7 @@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? WebAppRenderMode.NoPrerenderBlazorWebAssembly : webAppRenderMode.Current;
+    var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebAppSettings.WebAppRender.RenderMode;
 }
 
 <!DOCTYPE html>
@@ -40,7 +40,7 @@
     }
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    @if (webAppRenderMode.PwaEnabled)
+    @if (serverWebAppSettings.WebAppRender.PwaEnabled)
     {
         <Link rel="manifest" href="manifest.json" />
     }
@@ -55,7 +55,7 @@
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" href="Boilerplate.Server.Web.styles.css" />
 
-    @if (renderMode != null && (webAppRenderMode.PrerenderEnabled is false || noPrerender))
+    @if (renderMode != null && (serverWebAppSettings.WebAppRender.PrerenderEnabled is false || noPrerender))
     {
         <LoadingComponent />
     }
@@ -65,7 +65,7 @@
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
         <Script src="_framework/blazor.web.js" autostart="false"></Script>
-        @if (webAppRenderMode.PwaEnabled)
+        @if (serverWebAppSettings.WebAppRender.PwaEnabled)
         {
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
             <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>

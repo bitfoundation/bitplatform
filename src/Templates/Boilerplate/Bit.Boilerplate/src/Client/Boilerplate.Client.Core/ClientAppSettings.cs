@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Boilerplate.Client.Core;
 
 public partial class ClientAppSettings : SharedAppSettings
@@ -62,9 +64,36 @@ public partial class ClientAppSettings : SharedAppSettings
 
 public partial class WebAppRenderOptions
 {
-    public bool PreRenderEnabled { get; set; }
+    public bool PrerenderEnabled { get; set; }
 
     public BlazorWebAppMode BlazorMode { get; set; }
+
+    public IComponentRenderMode? RenderMode
+    {
+        get
+        {
+            return BlazorMode switch
+            {
+                BlazorWebAppMode.BlazorAuto => new InteractiveAutoRenderMode(PrerenderEnabled),
+                BlazorWebAppMode.BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled),
+                BlazorWebAppMode.BlazorServer => new InteractiveServerRenderMode(PrerenderEnabled),
+                BlazorWebAppMode.BlazorSsr => null,
+                _ => throw new NotImplementedException(),
+            };
+        }
+    }
+
+    //-:cnd:noEmit
+    /// <summary>
+    /// To enable/disable pwa support, navigate to Directory.Build.props and modify the PwaEnabled flag.
+    /// </summary>
+    public bool PwaEnabled =>
+#if PwaEnabled
+        true;
+#else
+    false;
+#endif
+    //+:cnd:noEmit
 }
 
 /// <summary>

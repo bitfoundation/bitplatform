@@ -9,21 +9,21 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public partial class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
-    [AutoInject] private readonly WebAppRenderMode webAppRenderMode = default!;
-    
     private PersistingComponentStateSubscription? subscription;
+    private readonly ClientAppSettings clientAppSettings = default!;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    private bool NoPersistant => webAppRenderMode.Current is null /*Ssr*/ ||
-                                       webAppRenderMode.PrerenderEnabled is false ||
+    private bool NoPersistant => clientAppSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
+                                       clientAppSettings.WebAppRender.PrerenderEnabled is false ||
                                        AppPlatform.IsBlazorHybrid;
 
-    public PrerenderStateService(PersistentComponentState? persistentComponentState = null)
+    public PrerenderStateService(ClientAppSettings webAppRenderMode, PersistentComponentState? persistentComponentState = null)
     {
-        if (NoPersistant) return;
-        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, webAppRenderMode.Current);
+        this.clientAppSettings = webAppRenderMode;
         this.persistentComponentState = persistentComponentState;
+        if (NoPersistant) return;
+        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, webAppRenderMode.WebAppRender.RenderMode);
     }
 
     public async Task<T?> GetValue<T>(Func<Task<T?>> factory,
