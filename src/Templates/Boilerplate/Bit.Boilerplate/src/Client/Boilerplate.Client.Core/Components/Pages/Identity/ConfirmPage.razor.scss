@@ -1,5 +1,4 @@
-﻿@import '../../../Styles/abstracts/_functions.scss';
-@import '../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../Styles/abstracts/_media-queries.scss';
 
 section {
     width: 100%;
@@ -8,6 +7,6 @@ section {
 
 ::deep {
     .confirm-pivot {
-        width: rem2(304px);
+        width: 304px;
     }
 }

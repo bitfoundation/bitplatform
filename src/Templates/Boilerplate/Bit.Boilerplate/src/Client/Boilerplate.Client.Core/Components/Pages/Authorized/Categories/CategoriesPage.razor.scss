@@ -1,5 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
@@ -49,10 +48,10 @@ section {
         }
 
         .color-box {
+            width: 24px;
+            height: 24px;
             display: block;
-            width: rem2(24px);
-            height: rem2(24px);
-            border-radius: rem2(2px);
+            border-radius: 2px;
         }
     }
 
