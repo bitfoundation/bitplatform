@@ -47,7 +47,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         var app = webApp = builder.Build();
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         return this;
     }

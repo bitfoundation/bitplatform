@@ -29,7 +29,7 @@ public static partial class Program
             await dbContext.Database.EnsureCreatedAsync();
         }
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         await app.RunAsync();
     }

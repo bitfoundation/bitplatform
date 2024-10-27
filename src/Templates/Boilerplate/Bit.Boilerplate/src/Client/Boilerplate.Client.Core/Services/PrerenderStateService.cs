@@ -14,16 +14,16 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
-    private bool NoPersistant => clientAppSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
+    private bool NoPersistent => clientAppSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
                                        clientAppSettings.WebAppRender.PrerenderEnabled is false ||
                                        AppPlatform.IsBlazorHybrid;
 
-    public PrerenderStateService(ClientAppSettings webAppRenderMode, PersistentComponentState? persistentComponentState = null)
+    public PrerenderStateService(ClientAppSettings clientAppSettings, PersistentComponentState? persistentComponentState = null)
     {
-        this.clientAppSettings = webAppRenderMode;
+        this.clientAppSettings = clientAppSettings;
         this.persistentComponentState = persistentComponentState;
-        if (NoPersistant) return;
-        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, webAppRenderMode.WebAppRender.RenderMode);
+        if (NoPersistent) return;
+        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientAppSettings.WebAppRender.RenderMode);
     }
 
     public async Task<T?> GetValue<T>(Func<Task<T?>> factory,
@@ -31,7 +31,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
     {
-        if (NoPersistant) return await factory();
+        if (NoPersistent) return await factory();
 
         string key = $"{filePath.Split('\\').LastOrDefault()} {memberName} {lineNumber}";
 
@@ -40,7 +40,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
-        if (NoPersistant) return await factory();
+        if (NoPersistent) return await factory();
 
         if (persistentComponentState!.TryTakeFromJson(key, out T? value)) return value;
 
@@ -51,10 +51,9 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     void Persist<T>(string key, T value)
     {
-        if (NoPersistant || AppPlatform.IsBlazorHybridOrBrowser) return;
+        if (NoPersistent || AppPlatform.IsBlazorHybridOrBrowser) return;
 
-        values.TryRemove(key, out object? _);
-        values.TryAdd(key, value);
+        values.AddOrUpdate(key, value, (_, _) => value);
     }
 
     async Task PersistAsJson()
@@ -67,7 +66,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     public async ValueTask DisposeAsync()
     {
-        if (NoPersistant) return;
+        if (NoPersistent) return;
 
         subscription?.Dispose();
     }

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
 using Boilerplate.Server.Api;
-using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
 
@@ -18,7 +17,7 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void ConfiureMiddlewares(this WebApplication app)
+    public static void ConfigureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
