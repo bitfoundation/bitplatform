@@ -28,9 +28,9 @@ public partial class IdentityPagesTests : PageTest
 
         await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 
-        const string email = "test@bitplatform.dev";
-        const string password = "123456";
-        const string userFullName = "Boilerplate test account";
+        const string email = TestData.DefaultTestEmail;
+        const string password = TestData.DefaultTestPassword;
+        const string userFullName = TestData.DefaultTestFullName;
 
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);

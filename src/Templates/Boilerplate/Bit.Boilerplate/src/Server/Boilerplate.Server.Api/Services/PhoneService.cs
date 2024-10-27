@@ -11,7 +11,7 @@ public partial class PhoneService
     [AutoInject] private readonly IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private readonly PhoneNumberUtil phoneNumberUtil = default!;
 
-    public string? NormalizePhoneNumber(string? phoneNumber)
+    public virtual string? NormalizePhoneNumber(string? phoneNumber)
     {
         if (string.IsNullOrEmpty(phoneNumber))
             return null;
@@ -26,7 +26,7 @@ public partial class PhoneService
         return phoneNumberUtil.Format(parsedPhoneNumber, PhoneNumberFormat.E164);
     }
 
-    public async Task SendSms(string messageText, string phoneNumber, CancellationToken cancellationToken)
+    public virtual async Task SendSms(string messageText, string phoneNumber, CancellationToken cancellationToken)
     {
         if (hostEnvironment.IsDevelopment())
         {

@@ -68,7 +68,7 @@ public partial class TestsInitializer
         await signinPage.Open();
         await signinPage.AssertOpen();
 
-        var signedInPage = await signinPage.SignIn();
+        var signedInPage = await signinPage.SignInWithEmail();
         await signedInPage.AssertSignInSuccess();
 
         var state = await playwrightPage.Page.Context.StorageStateAsync();

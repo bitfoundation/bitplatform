@@ -503,7 +503,6 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/Tests/PageTests/**",
-                        "src/Tests/TestInitializer.cs",
                         "src/Tests/Services/CulturedStringLocalizer.cs",
                         "src/Tests/Services/EmailReaderService.cs",
                         "src/Tests/Services/UserService.cs"

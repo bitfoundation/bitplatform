@@ -8,6 +8,8 @@ public static class StringLocalizerFactory
 
     public static IStringLocalizer<TResourceSource> Create<TResourceSource>(string culture)
     {
+        ArgumentException.ThrowIfNullOrEmpty(culture);
+
         var localizer = _stringLocalizerCache.GetOrAdd((culture, typeof(TResourceSource)),
             (_) => new CulturedStringLocalizer<TResourceSource>(culture));
         return (IStringLocalizer<TResourceSource>)localizer;
