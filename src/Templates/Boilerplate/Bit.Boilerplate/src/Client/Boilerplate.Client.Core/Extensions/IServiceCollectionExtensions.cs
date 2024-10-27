@@ -89,14 +89,14 @@ public static partial class IServiceCollectionExtensions
         //#endif
 
         //#if (appInsights == true)
-        var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
-        if (string.IsNullOrEmpty(connectionString) is false)
+        services.AddBlazorApplicationInsights(x =>
         {
-            services.AddBlazorApplicationInsights(x =>
+            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+            if (string.IsNullOrEmpty(connectionString) is false)
             {
                 x.ConnectionString = connectionString;
-            });
-        }
+            }
+        });
         //#endif
 
         services.AddTypedHttpClients();
