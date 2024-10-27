@@ -71,15 +71,12 @@
                     <ValidationMessage For="@(() => editUserDto.BirthDate)" />
 
                     <BitChoiceGroup Horizontal
-                                    @bind-Value="editUserDto.GenderAsString"
-                                    TItem="BitChoiceGroupOption<string>" TValue="string"
+                                    @bind-Value="editUserDto.Gender"
+                                    TItem="BitChoiceGroupOption<Gender>" TValue="Gender"
                                     Label="@Localizer[nameof(AppStrings.Gender)]">
-                        <BitChoiceGroupOption Value="@Gender.Male.ToString()"
-                                              Text="@Localizer[nameof(AppStrings.GenderMale)]" />
-                        <BitChoiceGroupOption Value="@Gender.Female.ToString()"
-                                              Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
-                        <BitChoiceGroupOption Value="@Gender.Other.ToString()"
-                                              Text="@Localizer[nameof(AppStrings.GenderOther)]" />
+                        <BitChoiceGroupOption Value="@Gender.Male" Text="@Localizer[nameof(AppStrings.GenderMale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Female" Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                        <BitChoiceGroupOption Value="@Gender.Other" Text="@Localizer[nameof(AppStrings.GenderOther)]" />
                     </BitChoiceGroup>
 
                     <BitButton IsLoading="isSaving"

@@ -15,11 +15,6 @@ public partial class SignUpRequestDto : IdentityRequestDto
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 
-    /// <example>true</example>
-    //[Range(typeof(bool), "true", "true", ErrorMessage = nameof(AppStrings.YouHaveToAcceptTerms))]
-    //[Display(Name = nameof(AppStrings.TermsAccepted))]
-    //public bool TermsAccepted { get; set; }
-
     //#if (captcha == "reCaptcha")
     /// <example>null</example>
     public string? GoogleRecaptchaResponse { get; set; }

@@ -52,7 +52,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
         var results = new List<ValidationResult>();
 
         var parent = propertyInfo.DeclaringType!;
-        var dtoResourceTypeAttr = parent.GetCustomAttribute<DtoResourceTypeAttribute>();
+        var dtoResourceTypeAttr = parent.GetCustomAttribute<DtoResourceTypeAttribute>(inherit: true);
         if (dtoResourceTypeAttr is not null)
         {
             var resourceType = dtoResourceTypeAttr.ResourceType;
@@ -117,7 +117,7 @@ public partial class AppDataAnnotationsValidator : AppComponentBase
 
         var objectType = modelValidationContext.ObjectType;
         var objectInstance = modelValidationContext.ObjectInstance;
-        var dtoResourceTypeAttr = objectType.GetCustomAttribute<DtoResourceTypeAttribute>();
+        var dtoResourceTypeAttr = objectType.GetCustomAttribute<DtoResourceTypeAttribute>(inherit: true);
 
         validationMessageStore.Clear();
         if (dtoResourceTypeAttr is not null)

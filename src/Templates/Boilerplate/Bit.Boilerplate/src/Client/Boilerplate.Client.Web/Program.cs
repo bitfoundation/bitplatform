@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Bit.Butil;
+using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Web;
 
@@ -15,6 +16,8 @@ public static partial class Program
 
         AppEnvironment.Set(builder.HostEnvironment.Environment);
 
+        builder.Configuration.AddClientConfigurations();
+
         if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") != "true")
         {
             // By default, App.razor adds Routes and HeadOutlet.
@@ -23,7 +26,11 @@ public static partial class Program
             builder.RootComponents.Add<HeadOutlet>("head::after");
             //+:cnd:noEmit
             //#if (appInsights == true)
-            builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
+            var clientAppSettings = builder.Configuration.Get<ClientAppSettings>()!;
+            if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
+            {
+                builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
+            }
             //#endif
             //-:cnd:noEmit
         }

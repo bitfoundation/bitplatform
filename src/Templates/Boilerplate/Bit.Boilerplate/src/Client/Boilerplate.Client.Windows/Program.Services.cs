@@ -9,14 +9,11 @@ namespace Boilerplate.Client.Windows;
 
 public static partial class Program
 {
-    public static void AddClientWindowsProjectServices(this IServiceCollection services)
+    public static void AddClientWindowsProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected in windows project only.
 
-        ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddClientConfigurations();
-        var configuration = configurationBuilder.Build();
-        services.AddTransient<IConfiguration>(sp => configuration);
+        services.AddTransient(sp => configuration);
 
         services.AddClientCoreProjectServices(configuration);
 

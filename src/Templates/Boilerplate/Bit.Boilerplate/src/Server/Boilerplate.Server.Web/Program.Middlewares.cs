@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
-using Boilerplate.Client.Core.Services;
+
 
 namespace Boilerplate.Server.Web;
 
@@ -17,16 +17,18 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    public static void ConfiureMiddlewares(this WebApplication app)
+    public static void ConfigureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        if (app.Environment.IsDevelopment() 
-            || configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders!.AllowedHosts.Any())
+        var forwarededHeadersOptions = configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders;
+
+        if (forwarededHeadersOptions is not null
+            && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
         {
             // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-            app.UseForwardedHeaders(configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders);
+            app.UseForwardedHeaders(forwarededHeadersOptions);
         }
 
         if (CultureInfoManager.MultilingualEnabled)
@@ -138,7 +140,9 @@ public static partial class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        if (AppRenderMode.PrerenderEnabled is false)
+        var webAppRenderMode = configuration.Get<ServerWebAppSettings>()!;
+
+        if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
         {
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }

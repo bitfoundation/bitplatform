@@ -31,13 +31,6 @@ jobs:
       versionSpec: '22.x'
     displayName: 'Install Node.js'
 
-  # - task: Bash@3
-  #   displayName: 'Enable pre rendering'
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #         'sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs'
-    
   - task: Bash@3
     displayName: 'Install wasm'
     inputs:

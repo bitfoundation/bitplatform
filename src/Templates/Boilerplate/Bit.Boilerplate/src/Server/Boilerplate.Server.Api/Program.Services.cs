@@ -152,6 +152,11 @@ public static partial class Program
             //#endif
         };
 
+        services.AddOptions<IdentityOptions>()
+            .Bind(configuration.GetRequiredSection(nameof(ServerApiAppSettings.Identity)))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddOptions<SharedAppSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
@@ -159,11 +164,6 @@ public static partial class Program
 
         services.AddOptions<ServerApiAppSettings>()
             .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<IdentityOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(ServerApiAppSettings.Identity)))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -176,9 +176,10 @@ public static partial class Program
 
         AddIdentity(builder);
 
-        var fluentEmailServiceBuilder = services.AddFluentEmail(appSettings.Email.DefaultFromEmail);
+        var emailSettings = appSettings.Email ?? throw new InvalidOperationException("Email settings are required.");
+        var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
 
-        if (appSettings.Email.UseLocalFolderForEmails)
+        if (emailSettings.UseLocalFolderForEmails)
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
             var sentEmailsFolderPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data", "sent-emails");
@@ -193,23 +194,23 @@ public static partial class Program
         }
         else
         {
-            if (appSettings.Email.HasCredential)
+            if (emailSettings.HasCredential)
             {
-                fluentEmailServiceBuilder.AddSmtpSender(() => new(appSettings.Email.Host, appSettings.Email.Port)
+                fluentEmailServiceBuilder.AddSmtpSender(() => new(emailSettings.Host, emailSettings.Port)
                 {
-                    Credentials = new NetworkCredential(appSettings.Email.UserName, appSettings.Email.Password),
+                    Credentials = new NetworkCredential(emailSettings.UserName, emailSettings.Password),
                     EnableSsl = true
                 });
             }
             else
             {
-                fluentEmailServiceBuilder.AddSmtpSender(appSettings.Email.Host, appSettings.Email.Port);
+                fluentEmailServiceBuilder.AddSmtpSender(emailSettings.Host, emailSettings.Port);
             }
         }
 
         services.AddTransient<EmailService>();
         services.AddTransient<PhoneService>();
-        if (appSettings.Sms.Configured)
+        if (appSettings.Sms?.Configured is true)
         {
             TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
         }
@@ -251,7 +252,7 @@ public static partial class Program
 
             if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
             {
-                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase?.PrivateKey.Replace(@"\n", string.Empty);
+                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
 
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
             }
@@ -279,7 +280,7 @@ public static partial class Program
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, configuration.GetRequiredValue<string>("DataProtectionCertificatePassword"), OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()

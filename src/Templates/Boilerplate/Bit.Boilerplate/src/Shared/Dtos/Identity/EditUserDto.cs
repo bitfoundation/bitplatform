@@ -8,24 +8,8 @@ public partial class EditUserDto
     public string? FullName { get; set; }
 
     [Display(Name = nameof(AppStrings.Gender))]
-    public Gender? Gender { get; set; }
+    public Gender Gender { get; set; }
 
     [Display(Name = nameof(AppStrings.BirthDate))]
     public DateTimeOffset? BirthDate { get; set; }
-
-    [JsonIgnore]
-    public string? GenderAsString
-    {
-        get
-        {
-            return Gender?.ToString();
-        }
-        set
-        {
-            if (string.IsNullOrEmpty(value) is false)
-            {
-                Gender = Enum.Parse<Gender>(value);
-            }
-        }
-    }
 }

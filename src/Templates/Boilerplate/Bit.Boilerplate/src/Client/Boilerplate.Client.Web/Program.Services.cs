@@ -19,7 +19,6 @@ public static partial class Program
 
         services.AddClientWebProjectServices(configuration);
 
-        configuration.AddClientConfigurations();
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
