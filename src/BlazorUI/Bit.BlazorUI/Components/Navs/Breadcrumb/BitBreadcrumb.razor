@@ -29,14 +29,14 @@
                             class="bit-brc-obt @Classes?.OverflowButton"
                             aria-label="@OverflowAriaLabel" @onclick="OpenCallout"
                             disabled="@(IsEnabled is false)">
-                            @if (OverflowIconTemplate is not null)
-                            {
-                                @OverflowIconTemplate
-                            }
-                            else
-                            {
-                                <i style="@Styles?.OverflowButtonIcon" class="bit-icon bit-icon--@(OverflowIconName ?? "More") @Classes?.OverflowButtonIcon" />
-                            }
+                        @if (OverflowIconTemplate is not null)
+                        {
+                            @OverflowIconTemplate
+                        }
+                        else
+                        {
+                            <i style="@Styles?.OverflowButtonIcon" class="bit-icon bit-icon--@(OverflowIconName ?? "More") @Classes?.OverflowButtonIcon" />
+                        }
                     </button>
                 }
                 else
@@ -45,9 +45,9 @@
                     if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"
-                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            style="@GetStyles(item, false)"
-                            class="bit-brc-itm @GetClasses(item, false)">
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                           style="@GetStyles(item, false)"
+                           class="bit-brc-itm @GetClasses(item, false)">
                             @if (template is not null)
                             {
                                 @template(item)
@@ -126,9 +126,9 @@
                     @if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"
-                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            style="@GetStyles(item, true)"
-                            class="bit-brc-ofi @GetClasses(item, true)">
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                           style="@GetStyles(item, true)"
+                           class="bit-brc-ofi @GetClasses(item, true)">
                             @if (overflowTemplate is not null)
                             {
                                 @overflowTemplate(item)
@@ -155,23 +155,23 @@
                                 disabled="@(GetIsEnabled(item) is false)"
                                 style="@GetStyles(item, true)"
                                 class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnItemClick(item)">
-                                @if (overflowTemplate is not null)
+                            @if (overflowTemplate is not null)
+                            {
+                                @overflowTemplate(item)
+                            }
+                            else if (OverflowTemplate is not null)
+                            {
+                                @OverflowTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
                                 {
-                                    @overflowTemplate(item)
+                                    <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
                                 }
-                                else if (OverflowTemplate is not null)
-                                {
-                                    @OverflowTemplate(item)
-                                }
-                                else
-                                {
-                                    var iconName = GetIconName(item);
-                                    @if (iconName.HasValue())
-                                    {
-                                        <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
-                                    }
-                                    <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
-                                }
+                                <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                            }
                         </button>
                     }
                 </li>

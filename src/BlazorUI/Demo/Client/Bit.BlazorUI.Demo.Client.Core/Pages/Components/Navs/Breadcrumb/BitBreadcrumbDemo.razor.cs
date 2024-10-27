@@ -389,7 +389,7 @@ public partial class BitBreadcrumbDemo
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the callout container of the BitBreadcrumb."
+                   Description = "Custom CSS classes/styles for the callout element of the BitBreadcrumb."
                },
                new()
                {

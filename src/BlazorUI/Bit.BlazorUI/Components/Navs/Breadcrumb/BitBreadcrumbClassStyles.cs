@@ -63,7 +63,7 @@ public class BitBreadcrumbClassStyles
     public string? DividerIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the callout container of the BitBreadcrumb.
+    /// Custom CSS classes/styles for the callout element of the BitBreadcrumb.
     /// </summary>
     public string? Callout { get; set; }
 
