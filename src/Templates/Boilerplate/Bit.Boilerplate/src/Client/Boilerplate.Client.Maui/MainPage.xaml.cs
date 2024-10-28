@@ -1,16 +1,14 @@
 ﻿//+:cnd:noEmit
 
-using Boilerplate.Client.Core;
-
 namespace Boilerplate.Client.Maui;
 
 public partial class MainPage
 {
-    public MainPage(ClientAppSettings clientAppSettings)
+    public MainPage(ClientMauiSettings clientMauiSettings)
     {
         InitializeComponent();
         //#if (appInsights == true)
-        if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
+        if (string.IsNullOrEmpty(clientMauiSettings.ApplicationInsights?.ConnectionString) is false)
         {
             AppWebView.RootComponents.Add(new()
             {

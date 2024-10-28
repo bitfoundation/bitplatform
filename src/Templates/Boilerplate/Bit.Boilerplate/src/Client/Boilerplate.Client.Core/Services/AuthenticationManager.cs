@@ -13,7 +13,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
-    [AutoInject] private ClientAppSettings clientAppSettings = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
@@ -127,7 +126,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (clientAppSettings.WebAppRender.PrerenderEnabled && AppPlatform.IsBlazorHybrid is false)
+        if (jsRuntime.IsInitialized())
         {
             await cookie.Set(new()
             {

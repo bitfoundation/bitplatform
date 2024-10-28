@@ -505,7 +505,9 @@
                         "src/Tests/PageTests/**",
                         "src/Tests/Services/CulturedStringLocalizer.cs",
                         "src/Tests/Services/EmailReaderService.cs",
-                        "src/Tests/Services/UserService.cs"
+                        "src/Tests/Services/UserService.cs",
+                        "src/Tests/Services/FakePhoneService.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },
                 {

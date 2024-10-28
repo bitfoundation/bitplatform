@@ -1,29 +1,30 @@
 ﻿//-:cnd:noEmit
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components;
 
-namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Web.Services;
 
 /// <summary>
 /// For more information <see cref="IPrerenderStateService"/> docs.
 /// </summary>
-public partial class PrerenderStateService : IPrerenderStateService, IAsyncDisposable
+public partial class WebPrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {
     private PersistingComponentStateSubscription? subscription;
-    private readonly ClientAppSettings clientAppSettings = default!;
+    private readonly ClientWebSettings clientAppSettings = default!;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, object?> values = new();
 
     private bool NoPersistent => clientAppSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
-                                       clientAppSettings.WebAppRender.PrerenderEnabled is false ||
-                                       AppPlatform.IsBlazorHybrid;
+                                       clientAppSettings.WebAppRender.PrerenderEnabled is false;
 
-    public PrerenderStateService(ClientAppSettings clientAppSettings, PersistentComponentState? persistentComponentState = null)
+    public WebPrerenderStateService(ClientWebSettings clientWebSettings, PersistentComponentState? persistentComponentState = null)
     {
-        this.clientAppSettings = clientAppSettings;
+        this.clientAppSettings = clientWebSettings;
         this.persistentComponentState = persistentComponentState;
         if (NoPersistent) return;
-        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientAppSettings.WebAppRender.RenderMode);
+        subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientWebSettings.WebAppRender.RenderMode);
     }
 
     public async Task<T?> GetValue<T>(Func<Task<T?>> factory,
@@ -51,7 +52,7 @@ public partial class PrerenderStateService : IPrerenderStateService, IAsyncDispo
 
     void Persist<T>(string key, T value)
     {
-        if (NoPersistent || AppPlatform.IsBlazorHybridOrBrowser) return;
+        if (NoPersistent || AppPlatform.IsBrowser) return;
 
         values.AddOrUpdate(key, value, (_, _) => value);
     }

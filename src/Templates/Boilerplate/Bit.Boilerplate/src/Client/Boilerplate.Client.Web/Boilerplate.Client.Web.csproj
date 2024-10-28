@@ -35,7 +35,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
-
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
         <Using Include="Microsoft.JSInterop" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Client.Core.Components" />

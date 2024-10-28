@@ -4,7 +4,7 @@
     <section>
         <BitStack FillContent>
             <BitStack FillContent>
-                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="padding-inline: 1.5rem">
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="stack">
                     <BitText Typography="BitTypography.H5">
                         @if (product.Id != default)
                         {
@@ -25,10 +25,10 @@
                 <BitSeparator />
             </BitStack>
 
-            <EditForm Model="product" OnValidSubmit="WrapHandled(Save)">
+            <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
                 <AppDataAnnotationsValidator />
 
-                <BitStack FillContent Style="padding-inline: 1.5rem">
+                <BitStack FillContent Class="stack">
                     <BitTextField @bind-Value="product.Name"
                                   AutoComplete="@BitAutoCompleteValue.Off"
                                   Label="@Localizer[(nameof(AppStrings.Name))]"

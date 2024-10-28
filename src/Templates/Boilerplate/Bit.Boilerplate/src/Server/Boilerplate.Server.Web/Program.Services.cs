@@ -10,7 +10,6 @@ using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
 using Boilerplate.Shared;
-using Boilerplate.Client.Core;
 
 namespace Boilerplate.Server.Web;
 
@@ -28,13 +27,6 @@ public static partial class Program
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-
-        services.AddOptions<SharedAppSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
 
         services.AddResponseCaching();
 
@@ -57,18 +49,12 @@ public static partial class Program
         services.AddAntiforgery();
         //#endif
 
-        services.AddOptions<ServerWebAppSettings>()
+        services.AddOptions<ServerWebSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ServerWebAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
+        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
 
         AddBlazor(builder);
     }
@@ -99,7 +85,7 @@ public static partial class Program
                 BaseAddress = serverAddress
             };
 
-            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebAppSettings>().ForwardedHeaders;
+            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {

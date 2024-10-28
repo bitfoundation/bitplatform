@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class NavPanel
 {
@@ -10,6 +8,7 @@ public partial class NavPanel
     private bool isSignOutModalOpen;
     private List<BitNavItem> allNavItems = [];
     private Action unsubOpenNavPanel = default!;
+    private BitSearchBox searchBoxRef = default!;
     private Action unsubUserDataChange = default!;
     private List<BitNavItem> flatNavItemList = [];
     private List<BitNavItem> filteredNavItems = [];
@@ -60,6 +59,13 @@ public partial class NavPanel
         {
             SearchNavItems(null);
         }
+    }
+
+    private async Task ToggleForSearch()
+    {
+        isMenuToggled = false;
+        await Task.Delay(1);
+        await searchBoxRef.FocusAsync();
     }
 
     private void SearchNavItems(string? searchText)

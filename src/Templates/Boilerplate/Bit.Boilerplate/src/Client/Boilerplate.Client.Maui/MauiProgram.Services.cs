@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Boilerplate.Client.Core;
 using Boilerplate.Client.Maui.Services;
 using Microsoft.Extensions.Options;
 
@@ -59,7 +58,7 @@ public static partial class MauiProgram
         //#endif
 
         //#if (appInsights == true)
-        var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+        var connectionString = configuration.Get<ClientMauiSettings>()!.ApplicationInsights?.ConnectionString;
         if (string.IsNullOrEmpty(connectionString) is false)
         {
             builder.Logging.AddApplicationInsights(config =>
@@ -85,16 +84,12 @@ public static partial class MauiProgram
             services.AddSessioned<ILocalHttpServer, MauiLocalHttpServer>();
         }
 
-        services.AddOptions<SharedAppSettings>()
+        services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
+        services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
 
 #if Android
         services.AddClientMauiProjectAndroidServices(builder.Configuration);

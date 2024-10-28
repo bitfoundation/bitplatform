@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif

@@ -16,7 +16,7 @@
             <BitEllipsisLoading />
         }
 
-        <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)">
+        <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" novalidate>
             <AppDataAnnotationsValidator />
 
             <BitStack FillContent>

@@ -1,23 +1,12 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Core;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Boilerplate.Client.Core;
+namespace Boilerplate.Client.Web;
 
-public partial class ClientAppSettings : SharedAppSettings
+public class ClientWebSettings : ClientCoreSettings
 {
-    /// <summary>
-    /// If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly
-    /// </summary>
-    [Required]
-    public string ServerAddress { get; set; } = default!;
-
-    //#if (captcha == "reCaptcha")
-    [Required]
-    public string GoogleRecaptchaSiteKey { get; set; } = default!;
-    //#endif
-
-    public WindowsUpdateOptions? WindowsUpdate { get; set; }
-
     [Required]
     public WebAppRenderOptions WebAppRender { get; set; } = default!;
 
@@ -34,11 +23,6 @@ public partial class ClientAppSettings : SharedAppSettings
 
         Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
 
-        if (WindowsUpdate is not null)
-        {
-            Validator.TryValidateObject(WindowsUpdate, new ValidationContext(WindowsUpdate), validationResults, true);
-        }
-
         //#if (notification == true)
         if (AdsPushVapid is not null)
         {
@@ -48,13 +32,6 @@ public partial class ClientAppSettings : SharedAppSettings
             {
                 validationResults.Add(new ValidationResult("Please set your own AdsPushVapid.PublicKey in Client.Core's appsettings.json"));
             }
-        }
-        //#endif
-
-        //#if (captcha == "reCaptcha")
-        if (AppEnvironment.IsDev() is false && GoogleRecaptchaSiteKey is "6LdMKr4pAAAAAKMyuEPn3IHNf04EtULXA8uTIVRw")
-        {
-            validationResults.Add(new ValidationResult("Please set your own GoogleRecaptchaSiteKey in Client.Core's appsettings.json"));
         }
         //#endif
 
@@ -108,13 +85,6 @@ public enum BlazorWebAppMode
     /// Pre-rendering without interactivity
     /// </summary>
     BlazorSsr,
-}
-
-public partial class WindowsUpdateOptions
-{
-    public bool AutoReload { get; set; }
-
-    public string? FilesUrl { get; set; }
 }
 
 //#if (notification == true)

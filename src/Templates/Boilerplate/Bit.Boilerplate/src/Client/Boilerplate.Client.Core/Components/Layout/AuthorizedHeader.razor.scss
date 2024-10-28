@@ -16,15 +16,4 @@ header {
             display: none;
         }
     }
-
-    .persona {
-        max-width: 180px;
-    }
-
-    .persona-details,
-    .menu-chevron {
-        @include lt-sm {
-            display: none;
-        }
-    }
 }

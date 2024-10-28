@@ -3,7 +3,7 @@
 public partial class Routes
 {
     [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
-    public static NavigationManager? universalLinksNavigationManager;
+    private static NavigationManager? universalLinksNavigationManager;
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {

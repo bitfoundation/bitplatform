@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Boilerplate.Shared;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -7,6 +9,13 @@ public static partial class IServiceCollectionExtensions
     public static IServiceCollection AddSharedProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
+
+        services.AddOptions<SharedSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
 
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<CultureInfoManager>();

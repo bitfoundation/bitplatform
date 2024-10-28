@@ -5,7 +5,7 @@ using AdsPush.Abstraction.Settings;
 
 namespace Boilerplate.Server.Api;
 
-public partial class ServerApiAppSettings : SharedAppSettings
+public partial class ServerApiSettings : SharedSettings
 {
     /// <summary>
     /// It can also be configured using: dotnet user-secrets set 'DataProtectionCertificatePassword' '@nyPassw0rd'

@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Resources;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 

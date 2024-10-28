@@ -43,7 +43,7 @@
         {
             <BitDropdown Items="cultures" IsResponsive
                          FitWidth NoBorder Transparent
-                         Classes="@(new() { Callout="identity-language-callout" })"
+                         Classes="@(new() { Callout="language-callout" })"
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">

@@ -2,9 +2,8 @@
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
-using Boilerplate.Shared;
-using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
+using Boilerplate.Shared;
 
 namespace Boilerplate.Client.Web;
 
@@ -12,13 +11,12 @@ public static partial class Program
 {
     public static void ConfigureServices(this WebAssemblyHostBuilder builder)
     {
-        // Services being registered here can get injected in web project only.
-
         var services = builder.Services;
         var configuration = builder.Configuration;
 
         services.AddClientWebProjectServices(configuration);
 
+        // The following services are blazor web assembly only.
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
@@ -30,29 +28,29 @@ public static partial class Program
         }
 
         services.AddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
-
-        services.AddOptions<SharedAppSettings>()
-            .Bind(configuration)
-            .ValidateOnStart();
-
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddClientCoreProjectServices(configuration);
 
-        // Services being registered here can get injected in both web project and server (during prerendering).
+        // The following services work both in blazor web assembly and server side for pre-rendering and blazor server.
 
         services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WebExceptionHandler>();
         //#if (notification == true)
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
+
+        services.AddTransient<IPrerenderStateService, WebPrerenderStateService>();
+
+        services.AddOptions<ClientWebSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
+
+        services.AddTransient<IStorageService, BrowserStorageService>();
     }
 }

@@ -19,7 +19,7 @@ public static partial class Program
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
         if (builder.Environment.IsDevelopment() && OperatingSystem.IsWindows())

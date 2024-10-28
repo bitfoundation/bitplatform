@@ -22,7 +22,7 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwarededHeadersOptions = configuration.Get<ServerWebAppSettings>()!.ForwardedHeaders;
+        var forwarededHeadersOptions = configuration.Get<ServerWebSettings>()!.ForwardedHeaders;
 
         if (forwarededHeadersOptions is not null
             && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
@@ -140,7 +140,7 @@ public static partial class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        var webAppRenderMode = configuration.Get<ServerWebAppSettings>()!;
+        var webAppRenderMode = configuration.Get<ServerWebSettings>()!;
 
         if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
         {
