@@ -2,11 +2,10 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Net.Http.Headers;
 using Bit.Websites.Sales.Server.Components;
 using System.Net;
-using Microsoft.AspNetCore.Components.Endpoints;
 using System.Runtime.Loader;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Websites.Sales.Server.Startup;
 
@@ -73,6 +72,8 @@ public class Middlewares
             app.MapHealthChecksUI();
         }
 
+        UseSiteMap(app);
+
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
@@ -112,4 +113,32 @@ public class Middlewares
             }
         });
     }
+
+    private static void UseSiteMap(WebApplication app)
+    {
+        var urls = Assembly.Load("Bit.Websites.Sales.Client")
+            .ExportedTypes
+            .Where(t => typeof(IComponent).IsAssignableFrom(t))
+            .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
+            .Select(r => r.Template)
+            .ToList();
+
+        const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
+
+        app.MapGet("/sitemap.xml", async context =>
+        {
+            if (siteMap is null)
+            {
+                var baseUrl = new Uri(context.Request.GetBaseUrl());
+
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            }
+
+            context.Response.Headers.ContentType = "application/xml";
+
+            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+        });
+    }
+
+    private static string? siteMap;
 }
