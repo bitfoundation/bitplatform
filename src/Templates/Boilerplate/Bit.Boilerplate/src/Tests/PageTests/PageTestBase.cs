@@ -18,7 +18,11 @@ public partial class PageTestBase : PageTest
         var configureTestServer = currentTestMethod!.GetCustomAttribute<ConfigureTestServerAttribute>();
         if (configureTestServer is not null)
         {
-            await (Task)GetType().GetMethod(configureTestServer.MethodName)!.Invoke(this, [TestServer])!;
+            var configureTestServerMethod = GetType()
+                .GetMethod(configureTestServer.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException($"Method '{configureTestServer.MethodName}' not found.");
+            var currentTestMethodArguments = GetTestMethodArguments();
+            await (Task)configureTestServerMethod.Invoke(this, [TestServer, .. currentTestMethodArguments])!;
             return;
         }
 
@@ -62,15 +66,19 @@ public partial class PageTestBase : PageTest
         var configureBrowserContext = currentTestMethod!.GetCustomAttribute<ConfigureBrowserContextAttribute>();
         if (configureBrowserContext is not null)
         {
-            GetType().GetMethod(configureBrowserContext.MethodName)!.Invoke(this, [options]);
+            var configureBrowserContextMethod = GetType()
+                .GetMethod(configureBrowserContext.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException($"Method '{configureBrowserContext.MethodName}' not found.");
+            var currentTestMethodArguments = GetTestMethodArguments();
+            configureBrowserContextMethod.Invoke(this, [options, .. currentTestMethodArguments]);
         }
 
         return options;
     }
 
-    private static string GetVideoDirectory(TestContext testContext)
+    private string GetVideoDirectory(TestContext testContext)
     {
-        var testMethodDsiplayName = GetTestMethodDisplayName(testContext);
+        var testMethodDsiplayName = GetTestMethodDisplayName();
         char[] invalidChars = [.. Path.GetInvalidPathChars(), .. Path.GetInvalidFileNameChars(), ')', '"', '<', '>', '|', '*', '?', '\r', '\n'];
         testMethodDsiplayName = new string(testMethodDsiplayName.Where(ch => !invalidChars.Contains(ch)).Select(ch => ch is '(' or ',' ? '_' : ch).ToArray());
         var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testMethodDsiplayName}";
@@ -78,15 +86,27 @@ public partial class PageTestBase : PageTest
         return Path.GetFullPath(dir);
     }
 
-    private static string GetTestMethodDisplayName(object testContext)
+    private string GetTestMethodDisplayName()
     {
-        var testContextType = testContext.GetType();
+        var testContextType = TestContext.GetType();
         var testMethodField = testContextType.GetField("_testMethod", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Field '_testMethod' not found.");
-        var testMethod = testMethodField.GetValue(testContext) ?? throw new InvalidOperationException("Field '_testMethod' is null.");
+        var testMethod = testMethodField.GetValue(TestContext) ?? throw new InvalidOperationException("Field '_testMethod' is null.");
         var testMethodType = testMethod.GetType();
         var displayNameProperty = testMethodType.GetProperty("DisplayName", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Property 'DisplayName' not found.");
         var displayName = displayNameProperty.GetValue(testMethod) ?? throw new InvalidOperationException("Field 'DisplayName' is null.");
         return (string)displayName;
+    }
+
+    private string?[]? GetTestMethodArguments()
+    {
+        var testContextType = TestContext.GetType();
+        var testMethodField = testContextType.GetField("_testMethod", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Field '_testMethod' not found.");
+        var testMethod = testMethodField.GetValue(TestContext) ?? throw new InvalidOperationException("Field '_testMethod' is null.");
+        var testMethodType = testMethod.GetType();
+        var serializedDataProperty = testMethodType.GetProperty("SerializedData", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Property 'SerializedData' not found.");
+        var serializedData = (string?[]?)serializedDataProperty.GetValue(testMethod);
+        if (serializedData is null) return [];
+        return serializedData.Where((_, index) => index % 2 == 1).Select(x => x?.Trim('"')).ToArray();
     }
 }
 
