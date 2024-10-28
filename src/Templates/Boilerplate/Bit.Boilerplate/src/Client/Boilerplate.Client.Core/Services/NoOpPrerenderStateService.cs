@@ -15,7 +15,6 @@ namespace Boilerplate.Client.Core.Services;
 /// </summary>
 public class NoopPrerenderStateService : IPrerenderStateService
 {
-
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     public Task<T?> GetValue<T>(Func<Task<T?>> factory, 
