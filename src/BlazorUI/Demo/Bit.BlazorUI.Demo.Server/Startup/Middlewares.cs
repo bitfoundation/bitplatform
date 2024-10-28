@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Bit.BlazorUI.Demo.Server.Components;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -81,6 +82,8 @@ public class Middlewares
             });
         }
 
+        UseSiteMap(app);
+
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
@@ -140,4 +143,32 @@ public class Middlewares
             }
         });
     }
+
+    private static void UseSiteMap(WebApplication app)
+    {
+        var urls = Assembly.Load("Bit.BlazorUI.Demo.Client.Core")
+            .ExportedTypes
+            .Where(t => typeof(IComponent).IsAssignableFrom(t))
+            .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
+            .Select(r => r.Template)
+            .ToList();
+
+        const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
+
+        app.MapGet("/sitemap.xml", async context =>
+        {
+            if (siteMap is null)
+            {
+                var baseUrl = context.Request.GetBaseUrl();
+
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            }
+
+            context.Response.Headers.ContentType = "application/xml";
+
+            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+        });
+    }
+
+    private static string? siteMap;
 }
