@@ -1,10 +1,8 @@
 ﻿//-:cnd:noEmit
-using System.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Bit.Butil;
-using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Web;
 
@@ -16,7 +14,7 @@ public static partial class Program
 
         AppEnvironment.Set(builder.HostEnvironment.Environment);
 
-        builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") != "true")
         {
@@ -26,8 +24,8 @@ public static partial class Program
             builder.RootComponents.Add<HeadOutlet>("head::after");
             //+:cnd:noEmit
             //#if (appInsights == true)
-            var clientAppSettings = builder.Configuration.Get<ClientAppSettings>()!;
-            if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
+            var clientWebSettings = builder.Configuration.Get<ClientWebSettings>()!;
+            if (string.IsNullOrEmpty(clientWebSettings.ApplicationInsights?.ConnectionString) is false)
             {
                 builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
             }

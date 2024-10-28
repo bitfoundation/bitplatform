@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.WebView;
-using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Windows;
 
@@ -12,13 +11,13 @@ public partial class MainWindow
         AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
         ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddClientConfigurations();
+        configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
         var configuration = configurationBuilder.Build();
         services.AddClientWindowsProjectServices(configuration);
         InitializeComponent();
         //#if (appInsights == true)
-        var clientAppSettings = configuration.Get<ClientAppSettings>()!;
-        if (string.IsNullOrEmpty(clientAppSettings.ApplicationInsights?.ConnectionString) is false)
+        var clientWindowsSettings = configuration.Get<ClientWindowsSettings>()!;
+        if (string.IsNullOrEmpty(clientWindowsSettings.ApplicationInsights?.ConnectionString) is false)
         {
             AppWebView.RootComponents.Add(new()
             {

@@ -1,9 +1,9 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Web;
 
 namespace Boilerplate.Server.Web;
 
-public partial class ServerWebAppSettings : ClientAppSettings
+public partial class ServerWebSettings : ClientWebSettings
 {
     public ForwardedHeadersOptions ForwardedHeaders { get; set; } = default!;
 

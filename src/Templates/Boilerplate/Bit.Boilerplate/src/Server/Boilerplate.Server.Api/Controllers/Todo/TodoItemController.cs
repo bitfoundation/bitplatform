@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Shared.Dtos.Todo;
-using Boilerplate.Server.Api.Models.Todo;
 using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;

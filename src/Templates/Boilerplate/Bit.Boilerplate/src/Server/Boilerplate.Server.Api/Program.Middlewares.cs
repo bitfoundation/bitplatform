@@ -14,7 +14,7 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwardedHeadersOptions = configuration.Get<ServerApiAppSettings>()!.ForwardedHeaders;
+        var forwardedHeadersOptions = configuration.Get<ServerApiSettings>()!.ForwardedHeaders;
 
         if (forwardedHeadersOptions is not null 
             && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))

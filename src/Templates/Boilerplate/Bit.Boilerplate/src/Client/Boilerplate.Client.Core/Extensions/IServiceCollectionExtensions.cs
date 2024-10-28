@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using BlazorApplicationInsights;
 //#endif
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core;
-using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -22,14 +22,19 @@ public static partial class IServiceCollectionExtensions
 
         services.AddSharedProjectServices(configuration);
 
+        services.AddOptions<ClientSettings>()
+            .Bind(configuration)
+            .ValidateOnStart();
+
+        services.AddTransient(sp => configuration.Get<ClientSettings>()!);
+
         services.AddSessioned<IPubSubService, PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<HttpClientHandler>();
 
-        services.AddTransient<IPrerenderStateService, PrerenderStateService>();
+        services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
         services.AddTransient<ICultureService, CultureService>();
         services.AddTransient<IThemeService, ThemeService>();
-        services.AddTransient<IStorageService, BrowserStorageService>();
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
         services.AddTransient<RequestHeadersDelegationHandler>();
@@ -91,7 +96,7 @@ public static partial class IServiceCollectionExtensions
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>
         {
-            var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+            var connectionString = configuration.Get<ClientSettings>()!.ApplicationInsights?.ConnectionString;
             if (string.IsNullOrEmpty(connectionString) is false)
             {
                 x.ConnectionString = connectionString;

@@ -24,7 +24,7 @@ public static partial class SignInManagerExtensions
 
     public static async Task<(SignInResult signInResult, string? authenticationMethod)> OtpSignInAsync(this SignInManager<User> signInManager, User user, string otp)
     {
-        var appSettings = signInManager.Context.RequestServices.GetRequiredService<ServerApiAppSettings>();
+        var appSettings = signInManager.Context.RequestServices.GetRequiredService<ServerApiSettings>();
 
         var expired = (DateTimeOffset.Now - user.OtpRequestedOn) > appSettings.Identity.OtpTokenLifetime;
 

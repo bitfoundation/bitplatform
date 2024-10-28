@@ -2,7 +2,7 @@
 
 public partial class GoogleRecaptchaHttpClient
 {
-    [AutoInject] protected ServerApiAppSettings AppSettings = default!;
+    [AutoInject] protected ServerApiSettings AppSettings = default!;
 
     [AutoInject] protected HttpClient httpClient = default!;
 

@@ -43,7 +43,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.Production.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/wwwroot/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/wwwroot/appsettings.Production.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WebAppRender.BlazorMode: BlazorWebAssembly
@@ -135,7 +135,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
+        files: 'TodoSample\src\Shared\appsettings.json, TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Client\TodoSample.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
@@ -224,7 +224,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
@@ -305,7 +305,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
