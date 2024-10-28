@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core;
 
-public partial class ClientSettings : SharedSettings
+public partial class ClientCoreSettings : SharedSettings
 {
     /// <summary>
     /// If you're running Boilerplate.Server.Web project, then you can also use relative urls such as / for Blazor Server and WebAssembly

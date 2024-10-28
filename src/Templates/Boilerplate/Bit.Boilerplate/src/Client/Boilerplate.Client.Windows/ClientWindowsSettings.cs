@@ -3,7 +3,7 @@ using Boilerplate.Client.Core;
 
 namespace Boilerplate.Client.Windows;
 
-public class ClientWindowsSettings : ClientSettings
+public class ClientWindowsSettings : ClientCoreSettings
 {
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
 

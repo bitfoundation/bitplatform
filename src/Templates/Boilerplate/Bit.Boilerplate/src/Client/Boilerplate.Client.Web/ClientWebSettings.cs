@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Web;
 
-public class ClientWebSettings : ClientSettings
+public class ClientWebSettings : ClientCoreSettings
 {
     [Required]
     public WebAppRenderOptions WebAppRender { get; set; } = default!;

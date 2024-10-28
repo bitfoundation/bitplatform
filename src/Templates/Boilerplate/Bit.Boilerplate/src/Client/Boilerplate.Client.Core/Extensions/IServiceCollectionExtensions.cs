@@ -22,12 +22,12 @@ public static partial class IServiceCollectionExtensions
 
         services.AddSharedProjectServices(configuration);
 
-        services.AddOptions<ClientSettings>()
+        services.AddOptions<ClientCoreSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddSingleton(sp => configuration.Get<ClientSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
 
         services.AddSessioned<IPubSubService, PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
@@ -97,7 +97,7 @@ public static partial class IServiceCollectionExtensions
         //#if (appInsights == true)
         services.AddBlazorApplicationInsights(x =>
         {
-            var connectionString = configuration.Get<ClientSettings>()!.ApplicationInsights?.ConnectionString;
+            var connectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;
             if (string.IsNullOrEmpty(connectionString) is false)
             {
                 x.ConnectionString = connectionString;
