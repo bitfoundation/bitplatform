@@ -2,7 +2,7 @@
 
 public static class ByteArrayExtensions
 {
-    public static string ToStringConcurrencyStamp(this byte[]? source)
+    public static string AsStringConcurrencyStamp(this byte[]? source)
     {
         if (source is null or { Length: 0 })
             source = [0, 0, 0, 0, 0, 0, 0, 0];
