@@ -62,7 +62,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpDelete("{id}/{concurrencyStamp}")]
-    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, [Base64String] string concurrencyStamp, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {

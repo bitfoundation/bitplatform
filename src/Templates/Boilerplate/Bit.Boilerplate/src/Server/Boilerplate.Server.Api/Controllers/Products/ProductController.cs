@@ -62,7 +62,7 @@ public partial class ProductController : AppControllerBase, IProductController
     }
 
     [HttpDelete("{id}/{concurrencyStamp}")]
-    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, [Base64String] string concurrencyStamp, CancellationToken cancellationToken)
     {
         DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(concurrencyStamp) });
 

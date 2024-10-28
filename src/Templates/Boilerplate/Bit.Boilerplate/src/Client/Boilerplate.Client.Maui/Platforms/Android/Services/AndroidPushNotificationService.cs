@@ -32,7 +32,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
         {
             // After the NotificationsSupported Task completes with a result of true,
             // we use FirebaseMessaging.Instance.GetToken.
-            // This methods is asynchronous and we need to wait for it to complete.
+            // This method is asynchronous and we need to wait for it to complete.
             await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
         }
 

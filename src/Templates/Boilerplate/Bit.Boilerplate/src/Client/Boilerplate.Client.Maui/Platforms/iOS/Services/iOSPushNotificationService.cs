@@ -29,8 +29,8 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
         while (string.IsNullOrEmpty(Token))
         {
             // After the NotificationsSupported Task completes with a result of true,
-            // We use UNUserNotificationCenter.Current.Delegate.
-            // This methods is asynchronous and we need to wait for it to complete.
+            // we use UNUserNotificationCenter.Current.Delegate.
+            // This method is asynchronous and we need to wait for it to complete.
             await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
         }
 
