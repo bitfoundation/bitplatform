@@ -26,8 +26,6 @@ public partial class ForgotPasswordPage
         {
             model.Email = null;
         }
-
-        StateHasChanged();
     }
 
     private async Task Submit()
