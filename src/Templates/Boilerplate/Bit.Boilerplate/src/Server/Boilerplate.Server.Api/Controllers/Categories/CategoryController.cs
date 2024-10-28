@@ -62,14 +62,14 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpDelete("{id}/{concurrencyStamp}")]
-    public async Task Delete(Guid id, [Base64String] string concurrencyStamp, CancellationToken cancellationToken)
+    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(concurrencyStamp) });
+        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
     }

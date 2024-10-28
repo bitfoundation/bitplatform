@@ -15,7 +15,7 @@ public interface IProductController : IAppController
     Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken);
 
     [HttpDelete("{id}/{concurrencyStamp}")]
-    Task Delete(Guid id, [Base64String] string concurrencyStamp, CancellationToken cancellationToken);
+    Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
 
     [HttpGet]
     Task<PagedResult<ProductDto>> GetProducts(CancellationToken cancellationToken) => default!;
