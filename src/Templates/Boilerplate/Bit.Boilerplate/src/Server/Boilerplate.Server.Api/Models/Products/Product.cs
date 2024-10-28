@@ -21,4 +21,6 @@ public partial class Product
     public Category? Category { get; set; }
 
     public Guid CategoryId { get; set; }
+
+    public byte[] ConcurrencyStamp { get; set; } = [];
 }

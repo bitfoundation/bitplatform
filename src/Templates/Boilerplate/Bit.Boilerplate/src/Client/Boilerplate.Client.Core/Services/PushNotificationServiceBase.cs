@@ -8,26 +8,15 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
     public virtual string Token { get; set; }
-    public virtual Task<bool> IsNotificationSupported() => Task.FromResult(false);
-    public abstract Task<DeviceInstallationDto> GetDeviceInstallation();
+    public virtual Task<bool> IsNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
+    public abstract Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken);
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
-        if (await IsNotificationSupported() is false)
+        if (await IsNotificationSupported(cancellationToken) is false)
             return;
 
-        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-
-        while (string.IsNullOrEmpty(Token))
-        {
-            // After the NotificationsSupported Task completes with a result of true,
-            // we use FirebaseMessaging.Instance.GetToken and UNUserNotificationCenter.Current.Delegate.
-            // Those methods are asynchronous and we need to wait for them to complete.
-            await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
-        }
-
-        var deviceInstallation = await GetDeviceInstallation();
+        var deviceInstallation = await GetDeviceInstallation(cancellationToken);
 
         await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
     }

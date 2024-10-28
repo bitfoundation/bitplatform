@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 
 public partial class MacCatalystPushNotificationService : PushNotificationServiceBase
 {
-    public async override Task<bool> IsNotificationSupported()
+    public async override Task<bool> IsNotificationSupported(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
@@ -21,8 +21,19 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
 
     public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 
-    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
     {
+        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+        while (string.IsNullOrEmpty(Token))
+        {
+            // After the NotificationsSupported Task completes with a result of true,
+            // We use UNUserNotificationCenter.Current.Delegate.
+            // This methods is asynchronous and we need to wait for it to complete.
+            await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+        }
+
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),

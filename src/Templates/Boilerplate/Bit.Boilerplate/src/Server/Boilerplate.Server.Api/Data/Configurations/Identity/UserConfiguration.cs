@@ -35,11 +35,6 @@ public partial class UserConfiguration : IEntityTypeConfiguration<User>
                               v => JsonSerializer.Deserialize<List<UserSession>>(v, (JsonSerializerOptions?)null)!);
         // You can also use builder.OwnsMany(u => u.Sessions, navBuilder => navBuilder.ToJson());
 
-        //#if (database == "Cosmos")
-        builder.Property(b => b.ConcurrencyStamp)
-            .IsETagConcurrency();
-        //#endif
-
         //#if (database != "PostgreSQL")
         builder
             .HasIndex(b => b.Email)

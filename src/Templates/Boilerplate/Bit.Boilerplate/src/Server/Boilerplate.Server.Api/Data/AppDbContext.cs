@@ -30,16 +30,20 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<DeviceInstallation> DeviceInstallations { get; set; }
     //#endif
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);
+        base.OnModelCreating(modelBuilder);
 
-        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         //#if (database != "Cosmos")
-        ConfigureIdentityTableNames(builder);
+        ConfigureIdentityTableNames(modelBuilder);
         //#else
-        ConfigureContainers(builder);
+        ConfigureContainers(modelBuilder);
+        //#endif
+
+        //#if (database != "Sqlite")
+        ConcurrencyStamp(modelBuilder);
         //#endif
     }
 
@@ -188,6 +192,30 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<DeviceInstallation>()
             .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
         //#endif
+    }
+    //#endif
+
+    //#if (database != "Sqlite")
+    private void ConcurrencyStamp(ModelBuilder modelBuilder)
+    {
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            return;
+        //#endif
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties()
+                .Where(p => p.Name is "ConcurrencyStamp"))
+            {
+                var builder = new PropertyBuilder(property);
+                builder.IsConcurrencyToken()
+                    //#if (database == "Cosmos")
+                    .IsETagConcurrency()
+                    //#endif
+                    .IsRowVersion();
+            }
+        }
     }
     //#endif
 }
