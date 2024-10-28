@@ -38,7 +38,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/wwwroot/appsettings.json'
+        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 #if (notifications == true)
