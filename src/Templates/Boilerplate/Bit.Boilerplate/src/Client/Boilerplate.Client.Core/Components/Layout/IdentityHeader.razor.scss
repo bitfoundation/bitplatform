@@ -10,7 +10,7 @@ header {
 }
 
 ::deep {
-    .identity-language-callout {
+    .language-callout {
         @include lt-sm {
             height: unset;
             box-shadow: none;

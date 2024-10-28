@@ -14,19 +14,15 @@ public partial class ForgotPasswordPage
     private const string EmailKey = nameof(EmailKey);
     private const string PhoneKey = nameof(PhoneKey);
 
-    private string selectedKey = EmailKey;
 
-
-    private void OnSelectedKeyChanged(string key)
+    private void OnPivotChange(BitPivotItem item)
     {
-        selectedKey = key;
-
-        if (key == EmailKey)
+        if (item.Key == EmailKey)
         {
             model.PhoneNumber = null;
         }
 
-        if (key == PhoneKey)
+        if (item.Key == PhoneKey)
         {
             model.Email = null;
         }

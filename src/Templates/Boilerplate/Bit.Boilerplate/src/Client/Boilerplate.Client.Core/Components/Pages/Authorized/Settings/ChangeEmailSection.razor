@@ -4,7 +4,7 @@
     <BitStack HorizontalAlign="BitAlignment.Center">
         @if (showConfirmation is false)
         {
-            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)">
+            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" novalidate>
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>
@@ -43,7 +43,7 @@
                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
             </BitText>
 
-            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)">
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" novalidate>
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>

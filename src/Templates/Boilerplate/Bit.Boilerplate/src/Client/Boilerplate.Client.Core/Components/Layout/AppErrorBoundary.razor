@@ -4,7 +4,11 @@
 {
     @ChildContent
 }
-else if (ErrorContent is null)
+else if (ErrorContent is not null)
+{
+    @ErrorContent(CurrentException)
+}
+else
 {
     <main>
         <BitStack Alignment="BitAlignment.Center">
@@ -28,8 +32,4 @@ else if (ErrorContent is null)
             </BitStack>
         </BitStack>
     </main>
-}
-else
-{
-    @ErrorContent(CurrentException)
 }

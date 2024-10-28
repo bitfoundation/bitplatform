@@ -25,11 +25,21 @@
                            IconName="@BitIconName.ColumnRightTwoThirds" />
             </BitStack>
 
-            @if (isToggled is false)
+            <BitSearchBox @ref="searchBoxRef"
+                          Underlined Immediate DebounceTime="500"
+                          OnChange="WrapHandled<string?>(SearchNavItems)"
+                          Style="@(isToggled ? "display:none" : "")"
+                          Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
+
+            @if (isToggled)
             {
-                <BitSearchBox Underlined Immediate DebounceTime="500"
-                              OnChange="WrapHandled<string?>(SearchNavItems)"
-                              Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
+                <BitButton IconOnly FixedColor
+                           Class="toggle-btn"
+                           Size="BitSize.Large"
+                           OnClick="ToggleForSearch"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Search"
+                           Color="BitColor.TertiaryBackground" />
             }
 
             @if (filteredNavItems.Count == 0)
