@@ -6,6 +6,7 @@
 
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
+                 OnDismiss="() => showCultures = false"
                  Classes="@(new() { Callout="user-menu-callout" })">
         <Template>
             <BitPersona Class="persona"

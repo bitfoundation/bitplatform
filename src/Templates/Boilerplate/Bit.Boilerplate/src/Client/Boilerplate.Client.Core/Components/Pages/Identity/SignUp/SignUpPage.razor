@@ -19,7 +19,7 @@
 
         <BitSeparator Border="BitColorKind.Tertiary" Background="BitColorKind.Secondary">@Localizer[AppStrings.Or]</BitSeparator>
 
-        <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)">
+        <EditForm Model="signUpModel" OnValidSubmit="WrapHandled(DoSignUp)" novalidate>
             <AppDataAnnotationsValidator />
 
             <BitStack FillContent Gap="2rem">

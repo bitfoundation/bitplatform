@@ -12,7 +12,8 @@
         <BitPivot Alignment="BitAlignment.Center" Class="confirm-pivot">
             @if (showEmailConfirmation)
             {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]" IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]"
+                              IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
                     <BitStack FillContent>
                         @if (isEmailConfirmed is false)
                         {
@@ -21,7 +22,7 @@
                                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
                             </BitText>
 
-                            <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" class="confirm-form">
+                            <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" novalidate>
                                 <AppDataAnnotationsValidator />
 
                                 <BitStack FillContent>
@@ -78,7 +79,8 @@
 
             @if (showPhoneConfirmation)
             {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]" IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]"
+                              IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
                     <BitStack FillContent>
                         @if (isPhoneConfirmed is false)
                         {
@@ -87,7 +89,7 @@
                                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
                             </BitText>
 
-                            <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" class="confirm-form">
+                            <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" novalidate>
                                 <AppDataAnnotationsValidator />
 
                                 <BitStack FillContent>

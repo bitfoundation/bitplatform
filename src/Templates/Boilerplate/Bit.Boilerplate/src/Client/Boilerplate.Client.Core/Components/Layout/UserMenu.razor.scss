@@ -15,4 +15,15 @@
             box-shadow: none;
         }
     }
+
+    .persona {
+        max-width: 12rem;
+    }
+
+    .persona-details,
+    .menu-chevron {
+        @include lt-sm {
+            display: none;
+        }
+    }
 }

@@ -17,26 +17,8 @@
 }
 
 .color-square {
-    width: 2rem;
+    width: 5rem;
     height: 2rem;
     border-radius: 2px;
     display: inline-block;
-
-    &.selected {
-        width: 80px;
-    }
-}
-
-::deep {
-    .back-btn {
-        margin-inline-end: 12px;
-
-        &[dir=rtl] {
-            transform: scale(-1);
-        }
-    }
-
-    .validation-message {
-        color: $bit-color-error;
-    }
 }
