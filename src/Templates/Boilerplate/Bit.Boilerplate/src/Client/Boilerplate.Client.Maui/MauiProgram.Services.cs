@@ -86,9 +86,10 @@ public static partial class MauiProgram
 
         services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ClientMauiSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
 
 #if Android
         services.AddClientMauiProjectAndroidServices(builder.Configuration);

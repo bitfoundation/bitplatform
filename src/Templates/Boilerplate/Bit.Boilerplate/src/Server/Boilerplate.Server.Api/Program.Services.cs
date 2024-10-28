@@ -156,7 +156,7 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ServerApiSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ServerApiSettings>()!);
 
         services.AddEndpointsApiExplorer();
 

@@ -74,8 +74,9 @@ public static partial class Program
 
         services.AddOptions<ClientWindowsSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ClientWindowsSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
     }
 }

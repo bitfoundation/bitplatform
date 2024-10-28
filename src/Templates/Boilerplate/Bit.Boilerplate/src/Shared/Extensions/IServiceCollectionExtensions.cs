@@ -15,7 +15,7 @@ public static partial class IServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<SharedSettings>()!);
+        services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
 
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<CultureInfoManager>();

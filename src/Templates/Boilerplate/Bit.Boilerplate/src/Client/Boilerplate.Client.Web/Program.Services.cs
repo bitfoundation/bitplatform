@@ -46,9 +46,10 @@ public static partial class Program
 
         services.AddOptions<ClientWebSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ClientWebSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
 
         services.AddTransient<IStorageService, BrowserStorageService>();
     }

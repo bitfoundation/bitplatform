@@ -54,7 +54,7 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ServerWebSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
 
         AddBlazor(builder);
     }

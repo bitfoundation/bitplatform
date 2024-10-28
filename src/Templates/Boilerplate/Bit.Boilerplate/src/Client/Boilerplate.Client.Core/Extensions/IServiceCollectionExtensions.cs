@@ -24,9 +24,10 @@ public static partial class IServiceCollectionExtensions
 
         services.AddOptions<ClientSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient(sp => configuration.Get<ClientSettings>()!);
+        services.AddSingleton(sp => configuration.Get<ClientSettings>()!);
 
         services.AddSessioned<IPubSubService, PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
