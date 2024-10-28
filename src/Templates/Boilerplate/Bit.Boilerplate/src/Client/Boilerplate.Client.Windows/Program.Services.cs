@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Boilerplate.Client.Core;
 using Boilerplate.Client.Windows.Services;
 using Microsoft.Extensions.Options;
 
@@ -61,7 +60,7 @@ public static partial class Program
             loggingBuilder.AddApplicationInsights(config =>
             {
                 config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
-                var connectionString = configuration.Get<ClientAppSettings>()!.ApplicationInsights?.ConnectionString;
+                var connectionString = configuration.Get<ClientWindowsSettings>()!.ApplicationInsights?.ConnectionString;
                 if (string.IsNullOrEmpty(connectionString) is false)
                 {
                     config.ConnectionString = connectionString;
@@ -73,15 +72,11 @@ public static partial class Program
             //#endif
         });
 
-        services.AddOptions<SharedAppSettings>()
+        services.AddOptions<ClientWindowsSettings>()
             .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ClientAppSettings>()
-            .Bind(configuration)
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ClientAppSettings>>().Value);
+        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
     }
 }

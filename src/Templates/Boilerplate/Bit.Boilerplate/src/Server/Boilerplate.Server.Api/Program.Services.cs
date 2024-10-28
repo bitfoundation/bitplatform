@@ -55,7 +55,7 @@ public static partial class Program
         services.AddApplicationInsightsTelemetry(configuration);
         //#endif
 
-        var appSettings = configuration.Get<ServerApiAppSettings>()!;
+        var appSettings = configuration.Get<ServerApiSettings>()!;
 
         services.AddCors(builder =>
         {
@@ -66,7 +66,7 @@ public static partial class Program
                     policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
                 }
 
-                var webClientUrl = configuration.Get<ServerApiAppSettings>()!.WebClientUrl;
+                var webClientUrl = configuration.Get<ServerApiSettings>()!.WebClientUrl;
 
                 policy.SetIsOriginAllowed(origin =>
                             LocalhostOriginRegex().IsMatch(origin) ||
@@ -147,22 +147,16 @@ public static partial class Program
         };
 
         services.AddOptions<IdentityOptions>()
-            .Bind(configuration.GetRequiredSection(nameof(ServerApiAppSettings.Identity)))
+            .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<SharedAppSettings>()
+        services.AddOptions<ServerApiSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<ServerApiAppSettings>()
-            .Bind(configuration)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<SharedAppSettings>>().Value);
-        services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<ServerApiAppSettings>>().Value);
+        services.AddSingleton(sp => configuration.Get<ServerApiSettings>()!);
 
         services.AddEndpointsApiExplorer();
 
@@ -270,7 +264,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
         var env = builder.Environment;
-        var appSettings = configuration.Get<ServerApiAppSettings>()!;
+        var appSettings = configuration.Get<ServerApiSettings>()!;
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");

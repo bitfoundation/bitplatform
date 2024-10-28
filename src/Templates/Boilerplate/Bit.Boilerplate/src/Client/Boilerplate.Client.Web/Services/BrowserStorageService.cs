@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Services;
+﻿using Bit.Butil;
+
+namespace Boilerplate.Client.Web.Services;
 
 public partial class BrowserStorageService : IStorageService
 {

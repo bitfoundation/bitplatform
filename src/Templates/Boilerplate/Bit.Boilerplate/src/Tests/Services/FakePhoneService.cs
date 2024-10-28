@@ -8,7 +8,7 @@ using PhoneNumbers;
 
 namespace Boilerplate.Tests.Services;
 
-public partial class FakePhoneService(ServerApiAppSettings appSettings, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> logger, PhoneNumberUtil phoneNumberUtil)
+public partial class FakePhoneService(ServerApiSettings appSettings, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> logger, PhoneNumberUtil phoneNumberUtil)
     : PhoneService(appSettings, hostEnvironment, httpContextAccessor, logger, phoneNumberUtil)
 {
     private static readonly ConcurrentDictionary<string, string> LastSmsPerPhone = new();

@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -96,7 +95,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Configuration.Get<ServerApiAppSettings>()!.WebClientUrl;
+        var webClientUrl = Configuration.Get<ServerApiSettings>()!.WebClientUrl;
         if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }

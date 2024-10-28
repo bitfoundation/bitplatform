@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
 namespace Boilerplate.Shared;
 
-public partial class SharedAppSettings : IValidatableObject
+public partial class SharedSettings : IValidatableObject
 {
     /// <summary>
     /// If you are hosting the API and web client on different URLs (e.g., api.company.com and app.company.com), you must set `WebClientUrl` to your web client's address.

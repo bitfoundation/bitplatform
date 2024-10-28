@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.ApplicationInsights.Channel;
+﻿using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Boilerplate.Client.Windows.Services;

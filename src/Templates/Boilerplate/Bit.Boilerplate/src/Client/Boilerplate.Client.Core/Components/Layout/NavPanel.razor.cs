@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace Boilerplate.Client.Core.Components.Layout;
+﻿namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class NavPanel
 {

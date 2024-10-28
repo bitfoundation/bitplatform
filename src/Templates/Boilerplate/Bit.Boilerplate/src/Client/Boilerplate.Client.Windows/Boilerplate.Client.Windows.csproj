@@ -54,6 +54,8 @@
 
     <ItemGroup>
       <Resource Include="Resources\**\*.*" />
+      <Content Remove="appsettings*.json" />
+      <EmbeddedResource Include="appsettings*.json" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">

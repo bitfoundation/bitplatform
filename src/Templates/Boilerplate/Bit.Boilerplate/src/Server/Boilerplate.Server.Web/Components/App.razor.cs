@@ -1,5 +1,4 @@
-﻿using Boilerplate.Client.Core.Services;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
 
@@ -13,7 +12,7 @@ public partial class App
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
-    [AutoInject] ServerWebAppSettings serverWebAppSettings = default!;
+    [AutoInject] ServerWebSettings serverWebSettings = default!;
 
     protected override void OnInitialized()
     {

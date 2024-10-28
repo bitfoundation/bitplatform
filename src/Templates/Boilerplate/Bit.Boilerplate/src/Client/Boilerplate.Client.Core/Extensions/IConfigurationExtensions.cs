@@ -7,7 +7,7 @@ public static partial class IConfigurationExtensions
 {
     public static string GetServerAddress(this IConfiguration configuration)
     {
-        var serverAddress = configuration.Get<ClientAppSettings>().ServerAddress;
+        var serverAddress = configuration.Get<ClientCoreSettings>()!.ServerAddress;
 
         if (AppEnvironment.IsDev() &&
             serverAddress.Contains("localhost", StringComparison.InvariantCultureIgnoreCase) &&

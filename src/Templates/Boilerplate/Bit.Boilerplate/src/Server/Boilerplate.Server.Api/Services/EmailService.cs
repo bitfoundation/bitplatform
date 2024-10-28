@@ -15,7 +15,7 @@ public partial class EmailService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ILogger<EmailService> logger = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private ServerApiAppSettings appSettings = default!;
+    [AutoInject] private ServerApiSettings appSettings = default!;
 
     public async Task SendResetPasswordToken(User user, string token, Uri link, CancellationToken cancellationToken)
     {

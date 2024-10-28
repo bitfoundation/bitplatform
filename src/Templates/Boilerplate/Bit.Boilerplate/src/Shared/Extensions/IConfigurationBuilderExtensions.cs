@@ -7,10 +7,10 @@ public static partial class IConfigurationBuilderExtensions
     /// <summary>
     /// Configuration priority (Lowest to highest) =>
     /// Shared/appsettings.json
-    /// Shared/appsettings.Production.json
+    /// Shared/appsettings.{environment}.json (If present)
     ///     Server.Api only =>
     ///         Server/appsettings.json
-    ///         Server/appsettings.Production.json
+    ///         Server/appsettings.{environment}.json (If present)
     ///         https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration#default-application-configuration-sources
     /// </summary>
     public static void AddSharedConfigurations(this IConfigurationBuilder builder)

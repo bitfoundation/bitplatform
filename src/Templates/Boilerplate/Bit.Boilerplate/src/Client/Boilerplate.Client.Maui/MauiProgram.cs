@@ -40,7 +40,7 @@ public static partial class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .Configuration.AddClientConfigurations();
+            .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
             //+:cnd:noEmit
             //#if (notification == true)
