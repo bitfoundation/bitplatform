@@ -33,7 +33,7 @@ public partial class MainWindow
                 App.Current.Properties["Culture"]?.ToString() ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        AppWebView.Services.GetRequiredService<IPubSubService>().Subscribe(PubSubMessages.CULTURE_CHANGED, async culture =>
+        AppWebView.Services.GetRequiredService<PubSubService>().Subscribe(PubSubMessages.CULTURE_CHANGED, async culture =>
         {
             App.Current.Shutdown();
             Application.Restart();

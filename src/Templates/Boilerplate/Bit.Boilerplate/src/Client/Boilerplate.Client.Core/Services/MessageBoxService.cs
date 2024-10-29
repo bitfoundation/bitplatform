@@ -6,7 +6,7 @@ public partial class MessageBoxService
     private readonly ConcurrentQueue<MessageBoxData> queue = new();
 
 
-    [AutoInject] private readonly IPubSubService pubSubService = default!;
+    [AutoInject] private readonly PubSubService pubSubService = default!;
 
 
     public Task<bool> Show(string message, string title = "")

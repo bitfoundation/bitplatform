@@ -14,8 +14,8 @@ public partial class UserMenu
 
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private IThemeService themeService { get; set; } = default!;
-    [AutoInject] private ICultureService cultureService { get; set; } = default!;
+    [AutoInject] private ThemeService themeService { get; set; } = default!;
+    [AutoInject] private CultureService cultureService { get; set; } = default!;
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }

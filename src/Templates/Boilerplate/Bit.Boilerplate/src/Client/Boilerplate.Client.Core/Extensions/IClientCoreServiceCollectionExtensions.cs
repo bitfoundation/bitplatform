@@ -29,13 +29,13 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
 
-        services.AddSessioned<IPubSubService, PubSubService>();
+        services.AddSessioned<PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<HttpClientHandler>();
 
         services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
-        services.AddTransient<ICultureService, CultureService>();
-        services.AddTransient<IThemeService, ThemeService>();
+        services.AddTransient<CultureService>();
+        services.AddTransient<ThemeService>();
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
         services.AddTransient<RequestHeadersDelegationHandler>();

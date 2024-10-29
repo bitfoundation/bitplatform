@@ -1,9 +1,9 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class CultureService : ICultureService
+public partial class CultureService
 {
     [AutoInject] private Cookie cookie = default!;
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;

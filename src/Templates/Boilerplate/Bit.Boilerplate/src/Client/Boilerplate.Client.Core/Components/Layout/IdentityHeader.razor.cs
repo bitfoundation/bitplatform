@@ -7,8 +7,8 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
     private Action unsubscribeUpdateBackLink = default!;
 
 
-    [AutoInject] private IThemeService themeService = default!;
-    [AutoInject] private ICultureService cultureService = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
