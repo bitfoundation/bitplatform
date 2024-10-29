@@ -18,16 +18,16 @@ namespace Boilerplate.Server.Api.Data;
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
 {
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
     //#if (sample == "Todo")
-    public DbSet<TodoItem> TodoItems { get; set; }
+    public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; } = default!;
+    public DbSet<Product> Products { get; set; } = default!;
     //#endif
     //#if (notification == true)
-    public DbSet<DeviceInstallation> DeviceInstallations { get; set; }
+    public DbSet<DeviceInstallation> DeviceInstallations { get; set; } = default!;
     //#endif
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -199,8 +199,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     private void ConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture)
-            || Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) ||
+            Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
             return;
         //#endif
 

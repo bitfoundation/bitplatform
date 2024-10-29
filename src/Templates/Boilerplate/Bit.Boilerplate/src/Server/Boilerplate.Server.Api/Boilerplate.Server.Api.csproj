@@ -90,7 +90,7 @@
     -->
     <PropertyGroup>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <EnableSdkContainerDebugging Condition="'$(Configuration)' == 'Debug'">True</EnableSdkContainerDebugging>
+        <EnableSdkContainerDebugging Condition="'$(Environment)' == 'Production'">True</EnableSdkContainerDebugging>
     </PropertyGroup>
 
 </Project>

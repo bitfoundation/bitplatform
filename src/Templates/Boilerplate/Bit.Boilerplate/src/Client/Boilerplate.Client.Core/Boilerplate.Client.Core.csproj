@@ -68,7 +68,7 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json" Outputs="wwwroot\scripts\app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Environment)' == 'Production' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <Target Name="BuildCssFiles">

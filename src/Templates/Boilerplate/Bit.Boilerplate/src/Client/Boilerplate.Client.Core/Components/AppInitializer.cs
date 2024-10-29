@@ -40,7 +40,7 @@ public partial class AppInitializer : AppComponentBase
 
             await SetupBodyClasses();
 
-            BrowserConsoleLoggerProvider.Console = console;
+            BrowserConsoleLoggerProvider.SetConsole(console);
         }
 
         await base.OnInitAsync();
