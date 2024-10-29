@@ -16,11 +16,6 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
     /// <summary>
-    /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
-    /// </summary>
-    [Parameter] public string? AutoComplete { get; set; }
-
-    /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
     /// </summary>
     [Parameter] public bool CanRevealPassword { get; set; }

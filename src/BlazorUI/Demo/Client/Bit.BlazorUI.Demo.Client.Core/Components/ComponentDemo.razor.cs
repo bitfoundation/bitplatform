@@ -244,6 +244,13 @@ public partial class ComponentDemo
     [
         new()
         {
+            Name = "AutoComplete",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the value of the autocomplete attribute of the input component.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
