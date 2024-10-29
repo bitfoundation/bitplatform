@@ -24,7 +24,11 @@ public partial class PushNotificationService
 
         if (deviceInstallation is null)
         {
-            dbContext.DeviceInstallations.Add(deviceInstallation = new() { InstallationId = dto.InstallationId });
+            dbContext.DeviceInstallations.Add(deviceInstallation = new()
+            {
+                InstallationId = dto.InstallationId,
+                Platform = dto.Platform
+            });
         }
 
         dto.Patch(deviceInstallation);

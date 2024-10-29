@@ -52,27 +52,21 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpPut]
     public async Task<ProductDto> Update(ProductDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Products.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = dto.Map();
 
-        if (entityToUpdate is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
-
-        dto.Patch(entityToUpdate);
+        DbContext.Update(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
         return entityToUpdate.Map();
     }
 
-    [HttpDelete("{id}")]
-    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    [HttpDelete("{id}/{concurrencyStamp}")]
+    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
     {
-        DbContext.Products.Remove(new() { Id = id });
+        DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
 
-        var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
-
-        if (affectedRows < 1)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 }
 

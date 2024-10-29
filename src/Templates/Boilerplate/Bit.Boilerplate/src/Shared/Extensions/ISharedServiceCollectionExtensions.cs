@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class ISharedServiceCollectionExtensions
 {
     public static IServiceCollection AddSharedProjectServices(this IServiceCollection services, IConfiguration configuration)
     {

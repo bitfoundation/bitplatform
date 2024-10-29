@@ -13,7 +13,7 @@ public static partial class AppPlatform
     public static bool IsAndroid => OperatingSystem.IsAndroid();
 
     [SupportedOSPlatformGuard("ios")]
-    public static bool IsIOS => OperatingSystem.IsIOS();
+    public static bool IsIOS => OperatingSystem.IsIOS() && !IsIosOnMacOS;
 
     [SupportedOSPlatformGuard("windows")]
     public static bool IsWindows => OperatingSystem.IsWindows();

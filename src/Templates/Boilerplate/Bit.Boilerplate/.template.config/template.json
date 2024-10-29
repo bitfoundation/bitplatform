@@ -349,7 +349,7 @@
             "path": "README.md"
         },
         {
-            "path": "Boilerplate.sln"
+            "path": "Boilerplate.Web.slnf"
         }
     ],
     "sources": [

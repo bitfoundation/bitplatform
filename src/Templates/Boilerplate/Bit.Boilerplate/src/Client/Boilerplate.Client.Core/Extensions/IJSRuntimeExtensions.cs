@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Reflection;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
@@ -47,7 +48,8 @@ public static partial class IJSRuntimeExtensions
         {
             "UnsupportedJavaScriptRuntime" => false, // pre-rendering
             "RemoteJSRuntime" /* blazor server */ => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!,
-            _ => true // blazor wasm / hybrid
+            "WebViewJSRuntime" /* blazor hybrid */ => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is not null,
+            _ => true // blazor wasm
         };
     }
 }

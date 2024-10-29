@@ -5,7 +5,7 @@ using Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class IIosServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMauiProjectIosServices(this IServiceCollection services, IConfiguration configuration)
     {

@@ -1,12 +1,13 @@
 ﻿using UIKit;
 using Plugin.LocalNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 public partial class iOSPushNotificationService : PushNotificationServiceBase
 {
-    public async override Task<bool> IsNotificationSupported()
+    public async override Task<bool> IsNotificationSupported(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
@@ -21,8 +22,29 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
 
     public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 
-    public override async Task<DeviceInstallationDto> GetDeviceInstallation()
+    public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
     {
+        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+        try
+        {
+            while (string.IsNullOrEmpty(Token))
+            {
+                // After the NotificationsSupported Task completes with a result of true,
+                // we use UNUserNotificationCenter.Current.Delegate.
+                // This method is asynchronous and we need to wait for it to complete.
+                await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+            }
+        }
+        finally
+        {
+            if (Token is null)
+            {
+                Logger.LogError("Unable to resolve token for APNS.");
+            }
+        }
+
         var installation = new DeviceInstallationDto
         {
             InstallationId = GetDeviceId(),

@@ -5,7 +5,7 @@ using Boilerplate.Client.Maui.Platforms.Android.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class IAndroidServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMauiProjectAndroidServices(this IServiceCollection services, IConfiguration configuration)
     {
