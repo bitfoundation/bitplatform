@@ -8,7 +8,7 @@ public partial class BitDialogDemo
         {
             Name = "AutoToggleScroll",
             Type = "bool",
-            DefaultValue = "true",
+            DefaultValue = "false",
             Description = "Enables the auto scrollbar toggle behavior of the Dialog."
         },
         new()
