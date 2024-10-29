@@ -42,7 +42,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureContainers(modelBuilder);
         //#endif
 
-        //#if (database != "Sqlite")
+        //#if (database != "Sqlite" && database != "Cosmos")
         ConcurrencyStamp(modelBuilder);
         //#endif
     }
@@ -195,7 +195,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
     //#endif
 
-    //#if (database != "Sqlite")
+    //#if (database != "Sqlite" && database != "Cosmos")
     private void ConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)

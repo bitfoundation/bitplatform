@@ -8,6 +8,11 @@ public partial class RoleConfiguration : IEntityTypeConfiguration<Role>
     public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.Property(role => role.Name).HasMaxLength(50);
+
+        //#if (database == "Cosmos")
+        builder.Property(b => b.ConcurrencyStamp)
+            .IsETagConcurrency();
+        //#endif
     }
 }
 

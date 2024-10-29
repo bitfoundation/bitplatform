@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Mappers;
 /// <summary>
 /// More info at Server/Mappers/README.md
 /// </summary>
-[Mapper(UseDeepCloning = true)]
+[Mapper]
 public static partial class CategoriesMapper
 {
     public static partial IQueryable<CategoryDto> Project(this IQueryable<Category> query);
