@@ -11,6 +11,10 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     private ChangeEventArgs _lastThrottleEventArgs = default!;
 
 
+    /// <summary>
+    /// Specifies the value of the autocomplete attribute of the input component.
+    /// </summary>
+    [Parameter] public string? AutoComplete { get; set; }
 
     /// <summary>
     /// Determines if the text input is auto focused on first render.
@@ -42,6 +46,11 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         {
             switch (parameter.Key)
             {
+                case nameof(AutoComplete):
+                    AutoComplete = (string?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(AutoFocus):
                     AutoFocus = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
