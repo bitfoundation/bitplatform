@@ -23,11 +23,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
 
     /// <summary>
-    /// Specifies the value of the autocomplete attribute of the input component.
-    /// </summary>
-    [Parameter] public string? Autocomplete { get; set; }
-
-    /// <summary>
     /// Custom CSS classes for different parts of the BitSearchBox.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }

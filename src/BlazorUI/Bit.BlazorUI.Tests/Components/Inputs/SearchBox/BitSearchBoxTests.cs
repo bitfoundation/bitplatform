@@ -134,7 +134,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
-            parameters.Add(p => p.Autocomplete, autoComplete);
+            parameters.Add(p => p.AutoComplete, autoComplete);
             parameters.Add(p => p.IsEnabled, true);
         });
 

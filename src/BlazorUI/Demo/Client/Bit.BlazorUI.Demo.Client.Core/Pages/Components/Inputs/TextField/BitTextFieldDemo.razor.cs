@@ -13,13 +13,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "AutoFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the text field is auto focused on first render.",
-        },
-        new()
-        {
             Name = "CanRevealPassword",
             Type = "bool",
             DefaultValue = "false",
