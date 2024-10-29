@@ -22,9 +22,9 @@ public partial class AboutPage
         // call third-party Java, Kotlin, Swift, and Objective-C libraries.
         // https://stackoverflow.com/a/2941199/2720104
         appName = AppInfo.Name;
-        appVersion = AppInfo.Version.ToString();
-        processId = Environment.ProcessId.ToString();
+        appVersion = telemetryContext.AppVersion!;
         os = $"{telemetryContext.OS} {telemetryContext.WebView}";
+        processId = Environment.ProcessId.ToString();
         oem = DeviceInfo.Current.Manufacturer;
 
         await base.OnInitAsync();
