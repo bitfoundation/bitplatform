@@ -5,18 +5,22 @@ namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiTelemetryInitializer : ITelemetryInitializer
 {
-    private string sessionId { get; } = Guid.NewGuid().ToString();
-
     public void Initialize(ITelemetry telemetry)
     {
-        telemetry.Context.Session.Id = sessionId;
-        telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
+        if (ITelemetryContext.Current is not null)
+        {
+            telemetry.Context.Session.Id = ITelemetryContext.Current.AppSessionId.ToString();
+            telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
+            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
+            telemetry.Context.User.Id = ITelemetryContext.Current.UserId?.ToString();
 
-        telemetry.Context.Device.OperatingSystem = DeviceInfo.Current.Platform.ToString();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
+        }
+
+        telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
         telemetry.Context.Device.OemName = DeviceInfo.Current.Manufacturer;
         telemetry.Context.Device.Model = DeviceInfo.Current.Model;
-
-        telemetry.Context.Component.Version = AppInfo.Current.VersionString;
 
         if (AppPlatform.IsIosOnMacOS)
         {

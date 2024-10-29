@@ -22,7 +22,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// <inheritdoc cref="IPubSubService"/>
     /// </summary>
-    [AutoInject] protected IPubSubService PubSubService = default!;
+    [AutoInject] protected PubSubService PubSubService = default!;
 
     [AutoInject] protected IConfiguration Configuration = default!;
 

@@ -1,9 +1,9 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
-/// For more information <see cref="IPubSubService"/> docs.
+/// Service for Publish/Subscribe pattern.
 /// </summary>
-public partial class PubSubService : IPubSubService
+public partial class PubSubService
 {
     private readonly ConcurrentDictionary<string, List<Func<object?, Task>>> handlers = new();
 

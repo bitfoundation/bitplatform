@@ -26,6 +26,7 @@ public partial class SignInPage : IDisposable
 
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
@@ -48,7 +49,7 @@ public partial class SignInPage : IDisposable
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
-        model.DeviceInfo = AppPlatform.OSDescription;
+        model.DeviceInfo = telemetryContext.OS;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {

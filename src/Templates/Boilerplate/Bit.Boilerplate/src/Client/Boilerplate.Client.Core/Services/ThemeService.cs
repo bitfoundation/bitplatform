@@ -1,9 +1,9 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class ThemeService : IThemeService
+public partial class ThemeService
 {
     [AutoInject] private Cookie cookie = default!;
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 

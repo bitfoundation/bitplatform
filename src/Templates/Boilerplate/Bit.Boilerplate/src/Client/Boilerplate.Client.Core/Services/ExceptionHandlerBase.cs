@@ -7,10 +7,11 @@ namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
-    [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
-    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
     [AutoInject] protected Bit.Butil.Console Console = default!;
+    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
     [AutoInject] protected ILogger<ExceptionHandlerBase> Logger = default!;
+    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
 
     public void Handle(Exception exp,
         Dictionary<string, object?>? parameters = null,
@@ -26,6 +27,15 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         parameters[nameof(filePath)] = filePath;
         parameters[nameof(memberName)] = memberName;
         parameters[nameof(lineNumber)] = lineNumber;
+        parameters[nameof(TelemetryContext.UserId)] = TelemetryContext.UserId;
+        parameters[nameof(TelemetryContext.UserSessionId)] = TelemetryContext.UserSessionId;
+        parameters[nameof(TelemetryContext.AppSessionId)] = TelemetryContext.AppSessionId;
+        parameters[nameof(TelemetryContext.AppVersion)] = TelemetryContext.AppVersion;
+        parameters[nameof(TelemetryContext.OS)] = TelemetryContext.OS;
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            parameters[nameof(TelemetryContext.WebView)] = TelemetryContext.WebView;
+        }
 
         Handle(exp, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }

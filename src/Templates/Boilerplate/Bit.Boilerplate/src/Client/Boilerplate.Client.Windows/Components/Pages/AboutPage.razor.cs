@@ -4,6 +4,8 @@ namespace Boilerplate.Client.Windows.Components.Pages;
 
 public partial class AboutPage
 {
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
+
     protected override string? Title => Localizer[nameof(AppStrings.AboutTitle)];
     protected override string? Subtitle => string.Empty;
 
@@ -18,8 +20,8 @@ public partial class AboutPage
     {
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
-        appVersion = asm.GetName().Version!.ToString();
-        os = $"{AppPlatform.OSDescription} EdgeWebView2: {Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString()}";
+        appVersion = telemetryContext.AppVersion!;
+        os = $"{telemetryContext.OS} {telemetryContext.WebView}";
         processId = Environment.ProcessId.ToString();
 
         await base.OnInitAsync();

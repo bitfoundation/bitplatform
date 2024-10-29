@@ -5,14 +5,17 @@ namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsTelemetryInitializer : ITelemetryInitializer
 {
-    private string sessionId { get; } = Guid.NewGuid().ToString();
-
     public void Initialize(ITelemetry telemetry)
     {
-        telemetry.Context.Session.Id = sessionId;
+        if (ITelemetryContext.Current is not null)
+        {
+            telemetry.Context.Session.Id = ITelemetryContext.Current.AppSessionId.ToString();
+            telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
+            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
+            telemetry.Context.User.Id = ITelemetryContext.Current.UserId?.ToString();
 
-        telemetry.Context.Device.OperatingSystem = AppPlatform.OSDescription;
-
-        telemetry.Context.Component.Version = typeof(WindowsTelemetryInitializer).Assembly.GetName().Version!.ToString();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
+        }
     }
 }
