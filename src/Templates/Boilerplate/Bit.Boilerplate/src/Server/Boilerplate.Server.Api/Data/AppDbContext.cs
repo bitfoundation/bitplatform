@@ -212,6 +212,22 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 var builder = new PropertyBuilder(property);
                 builder.IsConcurrencyToken()
                     .IsRowVersion();
+
+                //#if (IsInsideProjectTemplate == true)
+                if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+                {
+                    //#endif
+                    //#if (database == "PostgreSQL")
+                    if (property.ClrType == typeof(byte[]))
+                    {
+                        builder.HasConversion(new ValueConverter<byte[], uint>(
+                            v => BitConverter.ToUInt32(v, 0),
+                            v => BitConverter.GetBytes(v)));
+                    }
+                    //#endif
+                    //#if (IsInsideProjectTemplate == true)
+                }
+                //#endif
             }
         }
     }
