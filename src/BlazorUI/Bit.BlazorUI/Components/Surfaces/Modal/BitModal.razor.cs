@@ -16,7 +16,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Modal.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Modal will be positioned absolute instead of fixed.

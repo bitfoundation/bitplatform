@@ -18,7 +18,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Dialog.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Dialog will be positioned absolute instead of fixed.

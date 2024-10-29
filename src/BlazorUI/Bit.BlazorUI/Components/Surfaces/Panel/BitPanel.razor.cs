@@ -15,7 +15,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Panel.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// The content of the Panel, it can be any custom tag or text.

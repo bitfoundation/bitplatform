@@ -25,9 +25,10 @@
                inputmode="@_inputMode"
                value="@CurrentValue"
                style="@Styles?.Input"
+               autofocus="@AutoFocus"
                aria-label="@AriaLabel"
                placeholder="@Placeholder"
-               autocomplete="@Autocomplete"
+               autocomplete="@AutoComplete"
                disabled="@(IsEnabled is false)"
                class="bit-srb-inp @Classes?.Input" />
         @if (HideClearButton is false && CurrentValue.HasValue())
