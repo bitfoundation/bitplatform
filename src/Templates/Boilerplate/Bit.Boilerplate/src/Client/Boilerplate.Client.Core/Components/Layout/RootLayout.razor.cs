@@ -15,8 +15,8 @@ public partial class RootLayout : IDisposable
     private Action unsubscribeRouteDataUpdated = default!;
 
 
-    [AutoInject] private IThemeService themeService = default!;
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private NavigationManager navigationManager = default!;

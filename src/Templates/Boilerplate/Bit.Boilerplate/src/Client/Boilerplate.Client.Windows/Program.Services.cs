@@ -32,6 +32,7 @@ public static partial class Program
             services.AddBlazorWebViewDeveloperTools();
         }
 
+        services.AddSingleton(ITelemetryContext.Current = new WindowsTelemetryContext());
         services.AddTransient<IStorageService, WindowsStorageService>();
         services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();

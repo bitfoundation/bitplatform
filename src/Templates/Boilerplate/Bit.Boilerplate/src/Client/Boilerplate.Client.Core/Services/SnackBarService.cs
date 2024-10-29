@@ -2,7 +2,7 @@
 
 public partial class SnackBarService
 {
-    [AutoInject] private readonly IPubSubService pubSubService = default!;
+    [AutoInject] private readonly PubSubService pubSubService = default!;
 
 
     public void Show(string title, string body = "", BitColor color = BitColor.Info)
