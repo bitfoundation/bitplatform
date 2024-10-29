@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using EmbedIO;
 using EmbedIO.Actions;
 using Boilerplate.Client.Core.Components;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Services;
 
@@ -10,6 +11,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private IConfiguration configuration;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private ILogger<ILocalHttpServer> logger = default!;
 
     private WebServer? localHttpServer;
 
@@ -28,13 +30,24 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    _ = Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                 }
                 catch (Exception exp)
                 {
                     exceptionHandler.Handle(exp);
                 }
             }));
+
+        localHttpServer.HandleHttpException(async (context, exception) =>
+        {
+            using var scope = logger.BeginScope(new Dictionary<string, object?>()
+            {
+                { "StatusCode" , exception.StatusCode },
+                { "ExceptionMessage" , exception.Message },
+                { "RequestUri" , context.Request.Url },
+            });
+            logger.LogError("Local http server error.");
+        });
 
         _ = localHttpServer.RunAsync(cancellationToken)
             .ContinueWith(task =>

@@ -1,10 +1,12 @@
 ﻿using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Controllers.PushNotification;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
+    [AutoInject] protected ILogger<PushNotificationServiceBase> Logger = default!;
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
     public virtual string Token { get; set; }
@@ -14,7 +16,10 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
         if (await IsNotificationSupported(cancellationToken) is false)
+        {
+            Logger.LogInformation("Notifications are not supported/allowed on this device.");
             return;
+        }
 
         var deviceInstallation = await GetDeviceInstallation(cancellationToken);
 

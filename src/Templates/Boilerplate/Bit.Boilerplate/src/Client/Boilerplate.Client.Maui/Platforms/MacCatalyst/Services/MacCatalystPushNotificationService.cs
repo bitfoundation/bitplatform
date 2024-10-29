@@ -1,6 +1,7 @@
 ﻿using UIKit;
 using Plugin.LocalNotification;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 
@@ -26,12 +27,22 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
 
-        while (string.IsNullOrEmpty(Token))
+        try
         {
-            // After the NotificationsSupported Task completes with a result of true,
-            // we use UNUserNotificationCenter.Current.Delegate.
-            // This method is asynchronous and we need to wait for it to complete.
-            await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+            while (string.IsNullOrEmpty(Token))
+            {
+                // After the NotificationsSupported Task completes with a result of true,
+                // we use UNUserNotificationCenter.Current.Delegate.
+                // This method is asynchronous and we need to wait for it to complete.
+                await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+            }
+        }
+        finally
+        {
+            if (Token is null)
+            {
+                Logger.LogError("Unable to resolve token for APNS.");
+            }
         }
 
         var installation = new DeviceInstallationDto

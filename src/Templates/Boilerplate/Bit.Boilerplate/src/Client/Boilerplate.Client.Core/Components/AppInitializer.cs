@@ -21,6 +21,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private Bit.Butil.Console console = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -38,6 +39,8 @@ public partial class AppInitializer : AppComponentBase
             }
 
             await SetupBodyClasses();
+
+            BrowserConsoleLoggerProvider.Console = console;
         }
 
         await base.OnInitAsync();

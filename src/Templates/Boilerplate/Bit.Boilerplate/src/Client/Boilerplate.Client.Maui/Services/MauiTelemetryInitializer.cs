@@ -18,9 +18,9 @@ public partial class MauiTelemetryInitializer : ITelemetryInitializer
 
         telemetry.Context.Component.Version = AppInfo.Current.VersionString;
 
-        if (AppPlatform.IsIOS)
+        if (AppPlatform.IsIosOnMacOS)
         {
-            telemetry.Context.GlobalProperties["IsiOSApplicationOnMac"] = AppPlatform.IsIosOnMacOS.ToString();
+            telemetry.Context.GlobalProperties["IsiOSApplicationOnMac"] = "true";
         }
     }
 }

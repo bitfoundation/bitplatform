@@ -2,6 +2,7 @@
 using Plugin.LocalNotification;
 using static Android.Provider.Settings;
 using Boilerplate.Shared.Dtos.PushNotification;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
@@ -25,15 +26,25 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 
     public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
     {
-        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-
-        while (string.IsNullOrEmpty(Token))
+        try
         {
-            // After the NotificationsSupported Task completes with a result of true,
-            // we use FirebaseMessaging.Instance.GetToken.
-            // This method is asynchronous and we need to wait for it to complete.
-            await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+            while (string.IsNullOrEmpty(Token))
+            {
+                // After the NotificationsSupported Task completes with a result of true,
+                // we use FirebaseMessaging.Instance.GetToken.
+                // This method is asynchronous and we need to wait for it to complete.
+                await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
+            }
+        }
+        finally
+        {
+            if (Token is null)
+            {
+                Logger.LogError("Unable to resolve token for FCMv1.");
+            }
         }
 
         var installation = new DeviceInstallationDto
