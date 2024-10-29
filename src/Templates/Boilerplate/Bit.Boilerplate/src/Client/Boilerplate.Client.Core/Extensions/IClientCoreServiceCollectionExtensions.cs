@@ -30,15 +30,16 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
 
         services.AddSessioned<PubSubService>();
+        services.AddSessioned<HttpClientHandler>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
-        services.AddSessioned<HttpClientHandler>();
 
-        services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
-        services.AddTransient<CultureService>();
         services.AddTransient<ThemeService>();
+        services.AddTransient<CultureService>();
         services.AddTransient<IAuthTokenProvider, ClientSideAuthTokenProvider>();
+        services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
         services.AddTransient<IExternalNavigationService, DefaultExternalNavigationService>();
+
         services.AddTransient<RequestHeadersDelegationHandler>();
         services.AddTransient<AuthDelegatingHandler>();
         services.AddTransient<RetryDelegatingHandler>();
