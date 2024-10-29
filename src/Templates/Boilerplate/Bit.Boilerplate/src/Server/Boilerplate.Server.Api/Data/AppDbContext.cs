@@ -199,7 +199,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     private void ConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture)
+            || Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
             return;
         //#endif
 
@@ -210,9 +211,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             {
                 var builder = new PropertyBuilder(property);
                 builder.IsConcurrencyToken()
-                    //#if (database == "Cosmos")
-                    .IsETagConcurrency()
-                    //#endif
                     .IsRowVersion();
             }
         }
