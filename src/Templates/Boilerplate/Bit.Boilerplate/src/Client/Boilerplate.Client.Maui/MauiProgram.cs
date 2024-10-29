@@ -7,6 +7,7 @@ using Plugin.LocalNotification;
 //#endif
 //-:cnd:noEmit
 using Boilerplate.Client.Core.Styles;
+using Boilerplate.Client.Maui.Services;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -33,9 +34,6 @@ public static partial class MauiProgram
 #if iOS
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
 #endif
-
-        AppPlatform.OSDescription = $"{DeviceInfo.Current.Manufacturer} {(AppPlatform.IsIosOnMacOS ? DevicePlatform.macOS : DeviceInfo.Current.Platform)} {DeviceInfo.Current.Version}";
-
         var builder = MauiApp.CreateBuilder();
 
         builder

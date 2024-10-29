@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -29,6 +28,4 @@ public static partial class AppPlatform
 
     [SupportedOSPlatformGuard("ios")]
     public static bool IsIosOnMacOS { get; set; }
-
-    public static string OSDescription { get; set; } = RuntimeInformation.OSDescription;
 }

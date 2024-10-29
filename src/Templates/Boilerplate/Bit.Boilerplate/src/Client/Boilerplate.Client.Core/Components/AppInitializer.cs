@@ -14,14 +14,15 @@ public partial class AppInitializer : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private Bit.Butil.Console console = default!;
+    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
-    [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
-    [AutoInject] private Bit.Butil.Console console = default!;
+    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -52,7 +53,7 @@ public partial class AppInitializer : AppComponentBase
 
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            AppPlatform.OSDescription = await jsRuntime.GetBrowserPlatform();
+            telemetryContext.OS = await jsRuntime.GetBrowserPlatform();
         }
     }
 
@@ -60,6 +61,9 @@ public partial class AppInitializer : AppComponentBase
     {
         try
         {
+            var user = (await task).User;
+            (telemetryContext.UserId, telemetryContext.UserSessionId) = user.IsAuthenticated() ? (user.GetUserId(), user.GetSessionId()) : default;
+
             //#if (signalr == true)
             if (InPrerenderSession is false)
             {

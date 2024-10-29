@@ -75,6 +75,7 @@ public static partial class MauiProgram
         //-:cnd:noEmit
 
         services.AddTransient<MainPage>();
+        services.AddSingleton(ITelemetryContext.Current = new MauiTelemetryContext());
         services.AddTransient<IStorageService, MauiStorageService>();
         services.AddTransient<IBitDeviceCoordinator, MauiDeviceCoordinator>();
         services.AddTransient<IExceptionHandler, MauiExceptionHandler>();

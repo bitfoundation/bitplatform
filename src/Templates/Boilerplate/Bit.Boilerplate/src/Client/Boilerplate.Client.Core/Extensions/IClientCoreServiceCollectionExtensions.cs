@@ -31,6 +31,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddSessioned<PubSubService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<HttpClientHandler>();
 
         services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
