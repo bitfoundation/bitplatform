@@ -21,11 +21,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public string? AutoComplete { get; set; }
 
     /// <summary>
-    /// Determines if the text field is auto focused on first render.
-    /// </summary>
-    [Parameter] public bool AutoFocus { get; set; }
-
-    /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
     /// </summary>
     [Parameter] public bool CanRevealPassword { get; set; }
@@ -235,18 +230,6 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
 
         await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender is false || IsEnabled is false) return;
-
-        if (AutoFocus)
-        {
-            await InputElement.FocusAsync();
-        }
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)

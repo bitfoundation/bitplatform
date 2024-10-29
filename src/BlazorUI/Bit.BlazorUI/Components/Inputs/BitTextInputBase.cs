@@ -13,6 +13,11 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
 
     /// <summary>
+    /// Determines if the text input is auto focused on first render.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// The debounce time in milliseconds.
     /// </summary>
     [Parameter] public int DebounceTime { get; set; }
@@ -37,6 +42,11 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         {
             switch (parameter.Key)
             {
+                case nameof(AutoFocus):
+                    AutoFocus = (bool)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(DebounceTime):
                     DebounceTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -55,6 +65,18 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         }
 
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false || IsEnabled is false) return;
+
+        if (AutoFocus)
+        {
+            await InputElement.FocusAsync();
+        }
     }
 
 

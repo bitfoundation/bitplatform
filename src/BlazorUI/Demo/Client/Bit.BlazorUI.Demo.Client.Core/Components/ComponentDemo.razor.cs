@@ -244,6 +244,13 @@ public partial class ComponentDemo
     [
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines if the text input is auto focused on first render.",
+        },
+        new()
+        {
             Name = "DebounceTime",
             Type = "int",
             DefaultValue = "0",
