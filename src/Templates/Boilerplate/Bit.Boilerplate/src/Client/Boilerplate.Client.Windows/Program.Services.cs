@@ -48,6 +48,7 @@ public static partial class Program
             if (AppEnvironment.IsDev())
             {
                 loggingBuilder.AddDebug();
+                loggingBuilder.AddBrowserConsoleLogger();
             }
             loggingBuilder.AddConsole();
             //#if (appCenter == true)

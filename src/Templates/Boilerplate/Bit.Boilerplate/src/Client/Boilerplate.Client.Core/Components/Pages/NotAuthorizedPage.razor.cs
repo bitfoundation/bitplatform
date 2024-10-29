@@ -1,10 +1,14 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
+
+    [AutoInject] private ILogger<NotAuthorizedPage> logger = default!;
 
     protected override async Task OnParamsSetAsync()
     {
@@ -24,6 +28,8 @@ public partial class NotAuthorizedPage
         if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
             await AuthenticationManager.RefreshToken();
+
+            logger.LogInformation("Refreshing access token.");
 
             if ((await AuthenticationStateTask).User.IsAuthenticated())
             {

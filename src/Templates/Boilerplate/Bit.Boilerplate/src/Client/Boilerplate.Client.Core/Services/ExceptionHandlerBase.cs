@@ -1,6 +1,5 @@
 ﻿//-:cnd:noEmit
 using System.Diagnostics;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 
@@ -40,16 +39,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         if (isDevEnv)
         {
-            if (AppPlatform.IsBrowser is false)
-            {
-                StringBuilder errorInfo = new();
-                errorInfo.AppendLine(exceptionMessage);
-                foreach (var item in parameters)
-                {
-                    errorInfo.AppendLine($"{item.Key}: {item.Value}");
-                }
-                _ = Console.Error(errorInfo.ToString());
-            }
             Debugger.Break();
         }
 

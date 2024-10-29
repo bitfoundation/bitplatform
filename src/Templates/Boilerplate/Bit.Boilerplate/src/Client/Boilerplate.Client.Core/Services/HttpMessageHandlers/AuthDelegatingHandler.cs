@@ -29,7 +29,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            if (jsRuntime.IsInitialized() is false) 
+            if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false) 
                 throw; // We don't have access to refresh_token during pre-rendering.
 
             if (request.RequestUri?.LocalPath?.Contains("api/Identity/Refresh", StringComparison.InvariantCultureIgnoreCase) is true)

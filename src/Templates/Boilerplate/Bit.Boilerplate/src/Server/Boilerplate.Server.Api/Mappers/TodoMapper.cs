@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Mappers;
 /// <summary>
 /// More info at Server/Mappers/README.md
 /// </summary>
-[Mapper(UseDeepCloning = true)]
+[Mapper]
 public static partial class TodoMapper
 {
     public static partial IQueryable<TodoItemDto> Project(this IQueryable<TodoItem> query);

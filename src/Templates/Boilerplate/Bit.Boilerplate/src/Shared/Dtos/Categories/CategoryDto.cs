@@ -14,4 +14,6 @@ public partial class CategoryDto
     public string? Color { get; set; } = "#FFFFFF";
 
     public int ProductsCount { get; set; }
+
+    public byte[] ConcurrencyStamp { get; set; } = [];
 }

@@ -77,7 +77,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         {
             var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
-            if (string.IsNullOrEmpty(access_token) && jsRuntime.IsInitialized())
+            bool inPrerenderSession = AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false;
+
+            if (string.IsNullOrEmpty(access_token) && inPrerenderSession is false)
             {
                 string? refresh_token = await storageService.GetItem("refresh_token");
 
@@ -126,7 +128,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        if (jsRuntime.IsInitialized())
+        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
         {
             await cookie.Set(new()
             {

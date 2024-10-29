@@ -14,7 +14,7 @@ using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class IClientCoreServiceCollectionExtensions
 {
     public static IServiceCollection AddClientCoreProjectServices(this IServiceCollection services, IConfiguration configuration)
     {

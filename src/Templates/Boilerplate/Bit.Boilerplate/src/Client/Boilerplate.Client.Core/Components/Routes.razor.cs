@@ -15,7 +15,9 @@ public partial class Routes
             }
         });
 
-        if (CultureInfoManager.MultilingualEnabled && forceLoad == false)
+        if (CultureInfoManager.MultilingualEnabled &&
+            forceLoad == false &&
+            (AppPlatform.IsAndroid || AppPlatform.IsIOS))
         {
             var currentCulture = CultureInfo.CurrentUICulture.Name;
             var uri = new Uri(url);

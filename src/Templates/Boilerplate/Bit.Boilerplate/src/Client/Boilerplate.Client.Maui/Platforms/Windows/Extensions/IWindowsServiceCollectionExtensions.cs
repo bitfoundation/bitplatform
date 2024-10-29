@@ -5,7 +5,7 @@ using Boilerplate.Client.Maui.Platforms.Windows.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class IWindowsServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMauiProjectWindowsServices(this IServiceCollection services, IConfiguration configuration)
     {

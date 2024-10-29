@@ -5,7 +5,7 @@ using Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class IServiceCollectionExtensions
+public static partial class IMacServiceCollectionExtensions
 {
     public static IServiceCollection AddClientMauiProjectMacCatalystServices(this IServiceCollection services, IConfiguration configuration)
     {

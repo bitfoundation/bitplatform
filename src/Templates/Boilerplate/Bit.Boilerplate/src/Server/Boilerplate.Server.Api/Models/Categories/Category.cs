@@ -11,5 +11,7 @@ public partial class Category
 
     public string? Color { get; set; }
 
+    public byte[] ConcurrencyStamp { get; set; } = [];
+
     public IList<Product> Products { get; set; } = [];
 }

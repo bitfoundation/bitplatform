@@ -182,58 +182,51 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [HttpPost]
     public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto request)
     {
-        var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
-        var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
+        UserSession? userSession = null;
+        User? user = null;
 
-        if (refreshTicket?.Principal.IsAuthenticated() is false)
-            throw new UnauthorizedException();
-
-        string? userId = null; User? user = null; UserSession? userSession = null;
-
-        userId = refreshTicket?.Principal?.GetUserId().ToString();
-        if (string.IsNullOrEmpty(userId) is false)
+        try
         {
-            user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException();
+            var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
+            var refreshTicket = refreshTokenProtector.Unprotect(request.RefreshToken);
+
+            if (refreshTicket?.Principal.IsAuthenticated() is false
+                || (refreshTicket!.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
+                throw new UnauthorizedException();
+
+            var userId = refreshTicket!.Principal.GetUserId().ToString() ?? throw new InvalidOperationException("User id could not be found");
+            var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue("session-id") ?? throw new InvalidOperationException("session id could not be found"));
+
+            user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
+            userSession = user!.Sessions.Find(s => s.SessionUniqueId == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
+
+            if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
+                throw new UnauthorizedException();
+
+            userSession.RenewedOn = DateTimeOffset.UtcNow;
+
+            userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", currentSessionId.ToString()));
+
+            var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
+
+            return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         }
-        if (Guid.TryParse(refreshTicket?.Principal?.FindFirstValue("session-id"), out var currentSessionId))
+        catch when (userSession is not null)
         {
-            userSession = user!.Sessions.Find(s => s.SessionUniqueId == currentSessionId);
+            user!.Sessions.Remove(userSession);
+            throw;
         }
-
-        bool isExpiredSession = refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
-            DateTimeOffset.UtcNow >= expiresUtc ||
-            await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _ ||
-            userSession is null;
-
-        if (userSession is not null)
+        finally
         {
-            if (isExpiredSession)
-            {
-                user!.Sessions.Remove(userSession);
-            }
-            else
-            {
-                userSession!.RenewedOn = DateTimeOffset.UtcNow;
-            }
-
             try
             {
-                await userManager.UpdateAsync(user!);
+                if (user is not null)
+                {
+                    await userManager.UpdateAsync(user);
+                }
             }
             catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
         }
-
-        if (isExpiredSession)
-        {
-            // Return 401 if refresh token is either invalid or expired.
-            throw new UnauthorizedException();
-        }
-
-        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", currentSessionId.ToString()));
-
-        var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
-
-        return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
     }
 
     /// <summary>
