@@ -13,6 +13,9 @@ public partial class MauiTelemetryInitializer : ITelemetryInitializer
             telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
             telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
             telemetry.Context.User.Id = ITelemetryContext.Current.UserId?.ToString();
+
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
         }
 
         telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
