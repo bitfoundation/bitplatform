@@ -62,7 +62,8 @@ public partial class AppInitializer : AppComponentBase
         try
         {
             var user = (await task).User;
-            (telemetryContext.UserId, telemetryContext.UserSessionId) = user.IsAuthenticated() ? (user.GetUserId(), user.GetSessionId()) : default;
+            telemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
+            telemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
 
             //#if (signalr == true)
             if (InPrerenderSession is false)
