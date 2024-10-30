@@ -5,7 +5,8 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
-  BLAZOR_SERVER_TEST_FILTER: "FullyQualifiedName~PageTests.BlazorServer|FullyQualifiedName!~PageTests"
+  SIMPLE_TEST_FILTER: "FullyQualifiedName!~PageTests"
+  BLAZOR_SERVER_TEST_FILTER: "PageTests.BlazorServer"
   BLAZOR_WASM_TEST_FILTER: "PageTests.BlazorWebAssembly"
 
 jobs:
@@ -56,6 +57,27 @@ jobs:
         install: sqlengine
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
+
+    - name: Simple tests (no --advancedTests)
+      id: simple-test
+      run: |
+        dotnet new bit-bp --name SimpleTest --database Sqlite
+        cd SimpleTest/src/Server/SimpleTest.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.simple-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./SimpleTest/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test Sqlite database option
       id: sqlite-test
