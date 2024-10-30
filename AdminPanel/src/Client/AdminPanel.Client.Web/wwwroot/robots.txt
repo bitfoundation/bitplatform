@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: 
+
+Sitemap: https://adminpanel.bitplatform.dev/sitemap.xml

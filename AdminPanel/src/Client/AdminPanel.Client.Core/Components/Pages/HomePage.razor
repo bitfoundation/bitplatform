@@ -1,0 +1,80 @@
+﻿@attribute [Route(Urls.HomePage)]
+@attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
+
+<section>
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="stack">
+        <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.HomePanelTitle)]
+            <br />
+            @Localizer[nameof(AppStrings.HomePanelSubtitle)]
+        </BitText>
+
+        <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.HomeMessage)]
+        </BitText>
+
+        <br />
+
+        <BitButton Target="_blank"
+                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
+                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
+            @Localizer[nameof(AppStrings.GitHubRepo)]
+        </BitButton>
+
+        <br />
+
+        <BitCard FullWidth Style="padding:4rem">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H5">bit platform</BitText>
+                <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.BitPlatformMessage)]</BitText>
+                <BitLink Href="https://bitplatform.dev" NoUnderline>
+                    <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                        @Localizer[nameof(AppStrings.LearnMore)]
+                        <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                    </BitStack>
+                </BitLink>
+            </BitStack>
+        </BitCard>
+
+        <BitStack Horizontal Gap="2rem" Class="products-stack">
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.BitBlazorUIMessage)]
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=ahgpbDAshmY">
+                        @Localizer[nameof(AppStrings.WatchVideo)]
+                    </BitButton>
+                    <BitLink Href="https://blazorui.bitplatform.dev/" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            @Localizer[nameof(AppStrings.LearnMore)]
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+
+            <BitCard Style="padding:3rem" FullWidth>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H5">bit project template</BitText>
+                    <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.BitProjectTemplateMessage)]
+                    </BitText>
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=UjdWBvb0xac">
+                        @Localizer[nameof(AppStrings.WatchVideo)]
+                    </BitButton>
+                    <BitLink Href="https://bitplatform.dev/templates/overview/" NoUnderline>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
+                            @Localizer[nameof(AppStrings.LearnMore)]
+                            <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
+                        </BitStack>
+                    </BitLink>
+                </BitStack>
+            </BitCard>
+        </BitStack>
+    </BitStack>
+</section>

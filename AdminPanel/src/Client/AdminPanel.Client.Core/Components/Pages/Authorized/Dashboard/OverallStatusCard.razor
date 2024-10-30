@@ -1,0 +1,20 @@
+@inherits AppComponentBase
+
+<section>
+    <BitCard Border="BitColorKind.Transparent" FullWidth>
+        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+            <BitIcon IconName="@IconName" Size="BitSize.Large" Style="background-color:var(--bit-clr-bg-ter);padding:1rem" />
+            @if (Loading)
+            {
+                <BitEllipsisLoading Size="BitSize.Small" />
+            }
+            else
+            {
+                <BitStack Gap="0">
+                    <BitText Typography="BitTypography.H6">@Value</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@Label</BitText>
+                </BitStack>
+            }
+        </BitStack>
+    </BitCard>
+</section>

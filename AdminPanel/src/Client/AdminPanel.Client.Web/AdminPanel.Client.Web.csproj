@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
+        <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
+        <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
+        <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
+        <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+                <!-- Disabled WasmSIMD because of dotnet 8 issue on safari (iOS 16.3 and older devices)  -->
+        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
+            </PropertyGroup>
+
+    <ItemGroup Condition=" '$(PwaEnabled)' == 'true' ">
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+        <PackageReference Include="Bit.Bswup" />
+                <PackageReference Include="Newtonsoft.Json" />
+                <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj" />
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="AdminPanel.Client.Core.Services" />
+        <Using Include="AdminPanel.Client.Core.Components" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
+    </ItemGroup>
+
+        <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+    </ItemGroup>
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+    </ItemGroup>
+    
+</Project>

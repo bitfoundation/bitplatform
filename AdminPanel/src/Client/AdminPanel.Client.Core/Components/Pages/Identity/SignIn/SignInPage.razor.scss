@@ -1,0 +1,23 @@
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    height: 100%;
+}
+
+.form-forgot-password {
+    font-size: 14px;
+    line-height: 24px;
+    margin-bottom: 20px;
+}
+
+.tfa-otp-container {
+    gap: 4px;
+}
+
+
+::deep {
+    form {
+        max-width: 460px;
+    }
+}

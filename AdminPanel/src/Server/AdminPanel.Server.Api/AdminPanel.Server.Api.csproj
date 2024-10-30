@@ -1,0 +1,92 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <UserSecretsId>7D6049EF-168B-41EF-A4F1-39AEC3D4E924</UserSecretsId>
+        <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.Extensions.Options" />
+        <Using Include="Microsoft.AspNetCore.Authorization" />
+        <Using Include="AdminPanel.Shared.Enums" />
+        <Using Include="AdminPanel.Server.Api.Components" />
+        <Using Include="AdminPanel.Server.Api.Resources" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="libphonenumber-csharp" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+        <PackageReference Include="Humanizer" />
+        <PackageReference Include="QRCoder" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
+        <PackageReference Include="FluentEmail.Smtp" />
+        <PackageReference Include="FluentStorage" />
+        <PackageReference Include="FluentStorage.Azure.Blobs" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+        <PackageReference Include="AspNet.Security.OAuth.GitHub" />
+        <PackageReference Include="Riok.Mapperly" />
+        <PackageReference Include="Twilio" />
+        <PackageReference Include="AdsPush" />
+
+        <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
+        <Using Include="Microsoft.EntityFrameworkCore.Metadata.Builders" />
+        <Using Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <Using Include="AdminPanel.Shared" />
+        <Using Include="AdminPanel.Server.Api.Data" />
+        <Using Include="AdminPanel.Server.Api.Mappers" />
+        <Using Include="Microsoft.AspNetCore.Identity" />
+        <Using Include="Microsoft.EntityFrameworkCore" />
+        <Using Include="Microsoft.AspNetCore.OData.Query" />
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+
+        <None Update="DataProtectionCertificate.pfx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+
+        <Content Include=".config\dotnet-tools.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Shared\AdminPanel.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\EmailStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\EmailStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\EmailStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>AdminPanel.Server.Api.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>EmailStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="appsettings*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
+    <!--
+    https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container
+    https://learn.microsoft.com/en-us/visualstudio/containers/container-msbuild-properties
+    -->
+    <PropertyGroup>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <EnableSdkContainerDebugging Condition="'$(Environment)' == 'Production'">True</EnableSdkContainerDebugging>
+    </PropertyGroup>
+
+</Project>

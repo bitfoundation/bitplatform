@@ -1,0 +1,47 @@
+﻿@inherits LayoutComponentBase
+
+<RootContainer CurrentDir="currentDir"
+               CurrentUrl="@currentUrl"
+               CurrentTheme="currentTheme"
+               IsAuthenticated="isAuthenticated"
+               CurrentRouteData="currentRouteData"
+               IsCrossLayoutPage="isCrossLayoutPage">
+    <main class="@GetMainCssClass()">
+        <div class="root">
+            @if (isAuthenticated is false)
+            {
+                <IdentityHeader />
+            }
+            else if (isAuthenticated is true)
+            {
+                <NavPanel />
+            }
+
+            <div class="stack">
+                @if (isAuthenticated is true)
+                {
+                    <AuthorizedHeader />
+                }
+
+                <div class="body">
+                    @Body
+                </div>
+
+                @if (isAuthenticated is false && isCrossLayoutPage is false)
+                {
+                    <div class="panel">
+                        <BitImage Width="70%" Src="_content/AdminPanel.Client.Core/images/identitylayout-image.webp" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (isAuthenticated is true)
+        {
+            <NavBar />
+        }
+    </main>
+</RootContainer>
+
+<SnackBar />
+<MessageBox />

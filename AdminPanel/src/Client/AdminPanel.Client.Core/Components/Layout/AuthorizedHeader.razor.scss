@@ -1,0 +1,19 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+header {
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    position: sticky;
+    padding-block: 0.5rem;
+    background-color: $bit-color-background-primary;
+}
+
+::deep {
+    .menu-btn {
+        @include gt-sm {
+            display: none;
+        }
+    }
+}

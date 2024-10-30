@@ -1,0 +1,161 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net8.0-android</TargetFrameworks>
+        <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+        <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
+        <OutputType>Exe</OutputType>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+
+        <!-- Display name -->
+        <ApplicationTitle>AdminPanel</ApplicationTitle>
+
+        <!-- App Identifier -->
+        <ApplicationId>com.companyname.adminpanel</ApplicationId>
+
+        <!-- Versions -->
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+
+        <!-- Required for C# Hot Reload -->
+        <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
+
+        <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
+
+        <ResolveStaticWebAssetsInputsDependsOn>
+            BeforeBuildTasks;
+            $(ResolveStaticWebAssetsInputsDependsOn)
+        </ResolveStaticWebAssetsInputsDependsOn>
+        <!--<UseNativeHttpHandler>false</UseNativeHttpHandler>-->
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' == 'Production'">
+        <EnableLLVM>true</EnableLLVM>
+        <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
+        <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
+                <AndroidStripILAfterAOT>true</AndroidStripILAfterAOT>
+            </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
+        <EnableSGenConc>True</EnableSGenConc>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Production'">
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
+        <EnableSGenConc>True</EnableSGenConc>
+                <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
+        <MtouchInterpreter>-all</MtouchInterpreter>
+            </PropertyGroup>
+
+    <!-- Build Properties must be defined within these property groups to ensure successful publishing
+       to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' == 'Development'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Development.plist</CodesignEntitlements>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' == 'Production'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
+        <UseHardenedRuntime>true</UseHardenedRuntime>
+                <MtouchInterpreter>-all</MtouchInterpreter>
+            </PropertyGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
+        <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+                <PackageReference Include="Xamarin.Firebase.Messaging" />
+        <PackageReference Include="Xamarin.AndroidX.Collection" />
+        <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
+        <PackageReference Include="Xamarin.AndroidX.Activity" />
+        <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+        <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
+                <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
+        <!-- dotnet add package Mono.AotProfiler.Android -->
+        <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
+        <!-- dotnet build -t:FinishAotProfiling -f net8.0-android -->
+        <!-- dotnet remove package Mono.AotProfiler.Android -->
+    </ItemGroup>
+
+    <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
+    <ItemGroup>
+        
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <Using Include="AdminPanel.Client.Core.Components.Layout" />
+        <Using Include="AdminPanel.Client.Core.Components.Pages" />
+        <Using Include="AdminPanel.Client.Core.Services.Contracts" />
+        <Using Include="AdminPanel.Client.Core.Services" />
+        <Using Include="AdminPanel.Shared" />
+        <Watch Remove="*.scss" />
+    </ItemGroup>
+
+    <ItemGroup>
+
+        <!-- App icon for all platforms -->
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#0065EF" />
+
+        <!-- Customize App icon for Android -->
+        <MauiIcon Condition="$(TargetFramework.Contains('-android'))" Update="Resources\AppIcon\appicon.svg" Color="#0065EF" ForegroundScale="0.68" />
+
+        <!-- Splash Screen -->
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0D2960" BaseSize="128,128" />
+
+        <!-- Images -->
+        <MauiImage Include="Resources\Images\*" />
+
+        <!-- Fonts -->
+        <MauiFont Include="Resources\Fonts\*" />
+
+        <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="compilerconfig.json" />
+        <None Include="compilerconfig.json" />
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="EmbedIO" />
+        <PackageReference Include="Microsoft.Maui.Controls" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
+                <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="Microsoft.AppCenter.Analytics" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" />
+        <PackageReference Include="West.Extensions.Logging.AppCenter" />
+        <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" />
+        <PackageReference Include="Plugin.LocalNotification" />
+            </ItemGroup>
+    
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+        <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
+        <CallTarget Targets="BuildCssFiles" />
+    </Target>
+
+    <Target Name="BuildCssFiles">
+        <Exec Command="../AdminPanel.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+</Project>

@@ -1,0 +1,12 @@
+﻿section {
+    padding: 1rem;
+    min-width: 20rem;
+}
+
+::deep .body {
+    flex-grow: 1;
+    display: flex;
+    overflow: auto;
+    max-width: 90vw;
+    white-space: pre;
+}

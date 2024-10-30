@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "AdminPanel.sln",
+    "projects": [
+      "src\\Client\\AdminPanel.Client.Core\\AdminPanel.Client.Core.csproj",
+      "src\\Client\\AdminPanel.Client.Web\\AdminPanel.Client.Web.csproj",
+      "src\\Server\\AdminPanel.Server.Api\\AdminPanel.Server.Api.csproj",
+      "src\\Server\\AdminPanel.Server.Web\\AdminPanel.Server.Web.csproj",
+      "src\\Shared\\AdminPanel.Shared.csproj",
+      "src\\Tests\\AdminPanel.Tests.csproj"
+    ]
+  }
+}

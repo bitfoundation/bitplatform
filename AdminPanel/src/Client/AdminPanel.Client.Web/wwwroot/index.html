@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html bit-theme="dark">
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta name="theme-color">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="The AdminPanel is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.">
+
+    <script>
+        // disable auto-zoom of iOS Safari when focusing an input
+        (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
+            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
+    </script>
+
+    <link rel="preconnect" href="https://js.monitor.azure.com" crossorigin>
+
+
+    <link rel="preconnect" href="https://adminpanel.bitplatform.dev">
+
+    <link href="favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="images/icons/bit-icon-512.png" rel="apple-touch-icon" sizes="512x512" />
+    <link href="manifest.json" rel="manifest" />
+</head>
+<body class="bit-css-clr-bg-pri bit-css-clr-fg-pri bit-blazor-web">
+    <link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
+    <link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" />
+    <link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" />
+    <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
+    <link href="_content/AdminPanel.Client.Core/styles/app.css" rel="stylesheet" />
+    <link href="AdminPanel.Client.Web.styles.css" rel="stylesheet" />
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+    <style>
+        #bit-bswup {
+            top: 2px;
+            left: 50%;
+            display: none;
+            position: fixed;
+            z-index: 999999999;
+            text-align: center;
+            transform: translateX(-50%);
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+        }
+
+            #bit-bswup .bswup-container {
+                width: 3rem;
+                height: 3rem;
+                display: block;
+                position: relative;
+            }
+
+                #bit-bswup .bswup-container circle {
+                    fill: none;
+                    stroke: #e0e0e0;
+                    stroke-width: 0.2rem;
+                    transform-origin: 50% 50%;
+                    transform: rotate(-90deg);
+                }
+
+                    #bit-bswup .bswup-container circle:last-child {
+                        stroke: #1b6ec2;
+                        transition: stroke-dasharray 0.05s ease-in-out;
+                        stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
+                    }
+
+            #bit-bswup .bswup-progress-text {
+                top: 50%;
+                left: 50%;
+                font-size: 12px;
+                position: absolute;
+                text-align: center;
+                font-weight: normal;
+                transform: translate(-50%, -50%);
+            }
+
+                #bit-bswup .bswup-progress-text::after {
+                    content: var(--bit-bswup-percent-text, "");
+                }
+
+        #bit-bswup-reload {
+            top: 38px;
+            left: 50%;
+            display: none;
+            cursor: pointer;
+            position: fixed;
+            padding: 4px 8px;
+            z-index: 999999999;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+    </style>
+    <style>
+        .bit-lds-grid div {
+            background-color: #123456;
+        }
+
+        .bit-lds-wrapper {
+            top: 50%;
+            left: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        .bit-lds-grid {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+        }
+
+            .bit-lds-grid div {
+                width: 16px;
+                height: 16px;
+                position: absolute;
+                border-radius: 50%;
+                animation: bit-lds-grid 1.2s linear infinite;
+            }
+
+                .bit-lds-grid div:nth-child(1) {
+                    top: 8px;
+                    left: 8px;
+                    animation-delay: 0s;
+                }
+
+                .bit-lds-grid div:nth-child(2) {
+                    top: 8px;
+                    left: 32px;
+                    animation-delay: -0.4s;
+                }
+
+                .bit-lds-grid div:nth-child(3) {
+                    top: 8px;
+                    left: 56px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(4) {
+                    top: 32px;
+                    left: 8px;
+                    animation-delay: -0.4s;
+                }
+
+                .bit-lds-grid div:nth-child(5) {
+                    top: 32px;
+                    left: 32px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(6) {
+                    top: 32px;
+                    left: 56px;
+                    animation-delay: -1.2s;
+                }
+
+                .bit-lds-grid div:nth-child(7) {
+                    top: 56px;
+                    left: 8px;
+                    animation-delay: -0.8s;
+                }
+
+                .bit-lds-grid div:nth-child(8) {
+                    top: 56px;
+                    left: 32px;
+                    animation-delay: -1.2s;
+                }
+
+                .bit-lds-grid div:nth-child(9) {
+                    top: 56px;
+                    left: 56px;
+                    animation-delay: -1.6s;
+                }
+
+
+        @keyframes bit-lds-grid {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+    <div id="app-container">
+        <div class="bit-lds-wrapper">
+            <div class="bit-lds-grid">
+                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+            </div>
+        </div>
+        <div id="bit-bswup">
+            <div class="bswup-progress-text"></div>
+            <svg class="bswup-container">
+                <circle r="40%" cx="50%" cy="50%"></circle>
+                <circle r="40%" cx="50%" cy="50%"></circle>
+            </svg>
+        </div>
+    </div>
+    <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
+    set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
+    <!-- <button id="bit-bswup-reload">Update</button> -->
+    <script>
+        const autoReload = true, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
+        startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);
+    </script>
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+    <script src="_content/AdminPanel.Client.Core/scripts/app.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+</body>
+</html>

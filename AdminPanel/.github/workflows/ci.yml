@@ -1,0 +1,46 @@
+name: AdminPanel CI
+
+# https://bitplatform.dev/templates/dev-ops
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+
+  build_blazor_server:
+    name: build blazor
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Build
+      run: dotnet build AdminPanel.sln -c Release
+
+    - name: Install Playwright
+      run: pwsh src/Tests/bin/Debug/net8.0/playwright.ps1 install --with-deps
+
+    - name: Test
+      id: test
+      run: dotnet test src/Tests/AdminPanel.Tests.csproj --logger GitHubActions
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ failure() && steps.test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./src/Tests/TestResults
+        retention-days: 14

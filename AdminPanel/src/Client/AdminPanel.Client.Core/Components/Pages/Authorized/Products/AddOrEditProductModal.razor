@@ -1,0 +1,70 @@
+﻿@inherits AppComponentBase
+
+<BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">
+    <section>
+        <BitStack FillContent>
+            <BitStack FillContent>
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="stack">
+                    <BitText Typography="BitTypography.H5">
+                        @if (product.Id != default)
+                        {
+                            @Localizer[nameof(AppStrings.EditProduct)]
+                        }
+                        else
+                        {
+                            @Localizer[nameof(AppStrings.AddProduct)]
+                        }
+                    </BitText>
+                    <BitSpacer />
+                    <BitButton IconName="@BitIconName.ChromeClose"
+                               Color="BitColor.SecondaryForeground"
+                               OnClick="CloseModal"
+                               Variant="BitVariant.Text" />
+                </BitStack>
+
+                <BitSeparator />
+            </BitStack>
+
+            <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
+                <AppDataAnnotationsValidator />
+
+                <BitStack FillContent Class="stack">
+                    <BitTextField @bind-Value="product.Name"
+                                  AutoComplete="@BitAutoCompleteValue.Off"
+                                  Label="@Localizer[(nameof(AppStrings.Name))]"
+                                  Placeholder="@Localizer[nameof(AppStrings.EnterProductName)]" />
+                    <ValidationMessage For="() => product.Name" />
+
+                    <BitDropdown @bind-Value="selectedCategoryId"
+                                 IsMultiSelect="false"
+                                 Items="allCategoryList"
+                                 OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = Guid.Parse(item.Value!); product.CategoryName = item.Text; })"
+                                 Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
+                                 Label="@Localizer[(nameof(AppStrings.Category))]" />
+                    <ValidationMessage For="@(() => product.CategoryId)" />
+
+                    <BitNumberField @bind-Value="product.Price"
+                                    Suffix="$"
+                                    NumberFormat="C2"
+                                    Label="@Localizer[(nameof(AppStrings.Price))]" />
+                    <ValidationMessage For="() => product.Price" />
+
+                    <BitTextField @bind-Value="product.Description"
+                                  Rows="3"
+                                  IsMultiline="true"
+                                  Label="@Localizer[(nameof(AppStrings.Description))]" />
+                    <ValidationMessage For="() => product.Description" />
+
+                    <BitStack Horizontal HorizontalAlign="BitAlignment.End">
+                        <BitButton ButtonType="BitButtonType.Button" OnClick="CloseModal" Variant="BitVariant.Outline">
+                            @Localizer[nameof(AppStrings.Cancel)]
+                        </BitButton>
+                        <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+                            @Localizer[nameof(AppStrings.Save)]
+                        </BitButton>
+                    </BitStack>
+                </BitStack>
+            </EditForm>
+        </BitStack>
+    </section>
+</BitModal>

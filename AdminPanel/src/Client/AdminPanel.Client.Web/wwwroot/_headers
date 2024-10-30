@@ -1,0 +1,4 @@
+# https://developers.cloudflare.com/pages/configuration/headers/
+# https://yurl.chayev.com/
+/.well-known/apple-app-site-association
+  Content-Type: application/json; charset=utf-8
