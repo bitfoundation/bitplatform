@@ -1,25 +1,30 @@
 ﻿using System.Reflection;
+using Boilerplate.Client.Web;
+using Boilerplate.Tests.Extensions;
 using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Tests.PageTests;
 
 [TestClass]
-public partial class PageTestBase : PageTest
+public abstract partial class PageTestBase : PageTest
 {
     public AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
     public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
+    public virtual BlazorWebAppMode BlazorRenderMode => BlazorWebAppMode.BlazorServer;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
+        await Context.EnableBlazorWasmCaching();
+
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
         var configureTestServer = currentTestMethod!.GetCustomAttribute<ConfigureTestServerAttribute>();
         if (configureTestServer is not null)
         {
             var configureTestServerMethod = GetType()
-                .GetMethod(configureTestServer.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetMethod(configureTestServer.MethodName, BindingFlags.Public | BindingFlags.Instance)
                 ?? throw new InvalidOperationException($"Method '{configureTestServer.MethodName}' not found.");
             var currentTestMethodArguments = GetTestMethodArguments();
             await (Task)configureTestServerMethod.Invoke(this, [TestServer, .. currentTestMethodArguments])!;
@@ -29,7 +34,10 @@ public partial class PageTestBase : PageTest
         var autoStartTestServer = currentTestMethod!.GetCustomAttribute<AutoStartTestServerAttribute>();
         if (autoStartTestServer is null || autoStartTestServer.AutoStart)
         {
-            await TestServer.Build().Start();
+            await TestServer.Build(configureTestConfigurations: configuration =>
+            {
+                configuration["WebAppRender:BlazorMode"] = BlazorRenderMode.ToString();
+            }).Start();
         }
     }
 
@@ -67,7 +75,7 @@ public partial class PageTestBase : PageTest
         if (configureBrowserContext is not null)
         {
             var configureBrowserContextMethod = GetType()
-                .GetMethod(configureBrowserContext.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetMethod(configureBrowserContext.MethodName, BindingFlags.Public | BindingFlags.Instance)
                 ?? throw new InvalidOperationException($"Method '{configureBrowserContext.MethodName}' not found.");
             var currentTestMethodArguments = GetTestMethodArguments();
             configureBrowserContextMethod.Invoke(this, [options, .. currentTestMethodArguments]);

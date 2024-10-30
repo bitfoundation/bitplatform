@@ -6,6 +6,8 @@ using Microsoft.Data.Sqlite;
 //#endif
 //#if (advancedTests == true)
 using Boilerplate.Tests.PageTests.PageModels.Identity;
+using Boilerplate.Tests.Extensions;
+using Boilerplate.Client.Web;
 //#endif
 using Microsoft.Extensions.Hosting;
 
@@ -23,7 +25,15 @@ public partial class TestsInitializer
     {
         await using var testServer = new AppTestServer();
 
-        await testServer.Build().Start();
+        await testServer.Build(
+        //#if (advancedTests == true)
+        configureTestConfigurations: configuration =>
+        {
+            //Run assembly initialization test in BlazorWebAssembly mode to cache .wasm files
+            configuration["WebAppRender:BlazorMode"] = BlazorWebAppMode.BlazorWebAssembly.ToString();
+        }
+        //#endif
+        ).Start();
 
         await InitializeDatabase(testServer);
 
@@ -63,10 +73,16 @@ public partial class TestsInitializer
         await playwrightPage.ContextSetup();
         await playwrightPage.PageSetup();
 
+        await playwrightPage.Context.EnableBlazorWasmCaching();
+
         var signinPage = new SignInPage(playwrightPage.Page, testServer.WebAppServerAddress);
+
+        Assertions.SetDefaultExpectTimeout(30_000); //Set global timeout to 30 seconds for the first time of app loading in WebAssembly mode + Caching .wasm files
 
         await signinPage.Open();
         await signinPage.AssertOpen();
+
+        Assertions.SetDefaultExpectTimeout(5_000); //Set global timeout to 5 seconds for rest of the tests
 
         var signedInPage = await signinPage.SignInWithEmail();
         await signedInPage.AssertSignInSuccess();
