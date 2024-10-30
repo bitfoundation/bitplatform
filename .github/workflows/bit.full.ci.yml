@@ -5,6 +5,8 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  BLAZOR_SERVER_TEST_FILTER: "FullyQualifiedName~PageTests.BlazorServer|FullyQualifiedName!~PageTests"
+  BLAZOR_WASM_TEST_FILTER: "PageTests.BlazorWebAssembly"
 
 jobs:
 
@@ -64,8 +66,8 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
-        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -84,8 +86,8 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
-        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}"
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1

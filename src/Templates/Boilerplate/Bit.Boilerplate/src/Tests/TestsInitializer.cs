@@ -77,12 +77,12 @@ public partial class TestsInitializer
 
         var signinPage = new SignInPage(playwrightPage.Page, testServer.WebAppServerAddress);
 
-        Assertions.SetDefaultExpectTimeout(30_000); //Set global timeout to 30 seconds for the first time of app loading in WebAssembly mode + Caching .wasm files
+        Assertions.SetDefaultExpectTimeout(30_000); // Extended timeout for initial WebAssembly load and caching
 
         await signinPage.Open();
         await signinPage.AssertOpen();
 
-        Assertions.SetDefaultExpectTimeout(5_000); //Set global timeout to 5 seconds for rest of the tests
+        Assertions.SetDefaultExpectTimeout(5_000); // Standard timeout for subsequent tests
 
         var signedInPage = await signinPage.SignInWithEmail();
         await signedInPage.AssertSignInSuccess();

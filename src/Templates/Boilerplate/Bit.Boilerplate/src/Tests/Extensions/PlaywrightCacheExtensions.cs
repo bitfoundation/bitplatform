@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace Boilerplate.Tests.Extensions;
 
@@ -20,7 +21,7 @@ public static partial class PlaywrightCacheExtensions
 
     public static Task EnableAssetCaching(this IBrowserContext context, Func<string, bool> predicate) => context.RouteAsync(predicate, CacheHandler);
 
-    private static async Task CacheHandler(this IRoute route)
+    private static async Task CacheHandler(IRoute route)
     {
         var url = new Uri(route.Request.Url).PathAndQuery;
 
@@ -41,7 +42,7 @@ public static partial class PlaywrightCacheExtensions
     }
     public static void ClearCache() => cachedResponses.Clear();
 
-    private static Dictionary<string, (byte[] Body, Dictionary<string, string> Headers)> cachedResponses = [];
+    private static readonly ConcurrentDictionary<string, (byte[] Body, Dictionary<string, string> Headers)> cachedResponses = [];
 
     [GeneratedRegex(@"\/_framework\/[\w\.]+\.((wasm)|(pdb)|(dat))\?v=sha256-.+")]
     private static partial Regex BlazorWasmRegex();
