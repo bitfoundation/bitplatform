@@ -23,6 +23,12 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
         var deviceInstallation = await GetDeviceInstallation(cancellationToken);
 
+        if (deviceInstallation is null)
+        {
+            Logger.LogInformation("Could not retrieve device installation"); // Browser's incognito mode etc.
+            return;
+        }
+
         await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
     }
 

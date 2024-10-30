@@ -44,23 +44,17 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
-            .OrderByDescending(s => s.RenewedOn)
             .Select(us =>
             {
                 var dto = us.Map();
 
-                var lastSeenDateTime = us.RenewedOn ?? us.StartedOn;
+                dto.RenewedOn = us.RenewedOn ?? us.StartedOn;
 
-                dto.LastSeenOn = DateTimeOffset.UtcNow - lastSeenDateTime < TimeSpan.FromMinutes(5)
-                                 ? Localizer[nameof(AppStrings.Online)]
-                                 : DateTimeOffset.UtcNow - lastSeenDateTime < TimeSpan.FromMinutes(15)
-                                    ? Localizer[nameof(AppStrings.Recently)]
-                                    : lastSeenDateTime.Humanize(culture: CultureInfo.CurrentUICulture);
-
-                dto.IsValid = DateTimeOffset.UtcNow - lastSeenDateTime < AppSettings.Identity.RefreshTokenExpiration;
+                dto.IsValid = DateTimeOffset.UtcNow - dto.RenewedOn < AppSettings.Identity.RefreshTokenExpiration;
 
                 return dto;
             })
+            .OrderByDescending(us => us.RenewedOn)
         .ToList();
     }
 

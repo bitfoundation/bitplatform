@@ -47,7 +47,7 @@ jobs:
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
         WebAppRender.BlazorMode: BlazorWebAssembly
-        WebAppRender.PreRenderEnabled: true
+        WebAppRender.PrerenderEnabled: true
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 

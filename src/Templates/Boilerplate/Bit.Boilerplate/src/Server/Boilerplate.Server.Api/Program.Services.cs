@@ -69,7 +69,7 @@ public static partial class Program
                 var webClientUrl = configuration.Get<ServerApiSettings>()!.WebClientUrl;
 
                 policy.SetIsOriginAllowed(origin =>
-                            LocalhostOriginRegex().IsMatch(origin) ||
+                            AllowedOriginsRegex().IsMatch(origin) ||
                             (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
@@ -406,8 +406,8 @@ public static partial class Program
     }
 
     /// <summary>
-    /// For either Blazor Hybrid web view or localhost in dev environment.
+    /// For either Blazor Hybrid web view, localhost, dev tunnels etc in dev environment.
     /// </summary>
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
-    private static partial Regex LocalhostOriginRegex();
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
+    private static partial Regex AllowedOriginsRegex();
 }

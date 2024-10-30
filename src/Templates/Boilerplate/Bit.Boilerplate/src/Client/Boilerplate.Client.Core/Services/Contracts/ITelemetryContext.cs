@@ -1,4 +1,5 @@
-﻿namespace Boilerplate.Client.Core.Services.Contracts;
+﻿//+:cnd:noEmit
+namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface ITelemetryContext
 {
@@ -34,6 +35,14 @@ public interface ITelemetryContext
     public string? OS { get; set; }
 
     public string? AppVersion { get; set; }
-
     public string? WebView { get; set; }
+
+    public string? UserAgent { get; set; }
+
+    public string? TimeZone { get; set; }
+    public string? Culture { get; set; }
+
+    //#if (signalr == true)
+    public bool IsOnline { get; set; }
+    //#endif
 }

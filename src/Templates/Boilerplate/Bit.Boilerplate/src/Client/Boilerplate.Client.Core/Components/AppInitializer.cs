@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
@@ -14,17 +15,18 @@ public partial class AppInitializer : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private ILogger<AppInitializer> logger = default!;
     [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
@@ -51,9 +53,12 @@ public partial class AppInitializer : AppComponentBase
     {
         await base.OnAfterFirstRenderAsync();
 
+        TelemetryContext.UserAgent = await navigator.GetUserAgent();
+        TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+        TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            telemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+            TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
         }
     }
 
@@ -62,8 +67,8 @@ public partial class AppInitializer : AppComponentBase
         try
         {
             var user = (await task).User;
-            telemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
-            telemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
+            TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
+            TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
 
             //#if (signalr == true)
             if (InPrerenderSession is false)
@@ -97,7 +102,7 @@ public partial class AppInitializer : AppComponentBase
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect()
-            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
+            .WithUrl($"{HttpClient.BaseAddress}app-hub?access_token={access_token}", options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
@@ -123,8 +128,35 @@ public partial class AppInitializer : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         });
 
+        hubConnection.Closed += HubConnectionDisconnected;
+        hubConnection.Reconnected += HubConnectionConnected;
+        hubConnection.Reconnecting += HubConnectionDisconnected;
+
         await hubConnection.StartAsync(CurrentCancellationToken);
+
+        await HubConnectionConnected(null);
     }
+
+    private async Task HubConnectionConnected(string? arg)
+    {
+        TelemetryContext.IsOnline = true;
+        logger.LogInformation("SignalR connection established.");
+    }
+
+    private async Task HubConnectionDisconnected(Exception? exception)
+    {
+        TelemetryContext.IsOnline = false;
+
+        if (exception is null)
+        {
+            logger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
+        }
+        else
+        {
+            ExceptionHandler.Handle(exception);
+        }
+    }
+
     //#endif
 
     private async Task SetupBodyClasses()
@@ -162,6 +194,9 @@ public partial class AppInitializer : AppComponentBase
         //#if (signalr == true)
         if (hubConnection is not null)
         {
+            hubConnection.Closed -= HubConnectionDisconnected;
+            hubConnection.Reconnected -= HubConnectionConnected;
+            hubConnection.Reconnecting -= HubConnectionDisconnected;
             await hubConnection.DisposeAsync();
         }
         //#endif
