@@ -68,10 +68,6 @@ public partial class SettingsPage
 
     public async Task AssertConfirmEmailSuccess()
     {
-        //TODO: Remove the line below when the problem with refreshing page is solved.
-        await Task.Delay(1000);
-        await Page.GotoAsync(new Uri(WebAppServerAddress, PagePath).ToString());
-
         await Assertions.Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(newEmail);
         await ExpandAccount();
         await AssertExpandAccount(newEmail);

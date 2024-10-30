@@ -71,7 +71,7 @@ public partial class SettingsPage
 
     public async Task AssertConfirmPhoneSuccess()
     {
-        await Task.Delay(1000); //Wait for redirection to complete
+        await Page.WaitForTimeoutAsync(1000); //Wait for redirection to complete
         await ExpandAccount();
         await ClickOnPhoneTab();
         await AssertPhoneTab(newPhone);
