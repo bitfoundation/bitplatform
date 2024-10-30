@@ -45,6 +45,8 @@ public partial class MainActivity : MauiAppCompatActivity
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        Theme?.ApplyStyle(Resource.Style.OptOutEdgeToEdgeEnforcement, force: false);
+
         base.OnCreate(savedInstanceState);
 
         var url = Intent?.DataString;
