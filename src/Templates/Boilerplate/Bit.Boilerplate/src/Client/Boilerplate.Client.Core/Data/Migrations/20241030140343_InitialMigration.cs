@@ -33,7 +33,7 @@ public partial class InitialMigration : Migration
         migrationBuilder.InsertData(
             table: "Users",
             columns: new[] { "Id", "BirthDate", "Email", "FullName", "Gender", "Password", "PhoneNumber", "ProfileImageName", "UserName" },
-            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 1306790461440000000L, "test@bitplatform.dev", "Boilerplate test account", 2, "123456", "+31684207362", null, "test" });
+            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 1306790461440000000L, "test@bitplatform.dev", "Boilerplate test account", 0, "123456", "+31684207362", null, "test" });
     }
 
     /// <inheritdoc />

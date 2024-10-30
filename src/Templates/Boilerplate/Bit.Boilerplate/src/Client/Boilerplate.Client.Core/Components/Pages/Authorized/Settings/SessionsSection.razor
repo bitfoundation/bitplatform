@@ -7,13 +7,13 @@
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitPersona PrimaryText="@(currentSession.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                            SecondaryText="@currentSession.Address"
-                            TertiaryText="@($"{currentSession.IP} - {currentSession.LastSeenOn}")"
-                            Size="BitPersonaSize.Size48"
-                            Presence="@GetPresence(currentSession.LastSeenOn)"
-                            Styles="@(new() { Image = "width:50%;height:50%" })"
-                            ImageInitials="✓"
-                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
+                SecondaryText="@currentSession.Address"
+                TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
+                Size="BitPersonaSize.Size48"
+                Presence="@GetPresence(currentSession.RenewedOn)"
+                Styles="@(new() { Image = "width:50%;height:50%" })"
+                ImageInitials="✓"
+                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitCard>
         }
 
@@ -28,9 +28,9 @@
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                         <BitPersona Class="session-persona"
                                     PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                                    SecondaryText="@($"{session.Address} ({session.IP}) - {session.LastSeenOn}")"
+                                    SecondaryText="@($"{session.Address} ({session.IP}) - {GetLastSeenOn(session.RenewedOn)}")"
                                     Size="BitPersonaSize.Size48"
-                                    Presence="@GetPresence(session.LastSeenOn)"
+                                    Presence="@GetPresence(session.RenewedOn)"
                                     Styles="@(new() { Image = "width:50%;height:50%" })"
                                     ImageInitials="@(session.IsValid ? "✓" : "✘")"
                                     ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />

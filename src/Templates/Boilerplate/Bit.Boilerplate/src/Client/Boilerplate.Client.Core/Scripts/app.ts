@@ -9,6 +9,10 @@ class App {
         return (navigator as any).userAgentData?.platform || navigator?.platform;
     }
 
+    public static getTimeZone(): string {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+
     //#if (notification == true)
     public static async getDeviceInstallation(vapidPublicKey: string) {
         if (await Notification.requestPermission() != "granted")

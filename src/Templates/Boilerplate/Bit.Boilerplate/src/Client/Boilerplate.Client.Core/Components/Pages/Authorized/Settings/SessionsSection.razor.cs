@@ -75,10 +75,17 @@ public partial class SessionsSection
         return "apple.png";
     }
 
-    private static BitPersonaPresence GetPresence(string? lastSeenOn)
+    private BitPersonaPresence GetPresence(DateTimeOffset renewedOn)
     {
-        return lastSeenOn == AppStrings.Online ? BitPersonaPresence.Online
-             : lastSeenOn == AppStrings.Recently ? BitPersonaPresence.Away
-             : BitPersonaPresence.Offline;
+        return DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(5) ? BitPersonaPresence.Online
+                    : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? BitPersonaPresence.Away
+                    : BitPersonaPresence.Offline;
+    }
+
+    private string GetLastSeenOn(DateTimeOffset renewedOn)
+    {
+        return DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
+                    : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
+                    : renewedOn.ToLocalTime().ToString("g");
     }
 }
