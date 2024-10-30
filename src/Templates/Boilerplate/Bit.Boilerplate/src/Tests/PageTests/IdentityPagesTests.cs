@@ -1,10 +1,10 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Tests.PageTests.PageModels.Identity;
-using Boilerplate.Server.Api.Data;
 using Boilerplate.Tests.Services;
+using Boilerplate.Server.Api.Data;
 using Boilerplate.Tests.PageTests.PageModels;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 
-namespace Boilerplate.Tests.PageTests;
+namespace Boilerplate.Tests.PageTests.BlazorServer;
 
 [TestClass]
 public partial class IdentityPagesTests : PageTestBase

@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
-using Boilerplate.Tests.PageTests.PageModels;
 using Boilerplate.Tests.Services;
+using Boilerplate.Tests.PageTests.PageModels;
 
-namespace Boilerplate.Tests.PageTests;
+namespace Boilerplate.Tests.PageTests.BlazorServer;
 
 [TestClass]
 public partial class LocalizationTests : PageTestBase
@@ -17,7 +17,7 @@ public partial class LocalizationTests : PageTestBase
         await homePage.Open();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
     }
-    private async Task SetCultureInBrowserContext(BrowserNewContextOptions options, string cultureName, string _) => options.Locale = cultureName;
+    public async Task SetCultureInBrowserContext(BrowserNewContextOptions options, string cultureName, string _) => options.Locale = cultureName;
 
     [TestMethod]
     [CultureData]
