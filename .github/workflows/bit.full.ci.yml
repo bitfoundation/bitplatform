@@ -64,7 +64,8 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions
+        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
+        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -83,7 +84,8 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test --logger GitHubActions
+        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
+        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
