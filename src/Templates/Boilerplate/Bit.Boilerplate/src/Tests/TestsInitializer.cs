@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 //#endif
 //#if (advancedTests == true)
 using Boilerplate.Tests.PageTests.PageModels.Identity;
+using Boilerplate.Tests.Extensions;
 //#endif
 using Microsoft.Extensions.Hosting;
 
@@ -62,6 +63,8 @@ public partial class TestsInitializer
         await playwrightPage.BrowserSetup();
         await playwrightPage.ContextSetup();
         await playwrightPage.PageSetup();
+
+        await playwrightPage.Context.EnableBlazorWasmCaching();
 
         var signinPage = new SignInPage(playwrightPage.Page, testServer.WebAppServerAddress);
 

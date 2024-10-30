@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Boilerplate.Tests.Extensions;
 using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Tests.PageTests;
@@ -13,6 +14,8 @@ public partial class PageTestBase : PageTest
     [TestInitialize]
     public async Task InitializeTestServer()
     {
+        await Context.EnableBlazorWasmCaching();
+
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
         var configureTestServer = currentTestMethod!.GetCustomAttribute<ConfigureTestServerAttribute>();
