@@ -102,7 +102,7 @@ public partial class AppInitializer : AppComponentBase
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect()
-            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
+            .WithUrl($"{HttpClient.BaseAddress}app-hub?access_token={access_token}", options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.

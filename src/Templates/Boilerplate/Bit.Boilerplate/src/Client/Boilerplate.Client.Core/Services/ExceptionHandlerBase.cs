@@ -50,19 +50,28 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     {
         var isDevEnv = AppEnvironment.IsDev();
 
-        string exceptionMessage = (exception as KnownException)?.Message ??
+        using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))
+        {
+            var exceptionMessage = exception.Message;
+            var innerException = exception.InnerException;
+
+            while (innerException is not null)
+            {
+                exceptionMessage += $"{Environment.NewLine}{innerException.Message}";
+                innerException = innerException.InnerException;
+            }
+
+            Logger.LogError(exception, exceptionMessage);
+        }
+
+        string displayableExceptionMessage = (exception as KnownException)?.Message ??
             (isDevEnv ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);
+
+        MessageBoxService.Show(displayableExceptionMessage, Localizer[nameof(AppStrings.Error)]);
 
         if (isDevEnv)
         {
             Debugger.Break();
         }
-
-        using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))
-        {
-            Logger.LogError(exception, exceptionMessage);
-        }
-
-        MessageBoxService.Show(exceptionMessage, Localizer[nameof(AppStrings.Error)]);
     }
 }
