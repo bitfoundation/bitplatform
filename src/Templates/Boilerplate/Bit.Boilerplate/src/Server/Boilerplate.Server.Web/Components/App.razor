@@ -64,7 +64,7 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js?v=8.0.403" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?ver=8.0.403" autostart="false"></Script>
         <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
              This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
         @if (serverWebSettings.WebAppRender.PwaEnabled)
