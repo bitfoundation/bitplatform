@@ -366,7 +366,7 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitSeparatorShouldRespectFullWidthChangingAfterRender()
+    public void BitSeparatorShouldRespectAutoSizeChangingAfterRender()
     {
         var component = RenderComponent<BitSeparator>();
 
@@ -378,6 +378,88 @@ public class BitSeparatorTests : BunitTestContext
         });
 
         component.MarkupMatches(@"<div style=""width:auto"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(null),
+        DataRow(BitColorKind.Primary),
+        DataRow(BitColorKind.Secondary),
+        DataRow(BitColorKind.Tertiary),
+        DataRow(BitColorKind.Transparent)
+    ]
+    public void BitSeparatorShouldRespectBackground(BitColorKind? background)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Background, background);
+        });
+
+        var cssClass = background switch
+        {
+            BitColorKind.Primary => "bit-spr-pbg",
+            BitColorKind.Secondary => "bit-spr-sbg",
+            BitColorKind.Tertiary => "bit-spr-tbg",
+            BitColorKind.Transparent => "bit-spr-rbg",
+            _ => null
+        };
+
+        component.MarkupMatches(@$"<div class=""{cssClass} bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitSeparatorShouldRespectBackgroundChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Background, BitColorKind.Secondary);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-spr bit-spr-sbg bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(null),
+        DataRow(BitColorKind.Primary),
+        DataRow(BitColorKind.Secondary),
+        DataRow(BitColorKind.Tertiary),
+        DataRow(BitColorKind.Transparent)
+    ]
+    public void BitSeparatorShouldRespectBorder(BitColorKind? border)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Border, border);
+        });
+
+        var cssClass = border switch
+        {
+            BitColorKind.Primary => "bit-spr-pbr",
+            BitColorKind.Secondary => "bit-spr-sbr",
+            BitColorKind.Tertiary => "bit-spr-tbr",
+            BitColorKind.Transparent => "bit-spr-rbr",
+            _ => null
+        };
+
+        component.MarkupMatches(@$"<div class=""{cssClass} bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitSeparatorShouldRespectBorderChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        component.MarkupMatches(@"<div class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Border, BitColorKind.Secondary);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-spr bit-spr-sbr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -403,7 +485,7 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitSeparatorShouldRespectFullWidthChangingAfterRenderInVertical()
+    public void BitSeparatorShouldRespectAutoSizeChangingAfterRenderInVertical()
     {
         var component = RenderComponent<BitSeparator>(parameters =>
         {
