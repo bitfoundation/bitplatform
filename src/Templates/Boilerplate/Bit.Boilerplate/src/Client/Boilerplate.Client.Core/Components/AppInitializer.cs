@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
@@ -14,9 +15,11 @@ public partial class AppInitializer : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private ILogger<AppInitializer> logger = default!;
     [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
@@ -51,6 +54,9 @@ public partial class AppInitializer : AppComponentBase
     {
         await base.OnAfterFirstRenderAsync();
 
+        telemetryContext.UserAgent = await navigator.GetUserAgent();
+        telemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+        telemetryContext.Culture = CultureInfo.CurrentCulture.Name;
         if (AppPlatform.IsBlazorHybrid is false)
         {
             telemetryContext.OS = await jsRuntime.GetBrowserPlatform();
@@ -123,8 +129,35 @@ public partial class AppInitializer : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         });
 
+        hubConnection.Closed += HubConnectionDisconnected;
+        hubConnection.Reconnected += HubConnectionConnected;
+        hubConnection.Reconnecting += HubConnectionDisconnected;
+
         await hubConnection.StartAsync(CurrentCancellationToken);
+
+        await HubConnectionConnected(null);
     }
+
+    private async Task HubConnectionConnected(string? arg)
+    {
+        telemetryContext.IsOnline = true;
+        logger.LogInformation("SignalR connection established.");
+    }
+
+    private async Task HubConnectionDisconnected(Exception? exception)
+    {
+        telemetryContext.IsOnline = false;
+
+        if (exception is null)
+        {
+            logger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
+        }
+        else
+        {
+            logger.LogError(exception, "SignalR connection lost.");
+        }
+    }
+
     //#endif
 
     private async Task SetupBodyClasses()
@@ -162,6 +195,9 @@ public partial class AppInitializer : AppComponentBase
         //#if (signalr == true)
         if (hubConnection is not null)
         {
+            hubConnection.Closed -= HubConnectionDisconnected;
+            hubConnection.Reconnected -= HubConnectionConnected;
+            hubConnection.Reconnecting -= HubConnectionDisconnected;
             await hubConnection.DisposeAsync();
         }
         //#endif
