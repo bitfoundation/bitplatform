@@ -22,12 +22,11 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private ILogger<AppInitializer> logger = default!;
     [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
@@ -54,12 +53,12 @@ public partial class AppInitializer : AppComponentBase
     {
         await base.OnAfterFirstRenderAsync();
 
-        telemetryContext.UserAgent = await navigator.GetUserAgent();
-        telemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-        telemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+        TelemetryContext.UserAgent = await navigator.GetUserAgent();
+        TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+        TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            telemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+            TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
         }
     }
 
@@ -68,8 +67,8 @@ public partial class AppInitializer : AppComponentBase
         try
         {
             var user = (await task).User;
-            telemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
-            telemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
+            TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
+            TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
 
             //#if (signalr == true)
             if (InPrerenderSession is false)
@@ -140,13 +139,13 @@ public partial class AppInitializer : AppComponentBase
 
     private async Task HubConnectionConnected(string? arg)
     {
-        telemetryContext.IsOnline = true;
+        TelemetryContext.IsOnline = true;
         logger.LogInformation("SignalR connection established.");
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
     {
-        telemetryContext.IsOnline = false;
+        TelemetryContext.IsOnline = false;
 
         if (exception is null)
         {
@@ -154,7 +153,7 @@ public partial class AppInitializer : AppComponentBase
         }
         else
         {
-            logger.LogError(exception, "SignalR connection lost.");
+            ExceptionHandler.Handle(exception);
         }
     }
 

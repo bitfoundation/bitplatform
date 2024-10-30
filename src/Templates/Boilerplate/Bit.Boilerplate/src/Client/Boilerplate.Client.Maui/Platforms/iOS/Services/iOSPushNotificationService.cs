@@ -24,7 +24,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
 
     public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
     {
-        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
 
         try
@@ -37,12 +37,9 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
                 await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
             }
         }
-        finally
+        catch (Exception exp)
         {
-            if (Token is null)
-            {
-                Logger.LogError("Unable to resolve token for APNS.");
-            }
+            throw new InvalidOperationException("Unable to resolve token for APNS.", exp);
         }
 
         var installation = new DeviceInstallationDto
