@@ -42,7 +42,9 @@ jobs:
 
     - name: Prepare environment
       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
+        cd src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/
+        sed -i 's|"ServerAddress": "http://localhost:5030/",|"ServerAddress": "/",|' appsettings.json
+        cd ../../../../ && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
