@@ -28,7 +28,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
     {
         try
         {
-            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+            using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
 
             while (string.IsNullOrEmpty(Token))
@@ -39,12 +39,9 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
                 await Task.Delay(TimeSpan.FromSeconds(1), linkedCts.Token);
             }
         }
-        finally
+        catch (Exception exp)
         {
-            if (Token is null)
-            {
-                Logger.LogError("Unable to resolve token for FCMv1.");
-            }
+            throw new InvalidOperationException("Unable to resolve token for FCMv1.", exp);
         }
 
         var installation = new DeviceInstallationDto

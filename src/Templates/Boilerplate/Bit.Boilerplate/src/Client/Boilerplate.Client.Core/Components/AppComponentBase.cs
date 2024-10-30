@@ -20,7 +20,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected IPrerenderStateService PrerenderStateService = default!;
 
     /// <summary>
-    /// <inheritdoc cref="IPubSubService"/>
+    /// <inheritdoc cref="Services.PubSubService"/>
     /// </summary>
     [AutoInject] protected PubSubService PubSubService = default!;
 
@@ -37,6 +37,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
 
     [AutoInject] protected SnackBarService SnackBarService = default!;
+
+    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
 
 
     private readonly CancellationTokenSource cts = new();

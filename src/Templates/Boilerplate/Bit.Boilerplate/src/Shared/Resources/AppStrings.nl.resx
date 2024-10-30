@@ -211,9 +211,6 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Taal selecteren</value>
   </data>
-    <data name="Settings_Duplicate[1]" xml:space="preserve">
-    <value>Instellingen</value>
-  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profiel</value>
   </data>
@@ -806,9 +803,6 @@
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
-  </data>
-    <data name="TwoFactorAuthTitle_Duplicate[1]" xml:space="preserve">
-    <value></value>
   </data>
     <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>Het resetten van de gedeelde 2fa-sleutel moet 2fa uitschakelen totdat een 2fa-token op basis van de nieuwe gedeelde sleutel is gevalideerd.</value>

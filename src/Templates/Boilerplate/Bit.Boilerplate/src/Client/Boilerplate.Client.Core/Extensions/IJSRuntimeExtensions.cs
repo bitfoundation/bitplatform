@@ -13,6 +13,11 @@ public static partial class IJSRuntimeExtensions
         return jsRuntime.InvokeAsync<string>("App.getPlatform");
     }
 
+    public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeAsync<string>("App.getTimeZone");
+    }
+
     public static ValueTask ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
         return jsRuntime.InvokeVoidAsync("App.applyBodyElementClasses", cssClasses, cssVariables);
