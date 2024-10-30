@@ -10,7 +10,7 @@ public partial class UserSessionDto
 
     public string? Address { get; set; }
 
-    public string? LastSeenOn { get; set; }
+    public DateTimeOffset RenewedOn { get; set; }
 
     public bool IsValid { get; set; }
 }
