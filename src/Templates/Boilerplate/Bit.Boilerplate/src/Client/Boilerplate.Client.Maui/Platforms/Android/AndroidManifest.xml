@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-sdk android:targetSdkVersion="35" />
     <application android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round"></application>
 </manifest>
