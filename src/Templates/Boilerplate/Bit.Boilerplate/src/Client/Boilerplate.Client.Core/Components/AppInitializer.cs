@@ -88,43 +88,42 @@ public partial class AppInitializer : AppComponentBase
     //#if (signalr == true)
     private async Task ConnectSignalR()
     {
-        //TODO: This code is temporarily commented (until Yasir fixes it) because it causes connectivity issues when testing.
-        //if (hubConnection is not null)
-        //{
-        //    await hubConnection.DisposeAsync();
-        //}
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
 
-        //var access_token = await AuthTokenProvider.GetAccessToken();
+        var access_token = await AuthTokenProvider.GetAccessToken();
 
-        //hubConnection = new HubConnectionBuilder()
-        //    .WithAutomaticReconnect()
-        //    .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
-        //    {
-        //        options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
-        //        // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
-        //        // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-        //        options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
-        //        {
-        //            return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-        //                .Invoke(signalrHttpMessageHandler);
-        //        };
-        //    })
-        //    .Build();
+        hubConnection = new HubConnectionBuilder()
+            .WithAutomaticReconnect()
+            .WithUrl($"{Configuration.GetServerAddress()}/app-hub?access_token={access_token}", options =>
+            {
+                options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+                // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
+                // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
+                {
+                    return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
+                        .Invoke(signalrHttpMessageHandler);
+                };
+            })
+            .Build();
 
-        //hubConnection.On<string>("DisplayMessage", async (message) =>
-        //{
-        //    snackBarService.Show(message, "");
+        hubConnection.On<string>("DisplayMessage", async (message) =>
+        {
+            snackBarService.Show(message, "");
 
-        //    // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
-        //    /*await InvokeAsync(async () =>
-        //    {
-        //        StateHasChanged();
-        //    });*/
+            // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
+            /*await InvokeAsync(async () =>
+            {
+                StateHasChanged();
+            });*/
 
-        //    // You can also leverage IPubSubService to notify other components in the application.
-        //});
+            // You can also leverage IPubSubService to notify other components in the application.
+        });
 
-        //await hubConnection.StartAsync(CurrentCancellationToken);
+        await hubConnection.StartAsync(CurrentCancellationToken);
     }
     //#endif
 
