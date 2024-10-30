@@ -89,23 +89,24 @@ public partial class IdentityPagesTests : PageTestBase
         var confirmPage = await signupPage.SignUp(email);
         await confirmPage.AssertOpen();
 
-        var confirmationEmail = await signupPage.OpenConfirmationEmail();
-        await confirmationEmail.AssertContent();
-
         IdentityHomePage identityHomePage;
         switch (mode)
         {
             case "Token":
+                var confirmationEmail = await signupPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
                 var token = await confirmationEmail.GetToken();
                 identityHomePage = await confirmPage.ConfirmByToken(token);
+                break;
+            case "MagicLink":
+                confirmationEmail = await signupPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
+                identityHomePage = await confirmationEmail.OpenMagicLink<IdentityHomePage>();
                 break;
             case "InvalidToken":
                 await confirmPage.ConfirmByToken("111111");
                 await confirmPage.AssertInvalidToken();
                 return;
-            case "MagicLink":
-                identityHomePage = await confirmationEmail.OpenMagicLink<IdentityHomePage>();
-                break;
             default:
                 throw new NotSupportedException();
         }
@@ -139,17 +140,18 @@ public partial class IdentityPagesTests : PageTestBase
         var resetPasswordPage = await forgotPasswordPage.ForgotPassword(email);
         await resetPasswordPage.AssertOpen();
 
-        var resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
-        await resetPasswordEmail.AssertContent();
-
         const string newPassword = "new_password";
         switch (mode)
         {
             case "Token":
+                var resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+                await resetPasswordEmail.AssertContent();
                 var token = await resetPasswordEmail.GetToken();
                 await resetPasswordPage.ContinueByToken(token);
                 break;
             case "MagicLink":
+                resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+                await resetPasswordEmail.AssertContent();
                 resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
                 break;
             case "InvalidToken":
@@ -208,16 +210,17 @@ public partial class IdentityPagesTests : PageTestBase
         await settingsPage.ChangeEmail(newEmail);
         await settingsPage.AssertChangeEmail();
 
-        var confirmationEmail = await settingsPage.OpenConfirmationEmail();
-        await confirmationEmail.AssertContent();
-
         switch (mode)
         {
             case "Token":
+                var confirmationEmail = await settingsPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
                 var token = await confirmationEmail.GetToken();
                 await settingsPage.ConfirmEmailByToken(token);
                 break;
             case "MagicLink":
+                confirmationEmail = await settingsPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
                 settingsPage = await confirmationEmail.OpenMagicLink();
                 break;
             case "InvalidToken":
@@ -280,7 +283,6 @@ public partial class IdentityPagesTests : PageTestBase
             case "Token":
                 var token = settingsPage.GetPhoneToken();
                 await settingsPage.ConfirmPhoneByToken(token);
-
                 await settingsPage.AssertConfirmPhoneSuccess();
 
                 signInPage = await settingsPage.SignOut();
