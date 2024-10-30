@@ -36,6 +36,7 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
+//-:cnd:noEmit
 #if Android
 
             //+:cnd:noEmit
@@ -58,6 +59,7 @@ public partial class App
                 await App.Current!.Windows.First().Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
                 await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={Android.Webkit.WebView.CurrentWebViewPackage.PackageName}");
             }
+//-:cnd:noEmit
 #endif
         }
         catch (Exception exp)

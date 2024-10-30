@@ -32,12 +32,12 @@ self.externalAssets = [
     },
     {
         //#if (framework == "net9.0")
-        url: "_framework/blazor.web.js?v=9.0.0-rc.2.24474.3"
+        url: "_framework/blazor.web.js?ver=9.0.0-rc.2.24474.3"
         //#else
             //#if (IsInsideProjectTemplate == true)
             /*
             //#endif
-        url: "_framework/blazor.web.js?v=8.0.403"
+        url: "_framework/blazor.web.js?ver=8.0.403"
             //#if (IsInsideProjectTemplate == true)
             */
             //#endif

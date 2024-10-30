@@ -12,7 +12,6 @@
         <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
-        <!-- Disabled WasmSIMD because of dotnet 8 issue on safari (iOS 16.3 and older devices)  -->
         <WasmEnableSIMD Condition=" '$(framework)' == 'net8.0'">false</WasmEnableSIMD>
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
