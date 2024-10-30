@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
@@ -32,6 +32,12 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         parameters[nameof(TelemetryContext.AppSessionId)] = TelemetryContext.AppSessionId;
         parameters[nameof(TelemetryContext.AppVersion)] = TelemetryContext.AppVersion;
         parameters[nameof(TelemetryContext.OS)] = TelemetryContext.OS;
+        parameters[nameof(TelemetryContext.UserAgent)] = TelemetryContext.UserAgent;
+        parameters[nameof(TelemetryContext.TimeZone)] = TelemetryContext.TimeZone;
+        parameters[nameof(TelemetryContext.Culture)] = TelemetryContext.Culture;
+        //#if (signalr == true)
+        parameters[nameof(TelemetryContext.IsOnline)] = TelemetryContext.IsOnline;
+        //#endif
         if (AppPlatform.IsBlazorHybrid)
         {
             parameters[nameof(TelemetryContext.WebView)] = TelemetryContext.WebView;

@@ -1,4 +1,5 @@
-﻿using Microsoft.ApplicationInsights.Channel;
+﻿//+:cnd:noEmit
+using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Boilerplate.Client.Maui.Services;
@@ -16,6 +17,12 @@ public partial class MauiTelemetryInitializer : ITelemetryInitializer
 
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserAgent)] = ITelemetryContext.Current.UserAgent;
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.TimeZone)] = ITelemetryContext.Current.TimeZone;
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.Culture)] = ITelemetryContext.Current.Culture;
+            //#if (signalr == true)
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline.ToString().ToLowerInvariant();
+            //#endif
         }
 
         telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
