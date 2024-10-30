@@ -62,7 +62,7 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?v=9.0.0-rc.2.24474.3" autostart="false"></Script>
         @if (AppRenderMode.PwaEnabled)
         {
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
