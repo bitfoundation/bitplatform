@@ -161,13 +161,6 @@ public partial class BitModalDemo
                },
                new()
                {
-                   Name = "Container",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the main container of the BitModal."
-               },
-               new()
-               {
                    Name = "Overlay",
                    Type = "string?",
                    DefaultValue = "null",
@@ -179,13 +172,6 @@ public partial class BitModalDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the content of the BitModal."
-               },
-               new()
-               {
-                   Name = "ScrollContent",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the scroll content of the BitModal."
                }
             ]
         }

@@ -55,8 +55,8 @@
             <br />
             <div>
                 <div class="btn-container">
-                    <BitButton OnClick="() => IsOpen1 = true">Open Modal (Blocking = true)</BitButton>
-                    <BitButton OnClick="() => IsOpen2 = true">Open Modal (AutoToggleScroll = false)</BitButton>
+                    <BitButton OnClick="() => IsOpen1 = true">Open Modal (Blocking)</BitButton>
+                    <BitButton OnClick="() => IsOpen2 = true">Open Modal (AutoToggleScroll)</BitButton>
                 </div>
                 <div>
                     <BitModal @bind-IsOpen="IsOpen1" Blocking>
@@ -77,9 +77,9 @@
                             </p>
                         </div>
                     </BitModal>
-                    <BitModal @bind-IsOpen="IsOpen2" AutoToggleScroll="false">
+                    <BitModal @bind-IsOpen="IsOpen2" AutoToggleScroll>
                         <div class="modal-header">
-                            <span class="modal-header-text">AutoToggleScroll = false</span>
+                            <span class="modal-header-text">AutoToggleScroll</span>
                             <BitButton Variant="BitVariant.Text" OnClick="() => IsOpen2 = false" IconName="@BitIconName.ChromeClose" Title="Close" />
                         </div>
                         <div class="modal-body">
@@ -106,14 +106,14 @@
             <br />
             <div>
                 <div class="btn-container">
-                    <BitButton OnClick="() => IsOpen3 = true">Open Modal (AbsolutePosition = true)</BitButton>
+                    <BitButton OnClick="() => IsOpen3 = true">Open Modal (AbsolutePosition)</BitButton>
                     <BitButton OnClick="() => IsOpen4 = true">Open Modal (ScrollerSelector)</BitButton>
                 </div>
 
                 <div class="relative-container">
-                    <BitModal @bind-IsOpen="IsOpen3" AutoToggleScroll="false" AbsolutePosition Modeless>
+                    <BitModal @bind-IsOpen="IsOpen3" AbsolutePosition Modeless>
                         <div class="modal-header">
-                            <span class="modal-header-text">AbsolutePosition=true & Modeless=true</span>
+                            <span class="modal-header-text">AbsolutePosition & Modeless</span>
                             <BitButton Variant="BitVariant.Text" OnClick="() => IsOpen3 = false" IconName="@BitIconName.ChromeClose" Title="Close" />
                         </div>
                         <div class="modal-body">
@@ -130,7 +130,7 @@
                         </div>
                     </BitModal>
 
-                    <BitModal @bind-IsOpen="IsOpen4" AbsolutePosition ScrollerSelector=".relative-container">
+                    <BitModal @bind-IsOpen="IsOpen4" AutoToggleScroll AbsolutePosition ScrollerSelector=".relative-container">
                         <div class="modal-header">
                             <span class="modal-header-text">ScrollerSelector</span>
                             <BitButton Variant="BitVariant.Text" OnClick="() => IsOpen4 = false" IconName="@BitIconName.ChromeClose" Title="Close" />
@@ -386,7 +386,7 @@
                     </div>
                 </BitModal>
 
-                <BitModal @bind-IsOpen="IsOpen11" Classes="@(new() { Container = "custom-container", Overlay = "custom-overlay", Content = "custom-content" })">
+                <BitModal @bind-IsOpen="IsOpen11" Classes="@(new() { Root = "custom-root", Overlay = "custom-overlay", Content = "custom-content" })">
                     <div class="modal-header">
                         <span class="modal-header-text">Modal classes</span>
                         <BitButton Variant="BitVariant.Text" OnClick="() => IsOpen11 = false" IconName="@BitIconName.ChromeClose" Title="Close" />
