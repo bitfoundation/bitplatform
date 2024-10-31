@@ -36,33 +36,6 @@ public static partial class Program
         var configuration = builder.Configuration;
         var appSettings = configuration.Get<ServerApiSettings>()!;
 
-        //#if (notification == true)
-        services.AddScoped(_ =>
-        {
-            var adsPushSenderBuilder = new AdsPushSenderBuilder();
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
-            {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
-            }
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
-            {
-                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
-
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
-            }
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
-            {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
-            }
-
-            return adsPushSenderBuilder
-                .BuildSender();
-        });
-        services.AddScoped<PushNotificationService>();
-        //#endif
         services.AddScoped<EmailService>();
         services.AddScoped<PhoneService>();
         if (appSettings.Sms?.Configured is true)
@@ -88,6 +61,33 @@ public static partial class Program
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
         });
+        //#if (notification == true)
+        services.AddSingleton(_ =>
+        {
+            var adsPushSenderBuilder = new AdsPushSenderBuilder();
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
+            {
+                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
+
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
+            }
+
+            return adsPushSenderBuilder
+                .BuildSender();
+        });
+        services.AddScoped<PushNotificationService>();
+        //#endif
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 

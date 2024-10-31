@@ -45,6 +45,7 @@ public partial class PubSubService
             if (notHandledMessage == message)
             {
                 Publish(message, payload);
+                notHandledMessages.TryTake(out _);
             }
         }
 

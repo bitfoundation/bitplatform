@@ -1,9 +1,12 @@
-﻿using System.Text.Json.Serialization.Metadata;
+﻿using System.Collections.Concurrent;
+using System.Text.Json.Serialization.Metadata;
 
 namespace System.Text.Json;
 
 public static partial class JsonSerializerOptionsExtensions
 {
+    private static readonly ConcurrentDictionary<Type, JsonTypeInfo> _typeInfoCache = [];
+
     /// <summary>
     /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
     /// </summary>
@@ -14,7 +17,7 @@ public static partial class JsonSerializerOptionsExtensions
             return (JsonTypeInfo<T>)result;
         }
 
-        return JsonTypeInfo.CreateJsonTypeInfo<T>(options);
+        return (JsonTypeInfo<T>)_typeInfoCache.GetOrAdd(typeof(T), _ => JsonTypeInfo.CreateJsonTypeInfo<T>(options));
     }
 
     private static string GetTypeDisplayName(Type type)
