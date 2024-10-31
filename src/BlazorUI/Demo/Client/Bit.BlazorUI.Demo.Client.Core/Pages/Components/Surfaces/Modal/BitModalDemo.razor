@@ -149,7 +149,7 @@
 
     <ComponentExampleBox Title="Absolute positioning" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
-            <div>BitModal has an absolute position option to further customize it's location.</div><br />
+            <div>BitModal has an absolute position option to further customize its location.</div><br />
             <BitButton OnClick="() => isOpenAbsolutePosition = true">Open Modal (AbsolutePosition)</BitButton>
             <br /><br />
             <BitButton OnClick="() => isOpenScrollerSelector = true">Open Modal (ScrollerSelector)</BitButton>
@@ -272,7 +272,7 @@
             <BitButton OnClick="() => isOpenDraggable = true">Open Modal</BitButton>
             <BitModal @bind-IsOpen="isOpenDraggable" Draggable>
                 <div class="modal-header">
-                    <span class="modal-header-text">Draggble Modal</span>
+                    <span class="modal-header-text">Draggable Modal</span>
                     <BitButton Variant="BitVariant.Text" OnClick="() => isOpenDraggable = false" IconName="@BitIconName.ChromeClose" Title="Close" />
                 </div>
                 <div class="modal-body">
@@ -293,7 +293,7 @@
             <BitButton OnClick="() => isOpenDraggableSelector = true">Open Modal</BitButton>
             <BitModal @bind-IsOpen="isOpenDraggableSelector" Draggable DragElementSelector=".modal-header-drag">
                 <div class="modal-header modal-header-drag">
-                    <span class="modal-header-text">Draggble Modal with custom drag element</span>
+                    <span class="modal-header-text">Draggable Modal with custom drag element</span>
                     <BitButton Variant="BitVariant.Text" OnClick="() => isOpenDraggableSelector = false" IconName="@BitIconName.ChromeClose" Title="Close" />
                 </div>
                 <div class="modal-body">

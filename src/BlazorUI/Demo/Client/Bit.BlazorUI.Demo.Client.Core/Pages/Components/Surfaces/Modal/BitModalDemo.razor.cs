@@ -685,13 +685,13 @@ private bool isOpenDraggableSelector;";
     <div class=""modal-header"">
         <span class=""modal-header-text"">Full size modal</span>
         <BitButton Variant=""BitVariant.Text""
-                    OnClick=""() => isFullSize = !isFullSize""
-                    IconName=""@(isFullSize ? BitIconName.BackToWindow : BitIconName.ChromeFullScreen)""
-                    Title=""@(isFullSize ? ""Exit FullScreen"" : ""FullScreen"")"" />
+                   OnClick=""() => isFullSize = !isFullSize""
+                   IconName=""@(isFullSize ? BitIconName.BackToWindow : BitIconName.ChromeFullScreen)""
+                   Title=""@(isFullSize ? ""Exit FullScreen"" : ""FullScreen"")"" />
         <BitButton Variant=""BitVariant.Text""
-                    OnClick=""() => isOpenFullSize = false""
-                    IconName=""@BitIconName.ChromeClose""
-                    Title=""Close"" />
+                   OnClick=""() => isOpenFullSize = false""
+                   IconName=""@BitIconName.ChromeClose""
+                   Title=""Close"" />
     </div>
     <div class=""modal-body"">
         <p>
