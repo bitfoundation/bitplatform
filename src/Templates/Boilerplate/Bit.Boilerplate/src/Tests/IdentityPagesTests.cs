@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Tests;
+﻿using Boilerplate.Tests.Extensions;
+
+namespace Boilerplate.Tests;
 
 [TestClass]
 public partial class IdentityPagesTests : PageTest
@@ -44,28 +46,8 @@ public partial class IdentityPagesTests : PageTest
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        var options = base.ContextOptions();
-        options.RecordVideoDir = GetVideoDirectory(TestContext);
-        return options;
-    }
+    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
 
     [TestCleanup]
-    public async ValueTask Cleanup()
-    {
-        await Context.CloseAsync();
-        if (TestContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
-        {
-            var directory = GetVideoDirectory(TestContext);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
-        }
-    }
-
-    private static string GetVideoDirectory(TestContext testContext)
-    {
-        var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
-        return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
-    }
+    public async ValueTask Cleanup() => await this.FinalizeVideoRecording();
 }
