@@ -145,6 +145,16 @@
     }
 }
 
+.bit-brc-noc {
+    cursor: default;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: inherit;
+        }
+    }
+}
+
 .bit-brc-ovl {
     top: 0;
     left: 0;
