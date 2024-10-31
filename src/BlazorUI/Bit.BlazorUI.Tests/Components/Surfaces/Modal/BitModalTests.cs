@@ -151,7 +151,7 @@ public class BitModalTests : BunitTestContext
 
         var elementContent = com.Find(".bit-mdl-ctn");
 
-        elementContent.MarkupMatches("<div class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div id:ignore class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
