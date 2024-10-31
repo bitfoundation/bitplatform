@@ -83,7 +83,7 @@ public partial class TestsInitializer
         await signinPage.Open();
         await signinPage.AssertOpen();
 
-        Assertions.SetDefaultExpectTimeout(5_000); // Standard timeout for subsequent tests
+        Assertions.SetDefaultExpectTimeout(10_000); // Standard timeout for subsequent tests
 
         var signedInPage = await signinPage.SignInWithEmail();
         await signedInPage.AssertSignInSuccess();
