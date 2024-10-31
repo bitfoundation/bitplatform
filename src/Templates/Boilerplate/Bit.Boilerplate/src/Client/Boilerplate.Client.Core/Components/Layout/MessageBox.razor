@@ -1,9 +1,10 @@
 ﻿@inherits AppComponentBase
 
-<BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false">
+<BitModal @bind-IsOpen="isOpen" Blocking AutoToggleScroll="false" Class="root"
+          Classes="@(new() { Content = "content" })">
     <section>
         <BitStack>
-            <BitStack Horizontal>
+            <BitStack Horizontal AutoHeight>
                 <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">
                     @title
                 </BitText>
@@ -20,7 +21,7 @@
                 @body
             </BitText>
 
-            <BitStack Alignment="BitAlignment.Center">
+            <BitStack Alignment="BitAlignment.Center" AutoHeight>
                 <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
                     @Localizer[AppStrings.Ok]
                 </BitButton>

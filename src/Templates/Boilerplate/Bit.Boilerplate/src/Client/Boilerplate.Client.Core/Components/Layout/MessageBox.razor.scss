@@ -1,12 +1,35 @@
-﻿section {
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    height: 100%;
     padding: 1rem;
     min-width: 20rem;
 }
 
-::deep .body {
-    flex-grow: 1;
-    display: flex;
-    overflow: auto;
-    max-width: 90vw;
-    white-space: pre;
+::deep {
+    .root {
+        width: var(--app-max-width);
+        height: var(--app-max-height);
+        top: var(--app-inset-top);
+        left: var(--app-inset-left);
+        right: var(--app-inset-right);
+        bottom: var(--app-inset-bottom);
+    }
+
+    .content {
+        width: 100%;
+
+        @include lt-md {
+            height: 100%
+        }
+    }
+
+    .body {
+        flex-grow: 1;
+        display: flex;
+        overflow: auto;
+        max-width: 90vw;
+        white-space: pre;
+    }
 }
