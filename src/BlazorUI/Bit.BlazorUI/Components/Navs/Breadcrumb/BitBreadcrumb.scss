@@ -73,12 +73,6 @@
     padding: 0 spacing(1);
     font-size: spacing(2.5);
     line-height: spacing(4.5);
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $clr-bg-pri-hover;
-        }
-    }
 }
 
 .bit-brc-itm {
