@@ -21,13 +21,16 @@
     padding: 0 rem2(24px) rem2(24px);
 }
 
-.btn-container {
-    gap: 1rem;
-    display: flex;
-    flex-flow: row wrap;
+.relative-container {
+    width: 100%;
+    overflow: auto;
+    margin-top: 1rem;
+    position: relative;
+    height: rem2(400px);
+    border: rem2(2px) lightgreen solid;
 }
 
-.position-btn {
+.position-btn-container {
     gap: 1rem;
     display: flex;
     flex-flow: column nowrap;
@@ -38,22 +41,17 @@
     }
 }
 
-.relative-container {
-    width: 100%;
-    overflow: auto;
-    margin-top: 1rem;
-    height: rem2(400px);
-    position: relative;
-    border: rem2(2px) lightgreen solid;
-}
-
 ::deep {
+    .position-button {
+        width: 130px;
+    }
+
     .custom-class {
         border: 0.5rem solid tomato;
         background-color: darkgoldenrod;
     }
 
-    .custom-container {
+    .custom-root {
         border: 0.25rem solid #0054C6;
     }
 
