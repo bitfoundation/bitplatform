@@ -64,10 +64,10 @@
     }
 }
 
-.bit-brc-itm {
+.bit-brc-itm,
+.bit-brc-nii {
     display: flex;
     gap: spacing(1);
-    cursor: pointer;
     font-weight: 400;
     color: $clr-fg-pri;
     padding: 0 spacing(1);
@@ -81,14 +81,14 @@
     }
 }
 
-.bit-brc-nii {
-    display: flex;
-    gap: spacing(1);
-    font-weight: 400;
-    color: $clr-fg-pri;
-    padding: 0 spacing(1);
-    font-size: spacing(2.5);
-    line-height: spacing(4.5);
+.bit-brc-itm {
+    cursor: pointer;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
 }
 
 .bit-brc-rvi {
@@ -123,38 +123,7 @@
     max-height: spacing(88.875);
 }
 
-.bit-brc-ofi {
-    width: 100%;
-    display: flex;
-    gap: spacing(1);
-    cursor: pointer;
-    overflow: hidden;
-    text-align: left;
-    font-weight: 400;
-    user-select: none;
-    color: $clr-fg-pri;
-    position: relative;
-    align-items: center;
-    white-space: nowrap;
-    height: spacing(4.5);
-    outline: transparent;
-    padding: 0 spacing(1);
-    text-decoration: none;
-    box-sizing: border-box;
-    text-overflow: ellipsis;
-    font-size: spacing(1.75);
-    min-width: spacing(22.5);
-    line-height: spacing(2.5);
-    background-color: transparent;
-    border: $shp-border-width $shp-border-style transparent;
-
-    @media (hover: hover) {
-        &:hover {
-            background-color: $clr-bg-pri-hover;
-        }
-    }
-}
-
+.bit-brc-ofi,
 .bit-brc-ofn {
     width: 100%;
     display: flex;
@@ -178,6 +147,16 @@
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
+}
+
+.bit-brc-ofi {
+    cursor: pointer;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
 }
 
 .bit-brc-ovl {
