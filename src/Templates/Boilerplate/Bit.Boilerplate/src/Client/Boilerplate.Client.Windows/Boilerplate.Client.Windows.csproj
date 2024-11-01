@@ -63,7 +63,7 @@
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>

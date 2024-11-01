@@ -107,7 +107,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// CultureInfo for the Calendar.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -189,21 +189,21 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Whether the month picker is shown or hidden.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool ShowMonthPicker { get; set; } = true;
 
     /// <summary>
     /// The maximum allowable date of the calendar.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum allowable date of the calendar.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
@@ -245,7 +245,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Whether the time picker should be shown or not.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool ShowTimePicker { get; set; }
 
     /// <summary>
@@ -302,7 +302,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Specifies the date and time of the calendar when it is showing without any selected value.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? StartingValue { get; set; }
 
 
@@ -325,7 +325,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         OnValueChanged += HandleOnValueChanged;
 
-        HandleParameterChanges();
+        OnSetParameters();
 
         base.OnInitialized();
     }
@@ -373,10 +373,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        HandleParameterChanges();
+        OnSetParameters();
     }
 
-    private void HandleParameterChanges()
+    private void OnSetParameters()
     {
         _showTimePicker = ShowTimePicker && ShowTimePickerAsOverlay is false;
         _showMonthPicker = _showTimePicker is false && ShowMonthPicker && ShowMonthPickerAsOverlay is false;
