@@ -64,7 +64,7 @@ public static partial class MauiProgram
         //#if (appCenter == true)
         if (Microsoft.AppCenter.AppCenter.Configured)
         {
-            builder.Logging.AddAppCenter(options => { });
+            builder.Logging.AddAppCenter(options => options.IncludeScopes = true);
         }
         //#endif
 
