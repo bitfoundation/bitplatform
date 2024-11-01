@@ -10,7 +10,7 @@ public partial class PubSubService
     /// <summary>
     /// Messages that were published before any handler was subscribed.
     /// </summary>
-    private readonly ConcurrentBag<(string message, object? payload)> notHandledMessages = [];
+    private readonly ConcurrentBag<(string message, object? payload)> persistentMessages = [];
 
     [AutoInject] private readonly IServiceProvider serviceProvider = default!;
 
@@ -25,12 +25,7 @@ public partial class PubSubService
         }
         else if (persistent)
         {
-            notHandledMessages.Add((message, payload));
-        }
-
-        void handleException(Task t)
-        {
-            serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
+            persistentMessages.Add((message, payload));
         }
     }
 
@@ -40,15 +35,20 @@ public partial class PubSubService
 
         messageHandlers.Add(handler);
 
-        foreach (var (notHandledMessage, payload) in notHandledMessages)
+        foreach (var (notHandledMessage, payload) in persistentMessages)
         {
             if (notHandledMessage == message)
             {
-                Publish(message, payload);
-                notHandledMessages.TryTake(out _);
+                handler(payload).ContinueWith(handleException, TaskContinuationOptions.OnlyOnFaulted);
+                persistentMessages.TryTake(out _);
             }
         }
 
         return () => messageHandlers.Remove(handler);
+    }
+
+    private void handleException(Task t)
+    {
+        serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
     }
 }
