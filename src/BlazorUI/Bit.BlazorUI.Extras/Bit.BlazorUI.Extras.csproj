@@ -58,9 +58,9 @@
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildJavaScript"/>
-        <CallTarget Targets="BuildCss"/>
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="BuildCss" />
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
