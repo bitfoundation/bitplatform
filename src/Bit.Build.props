@@ -27,7 +27,7 @@
 
 		<ReleaseVersion>8.12.0</ReleaseVersion>
 
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-08/PackageReleaseNotes>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-08</PackageReleaseNotes>
 		<PackageVersion>$(ReleaseVersion)-pre-08</PackageVersion>
 
 		<!-- Version -->
