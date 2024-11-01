@@ -16,10 +16,9 @@ public static partial class ISharedServiceCollectionExtensions
         services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
         services.AddSingleton(sp =>
         {
-            var options = new JsonSerializerOptions(AppJsonContext.Default.Options)
-            {
-                TypeInfoResolver = new CompositeJsonTypeInfoResolver(AppJsonContext.Default, IdentityJsonContext.Default)
-            };
+            JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
+
+            options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
 
             return options;
         });

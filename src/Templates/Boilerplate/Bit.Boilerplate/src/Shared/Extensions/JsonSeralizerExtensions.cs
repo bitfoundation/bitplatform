@@ -17,7 +17,7 @@ public static partial class JsonSerializerOptionsExtensions
             return (JsonTypeInfo<T>)result;
         }
 
-        return (JsonTypeInfo<T>)_typeInfoCache.GetOrAdd(typeof(T), _ => JsonTypeInfo.CreateJsonTypeInfo<T>(options));
+        throw new InvalidOperationException($"Add [JsonSerializable(typeof({GetTypeDisplayName(typeof(T))}))] to the {nameof(AppJsonContext)}");
     }
 
     private static string GetTypeDisplayName(Type type)
@@ -28,22 +28,5 @@ public static partial class JsonSerializerOptionsExtensions
         }
 
         return type.Name;
-    }
-}
-
-public class CompositeJsonTypeInfoResolver(params IJsonTypeInfoResolver[] resolvers)
-    : IJsonTypeInfoResolver
-{
-    public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
-    {
-        foreach (var resolver in resolvers)
-        {
-            var typeInfo = resolver.GetTypeInfo(type, options);
-            if (typeInfo != null)
-            {
-                return typeInfo;
-            }
-        }
-        return null;
     }
 }
