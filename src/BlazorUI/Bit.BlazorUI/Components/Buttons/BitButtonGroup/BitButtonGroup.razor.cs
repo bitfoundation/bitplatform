@@ -20,7 +20,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// The content of the BitButtonGroup, that are BitButtonGroupOption components.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetChildContentAndItems))]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -33,7 +33,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetChildContentAndItems))]
     public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
@@ -169,7 +169,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
     }
 
-    private void HandleParameterChanges()
+    private void OnSetChildContentAndItems()
     {
         if (ChildContent is not null) return;
         if (Items.Any() is false || Items == _oldItems) return;
