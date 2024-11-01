@@ -32,12 +32,8 @@
     }
 }
 
-.bit-pgn-ico {
-    transform: var(--bit-pgn-ico-transform);
-}
-
-.bit-rtl {
-    --bit-pgn-ico-transform: scale(-1);
+.bit-pgn-btl {
+    transform: scaleX(-1);
 }
 
 .bit-pgn-elp {
