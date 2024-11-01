@@ -13,7 +13,7 @@
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.FirstButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.FirstButton @GetButtonClasses()">
-            <i style="@Styles?.FirstButtonIcon" class="bit-icon bit-icon--@(FirstIcon ?? "ChevronRightEnd6") @(FirstIcon is null && Dir != BitDir.Rtl ? "bit-pgn-btl" : "") @Styles?.FirstButtonIcon" />
+            <i style="@Styles?.FirstButtonIcon" class="bit-icon bit-icon--@(FirstIcon ?? "ChevronRightEnd6 bit-pgn-trs") @Styles?.FirstButtonIcon" />
         </button>
     }
 
@@ -24,7 +24,7 @@
                 disabled="@(SelectedPage == 1 || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.PreviousButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
-            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@(PreviousIcon ?? "ChevronRight") @(PreviousIcon is null && Dir != BitDir.Rtl ? "bit-pgn-btl" : "") @Classes?.PreviousButtonIcon" />
+            <i style="@Styles?.PreviousButtonIcon" class="bit-icon bit-icon--@(PreviousIcon ?? "ChevronRight bit-pgn-trs") @Classes?.PreviousButtonIcon" />
         </button>
     }
 
@@ -64,7 +64,7 @@
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.NextButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.NextButton @GetButtonClasses()">
-            <i style="@Styles?.NextButtonIcon" class="bit-icon bit-icon--@(NextIcon ?? "ChevronRight") @(NextIcon is null && Dir == BitDir.Rtl ? "bit-pgn-btl" : "") @Classes?.NextButtonIcon" />
+            <i style="@Styles?.NextButtonIcon" class="bit-icon bit-icon--@(NextIcon ?? "ChevronRight bit-pgn-tre") @Classes?.NextButtonIcon" />
         </button>
     }
 
@@ -75,7 +75,7 @@
                 disabled="@(SelectedPage == Count || IsEnabled is false)"
                 style="@Styles?.Button @Styles?.LastButton"
                 class="bit-pgn-btn @Classes?.Button @Classes?.LastButton @GetButtonClasses()">
-            <i style="@Styles?.LastButtonIcon" class="bit-icon bit-icon--@(LastIcon ?? "ChevronRightEnd6") @(LastIcon is null && Dir == BitDir.Rtl ? "bit-pgn-btl" : "") @Classes?.LastButtonIcon" />
+            <i style="@Styles?.LastButtonIcon" class="bit-icon bit-icon--@(LastIcon ?? "ChevronRightEnd6 bit-pgn-tre") @Classes?.LastButtonIcon" />
         </button>
     }
 </div>

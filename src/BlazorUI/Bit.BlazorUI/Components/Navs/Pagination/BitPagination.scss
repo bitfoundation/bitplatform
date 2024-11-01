@@ -6,6 +6,8 @@
     align-items: center;
     display: inline-flex;
     font-size: var(--bit-pgn-font-size);
+    --bit-pgn-ico-transform-end: scaleX(1);
+    --bit-pgn-ico-transform-start: scaleX(-1);
     --bit-pgn-clr-dis: #{$clr-bg-dis};
     --bit-pgn-clr-txt-dis: #{$clr-fg-dis};
     --bit-pgn-clr-btn-txt-hover: var(--bit-pgn-clr-txt);
@@ -32,8 +34,17 @@
     }
 }
 
-.bit-pgn-btl {
-    transform: scaleX(-1);
+.bit-pgn-trs {
+    transform: var(--bit-pgn-ico-transform-start);
+}
+
+.bit-pgn-tre {
+    transform: var(--bit-pgn-ico-transform-end);
+}
+
+.bit-rtl {
+    --bit-pgn-ico-transform-end: scaleX(-1);
+    --bit-pgn-ico-transform-start: scaleX(1);
 }
 
 .bit-pgn-elp {
