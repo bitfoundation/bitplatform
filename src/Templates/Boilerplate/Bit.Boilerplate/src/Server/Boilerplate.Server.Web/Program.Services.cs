@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
@@ -9,7 +8,6 @@ using Boilerplate.Server.Api;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Boilerplate.Client.Core.Services.Contracts;
-using Boilerplate.Shared;
 
 namespace Boilerplate.Server.Web;
 
@@ -18,11 +16,12 @@ public static partial class Program
     public static void AddServerWebProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
-
         var services = builder.Services;
         var configuration = builder.Configuration;
 
         services.AddClientWebProjectServices(configuration);
+
+        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
 
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
@@ -54,8 +53,6 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
-
         AddBlazor(builder);
     }
 
@@ -64,9 +61,8 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
-
-        services.AddTransient(sp =>
+        services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.AddScoped(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
             // Key headers such as Authorization and AcceptLanguage headers are added in Client/Core/Services/HttpMessageHandlers. 
