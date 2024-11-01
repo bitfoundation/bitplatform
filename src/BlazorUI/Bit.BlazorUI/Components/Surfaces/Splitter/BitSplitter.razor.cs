@@ -80,7 +80,7 @@ public partial class BitSplitter : BitComponentBase
     /// Sets the orientation of BitSplitter to vertical.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(ResetPaneDimensions))]
+    [CallOnSet(nameof(OnSetVertical))]
     public bool Vertical { get; set; }
 
 
@@ -109,7 +109,7 @@ public partial class BitSplitter : BitComponentBase
 
 
 
-    private async Task ResetPaneDimensions()
+    private async Task OnSetVertical()
     {
         await _js.BitSplitterResetPaneDimensions(_firstPanelRef);
         await _js.BitSplitterResetPaneDimensions(_secondPanelRef);

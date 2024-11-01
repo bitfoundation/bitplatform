@@ -20,7 +20,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
@@ -32,7 +32,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Default selected item for ChoiceGroup.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public TValue? DefaultValue { get; set; }
 
     /// <summary>
@@ -49,7 +49,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Sets the data source that populates the items of the list.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
@@ -155,7 +155,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
 
 
-    private void HandleParameterChanges()
+    private void OnSetParameters()
     {
         if (ChildContent is not null) return;
         if (Items.Any() is false || Items == _oldItems) return;
