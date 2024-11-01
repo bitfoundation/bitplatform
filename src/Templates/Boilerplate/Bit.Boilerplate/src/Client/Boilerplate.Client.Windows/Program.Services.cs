@@ -53,7 +53,7 @@ public static partial class Program
             //#if (appCenter == true)
             if (Microsoft.AppCenter.AppCenter.Configured)
             {
-                loggingBuilder.AddAppCenter(options => { });
+                loggingBuilder.AddAppCenter(options => options.IncludeScopes = true);
             }
             //#endif
             //#if (appInsights == true)
