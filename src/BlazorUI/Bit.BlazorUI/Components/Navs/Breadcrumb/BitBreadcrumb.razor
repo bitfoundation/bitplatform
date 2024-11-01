@@ -97,7 +97,7 @@
                     {
                         <span aria-current="@(GetIsSelected(item) ? "page" : null)"
                               style="@GetStyles(item, false)"
-                              class="bit-brc-itm bit-brc-noc @GetClasses(item, false)">
+                              class="bit-brc-nii @GetClasses(item, false)">
                             @if (template is not null)
                             {
                                 @template(item)
@@ -202,7 +202,7 @@
                     {
                         <span aria-current="@(GetIsSelected(item) ? "page" : null)"
                               style="@GetStyles(item, true)"
-                              class="bit-brc-ofi bit-brc-noc @GetClasses(item, true)">
+                              class="bit-brc-ofn @GetClasses(item, true)">
                               @if (overflowTemplate is not null)
                               {
                                   @overflowTemplate(item)
