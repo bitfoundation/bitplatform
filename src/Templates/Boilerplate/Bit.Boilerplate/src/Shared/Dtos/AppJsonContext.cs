@@ -6,7 +6,6 @@ using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Dtos.Dashboard;
 using Boilerplate.Shared.Dtos.Products;
 //#endif
-using Boilerplate.Shared.Dtos.Identity;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
@@ -19,7 +18,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(string[]))]
-[JsonSerializable(typeof(UserDto))]
+[JsonSerializable(typeof(RestErrorInfo))]
 //#if (notification == true)
 [JsonSerializable(typeof(DeviceInstallationDto))]
 //#endif
@@ -38,25 +37,6 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<CategoryDto>))]
 [JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
-[JsonSerializable(typeof(IdentityRequestDto))]
-[JsonSerializable(typeof(SignInRequestDto))]
-[JsonSerializable(typeof(SignInResponseDto))]
-[JsonSerializable(typeof(TokenResponseDto))]
-[JsonSerializable(typeof(RefreshRequestDto))]
-[JsonSerializable(typeof(SignUpRequestDto))]
-[JsonSerializable(typeof(EditUserDto))]
-[JsonSerializable(typeof(RestErrorInfo))]
-[JsonSerializable(typeof(SendEmailTokenRequestDto))]
-[JsonSerializable(typeof(SendPhoneTokenRequestDto))]
-[JsonSerializable(typeof(ConfirmEmailRequestDto))]
-[JsonSerializable(typeof(ChangeEmailRequestDto))]
-[JsonSerializable(typeof(ConfirmPhoneRequestDto))]
-[JsonSerializable(typeof(ChangePhoneNumberRequestDto))]
-[JsonSerializable(typeof(SendResetPasswordTokenRequestDto))]
-[JsonSerializable(typeof(ResetPasswordRequestDto))]
-[JsonSerializable(typeof(TwoFactorAuthRequestDto))]
-[JsonSerializable(typeof(TwoFactorAuthResponseDto))]
-[JsonSerializable(typeof(List<UserSessionDto>))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }
