@@ -176,6 +176,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     {
         if (IsEnabled is false) return;
         if (GetIsEnabled(item) is false) return;
+        if (OnItemClick.HasDelegate is false) return;
 
         await OnItemClick.InvokeAsync(item);
 
