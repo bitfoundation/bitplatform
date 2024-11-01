@@ -1,6 +1,5 @@
 ﻿using Boilerplate.Shared;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -10,15 +9,24 @@ public static partial class ISharedServiceCollectionExtensions
     {
         // Services being registered here can get injected everywhere (Api, Web, Android, iOS, Windows and macOS)
 
+        services.AddScoped<HtmlRenderer>();
+        services.AddScoped<CultureInfoManager>();
+        services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+
+        services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
+
+            options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
+
+            return options;
+        });
+
         services.AddOptions<SharedSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
-
-        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
-        services.AddTransient<CultureInfoManager>();
 
         // Define authorization policies here to seamlessly integrate them across various components,
         // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
@@ -30,10 +38,6 @@ public static partial class ISharedServiceCollectionExtensions
         });
 
         services.AddLocalization();
-
-        services.AddTransient(typeof(Lazy<>), typeof(Lazy<>)); // add support for lazy injection
-        services.AddTransient<HtmlRenderer>();
-        services.AddTransient(sp => AppJsonContext.Default.Options);
 
         return services;
     }

@@ -14,6 +14,7 @@ using Twilio;
 using PhoneNumbers;
 using FluentStorage;
 using FluentStorage.Blobs;
+using FluentEmail.Core;
 //#if (notification == true)
 using AdsPush;
 using AdsPush.Abstraction;
@@ -30,10 +31,63 @@ public static partial class Program
     public static void AddServerApiProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
-
+        var env = builder.Environment;
         var services = builder.Services;
         var configuration = builder.Configuration;
-        var env = builder.Environment;
+        var appSettings = configuration.Get<ServerApiSettings>()!;
+
+        services.AddScoped<EmailService>();
+        services.AddScoped<PhoneService>();
+        if (appSettings.Sms?.Configured is true)
+        {
+            TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
+        }
+
+        services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
+        services.AddSingleton<IBlobStorage>(sp =>
+        {
+            //#if (filesStorage == "Local")
+            var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
+            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+            Directory.CreateDirectory(attachmentsDirPath);
+            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
+            //#elif (filesStorage == "AzureBlobStorage")
+            var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
+            return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
+                                 ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
+                                 : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
+            //#else
+            // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
+            throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
+            //#endif
+        });
+        //#if (notification == true)
+        services.AddSingleton(_ =>
+        {
+            var adsPushSenderBuilder = new AdsPushSenderBuilder();
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
+            {
+                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
+
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
+            }
+
+            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
+            {
+                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
+            }
+
+            return adsPushSenderBuilder
+                .BuildSender();
+        });
+        services.AddScoped<PushNotificationService>();
+        //#endif
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
@@ -54,8 +108,6 @@ public static partial class Program
         //#if (appInsights == true)
         services.AddApplicationInsightsTelemetry(configuration);
         //#endif
-
-        var appSettings = configuration.Get<ServerApiSettings>()!;
 
         services.AddCors(builder =>
         {
@@ -79,11 +131,11 @@ public static partial class Program
 
         services.AddAntiforgery();
 
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]));
 
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.Add(AppJsonContext.Default))
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]))
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -202,67 +254,12 @@ public static partial class Program
             }
         }
 
-        services.AddTransient<EmailService>();
-        services.AddTransient<PhoneService>();
-        if (appSettings.Sms?.Configured is true)
-        {
-            TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
-        }
-
-        services.AddSingleton<IBlobStorage>(sp =>
-        {
-            //#if (filesStorage == "Local")
-            var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-            var attachmentsDirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
-            Directory.CreateDirectory(attachmentsDirPath);
-            return StorageFactory.Blobs.DirectoryFiles(attachmentsDirPath);
-            //#elif (filesStorage == "AzureBlobStorage")
-            var azureBlobStorageSasUrl = configuration.GetConnectionString("AzureBlobStorageSasUrl");
-            return (IBlobStorage)(azureBlobStorageSasUrl is "emulator"
-                                 ? StorageFactory.Blobs.AzureBlobStorageWithLocalEmulator()
-                                 : StorageFactory.Blobs.AzureBlobStorageWithSas(azureBlobStorageSasUrl));
-            //#else
-            // Note that FluentStorage.AWS can be used with any S3 compatible S3 implementation such as Digital Ocean's Spaces Object Storage.
-            throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
-            //#endif
-        });
-
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
-
-        //#if (notification == true)
-        services.AddScoped(_ =>
-        {
-            var adsPushSenderBuilder = new AdsPushSenderBuilder();
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
-            {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, null);
-            }
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
-            {
-                appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
-
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
-            }
-
-            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
-            {
-                adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, null);
-            }
-
-            return adsPushSenderBuilder
-                .BuildSender();
-        });
-        services.AddTransient<PushNotificationService>();
-        //#endif
-
-        services.AddSingleton(_ => PhoneNumberUtil.GetInstance());
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
@@ -280,7 +277,6 @@ public static partial class Program
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
 
-        services.AddTransient<IUserConfirmation<User>, AppUserConfirmation>();
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -289,10 +285,10 @@ public static partial class Program
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
 
-        services.AddTransient(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
-
-        services.AddTransient(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
-        services.AddTransient(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddScoped<IUserConfirmation<User>, AppUserConfirmation>();
+        services.AddScoped(sp => (IUserEmailStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddScoped(sp => (IUserPhoneNumberStore<User>)sp.GetRequiredService<IUserStore<User>>());
+        services.AddScoped(sp => (AppUserClaimsPrincipalFactory)sp.GetRequiredService<IUserClaimsPrincipalFactory<User>>());
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {

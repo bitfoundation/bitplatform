@@ -67,7 +67,7 @@
     </Target>
 
     <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.css;wwwroot/styles/bit.blazorui.fluent.css;wwwroot/styles/bit.blazorui.fluent-dark.css;wwwroot/styles/bit.blazorui.fluent-light.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

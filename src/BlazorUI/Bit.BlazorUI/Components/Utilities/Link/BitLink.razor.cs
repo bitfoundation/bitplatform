@@ -19,7 +19,7 @@ public partial class BitLink : BitComponentBase
     /// URL the link points to.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetRelAndHref))]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
     public string? Href { get; set; }
 
     /// <summary>
@@ -37,7 +37,7 @@ public partial class BitLink : BitComponentBase
     /// If Href provided, specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetRelAndHref))]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
     public BitAnchorRel? Rel { get; set; }
 
     /// <summary>
@@ -76,7 +76,7 @@ public partial class BitLink : BitComponentBase
         await _js.ScrollElementIntoView(Href![1..]);
     }
 
-    private void OnSetRelAndHref()
+    private void OnSetHrefAndRel()
     {
         if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
         {

@@ -39,7 +39,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.6" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.6" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.6" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.0.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.0.3" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.12.0-pre-07" />
@@ -77,7 +77,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0-rc.2.24474.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.0-rc.2.24474.3" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
-        <PackageVersion Include="Riok.Mapperly" Version="4.0.0" />
+        <PackageVersion Include="Riok.Mapperly" Version="4.1.0" />
         <PackageVersion Include="Twilio" Version="7.6.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0-rc.2.24474.3" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.0-rc.2.24474.3" />

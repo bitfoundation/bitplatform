@@ -2,7 +2,6 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Windows.Services;
-using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Windows;
 
@@ -11,12 +10,11 @@ public static partial class Program
     public static void AddClientWindowsProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected in windows project only.
-
-        services.AddTransient(sp => configuration);
-
         services.AddClientCoreProjectServices(configuration);
 
-        services.AddSessioned(sp =>
+        services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
+        services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -26,20 +24,20 @@ public static partial class Program
             return httpClient;
         });
 
+        services.AddSingleton(sp => configuration);
+        services.AddSingleton<IStorageService, WindowsStorageService>();
+        services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
+        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
+        services.AddSingleton(ITelemetryContext.Current = new WindowsTelemetryContext());
+        //#if (notification == true)
+        services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
+        //#endif
+
         services.AddWpfBlazorWebView();
         if (AppEnvironment.IsDev())
         {
             services.AddBlazorWebViewDeveloperTools();
         }
-
-        services.AddSingleton(ITelemetryContext.Current = new WindowsTelemetryContext());
-        services.AddTransient<IStorageService, WindowsStorageService>();
-        services.AddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WindowsExceptionHandler>();
-        services.AddSessioned<ILocalHttpServer, WindowsLocalHttpServer>();
-        //#if (notification == true)
-        services.AddScoped<IPushNotificationService, WindowsPushNotificationService>();
-        //#endif
 
         services.AddLogging(loggingBuilder =>
         {
@@ -78,7 +76,5 @@ public static partial class Program
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
     }
 }
