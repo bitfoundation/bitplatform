@@ -5,8 +5,6 @@ namespace System.Text.Json;
 
 public static partial class JsonSerializerOptionsExtensions
 {
-    private static readonly ConcurrentDictionary<Type, JsonTypeInfo> _typeInfoCache = [];
-
     /// <summary>
     /// https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-source-generator/
     /// </summary>
