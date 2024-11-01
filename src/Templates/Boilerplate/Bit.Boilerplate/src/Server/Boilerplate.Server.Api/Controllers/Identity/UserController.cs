@@ -304,7 +304,10 @@ public partial class UserController : AppControllerBase, IUserController
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrEmpty(unformattedKey))
         {
-            await userManager.ResetAuthenticatorKeyAsync(user);
+            IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
+            await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
+                userManager.GenerateNewAuthenticatorKey(), cancellationToken);
+            await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
             if (string.IsNullOrEmpty(unformattedKey))
