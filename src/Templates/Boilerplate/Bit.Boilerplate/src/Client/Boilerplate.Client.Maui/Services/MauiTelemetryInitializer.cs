@@ -13,7 +13,7 @@ public partial class MauiTelemetryInitializer : ITelemetryInitializer
             telemetry.Context.Session.Id = ITelemetryContext.Current.AppSessionId.ToString();
             telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
             telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
-            telemetry.Context.User.Id = ITelemetryContext.Current.UserId?.ToString();
+            telemetry.Context.User.AuthenticatedUserId = ITelemetryContext.Current.UserId?.ToString();
 
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
@@ -28,6 +28,7 @@ public partial class MauiTelemetryInitializer : ITelemetryInitializer
         telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
         telemetry.Context.Device.OemName = DeviceInfo.Current.Manufacturer;
         telemetry.Context.Device.Model = DeviceInfo.Current.Model;
+        telemetry.Context.Device.Type = DeviceInfo.Idiom.ToString();
 
         if (AppPlatform.IsIosOnMacOS)
         {

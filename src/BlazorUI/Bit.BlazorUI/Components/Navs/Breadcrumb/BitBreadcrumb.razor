@@ -67,7 +67,7 @@
                             }
                         </a>
                     }
-                    else
+                    else if (OnItemClick.HasDelegate)
                     {
                         <button type="button"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
@@ -93,6 +93,30 @@
                             }
                         </button>
                     }
+                    else 
+                    {
+                        <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                              style="@GetStyles(item, false)"
+                              class="bit-brc-nii @GetClasses(item, false)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                        </span>
+                    }
                 }
             </li>
 
@@ -106,7 +130,7 @@
                     else
                     {
                         <i style="@Styles?.DividerIcon"
-                           class="bit-brc-div bit-icon bit-icon--@(DividerIconName ?? "ChevronRight") @(Dir == BitDir.Rtl && DividerIconName is null ? "bit-brc-rdi" : "") @Classes?.DividerIcon" />
+                           class="bit-brc-div bit-icon bit-icon--@(DividerIconName ?? "ChevronRight bit-brc-trd") @Classes?.DividerIcon" />
                     }
                 </li>
             }
@@ -148,7 +172,7 @@
                             }
                         </a>
                     }
-                    else
+                    else if (OnItemClick.HasDelegate)
                     {
                         <button type="button"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
@@ -173,6 +197,30 @@
                                 <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
                             }
                         </button>
+                    }
+                    else
+                    {
+                        <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                              style="@GetStyles(item, true)"
+                              class="bit-brc-ofn @GetClasses(item, true)">
+                              @if (overflowTemplate is not null)
+                              {
+                                  @overflowTemplate(item)
+                              }
+                              else if (OverflowTemplate is not null)
+                              {
+                                  @OverflowTemplate(item)
+                              }
+                              else
+                              {
+                                  var iconName = GetIconName(item);
+                                  @if (iconName.HasValue())
+                                  {
+                                      <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                  }
+                                  <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                              }
+                        </span>
                     }
                 </li>
             }

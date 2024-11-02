@@ -9,11 +9,11 @@
         <ProjectReference Include="..\Bit.Websites.Platform.Client\Bit.Websites.Platform.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.12.0-pre-07">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.12.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.12.0-pre-07">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.12.0-pre-08">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -22,7 +22,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.2" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="8.0.1" />
-        <PackageReference Include="Riok.Mapperly" Version="4.0.0" />
+        <PackageReference Include="Riok.Mapperly" Version="4.1.0" />
     </ItemGroup>
 
     <ItemGroup>

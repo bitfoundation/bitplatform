@@ -13,9 +13,6 @@ public partial class NavPanel
     private List<BitNavItem> flatNavItemList = [];
     private List<BitNavItem> filteredNavItems = [];
 
-    [AutoInject] private NavigationManager navManager = default!;
-
-
 
     protected override async Task OnInitAsync()
     {

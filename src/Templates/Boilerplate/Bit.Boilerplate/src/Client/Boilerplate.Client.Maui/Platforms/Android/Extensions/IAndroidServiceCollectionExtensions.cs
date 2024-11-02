@@ -12,7 +12,7 @@ public static partial class IAndroidServiceCollectionExtensions
         // Services being registered here can get injected in Maui/Android.
 
         //#if (notification == true)
-        services.AddSessioned<IPushNotificationService, AndroidPushNotificationService>();
+        services.AddSingleton<IPushNotificationService, AndroidPushNotificationService>();
         //#endif
 
         return services;

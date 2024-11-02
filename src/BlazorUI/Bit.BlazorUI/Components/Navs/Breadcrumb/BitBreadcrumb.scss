@@ -2,6 +2,7 @@
 
 .bit-brc {
     white-space: nowrap;
+    --bit-brc-div-transform: scaleX(1);
 
     &.bit-dis {
         cursor: default;
@@ -44,8 +45,12 @@
     color: $clr-fg-sec;
 }
 
-.bit-brc-rdi {
-    transform: scaleX(-1);
+.bit-brc-trd {
+    transform: var(--bit-brc-div-transform);
+}
+
+.bit-rtl {
+    --bit-brc-div-transform: scaleX(-1);
 }
 
 .bit-brc-obt {
@@ -64,15 +69,19 @@
     }
 }
 
-.bit-brc-itm {
+.bit-brc-itm,
+.bit-brc-nii {
     display: flex;
     gap: spacing(1);
-    cursor: pointer;
     font-weight: 400;
     color: $clr-fg-pri;
     padding: 0 spacing(1);
     font-size: spacing(2.5);
     line-height: spacing(4.5);
+}
+
+.bit-brc-itm {
+    cursor: pointer;
 
     @media (hover: hover) {
         &:hover {
@@ -113,11 +122,11 @@
     max-height: spacing(88.875);
 }
 
-.bit-brc-ofi {
+.bit-brc-ofi,
+.bit-brc-ofn {
     width: 100%;
     display: flex;
     gap: spacing(1);
-    cursor: pointer;
     overflow: hidden;
     text-align: left;
     font-weight: 400;
@@ -137,6 +146,10 @@
     line-height: spacing(2.5);
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
+}
+
+.bit-brc-ofi {
+    cursor: pointer;
 
     @media (hover: hover) {
         &:hover {

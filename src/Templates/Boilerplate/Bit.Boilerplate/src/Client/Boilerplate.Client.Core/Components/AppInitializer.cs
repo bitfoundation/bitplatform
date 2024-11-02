@@ -20,9 +20,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<AppInitializer> logger = default!;
-    [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
-    [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
@@ -36,7 +34,7 @@ public partial class AppInitializer : AppComponentBase
         {
             if (CultureInfoManager.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(new Uri(navigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
                                                      await storageService.GetItem("Culture") ?? // 2- User settings
                                                      CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
@@ -98,11 +96,16 @@ public partial class AppInitializer : AppComponentBase
             await hubConnection.DisposeAsync();
         }
 
+        var hubAddress = $"{HttpClient.BaseAddress}app-hub";
         var access_token = await AuthTokenProvider.GetAccessToken();
+        if (access_token is not null)
+        {
+            hubAddress += $"?access_token={access_token}";
+        }
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect()
-            .WithUrl($"{HttpClient.BaseAddress}app-hub?access_token={access_token}", options =>
+            .WithUrl(hubAddress, options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
@@ -117,7 +120,7 @@ public partial class AppInitializer : AppComponentBase
 
         hubConnection.On<string>("DisplayMessage", async (message) =>
         {
-            snackBarService.Show(message, "");
+            SnackBarService.Show(message, "");
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>

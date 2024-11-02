@@ -5,13 +5,16 @@
 /// </summary>
 public partial class PubSubService
 {
-    private readonly ConcurrentDictionary<string, List<Func<object?, Task>>> handlers = new();
+    private readonly ConcurrentDictionary<string, List<Func<object?, Task>>> handlers = [];
+
+    /// <summary>
+    /// Messages that were published before any handler was subscribed.
+    /// </summary>
+    private readonly ConcurrentBag<(string message, object? payload)> persistentMessages = [];
 
     [AutoInject] private readonly IServiceProvider serviceProvider = default!;
 
-
-
-    public void Publish(string message, object? payload = null)
+    public void Publish(string message, object? payload = null, bool persistent = false)
     {
         if (handlers.TryGetValue(message, out var messageHandlers))
         {
@@ -20,10 +23,9 @@ public partial class PubSubService
                 handler(payload).ContinueWith(handleException, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
-
-        void handleException(Task t)
+        else if (persistent)
         {
-            serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
+            persistentMessages.Add((message, payload));
         }
     }
 
@@ -33,6 +35,20 @@ public partial class PubSubService
 
         messageHandlers.Add(handler);
 
+        foreach (var (notHandledMessage, payload) in persistentMessages)
+        {
+            if (notHandledMessage == message)
+            {
+                handler(payload).ContinueWith(handleException, TaskContinuationOptions.OnlyOnFaulted);
+                persistentMessages.TryTake(out _);
+            }
+        }
+
         return () => messageHandlers.Remove(handler);
+    }
+
+    private void handleException(Task t)
+    {
+        serviceProvider.GetRequiredService<IExceptionHandler>().Handle(t.Exception!);
     }
 }

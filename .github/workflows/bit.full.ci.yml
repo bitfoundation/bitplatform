@@ -5,6 +5,9 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  SIMPLE_TEST_FILTER: "FullyQualifiedName!~PageTests"
+  BLAZOR_SERVER_TEST_FILTER: "PageTests.BlazorServer"
+  BLAZOR_WASM_TEST_FILTER: "PageTests.BlazorWebAssembly"
 
 jobs:
 
@@ -40,7 +43,9 @@ jobs:
 
     - name: Prepare environment
       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
+        cd src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/
+        sed -i 's|"ServerAddress": "http://localhost:5030/",|"ServerAddress": "/",|' appsettings.json
+        cd ../../../../ && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
@@ -53,6 +58,27 @@ jobs:
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
 
+    - name: Simple tests (no --advancedTests)
+      id: simple-test
+      run: |
+        dotnet new bit-bp --name SimpleTest --database Sqlite
+        cd SimpleTest/src/Server/SimpleTest.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.simple-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./SimpleTest/src/Tests/TestResults
+        retention-days: 14
+
     - name: Test Sqlite database option
       id: sqlite-test
       run: |
@@ -64,8 +90,8 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
-        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -84,8 +110,8 @@ jobs:
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test --logger GitHubActions --filter "FullyQualifiedName~Boilerplate.Tests.PageTests.BlazorServer|FullyQualifiedName!~PageTests"
-        dotnet test --logger GitHubActions --filter Boilerplate.Tests.PageTests.BlazorWebAssembly
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1

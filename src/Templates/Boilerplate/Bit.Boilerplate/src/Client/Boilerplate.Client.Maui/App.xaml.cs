@@ -36,6 +36,7 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
+//-:cnd:noEmit
 #if Android
             if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
         webViewVersion.Major < 83)
