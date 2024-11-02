@@ -165,7 +165,7 @@
 
 .bit-snb-tst {
     top: spacing(1);
-    inset-inline-start: spacing(1);
+    inset-inline: spacing(1);
 }
 
 .bit-snb-tcn {
@@ -177,12 +177,12 @@
 .bit-snb-ten {
     top: spacing(1);
     align-items: flex-end;
-    inset-inline-end: spacing(1);
+    inset-inline: spacing(1);
 }
 
 .bit-snb-bst {
     bottom: spacing(1);
-    inset-inline-start: spacing(1);
+    inset-inline: spacing(1);
 }
 
 .bit-snb-bcn {
@@ -194,5 +194,5 @@
 .bit-snb-ben {
     bottom: spacing(1);
     align-items: flex-end;
-    inset-inline-end: spacing(1);
+    inset-inline: spacing(1);
 }
