@@ -2,7 +2,13 @@
 
 public partial class BitPdfReader
 {
+    [Parameter] public BitPdfReaderConfig Config { get; set; }
+
+
+
     [Inject] private IJSRuntime _js { get; set; }
+
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -12,9 +18,10 @@ public partial class BitPdfReader
                 "_content/Bit.BlazorUI.Extras/pdf.js/pdfjs-4.7.76.js",
                 "_content/Bit.BlazorUI.Extras/pdf.js/pdfjs-4.7.76-worker.js"
             ];
-
             
-            await _js.InitChartJs(scripts);
+            await _js.InitPdfJs(scripts);
+
+            await _js.SetupPdf(Config.Id, Config.Url);
         }
     }
 }

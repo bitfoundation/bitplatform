@@ -1,5 +1,5 @@
 /** @implements {IPDFStream} */
-export class PDFFetchStream implements IPDFStream {
+declare class PDFFetchStream implements IPDFStream {
     constructor(source: any);
     source: any;
     isHttp: boolean;
@@ -62,4 +62,3 @@ declare class PDFFetchStreamRangeReader implements IPDFStreamRangeReader {
     }>;
     cancel(reason: any): void;
 }
-export {};

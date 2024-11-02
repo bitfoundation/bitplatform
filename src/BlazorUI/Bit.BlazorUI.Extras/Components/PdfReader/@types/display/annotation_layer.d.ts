@@ -1,15 +1,8 @@
-export type PDFPageProxy = import("./api").PDFPageProxy;
-export type PageViewport = import("./display_utils").PageViewport;
-export type TextAccessibilityManager = import("../../web/text_accessibility.js").TextAccessibilityManager;
-export type IDownloadManager = import("../../web/interfaces").IDownloadManager;
-export type IPDFLinkService = import("../../web/interfaces").IPDFLinkService;
-export type AnnotationEditorUIManager = any;
-export type StructTreeLayerBuilder = import("../../web/struct_tree_layer_builder.js").StructTreeLayerBuilder;
-export type AnnotationElementParameters = {
+declare type AnnotationElementParameters = {
     data: Object;
     layer: HTMLDivElement;
     linkService: IPDFLinkService;
-    downloadManager?: import("../../web/interfaces").IDownloadManager | undefined;
+    downloadManager?: IDownloadManager | undefined;
     annotationStorage?: AnnotationStorage | undefined;
     /**
      * - Path for image resources, mainly
@@ -22,13 +15,13 @@ export type AnnotationElementParameters = {
     hasJSActions?: boolean | undefined;
     fieldObjects?: Object | undefined;
 };
-export type AnnotationLayerParameters = {
+declare type AnnotationLayerParameters = {
     viewport: PageViewport;
     div: HTMLDivElement;
     annotations: any[];
     page: PDFPageProxy;
     linkService: IPDFLinkService;
-    downloadManager?: import("../../web/interfaces").IDownloadManager | undefined;
+    downloadManager?: IDownloadManager | undefined;
     annotationStorage?: AnnotationStorage | undefined;
     /**
      * - Path for image resources, mainly
@@ -49,9 +42,9 @@ export type AnnotationLayerParameters = {
         [x: string]: Object[];
     } | null | undefined;
     annotationCanvasMap?: Map<string, HTMLCanvasElement> | undefined;
-    accessibilityManager?: import("../../web/text_accessibility.js").TextAccessibilityManager | undefined;
+    accessibilityManager?: TextAccessibilityManager | undefined;
     annotationEditorUIManager?: AnnotationEditorUIManager;
-    structTreeLayer?: import("../../web/struct_tree_layer_builder.js").StructTreeLayerBuilder | undefined;
+    structTreeLayer?: StructTreeLayerBuilder | undefined;
 };
 /**
  * @typedef {Object} AnnotationLayerParameters
@@ -77,7 +70,7 @@ export type AnnotationLayerParameters = {
 /**
  * Manage the layer containing all the annotations.
  */
-export class AnnotationLayer {
+declare class AnnotationLayer {
     constructor({ div, accessibilityManager, annotationCanvasMap, annotationEditorUIManager, page, viewport, structTreeLayer, }: {
         div: any;
         accessibilityManager: any;
@@ -110,30 +103,28 @@ export class AnnotationLayer {
     update({ viewport }: AnnotationLayerParameters): void;
     getEditableAnnotations(): any[];
     getEditableAnnotation(id: any): any;
-    #private;
 }
-export class FreeTextAnnotationElement extends AnnotationElement {
+declare class FreeTextAnnotationElement extends AnnotationElement {
     constructor(parameters: any);
     textContent: any;
     textPosition: any;
     annotationEditorType: number;
     render(): HTMLElement | undefined;
 }
-export class HighlightAnnotationElement extends AnnotationElement {
+declare class HighlightAnnotationElement extends AnnotationElement {
     constructor(parameters: any);
     annotationEditorType: number;
     render(): HTMLElement | undefined;
 }
-export class InkAnnotationElement extends AnnotationElement {
+declare class InkAnnotationElement extends AnnotationElement {
     constructor(parameters: any);
     containerClassName: string;
     svgElementName: string;
     annotationEditorType: number;
     render(): HTMLElement | undefined;
     getElementsToTriggerPopup(): any[];
-    #private;
 }
-export class StampAnnotationElement extends AnnotationElement {
+declare class StampAnnotationElement extends AnnotationElement {
     constructor(parameters: any);
     annotationEditorType: number;
     render(): HTMLElement | undefined;
@@ -222,6 +213,4 @@ declare class AnnotationElement {
     public getElementsToTriggerPopup(): Array<HTMLElement> | HTMLElement;
     addHighlightArea(): void;
     _editOnDoubleClick(): void;
-    #private;
 }
-export {};

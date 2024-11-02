@@ -1,10 +1,10 @@
-export function getShadingPattern(IR: any): RadialAxialShadingPattern | MeshShadingPattern | DummyShadingPattern;
-export namespace PathType {
+declare function getShadingPattern(IR: any): RadialAxialShadingPattern | MeshShadingPattern | DummyShadingPattern;
+declare namespace PathType {
     let FILL: string;
     let STROKE: string;
     let SHADING: string;
 }
-export class TilingPattern {
+declare class TilingPattern {
     static MAX_PATTERN_SIZE: number;
     constructor(IR: any, color: any, ctx: any, canvasGraphicsFactory: any, baseTransform: any);
     operatorList: any;
@@ -68,6 +68,5 @@ declare class DummyShadingPattern extends BaseShadingPattern {
     getPattern(): string;
 }
 declare class BaseShadingPattern {
-    getPattern(): void;
+    getPattern(ctx: any, owner: any, inverse: any, pathType: any): any;
 }
-export {};

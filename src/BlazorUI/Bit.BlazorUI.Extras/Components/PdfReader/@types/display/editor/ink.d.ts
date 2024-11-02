@@ -1,7 +1,7 @@
 /**
  * Basic draw editor in order to generate an Ink annotation.
  */
-export class InkEditor extends AnnotationEditor {
+declare class InkEditor extends AnnotationEditor {
     static _defaultColor: null;
     static _defaultOpacity: number;
     static _defaultThickness: number;
@@ -85,6 +85,4 @@ export class InkEditor extends AnnotationEditor {
         rotation: number;
         structTreeParentId: any;
     } | null;
-    #private;
 }
-import { AnnotationEditor } from "./editor.js";

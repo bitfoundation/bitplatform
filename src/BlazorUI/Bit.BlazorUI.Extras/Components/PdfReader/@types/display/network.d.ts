@@ -1,5 +1,5 @@
 /** @implements {IPDFStream} */
-export class PDFNetworkStream implements IPDFStream {
+declare class PDFNetworkStream implements IPDFStream {
     constructor(source: any);
     _source: any;
     _manager: NetworkManager;
@@ -47,7 +47,7 @@ declare class PDFNetworkStreamFullRequestReader implements IPDFStreamReader {
     _cachedChunks: any[];
     _requests: any[];
     _done: boolean;
-    _storedError: import("../shared/util.js").MissingPDFException | import("../shared/util.js").UnexpectedResponseException | undefined;
+    _storedError: MissingPDFException | UnexpectedResponseException | undefined;
     _filename: string | null;
     onProgress: any;
     _onHeadersReceived(): void;
@@ -72,7 +72,7 @@ declare class PDFNetworkStreamRangeRequestReader implements IPDFStreamRangeReade
     _requests: any[];
     _queuedChunk: any;
     _done: boolean;
-    _storedError: import("../shared/util.js").MissingPDFException | import("../shared/util.js").UnexpectedResponseException | undefined;
+    _storedError: MissingPDFException | UnexpectedResponseException | undefined;
     onProgress: any;
     onClosed: any;
     _close(): void;
@@ -83,4 +83,3 @@ declare class PDFNetworkStreamRangeRequestReader implements IPDFStreamRangeReade
     read(): Promise<any>;
     cancel(reason: any): void;
 }
-export {};

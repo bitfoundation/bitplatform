@@ -1,0 +1,20 @@
+@page "/components/pdfreader"
+
+@inherits AppComponentBase
+
+<PageOutlet Url="components/pdfreader"
+            Title="PdfReader"
+            Description="pdfreader component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="PdfReader"
+               ComponentDescription="BitPdfReader is ... ."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <BitPdfReader Config="@(new() { Url="/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" })" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

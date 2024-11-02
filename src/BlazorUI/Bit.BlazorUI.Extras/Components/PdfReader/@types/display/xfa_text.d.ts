@@ -1,6 +1,5 @@
-export type TextContent = import("./api").TextContent;
 /** @typedef {import("./api").TextContent} TextContent */
-export class XfaText {
+declare class XfaText {
     /**
      * Walk an XFA tree and create an array of text nodes that is compatible
      * with a regular PDFs TextContent. Currently, only TextItem.str is supported,

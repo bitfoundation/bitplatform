@@ -1,4 +1,4 @@
-export class FontFaceObject {
+declare class FontFaceObject {
     constructor(translatedData: any, { disableFontFace, inspectFont }: {
         disableFontFace?: boolean | undefined;
         inspectFont?: null | undefined;
@@ -10,7 +10,7 @@ export class FontFaceObject {
     createFontFaceRule(): string | null;
     getPathGenerator(objs: any, character: any): any;
 }
-export class FontLoader {
+declare class FontLoader {
     constructor({ ownerDocument, styleElement, }: {
         ownerDocument?: Document | undefined;
         styleElement?: null | undefined;
@@ -38,5 +38,4 @@ export class FontLoader {
     };
     get _loadTestFont(): any;
     _prepareFontLoadEvent(font: any, request: any): void;
-    #private;
 }

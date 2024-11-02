@@ -1,7 +1,7 @@
 /**
  * Basic text editor in order to create a FreeTex annotation.
  */
-export class StampEditor extends AnnotationEditor {
+declare class StampEditor extends AnnotationEditor {
     static _type: string;
     static _editorType: number;
     /** @inheritdoc */
@@ -41,6 +41,4 @@ export class StampEditor extends AnnotationEditor {
     serialize(isForCopying?: boolean, context?: null): Object | null;
     /** @inheritdoc */
     renderAnnotationElement(annotation: any): null;
-    #private;
 }
-import { AnnotationEditor } from "./editor.js";

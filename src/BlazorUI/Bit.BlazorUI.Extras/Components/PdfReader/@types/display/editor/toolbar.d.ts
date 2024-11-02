@@ -1,4 +1,4 @@
-export class EditorToolbar {
+declare class EditorToolbar {
     static "__#4@#l10nRemove": null;
     static "__#4@#pointerDown"(e: any): void;
     constructor(editor: any);
@@ -9,11 +9,9 @@ export class EditorToolbar {
     addAltText(altText: any): Promise<void>;
     addColorPicker(colorPicker: any): void;
     remove(): void;
-    #private;
 }
-export class HighlightToolbar {
+declare class HighlightToolbar {
     constructor(uiManager: any);
     show(parent: any, boxes: any, isLTR: any): void;
     hide(): void;
-    #private;
 }

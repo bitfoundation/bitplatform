@@ -1,4 +1,4 @@
-export type PageViewportParameters = {
+declare type PageViewportParameters = {
     /**
      * - The xMin, yMin, xMax and
      * yMax coordinates.
@@ -28,7 +28,7 @@ export type PageViewportParameters = {
      */
     dontFlip?: boolean | undefined;
 };
-export type PageViewportCloneParameters = {
+declare type PageViewportCloneParameters = {
     /**
      * - The scale, overriding the one in the cloned
      * viewport. The default value is `this.scale`.
@@ -55,8 +55,8 @@ export type PageViewportCloneParameters = {
      */
     dontFlip?: boolean | undefined;
 };
-export function deprecated(details: any): void;
-export class DOMCanvasFactory extends BaseCanvasFactory {
+declare function deprecated(details: any): void;
+declare class DOMCanvasFactory extends BaseCanvasFactory {
     constructor({ ownerDocument, enableHWA }: {
         ownerDocument?: Document | undefined;
         enableHWA?: boolean | undefined;
@@ -67,7 +67,7 @@ export class DOMCanvasFactory extends BaseCanvasFactory {
      */
     _createCanvas(width: any, height: any): HTMLCanvasElement;
 }
-export class DOMCMapReaderFactory extends BaseCMapReaderFactory {
+declare class DOMCMapReaderFactory extends BaseCMapReaderFactory {
     /**
      * @ignore
      */
@@ -85,7 +85,7 @@ export class DOMCMapReaderFactory extends BaseCMapReaderFactory {
  * an image without the need to apply them on the pixel arrays: the renderer
  * does the magic for us.
  */
-export class DOMFilterFactory extends BaseFilterFactory {
+declare class DOMFilterFactory extends BaseFilterFactory {
     constructor({ docId, ownerDocument }: {
         docId: any;
         ownerDocument?: Document | undefined;
@@ -95,30 +95,29 @@ export class DOMFilterFactory extends BaseFilterFactory {
     addAlphaFilter(map: any): any;
     addLuminosityFilter(map: any): any;
     addHighlightHCMFilter(filterName: any, fgColor: any, bgColor: any, newFgColor: any, newBgColor: any): any;
-    #private;
 }
-export class DOMStandardFontDataFactory extends BaseStandardFontDataFactory {
+declare class DOMStandardFontDataFactory extends BaseStandardFontDataFactory {
     /**
      * @ignore
      */
     _fetchData(url: any): Promise<Uint8Array>;
 }
-export class DOMSVGFactory extends BaseSVGFactory {
+declare class DOMSVGFactory extends BaseSVGFactory {
     /**
      * @ignore
      */
     _createSVG(type: any): any;
 }
-export function fetchData(url: any, type?: string): Promise<any>;
-export function getColorValues(colors: any): void;
-export function getCurrentTransform(ctx: any): any[];
-export function getCurrentTransformInverse(ctx: any): any[];
+declare function fetchData(url: any, type?: string): Promise<any>;
+declare function getColorValues(colors: any): void;
+declare function getCurrentTransform(ctx: any): any[];
+declare function getCurrentTransformInverse(ctx: any): any[];
 /**
  * Gets the filename from a given URL.
  * @param {string} url
  * @returns {string}
  */
-export function getFilenameFromUrl(url: string): string;
+declare function getFilenameFromUrl(url: string): string;
 /**
  * Returns the filename or guessed filename from the url (see issue 3455).
  * @param {string} url - The original PDF location.
@@ -126,26 +125,26 @@ export function getFilenameFromUrl(url: string): string;
  *   unknown, or the protocol is unsupported.
  * @returns {string} Guessed PDF filename.
  */
-export function getPdfFilenameFromUrl(url: string, defaultFilename?: string): string;
-export function getRGB(color: any): any;
+declare function getPdfFilenameFromUrl(url: string, defaultFilename?: string): string;
+declare function getRGB(color: any): any;
 /**
  * NOTE: This is (mostly) intended to support printing of XFA forms.
  */
-export function getXfaPageViewport(xfaPage: any, { scale, rotation }: {
+declare function getXfaPageViewport(xfaPage: any, { scale, rotation }: {
     scale?: number | undefined;
     rotation?: number | undefined;
 }): PageViewport;
-export function isDataScheme(url: any): boolean;
-export function isPdfFile(filename: any): boolean;
-export function isValidFetchUrl(url: any, baseUrl: any): boolean;
+declare function isDataScheme(url: any): boolean;
+declare function isPdfFile(filename: any): boolean;
+declare function isValidFetchUrl(url: any, baseUrl: any): boolean;
 /**
  * Event handler to suppress context menu.
  */
-export function noContextMenu(e: any): void;
+declare function noContextMenu(e: any): void;
 /**
  * Scale factors for the canvas, necessary with HiDPI displays.
  */
-export class OutputScale {
+declare class OutputScale {
     /**
      * @type {number} Horizontal scale.
      */
@@ -189,7 +188,7 @@ export class OutputScale {
 /**
  * PDF page viewport created based on scale, rotation and offset.
  */
-export class PageViewport {
+declare class PageViewport {
     /**
      * @param {PageViewportParameters}
      */
@@ -243,7 +242,7 @@ export class PageViewport {
      */
     convertToPdfPoint(x: number, y: number): any[];
 }
-export class PDFDateString {
+declare class PDFDateString {
     /**
      * Convert a PDF date string to a JavaScript `Date` object.
      *
@@ -262,13 +261,13 @@ export class PDFDateString {
      */
     static toDateObject(input: string): Date | null;
 }
-export class PixelsPerInch {
+declare class PixelsPerInch {
     static CSS: number;
     static PDF: number;
     static PDF_TO_CSS_UNITS: number;
 }
 declare const RenderingCancelledException_base: any;
-export class RenderingCancelledException extends RenderingCancelledException_base {
+declare class RenderingCancelledException extends RenderingCancelledException_base {
     [x: string]: any;
     constructor(msg: any, extraDelay?: number);
     extraDelay: number;
@@ -279,17 +278,11 @@ export class RenderingCancelledException extends RenderingCancelledException_bas
  * @param {boolean} mustFlip
  * @param {boolean} mustRotate
  */
-export function setLayerDimensions(div: HTMLDivElement, viewport: PageViewport, mustFlip?: boolean, mustRotate?: boolean): void;
-export class StatTimer {
+declare function setLayerDimensions(div: HTMLDivElement, viewport: PageViewport, mustFlip?: boolean, mustRotate?: boolean): void;
+declare class StatTimer {
     started: any;
     times: any[];
     time(name: any): void;
     timeEnd(name: any): void;
     toString(): string;
 }
-import { BaseCanvasFactory } from "./base_factory.js";
-import { BaseCMapReaderFactory } from "./base_factory.js";
-import { BaseFilterFactory } from "./base_factory.js";
-import { BaseStandardFontDataFactory } from "./base_factory.js";
-import { BaseSVGFactory } from "./base_factory.js";
-export {};

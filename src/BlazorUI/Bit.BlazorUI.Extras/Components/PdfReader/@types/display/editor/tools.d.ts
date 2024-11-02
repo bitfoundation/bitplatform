@@ -1,5 +1,3 @@
-export type AnnotationEditor = import("./editor.js").AnnotationEditor;
-export type AnnotationEditorLayer = import("./annotation_editor_layer.js").AnnotationEditorLayer;
 /**
  * A pdf has several pages and each of them when it will rendered
  * will have an AnnotationEditorLayer which will contain the some
@@ -8,7 +6,7 @@ export type AnnotationEditorLayer = import("./annotation_editor_layer.js").Annot
  * This class is used to manage all the different layers, editors and
  * some action like copy/paste, undo/redo, ...
  */
-export class AnnotationEditorUIManager {
+declare class AnnotationEditorUIManager {
     static TRANSLATE_SMALL: number;
     static TRANSLATE_BIG: number;
     static get _keyboardManager(): any;
@@ -301,10 +299,9 @@ export class AnnotationEditorUIManager {
         annotationElementId: any;
     }): void;
     renderAnnotationElement(annotation: any): void;
-    #private;
 }
-export function bindEvents(obj: any, element: any, names: any): void;
-export class ColorManager {
+declare function bindEvents(obj: any, element: any, names: any): void;
+declare class ColorManager {
     static _colorsMapping: Map<string, number[]>;
     get _colors(): any;
     /**
@@ -331,7 +328,7 @@ export class ColorManager {
  * If we hit some memory issues we could likely use a circular buffer.
  * It has to be used as a singleton.
  */
-export class CommandManager {
+declare class CommandManager {
     constructor(maxSize?: number);
     /**
      * @typedef {Object} addOptions
@@ -375,13 +372,12 @@ export class CommandManager {
      */
     hasSomethingToRedo(): boolean;
     destroy(): void;
-    #private;
 }
 /**
  * Class to handle the different keyboards shortcuts we can have on mac or
  * non-mac OSes.
  */
-export class KeyboardManager {
+declare class KeyboardManager {
     /**
      * Create a new keyboard manager class.
      * @param {Array<Array>} callbacks - an array containing an array of shortcuts
@@ -400,11 +396,10 @@ export class KeyboardManager {
      * @returns
      */
     exec(self: Object, event: KeyboardEvent): void;
-    #private;
 }
 /**
  * Convert a number between 0 and 100 into an hex number between 0 and 255.
  * @param {number} opacity
  * @return {string}
  */
-export function opacityToHex(opacity: number): string;
+declare function opacityToHex(opacity: number): string;

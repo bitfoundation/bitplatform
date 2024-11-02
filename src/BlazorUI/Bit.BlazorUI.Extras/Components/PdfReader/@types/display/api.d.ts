@@ -1,12 +1,12 @@
-export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
-export type RefProxy = {
+declare type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
+declare type RefProxy = {
     num: number;
     gen: number;
 };
 /**
  * Document initialization / loading parameters object.
  */
-export type DocumentInitParameters = {
+declare type DocumentInitParameters = {
     /**
      * - The URL of the PDF.
      */
@@ -153,7 +153,7 @@ export type DocumentInitParameters = {
     disableFontFace?: boolean | undefined;
     /**
      * - Include additional properties,
-     * which are unused during rendering of PDF documents, when exporting the
+     * which are unused during rendering of PDF documents, when declareing the
      * parsed font data from the worker-thread. This may be useful for debugging
      * purposes (and backwards compatibility), but note that it will lead to
      * increased memory usage. The default value is `false`.
@@ -214,7 +214,7 @@ export type DocumentInitParameters = {
      */
     enableHWA?: boolean | undefined;
 };
-export type OnProgressParameters = {
+declare type OnProgressParameters = {
     /**
      * - Currently loaded number of bytes.
      */
@@ -227,7 +227,7 @@ export type OnProgressParameters = {
 /**
  * Page getViewport parameters.
  */
-export type GetViewportParameters = {
+declare type GetViewportParameters = {
     /**
      * - The desired scale of the viewport.
      */
@@ -256,7 +256,7 @@ export type GetViewportParameters = {
 /**
  * Page getTextContent parameters.
  */
-export type getTextContentParameters = {
+declare type getTextContentParameters = {
     /**
      * - When true include marked
      * content items in the items array of TextContent. The default is `false`.
@@ -271,7 +271,7 @@ export type getTextContentParameters = {
 /**
  * Page text content.
  */
-export type TextContent = {
+declare type TextContent = {
     /**
      * - Array of
      * {@link TextItem} and {@link TextMarkedContent} objects. TextMarkedContent
@@ -293,7 +293,7 @@ export type TextContent = {
 /**
  * Page text content part.
  */
-export type TextItem = {
+declare type TextItem = {
     /**
      * - Text content.
      */
@@ -327,7 +327,7 @@ export type TextItem = {
 /**
  * Page text marked content part.
  */
-export type TextMarkedContent = {
+declare type TextMarkedContent = {
     /**
      * - Either 'beginMarkedContent',
      * 'beginMarkedContentProps', or 'endMarkedContent'.
@@ -342,7 +342,7 @@ export type TextMarkedContent = {
 /**
  * Text style.
  */
-export type TextStyle = {
+declare type TextStyle = {
     /**
      * - Font ascent.
      */
@@ -363,7 +363,7 @@ export type TextStyle = {
 /**
  * Page annotation parameters.
  */
-export type GetAnnotationsParameters = {
+declare type GetAnnotationsParameters = {
     /**
      * - Determines the annotations that are fetched,
      * can be 'display' (viewable annotations), 'print' (printable annotations),
@@ -374,7 +374,7 @@ export type GetAnnotationsParameters = {
 /**
  * Page render parameters.
  */
-export type RenderParameters = {
+declare type RenderParameters = {
     /**
      * - A 2D context of a DOM
      * Canvas object.
@@ -449,7 +449,7 @@ export type RenderParameters = {
 /**
  * Page getOperatorList parameters.
  */
-export type GetOperatorListParameters = {
+declare type GetOperatorListParameters = {
     /**
      * - Rendering intent, can be 'display', 'print',
      * or 'any'. The default value is 'display'.
@@ -479,7 +479,7 @@ export type GetOperatorListParameters = {
 /**
  * Structure tree node. The root node will have a role "Root".
  */
-export type StructTreeNode = {
+declare type StructTreeNode = {
     /**
      * - Array of
      * {@link StructTreeNode} and {@link StructTreeContent} objects.
@@ -494,7 +494,7 @@ export type StructTreeNode = {
 /**
  * Structure tree content.
  */
-export type StructTreeContent = {
+declare type StructTreeContent = {
     /**
      * - either "content" for page and stream structure
      * elements or "object" for object references.
@@ -508,7 +508,7 @@ export type StructTreeContent = {
 /**
  * PDF page operator list.
  */
-export type PDFOperatorList = {
+declare type PDFOperatorList = {
     /**
      * - Array containing the operator functions.
      */
@@ -519,7 +519,7 @@ export type PDFOperatorList = {
      */
     argsArray: Array<any>;
 };
-export type PDFWorkerParameters = {
+declare type PDFWorkerParameters = {
     /**
      * - The name of the worker.
      */
@@ -535,11 +535,11 @@ export type PDFWorkerParameters = {
     verbosity?: number | undefined;
 };
 /** @type {string} */
-export const build: string;
-export const DefaultCanvasFactory: typeof NodeCanvasFactory;
-export const DefaultCMapReaderFactory: typeof NodeCMapReaderFactory;
-export const DefaultFilterFactory: typeof DOMFilterFactory | typeof NodeFilterFactory;
-export const DefaultStandardFontDataFactory: typeof NodeStandardFontDataFactory;
+declare const build: string;
+declare const DefaultCanvasFactory: typeof NodeCanvasFactory;
+declare const DefaultCMapReaderFactory: typeof NodeCMapReaderFactory;
+declare const DefaultFilterFactory: typeof DOMFilterFactory | typeof NodeFilterFactory;
+declare const DefaultStandardFontDataFactory: typeof NodeStandardFontDataFactory;
 /**
  * @typedef { Int8Array | Uint8Array | Uint8ClampedArray |
  *            Int16Array | Uint16Array |
@@ -629,7 +629,7 @@ export const DefaultStandardFontDataFactory: typeof NodeStandardFontDataFactory;
  *   constructs the glyphs with primitive path commands.
  *   The default value is `false` in web environments and `true` in Node.js.
  * @property {boolean} [fontExtraProperties] - Include additional properties,
- *   which are unused during rendering of PDF documents, when exporting the
+ *   which are unused during rendering of PDF documents, when declareing the
  *   parsed font data from the worker-thread. This may be useful for debugging
  *   purposes (and backwards compatibility), but note that it will lead to
  *   increased memory usage. The default value is `false`.
@@ -673,13 +673,12 @@ export const DefaultStandardFontDataFactory: typeof NodeStandardFontDataFactory;
  *         already populated with data, or a parameter object.
  * @returns {PDFDocumentLoadingTask}
  */
-export function getDocument(src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters): PDFDocumentLoadingTask;
-export class LoopbackPort {
+declare function getDocument(src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters): PDFDocumentLoadingTask;
+declare class LoopbackPort {
     postMessage(obj: any, transfer: any): void;
     addEventListener(name: any, listener: any): void;
     removeEventListener(name: any, listener: any): void;
     terminate(): void;
-    #private;
 }
 /**
  * Abstract class to support range requests file loading.
@@ -688,7 +687,7 @@ export class LoopbackPort {
  * will generally be transferred to the worker-thread. This will help reduce
  * main-thread memory usage, however it will take ownership of the TypedArrays.
  */
-export class PDFDataRangeTransport {
+declare class PDFDataRangeTransport {
     /**
      * @param {number} length
      * @param {Uint8Array|null} initialData
@@ -754,7 +753,7 @@ export class PDFDataRangeTransport {
  * (such as network requests) and provides a way to listen for completion,
  * after which individual pages can be rendered.
  */
-export class PDFDocumentLoadingTask {
+declare class PDFDocumentLoadingTask {
     static "__#47@#docId": number;
     _capability: any;
     _transport: any;
@@ -798,7 +797,7 @@ export class PDFDocumentLoadingTask {
 /**
  * Proxy to a `PDFDocument` in the worker thread.
  */
-export class PDFDocumentProxy {
+declare class PDFDocumentProxy {
     constructor(pdfInfo: any, transport: any);
     _pdfInfo: any;
     _transport: any;
@@ -1237,7 +1236,7 @@ export class PDFDocumentProxy {
 /**
  * Proxy to a `PDFPage` in the worker thread.
  */
-export class PDFPageProxy {
+declare class PDFPageProxy {
     constructor(pageIndex: any, pageInfo: any, transport: any, pdfBug?: boolean);
     _pageIndex: any;
     _pageInfo: any;
@@ -1375,7 +1374,6 @@ export class PDFPageProxy {
      *   otherwise.
      */
     get stats(): StatTimer | null;
-    #private;
 }
 /**
  * @typedef {Object} PDFWorkerParameters
@@ -1392,7 +1390,7 @@ export class PDFPageProxy {
  *
  * @param {PDFWorkerParameters} params - The worker initialization parameters.
  */
-export class PDFWorker {
+declare class PDFWorker {
     static "__#50@#fakeWorkerId": number;
     static "__#50@#isWorkerDisabled": boolean;
     static "__#50@#workerPorts": any;
@@ -1441,12 +1439,11 @@ export class PDFWorker {
      * Destroys the worker instance.
      */
     destroy(): void;
-    #private;
 }
 /**
  * Allows controlling of the rendering tasks.
  */
-export class RenderTask {
+declare class RenderTask {
     constructor(internalRenderTask: any);
     /**
      * Callback for incremental rendering -- a function that will be called
@@ -1476,18 +1473,7 @@ export class RenderTask {
     #private;
 }
 /** @type {string} */
-export const version: string;
-import { PageViewport } from "./display_utils.js";
-import { OptionalContentConfig } from "./optional_content_config.js";
-import { PrintAnnotationStorage } from "./annotation_storage.js";
-import { NodeCanvasFactory } from "./node_utils";
-import { NodeCMapReaderFactory } from "./node_utils";
-import { DOMFilterFactory } from "./display_utils.js";
-import { NodeFilterFactory } from "./node_utils";
-import { NodeStandardFontDataFactory } from "./node_utils";
-import { AnnotationStorage } from "./annotation_storage.js";
-import { Metadata } from "./metadata.js";
-import { StatTimer } from "./display_utils.js";
+declare const version: string;
 /**
  * A PDF document and page is built of many objects. E.g. there are objects for
  * fonts, images, rendering code, etc. These objects may get processed inside of
@@ -1523,5 +1509,3 @@ declare class PDFObjects {
     [Symbol.iterator](): Generator<any[], void, unknown>;
     #private;
 }
-import { MessageHandler } from "../shared/message_handler.js";
-export {};

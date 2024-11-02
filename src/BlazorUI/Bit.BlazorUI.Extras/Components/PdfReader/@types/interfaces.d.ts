@@ -4,7 +4,7 @@
  *
  * @interface
  */
-export class IPDFStream {
+declare class IPDFStream {
     /**
      * Gets a reader for the entire PDF data.
      * @returns {IPDFStreamReader}
@@ -16,7 +16,7 @@ export class IPDFStream {
      * @param {number} end - the end offset of the data.
      * @returns {IPDFStreamRangeReader}
      */
-    getRangeReader(begin: number, end: number): IPDFStreamRangeReader;
+    getRangeReader(begin: number, end: number): IPDFStreamRangeReader | null;
     /**
      * Cancels all opened reader and closes all their opened requests.
      * @param {Object} reason - the reason for cancelling
@@ -28,7 +28,7 @@ export class IPDFStream {
  *
  * @interface
  */
-export class IPDFStreamRangeReader {
+declare class IPDFStreamRangeReader {
     /**
      * Sets or gets the progress callback. The callback can be useful when the
      * isStreamingSupported property of the object is defined as false.
@@ -61,7 +61,7 @@ export class IPDFStreamRangeReader {
  *
  * @interface
  */
-export class IPDFStreamReader {
+declare class IPDFStreamReader {
     /**
      * Sets or gets the progress callback. The callback can be useful when the
      * isStreamingSupported property of the object is defined as false.

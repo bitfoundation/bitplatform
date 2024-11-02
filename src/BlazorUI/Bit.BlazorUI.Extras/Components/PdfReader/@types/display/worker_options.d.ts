@@ -1,4 +1,4 @@
-export class GlobalWorkerOptions {
+declare class GlobalWorkerOptions {
     static "__#41@#port": null;
     static "__#41@#src": string;
     /**

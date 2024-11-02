@@ -1,4 +1,4 @@
-export class CanvasGraphics {
+declare class CanvasGraphics {
     constructor(canvasCtx: any, commonObjs: any, objs: any, canvasFactory: any, filterFactory: any, { optionalContentConfig, markedContentStack }: {
         optionalContentConfig: any;
         markedContentStack?: null | undefined;
@@ -156,7 +156,6 @@ export class CanvasGraphics {
     getScaleForStroking(): number[];
     rescaleAndStroke(saveRestore: any): void;
     isContentVisible(): boolean;
-    #private;
 }
 declare class CanvasExtraState {
     constructor(width: any, height: any);
@@ -209,4 +208,3 @@ declare class CachedCanvases {
     delete(id: any): void;
     clear(): void;
 }
-export {};

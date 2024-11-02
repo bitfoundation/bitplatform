@@ -1,8 +1,7 @@
-export type AnnotationEditorLayer = import("./annotation_editor_layer.js").AnnotationEditorLayer;
 /**
  * Basic text editor in order to create a FreeTex annotation.
  */
-export class FreeTextEditor extends AnnotationEditor {
+declare class FreeTextEditor extends AnnotationEditor {
     static _freeTextDefaultContent: string;
     static _internalPadding: number;
     static _defaultColor: null;
@@ -52,6 +51,4 @@ export class FreeTextEditor extends AnnotationEditor {
     serialize(isForCopying?: boolean): Object | null;
     /** @inheritdoc */
     renderAnnotationElement(annotation: any): HTMLElement | null;
-    #private;
 }
-import { AnnotationEditor } from "./editor.js";

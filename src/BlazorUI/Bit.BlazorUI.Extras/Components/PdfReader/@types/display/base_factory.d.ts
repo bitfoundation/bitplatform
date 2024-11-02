@@ -1,4 +1,4 @@
-export class BaseCanvasFactory {
+declare class BaseCanvasFactory {
     constructor({ enableHWA }: {
         enableHWA?: boolean | undefined;
     });
@@ -12,9 +12,8 @@ export class BaseCanvasFactory {
      * @ignore
      */
     _createCanvas(width: any, height: any): void;
-    #private;
 }
-export class BaseCMapReaderFactory {
+declare class BaseCMapReaderFactory {
     constructor({ baseUrl, isCompressed }: {
         baseUrl?: null | undefined;
         isCompressed?: boolean | undefined;
@@ -29,7 +28,7 @@ export class BaseCMapReaderFactory {
      */
     _fetchData(url: any, compressionType: any): void;
 }
-export class BaseFilterFactory {
+declare class BaseFilterFactory {
     addFilter(maps: any): string;
     addHCMFilter(fgColor: any, bgColor: any): string;
     addAlphaFilter(map: any): string;
@@ -37,7 +36,7 @@ export class BaseFilterFactory {
     addHighlightHCMFilter(filterName: any, fgColor: any, bgColor: any, newFgColor: any, newBgColor: any): string;
     destroy(keepHCM?: boolean): void;
 }
-export class BaseStandardFontDataFactory {
+declare class BaseStandardFontDataFactory {
     constructor({ baseUrl }: {
         baseUrl?: null | undefined;
     });
@@ -50,7 +49,7 @@ export class BaseStandardFontDataFactory {
      */
     _fetchData(url: any): void;
 }
-export class BaseSVGFactory {
+declare class BaseSVGFactory {
     create(width: any, height: any, skipDimensions?: boolean): void;
     createElement(type: any): void;
     /**

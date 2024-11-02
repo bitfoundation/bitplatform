@@ -1,4 +1,4 @@
-export class Metadata {
+declare class Metadata {
     constructor({ parsedData, rawData }: {
         parsedData: any;
         rawData: any;
@@ -7,5 +7,4 @@ export class Metadata {
     get(name: any): any;
     getAll(): any;
     has(name: any): any;
-    #private;
 }

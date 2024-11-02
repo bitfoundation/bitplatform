@@ -1,8 +1,5 @@
-export type IPDFStream = import("../interfaces").IPDFStream;
-export type IPDFStreamReader = import("../interfaces").IPDFStreamReader;
-export type IPDFStreamRangeReader = import("../interfaces").IPDFStreamRangeReader;
 /** @implements {IPDFStream} */
-export class PDFDataTransportStream implements IPDFStream {
+declare class PDFDataTransportStream implements IPDFStream {
     constructor(pdfDataRangeTransport: any, { disableRange, disableStream }: {
         disableRange?: boolean | undefined;
         disableStream?: boolean | undefined;
@@ -64,4 +61,3 @@ declare class PDFDataTransportStreamRangeReader implements IPDFStreamRangeReader
     read(): Promise<any>;
     cancel(reason: any): void;
 }
-export {};

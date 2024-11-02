@@ -1,11 +1,8 @@
-export type AnnotationStorage = import("./annotation_storage").AnnotationStorage;
-export type PageViewport = import("./display_utils").PageViewport;
-export type IPDFLinkService = import("../../web/interfaces").IPDFLinkService;
-export type XfaLayerParameters = {
+declare type XfaLayerParameters = {
     viewport: PageViewport;
     div: HTMLDivElement;
     xfaHtml: Object;
-    annotationStorage?: import("./annotation_storage").AnnotationStorage | undefined;
+    annotationStorage?: AnnotationStorage | undefined;
     linkService: IPDFLinkService;
     /**
      * - (default value is 'display').
@@ -21,7 +18,7 @@ export type XfaLayerParameters = {
  * @property {IPDFLinkService} linkService
  * @property {string} [intent] - (default value is 'display').
  */
-export class XfaLayer {
+declare class XfaLayer {
     static setupStorage(html: any, id: any, element: any, storage: any, intent: any): void;
     static setAttributes({ html, element, storage, intent, linkService }: {
         html: any;

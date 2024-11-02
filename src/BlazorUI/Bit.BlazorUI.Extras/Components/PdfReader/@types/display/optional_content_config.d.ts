@@ -1,4 +1,4 @@
-export class OptionalContentConfig {
+declare class OptionalContentConfig {
     constructor(data: any, renderingIntent?: number);
     renderingIntent: number;
     name: any;
@@ -14,5 +14,4 @@ export class OptionalContentConfig {
     getGroups(): any;
     getGroup(id: any): any;
     getHash(): string;
-    #private;
 }

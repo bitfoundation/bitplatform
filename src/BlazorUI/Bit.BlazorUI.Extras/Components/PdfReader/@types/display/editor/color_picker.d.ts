@@ -1,4 +1,4 @@
-export class ColorPicker {
+declare class ColorPicker {
     static "__#24@#l10nColor": null;
     static get _keyboardManager(): any;
     constructor({ editor, uiManager }: {
@@ -16,5 +16,4 @@ export class ColorPicker {
     _hideDropdownFromKeyboard(): void;
     updateColor(color: any): void;
     destroy(): void;
-    #private;
 }

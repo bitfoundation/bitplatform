@@ -3,7 +3,7 @@
  * It's important to have them directly on top of the canvas because we want to
  * be able to use mix-blend-mode for some of them.
  */
-export class DrawLayer {
+declare class DrawLayer {
     static get _svgFactory(): any;
     static "__#28@#setBox"(element: any, { x, y, width, height }?: {
         x?: number | undefined;
@@ -35,5 +35,4 @@ export class DrawLayer {
     getSVGRoot(id: any): any;
     remove(id: any): void;
     destroy(): void;
-    #private;
 }

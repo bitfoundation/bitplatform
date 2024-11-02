@@ -1,5 +1,4 @@
-export type AnnotationEditorLayer = import("./annotation_editor_layer.js").AnnotationEditorLayer;
-export type AnnotationEditorParameters = {
+declare type AnnotationEditorParameters = {
     /**
      * - the global manager
      */
@@ -32,7 +31,7 @@ export type AnnotationEditorParameters = {
 /**
  * Base class for editors.
  */
-export class AnnotationEditor {
+declare class AnnotationEditor {
     static _l10nPromise: null;
     static _l10nResizer: null;
     static _borderLineWidth: number;
@@ -95,7 +94,7 @@ export class AnnotationEditor {
     _isVisible: boolean;
     _uiManager: null;
     _focusEventsAllowed: boolean;
-    parent: import("./annotation_editor_layer.js").AnnotationEditorLayer;
+    parent: AnnotationEditorLayer;
     id: string;
     width: any;
     height: any;
@@ -432,8 +431,4 @@ export class AnnotationEditor {
      */
     renderAnnotationElement(annotation: Object): HTMLElement | null;
     resetAnnotationElement(annotation: any): void;
-    #private;
 }
-import { AnnotationEditorUIManager } from "./tools.js";
-import { EditorToolbar } from "./toolbar.js";
-import { ColorManager } from "./tools.js";

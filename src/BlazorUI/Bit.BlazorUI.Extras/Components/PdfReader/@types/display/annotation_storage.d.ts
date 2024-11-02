@@ -1,7 +1,7 @@
 /**
  * Key/value storage for annotation data in forms.
  */
-export class AnnotationStorage {
+declare class AnnotationStorage {
     onSetModified: any;
     onResetModified: any;
     onAnnotationEditor: any;
@@ -71,14 +71,13 @@ export class AnnotationStorage {
         ids: Set<string>;
         hash: string;
     };
-    #private;
 }
 /**
  * A special `AnnotationStorage` for use during printing, where the serializable
  * data is *frozen* upon initialization, to prevent scripting from modifying its
  * contents. (Necessary since printing is triggered synchronously in browsers.)
  */
-export class PrintAnnotationStorage extends AnnotationStorage {
+declare class PrintAnnotationStorage extends AnnotationStorage {
     constructor(parent: any);
     /**
      * PLEASE NOTE: Only intended for usage within the API itself.
@@ -90,9 +89,8 @@ export class PrintAnnotationStorage extends AnnotationStorage {
         transfer: any;
     };
     get modifiedIds(): any;
-    #private;
 }
-export const SerializableEmpty: Readonly<{
+declare const SerializableEmpty: Readonly<{
     map: null;
     hash: "";
     transfer: undefined;

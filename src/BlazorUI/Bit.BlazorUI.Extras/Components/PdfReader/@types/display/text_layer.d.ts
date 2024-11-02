@@ -1,6 +1,4 @@
-export type PageViewport = import("./display_utils").PageViewport;
-export type TextContent = import("./api").TextContent;
-export type TextLayerParameters = {
+declare type TextLayerParameters = {
     /**
      * - Text content to
      * render, i.e. the value returned by the page's `streamTextContent` or
@@ -18,7 +16,7 @@ export type TextLayerParameters = {
      */
     viewport: PageViewport;
 };
-export type TextLayerUpdateParameters = {
+declare type TextLayerUpdateParameters = {
     /**
      * - The target viewport to properly layout
      * the text runs.
@@ -30,7 +28,7 @@ export type TextLayerUpdateParameters = {
      */
     onBefore?: Function | undefined;
 };
-export class TextLayer {
+declare class TextLayer {
     static "__#46@#ascentCache": Map<any, any>;
     static "__#46@#canvasContexts": Map<any, any>;
     static "__#46@#canvasCtxFonts": WeakMap<object, any>;
@@ -81,5 +79,4 @@ export class TextLayer {
      *   This is output and will initially be set to an empty array
      */
     get textContentItemsStr(): string[];
-    #private;
 }

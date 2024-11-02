@@ -1,7 +1,7 @@
 /**
  * Basic draw editor in order to generate an Highlight annotation.
  */
-export class HighlightEditor extends AnnotationEditor {
+declare class HighlightEditor extends AnnotationEditor {
     static _defaultColor: null;
     static _defaultOpacity: number;
     static _defaultThickness: number;
@@ -73,6 +73,4 @@ export class HighlightEditor extends AnnotationEditor {
     serialize(isForCopying?: boolean): Object | null;
     /** @inheritdoc */
     renderAnnotationElement(annotation: any): null;
-    #private;
 }
-import { AnnotationEditor } from "./editor.js";

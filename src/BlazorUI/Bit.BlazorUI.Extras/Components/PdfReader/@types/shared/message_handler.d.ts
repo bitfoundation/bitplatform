@@ -1,4 +1,4 @@
-export class MessageHandler {
+declare class MessageHandler {
     constructor(sourceName: any, targetName: any, comObj: any);
     sourceName: any;
     targetName: any;

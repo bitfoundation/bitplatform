@@ -1,4 +1,4 @@
-export class PDFNodeStream {
+declare class PDFNodeStream {
     constructor(source: any);
     source: any;
     url: URL;
@@ -66,4 +66,3 @@ declare class BaseRangeReader {
     _error(reason: any): void;
     _setReadableStream(readableStream: any): void;
 }
-export {};

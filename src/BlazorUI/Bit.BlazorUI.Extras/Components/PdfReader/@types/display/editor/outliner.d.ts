@@ -1,4 +1,4 @@
-export class FreeOutliner {
+declare class FreeOutliner {
     static "__#22@#MIN_DIST": number;
     static "__#22@#MIN_DIFF": number;
     static "__#22@#MIN": number;
@@ -14,9 +14,8 @@ export class FreeOutliner {
     }): boolean;
     toSVGPath(): string;
     getOutlines(): FreeHighlightOutline;
-    #private;
 }
-export class Outliner {
+declare class Outliner {
     /**
      * Construct an outliner.
      * @param {Array<Object>} boxes - An array of axis-aligned rectangles.
@@ -31,7 +30,6 @@ export class Outliner {
      */
     constructor(boxes: Array<Object>, borderWidth?: number, innerMargin?: number, isLTR?: boolean);
     getOutlines(): HighlightOutline;
-    #private;
 }
 declare class FreeHighlightOutline extends Outline {
     constructor(outline: any, points: any, box: any, scaleFactor: any, innerMargin: any, isLTR: any);
@@ -41,7 +39,6 @@ declare class FreeHighlightOutline extends Outline {
     };
     get box(): null;
     getNewOutline(thickness: any, innerMargin: any): FreeHighlightOutline;
-    #private;
 }
 declare class HighlightOutline extends Outline {
     constructor(outlines: any, box: any);
@@ -53,7 +50,6 @@ declare class HighlightOutline extends Outline {
      */
     serialize([blX, blY, trX, trY]: Array<number>, _rotation: number): Array<Array<number>>;
     get box(): any;
-    #private;
 }
 declare class Outline {
     /**
@@ -67,4 +63,3 @@ declare class Outline {
     serialize(_bbox: any, _rotation: any): void;
     get free(): any;
 }
-export {};

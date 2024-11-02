@@ -1,17 +1,10 @@
-export type AnnotationEditorUIManager = import("./tools.js").AnnotationEditorUIManager;
-export type PageViewport = import("../display_utils.js").PageViewport;
-export type TextAccessibilityManager = import("../../../web/text_accessibility.js").TextAccessibilityManager;
-export type IL10n = import("../../../web/interfaces").IL10n;
-export type AnnotationLayer = import("../annotation_layer.js").AnnotationLayer;
-export type DrawLayer = import("../draw_layer.js").DrawLayer;
-export type StructTreeLayerBuilder = any;
-export type AnnotationEditorLayerOptions = {
+declare type AnnotationEditorLayerOptions = {
     mode: Object;
     div: HTMLDivElement;
     structTreeLayer: StructTreeLayerBuilder;
     uiManager: AnnotationEditorUIManager;
     enabled: boolean;
-    accessibilityManager?: import("../../../web/text_accessibility.js").TextAccessibilityManager | undefined;
+    accessibilityManager?: TextAccessibilityManager | undefined;
     pageIndex: number;
     l10n: IL10n;
     annotationLayer?: import("../annotation_layer.js").AnnotationLayer | undefined;
@@ -19,7 +12,7 @@ export type AnnotationEditorLayerOptions = {
     drawLayer: DrawLayer;
     viewport: PageViewport;
 };
-export type RenderEditorLayerOptions = {
+declare type RenderEditorLayerOptions = {
     viewport: PageViewport;
 };
 /**
@@ -44,7 +37,7 @@ export type RenderEditorLayerOptions = {
 /**
  * Manage all the different editors on a page.
  */
-export class AnnotationEditorLayer {
+declare class AnnotationEditorLayer {
     static _initialized: boolean;
     static "__#29@#editorTypes": Map<number, typeof FreeTextEditor | typeof HighlightEditor | typeof InkEditor | typeof StampEditor>;
     /**
@@ -220,10 +213,4 @@ export class AnnotationEditorLayer {
      */
     get pageDimensions(): Object;
     get scale(): number;
-    #private;
 }
-import { AnnotationEditor } from "./editor.js";
-import { FreeTextEditor } from "./freetext.js";
-import { HighlightEditor } from "./highlight.js";
-import { InkEditor } from "./ink.js";
-import { StampEditor } from "./stamp.js";
