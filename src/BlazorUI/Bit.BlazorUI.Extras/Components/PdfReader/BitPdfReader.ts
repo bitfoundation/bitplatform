@@ -3,12 +3,21 @@ declare type PdfJsLib = {
     GlobalWorkerOptions: GlobalWorkerOptions
 }
 
+declare type BitPdfReaderConfig = {
+    id: string;
+    url: string;
+    renderAllPages: boolean;
+    scale: number;
+    initialPageNumber: number;
+    pdfDoc?: PDFDocumentProxy;
+}
+
 namespace BitBlazorUI {
     export class BitPdfReader {
         private static _initPromise?: Promise<unknown>;
-        private static _bitPdfReaders = new Map<string, PDFDocumentProxy>();
+        private static _bitPdfReaders = new Map<string, BitPdfReaderConfig>();
 
-        public static async initPdfJs(scripts: string[]) {
+        public static async init(scripts: string[]) {
             if (BitPdfReader._initPromise) {
                 await BitPdfReader._initPromise;
             }
@@ -41,47 +50,39 @@ namespace BitBlazorUI {
             }
         }
 
-        public static async setupPdf(id: string, url: string) {
+        public static async setup(config: BitPdfReaderConfig) {
             var { pdfjsLib } = globalThis as unknown as { pdfjsLib: PdfJsLib };
 
-            // The workerSrc property shall be specified.
-            //pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.mjs';
+            var loadingTask = pdfjsLib.getDocument(config.url);
+            const pdfDoc = await loadingTask.promise;
+            config.pdfDoc = pdfDoc;
+            BitPdfReader._bitPdfReaders.set(config.id, config);
 
-            // Asynchronous download of PDF
-            var loadingTask = pdfjsLib.getDocument(url);
-            loadingTask.promise.then(function (pdf) {
-                console.log('PDF loaded');
+            var pageNumber = config.initialPageNumber;
+            await this.renderPage(config.id, pageNumber);
+        }
 
-                BitPdfReader._bitPdfReaders.set(id, pdf);
+        public static async renderPage(id: string, pageNumber: number) {
+            const config = BitPdfReader._bitPdfReaders.get(id);
+            if (!config || !config.pdfDoc) return;
 
-                // Fetch the first page
-                var pageNumber = 1;
-                pdf.getPage(pageNumber).then(function (page) {
-                    console.log('Page loaded');
+            const page = await config.pdfDoc.getPage(pageNumber);
 
-                    var scale = 1.5;
-                    var viewport = page.getViewport({ scale: scale });
+            var scale = config.scale;
+            var viewport = page.getViewport({ scale: scale });
 
-                    // Prepare canvas using PDF page dimensions
-                    var canvas = document.getElementById(id) as HTMLCanvasElement;
-                    var context = canvas.getContext('2d')!;
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+            var canvas = document.getElementById(config.id) as HTMLCanvasElement;
+            var context = canvas.getContext('2d')!;
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
 
-                    // Render PDF page into canvas context
-                    var renderContext: RenderParameters = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    var renderTask = page.render(renderContext);
-                    renderTask.promise.then(function () {
-                        console.log('Page rendered');
-                    });
-                });
-            }, function (reason) {
-                // PDF loading error
-                console.error(reason);
-            });
+            var renderContext: RenderParameters = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            var renderTask = page.render(renderContext);
+            await renderTask.promise;
         }
     }
 }

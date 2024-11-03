@@ -21,7 +21,7 @@ public partial class BitPdfReader
             
             await _js.InitPdfJs(scripts);
 
-            await _js.SetupPdf(Config.Id, Config.Url);
+            await _js.SetupPdfJs(Config);
         }
     }
 }
