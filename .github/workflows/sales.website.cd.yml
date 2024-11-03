@@ -41,6 +41,7 @@ jobs:
       with:
         name: server-bundle
         path: server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
