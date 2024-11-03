@@ -13,6 +13,7 @@ public partial class AboutPage
     private string appName = default!;
     private string appVersion = default!;
     private string os = default!;
+    private string webView = default!;
     private string processId = default!;
 
 
@@ -21,7 +22,8 @@ public partial class AboutPage
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
         appVersion = telemetryContext.AppVersion!;
-        os = $"{telemetryContext.OS} {telemetryContext.WebView}";
+        os = telemetryContext.OS!;
+        webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
 
         await base.OnInitAsync();

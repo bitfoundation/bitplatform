@@ -1,3 +1,5 @@
 @inherits AppComponentBase
 
-<BitSnackBar @ref="snackbarRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />
+<BitSnackBar @ref="snackbarRef" AutoDismiss Multiline
+             AutoDismissTime="TimeSpan.FromSeconds(10)"
+             Style="bottom:calc(var(--app-inset-bottom) + var(--bit-spa-scaling-factor))" />
