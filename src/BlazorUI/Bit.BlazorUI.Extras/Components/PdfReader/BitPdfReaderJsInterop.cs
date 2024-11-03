@@ -7,9 +7,9 @@ internal static class BitPdfReaderJsInterop
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitPdfReader.init", scripts);
     }
 
-    public static ValueTask SetupPdfJs(this IJSRuntime jsRuntime, BitPdfReaderConfig config)
+    public static ValueTask<int> SetupPdfJs(this IJSRuntime jsRuntime, BitPdfReaderConfig config)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitPdfReader.setup", config);
+        return jsRuntime.InvokeAsync<int>("BitBlazorUI.BitPdfReader.setup", config);
     }
 
     public static ValueTask renderPdfJsPage(this IJSRuntime jsRuntime, string id, int pageNumber)

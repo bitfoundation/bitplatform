@@ -6,9 +6,7 @@ declare type PdfJsLib = {
 declare type BitPdfReaderConfig = {
     id: string;
     url: string;
-    renderAllPages: boolean;
     scale: number;
-    initialPageNumber: number;
     pdfDoc?: PDFDocumentProxy;
 }
 
@@ -51,37 +49,42 @@ namespace BitBlazorUI {
         }
 
         public static async setup(config: BitPdfReaderConfig) {
-            var { pdfjsLib } = globalThis as unknown as { pdfjsLib: PdfJsLib };
+            const { pdfjsLib } = globalThis as unknown as { pdfjsLib: PdfJsLib };
 
-            var loadingTask = pdfjsLib.getDocument(config.url);
+            const loadingTask = pdfjsLib.getDocument(config.url);
             const pdfDoc = await loadingTask.promise;
             config.pdfDoc = pdfDoc;
             BitPdfReader._bitPdfReaders.set(config.id, config);
 
-            var pageNumber = config.initialPageNumber;
-            await this.renderPage(config.id, pageNumber);
+            return pdfDoc.numPages;
         }
 
         public static async renderPage(id: string, pageNumber: number) {
             const config = BitPdfReader._bitPdfReaders.get(id);
+
             if (!config || !config.pdfDoc) return;
+            if (pageNumber < 1 || pageNumber > config.pdfDoc.numPages) return;
 
             const page = await config.pdfDoc.getPage(pageNumber);
 
-            var scale = config.scale;
-            var viewport = page.getViewport({ scale: scale });
+            const scale = config.scale;
+            const viewport = page.getViewport({ scale: scale });
 
-            var canvas = document.getElementById(config.id) as HTMLCanvasElement;
-            var context = canvas.getContext('2d')!;
+            let canvas = document.getElementById(config.id) as HTMLCanvasElement;
+            if (!canvas) {
+                canvas = document.getElementById(`${config.id}-${pageNumber}`) as HTMLCanvasElement;
+            }
+
+            const context = canvas.getContext('2d')!;
             canvas.height = viewport.height;
             canvas.width = viewport.width;
 
-            var renderContext: RenderParameters = {
+            const renderContext: RenderParameters = {
                 canvasContext: context,
                 viewport: viewport
             };
 
-            var renderTask = page.render(renderContext);
+            const renderTask = page.render(renderContext);
             await renderTask.promise;
         }
     }

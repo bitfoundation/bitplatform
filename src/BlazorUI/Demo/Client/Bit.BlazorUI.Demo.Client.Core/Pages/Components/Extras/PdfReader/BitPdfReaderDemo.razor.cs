@@ -1,4 +1,5 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfReader;
+﻿
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfReader;
 
 public partial class BitPdfReaderDemo
 {
@@ -6,54 +7,80 @@ public partial class BitPdfReaderDemo
     [
          new()
          {
-            Name = "Items",
-            Type = "IQueryable<TGridItem>?",
-            DefaultValue = "null",
-            Description = @"A queryable source of data for the grid.
-                            This could be in-memory data converted to queryable using the
-                            System.Linq.Queryable.AsQueryable(System.Collections.IEnumerable) extension method,
-                            or an EntityFramework DataSet or an IQueryable derived from it.
-                            You should supply either Items or ItemsProvider, but not both.",
-         }
+            Name = "Config",
+            Type = "BitPdfReaderConfig",
+            DefaultValue = "",
+            Description = "The configuration of the pdf reader.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-reader-config"
+         },
+         new()
+         {
+            Name = "Horizontal",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the pages horizontally.",
+         },
+         new()
+         {
+            Name = "InitialPageNumber",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The page number to render initially.",
+         },
+         new()
+         {
+            Name = "RenderAllPages",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether render all pages at start.",
+         },
+         new()
+         {
+            Name = "ScrollElement",
+            Type = "string",
+            DefaultValue = "body",
+            Description = "The CSS selector of the scroll element that is the parent of the pdf reader.",
+         },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
          {
-            Id = "BitDataGridColumnBase",
-            Title = "BitDataGridColumnBase",
+            Id = "pdf-reader-config",
+            Title = "BitPdfReaderConfig",
             Parameters=
             [
                 new()
                 {
-                    Name = "Title",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Title text for the column. This is rendered automatically if HeaderTemplate is not used.",
+                    Name = "Id",
+                    Type = "string",
+                    DefaultValue = "Guid.NewGuid().ToString()",
+                    Description = "The id of the pdf reader instance and its canvas element(s).",
+                },
+                new()
+                {
+                    Name = "Url",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The URL of the pdf file.",
+                },
+                new()
+                {
+                    Name = "Scale",
+                    Type = "decimal",
+                    DefaultValue = "1",
+                    Description = "The scale in which the pdf document gets rendered on the page.",
                 },
             ]
         }
     ];
 
-    private readonly List<ComponentSubEnum> componentSubEnums =
-    [
-        new()
-        {
-            Id = "BitDataGridAlign",
-            Name = "BitDataGridAlign",
-            Description = "Describes alignment for a BitDataGrid<TGridItem> column.",
-            Items =
-            [
-                new()
-                {
-                     Name = "Left",
-                     Value = "0",
-                     Description = "Justifies the content against the start of the container."
-                },
-            ]
-        }
-    ];
+
+    private BitPdfReader pdfReaderRef = default!;
+
+    private BitPdfReaderConfig publicApiConfig = new () { Url="/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
 
 
 

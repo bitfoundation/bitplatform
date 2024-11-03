@@ -10,11 +10,30 @@
                ComponentDescription="BitPdfReader is ... ."
                Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
                ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses"
-               ComponentSubEnums="componentSubEnums">
+               ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <BitPdfReader Config="@(new() { Url="/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" })" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RenderAllPages & Horizontal" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <BitPdfReader RenderAllPages Horizontal Config="@(new() { Url="/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" })" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Public API" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick="() => pdfReaderRef!.First()">First</BitButton>&nbsp;
+                <BitButton OnClick="() => pdfReaderRef!.Prev()">Prev</BitButton>&nbsp;
+                <BitTag Variant="BitVariant.Outline" Text="@($"{pdfReaderRef?.CurrentPage.ToString()}/{pdfReaderRef?.NumberOfPages.ToString()}")" Color="BitColor.Info" />
+                <BitButton OnClick="() => pdfReaderRef!.Next()">Next</BitButton>&nbsp;
+                <BitButton OnClick="() => pdfReaderRef!.Last()">Last</BitButton>
+            </div>
+            <br />
+            <BitPdfReader @ref="pdfReaderRef" Config="publicApiConfig" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
