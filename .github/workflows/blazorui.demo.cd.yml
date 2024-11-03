@@ -56,6 +56,7 @@ jobs:
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
