@@ -61,6 +61,10 @@
     left: 0;
 }
 
+.bit-swp-lbi {
+    transform: scaleX(-1);
+}
+
 .bit-swp-dot {
     text-align: center;
     margin-top: spacing(1.25);

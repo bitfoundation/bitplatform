@@ -4,44 +4,53 @@
 .layout {
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
     background-color: $bit-color-background-primary;
-    --app-inset-top: env(safe-area-inset-top);
-    --app-inset-bottom: env(safe-area-inset-bottom);
-    --app-inset-left: env(safe-area-inset-left);
-    --app-inset-right: env(safe-area-inset-right);
 }
 
 .inset-top {
+    width: 100%;
+    z-index: 999999;
     height: var(--app-inset-top);
+    background-color: $bit-color-background-primary;
+}
+
+.inset-bottom {
+    width: 100%;
+    z-index: 999999;
+    height: var(--app-inset-bottom);
+    background-color: $bit-color-background-primary;
+}
+
+.inset-center {
+    width: 100%;
+    display: flex;
+    height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
+}
+
+.inset-main {
+    height: 100%;
+    display: flex;
+    overflow: auto;
+    min-height: 100%;
+    min-height: unset;
+    position: relative;
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    width: calc(100% - var(--app-inset-left) - var(--app-inset-right));
 }
 
 .inset-left {
     height: 100%;
+    z-index: 999999;
     width: var(--app-inset-left);
-}
-
-.inset-main {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    min-height: 100%;
-
-    @include lt-md {
-        overflow: auto;
-        min-height: unset;
-        position: relative;
-        scroll-behavior: smooth;
-        overscroll-behavior: none;
-        width: calc(100% - var(--app-inset-left) - var(--app-inset-right));
-        height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
-    }
+    background-color: $bit-color-background-primary;
 }
 
 .inset-right {
     height: 100%;
+    z-index: 999999;
     width: var(--app-inset-right);
-}
-
-.inset-bottom {
-    height: var(--app-inset-bottom);
+    background-color: $bit-color-background-primary;
 }

@@ -6,11 +6,13 @@
                     <CascadingValue Value="IsCrossLayoutPage" Name="@Parameters.IsCrossLayoutPage">
                         <div class="layout">
                             <div class="inset-top"></div>
-                            <div class="inset-main" dir="@CurrentDir?.ToString().ToLower()">
+                            <div class="inset-center" dir="@CurrentDir?.ToString().ToLower()">
                                 <div class="inset-left"></div>
-                                <AppErrorBoundary>
-                                    @ChildContent
-                                </AppErrorBoundary>
+                                <div class="inset-main">
+                                    <AppErrorBoundary>
+                                        @ChildContent
+                                    </AppErrorBoundary>
+                                </div>
                                 <div class="inset-right"></div>
                             </div>
                             <div class="inset-bottom"></div>

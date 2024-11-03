@@ -13,6 +13,7 @@ header {
     .language-callout {
         @include lt-sm {
             height: unset;
+            max-width: 225px;
             box-shadow: none;
             bottom: var(--app-inset-bottom);
             top: var(--app-inset-top) !important;

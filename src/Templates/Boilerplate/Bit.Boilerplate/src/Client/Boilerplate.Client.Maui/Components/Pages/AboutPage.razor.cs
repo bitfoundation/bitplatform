@@ -14,6 +14,7 @@ public partial class AboutPage
     private string appVersion = default!;
     private string processId = default!;
     private string os = default!;
+    private string webView = default!;
     private string oem = default!;
 
     protected async override Task OnInitAsync()
@@ -23,7 +24,8 @@ public partial class AboutPage
         // https://stackoverflow.com/a/2941199/2720104
         appName = AppInfo.Name;
         appVersion = telemetryContext.AppVersion!;
-        os = $"{telemetryContext.OS} {telemetryContext.WebView}";
+        os = telemetryContext.OS!;
+        webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
         oem = DeviceInfo.Current.Manufacturer;
 
