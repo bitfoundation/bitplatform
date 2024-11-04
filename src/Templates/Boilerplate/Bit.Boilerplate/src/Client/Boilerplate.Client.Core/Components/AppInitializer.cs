@@ -22,6 +22,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private ILogger<AppInitializer> logger = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     protected override async Task OnInitAsync()
@@ -67,6 +68,11 @@ public partial class AppInitializer : AppComponentBase
             var user = (await task).User;
             TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
             TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
+
+            using var scope = authLogger.BeginScope(TelemetryContext.ToDictionary());
+            {
+                authLogger.LogInformation("Authentication state changed.");
+            }
 
             //#if (signalr == true)
             if (InPrerenderSession is false)

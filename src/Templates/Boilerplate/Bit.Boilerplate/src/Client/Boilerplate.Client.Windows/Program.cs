@@ -1,4 +1,5 @@
 ﻿using Velopack;
+using Boilerplate.Client.Windows.Services;
 
 namespace Boilerplate.Client.Windows;
 
@@ -16,6 +17,9 @@ public partial class Program
         }
         //#endif
         //-:cnd:noEmit
+
+        AppPlatform.IsBlazorHybrid = true;
+        ITelemetryContext.Current = new WindowsTelemetryContext();
 
         // https://github.com/velopack/velopack
         VelopackApp.Build().Run();
