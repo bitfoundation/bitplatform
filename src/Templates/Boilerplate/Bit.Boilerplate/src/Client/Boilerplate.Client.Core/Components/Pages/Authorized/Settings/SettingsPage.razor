@@ -1,6 +1,6 @@
 ﻿@*+:cnd:noEmit*@
-@attribute [Route(Urls.SettingsPage)]
-@attribute [Route("{culture?}" + Urls.SettingsPage)]
+@attribute [Route(Urls.SettingsPage + "/{Section?}")]
+@attribute [Route("{culture?}" + Urls.SettingsPage + "/{Section?}")]
 @attribute [Authorize]
 @inherits AppPageBase
 
@@ -12,13 +12,13 @@
 
 <section>
     <BitStack Class="stack">
-        <Accordion Index="1" @bind-Value="openedAccordion"
+        <Accordion Name="@Urls.SettingsSections.Profile" @bind-Value="@openedAccordion"
                    Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
             <ProfileSection Loading="isLoading" User="user" />
         </Accordion>
 
-        <Accordion Index="2" @bind-Value="openedAccordion"
+        <Accordion Name="@Urls.SettingsSections.Account" @bind-Value="@openedAccordion"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
             <BitPivot Alignment="BitAlignment.Center">
@@ -28,19 +28,24 @@
                 <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]">
                     <ChangePhoneNumberSection PhoneNumber="@user?.PhoneNumber" />
                 </BitPivotItem>
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Delete)]">
-                    <DeleteAccountSection />
+                <BitPivotItem>
+                    <Header>
+                        <BitText Color="BitColor.Error">@Localizer[nameof(AppStrings.Delete)]</BitText>
+                    </Header>
+                    <Body>
+                        <DeleteAccountSection />
+                    </Body>
                 </BitPivotItem>
             </BitPivot>
         </Accordion>
 
-        <Accordion Index="3" @bind-Value="openedAccordion"
+        <Accordion Name="@Urls.SettingsSections.Tfa" @bind-Value="@openedAccordion"
                    Title="@Localizer[nameof(AppStrings.TfaTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.TfaSubtitle)]">
             <TwoFactorSection />
         </Accordion>
 
-        <Accordion Index="4" @bind-Value="openedAccordion"
+        <Accordion Name="@Urls.SettingsSections.Sessions" @bind-Value="@openedAccordion"
                    Title="@Localizer[nameof(AppStrings.SessionsTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
             <SessionsSection />

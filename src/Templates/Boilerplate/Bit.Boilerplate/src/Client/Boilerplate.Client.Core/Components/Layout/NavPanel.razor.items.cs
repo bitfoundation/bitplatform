@@ -50,6 +50,13 @@ public partial class NavPanel
                 Text = Localizer[nameof(AppStrings.Settings)],
                 IconName = BitIconName.Equalizer,
                 Url = Urls.SettingsPage,
+                AdditionalUrls =
+                [
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+                ]
             },
             //#if (offlineDb == true)
             new()

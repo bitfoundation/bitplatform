@@ -2,10 +2,10 @@
 
 public partial class Accordion
 {
-    [Parameter] public int Index { get; set; }
+    [Parameter] public string? Name { get; set; }
 
-    [Parameter] public int Value { get; set; }
-    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? Subtitle { get; set; }
@@ -15,7 +15,7 @@ public partial class Accordion
 
     private async Task HandleOnClick()
     {
-        Value = Value == Index ? 0 : Index;
+        Value = Value == Name ? null : Name;
         await ValueChanged.InvokeAsync(Value);
     }
 }
