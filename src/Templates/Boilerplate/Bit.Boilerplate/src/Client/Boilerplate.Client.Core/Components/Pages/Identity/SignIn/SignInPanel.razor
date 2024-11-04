@@ -18,30 +18,33 @@
             <BitStack FillContent>
                 <BitPivot Alignment="BitAlignment.Center" SelectedKey="@selectedKey" SelectedKeyChanged="OnSelectedKeyChanged">
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey">
-                        <BitTextField @bind-Value="Model.Email" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})"
+                        <BitTextField @bind-Value="Model.Email"
                                       AutoFocus
                                       Type="BitInputType.Email"
                                       Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.Email)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]"
+                                      InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
                         <ValidationMessage For="@(() => Model.Email)" />
                     </BitPivotItem>
 
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]" Key="@PhoneKey">
-                        <BitTextField @bind-Value="Model.PhoneNumber" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})"
+                        <BitTextField @bind-Value="Model.PhoneNumber"
                                       Type="BitInputType.Tel"
                                       Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]"
+                                      InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
                     </BitPivotItem>
                 </BitPivot>
 
-                <BitTextField @bind-Value="Model.Password" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})"
+                <BitTextField @bind-Value="Model.Password"
                               CanRevealPassword="true"
                               Type="BitInputType.Password"
                               AutoComplete="@BitAutoCompleteValue.CurrentPassword"
-                              Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
+                              Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]"
+                              InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})">
                     <LabelTemplate>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                             <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
