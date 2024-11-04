@@ -18,7 +18,8 @@
             <BitStack FillContent>
                 <BitPivot Alignment="BitAlignment.Center" SelectedKey="@selectedKey" SelectedKeyChanged="OnSelectedKeyChanged">
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey">
-                        <BitTextField @bind-Value="Model.Email"
+                        <BitTextField @bind-Value="Model.Email" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})"
+                                      AutoFocus
                                       Type="BitInputType.Email"
                                       Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.Email)]"
@@ -27,7 +28,7 @@
                     </BitPivotItem>
 
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]" Key="@PhoneKey">
-                        <BitTextField @bind-Value="Model.PhoneNumber"
+                        <BitTextField @bind-Value="Model.PhoneNumber" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})"
                                       Type="BitInputType.Tel"
                                       Immediate DebounceTime="500"
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
@@ -36,7 +37,7 @@
                     </BitPivotItem>
                 </BitPivot>
 
-                <BitTextField @bind-Value="Model.Password"
+                <BitTextField @bind-Value="Model.Password" InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})"
                               CanRevealPassword="true"
                               Type="BitInputType.Password"
                               AutoComplete="@BitAutoCompleteValue.CurrentPassword"

@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -34,6 +35,7 @@ public partial class SignInPage : IDisposable
     private bool isWaiting;
     private bool isOtpSent;
     private bool requiresTwoFactor;
+    private EditContext editContext;
     private readonly SignInRequestDto model = new();
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
@@ -50,6 +52,8 @@ public partial class SignInPage : IDisposable
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
         model.DeviceInfo = telemetryContext.OS;
+
+        editContext = new EditContext(model);
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
@@ -146,6 +150,8 @@ public partial class SignInPage : IDisposable
     private async Task SendOtp(bool resend)
     {
         if (model.Email is null && model.PhoneNumber is null) return;
+
+        if (editContext.Validate() is false) return;
 
         try
         {
