@@ -7,6 +7,8 @@ declare type BitPdfReaderConfig = {
     id: string;
     url: string;
     scale: number;
+    zoom: number;
+    autoScale: boolean;
     pdfDoc?: PDFDocumentProxy;
 }
 
@@ -67,7 +69,9 @@ namespace BitBlazorUI {
 
             const page = await config.pdfDoc.getPage(pageNumber);
 
-            const scale = config.scale;
+            const pixelRatio = (config.autoScale && window.devicePixelRatio) || 1;
+            const scale = config.zoom * config.scale * pixelRatio;
+            
             const viewport = page.getViewport({ scale: scale });
 
             let canvas = document.getElementById(config.id) as HTMLCanvasElement;
@@ -76,8 +80,11 @@ namespace BitBlazorUI {
             }
 
             const context = canvas.getContext('2d')!;
-            canvas.height = viewport.height;
             canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            canvas.style.width = `${viewport.width / pixelRatio}px`;
+            canvas.style.height = `${viewport.height / pixelRatio}px`;
 
             const renderContext: RenderParameters = {
                 canvasContext: context,

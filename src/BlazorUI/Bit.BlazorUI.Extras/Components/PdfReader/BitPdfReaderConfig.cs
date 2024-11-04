@@ -17,4 +17,13 @@ public class BitPdfReaderConfig
     /// </summary>
     public decimal Scale { get; set; } = 1;
 
+    /// <summary>
+    /// The zoom factor in which the pdf gets rendered on the page.
+    /// </summary>
+    public decimal Zoom { get; set; } = 1;
+
+    /// <summary>
+    /// Automatically scales the pdf based on the device pixel-ratio.
+    /// </summary>
+    public bool AutoScale { get; set; } = true;
 }

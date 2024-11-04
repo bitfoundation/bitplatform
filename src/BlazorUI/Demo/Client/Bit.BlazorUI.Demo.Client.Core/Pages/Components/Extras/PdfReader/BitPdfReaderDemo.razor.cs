@@ -73,6 +73,20 @@ public partial class BitPdfReaderDemo
                     DefaultValue = "1",
                     Description = "The scale in which the pdf document gets rendered on the page.",
                 },
+                new()
+                {
+                    Name = "Zoom",
+                    Type = "decimal",
+                    DefaultValue = "1",
+                    Description = "The zoom factor in which the pdf gets rendered on the page.",
+                },
+                new()
+                {
+                    Name = "AutoScale",
+                    Type = "bool",
+                    DefaultValue = "true",
+                    Description = "Automatically scales the pdf based on the device pixel-ratio.",
+                },
             ]
         }
     ];
