@@ -158,6 +158,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
+    /// The value of the tabindex html attribute of the input element.
+    /// </summary>
+    [Parameter] public string? TabIndex { get; set; }
+
+    /// <summary>
     /// Specifies whether to remove any leading or trailing whitespace from the value.
     /// </summary>
     [Parameter] public bool Trim { get; set; }
