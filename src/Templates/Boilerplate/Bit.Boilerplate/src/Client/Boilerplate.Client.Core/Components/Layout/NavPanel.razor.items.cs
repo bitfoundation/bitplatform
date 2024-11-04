@@ -52,10 +52,10 @@ public partial class NavPanel
                 Url = Urls.SettingsPage,
                 AdditionalUrls =
                 [
-                    $"{Urls.SettingsPage}/{SettingsSections.Profile}",
-                    $"{Urls.SettingsPage}/{SettingsSections.Account}",
-                    $"{Urls.SettingsPage}/{SettingsSections.Tfa}",
-                    $"{Urls.SettingsPage}/{SettingsSections.Sessions}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
                 ]
             },
             //#if (offlineDb == true)

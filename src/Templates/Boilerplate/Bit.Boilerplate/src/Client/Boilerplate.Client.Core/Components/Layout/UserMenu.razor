@@ -54,7 +54,7 @@
                             <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
                         </BitStack>
 
-                        <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{SettingsSections.Profile}")" FullWidth OnClick="() => isOpen=false">
+                        <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen=false">
                             @Localizer[nameof(AppStrings.ProfileTitle)]
                         </BitActionButton>
 
