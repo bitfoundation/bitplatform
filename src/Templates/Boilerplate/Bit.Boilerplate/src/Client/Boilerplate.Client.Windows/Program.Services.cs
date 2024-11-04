@@ -28,7 +28,7 @@ public static partial class Program
         services.AddSingleton<IStorageService, WindowsStorageService>();
         services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
         services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
-        services.AddSingleton(ITelemetryContext.Current = new WindowsTelemetryContext());
+        services.AddSingleton(ITelemetryContext.Current!);
         //#if (notification == true)
         services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
         //#endif

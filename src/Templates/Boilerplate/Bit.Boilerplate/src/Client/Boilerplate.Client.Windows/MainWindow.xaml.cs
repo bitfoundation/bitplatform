@@ -8,7 +8,6 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");

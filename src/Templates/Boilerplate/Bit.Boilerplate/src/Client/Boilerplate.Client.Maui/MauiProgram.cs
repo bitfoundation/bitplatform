@@ -34,6 +34,8 @@ public static partial class MauiProgram
 #if iOS
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
 #endif
+        ITelemetryContext.Current = new MauiTelemetryContext();
+
         var builder = MauiApp.CreateBuilder();
 
         builder

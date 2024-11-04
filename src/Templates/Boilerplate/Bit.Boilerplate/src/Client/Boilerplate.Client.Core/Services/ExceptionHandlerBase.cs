@@ -13,37 +13,22 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
     [AutoInject] protected readonly IStringLocalizer<AppStrings> Localizer = default!;
 
-    public void Handle(Exception exp,
+    public void Handle(Exception exception,
         Dictionary<string, object?>? parameters = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
     {
-        if (exp is TaskCanceledException)
+        if (IgnoreException(exception))
             return;
 
-        parameters ??= [];
+        parameters = TelemetryContext.ToDictionary(parameters);
 
         parameters[nameof(filePath)] = filePath;
         parameters[nameof(memberName)] = memberName;
         parameters[nameof(lineNumber)] = lineNumber;
-        parameters[nameof(TelemetryContext.UserId)] = TelemetryContext.UserId;
-        parameters[nameof(TelemetryContext.UserSessionId)] = TelemetryContext.UserSessionId;
-        parameters[nameof(TelemetryContext.AppSessionId)] = TelemetryContext.AppSessionId;
-        parameters[nameof(TelemetryContext.AppVersion)] = TelemetryContext.AppVersion;
-        parameters[nameof(TelemetryContext.OS)] = TelemetryContext.OS;
-        parameters[nameof(TelemetryContext.UserAgent)] = TelemetryContext.UserAgent;
-        parameters[nameof(TelemetryContext.TimeZone)] = TelemetryContext.TimeZone;
-        parameters[nameof(TelemetryContext.Culture)] = TelemetryContext.Culture;
-        //#if (signalr == true)
-        parameters[nameof(TelemetryContext.IsOnline)] = TelemetryContext.IsOnline;
-        //#endif
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            parameters[nameof(TelemetryContext.WebView)] = TelemetryContext.WebView;
-        }
 
-        Handle(exp, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
+        Handle(exception, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
 
     protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
@@ -73,5 +58,10 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         {
             Debugger.Break();
         }
+    }
+
+    protected bool IgnoreException(Exception exception)
+    {
+        return exception is TaskCanceledException;
     }
 }
