@@ -29,7 +29,8 @@
                             <BitTextField @bind-Value="signUpModel.Email"
                                           Type="BitInputType.Email"
                                           Label="@Localizer[nameof(AppStrings.Email)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]"
+                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
                             <ValidationMessage For="@(() => signUpModel.Email)" />
                         </BitPivotItem>
 
@@ -37,7 +38,8 @@
                             <BitTextField @bind-Value="signUpModel.PhoneNumber"
                                           Type="BitInputType.Tel"
                                           Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]"
+                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
                             <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
                         </BitPivotItem>
                     </BitPivot>
@@ -46,7 +48,8 @@
                                   Type="BitInputType.Password"
                                   Label="@Localizer[nameof(AppStrings.Password)]"
                                   AutoComplete="@BitAutoCompleteValue.NewPassword"
-                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
+                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]"
+                                  InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})" />
                     <ValidationMessage For="@(() => signUpModel.Password)" />
                 </BitStack>
 

@@ -7,7 +7,7 @@
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <EditForm Model="model" OnValidSubmit="WrapHandled(DoSignIn)" novalidate>
+        <EditForm EditContext="editContext" OnValidSubmit="WrapHandled(DoSignIn)" novalidate>
             <AppDataAnnotationsValidator />
 
             <BitStack HorizontalAlign="BitAlignment.Center">
