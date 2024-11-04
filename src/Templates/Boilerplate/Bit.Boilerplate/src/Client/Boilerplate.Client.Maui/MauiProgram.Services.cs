@@ -29,7 +29,7 @@ public static partial class MauiProgram
 
         services.AddSingleton<IStorageService, MauiStorageService>();
         services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
-        services.AddSingleton(ITelemetryContext.Current = new MauiTelemetryContext());
+        services.AddSingleton(ITelemetryContext.Current!);
         if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
         {
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();

@@ -45,4 +45,29 @@ public interface ITelemetryContext
     //#if (signalr == true)
     public bool IsOnline { get; set; }
     //#endif
+
+    public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
+    {
+        var data = new Dictionary<string, object?>(additionalParameters ??= [])
+        {
+            { nameof(UserId), UserId },
+            { nameof(UserSessionId), UserSessionId },
+            { nameof(AppSessionId), AppSessionId },
+            { nameof(OS), OS },
+            { nameof(AppVersion), AppVersion },
+            { nameof(UserAgent), UserAgent },
+            { nameof(TimeZone), TimeZone },
+            { nameof(Culture), Culture },
+            //#if (signalr == true)
+            { nameof(IsOnline), IsOnline }
+            //#endif
+        };
+
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            data[nameof(WebView)] = WebView;
+        }
+
+        return data;
+    }
 }
