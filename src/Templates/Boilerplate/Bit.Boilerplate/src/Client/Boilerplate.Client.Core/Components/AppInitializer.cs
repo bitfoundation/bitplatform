@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
+//#if (appInsights == true)
+using BlazorApplicationInsights.Interfaces;
+//#endif
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -14,6 +17,9 @@ public partial class AppInitializer : AppComponentBase
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (appInsights == true)
+    [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -29,7 +35,30 @@ public partial class AppInitializer : AppComponentBase
     {
         AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
-        AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
+        if (InPrerenderSession is false)
+        {
+            TelemetryContext.UserAgent = await navigator.GetUserAgent();
+            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+            }
+
+            //#if (appInsights == true)
+            await appInsights.AddTelemetryInitializer(new()
+            {
+                Data = new()
+                {
+                    ["ai.application.ver"] = TelemetryContext.AppVersion,
+                    ["ai.session.id"] = TelemetryContext.AppSessionId,
+                    ["ai.device.locale"] = TelemetryContext.Culture
+                }
+            });
+            //#endif
+
+            AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
+        }
 
         if (AppPlatform.IsBlazorHybrid)
         {
@@ -48,19 +77,6 @@ public partial class AppInitializer : AppComponentBase
         await base.OnInitAsync();
     }
 
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        TelemetryContext.UserAgent = await navigator.GetUserAgent();
-        TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-        TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
-        }
-    }
-
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
@@ -69,23 +85,30 @@ public partial class AppInitializer : AppComponentBase
             TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
             TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
 
-            using var scope = authLogger.BeginScope(TelemetryContext.ToDictionary());
+            var data = TelemetryContext.ToDictionary();
+
+            //#if (appInsights == true)
+            if (user.IsAuthenticated())
+            {
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
+            }
+            //#endif
+
+            using var scope = authLogger.BeginScope(data);
             {
                 authLogger.LogInformation("Authentication state changed.");
             }
 
             //#if (signalr == true)
-            if (InPrerenderSession is false)
-            {
-                await ConnectSignalR();
-            }
+            await ConnectSignalR();
             //#endif
 
             //#if (notification == true)
-            if (InPrerenderSession is false)
-            {
-                await pushNotificationService.RegisterDevice(CurrentCancellationToken);
-            }
+            await pushNotificationService.RegisterDevice(CurrentCancellationToken);
             //#endif
         }
         catch (Exception exp)

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
+using BlazorApplicationInsights.Interfaces;
 //#endif
 using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
@@ -97,13 +98,10 @@ public static partial class IClientCoreServiceCollectionExtensions
         //#endif
 
         //#if (appInsights == true)
+        services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJSSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
         services.AddBlazorApplicationInsights(x =>
         {
-            var connectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;
-            if (string.IsNullOrEmpty(connectionString) is false)
-            {
-                x.ConnectionString = connectionString;
-            }
+            x.ConnectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;
         });
         //#endif
 
