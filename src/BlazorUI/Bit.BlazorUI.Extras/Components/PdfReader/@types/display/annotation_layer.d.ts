@@ -129,7 +129,6 @@ declare class StampAnnotationElement extends AnnotationElement {
     annotationEditorType: number;
     render(): HTMLElement | undefined;
 }
-import { AnnotationStorage } from "./annotation_storage.js";
 declare class AnnotationElement {
     static _hasPopupData({ titleObj, contentsObj, richText }: {
         titleObj: any;

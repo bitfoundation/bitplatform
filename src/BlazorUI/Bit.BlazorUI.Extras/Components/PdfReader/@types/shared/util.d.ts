@@ -2,11 +2,11 @@ declare const AbortException_base: any;
 /**
  * Error used to indicate task cancellation.
  */
-export class AbortException extends AbortException_base {
+declare class AbortException extends AbortException_base {
     [x: string]: any;
     constructor(msg: any);
 }
-export namespace AnnotationActionEventType {
+declare namespace AnnotationActionEventType {
     let E: string;
     let X: string;
     let D: string;
@@ -22,14 +22,14 @@ export namespace AnnotationActionEventType {
     let V: string;
     let C: string;
 }
-export namespace AnnotationBorderStyleType {
+declare namespace AnnotationBorderStyleType {
     let SOLID: number;
     let DASHED: number;
     let BEVELED: number;
     let INSET: number;
     let UNDERLINE: number;
 }
-export namespace AnnotationEditorParamsType {
+declare namespace AnnotationEditorParamsType {
     let RESIZE: number;
     let CREATE: number;
     let FREETEXT_SIZE: number;
@@ -44,8 +44,8 @@ export namespace AnnotationEditorParamsType {
     let HIGHLIGHT_FREE: number;
     let HIGHLIGHT_SHOW_ALL: number;
 }
-export const AnnotationEditorPrefix: "pdfjs_internal_editor_";
-export namespace AnnotationEditorType {
+declare const AnnotationEditorPrefix: "pdfjs_internal_editor_";
+declare namespace AnnotationEditorType {
     let DISABLE: number;
     let NONE: number;
     let FREETEXT: number;
@@ -53,7 +53,7 @@ export namespace AnnotationEditorType {
     let STAMP: number;
     let INK: number;
 }
-export namespace AnnotationFieldFlag {
+declare namespace AnnotationFieldFlag {
     let READONLY: number;
     let REQUIRED: number;
     let NOEXPORT: number;
@@ -74,75 +74,75 @@ export namespace AnnotationFieldFlag {
     let RADIOSINUNISON: number;
     let COMMITONSELCHANGE: number;
 }
-export namespace AnnotationFlag {
-    export let INVISIBLE: number;
-    export let HIDDEN: number;
-    export let PRINT: number;
-    export let NOZOOM: number;
-    export let NOROTATE: number;
-    export let NOVIEW: number;
+declare namespace AnnotationFlag {
+    let INVISIBLE: number;
+    let HIDDEN: number;
+    let PRINT: number;
+    let NOZOOM: number;
+    let NOROTATE: number;
+    let NOVIEW: number;
     let READONLY_1: number;
-    export { READONLY_1 as READONLY };
-    export let LOCKED: number;
-    export let TOGGLENOVIEW: number;
-    export let LOCKEDCONTENTS: number;
+    //export { READONLY_1 as READONLY };
+    let LOCKED: number;
+    let TOGGLENOVIEW: number;
+    let LOCKEDCONTENTS: number;
 }
-export namespace AnnotationMode {
+declare namespace AnnotationMode {
     let DISABLE_1: number;
-    export { DISABLE_1 as DISABLE };
-    export let ENABLE: number;
-    export let ENABLE_FORMS: number;
-    export let ENABLE_STORAGE: number;
+    //export { DISABLE_1 as DISABLE };
+    let ENABLE: number;
+    let ENABLE_FORMS: number;
+    let ENABLE_STORAGE: number;
 }
-export const AnnotationPrefix: "pdfjs_internal_id_";
-export namespace AnnotationReplyType {
+declare const AnnotationPrefix: "pdfjs_internal_id_";
+declare namespace AnnotationReplyType {
     let GROUP: string;
     let REPLY: string;
 }
-export namespace AnnotationType {
-    export let TEXT: number;
-    export let LINK: number;
+declare namespace AnnotationType {
+    let TEXT: number;
+    let LINK: number;
     let FREETEXT_1: number;
-    export { FREETEXT_1 as FREETEXT };
-    export let LINE: number;
-    export let SQUARE: number;
-    export let CIRCLE: number;
-    export let POLYGON: number;
-    export let POLYLINE: number;
+    //export { FREETEXT_1 as FREETEXT };
+    let LINE: number;
+    let SQUARE: number;
+    let CIRCLE: number;
+    let POLYGON: number;
+    let POLYLINE: number;
     let HIGHLIGHT_1: number;
-    export { HIGHLIGHT_1 as HIGHLIGHT };
+    //export { HIGHLIGHT_1 as HIGHLIGHT };
     let UNDERLINE_1: number;
-    export { UNDERLINE_1 as UNDERLINE };
-    export let SQUIGGLY: number;
-    export let STRIKEOUT: number;
+    //export { UNDERLINE_1 as UNDERLINE };
+    let SQUIGGLY: number;
+    let STRIKEOUT: number;
     let STAMP_1: number;
-    export { STAMP_1 as STAMP };
-    export let CARET: number;
+    //export { STAMP_1 as STAMP };
+    let CARET: number;
     let INK_1: number;
-    export { INK_1 as INK };
-    export let POPUP: number;
-    export let FILEATTACHMENT: number;
-    export let SOUND: number;
-    export let MOVIE: number;
-    export let WIDGET: number;
-    export let SCREEN: number;
-    export let PRINTERMARK: number;
-    export let TRAPNET: number;
-    export let WATERMARK: number;
-    export let THREED: number;
-    export let REDACT: number;
+    //export { INK_1 as INK };
+    let POPUP: number;
+    let FILEATTACHMENT: number;
+    let SOUND: number;
+    let MOVIE: number;
+    let WIDGET: number;
+    let SCREEN: number;
+    let PRINTERMARK: number;
+    let TRAPNET: number;
+    let WATERMARK: number;
+    let THREED: number;
+    let REDACT: number;
 }
-export function assert(cond: any, msg: any): void;
+declare function assert(cond: any, msg: any): void;
 /**
  * @type {any}
  */
-export const BaseException: any;
-export const BASELINE_FACTOR: number;
-export function bytesToString(bytes: any): string;
-export namespace CMapCompressionType {
+declare const BaseException: any;
+declare const BASELINE_FACTOR: number;
+declare function bytesToString(bytes: any): string;
+declare namespace CMapCompressionType {
     let NONE_1: number;
-    export { NONE_1 as NONE };
-    export let BINARY: number;
+    //export { NONE_1 as NONE };
+    let BINARY: number;
 }
 /**
  * Attempts to create a valid absolute URL.
@@ -152,23 +152,23 @@ export namespace CMapCompressionType {
  * @param {Object} [options]
  * @returns Either a valid {URL}, or `null` otherwise.
  */
-export function createValidAbsoluteUrl(url: URL | string, baseUrl?: string | URL | undefined, options?: Object | undefined): URL | null;
-export namespace DocumentActionEventType {
+declare function createValidAbsoluteUrl(url: URL | string, baseUrl?: string | URL | undefined, options?: Object | undefined): URL | null;
+declare namespace DocumentActionEventType {
     let WC: string;
     let WS: string;
     let DS: string;
     let WP: string;
     let DP: string;
 }
-export class FeatureTest {
+declare class FeatureTest {
     static get isLittleEndian(): any;
     static get isEvalSupported(): any;
     static get isOffscreenCanvasSupported(): any;
     static get platform(): any;
     static get isCSSRoundSupported(): any;
 }
-export const FONT_IDENTITY_MATRIX: number[];
-export namespace FontRenderOps {
+declare const FONT_IDENTITY_MATRIX: number[];
+declare namespace FontRenderOps {
     let BEZIER_CURVE_TO: number;
     let MOVE_TO: number;
     let LINE_TO: number;
@@ -183,39 +183,39 @@ declare const FormatError_base: any;
 /**
  * Error caused during parsing PDF data.
  */
-export class FormatError extends FormatError_base {
+declare class FormatError extends FormatError_base {
     [x: string]: any;
     constructor(msg: any);
 }
-export function getModificationDate(date?: Date): string;
-export function getUuid(): string;
-export function getVerbosityLevel(): number;
-export const IDENTITY_MATRIX: number[];
-export namespace ImageKind {
+declare function getModificationDate(date?: Date): string;
+declare function getUuid(): string;
+declare function getVerbosityLevel(): number;
+declare const IDENTITY_MATRIX: number[];
+declare namespace ImageKind {
     let GRAYSCALE_1BPP: number;
     let RGB_24BPP: number;
     let RGBA_32BPP: number;
 }
-export function info(msg: any): void;
+declare function info(msg: any): void;
 declare const InvalidPDFException_base: any;
-export class InvalidPDFException extends InvalidPDFException_base {
+declare class InvalidPDFException extends InvalidPDFException_base {
     [x: string]: any;
     constructor(msg: any);
 }
-export function isArrayEqual(arr1: any, arr2: any): boolean;
-export const isNodeJS: any;
-export const LINE_DESCENT_FACTOR: 0.35;
-export const LINE_FACTOR: 1.35;
-export const MAX_IMAGE_SIZE_TO_CACHE: 10000000;
+declare function isArrayEqual(arr1: any, arr2: any): boolean;
+declare const isNodeJS: any;
+declare const LINE_DESCENT_FACTOR: 0.35;
+declare const LINE_FACTOR: 1.35;
+declare const MAX_IMAGE_SIZE_TO_CACHE: 10000000;
 declare const MissingPDFException_base: any;
-export class MissingPDFException extends MissingPDFException_base {
+declare class MissingPDFException extends MissingPDFException_base {
     [x: string]: any;
     constructor(msg: any);
 }
-export function normalizeUnicode(str: any): any;
-export function objectFromMap(map: any): any;
-export function objectSize(obj: any): number;
-export namespace OPS {
+declare function normalizeUnicode(str: any): any;
+declare function objectFromMap(map: any): any;
+declare function objectSize(obj: any): number;
+declare namespace OPS {
     let dependency: number;
     let setLineWidth: number;
     let setLineCap: number;
@@ -307,79 +307,79 @@ export namespace OPS {
     let setStrokeTransparent: number;
     let setFillTransparent: number;
 }
-export namespace PageActionEventType {
-    export let O: string;
+declare namespace PageActionEventType {
+    let O: string;
     let C_1: string;
-    export { C_1 as C };
+    //export { C_1 as C };
 }
 declare const PasswordException_base: any;
-export class PasswordException extends PasswordException_base {
+declare class PasswordException extends PasswordException_base {
     [x: string]: any;
     constructor(msg: any, code: any);
     code: any;
 }
-export namespace PasswordResponses {
+declare namespace PasswordResponses {
     let NEED_PASSWORD: number;
     let INCORRECT_PASSWORD: number;
 }
-export namespace PermissionFlag {
+declare namespace PermissionFlag {
     let PRINT_1: number;
-    export { PRINT_1 as PRINT };
-    export let MODIFY_CONTENTS: number;
-    export let COPY: number;
-    export let MODIFY_ANNOTATIONS: number;
-    export let FILL_INTERACTIVE_FORMS: number;
-    export let COPY_FOR_ACCESSIBILITY: number;
-    export let ASSEMBLE: number;
-    export let PRINT_HIGH_QUALITY: number;
+    //export { PRINT_1 as PRINT };
+    let MODIFY_CONTENTS: number;
+    let COPY: number;
+    let MODIFY_ANNOTATIONS: number;
+    let FILL_INTERACTIVE_FORMS: number;
+    let COPY_FOR_ACCESSIBILITY: number;
+    let ASSEMBLE: number;
+    let PRINT_HIGH_QUALITY: number;
 }
-export namespace RenderingIntentFlag {
-    export let ANY: number;
-    export let DISPLAY: number;
+declare namespace RenderingIntentFlag {
+    let ANY: number;
+    let DISPLAY: number;
     let PRINT_2: number;
-    export { PRINT_2 as PRINT };
+    //export { PRINT_2 as PRINT };
     let SAVE_1: number;
-    export { SAVE_1 as SAVE };
-    export let ANNOTATIONS_FORMS: number;
-    export let ANNOTATIONS_STORAGE: number;
-    export let ANNOTATIONS_DISABLE: number;
-    export let IS_EDITING: number;
-    export let OPLIST: number;
+    //export { SAVE_1 as SAVE };
+    let ANNOTATIONS_FORMS: number;
+    let ANNOTATIONS_STORAGE: number;
+    let ANNOTATIONS_DISABLE: number;
+    let IS_EDITING: number;
+    let OPLIST: number;
 }
-export function setVerbosityLevel(level: any): void;
-export function shadow(obj: any, prop: any, value: any, nonSerializable?: boolean): any;
-export function string32(value: any): string;
-export function stringToBytes(str: any): Uint8Array;
-export function stringToPDFString(str: any): string;
-export function stringToUTF8String(str: any): string;
-export namespace TextRenderingMode {
-    export let FILL: number;
-    export let STROKE: number;
-    export let FILL_STROKE: number;
+declare function setVerbosityLevel(level: any): void;
+declare function shadow(obj: any, prop: any, value: any, nonSerializable?: boolean): any;
+declare function string32(value: any): string;
+declare function stringToBytes(str: any): Uint8Array;
+declare function stringToPDFString(str: any): string;
+declare function stringToUTF8String(str: any): string;
+declare namespace TextRenderingMode {
+    let FILL: number;
+    let STROKE: number;
+    let FILL_STROKE: number;
     let INVISIBLE_1: number;
-    export { INVISIBLE_1 as INVISIBLE };
-    export let FILL_ADD_TO_PATH: number;
-    export let STROKE_ADD_TO_PATH: number;
-    export let FILL_STROKE_ADD_TO_PATH: number;
-    export let ADD_TO_PATH: number;
-    export let FILL_STROKE_MASK: number;
-    export let ADD_TO_PATH_FLAG: number;
+    //export { INVISIBLE_1 as INVISIBLE };
+    let FILL_ADD_TO_PATH: number;
+    let STROKE_ADD_TO_PATH: number;
+    let FILL_STROKE_ADD_TO_PATH: number;
+    let ADD_TO_PATH: number;
+    let FILL_STROKE_MASK: number;
+    let ADD_TO_PATH_FLAG: number;
 }
 declare const UnexpectedResponseException_base: any;
-export class UnexpectedResponseException extends UnexpectedResponseException_base {
+declare class UnexpectedResponseException extends UnexpectedResponseException_base {
     [x: string]: any;
     constructor(msg: any, status: any);
     status: any;
 }
 declare const UnknownErrorException_base: any;
-export class UnknownErrorException extends UnknownErrorException_base {
+declare class UnknownErrorException extends UnknownErrorException_base {
     [x: string]: any;
     constructor(msg: any, details: any);
     details: any;
 }
-export function unreachable(msg: any): void;
-export function utf8StringToString(str: any): string;
-export class Util {
+declare function unreachable(msg: any): void;
+declare function utf8StringToString(str: any): string;
+declare class Util {
     static makeHexColor(r: any, g: any, b: any): string;
     static scaleMinMax(transform: any, minMax: any): void;
     static transform(m1: any, m2: any): any[];
@@ -394,10 +394,10 @@ export class Util {
     static "__#1@#getExtremum"(x0: any, x1: any, x2: any, x3: any, y0: any, y1: any, y2: any, y3: any, a: any, b: any, c: any, minMax: any): void;
     static bezierBoundingBox(x0: any, y0: any, x1: any, y1: any, x2: any, y2: any, x3: any, y3: any, minMax: any): any;
 }
-export namespace VerbosityLevel {
+declare namespace VerbosityLevel {
     let ERRORS: number;
     let WARNINGS: number;
     let INFOS: number;
 }
-export function warn(msg: any): void;
-export {};
+declare function warn(msg: any): void;
+//export {};

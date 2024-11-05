@@ -1,4 +1,4 @@
-export class MurmurHash3_64 {
+declare class MurmurHash3_64 {
     constructor(seed: any);
     h1: number;
     h2: number;

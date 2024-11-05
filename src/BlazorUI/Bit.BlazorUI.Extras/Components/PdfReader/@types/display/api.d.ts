@@ -1470,7 +1470,6 @@ declare class RenderTask {
      * @type {boolean}
      */
     get separateAnnots(): boolean;
-    #private;
 }
 /** @type {string} */
 declare const version: string;
@@ -1507,5 +1506,4 @@ declare class PDFObjects {
     resolve(objId: string, data?: any): void;
     clear(): void;
     [Symbol.iterator](): Generator<any[], void, unknown>;
-    #private;
 }

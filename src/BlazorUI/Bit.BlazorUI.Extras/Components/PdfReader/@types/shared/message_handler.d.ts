@@ -39,5 +39,4 @@ declare class MessageHandler {
      */
     sendWithStream(actionName: string, data: JSON, queueingStrategy: Object, transfers?: any[] | undefined): ReadableStream;
     destroy(): void;
-    #private;
 }
