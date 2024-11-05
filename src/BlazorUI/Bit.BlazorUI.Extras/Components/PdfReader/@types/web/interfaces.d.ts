@@ -60,9 +60,9 @@ declare class IL10n {
      */
     resume(): void;
 }
-/** @typedef {import("../src/display/api").PDFPageProxy} PDFPageProxy */
-/** @typedef {import("../src/display/display_utils").PageViewport} PageViewport */
-/** @typedef {import("./ui_utils").RenderingStates} RenderingStates */
+/** @typedef {PDFPageProxy} PDFPageProxy */
+/** @typedef {PageViewport} PageViewport */
+/** @typedef {RenderingStates} RenderingStates */
 /**
  * @interface
  */
