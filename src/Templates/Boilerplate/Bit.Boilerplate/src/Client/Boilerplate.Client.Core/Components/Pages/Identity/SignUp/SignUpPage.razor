@@ -27,38 +27,38 @@
                     <BitPivot Alignment="BitAlignment.Center">
                         @* <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.UserName)]">
                             <BitTextField @bind-Value="signUpModel.UserName"
+                                          AutoFocus TabIndex="1"
                                           Type="BitInputType.Text"
                                           Label="@Localizer[nameof(AppStrings.UserName)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.UserName)]"
-                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
+                                          Placeholder="@Localizer[nameof(AppStrings.UserName)]" />
                             <ValidationMessage For="@(() => signUpModel.UserName)" />
                         </BitPivotItem> *@
 
                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
                             <BitTextField @bind-Value="signUpModel.Email"
+                                          AutoFocus TabIndex="1"
                                           Type="BitInputType.Email"
                                           Label="@Localizer[nameof(AppStrings.Email)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]"
-                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
+                                          Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                             <ValidationMessage For="@(() => signUpModel.Email)" />
                         </BitPivotItem>
 
                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]">
                             <BitTextField @bind-Value="signUpModel.PhoneNumber"
+                                          AutoFocus TabIndex="1"
                                           Type="BitInputType.Tel"
                                           Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]"
-                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
+                                          Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                             <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
                         </BitPivotItem>
                     </BitPivot>
 
                     <BitTextField @bind-Value="signUpModel.Password" CanRevealPassword
+                                  TabIndex="2"
                                   Type="BitInputType.Password"
                                   Label="@Localizer[nameof(AppStrings.Password)]"
                                   AutoComplete="@BitAutoCompleteValue.NewPassword"
-                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]"
-                                  InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})" />
+                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]" />
                     <ValidationMessage For="@(() => signUpModel.Password)" />
                 </BitStack>
 

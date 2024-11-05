@@ -25,9 +25,9 @@
                         <ColumnOptions>
                             <BitStack Horizontal>
                                 <BitSearchBox @bind-Value="ProductNameFilter"
-                                              Immediate DebounceTime="500" DisableAnimation
-                                              Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
-                                              InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                                              AutoFocus DisableAnimation
+                                              Immediate DebounceTime="500"
+                                              Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]" />
                                 @if (isLoading)
                                 {
                                     <BitEllipsisLoading CustomSize="32" />
@@ -44,9 +44,9 @@
                         <ColumnOptions>
                             <BitStack Horizontal>
                                 <BitSearchBox @bind-Value="CategoryNameFilter"
-                                              Immediate DebounceTime="500" DisableAnimation
-                                              Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]"
-                                              InputHtmlAttributes="@(new Dictionary<string, object> {{"autofocus", true}})" />
+                                              AutoFocus DisableAnimation
+                                              Immediate DebounceTime="500"
+                                              Placeholder="@Localizer[(nameof(AppStrings.SearchOnName))]" />
                                 @if (isLoading)
                                 {
                                     <BitEllipsisLoading CustomSize="32" />
