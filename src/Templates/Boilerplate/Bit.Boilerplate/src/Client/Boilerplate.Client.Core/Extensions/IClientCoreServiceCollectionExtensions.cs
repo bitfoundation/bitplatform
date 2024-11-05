@@ -98,7 +98,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         //#endif
 
         //#if (appInsights == true)
-        services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJSSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
+        services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
         services.AddBlazorApplicationInsights(x =>
         {
             x.ConnectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;

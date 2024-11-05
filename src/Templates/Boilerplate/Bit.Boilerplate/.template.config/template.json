@@ -462,7 +462,7 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Core/Services/AppInsightsJSSdkService.cs"
+                        "src/Client/Boilerplate.Client.Core/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
                 {

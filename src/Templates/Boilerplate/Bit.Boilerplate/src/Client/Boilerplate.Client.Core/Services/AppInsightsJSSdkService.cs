@@ -4,7 +4,7 @@ using BlazorApplicationInsights.Interfaces;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class AppInsightsJSSdkService : IApplicationInsights
+public partial class AppInsightsJsSdkService : IApplicationInsights
 {
     private readonly ApplicationInsights applicationInsights = new();
     private TaskCompletionSource? appInsightsReady;
