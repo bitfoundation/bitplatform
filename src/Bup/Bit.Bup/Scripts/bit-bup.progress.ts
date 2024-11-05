@@ -1,4 +1,4 @@
-﻿window['bit-bup.progress version'] = '8.12.0-pre-08';
+﻿window['bit-bup.progress version'] = '8.12.0-pre-09';
 
 ; (function () {
     (window as any).startBupProgress = (showLogs: boolean, showAssets: boolean, appContainerSelector: string, hideApp: boolean, autoHide: boolean) => {

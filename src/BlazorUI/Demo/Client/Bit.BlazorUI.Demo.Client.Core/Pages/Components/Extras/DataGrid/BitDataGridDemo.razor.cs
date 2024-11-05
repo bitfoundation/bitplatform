@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+﻿using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
@@ -102,6 +101,7 @@ public partial class BitDataGridDemo
          {
             Id = "BitDataGridColumnBase",
             Title = "BitDataGridColumnBase",
+            Description = "BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase he BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
             Parameters=
             [
                 new()
@@ -167,14 +167,13 @@ public partial class BitDataGridDemo
                     Description = "If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.",
                 }
             ],
-            Description = @"BitDataGrid has two built-in column types, BitDataGridPropertyColumn and BitDataGridTemplateColumn. You can also create your own column types by subclassing ColumnBase
-                            The BitDataGridColumnBase type, which all column must derive from, offers some common parameters",
 
         },
         new()
         {
             Id="BitDataGridPropertyColumn",
             Title = "BitDataGridPropertyColumn",
+            Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
             Parameters=
             [
                 new()
@@ -191,12 +190,12 @@ public partial class BitDataGridDemo
                     Description = "Optionally specifies a format string for the value. Using this requires the TProp type to implement IFormattable.",
                 },
             ],
-            Description = "It is for displaying a single value specified by the parameter Property. This column infers sorting rules automatically, and uses the property's name as its title if not otherwise set.",
         },
         new()
         {
             Id = "BitDataGridTemplateColumn",
             Title = "BitDataGridTemplateColumn",
+            Description = @"It uses arbitrary Razor fragments to supply contents for its cells. It can't infer the column's title or sort order automatically. also it's possible to add arbitrary Blazor components to your table cells. Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
             Parameters =
             [
                  new()
@@ -213,13 +212,8 @@ public partial class BitDataGridDemo
                     Description = "Optionally specifies sorting rules for this column.",
                  },
             ],
-            Description = @"It uses arbitrary Razor fragments to supply contents for its cells.
-                            It can't infer the column's title or sort order automatically. 
-                            also it's possible to add arbitrary Blazor components to your table cells.
-                            Remember that rendering many components, or many event handlers, can impact the performance of your grid. One way to mitigate this issue is by paginating or virtualizing your grid",
 
         },
-
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =

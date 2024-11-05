@@ -122,15 +122,15 @@ public partial class BitChart : IAsyncDisposable
                 scripts.AddRange(DateAdapterScripts);
             }
 
-            await _js.InitChartJs(scripts);
+            await _js.BitChartJsInitChartJs(scripts);
 
-            await _js.SetupChart(Config);
+            await _js.BitChartJsSetupChart(Config);
 
             await SetupCompletedCallback.InvokeAsync(this);
         }
         else
         {
-            await _js.SetupChart(Config);
+            await _js.BitChartJsSetupChart(Config);
         }
     }
 
@@ -142,7 +142,7 @@ public partial class BitChart : IAsyncDisposable
     /// </summary>
     public Task Update()
     {
-        return _js.UpdateChart(Config).AsTask();
+        return _js.BitChartJsUpdateChart(Config).AsTask();
     }
 
     public async ValueTask DisposeAsync()
@@ -158,7 +158,7 @@ public partial class BitChart : IAsyncDisposable
 
         try
         {
-            await _js.RemoveChart(Config?.CanvasId);
+            await _js.BitChartJsRemoveChart(Config?.CanvasId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
