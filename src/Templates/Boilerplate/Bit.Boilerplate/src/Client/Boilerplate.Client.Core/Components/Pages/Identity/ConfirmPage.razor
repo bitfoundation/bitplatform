@@ -27,6 +27,7 @@
 
                                 <BitStack FillContent>
                                     <BitTextField @bind-Value="emailModel.Email"
+                                                  AutoFocus TabIndex="1"
                                                   Type="BitInputType.Email"
                                                   Label="@Localizer[nameof(AppStrings.Email)]"
                                                   IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
@@ -34,6 +35,7 @@
                                     <ValidationMessage For="@(() => emailModel.Email)" />
 
                                     <BitTextField @bind-Value="emailModel.Token"
+                                                  TabIndex="2"
                                                   Type="BitInputType.Number"
                                                   AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                                   Label="@Localizer[nameof(AppStrings.EmailToken)]"
@@ -94,6 +96,7 @@
 
                                 <BitStack FillContent>
                                     <BitTextField @bind-Value="phoneModel.PhoneNumber"
+                                                  AutoFocus TabIndex="1"
                                                   Type="BitInputType.Tel"
                                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                   IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
@@ -101,6 +104,7 @@
                                     <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
                                     <BitTextField @bind-Value="phoneModel.Token"
+                                                  TabIndex="2"
                                                   Type="BitInputType.Number"
                                                   AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                                   Label="@Localizer[nameof(AppStrings.PhoneToken)]"
