@@ -39,21 +39,23 @@
                     </BitPivotItem>
                 </BitPivot>
 
-                <BitTextField @bind-Value="Model.Password"
-                              CanRevealPassword="true"
-                              Type="BitInputType.Password"
-                              AutoComplete="@BitAutoCompleteValue.CurrentPassword"
-                              Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]"
-                              InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})">
-                    <LabelTemplate>
-                        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                            <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
-                            <BitSpacer />
-                            <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
-                        </BitStack>
-                    </LabelTemplate>
-                </BitTextField>
-                <ValidationMessage For="@(() => Model.Password)" />
+                <BitStack Gap="0" FillContent>
+                    <BitTextField @bind-Value="Model.Password"
+                                  CanRevealPassword="true"
+                                  Type="BitInputType.Password"
+                                  AutoComplete="@BitAutoCompleteValue.CurrentPassword"
+                                  Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]"
+                                  InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="2"})">
+                        <LabelTemplate>
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitText>@Localizer[nameof(AppStrings.Password)]</BitText>
+                                <BitSpacer />
+                                <BitLink Href="@Urls.ForgotPasswordPage">@Localizer[nameof(AppStrings.ForgotPasswordLink)]</BitLink>
+                            </BitStack>
+                        </LabelTemplate>
+                    </BitTextField>
+                    <ValidationMessage For="@(() => Model.Password)" />
+                </BitStack>
             </BitStack>
 
             <BitCheckbox @bind-Value="Model.RememberMe" Label="@Localizer[nameof(AppStrings.RememberMe)]" />
