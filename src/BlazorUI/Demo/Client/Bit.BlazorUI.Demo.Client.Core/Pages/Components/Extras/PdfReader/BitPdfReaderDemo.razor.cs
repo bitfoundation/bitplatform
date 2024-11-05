@@ -119,14 +119,14 @@ public partial class BitPdfReaderDemo
         }
     ];
 
-    private readonly BitPdfReaderConfig basicConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
+    private readonly BitPdfReaderConfig basicConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/hello-world.pdf" };
 
-    private readonly BitPdfReaderConfig renderAllConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
+    private readonly BitPdfReaderConfig renderAllConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
 
 
     private double scale = 1;
     private BitPdfReader publicApiPdfReaderRef = default!;
-    private BitPdfReaderConfig publicApiConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
+    private BitPdfReaderConfig publicApiConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/article.pdf" };
 
     private async Task ZoomIn()
     {
@@ -150,12 +150,12 @@ public partial class BitPdfReaderDemo
     private readonly string example1RazorCode = @"
 <BitPdfReader Config=""basicConfig"" />";
     private readonly string example1CsharpCode = @"
-private readonly BitPdfReaderConfig basicConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };";
+private readonly BitPdfReaderConfig basicConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
 
     private readonly string example2RazorCode = @"
 <BitPdfReader RenderAllPages Horizontal Config=""renderAllConfig"" />";
     private readonly string example2CsharpCode = @"
-private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };";
+private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""() => publicApiPdfReaderRef!.First()"">First</BitButton>
@@ -170,7 +170,7 @@ private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""/_content/
     private readonly string example3CsharpCode = @"
 private double scale = 1;
 private BitPdfReader publicApiPdfReaderRef = default!;
-private BitPdfReaderConfig publicApiConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };
+private BitPdfReaderConfig publicApiConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };
 
 private async Task ZoomIn()
 {
