@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
 //#endif
+//#if (appInsights == true)
+using BlazorApplicationInsights.Interfaces;
+//#endif
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -15,28 +18,53 @@ public partial class AppInitializer : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    //#if (appInsights == true)
+    [AutoInject] private IApplicationInsights appInsights = default!;
+    //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<AppInitializer> logger = default!;
-    [AutoInject] private SnackBarService snackBarService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
-    [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
+    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     protected override async Task OnInitAsync()
     {
         AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
 
-        AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
+        if (InPrerenderSession is false)
+        {
+            TelemetryContext.UserAgent = await navigator.GetUserAgent();
+            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
+            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            if (AppPlatform.IsBlazorHybrid is false)
+            {
+                TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+            }
+
+            //#if (appInsights == true)
+            await appInsights.AddTelemetryInitializer(new()
+            {
+                Data = new()
+                {
+                    ["ai.application.ver"] = TelemetryContext.AppVersion,
+                    ["ai.session.id"] = TelemetryContext.AppSessionId,
+                    ["ai.device.locale"] = TelemetryContext.Culture
+                }
+            });
+            //#endif
+
+            AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
+        }
 
         if (AppPlatform.IsBlazorHybrid)
         {
             if (CultureInfoManager.MultilingualEnabled)
             {
-                cultureInfoManager.SetCurrentCulture(new Uri(navigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
                                                      await storageService.GetItem("Culture") ?? // 2- User settings
                                                      CultureInfo.CurrentUICulture.Name); // 3- OS settings
             }
@@ -49,19 +77,6 @@ public partial class AppInitializer : AppComponentBase
         await base.OnInitAsync();
     }
 
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        TelemetryContext.UserAgent = await navigator.GetUserAgent();
-        TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-        TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
-        }
-    }
-
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
@@ -70,18 +85,30 @@ public partial class AppInitializer : AppComponentBase
             TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
             TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
 
-            //#if (signalr == true)
-            if (InPrerenderSession is false)
+            var data = TelemetryContext.ToDictionary();
+
+            //#if (appInsights == true)
+            if (user.IsAuthenticated())
             {
-                await ConnectSignalR();
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
             }
             //#endif
 
-            //#if (notification == true)
-            if (InPrerenderSession is false)
+            using var scope = authLogger.BeginScope(data);
             {
-                await pushNotificationService.RegisterDevice(CurrentCancellationToken);
+                authLogger.LogInformation("Authentication state changed.");
             }
+
+            //#if (signalr == true)
+            await ConnectSignalR();
+            //#endif
+
+            //#if (notification == true)
+            await pushNotificationService.RegisterDevice(CurrentCancellationToken);
             //#endif
         }
         catch (Exception exp)
@@ -98,11 +125,16 @@ public partial class AppInitializer : AppComponentBase
             await hubConnection.DisposeAsync();
         }
 
+        var hubAddress = $"{HttpClient.BaseAddress}app-hub";
         var access_token = await AuthTokenProvider.GetAccessToken();
+        if (access_token is not null)
+        {
+            hubAddress += $"?access_token={access_token}";
+        }
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect()
-            .WithUrl($"{HttpClient.BaseAddress}app-hub?access_token={access_token}", options =>
+            .WithUrl(hubAddress, options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
@@ -117,7 +149,7 @@ public partial class AppInitializer : AppComponentBase
 
         hubConnection.On<string>("DisplayMessage", async (message) =>
         {
-            snackBarService.Show(message, "");
+            SnackBarService.Show(message, "");
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>

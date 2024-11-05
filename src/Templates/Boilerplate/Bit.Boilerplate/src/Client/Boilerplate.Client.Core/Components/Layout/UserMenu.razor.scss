@@ -2,11 +2,14 @@
 
 ::deep {
     .user-menu-callout {
+        min-width: 225px;
+
         @include lt-sm {
             height: unset;
             box-shadow: none;
-            bottom: var(--app-inset-bottom);
             top: var(--app-inset-top) !important;
+            bottom: var(--app-inset-bottom) !important;
+            inset-inline-end: var(--app-inset-inline-start) !important;
         }
     }
 

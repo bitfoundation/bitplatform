@@ -67,6 +67,10 @@
     left: 0;
 }
 
+.bit-csl-rbi {
+    transform: scaleX(-1);
+}
+
 .bit-csl-dot {
     text-align: center;
     margin-top: spacing(1.25);

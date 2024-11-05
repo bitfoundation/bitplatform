@@ -122,7 +122,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     /// CultureInfo for the TimePicker
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetCulture))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -427,7 +427,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         await OnClick.InvokeAsync();
     }
 
-    private void HandleParameterChanges()
+    private void OnSetCulture()
     {
         _culture = Culture ?? CultureInfo.CurrentUICulture;
     }

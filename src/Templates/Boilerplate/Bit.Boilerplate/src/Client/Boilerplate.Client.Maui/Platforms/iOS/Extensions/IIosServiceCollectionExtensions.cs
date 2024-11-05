@@ -12,7 +12,7 @@ public static partial class IIosServiceCollectionExtensions
         // Services registered in this class can be injected in iOS.
 
         //#if (notification == true)
-        services.AddSessioned<IPushNotificationService, iOSPushNotificationService>();
+        services.AddSingleton<IPushNotificationService, iOSPushNotificationService>();
         //#endif
 
         return services;

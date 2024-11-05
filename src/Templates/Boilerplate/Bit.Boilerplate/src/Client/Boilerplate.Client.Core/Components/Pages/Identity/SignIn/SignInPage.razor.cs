@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -146,6 +147,18 @@ public partial class SignInPage : IDisposable
     private async Task SendOtp(bool resend)
     {
         if (model.Email is null && model.PhoneNumber is null) return;
+
+        if(model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
+        {
+            SnackBarService.Error(string.Format(AppStrings.EmailAddressAttribute_ValidationError, AppStrings.Email));
+            return;
+        }
+
+        if (model.PhoneNumber is not null && new PhoneAttribute().IsValid(model.PhoneNumber) is false)
+        {
+            SnackBarService.Error(string.Format(AppStrings.PhoneAttribute_ValidationError, AppStrings.PhoneNumber));
+            return;
+        }
 
         try
         {

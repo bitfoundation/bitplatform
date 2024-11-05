@@ -8,14 +8,11 @@ public partial class MainPage
     {
         InitializeComponent();
         //#if (appInsights == true)
-        if (string.IsNullOrEmpty(clientMauiSettings.ApplicationInsights?.ConnectionString) is false)
+        AppWebView.RootComponents.Insert(0, new()
         {
-            AppWebView.RootComponents.Add(new()
-            {
-                ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
-                Selector = "head::after"
-            });
-        }
+            ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
+            Selector = "head::after"
+        });
         //#endif
     }
 }

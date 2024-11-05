@@ -9,16 +9,23 @@ public partial class SettingsPage
     protected override string? Title => Localizer[nameof(AppStrings.Settings)];
     protected override string? Subtitle => string.Empty;
 
-    private UserDto? user;
-    private bool isLoading;
-    private int openedAccordion = 1;
-    private string? profileImageUrl;
+
+    [Parameter] public string? Section { get; set; }
+
 
     [AutoInject] private IUserController userController = default!;
 
 
+    private UserDto? user;
+    private bool isLoading;
+    private string? profileImageUrl;
+    private string? openedAccordion;
+
+
     protected override async Task OnInitAsync()
     {
+        openedAccordion = Section?.ToLower();
+
         isLoading = true;
 
         try

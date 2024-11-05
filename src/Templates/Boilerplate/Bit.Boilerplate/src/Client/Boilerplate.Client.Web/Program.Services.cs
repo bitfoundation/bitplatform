@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
-using Microsoft.Extensions.Options;
-using Boilerplate.Shared;
 
 namespace Boilerplate.Client.Web;
 
@@ -27,30 +25,28 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.AddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
+        services.AddScoped(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddClientCoreProjectServices(configuration);
-
         // The following services work both in blazor web assembly and server side for pre-rendering and blazor server.
 
-        services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WebExceptionHandler>();
+        services.AddTransient<IPrerenderStateService, WebPrerenderStateService>();
+
+        services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddScoped<IExceptionHandler, WebExceptionHandler>();
+        services.AddScoped<IStorageService, BrowserStorageService>();
         //#if (notification == true)
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
 
-        services.AddTransient<IPrerenderStateService, WebPrerenderStateService>();
+        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
 
         services.AddOptions<ClientWebSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
-
-        services.AddTransient<IStorageService, BrowserStorageService>();
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Maui.Services;
-using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Maui;
 
@@ -9,20 +8,16 @@ public static partial class MauiProgram
     public static void ConfigureServices(this MauiAppBuilder builder)
     {
         // Services being registered here can get injected in Maui (Android, iOS, macOS, Windows)
-
         var services = builder.Services;
         var configuration = builder.Configuration;
-
         services.AddClientCoreProjectServices(builder.Configuration);
 
-        services.AddMauiBlazorWebView();
+        services.AddTransient<MainPage>();
 
-        if (AppEnvironment.IsDev())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
-
-        services.AddSessioned(sp =>
+        services.AddScoped<IExceptionHandler, MauiExceptionHandler>();
+        services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
+        services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
+        services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -31,6 +26,21 @@ public static partial class MauiProgram
             };
             return httpClient;
         });
+
+        services.AddSingleton<IStorageService, MauiStorageService>();
+        services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
+        services.AddSingleton(ITelemetryContext.Current!);
+        if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
+        {
+            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
+        }
+
+        services.AddMauiBlazorWebView();
+
+        if (AppEnvironment.IsDev())
+        {
+            services.AddBlazorWebViewDeveloperTools();
+        }
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
@@ -54,7 +64,7 @@ public static partial class MauiProgram
         //#if (appCenter == true)
         if (Microsoft.AppCenter.AppCenter.Configured)
         {
-            builder.Logging.AddAppCenter(options => { });
+            builder.Logging.AddAppCenter(options => options.IncludeScopes = true);
         }
         //#endif
 
@@ -74,24 +84,10 @@ public static partial class MauiProgram
         //#endif
         //-:cnd:noEmit
 
-        services.AddTransient<MainPage>();
-        services.AddSingleton(ITelemetryContext.Current = new MauiTelemetryContext());
-        services.AddTransient<IStorageService, MauiStorageService>();
-        services.AddTransient<IBitDeviceCoordinator, MauiDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, MauiExceptionHandler>();
-        services.AddTransient<IExternalNavigationService, MauiExternalNavigationService>();
-
-        if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
-        {
-            services.AddSessioned<ILocalHttpServer, MauiLocalHttpServer>();
-        }
-
         services.AddOptions<ClientMauiSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
 
 #if Android
         services.AddClientMauiProjectAndroidServices(builder.Configuration);

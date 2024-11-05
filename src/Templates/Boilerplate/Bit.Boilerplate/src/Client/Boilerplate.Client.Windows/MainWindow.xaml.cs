@@ -8,7 +8,6 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
         ConfigurationBuilder configurationBuilder = new();
         configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
@@ -16,15 +15,11 @@ public partial class MainWindow
         services.AddClientWindowsProjectServices(configuration);
         InitializeComponent();
         //#if (appInsights == true)
-        var clientWindowsSettings = configuration.Get<ClientWindowsSettings>()!;
-        if (string.IsNullOrEmpty(clientWindowsSettings.ApplicationInsights?.ConnectionString) is false)
+        AppWebView.RootComponents.Insert(0, new()
         {
-            AppWebView.RootComponents.Add(new()
-            {
-                ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
-                Selector = "head::after"
-            });
-        }
+            ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
+            Selector = "head::after"
+        });
         //#endif
         AppWebView.Services = services.BuildServiceProvider();
         if (CultureInfoManager.MultilingualEnabled)

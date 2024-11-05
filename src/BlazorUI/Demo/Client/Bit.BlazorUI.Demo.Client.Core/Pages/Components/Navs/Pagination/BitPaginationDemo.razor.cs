@@ -46,15 +46,15 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "FirstIcon",
-            Type = "string",
-            DefaultValue = "ChevronLeftEnd6",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the first button."
         },
         new()
         {
             Name = "LastIcon",
-            Type = "string",
-            DefaultValue = "ChevronRightEnd6",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the last button."
         },
         new()
@@ -67,8 +67,8 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "NextIcon",
-            Type = "string",
-            DefaultValue = "ChevronRight",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the next button."
         },
         new()
@@ -81,8 +81,8 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "PreviousIcon",
-            Type = "string",
-            DefaultValue = "ChevronLeft",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the previous button."
         },
         new()

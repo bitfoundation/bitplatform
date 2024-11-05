@@ -26,7 +26,7 @@ public partial class BitBadge : BitComponentBase
     /// Content you want inside the badge. Supported types are string and integer.
     /// </summary>
     [Parameter] 
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetContentAndMax))]
     public object? Content { get; set; }
 
     /// <summary>
@@ -49,7 +49,7 @@ public partial class BitBadge : BitComponentBase
     /// Max value to display when content is integer type.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetContentAndMax))]
     public int? Max { get; set; }
 
     /// <summary>
@@ -156,7 +156,7 @@ public partial class BitBadge : BitComponentBase
         await OnClick.InvokeAsync(e);
     }
 
-    private void HandleParameterChanges()
+    private void OnSetContentAndMax()
     {
         if (Content is string stringContent)
         {
