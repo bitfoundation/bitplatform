@@ -41,11 +41,8 @@
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
     @*#if (appInsights == true)*@
-    @if (string.IsNullOrEmpty(serverWebSettings.ApplicationInsights?.ConnectionString) is false)
-    {
-        <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
-        <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
-    }
+    <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+    <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
     @if (serverWebSettings.WebAppRender.PwaEnabled)

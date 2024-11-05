@@ -20,17 +20,13 @@ public static partial class Program
         {
             // By default, App.razor adds Routes and HeadOutlet.
             // The following is only required for blazor webassembly standalone.
-            builder.RootComponents.Add<Routes>("#app-container");
             builder.RootComponents.Add<HeadOutlet>("head::after");
             //+:cnd:noEmit
             //#if (appInsights == true)
-            var clientWebSettings = builder.Configuration.Get<ClientWebSettings>()!;
-            if (string.IsNullOrEmpty(clientWebSettings.ApplicationInsights?.ConnectionString) is false)
-            {
-                builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
-            }
+            builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>(selector: "head::after");
             //#endif
             //-:cnd:noEmit
+            builder.RootComponents.Add<Routes>("#app-container");
         }
 
         builder.ConfigureServices();

@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Reflection;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
@@ -19,9 +20,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         [CallerMemberName] string memberName = "",
         [CallerFilePath] string filePath = "")
     {
-        if (IgnoreException(exception))
-            return;
-
         parameters = TelemetryContext.ToDictionary(parameters);
 
         parameters[nameof(filePath)] = filePath;
@@ -34,6 +32,7 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
     {
         var isDevEnv = AppEnvironment.IsDev();
+
 
         using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))
         {
@@ -58,6 +57,20 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
         {
             Debugger.Break();
         }
+    }
+
+    protected Exception UnWrapException(Exception exception)
+    {
+        if (exception is AggregateException aggregateException)
+        {
+            return aggregateException.Flatten().InnerException ?? aggregateException;
+        }
+        else if (exception is TargetInvocationException)
+        {
+            return exception.InnerException ?? exception;
+        }
+
+        return exception;
     }
 
     protected bool IgnoreException(Exception exception)
