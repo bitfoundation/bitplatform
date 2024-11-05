@@ -19,9 +19,12 @@ declare class AltText {
     /**
      * Set the alt text data.
      */
-    set data({ altText, decorative, guessedText, textWithDisclaimer, cancel, }: {
+    set data({ altText, decorative, guessedText, textWithDisclaimer, cancel }: {
         altText: null;
         decorative: boolean;
+        guessedText: any;
+        textWithDisclaimer: any;
+        cancel: any;
     });
     get data(): {
         altText: null;
