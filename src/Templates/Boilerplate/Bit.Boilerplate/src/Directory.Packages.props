@@ -9,7 +9,7 @@
         <PackageVersion Include="Bit.Bswup" Version="8.12.0-pre-09" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="8.12.0-pre-09" />
         <PackageVersion Include="Bit.SourceGenerators" Version="8.12.0-pre-09" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.48" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.49" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
@@ -21,7 +21,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.92" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
-        <PackageVersion Include="Velopack" Version="0.0.626" />
+        <PackageVersion Include="Velopack" Version="0.0.869" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
