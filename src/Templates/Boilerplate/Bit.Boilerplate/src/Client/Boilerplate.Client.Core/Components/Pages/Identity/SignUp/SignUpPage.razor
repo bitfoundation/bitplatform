@@ -25,6 +25,15 @@
             <BitStack FillContent Gap="2rem">
                 <BitStack FillContent>
                     <BitPivot Alignment="BitAlignment.Center">
+                        @* <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.UserName)]">
+                            <BitTextField @bind-Value="signUpModel.UserName"
+                                          Type="BitInputType.Text"
+                                          Label="@Localizer[nameof(AppStrings.UserName)]"
+                                          Placeholder="@Localizer[nameof(AppStrings.UserName)]"
+                                          InputHtmlAttributes="@(new Dictionary<string,object> {["tabindex"]="1"})" />
+                            <ValidationMessage For="@(() => signUpModel.UserName)" />
+                        </BitPivotItem> *@
+
                         <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
                             <BitTextField @bind-Value="signUpModel.Email"
                                           Type="BitInputType.Email"

@@ -35,7 +35,6 @@ public partial class SignInPage : IDisposable
     private bool isWaiting;
     private bool isOtpSent;
     private bool requiresTwoFactor;
-    private EditContext editContext;
     private readonly SignInRequestDto model = new();
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
@@ -52,8 +51,6 @@ public partial class SignInPage : IDisposable
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
         model.DeviceInfo = telemetryContext.OS;
-
-        editContext = new EditContext(model);
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
@@ -151,7 +148,17 @@ public partial class SignInPage : IDisposable
     {
         if (model.Email is null && model.PhoneNumber is null) return;
 
-        if (editContext.Validate() is false) return;
+        if(model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
+        {
+            SnackBarService.Error(string.Format(AppStrings.EmailAddressAttribute_ValidationError, AppStrings.Email));
+            return;
+        }
+
+        if (model.PhoneNumber is not null && new PhoneAttribute().IsValid(model.PhoneNumber) is false)
+        {
+            SnackBarService.Error(string.Format(AppStrings.PhoneAttribute_ValidationError, AppStrings.PhoneNumber));
+            return;
+        }
 
         try
         {
