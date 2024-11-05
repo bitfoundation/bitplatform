@@ -7,7 +7,7 @@ declare type AnnotationEditorLayerOptions = {
     accessibilityManager?: TextAccessibilityManager | undefined;
     pageIndex: number;
     l10n: IL10n;
-    annotationLayer?: import("../annotation_layer.js").AnnotationLayer | undefined;
+    annotationLayer?: AnnotationLayer | undefined;
     textLayer?: HTMLDivElement | undefined;
     drawLayer: DrawLayer;
     viewport: PageViewport;
@@ -46,8 +46,8 @@ declare class AnnotationEditorLayer {
     constructor({ uiManager, pageIndex, div, structTreeLayer, accessibilityManager, annotationLayer, drawLayer, textLayer, viewport, l10n, }: AnnotationEditorLayerOptions);
     pageIndex: number;
     div: HTMLDivElement;
-    viewport: import("../display_utils.js").PageViewport;
-    drawLayer: import("../draw_layer.js").DrawLayer;
+    viewport: PageViewport;
+    drawLayer: DrawLayer;
     _structTree: any;
     get isEmpty(): boolean;
     get isInvisible(): boolean;

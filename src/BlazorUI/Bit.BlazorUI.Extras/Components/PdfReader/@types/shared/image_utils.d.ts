@@ -1,4 +1,4 @@
-export function convertBlackAndWhiteToRGBA({ src, srcPos, dest, width, height, nonBlackColor, inverseDecode, }: {
+declare function convertBlackAndWhiteToRGBA({ src, srcPos, dest, width, height, nonBlackColor, inverseDecode, }: {
     src: any;
     srcPos?: number | undefined;
     dest: any;
@@ -10,8 +10,8 @@ export function convertBlackAndWhiteToRGBA({ src, srcPos, dest, width, height, n
     srcPos: number;
     destPos: number;
 };
-export function convertToRGBA(params: any): {
+declare function convertToRGBA(params: any): {
     srcPos: number;
     destPos: number;
 } | null;
-export function grayToRGBA(src: any, dest: any): void;
+declare function grayToRGBA(src: any, dest: any): void;

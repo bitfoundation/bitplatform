@@ -1,4 +1,4 @@
-/** @typedef {import("./api").TextContent} TextContent */
+/** @typedef {TextContent} TextContent */
 declare class XfaText {
     /**
      * Walk an XFA tree and create an array of text nodes that is compatible
