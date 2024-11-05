@@ -134,9 +134,13 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
             {
                 try
                 {
-                    var appInsightsVersion = await jsRuntime!.InvokeAsync<int>("eval", "window.appInsights.version");
-                    appInsightsReady.SetResult();
-                    break;
+                    var appInsightsInitialized = await jsRuntime!.InvokeAsync<bool>("window.hasOwnProperty", "appInsights");
+                    var appInsightsBlazorWrapperModuleInitialized = await jsRuntime!.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights");
+                    if (appInsightsInitialized && appInsightsBlazorWrapperModuleInitialized)
+                    {
+                        appInsightsReady.SetResult();
+                        break;
+                    }
                 }
                 catch { await Task.Delay(250); }
             }

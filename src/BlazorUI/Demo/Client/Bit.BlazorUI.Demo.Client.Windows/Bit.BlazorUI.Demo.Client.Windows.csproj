@@ -27,7 +27,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="8.0.92" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
-        <PackageReference Include="Velopack" Version="0.0.626" />
+        <PackageReference Include="Velopack" Version="0.0.869" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
