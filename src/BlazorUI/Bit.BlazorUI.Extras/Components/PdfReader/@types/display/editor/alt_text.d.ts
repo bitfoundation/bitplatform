@@ -30,5 +30,4 @@ declare class AltText {
     toggle(enabled?: boolean): void;
     shown(): void;
     destroy(): void;
-    #private;
 }
