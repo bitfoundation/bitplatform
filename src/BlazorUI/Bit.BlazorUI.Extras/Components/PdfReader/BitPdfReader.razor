@@ -1,0 +1,15 @@
+@namespace Bit.BlazorUI
+
+<div style="@Style" class="bit-pdr @(Horizontal ? "bit-pdr-hor" : "") @Class">
+    @if (RenderAllPages)
+    {
+        for (int i = 0; i < _numberOfPages; i++)
+        {
+            <canvas @key="@($"{Config.Id}-{i+1}")" id="@($"{Config.Id}-{i+1}")" style="@CanvasStyle" class="@CanvasClass" />
+        }
+    }
+    else
+    {
+        <canvas id="@Config.Id" style="@CanvasStyle" class="@CanvasClass" />
+    }
+</div>

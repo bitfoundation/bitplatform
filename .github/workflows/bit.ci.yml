@@ -35,7 +35,7 @@ jobs:
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 -f net9.0
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.sln
@@ -76,7 +76,7 @@ jobs:
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI.sln -t:BeforeBuildTasks -m:1 -f net9.0
 
     - name: Build
       run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false

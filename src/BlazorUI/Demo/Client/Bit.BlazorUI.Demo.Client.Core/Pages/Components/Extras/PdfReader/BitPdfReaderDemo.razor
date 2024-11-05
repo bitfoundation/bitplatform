@@ -1,0 +1,41 @@
+@page "/components/pdfreader"
+
+@inherits AppComponentBase
+
+<PageOutlet Url="components/pdfreader"
+            Title="PdfReader"
+            Description="pdfreader component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="PdfReader"
+               ComponentDescription="BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <BitPdfReader Config="basicConfig" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RenderAllPages" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <BitPdfReader RenderAllPages Horizontal Config="renderAllConfig" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Public API" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <div>
+                <BitButton OnClick="() => publicApiPdfReaderRef!.First()">First</BitButton>&nbsp;
+                <BitButton OnClick="() => publicApiPdfReaderRef!.Prev()">Prev</BitButton>&nbsp;
+                <BitTag Variant="BitVariant.Outline" Text="@($"{publicApiPdfReaderRef?.CurrentPageNumber.ToString()}/{publicApiPdfReaderRef?.NumberOfPages.ToString()}")" Color="BitColor.Info" />
+                <BitButton OnClick="() => publicApiPdfReaderRef!.Next()">Next</BitButton>&nbsp;
+                <BitButton OnClick="() => publicApiPdfReaderRef!.Last()">Last</BitButton>&nbsp;|
+                <BitButton OnClick="ZoomOut">Zoom -</BitButton>
+                <BitButton OnClick="ZoomIn">Zoom +</BitButton>
+            </div>
+            <br />
+            <BitPdfReader @ref="publicApiPdfReaderRef" Config="publicApiConfig" OnPdfLoaded="() => StateHasChanged()" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>
