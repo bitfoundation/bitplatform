@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 public partial class BitPdfReader
 {
@@ -159,6 +161,7 @@ public partial class BitPdfReader
         return base.OnParametersSetAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfReaderConfig))]
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
