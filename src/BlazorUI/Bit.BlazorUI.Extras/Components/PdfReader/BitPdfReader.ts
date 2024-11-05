@@ -7,9 +7,9 @@ declare type BitPdfReaderConfig = {
     id: string;
     url: string;
     scale: number;
-    zoom: number;
     autoScale: boolean;
     pdfDoc?: PDFDocumentProxy;
+    isRendering: boolean[];
 }
 
 namespace BitBlazorUI {
@@ -56,43 +56,63 @@ namespace BitBlazorUI {
             const loadingTask = pdfjsLib.getDocument(config.url);
             const pdfDoc = await loadingTask.promise;
             config.pdfDoc = pdfDoc;
+            config.isRendering = [];
             BitPdfReader._bitPdfReaders.set(config.id, config);
 
             return pdfDoc.numPages;
+        }
+
+        public static async refreshPage(config: BitPdfReaderConfig, pageNumber: number) {
+            let oldConfig = BitPdfReader._bitPdfReaders.get(config.id);
+            if (oldConfig) {
+                BitPdfReader._bitPdfReaders.set(config.id, Object.assign(oldConfig, config));
+            } else {
+                BitPdfReader.setup(config);
+            }
+
+            await BitPdfReader.renderPage(config.id, pageNumber);
         }
 
         public static async renderPage(id: string, pageNumber: number) {
             const config = BitPdfReader._bitPdfReaders.get(id);
 
             if (!config || !config.pdfDoc) return;
+
+            if (config.isRendering[pageNumber]) return;
             if (pageNumber < 1 || pageNumber > config.pdfDoc.numPages) return;
 
-            const page = await config.pdfDoc.getPage(pageNumber);
+            config.isRendering[pageNumber] = true;
+            try {
+                const page = await config.pdfDoc.getPage(pageNumber);
 
-            const pixelRatio = (config.autoScale && window.devicePixelRatio) || 1;
-            const scale = config.zoom * config.scale * pixelRatio;
-            
-            const viewport = page.getViewport({ scale: scale });
+                const pixelRatio = (config.autoScale && window.devicePixelRatio) || 1;
+                const scale = config.scale * pixelRatio;
 
-            let canvas = document.getElementById(config.id) as HTMLCanvasElement;
-            if (!canvas) {
-                canvas = document.getElementById(`${config.id}-${pageNumber}`) as HTMLCanvasElement;
+                const viewport = page.getViewport({ scale: scale });
+
+                let canvas = document.getElementById(config.id) as HTMLCanvasElement;
+                if (!canvas) {
+                    canvas = document.getElementById(`${config.id}-${pageNumber}`) as HTMLCanvasElement;
+                }
+
+                const context = canvas.getContext('2d')!;
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                canvas.style.width = `${viewport.width / pixelRatio}px`;
+                canvas.style.height = `${viewport.height / pixelRatio}px`;
+
+                const renderContext: RenderParameters = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                const renderTask = page.render(renderContext);
+                await renderTask.promise;
+
+            } finally {
+                config.isRendering[pageNumber] = false;
             }
-
-            const context = canvas.getContext('2d')!;
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            canvas.style.width = `${viewport.width / pixelRatio}px`;
-            canvas.style.height = `${viewport.height / pixelRatio}px`;
-
-            const renderContext: RenderParameters = {
-                canvasContext: context,
-                viewport: viewport
-            };
-
-            const renderTask = page.render(renderContext);
-            await renderTask.promise;
         }
     }
 }

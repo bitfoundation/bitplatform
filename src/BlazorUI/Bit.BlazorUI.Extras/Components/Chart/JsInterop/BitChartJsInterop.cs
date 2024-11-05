@@ -20,12 +20,12 @@ internal static class BitChartJsInterop
         Converters = { new IsoDateTimeConverter() }
     };
 
-    public static ValueTask InitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
+    public static ValueTask BitChartJsInitChartJs(this IJSRuntime jsRuntime, IEnumerable<string> scripts)
     {
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.initChartJs", scripts);
     }
 
-    public static ValueTask RemoveChart(this IJSRuntime jsRuntime, string canvasId)
+    public static ValueTask BitChartJsRemoveChart(this IJSRuntime jsRuntime, string canvasId)
     {
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.removeChart", canvasId);
     }
@@ -36,12 +36,27 @@ internal static class BitChartJsInterop
     /// <param name="jsRuntime"></param>
     /// <param name="chartConfig">The config for the new chart.</param>
     /// <returns></returns>
-    public static ValueTask<bool> SetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    public static ValueTask<bool> BitChartJsSetupChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
     {
         var dynParam = StripNulls(chartConfig);
         Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
         return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.setupChart", param);
     }
+
+    /// <summary>
+    /// Update an existing chart. Make sure that the Chart with this <see cref="BitChartConfigBase.CanvasId"/> already exists.
+    /// </summary>
+    /// <param name="jsRuntime"></param>
+    /// <param name="chartConfig">The updated config of the chart you want to update.</param>
+    /// <returns></returns>
+    public static ValueTask<bool> BitChartJsUpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
+    {
+        var dynParam = StripNulls(chartConfig);
+        Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
+        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.updateChart", param);
+    }
+
+
 
     /// <summary>
     /// This method is specifically used to convert an <see cref="ExpandoObject"/> with a Tree structure to a <c>Dictionary&lt;string, object&gt;</c>.
@@ -84,19 +99,6 @@ internal static class BitChartJsInterop
                 return elementSelector.Value;
             }
         );
-
-    /// <summary>
-    /// Update an existing chart. Make sure that the Chart with this <see cref="BitChartConfigBase.CanvasId"/> already exists.
-    /// </summary>
-    /// <param name="jsRuntime"></param>
-    /// <param name="chartConfig">The updated config of the chart you want to update.</param>
-    /// <returns></returns>
-    public static ValueTask<bool> UpdateChart(this IJSRuntime jsRuntime, BitChartConfigBase chartConfig)
-    {
-        var dynParam = StripNulls(chartConfig);
-        Dictionary<string, object> param = ConvertExpandoObjectToDictionary(dynParam);
-        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.updateChart", param);
-    }
 
     /// <summary>
     /// Returns an object that is equivalent to the given parameter but without any null members AND it preserves <see cref="IBitChartMethodHandler"/>s intact.

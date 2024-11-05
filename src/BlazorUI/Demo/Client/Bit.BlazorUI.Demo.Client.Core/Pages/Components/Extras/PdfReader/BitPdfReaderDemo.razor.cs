@@ -7,6 +7,27 @@ public partial class BitPdfReaderDemo
     [
          new()
          {
+            Name = "CanvasClass",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS class of the canvas element(s).",
+         },
+         new()
+         {
+            Name = "CanvasStyle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS style of the canvas element(s).",
+         },
+         new()
+         {
+            Name = "Class",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS class of the root element.",
+         },
+         new()
+         {
             Name = "Config",
             Type = "BitPdfReaderConfig",
             DefaultValue = "",
@@ -30,6 +51,20 @@ public partial class BitPdfReaderDemo
          },
          new()
          {
+            Name = "OnPdfPageRendered",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback for when the pdf page is done rendering.",
+         },
+         new()
+         {
+            Name = "OnPdfLoaded",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback for when the pdf document is done loading and processing.",
+         },
+         new()
+         {
             Name = "RenderAllPages",
             Type = "bool",
             DefaultValue = "false",
@@ -37,10 +72,10 @@ public partial class BitPdfReaderDemo
          },
          new()
          {
-            Name = "ScrollElement",
-            Type = "string",
-            DefaultValue = "body",
-            Description = "The CSS selector of the scroll element that is the parent of the pdf reader.",
+            Name = "Style",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS style of the root element.",
          },
     ];
 
@@ -75,13 +110,6 @@ public partial class BitPdfReaderDemo
                 },
                 new()
                 {
-                    Name = "Zoom",
-                    Type = "decimal",
-                    DefaultValue = "1",
-                    Description = "The zoom factor in which the pdf gets rendered on the page.",
-                },
-                new()
-                {
                     Name = "AutoScale",
                     Type = "bool",
                     DefaultValue = "true",
@@ -91,15 +119,73 @@ public partial class BitPdfReaderDemo
         }
     ];
 
+    private readonly BitPdfReaderConfig basicConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
 
-    private BitPdfReader pdfReaderRef = default!;
+    private readonly BitPdfReaderConfig renderAllConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
 
-    private BitPdfReaderConfig publicApiConfig = new () { Url="/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
+
+    private double scale = 1;
+    private BitPdfReader publicApiPdfReaderRef = default!;
+    private BitPdfReaderConfig publicApiConfig = new() { Url = "/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf" };
+
+    private async Task ZoomIn()
+    {
+        scale += 0.25;
+        publicApiConfig.Scale = scale;
+        await publicApiPdfReaderRef.Refresh();
+    }
+
+    private async Task ZoomOut()
+    {
+        if (scale > 0.25)
+        {
+            scale -= 0.25;
+        }
+        publicApiConfig.Scale = scale;
+        await publicApiPdfReaderRef.Refresh();
+    }
 
 
 
     private readonly string example1RazorCode = @"
-";
+<BitPdfReader Config=""basicConfig"" />";
     private readonly string example1CsharpCode = @"
-";
+private readonly BitPdfReaderConfig basicConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };";
+
+    private readonly string example2RazorCode = @"
+<BitPdfReader RenderAllPages Horizontal Config=""renderAllConfig"" />";
+    private readonly string example2CsharpCode = @"
+private readonly BitPdfReaderConfig renderAllConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };";
+
+    private readonly string example3RazorCode = @"
+<BitButton OnClick=""() => publicApiPdfReaderRef!.First()"">First</BitButton>
+<BitButton OnClick=""() => publicApiPdfReaderRef!.Prev()"">Prev</BitButton>
+<BitTag Variant=""BitVariant.Outline"" Text=""@($""{publicApiPdfReaderRef?.CurrentPageNumber.ToString()}/{publicApiPdfReaderRef?.NumberOfPages.ToString()}"")"" Color=""BitColor.Info"" />
+<BitButton OnClick=""() => publicApiPdfReaderRef!.Next()"">Next</BitButton>
+<BitButton OnClick=""() => publicApiPdfReaderRef!.Last()"">Last</BitButton>
+<BitButton OnClick=""ZoomOut"">Zoom -</BitButton>
+<BitButton OnClick=""ZoomIn"">Zoom +</BitButton>
+
+<BitPdfReader @ref=""publicApiPdfReaderRef"" Config=""publicApiConfig"" />";
+    private readonly string example3CsharpCode = @"
+private double scale = 1;
+private BitPdfReader publicApiPdfReaderRef = default!;
+private BitPdfReaderConfig publicApiConfig = new() { Url = ""/_content/Bit.BlazorUI.Demo.Client.Core/samples/1.pdf"" };
+
+private async Task ZoomIn()
+{
+    scale += 0.25;
+    publicApiConfig.Scale = scale;
+    await publicApiPdfReaderRef.Refresh();
+}
+
+private async Task ZoomOut()
+{
+    if (scale > 0.25)
+    {
+        scale -= 0.25;
+    }
+    publicApiConfig.Scale = scale;
+    await publicApiPdfReaderRef.Refresh();
+}";
 }
