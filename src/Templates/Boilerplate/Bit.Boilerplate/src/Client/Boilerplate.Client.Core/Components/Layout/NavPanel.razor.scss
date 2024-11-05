@@ -2,11 +2,11 @@
 @import '../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    height: 100vh;
+    top: 0;
     padding: 1rem;
     position: sticky;
     overflow: hidden auto;
-    top: var(--app-inset-top);
+    height: var(--app-max-height-vh);
     min-width: var(--nav-menu-width);
     max-width: var(--nav-menu-width);
 
@@ -19,6 +19,7 @@ section {
         padding: 0;
         position: fixed;
         height: unset !important;
+        top: var(--app-inset-top);
         bottom: var(--app-inset-bottom);
 
         &.closed {

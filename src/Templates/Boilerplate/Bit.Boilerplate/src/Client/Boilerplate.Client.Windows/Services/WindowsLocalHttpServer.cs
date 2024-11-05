@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using EmbedIO;
 using EmbedIO.Actions;
@@ -42,13 +43,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            using var scope = logger.BeginScope(new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
-                { "ExceptionMessage" , exception.Message },
                 { "RequestUri" , context.Request.Url },
             });
-            logger.LogError("Local http server error.");
         });
 
         _ = localHttpServer.RunAsync(cancellationToken)

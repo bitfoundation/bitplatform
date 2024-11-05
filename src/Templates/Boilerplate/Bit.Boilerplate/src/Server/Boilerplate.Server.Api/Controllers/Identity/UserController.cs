@@ -171,7 +171,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var link = new Uri(
             HttpContext.Request.GetWebClientUrl(),
-            $"{Urls.SettingsPage}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+            $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
@@ -304,7 +304,10 @@ public partial class UserController : AppControllerBase, IUserController
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrEmpty(unformattedKey))
         {
-            await userManager.ResetAuthenticatorKeyAsync(user);
+            IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
+            await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
+                userManager.GenerateNewAuthenticatorKey(), cancellationToken);
+            await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
             if (string.IsNullOrEmpty(unformattedKey))

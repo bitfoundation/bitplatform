@@ -40,13 +40,11 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            using var scope = logger.BeginScope(new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
-                { "ExceptionMessage" , exception.Message },
                 { "RequestUri" , context.Request.Url },
             });
-            logger.LogError("Local http server error.");
         });
 
         _ = localHttpServer.RunAsync(cancellationToken)

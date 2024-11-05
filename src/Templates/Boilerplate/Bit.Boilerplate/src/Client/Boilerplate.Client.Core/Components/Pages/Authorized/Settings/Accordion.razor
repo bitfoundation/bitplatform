@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-<BitAccordion OnClick="HandleOnClick" IsExpanded="Value == Index"
+<BitAccordion OnClick="HandleOnClick" IsExpanded="Value == Name"
               Classes="@(new() { Header=BitCss.Class.Color.Background.Secondary })">
 
     <HeaderTemplate>
@@ -12,7 +12,7 @@
                 </BitText>
             </BitStack>
 
-            <BitIcon IconName="@(Value == Index ? BitIconName.ChevronUp : BitIconName.ChevronDown)" Color="BitColor.Tertiary" />
+            <BitIcon IconName="@(Value == Name ? BitIconName.ChevronUp : BitIconName.ChevronDown)" Color="BitColor.Tertiary" />
         </BitStack>
     </HeaderTemplate>
 
