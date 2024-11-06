@@ -2,9 +2,9 @@
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 
-namespace Boilerplate.Client.Windows.Services;
+namespace Boilerplate.Client.Maui.Services;
 
-public partial class WindowsTelemetryInitializer : ITelemetryInitializer
+public partial class MauiAppInsightsTelemetryInitializer : ITelemetryInitializer
 {
     public void Initialize(ITelemetry telemetry)
     {
@@ -23,6 +23,16 @@ public partial class WindowsTelemetryInitializer : ITelemetryInitializer
             //#if (signalr == true)
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline.ToString().ToLowerInvariant();
             //#endif
+        }
+
+        telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;
+        telemetry.Context.Device.OemName = DeviceInfo.Current.Manufacturer;
+        telemetry.Context.Device.Model = DeviceInfo.Current.Model;
+        telemetry.Context.Device.Type = DeviceInfo.Idiom.ToString();
+
+        if (AppPlatform.IsIosOnMacOS)
+        {
+            telemetry.Context.GlobalProperties["IsiOSApplicationOnMac"] = "true";
         }
     }
 }

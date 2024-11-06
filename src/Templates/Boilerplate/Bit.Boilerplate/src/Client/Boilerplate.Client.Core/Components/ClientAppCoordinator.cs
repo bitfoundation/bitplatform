@@ -9,7 +9,12 @@ using BlazorApplicationInsights.Interfaces;
 
 namespace Boilerplate.Client.Core.Components;
 
-public partial class AppInitializer : AppComponentBase
+/// <summary>
+/// Manages the initialization and coordination of core services and settings within the client application.
+/// This includes authentication state handling, telemetry setup, culture configuration, and optional
+/// services such as SignalR connections, push notifications, and application insights.
+/// </summary>
+public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
@@ -25,7 +30,7 @@ public partial class AppInitializer : AppComponentBase
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private ILogger<AppInitializer> logger = default!;
+    [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
