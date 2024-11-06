@@ -36,21 +36,16 @@ public static partial class MauiProgram
         }
 
         services.AddMauiBlazorWebView();
-
-        if (AppEnvironment.IsDev())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
+        services.AddBlazorWebViewDeveloperTools();
 
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
         if (AppEnvironment.IsDev())
         {
             builder.Logging.AddDebug();
-            builder.Logging.AddBrowserConsoleLogger();
         }
-
         builder.Logging.AddConsole();
+        builder.Logging.AddBrowserConsoleLogger();
 
         if (AppPlatform.IsWindows)
         {
@@ -74,7 +69,7 @@ public static partial class MauiProgram
         {
             builder.Logging.AddApplicationInsights(config =>
             {
-                config.TelemetryInitializers.Add(new MauiTelemetryInitializer());
+                config.TelemetryInitializers.Add(new MauiAppInsightsTelemetryInitializer());
                 config.ConnectionString = connectionString;
             }, options =>
             {

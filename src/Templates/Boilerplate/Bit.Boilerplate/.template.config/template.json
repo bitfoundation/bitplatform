@@ -477,8 +477,8 @@
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Maui/Services/MauiAppInsightsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsAppInsightsTelemetryInitializer.cs",
                         "src/Client/Boilerplate.Client.Core/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
