@@ -2,3 +2,10 @@ section {
     width: 100%;
     height: 100%;
 }
+
+::deep {
+    .stack {
+        overflow: auto;
+        max-height: calc(var(--app-max-height-vh) - 10rem);
+    }
+}

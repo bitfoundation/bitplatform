@@ -5,19 +5,22 @@
 
 <section>
     <BitStack FillContent>
-        <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">Diagnostic</BitText>
-
         <BitStack Horizontal FitHeight>
-            <BitSearchBox />
-            <BitSpacer />
-            <BitDropdown Items="logLevelItems" FitWidth
+            <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
+            <BitDropdown FitWidth
+                         Items="logLevelItems"
+                         DefaultValue="LogLevel.Error"
+                         OnChange="HandleOnLogLevelFilter"
                          TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
         </BitStack>
 
-        <BitStack>
-            @foreach (var log in allLogs)
+        <BitStack Class="stack">
+            @foreach (var log in filteredLogs)
             {
-                <div>@log.Message</div>
+                <BitStack @key="log.Id" Horizontal>
+                    <BitText Style="min-width:20rem">@log.Id</BitText>
+                    <BitText Style="white-space:nowrap">@log.Message</BitText>
+                </BitStack>
             }
         </BitStack>
     </BitStack>
