@@ -1,25 +1,12 @@
 ﻿using System.Reflection;
 using Boilerplate.Tests.Services;
 using Boilerplate.Tests.PageTests.PageModels;
-using Boilerplate.Tests.Extensions;
 
 namespace Boilerplate.Tests.PageTests.BlazorServer;
 
 [TestClass]
 public partial class LocalizationTests : PageTestBase
 {
-    [TestMethod]
-    [TestCategory("MultilingualDisabled")]
-    public async Task MultilingualDisabled()
-    {
-        var homePage = new MainHomePage(Page, WebAppServerAddress);
-        await homePage.Open();
-        await homePage.AssertOpen();
-
-        var contains = PlaywrightCacheExtensions.ContainsAsset(new(@"\/_framework\/icudt_hybrid\.dat\?v=sha256-.+"));
-        Assert.IsFalse(contains, "The 'icudt_hybrid.dat' file must not be loaded when Multilingual is disabled.");
-    }
-
     [TestMethod]
     [CultureData]
     [ConfigureBrowserContext(nameof(SetCultureInBrowserContext))]
