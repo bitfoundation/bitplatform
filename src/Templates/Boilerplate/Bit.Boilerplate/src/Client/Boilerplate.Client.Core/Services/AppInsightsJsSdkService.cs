@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AppInsightsJsSdkService : IApplicationInsights
 {
-    private TaskCompletionSource? telemetryInitializerIsAdded;
+    private TaskCompletionSource? telemetryInitializerIsAddedTcs;
     private readonly TaskCompletionSource appInsightsJsFilesAreLoaded = new();
 
     private readonly ApplicationInsights applicationInsights = new();
@@ -125,28 +125,30 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
         try
         {
             await applicationInsights.AddTelemetryInitializer(telemetryItem);
-            telemetryInitializerIsAdded!.SetResult();
+            telemetryInitializerIsAddedTcs!.SetResult();
         }
         catch (Exception exp)
         {
-            telemetryInitializerIsAdded!.SetException(exp);
+            telemetryInitializerIsAddedTcs!.SetException(exp);
         }
     }
 
     private async Task EnsureApplicationInsightsIsReady()
     {
         await appInsightsJsFilesAreLoaded.Task;
-        await telemetryInitializerIsAdded!.Task;
+        await telemetryInitializerIsAddedTcs!.Task;
     }
 
     private async Task EnsureAppInsightsJsFilesAreLoaded()
     {
         try
         {
-            if (telemetryInitializerIsAdded is not null)
+            if (telemetryInitializerIsAddedTcs is not null)
                 return;
 
-            telemetryInitializerIsAdded = new();
+            telemetryInitializerIsAddedTcs = new();
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
             while (true)
             {
@@ -156,7 +158,7 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
                     appInsightsJsFilesAreLoaded.SetResult();
                     break;
                 }
-                await Task.Delay(250);
+                await Task.Delay(250, cts.Token);
             }
         }
         catch (Exception exp)

@@ -51,7 +51,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (appInsights == true)
-            await appInsights.AddTelemetryInitializer(new()
+            _ = appInsights.AddTelemetryInitializer(new()
             {
                 Data = new()
                 {
@@ -95,11 +95,11 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#if (appInsights == true)
             if (user.IsAuthenticated())
             {
-                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
             }
             else
             {
-                await appInsights.ClearAuthenticatedUserContext();
+                _ = appInsights.ClearAuthenticatedUserContext();
             }
             //#endif
 
@@ -108,12 +108,12 @@ public partial class ClientAppCoordinator : AppComponentBase
                 authLogger.LogInformation("Authentication state changed.");
             }
 
-            //#if (signalr == true)
-            await ConnectSignalR();
-            //#endif
-
             //#if (notification == true)
             await pushNotificationService.RegisterDevice(CurrentCancellationToken);
+            //#endif
+
+            //#if (signalr == true)
+            await ConnectSignalR();
             //#endif
         }
         catch (Exception exp)
