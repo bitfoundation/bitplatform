@@ -67,6 +67,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Pages/Diagnostic/DiagnosticPage.razor.css",
+        "inputFile": "Components/Pages/Diagnostic/DiagnosticPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Pages/HomePage.razor.css",
         "inputFile": "Components/Pages/HomePage.razor.scss",
         "minify": { "enabled": false },

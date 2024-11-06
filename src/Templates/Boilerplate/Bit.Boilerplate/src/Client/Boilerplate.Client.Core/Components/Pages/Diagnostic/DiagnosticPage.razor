@@ -1,0 +1,24 @@
+@attribute [Route(Urls.DiagnosticPage)]
+@inherits AppPageBase
+
+<PageTitle>Diagnostic</PageTitle>
+
+<section>
+    <BitStack FillContent>
+        <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">Diagnostic</BitText>
+
+        <BitStack Horizontal FitHeight>
+            <BitSearchBox />
+            <BitSpacer />
+            <BitDropdown Items="logLevelItems" FitWidth
+                         TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+        </BitStack>
+
+        <BitStack>
+            @foreach (var log in allLogs)
+            {
+                <div>@log.Message</div>
+            }
+        </BitStack>
+    </BitStack>
+</section>
