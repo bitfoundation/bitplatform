@@ -8,7 +8,7 @@ namespace Boilerplate.Client.Core.Services;
 /// <summary>
 /// This logger writes to the browser console in blazor hybrid.
 /// </summary>
-[ProviderAlias("BrowserConsolelogger")]
+[ProviderAlias("BrowserConsoleLogger")]
 public partial class BrowserConsoleLoggerProvider : ILoggerProvider, ILogger, IDisposable
 {
     private static Bit.Butil.Console? console;

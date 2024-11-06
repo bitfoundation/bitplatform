@@ -22,7 +22,7 @@ public partial class Routes
             var currentCulture = CultureInfo.CurrentUICulture.Name;
             var uri = new Uri(url);
             var urlCulture = uri.GetCulture();
-            forceLoad = urlCulture is not null && currentCulture != urlCulture;
+            forceLoad = urlCulture is not null && string.Equals(currentCulture, urlCulture, StringComparison.InvariantCultureIgnoreCase) is false;
         }
 
         universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);

@@ -99,4 +99,7 @@ public partial class IdentityController
         if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
 }

@@ -33,25 +33,24 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
     {
         var isDevEnv = AppEnvironment.IsDev();
 
-
         using (var scope = Logger.BeginScope(parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty)))
         {
-            var exceptionMessage = exception.Message;
+            var exceptionMessageToLog = exception.Message;
             var innerException = exception.InnerException;
 
             while (innerException is not null)
             {
-                exceptionMessage += $"{Environment.NewLine}{innerException.Message}";
+                exceptionMessageToLog += $"{Environment.NewLine}{innerException.Message}";
                 innerException = innerException.InnerException;
             }
 
-            Logger.LogError(exception, exceptionMessage);
+            Logger.LogError(exception, exceptionMessageToLog);
         }
 
-        string displayableExceptionMessage = (exception as KnownException)?.Message ??
+        string exceptionMessageToShow = (exception as KnownException)?.Message ??
             (isDevEnv ? exception.ToString() : Localizer[nameof(AppStrings.UnknownException)]);
 
-        MessageBoxService.Show(displayableExceptionMessage, Localizer[nameof(AppStrings.Error)]);
+        MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
 
         if (isDevEnv)
         {
@@ -75,6 +74,12 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
     protected bool IgnoreException(Exception exception)
     {
-        return exception is TaskCanceledException;
+        if (exception is KnownException)
+            return false;
+
+        return exception is TaskCanceledException ||
+            exception is OperationCanceledException ||
+            exception is TimeoutException ||
+            (exception.InnerException is not null && IgnoreException(exception.InnerException));
     }
 }
