@@ -34,10 +34,7 @@ public static partial class Program
         //#endif
 
         services.AddWpfBlazorWebView();
-        if (AppEnvironment.IsDev())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
+        services.AddBlazorWebViewDeveloperTools();
 
         services.AddLogging(loggingBuilder =>
         {
@@ -47,9 +44,9 @@ public static partial class Program
             if (AppEnvironment.IsDev())
             {
                 loggingBuilder.AddDebug();
-                loggingBuilder.AddBrowserConsoleLogger();
             }
             loggingBuilder.AddConsole();
+            loggingBuilder.AddBrowserConsoleLogger();
             //#if (appCenter == true)
             if (Microsoft.AppCenter.AppCenter.Configured)
             {
@@ -59,7 +56,7 @@ public static partial class Program
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {
-                config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
+                config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
                 var connectionString = configuration.Get<ClientWindowsSettings>()!.ApplicationInsights?.ConnectionString;
                 if (string.IsNullOrEmpty(connectionString) is false)
                 {

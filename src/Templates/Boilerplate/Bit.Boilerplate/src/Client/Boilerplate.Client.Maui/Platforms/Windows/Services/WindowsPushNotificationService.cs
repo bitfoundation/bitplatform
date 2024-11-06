@@ -6,5 +6,4 @@ public partial class WindowsPushNotificationService : PushNotificationServiceBas
 {
     public override Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken) => 
         throw new NotImplementedException();
-
 }
