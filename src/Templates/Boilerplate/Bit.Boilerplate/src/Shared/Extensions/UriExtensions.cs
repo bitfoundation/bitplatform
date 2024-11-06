@@ -28,6 +28,9 @@ public static partial class UriExtensions
         if (string.IsNullOrEmpty(culture) is false)
             return culture;
 
+        if (CultureInfoManager.MultilingualEnabled is false)
+            return null;
+
         foreach (var segment in uri.Segments.Take(2))
         {
             var segmentValue = segment.Trim('/');
