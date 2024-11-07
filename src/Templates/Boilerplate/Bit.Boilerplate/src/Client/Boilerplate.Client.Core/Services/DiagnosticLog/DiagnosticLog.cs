@@ -9,4 +9,6 @@ public class DiagnosticLog
     public string? Message { get; set; }
 
     public Exception? Exception { get; set; }
+
+    public IDictionary<string, object?>? State { get; set; }
 }

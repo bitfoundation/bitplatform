@@ -6,11 +6,11 @@ interface DotNetObject {
 }
 
 (function () {
-    set();
+    setCssWindowSizes();
 
-    window.addEventListener('resize', set);
+    window.addEventListener('resize', setCssWindowSizes);
 
-    function set() {
+    function setCssWindowSizes() {
         document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
         document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
     }
@@ -50,7 +50,7 @@ class App {
         if (!registration) return null;
 
         const pushManager = registration.pushManager;
-        if (pushManager == null) return;
+        if (pushManager == null) return null;
 
         let subscription = await pushManager.getSubscription();
         if (subscription == null) {

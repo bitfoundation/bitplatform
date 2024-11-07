@@ -4,6 +4,8 @@ namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILogger, IDisposable
 {
+    public ConcurrentBag<DiagnosticLog> Store = [];
+
     private ConcurrentQueue<IDictionary<string, object?>> states = new();
 
     public string? CategoryName { get; set; }
@@ -37,7 +39,7 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         if (scope is null) return;
 
-        DiagnosticModal.Store.Enqueue(new() { Level = logLevel, Message = message, Exception = exception });
+        Store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState });
 
         var jsRuntime = scope.GetRequiredService<IJSRuntime>();
 

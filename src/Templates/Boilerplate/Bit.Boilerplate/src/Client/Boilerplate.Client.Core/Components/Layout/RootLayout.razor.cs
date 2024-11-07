@@ -171,6 +171,7 @@ public partial class RootLayout : IDisposable
         unsubscribeCultureChange?.Invoke();
         unsubscribeRouteDataUpdated?.Invoke();
 
-        _ = keyboard.Remove(OpenDiagnosticModal);
+        _ = keyboard?.Remove(OpenDiagnosticModal);
+        _ = keyboard?.DisposeAsync();
     }
 }

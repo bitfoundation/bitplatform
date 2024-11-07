@@ -5,8 +5,6 @@ namespace Boilerplate.Client.Core.Components.Layout;
 
 public partial class DiagnosticModal : IDisposable
 {
-    public static ConcurrentQueue<DiagnosticLog> Store = new();
-
     private bool isOpen;
     private Action unsubscribe = default!;
     private IEnumerable<DiagnosticLog> allLogs = default!;
@@ -16,6 +14,7 @@ public partial class DiagnosticModal : IDisposable
 
 
     [AutoInject] private Clipboard clipboard = default!;
+    [AutoInject] private DiagnosticLogger logger = default!;
 
 
     protected override Task OnInitAsync()
@@ -23,8 +22,8 @@ public partial class DiagnosticModal : IDisposable
         unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
-            allLogs = [.. Store];
-            await HandleOnLogLevelFilter(LogLevel.Error);
+            allLogs = [.. logger.Store];
+            await HandleOnLogLevelFilter(LogLevel.Information);
             await InvokeAsync(StateHasChanged);
         });
 
@@ -58,7 +57,7 @@ public partial class DiagnosticModal : IDisposable
 
     private async Task CopyException(DiagnosticLog log)
     {
-        await clipboard.WriteText($"{log.Message}{Environment.NewLine}{log.Exception?.ToString()}");
+        await clipboard.WriteText($"{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{log.State?.ToString()}");
     }
 
     private async Task GoTop()
