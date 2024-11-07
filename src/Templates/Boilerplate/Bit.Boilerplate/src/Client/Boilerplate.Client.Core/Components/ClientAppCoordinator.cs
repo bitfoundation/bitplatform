@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
@@ -149,8 +150,8 @@ public partial class ClientAppCoordinator : AppComponentBase
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
                 options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
-                    return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                        .Invoke(signalrHttpMessageHandler);
+                    return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
+                        .Invoke(transportHandler: signalrHttpMessageHandler);
                 };
             })
             .Build();

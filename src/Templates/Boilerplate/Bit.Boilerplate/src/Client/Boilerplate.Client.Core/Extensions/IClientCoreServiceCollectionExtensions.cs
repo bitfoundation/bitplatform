@@ -55,12 +55,12 @@ public static partial class IClientCoreServiceCollectionExtensions
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
         // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
-        services.AddScoped<Func<HttpMessageHandler, HttpMessageHandler>>(serviceProvider => underlyingHttpMessageHandler =>
+        services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
             var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [underlyingHttpMessageHandler])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])]);
             return constructedHttpMessageHandler;
         });
         services.AddScoped<AuthDelegatingHandler>();
@@ -69,8 +69,8 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<RequestHeadersDelegationHandler>();
         services.AddScoped(serviceProvider =>
         {
-            var underlyingHttpMessageHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
-            var constructedHttpMessageHandler = serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>().Invoke(underlyingHttpMessageHandler);
+            var transportHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
+            var constructedHttpMessageHandler = serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(transportHandler);
             return constructedHttpMessageHandler;
         });
 

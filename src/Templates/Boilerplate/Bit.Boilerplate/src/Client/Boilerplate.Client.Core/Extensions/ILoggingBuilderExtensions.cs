@@ -22,7 +22,7 @@ public static class ILoggingBuilderExtensions
         {
             loggingBuilder.AddConsole();
             // DevInsightsLogger is already logging in browser's console.
-            // But Console logger is still useful in Visual Studio's Device Log (Android, iOS) or Browser Stack etc.
+            // But Console logger is still useful in Visual Studio's Device Log (Android, iOS) or BrowserStack etc.
         }
 
         loggingBuilder.AddDevInsightsLogger();
