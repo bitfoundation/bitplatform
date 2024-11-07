@@ -5,8 +5,6 @@ public static partial class Urls
 {
     public const string HomePage = "/";
 
-    public const string DiagnosticPage = "/diagnostic";
-
     public const string NotFoundPage = "/not-found";
 
     public const string TermsPage = "/terms";

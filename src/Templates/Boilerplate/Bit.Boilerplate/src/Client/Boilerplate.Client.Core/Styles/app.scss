@@ -5,10 +5,14 @@
     --app-inset-left: env(safe-area-inset-left);
     --app-inset-right: env(safe-area-inset-right);
     --app-inset-bottom: env(safe-area-inset-bottom);
-    --app-max-width: calc(100% - var(--app-inset-left) - var(--app-inset-right));
-    --app-max-height: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
-    --app-max-width-vw: calc(100vw - var(--app-inset-left) - var(--app-inset-right));
-    --app-max-height-vh: calc(100vh - var(--app-inset-top) - var(--app-inset-bottom));
+    //--
+    --app-width-vw: calc(100vw - var(--app-inset-left) - var(--app-inset-right));
+    --app-height-vh: calc(100vh - var(--app-inset-top) - var(--app-inset-bottom));
+    --app-width-per: calc(100% - var(--app-inset-left) - var(--app-inset-right));
+    --app-height-per: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
+    --app-width: calc(var(--win-width) - var(--app-inset-left) - var(--app-inset-right));
+    --app-height: calc(var(--win-height) - var(--app-inset-top) - var(--app-inset-bottom));
+    //--
     --app-inset-inline-start: var(--app-inset-left);
     --app-inset-inline-end: var(--app-inset-right);
 

@@ -24,6 +24,17 @@ public partial class AuthorizedHeader : AppComponentBase
     }
 
 
+    private int clickCount = 0;
+    private async Task HandleTitleClick()
+    {
+        if (++clickCount == 7)
+        {
+            clickCount = 0;
+            PubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        }
+    }
+
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         await base.DisposeAsync(disposing);

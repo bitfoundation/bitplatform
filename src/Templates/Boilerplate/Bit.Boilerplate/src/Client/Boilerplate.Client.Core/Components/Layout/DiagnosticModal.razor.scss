@@ -1,0 +1,23 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    height: 100%;
+}
+
+::deep {
+    .container {
+        padding: 1rem;
+    }
+
+    .stack {
+        overflow: auto;
+    }
+
+    .go-top-button {
+        left: 50%;
+        position: fixed;
+        transform: translateX(-50%);
+        bottom: calc(var(--app-inset-bottom) + 1rem);
+    }
+}

@@ -7,7 +7,7 @@ main {
 
     @include lt-md {
         height: unset;
-        min-height: 100vh;
+        min-height: var(--app-height);
     }
 
     &.unauthenticated {
@@ -21,7 +21,6 @@ main {
             .body {
                 width: 100%;
                 padding: 2rem;
-                min-height: 100%;
                 padding-top: 5rem;
             }
         }
@@ -48,7 +47,6 @@ main {
             width: 30%;
             padding: 4rem;
             min-width: 35rem;
-            min-height: 100%;
             padding-top: 5rem;
             background-color: $bit-color-background-secondary;
             border-inline-end: 1px solid $bit-color-border-secondary;
@@ -58,6 +56,7 @@ main {
                 border: none;
                 min-width: unset;
                 padding-inline: 1rem;
+                background-color: $bit-color-background-primary;
             }
         }
     }
@@ -76,7 +75,7 @@ main {
 
             @include lt-md {
                 height: unset;
-                min-height: 100vh;
+                padding-bottom: 3.5rem;
             }
         }
 

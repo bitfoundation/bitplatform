@@ -1,0 +1,45 @@
+@inherits AppComponentBase
+
+<div>
+    <BitModal @bind-IsOpen="isOpen" FullSize>
+        <BitStack FillContent Class="container">
+            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H3">Diagnostic</BitText>
+                <BitSpacer />
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           OnClick="() => isOpen = false"
+                           IconName="@BitIconName.ChromeClose" />
+            </BitStack>
+
+            <BitStack Horizontal FitHeight>
+                <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
+                <BitDropdown FitWidth
+                             Items="logLevelItems"
+                             DefaultValue="LogLevel.Error"
+                             OnChange="HandleOnLogLevelFilter"
+                             TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+            </BitStack>
+
+            <BitBasicList @ref="logStackRef"
+                          Style="height:unset"
+                          EnableVirtualization
+                          Items="filteredLogs.Indexed().ToArray()">
+                <RowTemplate Context="logIndex">
+                    <BitStack @key="logIndex.index.ToString()" Horizontal AutoHeight>
+                        <BitText Style="min-width:1.5rem">@($"{logIndex.index + 1}.")</BitText>
+                        <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
+                    </BitStack>
+                </RowTemplate>
+            </BitBasicList>
+        </BitStack>
+
+        <BitButton IconOnly
+                   OnClick="GoTop"
+                   Color="BitColor.Info"
+                   Class="go-top-button"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Up" />
+    </BitModal>
+</div>

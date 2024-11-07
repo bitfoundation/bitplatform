@@ -50,5 +50,14 @@ section {
     .todo-list {
         width: 100%;
         background-color: var(--bit-clr-bg-sec);
+        height: calc(var(--app-height) - 17rem);
+
+        @include lt-md {
+            height: calc(var(--app-height) - 18rem);
+        }
+
+        @include lt-sm {
+            height: calc(var(--app-height) - 20rem);
+        }
     }
 }

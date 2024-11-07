@@ -1,4 +1,20 @@
 ﻿//+:cnd:noEmit
+
+(function () {
+    set()
+
+    window.addEventListener('resize', e => {
+        set();
+    });
+
+    function set() {
+        console.log('window.innerWidth:', window.innerWidth)
+        console.log('window.innerHeight:', window.innerHeight)
+        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
+        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
+    }
+}());
+
 class App {
     public static applyBodyElementClasses(cssClasses: string[], cssVariables: any): void {
         cssClasses?.forEach(c => document.body.classList.add(c));

@@ -82,4 +82,8 @@
         <None Include="tsconfig.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Pages\Diagnostic\" />
+    </ItemGroup>
+
 </Project>
