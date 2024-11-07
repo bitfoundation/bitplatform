@@ -11,7 +11,6 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private IConfiguration configuration;
     [AutoInject] private IExceptionHandler exceptionHandler;
-    [AutoInject] private ILogger<ILocalHttpServer> logger = default!;
 
     private WebServer? localHttpServer;
 

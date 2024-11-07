@@ -2,7 +2,6 @@
 using Plugin.LocalNotification;
 using static Android.Provider.Settings;
 using Boilerplate.Shared.Dtos.PushNotification;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 

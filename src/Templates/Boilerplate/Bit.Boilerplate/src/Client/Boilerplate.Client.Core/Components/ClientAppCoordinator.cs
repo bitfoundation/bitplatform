@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR.Client;
+using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
@@ -9,11 +10,15 @@ using BlazorApplicationInsights.Interfaces;
 
 namespace Boilerplate.Client.Core.Components;
 
-public partial class AppInitializer : AppComponentBase
+/// <summary>
+/// Manages the initialization and coordination of core services and settings within the client application.
+/// This includes authentication state handling, telemetry setup, culture configuration, and optional
+/// services such as SignalR connections, push notifications, and application insights.
+/// </summary>
+public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
-    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -23,9 +28,8 @@ public partial class AppInitializer : AppComponentBase
     //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private ILogger<AppInitializer> logger = default!;
+    [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
@@ -46,7 +50,7 @@ public partial class AppInitializer : AppComponentBase
             }
 
             //#if (appInsights == true)
-            await appInsights.AddTelemetryInitializer(new()
+            _ = appInsights.AddTelemetryInitializer(new()
             {
                 Data = new()
                 {
@@ -70,8 +74,6 @@ public partial class AppInitializer : AppComponentBase
             }
 
             await SetupBodyClasses();
-
-            BrowserConsoleLoggerProvider.SetConsole(console);
         }
 
         await base.OnInitAsync();
@@ -90,11 +92,11 @@ public partial class AppInitializer : AppComponentBase
             //#if (appInsights == true)
             if (user.IsAuthenticated())
             {
-                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
             }
             else
             {
-                await appInsights.ClearAuthenticatedUserContext();
+                _ = appInsights.ClearAuthenticatedUserContext();
             }
             //#endif
 
@@ -103,12 +105,12 @@ public partial class AppInitializer : AppComponentBase
                 authLogger.LogInformation("Authentication state changed.");
             }
 
-            //#if (signalr == true)
-            await ConnectSignalR();
-            //#endif
-
             //#if (notification == true)
             await pushNotificationService.RegisterDevice(CurrentCancellationToken);
+            //#endif
+
+            //#if (signalr == true)
+            await ConnectSignalR();
             //#endif
         }
         catch (Exception exp)
@@ -141,8 +143,8 @@ public partial class AppInitializer : AppComponentBase
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
                 options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
-                    return serviceProvider.GetRequiredService<Func<HttpMessageHandler, HttpMessageHandler>>()
-                        .Invoke(signalrHttpMessageHandler);
+                    return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
+                        .Invoke(transportHandler: signalrHttpMessageHandler);
                 };
             })
             .Build();
@@ -234,5 +236,28 @@ public partial class AppInitializer : AppComponentBase
         //#endif
 
         await base.DisposeAsync(disposing);
+    }
+
+    [AutoInject]
+    private IServiceProvider serviceProvider
+    {
+        set => currentServiceProvider = value;
+        get => currentServiceProvider!;
+    }
+
+    private static IServiceProvider? currentServiceProvider;
+    public static IServiceProvider? CurrentServiceProvider
+    {
+        get
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser is false)
+                throw new InvalidOperationException($"{nameof(CurrentServiceProvider)} is only available in Blazor Hybrid or blazor web assembly.");
+
+            return currentServiceProvider;
+        }
+        private set
+        {
+            currentServiceProvider = value;
+        }
     }
 }

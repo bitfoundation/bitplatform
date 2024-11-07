@@ -17,7 +17,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     {
         if (await IsNotificationSupported(cancellationToken) is false)
         {
-            Logger.LogInformation("Notifications are not supported/allowed on this device.");
+            Logger.LogInformation("Notifications are not supported/allowed on this platform/device.");
             return;
         }
 

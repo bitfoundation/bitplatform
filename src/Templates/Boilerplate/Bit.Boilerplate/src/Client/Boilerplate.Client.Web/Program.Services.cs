@@ -11,12 +11,12 @@ public static partial class Program
     {
         var services = builder.Services;
         var configuration = builder.Configuration;
-
-        services.AddClientWebProjectServices(configuration);
-
         // The following services are blazor web assembly only.
 
+        builder.Logging.ConfigureLoggers();
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+
+        services.AddClientWebProjectServices(configuration);
 
         Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
 

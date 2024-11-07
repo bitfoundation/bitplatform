@@ -2,8 +2,8 @@
 
 namespace Boilerplate.Server.Api.Services.Identity;
 
-public partial class AppUserClaimsPrincipalFactory(UserManager<User> userManager, IOptions<IdentityOptions> optionsAccessor)
-    : UserClaimsPrincipalFactory<User>(userManager, optionsAccessor)
+public partial class AppUserClaimsPrincipalFactory(UserManager<User> userManager, RoleManager<Role> roleManager, IOptions<IdentityOptions> optionsAccessor)
+    : UserClaimsPrincipalFactory<User, Role>(userManager, roleManager, optionsAccessor)
 {
     /// <summary>
     /// These claims will be included in both the access and refresh tokens only if the successful sign-in happens during the current HTTP request lifecycle.

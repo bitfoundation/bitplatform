@@ -5,9 +5,10 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
-  SIMPLE_TEST_FILTER: "FullyQualifiedName!~PageTests"
-  BLAZOR_SERVER_TEST_FILTER: "PageTests.BlazorServer"
-  BLAZOR_WASM_TEST_FILTER: "PageTests.BlazorWebAssembly"
+  SIMPLE_TEST_FILTER: "ClassName!~PageTests"
+  BLAZOR_SERVER_TEST_FILTER: "ClassName~PageTests.BlazorServer"
+  BLAZOR_WASM_TEST_FILTER: "ClassName~PageTests.BlazorWebAssembly"
+  MULTILINGUAL_DISABLED_TEST_FILTER: "ClassName!~LocalizationTests|TestCategory=MultilingualDisabled"
 
 jobs:
 
@@ -104,7 +105,7 @@ jobs:
     - name: Test SqlServer database option
       id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -119,6 +120,25 @@ jobs:
       with:
         name: tests-artifact
         path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Test Multilingual disabled option
+      id: multilingual-disabled-test
+      run: |
+        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests
+        cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.multilingual-disabled-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./MultilingualDisabled/src/Tests/TestResults
         retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
