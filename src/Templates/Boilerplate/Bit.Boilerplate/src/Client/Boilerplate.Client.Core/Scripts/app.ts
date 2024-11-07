@@ -20,9 +20,11 @@ class App {
     private static jsBridgeObj: DotNetObject;
 
     public static registerJsBridge(dotnetObj: DotNetObject) {
+        // For additional details, see the JsBridge.cs file.
         App.jsBridgeObj = dotnetObj;
     }
 
+    /** Press Alt + Ctrl + Shift + D as an alternative option to show diagnostic. */
     public static ShowDiagnostic() {
         return App.jsBridgeObj?.invokeMethodAsync("ShowDiagnostic");
     }
