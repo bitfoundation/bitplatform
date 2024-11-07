@@ -57,7 +57,7 @@ public partial class RootLayout : IDisposable
             SetCurrentUrl();
             currentTheme = await themeService.GetCurrentTheme();
 
-            await keyboard.Add(ButilKeyCodes.KeyD, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Alt | ButilModifiers.Shift);
+            await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
             await base.OnInitializedAsync();
         }
         catch (Exception exp)

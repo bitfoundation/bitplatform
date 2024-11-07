@@ -24,7 +24,7 @@ class App {
         App.jsBridgeObj = dotnetObj;
     }
 
-    /** Press Alt + Ctrl + Shift + D as an alternative option to show diagnostic. */
+    /** Press Ctrl + Shift + X as an alternative option to show diagnostic. */
     public static ShowDiagnostic() {
         return App.jsBridgeObj?.invokeMethodAsync("ShowDiagnostic");
     }
