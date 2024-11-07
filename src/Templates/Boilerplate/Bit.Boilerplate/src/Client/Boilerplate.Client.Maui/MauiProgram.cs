@@ -42,14 +42,14 @@ public static partial class MauiProgram
             .UseMauiApp<App>()
             .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
-            //+:cnd:noEmit
-            //#if (notification == true)
+        //+:cnd:noEmit
+        //#if (notification == true)
         if (AppPlatform.IsWindows is false)
         {
             builder.UseLocalNotification();
         }
-            //#endif
-            //-:cnd:noEmit
+        //#endif
+        //-:cnd:noEmit
 
         builder.ConfigureServices();
 
@@ -136,13 +136,10 @@ public static partial class MauiProgram
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
-            if (AppEnvironment.IsDev())
+            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
+                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
             {
-                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
-                {
-                    webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
-                }
+                webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
             }
 #elif Android
             webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));

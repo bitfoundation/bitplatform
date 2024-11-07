@@ -26,7 +26,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.0-rc.2.24503.2" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
         <PackageReference Include="Velopack" Version="0.0.869" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         

@@ -47,6 +47,9 @@ public static partial class IJSRuntimeExtensions
     /// </summary>
     public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
+        if (jsRuntime is null)
+            return false;
+
         var type = jsRuntime.GetType();
 
         return type.Name switch

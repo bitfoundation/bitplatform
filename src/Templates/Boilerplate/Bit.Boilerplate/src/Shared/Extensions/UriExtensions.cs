@@ -23,6 +23,9 @@ public static partial class UriExtensions
     /// </summary>
     public static string? GetCulture(this Uri uri)
     {
+        if (CultureInfoManager.MultilingualEnabled is false)
+            return null;
+        
         var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
         if (string.IsNullOrEmpty(culture) is false)

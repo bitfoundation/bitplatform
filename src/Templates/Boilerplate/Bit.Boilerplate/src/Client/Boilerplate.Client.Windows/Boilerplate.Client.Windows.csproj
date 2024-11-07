@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -26,8 +26,6 @@
         <Watch Remove="*.scss" />
 
         <PackageReference Include="EmbedIO" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
