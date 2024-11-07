@@ -11,7 +11,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+        modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
             {
@@ -44,35 +44,35 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
                         Color = "#FFCD56",
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         Name = "Ford"
                     },
                     new
                     {
                         Id = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
                         Color = "#FF6384",
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         Name = "Nissan"
                     },
                     new
                     {
                         Id = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
                         Color = "#4BC0C0",
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         Name = "Benz"
                     },
                     new
                     {
                         Id = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
                         Color = "#FF9124",
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         Name = "BMW"
                     },
                     new
                     {
                         Id = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
                         Color = "#2B88D8",
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         Name = "Tesla"
                     });
             });
@@ -85,7 +85,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("ConcurrencyStamp")
                     .IsConcurrencyToken()
-                    .HasColumnType("TEXT");
+                    .ValueGeneratedOnAddOrUpdate()
+                    .HasColumnType("TEXT")
+                    .HasAnnotation("Cosmos:PropertyName", "_etag");
 
                 b.Property<string>("Name")
                     .HasMaxLength(50)
@@ -122,7 +124,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("ConcurrencyStamp")
                     .IsConcurrencyToken()
-                    .HasColumnType("TEXT");
+                    .ValueGeneratedOnAddOrUpdate()
+                    .HasColumnType("TEXT")
+                    .HasAnnotation("Cosmos:PropertyName", "_etag");
 
                 b.Property<string>("Email")
                     .HasMaxLength(256)
@@ -283,7 +287,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("9a59dda2-7b12-4cc1-9658-d2586eef91d4"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "The Ford Mustang is ranked #1 in Sports Cars",
                         Name = "Mustang",
@@ -293,7 +297,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("a42914e2-92da-4f0b-aab0-b9572c9671b4"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "The Ford GT is a mid-engine two-seater sports car manufactured and marketed by American automobile manufacturer",
                         Name = "GT",
@@ -303,7 +307,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("f75325c8-a213-470b-ab93-4677ca4caeef"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "Ford Ranger is a nameplate that has been used on multiple model lines of pickup trucks sold by Ford worldwide.",
                         Name = "Ranger",
@@ -313,7 +317,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("43a82ec1-aab6-445f-83af-a85028417cf7"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306431258624000000L,
                         Description = "Raptor is a SCORE off-road trophy truck living in a asphalt world",
                         Name = "Raptor",
@@ -323,7 +327,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("f01b32bb-eccd-43be-aaf3-3c788a7d7558"),
                         CategoryId = new Guid("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "The Ford Maverick is a compact pickup truck produced by Ford Motor Company.",
                         Name = "Maverick",
@@ -333,7 +337,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("d53bb159-f4f9-493a-b4dc-215fd765ca25"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "A powerful convertible sports car",
                         Name = "Roadster",
@@ -343,7 +347,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("74bb268f-18cf-45ec-9f2f-30b34b18fb3c"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "A perfectly adequate family sedan with sharp looks",
                         Name = "Altima",
@@ -353,7 +357,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("eb787e1a-7ba8-4708-924b-9f7964fa0f64"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "Legendary supercar with AWD, 4 seats, a powerful V6 engine and the latest tech",
                         Name = "GT-R",
@@ -363,7 +367,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("362a6638-0031-485d-825f-e8aeae63a334"),
                         CategoryId = new Guid("582b8c19-0709-4dae-b7a6-fa0e704dad3c"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "A new smart SUV",
                         Name = "Juke",
@@ -373,7 +377,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("8629931e-e26e-4885-b561-e447197d4b69"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "",
                         Name = "H247",
@@ -383,7 +387,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("a1c1987d-ee6c-41ad-9647-18de4504303a"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "",
                         Name = "V297",
@@ -393,7 +397,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("59eea437-bdf2-4c11-b262-06643b253288"),
                         CategoryId = new Guid("6fae78f3-b067-40fb-a2d5-9c8dd5eb2e08"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "",
                         Name = "R50",
@@ -403,7 +407,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("01d223a3-182d-406a-9722-19dab083f96e"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "",
                         Name = "M550i",
@@ -413,7 +417,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("64a2616f-3af6-4248-86cf-4a605095a644"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "",
                         Name = "540i",
@@ -423,7 +427,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("ac50dc29-4b7e-4d4d-b23a-4227d91f2bb0"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306448953344000000L,
                         Description = "",
                         Name = "530e",
@@ -433,7 +437,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("fb41cc51-9abd-4b45-b0d9-ea8f565ec502"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306440105984000000L,
                         Description = "",
                         Name = "530i",
@@ -443,7 +447,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("e159b1ad-12aa-4e02-a39b-d5e4a32eaf99"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306431258624000000L,
                         Description = "",
                         Name = "M850i",
@@ -453,7 +457,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("4d9cb0f4-1f32-45d5-8c84-d7f15bc569d5"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "",
                         Name = "X7",
@@ -463,7 +467,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("1b22319e-0a58-471e-82b6-75cd8b9d98e1"),
                         CategoryId = new Guid("ecf0496f-f1e3-4d92-8fe4-0d7fa2b4ffa4"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306413563904000000L,
                         Description = "",
                         Name = "IX",
@@ -473,7 +477,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("96c73b9c-03df-4f70-ac8d-75c32b89881a"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306466648064000000L,
                         Description = "rapid acceleration and dynamic handling",
                         Name = "Model 3",
@@ -483,7 +487,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("840ba759-bde9-4821-b49b-c981c082bb96"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306457800704000000L,
                         Description = "finishes near the top of our luxury electric car rankings.",
                         Name = "Model S",
@@ -493,7 +497,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("840e113b-5074-4b1c-86bd-e9affb659412"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306448953344000000L,
                         Description = "Heart-pumping acceleration, long drive range",
                         Name = "Model X",
@@ -503,7 +507,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     {
                         Id = new Guid("b2db9074-a0a9-4054-87e2-206b7a55c793"),
                         CategoryId = new Guid("747f6d66-7524-40ca-8494-f65e85b5ee5d"),
-                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 },
+                        ConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
                         CreatedOn = 1306422411264000000L,
                         Description = "extensive driving range, lots of standard safety features",
                         Name = "Model Y",
