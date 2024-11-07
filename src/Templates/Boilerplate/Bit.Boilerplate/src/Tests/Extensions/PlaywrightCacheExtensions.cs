@@ -5,6 +5,8 @@ namespace Boilerplate.Tests.Extensions;
 
 public static partial class PlaywrightCacheExtensions
 {
+    private static readonly ConcurrentDictionary<string, (byte[] Body, Dictionary<string, string> Headers)> cachedResponses = [];
+
     public static Task EnableBlazorWasmCaching(this IPage page) => page.EnableAssetCaching(BlazorWasmRegex());
 
     public static Task EnableBlazorWasmCaching(this IBrowserContext context) => context.EnableAssetCaching(BlazorWasmRegex());
@@ -40,9 +42,10 @@ public static partial class PlaywrightCacheExtensions
             Headers = cachedResponse.Headers
         });
     }
+
     public static void ClearCache() => cachedResponses.Clear();
 
-    private static readonly ConcurrentDictionary<string, (byte[] Body, Dictionary<string, string> Headers)> cachedResponses = [];
+    public static bool ContainsAsset(Regex regex) => cachedResponses.Keys.Any(regex.IsMatch);
 
     [GeneratedRegex(@"\/_framework\/[\w\.]+\.((wasm)|(pdb)|(dat))\?v=sha256-.+")]
     private static partial Regex BlazorWasmRegex();
