@@ -34,6 +34,8 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         states.TryDequeue(out var currentState);
 
+        Store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
+
         var scope = scopeProvider.Invoke();
 
         if (scope is null) return;
@@ -41,8 +43,6 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
         var jsRuntime = scope.GetRequiredService<IJSRuntime>();
 
         if (jsRuntime.IsInitialized() is false) return;
-
-        Store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState });
 
         var console = scope.GetRequiredService<Bit.Butil.Console>();
 

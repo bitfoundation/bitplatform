@@ -10,5 +10,5 @@ public class DiagnosticLog
 
     public Exception? Exception { get; set; }
 
-    public IDictionary<string, object?>? State { get; set; }
+    public IDictionary<string, string?>? State { get; set; }
 }

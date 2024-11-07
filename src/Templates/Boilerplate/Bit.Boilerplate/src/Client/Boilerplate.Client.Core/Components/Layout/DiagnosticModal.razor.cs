@@ -36,7 +36,7 @@ public partial class DiagnosticModal : IDisposable
 
     private async Task HandleOnLogLevelFilter(LogLevel logLevel)
     {
-        filteredLogs = allLogs.Where(l => l.Level == logLevel);
+        filteredLogs = allLogs.Where(l => l.Level >= logLevel);
     }
 
     private static BitColor GetColor(LogLevel level)
@@ -56,7 +56,9 @@ public partial class DiagnosticModal : IDisposable
 
     private async Task CopyException(DiagnosticLog log)
     {
-        await clipboard.WriteText($"{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{log.State?.ToString()}");
+        var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
+
+        await clipboard.WriteText($"{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}");
     }
 
     private async Task GoTop()
