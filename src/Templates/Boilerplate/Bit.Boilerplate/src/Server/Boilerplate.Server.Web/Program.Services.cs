@@ -21,8 +21,7 @@ public static partial class Program
 
         if (AppEnvironment.IsDev())
         {
-            // This logger is not supposed to be used in blazor server / production.
-            builder.Logging.AddDevInsightsLogger();
+            builder.Logging.AddDiagnosticLogger();
         }
 
         services.AddClientWebProjectServices(configuration);
@@ -116,6 +115,8 @@ public static partial class Program
 
             return httpClient;
         });
+
+        services.AddSingleton(sp => new CurrentScopeProvider(() => sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.RequestServices));
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()

@@ -1,10 +1,13 @@
-﻿namespace Microsoft.Extensions.Logging;
+﻿using Boilerplate.Client.Core.Services.DiagnosticLog;
+
+namespace Microsoft.Extensions.Logging;
 
 public static class ILoggingBuilderExtensions
 {
-    public static ILoggingBuilder AddDevInsightsLogger(this ILoggingBuilder builder)
+    public static ILoggingBuilder AddDiagnosticLogger(this ILoggingBuilder builder)
     {
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DevInsightsLoggerProvider>());
+        builder.Services.AddSessioned<DiagnosticLogger>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DiagnosticLoggerProvider>());
 
         return builder;
     }
@@ -21,11 +24,11 @@ public static class ILoggingBuilderExtensions
         if (!AppPlatform.IsBrowser)
         {
             loggingBuilder.AddConsole();
-            // DevInsightsLogger is already logging in browser's console.
+            // DiagnosticLogger is already logging in browser's console.
             // But Console logger is still useful in Visual Studio's Device Log (Android, iOS) or BrowserStack etc.
         }
 
-        loggingBuilder.AddDevInsightsLogger();
+        loggingBuilder.AddDiagnosticLogger();
 
         return loggingBuilder;
     }

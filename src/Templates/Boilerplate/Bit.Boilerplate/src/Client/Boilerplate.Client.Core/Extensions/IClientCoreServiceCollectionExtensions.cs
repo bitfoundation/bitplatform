@@ -10,6 +10,7 @@ using BlazorApplicationInsights.Interfaces;
 using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
+        services.AddSingleton(_ => new CurrentScopeProvider(() => ClientAppCoordinator.CurrentServiceProvider));
 
         services.AddOptions<ClientCoreSettings>()
             .Bind(configuration)

@@ -19,7 +19,6 @@ public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
-    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -42,12 +41,6 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            if (AppPlatform.IsBlazorHybridOrBrowser
-                || AppEnvironment.IsDev() /* Blazor server in dev env. */)
-            {
-                DevInsightsLoggerProvider.SetServiceProvider(serviceProvider);
-            }
-
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -243,5 +236,28 @@ public partial class ClientAppCoordinator : AppComponentBase
         //#endif
 
         await base.DisposeAsync(disposing);
+    }
+
+    [AutoInject]
+    private IServiceProvider serviceProvider
+    {
+        set => currentServiceProvider = value;
+        get => currentServiceProvider!;
+    }
+
+    private static IServiceProvider? currentServiceProvider;
+    public static IServiceProvider? CurrentServiceProvider
+    {
+        get
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser is false)
+                throw new InvalidOperationException($"{nameof(CurrentServiceProvider)} is only available in Blazor Hybrid or blazor web assembly.");
+
+            return currentServiceProvider;
+        }
+        private set
+        {
+            currentServiceProvider = value;
+        }
     }
 }
