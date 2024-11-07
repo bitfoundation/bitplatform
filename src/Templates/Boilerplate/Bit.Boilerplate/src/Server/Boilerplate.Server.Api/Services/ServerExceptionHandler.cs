@@ -50,10 +50,17 @@ public partial class ServerExceptionHandler : IExceptionHandler
         return true;
     }
 
-    private Exception UnWrapException(Exception exp)
+    protected Exception UnWrapException(Exception exception)
     {
-        return exp is TargetInvocationException && exp.InnerException is not null
-            ? exp.InnerException
-            : exp;
+        if (exception is AggregateException aggregateException)
+        {
+            return aggregateException.Flatten().InnerException ?? aggregateException;
+        }
+        else if (exception is TargetInvocationException)
+        {
+            return exception.InnerException ?? exception;
+        }
+
+        return exception;
     }
 }

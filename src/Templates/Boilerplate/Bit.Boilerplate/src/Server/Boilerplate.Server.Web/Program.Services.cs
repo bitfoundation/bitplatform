@@ -19,6 +19,12 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        if (AppEnvironment.IsDev())
+        {
+            // This logger is not supposed to be used in blazor server / production.
+            builder.Logging.AddDevInsightsLogger();
+        }
+
         services.AddClientWebProjectServices(configuration);
 
         services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);

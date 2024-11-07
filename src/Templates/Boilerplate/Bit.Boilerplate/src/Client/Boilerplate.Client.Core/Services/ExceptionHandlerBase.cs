@@ -44,7 +44,14 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
                 innerException = innerException.InnerException;
             }
 
-            Logger.LogError(exception, exceptionMessageToLog);
+            if (exception is KnownException)
+            {
+                Logger.LogError(exception, exceptionMessageToLog);
+            }
+            else
+            {
+                Logger.LogCritical(exception, exceptionMessageToLog);
+            }
         }
 
         string exceptionMessageToShow = (exception as KnownException)?.Message ??

@@ -38,15 +38,14 @@ public static partial class Program
 
         services.AddLogging(loggingBuilder =>
         {
+            loggingBuilder.ConfigureLoggers();
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-            loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            if (AppEnvironment.IsDev())
+
+            if (AppPlatform.IsWindows)
             {
-                loggingBuilder.AddDebug();
+                loggingBuilder.AddEventLog();
             }
-            loggingBuilder.AddConsole();
-            loggingBuilder.AddBrowserConsoleLogger();
             //#if (appCenter == true)
             if (Microsoft.AppCenter.AppCenter.Configured)
             {

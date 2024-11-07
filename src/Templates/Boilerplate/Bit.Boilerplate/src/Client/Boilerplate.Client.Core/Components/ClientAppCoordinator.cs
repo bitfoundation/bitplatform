@@ -28,7 +28,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private Bit.Butil.Console console = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
@@ -42,6 +41,12 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
+            if (AppPlatform.IsBlazorHybridOrBrowser
+                || AppEnvironment.IsDev() /* Blazor server in dev env. */)
+            {
+                DevInsightsLoggerProvider.SetServiceProvider(serviceProvider);
+            }
+
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -75,8 +80,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             await SetupBodyClasses();
-
-            BrowserConsoleLoggerProvider.SetConsole(console);
         }
 
         await base.OnInitAsync();
