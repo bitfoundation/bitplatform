@@ -23,13 +23,13 @@ public static partial class UriExtensions
     /// </summary>
     public static string? GetCulture(this Uri uri)
     {
+        if (CultureInfoManager.MultilingualEnabled is false)
+            return null;
+        
         var culture = HttpUtility.ParseQueryString(uri.Query)["culture"];
 
         if (string.IsNullOrEmpty(culture) is false)
             return culture;
-
-        if (CultureInfoManager.MultilingualEnabled is false)
-            return null;
 
         foreach (var segment in uri.Segments.Take(2))
         {
