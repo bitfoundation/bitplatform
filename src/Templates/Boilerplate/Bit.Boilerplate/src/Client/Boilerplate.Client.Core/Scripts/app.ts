@@ -1,15 +1,10 @@
 ﻿//+:cnd:noEmit
-
 (function () {
-    set()
+    set();
 
-    window.addEventListener('resize', e => {
-        set();
-    });
+    window.addEventListener('resize', set);
 
     function set() {
-        console.log('window.innerWidth:', window.innerWidth)
-        console.log('window.innerHeight:', window.innerHeight)
         document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
         document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
     }
@@ -31,13 +26,16 @@ class App {
 
     //#if (notification == true)
     public static async getDeviceInstallation(vapidPublicKey: string) {
-        if (await Notification.requestPermission() != "granted")
-            return null;
+        if (!("Notification" in window)) return null;
+
+        if (await Notification.requestPermission() != "granted") return null;
+
         const registration = await navigator.serviceWorker.ready;
         if (!registration) return null;
+
         const pushManager = registration.pushManager;
-        if (pushManager == null)
-            return;
+        if (pushManager == null) return;
+
         let subscription = await pushManager.getSubscription();
         if (subscription == null) {
             subscription = await pushManager.subscribe({

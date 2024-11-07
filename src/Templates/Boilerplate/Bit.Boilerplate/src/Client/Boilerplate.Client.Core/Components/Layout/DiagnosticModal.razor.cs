@@ -1,4 +1,5 @@
 ﻿using Bit.BlazorUI;
+using Boilerplate.Client.Core.Services.DiagnosticLog;
 using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components.Layout;

@@ -35,8 +35,7 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         var scope = scopeProvider.Invoke();
 
-        if (scope is null)
-            return;
+        if (scope is null) return;
 
         // Store logs in the memory to be shown later.
 
