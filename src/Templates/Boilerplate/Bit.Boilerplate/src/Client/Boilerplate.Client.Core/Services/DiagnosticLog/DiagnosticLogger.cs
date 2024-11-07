@@ -37,12 +37,11 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         if (scope is null) return;
 
-        // Store logs in the memory to be shown later.
+        DiagnosticModal.Store.Enqueue(new() { Level = logLevel, Message = message, Exception = exception });
 
         var jsRuntime = scope.GetRequiredService<IJSRuntime>();
 
-        if (jsRuntime.IsInitialized() is false)
-            return;
+        if (jsRuntime.IsInitialized() is false) return;
 
         var console = scope.GetRequiredService<Bit.Butil.Console>();
 

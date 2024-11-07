@@ -1,4 +1,10 @@
 ﻿//+:cnd:noEmit
+interface DotNetObject {
+    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
+    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
+    dispose(): void;
+}
+
 (function () {
     set();
 
@@ -11,6 +17,16 @@
 }());
 
 class App {
+    private static jsBridgeObj: DotNetObject;
+
+    public static registerJsBridge(dotnetObj: DotNetObject) {
+        App.jsBridgeObj = dotnetObj;
+    }
+
+    public static ShowDiagnostic() {
+        return App.jsBridgeObj?.invokeMethodAsync("ShowDiagnostic");
+    }
+
     public static applyBodyElementClasses(cssClasses: string[], cssVariables: any): void {
         cssClasses?.forEach(c => document.body.classList.add(c));
         Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));

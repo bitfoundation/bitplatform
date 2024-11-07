@@ -9,7 +9,7 @@ namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 /// Provides a custom logger that outputs log messages to the browser's console and allows for selective display of logs
 /// within the application UI for enhanced diagnostics.
 /// </summary>
-[ProviderAlias("DevInsights")]
+[ProviderAlias("Diagnostic")]
 public partial class DiagnosticLoggerProvider : ILoggerProvider
 {
     [AutoInject] private CurrentScopeProvider scopeProvider = default!;
