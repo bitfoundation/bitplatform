@@ -50,7 +50,7 @@ public partial class ServerExceptionHandler : IExceptionHandler
         return true;
     }
 
-    protected Exception UnWrapException(Exception exception)
+    private Exception UnWrapException(Exception exception)
     {
         if (exception is AggregateException aggregateException)
         {

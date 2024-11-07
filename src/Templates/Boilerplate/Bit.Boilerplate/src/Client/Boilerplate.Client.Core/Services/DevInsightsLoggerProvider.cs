@@ -110,13 +110,16 @@ public partial class DevInsightsLoggerProvider : ILoggerProvider, ILogger, IDisp
         if (console is null)
             return false;
 
-        if (jsRuntime!.IsInitialized() is false && AppEnvironment.IsDev())
+        if (jsRuntime!.IsInitialized() is false)
         {
             // DevInsightsLogger is designed for use in blazor wasm or hybrid applications.
             // However, we’ve enabled it to work in Blazor Server in the development environment as well.
             // Note that logs will display in the most recently opened browser tab.
             // If you close the browser, logs will stop displaying until a new tab is opened or an existing tab is refreshed.
-            System.Console.WriteLine("DevInsightsLogger is in detached state.");
+            if (AppEnvironment.IsDev())
+            {
+                System.Console.WriteLine("DevInsightsLogger is in detached state.");
+            }
 
             return false;
         }
