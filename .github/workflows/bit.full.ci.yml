@@ -104,7 +104,7 @@ jobs:
     - name: Test SqlServer database option
       id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
