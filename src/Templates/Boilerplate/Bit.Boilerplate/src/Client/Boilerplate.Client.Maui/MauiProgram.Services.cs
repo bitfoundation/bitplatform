@@ -38,21 +38,15 @@ public static partial class MauiProgram
         services.AddMauiBlazorWebView();
         services.AddBlazorWebViewDeveloperTools();
 
+        builder.Logging.ConfigureLoggers();
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
-        if (AppEnvironment.IsDev())
-        {
-            builder.Logging.AddDebug();
-        }
-        builder.Logging.AddConsole();
-        builder.Logging.AddBrowserConsoleLogger();
+        builder.Logging.AddEventSourceLogger();
 
         if (AppPlatform.IsWindows)
         {
             builder.Logging.AddEventLog();
         }
-
-        builder.Logging.AddEventSourceLogger();
 
         //+:cnd:noEmit
 

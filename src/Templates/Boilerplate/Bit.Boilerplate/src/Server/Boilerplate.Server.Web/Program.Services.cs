@@ -19,6 +19,11 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        if (AppEnvironment.IsDev())
+        {
+            builder.Logging.AddDiagnosticLogger();
+        }
+
         services.AddClientWebProjectServices(configuration);
 
         services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
@@ -110,6 +115,8 @@ public static partial class Program
 
             return httpClient;
         });
+
+        services.AddSingleton(sp => new CurrentScopeProvider(() => sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.RequestServices));
 
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
