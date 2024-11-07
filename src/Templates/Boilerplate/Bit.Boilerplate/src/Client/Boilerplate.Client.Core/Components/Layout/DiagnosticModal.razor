@@ -26,7 +26,7 @@
                           Style="height:unset"
                           EnableVirtualization
                           Items="filteredLogs.Indexed().ToArray()">
-                <EmptyContent>nothing to show!</EmptyContent>
+                <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
                     <BitStack @key="logIndex.index.ToString()" Horizontal AutoHeight>
                         <BitText Style="min-width:2rem">@($"{logIndex.index + 1}.")</BitText>
