@@ -28,9 +28,9 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "CaretDownIconName",
-            Type = "string",
-            DefaultValue = "ChevronDown",
-            Description = "The icon name of the chevron down element of the dropdown. The default value is ChevronDown.",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the chevron down element of the dropdown.",
         },
         new()
         {

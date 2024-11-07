@@ -108,7 +108,7 @@
                         aria-label="@IncrementAriaLabel">
                     <span style="@Styles?.IncrementIconWrapper" class="bit-spb-iwp @Classes?.IncrementIconWrapper">
                         <i style="@Styles?.IncrementIcon"
-                           class="bit-spb-ico bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
+                           class="bit-spb-ico bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-spb-bii") @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -126,7 +126,7 @@
                         aria-label="@DecrementAriaLabel">
                     <span style="@Styles?.DecrementIconWrapper" class="bit-spb-iwp @Classes?.DecrementIconWrapper">
                         <i style="@Styles?.DecrementIcon"
-                           class="bit-spb-ico bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
+                           class="bit-spb-ico bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>

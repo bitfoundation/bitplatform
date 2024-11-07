@@ -434,6 +434,10 @@
     font-weight: $tg-font-weight;
 }
 
+.bit-cal-tpi {
+    transform: rotate(-180deg);
+}
+
 .bit-cal-am-pm {
     display: flex;
     flex-direction: column;

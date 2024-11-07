@@ -451,7 +451,7 @@
                                 aria-disabled="@(IsEnabled is false)"
                                 style="@Styles?.TimePickerIncreaseHourButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseHourButton">
-                            <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
+                            <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-cal-tpi bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
                         </button>
                         <input @ref="_inputTimeHourRef"
                                @bind="@_hourView"
@@ -487,7 +487,7 @@
                                 aria-disabled="@(IsEnabled is false)"
                                 style="@Styles?.TimePickerIncreaseMinuteButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseMinuteButton">
-                            <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
+                            <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-cal-tpi bit-icon bit-icon--ChevronDownSmall @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
                         </button>
                         <input @ref="_inputTimeMinuteRef"
                                @bind="@_minuteView"

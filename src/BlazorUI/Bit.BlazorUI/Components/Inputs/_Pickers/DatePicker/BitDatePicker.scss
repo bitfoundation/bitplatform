@@ -684,18 +684,22 @@
 
 .bit-dtp-tpr {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
     gap: spacing(0.25);
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .bit-dtp-tdv {
     display: flex;
-    justify-content: center;
     align-items: center;
     font-size: spacing(2.5);
+    justify-content: center;
     font-weight: $tg-font-weight;
+}
+
+.bit-dtp-tpi {
+    transform: rotate(-180deg);
 }
 
 .bit-dtp-am-pm {

@@ -240,6 +240,10 @@
     font-weight: $tg-font-weight;
 }
 
+.bit-tpc-tpi {
+    transform: rotate(-180deg);
+}
+
 .bit-tpc-am-pm {
     display: flex;
     flex-direction: column;
