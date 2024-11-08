@@ -17,7 +17,6 @@ public partial class DiagnosticModal : IDisposable
 
 
     [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private ConcurrentBag<DiagnosticLog> store = default!;
 
 
     protected override Task OnInitAsync()
@@ -25,7 +24,7 @@ public partial class DiagnosticModal : IDisposable
         unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
-            allLogs = [.. store];
+            allLogs = [.. DiagnosticLogger.Store];
             HandleOnLogLevelFilter([LogLevel.Information]);
             await InvokeAsync(StateHasChanged);
         });

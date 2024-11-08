@@ -12,11 +12,9 @@ namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 [ProviderAlias("DiagnosticLogger")]
 public partial class DiagnosticLoggerProvider : ILoggerProvider
 {
-    [AutoInject] private CurrentScopeProvider scopeProvider = default!;
-
     public ILogger CreateLogger(string categoryName)
     {
-        return new DiagnosticLogger(scopeProvider)
+        return new DiagnosticLogger()
         {
             CategoryName = categoryName
         };
