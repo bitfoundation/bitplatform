@@ -16,7 +16,7 @@ public partial class DiagnosticModal : IDisposable
     [AutoInject] private Clipboard clipboard = default!;
 
 
-    protected override Task OnInitAsync()
+    protected override Task OnInitAsync()   
     {
         unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
