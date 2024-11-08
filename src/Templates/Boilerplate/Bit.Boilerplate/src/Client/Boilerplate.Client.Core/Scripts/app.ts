@@ -59,16 +59,13 @@ interface DotNetObject {
     dispose(): void;
 }
 
-(function () {
-    setCssWindowSizes();
+window.addEventListener('load', setCssWindowSizes);
+window.addEventListener('resize', setCssWindowSizes);
 
-    window.addEventListener('resize', setCssWindowSizes);
-
-    function setCssWindowSizes() {
-        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
-        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
-    }
-}());
+function setCssWindowSizes() {
+    document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
+    document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
+}
 
 BitTheme.init({
     system: true,
