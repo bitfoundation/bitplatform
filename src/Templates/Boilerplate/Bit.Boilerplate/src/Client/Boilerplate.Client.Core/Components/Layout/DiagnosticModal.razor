@@ -17,7 +17,7 @@
                 <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
                 <BitDropdown FitWidth IsMultiSelect
                              Items="logLevelItems"
-                             DefaultValues="[LogLevel.Information]"
+                             DefaultValues="defaultFilterLogLevels"
                              OnValuesChange="HandleOnLogLevelFilter"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
                 <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"

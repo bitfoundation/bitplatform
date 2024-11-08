@@ -13,7 +13,8 @@ public partial class DiagnosticModal : IDisposable
     private IEnumerable<DiagnosticLog> allLogs = default!;
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
-    private BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
+    private readonly LogLevel[] defaultFilterLogLevels = [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
+    private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
 
 
     [AutoInject] private Clipboard clipboard = default!;
@@ -25,7 +26,7 @@ public partial class DiagnosticModal : IDisposable
         {
             isOpen = true;
             allLogs = [.. DiagnosticLogger.Store];
-            HandleOnLogLevelFilter([LogLevel.Information]);
+            HandleOnLogLevelFilter(defaultFilterLogLevels);
             await InvokeAsync(StateHasChanged);
         });
 
@@ -58,7 +59,7 @@ public partial class DiagnosticModal : IDisposable
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.Where(l => l.Message?.Contains(searchText ?? "", StringComparison.InvariantCultureIgnoreCase) ?? false)
+        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
                               .Where(l => filterLogLevels.Contains(l.Level));
         if (isDescendingSort)
         {

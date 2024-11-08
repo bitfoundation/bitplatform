@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-<header @onclick="HandleTitleClick">
+<header>
     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
         <BitButton IconOnly FixedColor
                    Class="menu-btn"
@@ -22,7 +22,7 @@
             }
         </BitStack>
 
-        <BitSpacer />
+        <BitSpacer @onclick="HandleTitleClick" Style="height:100%" />
 
         <UserMenu />
     </BitStack>
