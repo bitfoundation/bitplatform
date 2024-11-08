@@ -84,6 +84,14 @@ main {
             flex-grow: 1;
             padding: 1rem;
             flex-direction: column;
+
+            @include lt-md {
+                gap: 1rem;
+            }
+
+            @include lt-sm {
+                gap: 0;
+            }
         }
     }
 

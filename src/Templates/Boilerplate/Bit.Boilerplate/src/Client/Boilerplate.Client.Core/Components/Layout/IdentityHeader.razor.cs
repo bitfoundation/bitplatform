@@ -52,17 +52,6 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
     }
 
 
-    private int clickCount = 0;
-    private async Task HandleTitleClick()
-    {
-        if (++clickCount == 7)
-        {
-            clickCount = 0;
-            PubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
-        }
-    }
-
-
     public void Dispose()
     {
         unsubscribeUpdateBackLink?.Invoke();

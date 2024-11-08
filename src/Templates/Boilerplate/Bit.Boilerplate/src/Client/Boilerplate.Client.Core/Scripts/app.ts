@@ -1,21 +1,4 @@
 ﻿//+:cnd:noEmit
-interface DotNetObject {
-    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
-    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
-    dispose(): void;
-}
-
-(function () {
-    setCssWindowSizes();
-
-    window.addEventListener('resize', setCssWindowSizes);
-
-    function setCssWindowSizes() {
-        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
-        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
-    }
-}());
-
 class App {
     private static jsBridgeObj: DotNetObject;
 
@@ -24,8 +7,7 @@ class App {
         App.jsBridgeObj = dotnetObj;
     }
 
-    /** Press Ctrl + Shift + X as an alternative option to show diagnostic. */
-    public static ShowDiagnostic() {
+    public static showDiagnostic() {
         return App.jsBridgeObj?.invokeMethodAsync("ShowDiagnostic");
     }
 
@@ -70,6 +52,23 @@ class App {
 }
 
 declare class BitTheme { static init(options: any): void; };
+
+interface DotNetObject {
+    invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
+    invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
+    dispose(): void;
+}
+
+(function () {
+    setCssWindowSizes();
+
+    window.addEventListener('resize', setCssWindowSizes);
+
+    function setCssWindowSizes() {
+        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
+        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
+    }
+}());
 
 BitTheme.init({
     system: true,

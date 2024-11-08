@@ -3,6 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
+/// <summary>
+/// This modal can be opened by clicking 7 times on the spacer of the header or by pressing Ctrl+Shift+X.
+/// Also by calling `App.showDiagnostic` function using the dev-tools console.
+/// </summary>
 public partial class DiagnosticModal : IDisposable
 {
     private bool isOpen;
