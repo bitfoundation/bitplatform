@@ -149,12 +149,28 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     private IEnumerable<Claim> ParseTokenClaims(string access_token)
     {
-        return ParseJwt(access_token)
-            .Select(keyValue => new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty))
-            .ToArray();
+        var parsedClaims = ParseJwt(access_token);
+
+        var claims = new List<Claim>();
+        foreach (var keyValue in parsedClaims)
+        {
+            if (keyValue.Value.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in keyValue.Value.EnumerateArray())
+                {
+                    claims.Add(new Claim(keyValue.Key, element.ToString() ?? string.Empty));
+                }
+            }
+            else
+            {
+                claims.Add(new Claim(keyValue.Key, keyValue.Value.ToString() ?? string.Empty));
+            }
+        }
+
+        return claims;
     }
 
-    private Dictionary<string, object> ParseJwt(string access_token)
+    private Dictionary<string, JsonElement> ParseJwt(string access_token)
     {
         // Split the token to get the payload
         string base64UrlPayload = access_token.Split('.')[1];
@@ -166,7 +182,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
 
         // Deserialize the JSON string to a dictionary
-        var claims = JsonSerializer.Deserialize(jsonPayload, jsonSerializerOptions.GetTypeInfo<Dictionary<string, object>>())!;
+        var claims = JsonSerializer.Deserialize(jsonPayload, jsonSerializerOptions.GetTypeInfo<Dictionary<string, JsonElement>>())!;
 
         return claims;
     }
