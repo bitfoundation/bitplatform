@@ -4,8 +4,6 @@ namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILogger, IDisposable
 {
-    public static ConcurrentBag<DiagnosticLog> Store = [];
-
     private ConcurrentQueue<IDictionary<string, object?>> states = new();
 
     public string? CategoryName { get; set; }
@@ -34,11 +32,12 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         states.TryDequeue(out var currentState);
 
-        Store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
-
         var scope = scopeProvider.Invoke();
 
         if (scope is null) return;
+
+        var store = scope.GetRequiredService<ConcurrentBag<DiagnosticLog>>();
+        store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
 
         var jsRuntime = scope.GetRequiredService<IJSRuntime>();
 
