@@ -57,7 +57,6 @@ public partial class RootLayout : IDisposable
             SetCurrentUrl();
             currentTheme = await themeService.GetCurrentTheme();
 
-            await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
             await base.OnInitializedAsync();
         }
         catch (Exception exp)
@@ -73,6 +72,16 @@ public partial class RootLayout : IDisposable
         // ErrorBoundaryRef.Recover();
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 

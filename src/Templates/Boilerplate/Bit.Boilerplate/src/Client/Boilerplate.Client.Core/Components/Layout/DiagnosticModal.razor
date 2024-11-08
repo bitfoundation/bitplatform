@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen" FullSize>
+    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal">
         <BitStack FillContent Class="container">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
@@ -12,6 +12,22 @@
                            OnClick="() => isOpen = false"
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
+
+            <BitAccordion Title="Telemetry Context">
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           OnClick="CopyTelemetry"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Copy" />
+                <BitScrollablePane>
+                    <BitStack>
+                        @foreach (var (key, value) in telemetryContext.ToDictionary())
+                        {
+                            <BitText NoWrap><b>@key</b>: @value</BitText>
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+            </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
                 <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
@@ -31,7 +47,7 @@
                           Items="filteredLogs.Indexed().ToArray()">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight Gap="0">
+                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight Gap="0" VerticalAlign="BitAlignment.Center">
                         <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
