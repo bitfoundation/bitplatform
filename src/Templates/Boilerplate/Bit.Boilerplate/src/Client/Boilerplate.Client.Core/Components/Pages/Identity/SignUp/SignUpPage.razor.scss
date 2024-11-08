@@ -9,4 +9,16 @@ section {
     form {
         width: 304px;
     }
+
+    .lg-sep {
+        @include lt-md {
+            display: none;
+        }
+    }
+
+    .sm-sep {
+        @include gt-sm {
+            display: none;
+        }
+    }
 }

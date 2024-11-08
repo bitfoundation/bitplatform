@@ -116,8 +116,6 @@ public static partial class Program
             return httpClient;
         });
 
-        services.AddSingleton(sp => new CurrentScopeProvider(() => sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.RequestServices));
-
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
