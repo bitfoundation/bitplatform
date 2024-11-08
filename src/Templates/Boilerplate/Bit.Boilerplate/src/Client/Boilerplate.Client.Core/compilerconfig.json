@@ -19,6 +19,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/DiagnosticModal.razor.css",
+        "inputFile": "Components/Layout/DiagnosticModal.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/IdentityHeader.razor.css",
         "inputFile": "Components/Layout/IdentityHeader.razor.scss",
         "minify": { "enabled": false },
@@ -63,12 +69,6 @@
     {
         "outputFile": "Components/Layout/UserMenu.razor.css",
         "inputFile": "Components/Layout/UserMenu.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Pages/Diagnostic/DiagnosticPage.razor.css",
-        "inputFile": "Components/Pages/Diagnostic/DiagnosticPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
