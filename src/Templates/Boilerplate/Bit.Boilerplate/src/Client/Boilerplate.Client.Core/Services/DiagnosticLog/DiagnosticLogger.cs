@@ -38,35 +38,6 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
 
         var store = scope.GetRequiredService<ConcurrentBag<DiagnosticLog>>();
         store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
-
-        var jsRuntime = scope.GetRequiredService<IJSRuntime>();
-
-        if (jsRuntime.IsInitialized() is false) return;
-
-        var console = scope.GetRequiredService<Bit.Butil.Console>();
-
-        switch (logLevel)
-        {
-            case LogLevel.Trace:
-            case LogLevel.Debug:
-                console!.Log(message, $"{Environment.NewLine}Category:", CategoryName, $"{Environment.NewLine}State:", currentState);
-                break;
-            case LogLevel.Information:
-                console!.Info(message, $"{Environment.NewLine}Category:", CategoryName, $"{Environment.NewLine}State:", currentState);
-                break;
-            case LogLevel.Warning:
-                console!.Warn(message, $"{Environment.NewLine}Category:", CategoryName, $"{Environment.NewLine}State:", currentState);
-                break;
-            case LogLevel.Error:
-            case LogLevel.Critical:
-                console!.Error(message, $"{Environment.NewLine}Category:", CategoryName, $"{Environment.NewLine}State:", currentState);
-                break;
-            case LogLevel.None:
-                break;
-            default:
-                console!.Log(message, $"{Environment.NewLine}Category:", CategoryName, $"{Environment.NewLine}State:", currentState);
-                break;
-        }
     }
 
     public void Dispose()

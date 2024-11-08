@@ -6,8 +6,20 @@ public static class ILoggingBuilderExtensions
 {
     public static ILoggingBuilder AddDiagnosticLogger(this ILoggingBuilder builder)
     {
-        builder.Services.AddScoped<ConcurrentBag<DiagnosticLog>>(); // In memory log store
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DiagnosticLoggerProvider>());
+        if (AppPlatform.IsBlazorHybridOrBrowser)
+        {
+            builder.Services.AddScoped<ConcurrentBag<DiagnosticLog>>(); // In memory log store
+        }
+        else
+        {
+            builder.Services.AddSingleton<ConcurrentBag<DiagnosticLog>>(); // In memory log store
+        }
+
+        if (AppPlatform.IsBlazorHybridOrBrowser 
+            || AppEnvironment.IsDev() /* Blazor server in dev env only */)
+        {
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DiagnosticLoggerProvider>());
+        }
 
         return builder;
     }
