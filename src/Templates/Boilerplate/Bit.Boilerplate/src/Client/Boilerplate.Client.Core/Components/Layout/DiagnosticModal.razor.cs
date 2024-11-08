@@ -22,6 +22,7 @@ public partial class DiagnosticModal : IDisposable
 
 
     [AutoInject] private Clipboard clipboard = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
 
 
     protected override Task OnInitAsync()
@@ -73,6 +74,11 @@ public partial class DiagnosticModal : IDisposable
         {
             filteredLogs = filteredLogs.OrderBy(l => l.CreatedOn);
         }
+    }
+
+    private async Task CopyTelemetry()
+    {
+        await clipboard.WriteText(string.Join(Environment.NewLine, telemetryContext.ToDictionary().Select(c => $"{c.Key}: {c.Value}")));
     }
 
     private async Task CopyException(DiagnosticLog log)

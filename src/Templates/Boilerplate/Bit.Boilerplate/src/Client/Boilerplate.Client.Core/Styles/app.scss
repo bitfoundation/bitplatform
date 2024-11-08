@@ -1,5 +1,10 @@
 @import '../Styles/abstracts/_media-queries.scss';
 
+:root[bit-theme="dark"] {
+    //--bit-clr-bg-pri: #010409;
+    // In case you need to change the background color, make sure to also update ThemeColors.cs's PrimaryDarkBgColor accordingly.
+}
+
 :root {
     --app-inset-top: env(safe-area-inset-top);
     --app-inset-left: env(safe-area-inset-left);
@@ -20,11 +25,6 @@
         --app-inset-inline-start: var(--app-inset-right);
         --app-inset-inline-end: var(--app-inset-left);
     }
-}
-
-:root[bit-theme="dark"] {
-    //--bit-clr-bg-pri: #010409;
-    // In case you need to change the background color, make sure to also update ThemeColors.cs's PrimaryDarkBgColor accordingly.
 }
 
 * {

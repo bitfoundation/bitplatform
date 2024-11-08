@@ -6,6 +6,14 @@ section {
 }
 
 ::deep {
+    .modal {
+        width: unset;
+        top: var(--app-inset-top);
+        left: var(--app-inset-left);
+        right: var(--app-inset-right);
+        bottom: var(--app-inset-bottom);
+    }
+
     .container {
         padding: 1rem;
     }
