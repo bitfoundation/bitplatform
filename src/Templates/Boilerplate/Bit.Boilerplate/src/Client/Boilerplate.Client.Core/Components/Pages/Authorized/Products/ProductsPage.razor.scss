@@ -5,10 +5,23 @@ section {
     width: 100%;
 }
 
+.grid-container {
+    overflow: auto;
+    height: calc(var(--app-height) - 14rem);
+
+    @include lt-md {
+        height: calc(var(--app-height) - 17rem);
+    }
+
+    @include lt-sm {
+        height: calc(var(--app-height) - 16rem);
+    }
+}
+
 ::deep {
     .products-grid {
         width: 100%;
-        height: 484px;
+        height: 100%;
         border-spacing: 0;
         background-color: $bit-color-background-secondary;
 

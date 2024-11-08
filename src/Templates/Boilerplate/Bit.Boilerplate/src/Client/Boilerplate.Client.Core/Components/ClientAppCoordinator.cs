@@ -19,6 +19,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
+    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -236,28 +237,5 @@ public partial class ClientAppCoordinator : AppComponentBase
         //#endif
 
         await base.DisposeAsync(disposing);
-    }
-
-    [AutoInject]
-    private IServiceProvider serviceProvider
-    {
-        set => currentServiceProvider = value;
-        get => currentServiceProvider!;
-    }
-
-    private static IServiceProvider? currentServiceProvider;
-    public static IServiceProvider? CurrentServiceProvider
-    {
-        get
-        {
-            if (AppPlatform.IsBlazorHybridOrBrowser is false)
-                throw new InvalidOperationException($"{nameof(CurrentServiceProvider)} is only available in Blazor Hybrid or blazor web assembly.");
-
-            return currentServiceProvider;
-        }
-        private set
-        {
-            currentServiceProvider = value;
-        }
     }
 }
