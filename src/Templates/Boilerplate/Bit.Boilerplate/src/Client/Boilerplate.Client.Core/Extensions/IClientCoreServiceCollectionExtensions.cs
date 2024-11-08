@@ -44,7 +44,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
-        services.AddSingleton(_ => new CurrentScopeProvider(() => ClientAppCoordinator.CurrentServiceProvider));
 
         services.AddOptions<ClientCoreSettings>()
             .Bind(configuration)

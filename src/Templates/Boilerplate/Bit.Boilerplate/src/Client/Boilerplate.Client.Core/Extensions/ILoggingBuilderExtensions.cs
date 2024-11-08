@@ -6,8 +6,6 @@ public static class ILoggingBuilderExtensions
 {
     public static ILoggingBuilder AddDiagnosticLogger(this ILoggingBuilder builder)
     {
-        builder.Services.AddSingleton<ConcurrentBag<DiagnosticLog>>(); // In memory log store
-
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DiagnosticLoggerProvider>());
 
         return builder;
