@@ -6,7 +6,10 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class DiagnosticModal : IDisposable
 {
     private bool isOpen;
+    private string? searchText;
+    private bool isDescendingSort;
     private Action unsubscribe = default!;
+    private IEnumerable<LogLevel> filterLogLevels = [];
     private IEnumerable<DiagnosticLog> allLogs = default!;
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
@@ -23,36 +26,49 @@ public partial class DiagnosticModal : IDisposable
         {
             isOpen = true;
             allLogs = [.. store];
-            await HandleOnLogLevelFilter(LogLevel.Information);
+            HandleOnLogLevelFilter([LogLevel.Information]);
             await InvokeAsync(StateHasChanged);
         });
 
         return base.OnInitAsync();
     }
 
-    private async Task HandleOnSearchChange(string? searchText)
+
+    private void HandleOnSearchChange(string? text)
     {
-        filteredLogs = allLogs.Where(l => l.Message?.Contains(searchText ?? "") ?? false);
+        searchText = text;
+        FilterLogs();
     }
 
-    private async Task HandleOnLogLevelFilter(LogLevel logLevel)
+    private void HandleOnLogLevelFilter(BitDropdownItem<LogLevel>[] items)
     {
-        filteredLogs = allLogs.Where(l => l.Level >= logLevel);
+        HandleOnLogLevelFilter(items.Select(i => i.Value));
     }
 
-    private static BitColor GetColor(LogLevel level)
+    private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)
     {
-        return level switch
+        filterLogLevels = logLevels;
+        FilterLogs();
+    }
+
+    private void HandleOnSortClick()
+    {
+        isDescendingSort = !isDescendingSort;
+        FilterLogs();
+    }
+
+    private void FilterLogs()
+    {
+        filteredLogs = allLogs.Where(l => l.Message?.Contains(searchText ?? "", StringComparison.InvariantCultureIgnoreCase) ?? false)
+                              .Where(l => filterLogLevels.Contains(l.Level));
+        if (isDescendingSort)
         {
-            LogLevel.Trace => BitColor.Info,
-            LogLevel.Debug => BitColor.Secondary,
-            LogLevel.Information => BitColor.Primary,
-            LogLevel.Warning => BitColor.Warning,
-            LogLevel.Error => BitColor.SevereWarning,
-            LogLevel.Critical => BitColor.Error,
-            LogLevel.None => BitColor.SecondaryForeground,
-            _ => BitColor.TertiaryForeground
-        };
+            filteredLogs = filteredLogs.OrderByDescending(l => l.CreatedOn);
+        }
+        else
+        {
+            filteredLogs = filteredLogs.OrderBy(l => l.CreatedOn);
+        }
     }
 
     private async Task CopyException(DiagnosticLog log)
@@ -65,6 +81,22 @@ public partial class DiagnosticModal : IDisposable
     private async Task GoTop()
     {
         await logStackRef.RootElement.Scroll(0, 0);
+    }
+
+
+    private static BitColor GetColor(LogLevel level)
+    {
+        return level switch
+        {
+            LogLevel.Trace => BitColor.PrimaryForeground,
+            LogLevel.Debug => BitColor.PrimaryForeground,
+            LogLevel.Information => BitColor.Primary,
+            LogLevel.Warning => BitColor.Warning,
+            LogLevel.Error => BitColor.Error,
+            LogLevel.Critical => BitColor.Error,
+            LogLevel.None => BitColor.SecondaryForeground,
+            _ => BitColor.TertiaryForeground
+        };
     }
 
 

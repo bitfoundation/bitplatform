@@ -15,11 +15,14 @@
 
             <BitStack Horizontal FitHeight>
                 <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
-                <BitDropdown FitWidth
+                <BitDropdown FitWidth IsMultiSelect
                              Items="logLevelItems"
-                             DefaultValue="LogLevel.Information"
-                             OnChange="HandleOnLogLevelFilter"
+                             DefaultValues="[LogLevel.Information]"
+                             OnValuesChange="HandleOnLogLevelFilter"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+                <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                           OnClick="HandleOnSortClick"
+                           IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
@@ -28,8 +31,8 @@
                           Items="filteredLogs.Indexed().ToArray()">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.index.ToString()" Horizontal AutoHeight>
-                        <BitText Style="min-width:2rem">@($"{logIndex.index + 1}.")</BitText>
+                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight Gap="0">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
                                    Color="BitColor.Info"
@@ -38,7 +41,6 @@
                                    OnClick="() => CopyException(logIndex.item)" />
                         <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">@logIndex.item.Message</BitText>
                     </BitStack>
-                    <br />
                 </RowTemplate>
             </BitBasicList>
         </BitStack>

@@ -37,7 +37,7 @@ public partial class DiagnosticLogger(CurrentScopeProvider scopeProvider) : ILog
         if (scope is null) return;
 
         var store = scope.GetRequiredService<ConcurrentBag<DiagnosticLog>>();
-        store.Add(new() { Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
+        store.Add(new() { CreatedOn = DateTimeOffset.Now, Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
     }
 
     public void Dispose()

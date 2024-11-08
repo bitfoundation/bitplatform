@@ -4,6 +4,8 @@ namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public class DiagnosticLog
 {
+    public DateTimeOffset CreatedOn { get; set; }
+
     public LogLevel Level { get; set; }
 
     public string? Message { get; set; }
