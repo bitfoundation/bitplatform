@@ -8,7 +8,7 @@ public partial class SessionsSection
     private bool isWaiting;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
-    private IEnumerable<UserSessionDto> otherSessions = [];
+    private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
 
@@ -32,7 +32,7 @@ public partial class SessionsSection
         }
         finally
         {
-            otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId);
+            otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId).ToArray();
             currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId);
         }
     }
