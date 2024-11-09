@@ -20,7 +20,6 @@ public class Notification(IJSRuntime js)
         object? opts = null;
         if (options is not null)
         {
-            var dir = options.Dir.ToString().ToLower();
             opts = new
             {
                 options.Tag,
@@ -31,7 +30,7 @@ public class Notification(IJSRuntime js)
                 options.Badge,
                 options.Silent,
                 options.RequireInteraction,
-                Dir = dir
+                Dir = options.Dir.ToString().ToLower()
             };
         }
 
