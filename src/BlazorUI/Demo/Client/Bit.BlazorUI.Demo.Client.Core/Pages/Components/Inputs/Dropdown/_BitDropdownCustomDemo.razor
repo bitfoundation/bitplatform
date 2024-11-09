@@ -12,7 +12,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items"
-                         IsMultiSelect="true" />
+                         MultiSelect="true" />
             <br /><br />
             <BitDropdown Label="Required" Required
                          Items="GetBasicCustoms()"
@@ -83,7 +83,7 @@
                      Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
                      Placeholder="Select items"
-                     IsMultiSelect="true" />
+                     MultiSelect="true" />
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -101,7 +101,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items"
-                         IsMultiSelect="true" />
+                         MultiSelect="true" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -115,7 +115,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select an item"
-                         IsResponsive=true />
+                         Responsive=true />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -159,7 +159,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select options"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowClearButton="true" />
             <br />
             <div>Values: @string.Join(',', clearValues)</div>
@@ -184,7 +184,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search items" />
             <br /><br /><br /><br />
@@ -202,7 +202,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowSearchBox="true"
                          SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
                          SearchBoxPlaceholder="Search items" />
@@ -235,7 +235,7 @@
                                  Items="GetBasicCustoms()"
                                  NameSelectors="nameSelectors"
                                  Placeholder="Select items"
-                                 IsMultiSelect="true" />
+                                 MultiSelect="true" />
 
                     <ValidationMessage For="@(() => validationModel.Products)" />
 
@@ -351,7 +351,7 @@
                          Items="GetBasicCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items"
-                         IsMultiSelect="true" />
+                         MultiSelect="true" />
             <br />
             <div>Selected Values: @string.Join(",", controlledValues)</div>
             <br /><br /><br /><br />
@@ -361,19 +361,19 @@
                          Placeholder="Select an item"
                          NameSelectors="nameSelectors"
                          TItem="Product" TValue="string"
-                         OnValuesChange="(Product[] items) => changedItem = items.SingleOrDefault()" />
+                         OnChange="(string? value) => changedValue = value" />
             <br />
-            <div>Changed Value: @changedItem?.Value</div>
+            <div>Changed Value: @changedValue</div>
             <br /><br />
             <BitDropdown Label="Multi select"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Items="GetBasicCustoms()"
                          Placeholder="Select items"
                          NameSelectors="nameSelectors"
                          TItem="Product" TValue="string"
-                         OnValuesChange="(Product[] items) => changedItems = items" />
+                         OnValuesChange="(IEnumerable<string> values) => changedValues = values" />
             <br />
-            <div>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</div>
+            <div>Changed Values: @string.Join(",", changedValues)</div>
             <br /><br /><br /><br />
             <div>OnSelectItem:</div><br />
             <BitDropdown Label="Single select"
@@ -386,7 +386,7 @@
             <div>Selected Value: @selectedItem1?.Value</div>
             <br /><br />
             <BitDropdown Label="Multi select"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Items="GetBasicCustoms()"
                          Placeholder="Select items"
                          DefaultValue="@string.Empty"
@@ -413,7 +413,7 @@
             <BitDropdown Label="Multi select"
                          Items="virtualizeCustoms2"
                          NameSelectors="nameSelectors"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Placeholder="Select items"
                          Virtualize="true" />
             <br /><br /><br /><br />
@@ -426,7 +426,7 @@
             <br />
             <BitDropdown Label="Multi select"
                          Virtualize="true"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ItemsProvider="LoadItems"
                          NameSelectors="nameSelectors"
                          Placeholder="Select items" />
@@ -449,7 +449,7 @@
             <div>Value: @comboBoxValueSample1</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues1"
-                         Combo IsMultiSelect
+                         Combo MultiSelect
                          Label="Multi select combo box"
                          Placeholder="Select an option"
                          Items="comboBoxCustoms"
@@ -475,7 +475,7 @@
             <div>Value: @comboBoxValueSample2</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues2"
-                         Combo Chips IsMultiSelect
+                         Combo Chips MultiSelect
                          Label="Multi select combo box & chips"
                          Placeholder="Select an option"
                          Items="comboBoxCustoms"
@@ -512,7 +512,7 @@
                          Label="Single select combo box, chips & dynamic"
                          Placeholder="Select an option"
                          Items="comboBoxCustoms"
-                         IsResponsive="true"
+                         Responsive="true"
                          NameSelectors="comboBoxNameSelectors"
                          DynamicValueGenerator="@((Product item) => item.Text ?? "")"
                          OnDynamicAdd="(Product item) => HandleOnDynamicAdd(item)" />
@@ -520,11 +520,11 @@
             <div>Value: @comboBoxValueSample4</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues3"
-                         Combo Chips Dynamic IsMultiSelect
+                         Combo Chips Dynamic MultiSelect
                          Label="Multi select combo box, chips & dynamic"
                          Placeholder="Select options"
                          Items="comboBoxCustoms"
-                         IsResponsive="true"
+                         Responsive="true"
                          NameSelectors="comboBoxNameSelectors"
                          DynamicValueGenerator="@((Product item) => item.Text ?? "")"
                          OnDynamicAdd="(Product item) => HandleOnDynamicAdd(item)" />
@@ -593,7 +593,7 @@
                          Items="GetRtlCustoms()"
                          NameSelectors="nameSelectors"
                          Placeholder="انتخاب چند گزینه ای"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Dir="BitDir.Rtl" />
         </div>
     </ExamplePreview>

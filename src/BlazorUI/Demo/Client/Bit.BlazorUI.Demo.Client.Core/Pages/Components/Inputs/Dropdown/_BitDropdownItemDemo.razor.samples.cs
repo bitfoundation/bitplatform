@@ -475,16 +475,16 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItem = items.SingleOrDefault()"" />
-<div>Changed Value: @changedItem?.Value</div>
+             OnChange=""(string value) => changedValue = value"" />
+<div>Changed Value: @changedValue</div>
             
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
              Items=""GetBasicItems()""
              Placeholder=""Select items""
              TItem=""BitDropdownItem<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownItem<string>[] items) => changedItems = items"" />
-<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
+             OnValuesChange=""(IEnumerable<string> values) => changedValues = values"" />
+<div>Changed Values: @string.Join("","", changedValues)</div>
 
 
 
@@ -504,10 +504,10 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
 <div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example11CsharpCode = @"
 private string controlledValue = ""f-app"";
-private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+private IEnumerable<string> controlledValues = [""f-app"", ""f-ban""];
 
-private BitDropdownItem<string>? changedItem;
-private BitDropdownItem<string>[] changedItems = Array.Empty<BitDropdownItem<string>>();
+private string? changedValue;
+private IEnumerable<string> changedValues = [];
 
 private BitDropdownItem<string>? selectedItem1;
 private BitDropdownItem<string>? selectedItem2;

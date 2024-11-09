@@ -20,7 +20,7 @@
             <br /><br />
             <BitDropdown Label="Multi select"
                          Placeholder="Select items"
-                         IsMultiSelect="true" TItem="BitDropdownOption<string>" TValue="string">
+                         MultiSelect="true" TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
                     <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
@@ -130,7 +130,7 @@
         <br /><br />
         <BitDropdown Label="Multi select" FitWidth
                      Placeholder="Select items"
-                     IsMultiSelect="true"
+                     MultiSelect="true"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
@@ -156,7 +156,7 @@
             <br /><br />
             <BitDropdown NoBorder
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
@@ -174,7 +174,7 @@
         <div class="example-content">
             <BitDropdown Label="Responsive Dropdown"
                          Placeholder="Select an item"
-                         IsResponsive=true
+                         Responsive=true
                          TItem="BitDropdownOption<string>" TValue="string">
                 <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
                 <BitDropdownOption Text="Apple" Value="@("f-app")" />
@@ -241,7 +241,7 @@
             <BitDropdown @bind-Values="clearValues"
                          Label="Multi select dropdown"
                          Placeholder="Select options"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowClearButton="true"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
@@ -274,7 +274,7 @@
             <br /><br />
             <BitDropdown Label="Multi select"
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowSearchBox="true"
                          SearchBoxPlaceholder="Search items"
                          TItem="BitDropdownOption<string>" TValue="string">
@@ -300,7 +300,7 @@
             <br /><br />
             <BitDropdown Label="Multi select"
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          ShowSearchBox="true"
                          SearchFunction="(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"
                          SearchBoxPlaceholder="Search items"
@@ -341,7 +341,7 @@
                     <BitDropdown @bind-Values="validationModel.Products"
                                  Label="Select min 1 and max 2 items"
                                  Placeholder="Select items"
-                                 IsMultiSelect="true"
+                                 MultiSelect="true"
                                  TItem="BitDropdownOption<string>" TValue="string">
                         @foreach (var item in basicItems)
                         {
@@ -500,7 +500,7 @@
             <BitDropdown @bind-Values="controlledValues"
                          Label="Multi select"
                          Placeholder="Select items"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in basicItems)
                 {
@@ -514,27 +514,27 @@
             <BitDropdown Label="Single select"
                          Placeholder="Select an item"
                          TItem="BitDropdownOption<string>" TValue="string"
-                         OnValuesChange="(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()">
+                         OnChange="(string value) => changedValue = value">
                 @foreach (var item in basicItems)
                 {
                     <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
                 }
             </BitDropdown>
             <br />
-            <div>Changed Value: @changedItem?.Value</div>
+            <div>Changed Value: @changedValue</div>
             <br /><br />
             <BitDropdown Label="Multi select"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Placeholder="Select items"
                          TItem="BitDropdownOption<string>" TValue="string"
-                         OnValuesChange="(BitDropdownOption<string>[] items) => changedItems = items">
+                         OnValuesChange="(IEnumerable<string> values) => changedValues = values">
                 @foreach (var item in basicItems)
                 {
                     <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
                 }
             </BitDropdown>
             <br />
-            <div>Changed Values: @string.Join(",", changedItems.Select(i => i.Value))</div>
+            <div>Changed Values: @string.Join(",", changedValues)</div>
             <br /><br /><br /><br />
             <div>OnSelectItem:</div><br />
             <BitDropdown Label="Single select"
@@ -551,7 +551,7 @@
             <div>Selected Value: @selectedItem1?.Value</div>
             <br /><br />
             <BitDropdown Label="Multi select"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          DefaultValue="@string.Empty"
                          Placeholder="Select items"
                          TItem="BitDropdownOption<string>" TValue="string"
@@ -586,7 +586,7 @@
             <div>Value: @comboBoxValueSample1</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues1"
-                         Combo IsMultiSelect
+                         Combo MultiSelect
                          Label="Multi select combo box"
                          Placeholder="Select an option"
                          TItem="BitDropdownOption<string>" TValue="string">
@@ -620,7 +620,7 @@
             <div>Value: @comboBoxValueSample2</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues2"
-                         Combo Chips IsMultiSelect
+                         Combo Chips MultiSelect
                          Label="Multi select combo box & chips"
                          Placeholder="Select an option"
                          TItem="BitDropdownOption<string>" TValue="string">
@@ -663,7 +663,7 @@
                          Combo Chips Dynamic
                          Label="Single select combo box, chips & dynamic"
                          Placeholder="Select an option"
-                         IsResponsive="true"
+                         Responsive="true"
                          DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
                          OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                          TItem="BitDropdownOption<string>" TValue="string">
@@ -679,8 +679,8 @@
                          Combo Chips Dynamic
                          Label="Multi select combo box, chips & dynamic"
                          Placeholder="Select options"
-                         IsMultiSelect="true"
-                         IsResponsive="true"
+                         MultiSelect="true"
+                         Responsive="true"
                          DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
                          OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                          TItem="BitDropdownOption<string>" TValue="string">
@@ -776,7 +776,7 @@
             <br /><br />
             <BitDropdown Label="چند انتخابی"
                          Placeholder="انتخاب چند گزینه ای"
-                         IsMultiSelect="true"
+                         MultiSelect="true"
                          Dir="BitDir.Rtl"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in rtlItems)

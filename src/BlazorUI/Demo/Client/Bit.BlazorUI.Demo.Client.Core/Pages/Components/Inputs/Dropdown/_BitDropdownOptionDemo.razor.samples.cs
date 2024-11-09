@@ -612,25 +612,25 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <BitDropdown Label=""Single select""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()"">
+             OnChange=""(string value) => changedValue = value"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>Changed Value: @changedItem?.Value</div>
+<div>Changed Value: @changedValue</div>
 
 <BitDropdown Label=""Multi select""
              IsMultiSelect=""true""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownOption<string>[] items) => changedItems = items"">
+             OnValuesChange=""(IEnumerable<string> values) => changedValues = values"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
+<div>Changed Values: @string.Join("","", changedValues)</div>
 
 
 
@@ -660,10 +660,10 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example11CsharpCode = @"
 private string controlledValue = ""f-app"";
-private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+private IEnumerable<string?> controlledValues = [""f-app"", ""f-ban""];
 
-private BitDropdownOption<string>? changedItem;
-private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
+private string? changedValue;
+private IEnumerable<string> changedValues = [];
 
 private BitDropdownOption<string>? selectedItem1;
 private BitDropdownOption<string>? selectedItem2;
