@@ -205,8 +205,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
     private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
+             Responsive
              Placeholder=""Select an item""
-             IsResponsive=true
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" />
@@ -699,7 +699,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <div>Value: @comboBoxValueSample1</div>
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues1""
-             Combo IsMultiSelect
+             Combo 
+             MultiSelect
              Label=""Multi select combo box""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -743,9 +744,10 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <div>Value: @comboBoxValueSample2</div>
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues2""
-             Combo Chips IsMultiSelect
-             Label=""Multi select combo box & chips""
+             Combo Chips 
+             MultiSelect
              Placeholder=""Select an option""
+             Label=""Multi select combo box & chips""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
     {
@@ -775,11 +777,11 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
-             Label=""Single select combo box & dynamic""
              Placeholder=""Select an option""
+             Label=""Single select combo box & dynamic""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
-             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />

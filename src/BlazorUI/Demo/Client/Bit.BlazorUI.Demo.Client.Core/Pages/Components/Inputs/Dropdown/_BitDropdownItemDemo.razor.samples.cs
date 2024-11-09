@@ -147,10 +147,10 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 
     private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
+             Responsive
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""Select an item""
-             IsResponsive=true />";
+             Placeholder=""Select an item"" />";
     private readonly string example5CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -611,16 +611,17 @@ private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>>
     private readonly string example13RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
-             Label=""Single select combo box""
+             Items=""comboBoxItems"" 
              Placeholder=""Select an option""
-             Items=""comboBoxItems"" />
+             Label=""Single select combo box"" />
 <div>Value: @comboBoxValueSample1</div>
 
 <BitDropdown @bind-Values=""comboBoxValues1""
-             Combo IsMultiSelect
+             Combo 
+             MultiSelect
+             Items=""comboBoxItems"" 
              Label=""Multi select combo box""
-             Placeholder=""Select an option""
-             Items=""comboBoxItems"" />
+             Placeholder=""Select an option"" />
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example13CsharpCode = @"
 private string comboBoxValueSample1 = default!;
@@ -643,16 +644,17 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
-             Label=""Single select combo box & chips""
+             Items=""comboBoxItems"" 
              Placeholder=""Select an option""
-             Items=""comboBoxItems"" />
+             Label=""Single select combo box & chips"" />
 <div>Value: @comboBoxValueSample2</div>
 
 <BitDropdown @bind-Values=""comboBoxValues2""
-             Combo Chips IsMultiSelect
-             Label=""Multi select combo box & chips""
+             Combo Chips 
+             MultiSelect
+             Items=""comboBoxItems"" 
              Placeholder=""Select an option""
-             Items=""comboBoxItems"" />
+             Label=""Multi select combo box & chips"" />
 <div>Values: @string.Join(',', comboBoxValues2)</div>";
     private readonly string example14CsharpCode = @"
 private string comboBoxValueSample2 = default!;

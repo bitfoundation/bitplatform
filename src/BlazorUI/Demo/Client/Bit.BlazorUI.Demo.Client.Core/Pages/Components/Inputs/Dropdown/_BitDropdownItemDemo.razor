@@ -117,10 +117,10 @@
         <br />
         <div class="example-content">
             <BitDropdown Label="Responsive Dropdown"
+                         Responsive
                          Items="GetBasicItems()"
                          DefaultValue="@string.Empty"
-                         Placeholder="Select an item"
-                         Responsive=true />
+                         Placeholder="Select an item" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -436,17 +436,18 @@
         <div class="example-content">
             <BitDropdown @bind-Value="comboBoxValueSample1"
                          Combo
-                         Label="Single select combo box"
+                         Items="comboBoxItems"
                          Placeholder="Select an option"
-                         Items="comboBoxItems" />
+                         Label="Single select combo box" />
             <br />
             <div>Value: @comboBoxValueSample1</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues1"
-                         Combo MultiSelect
+                         Combo
+                         MultiSelect
+                         Items="comboBoxItems"
                          Label="Multi select combo box"
-                         Placeholder="Select an option"
-                         Items="comboBoxItems" />
+                         Placeholder="Select an option" />
             <br />
             <div>Values: @string.Join(',', comboBoxValues1)</div>
         </div>
@@ -460,17 +461,18 @@
         <div class="example-content">
             <BitDropdown @bind-Value="comboBoxValueSample2"
                          Combo Chips
-                         Label="Single select combo box & chips"
+                         Items="comboBoxItems"
                          Placeholder="Select an option"
-                         Items="comboBoxItems" />
+                         Label="Single select combo box & chips" />
             <br />
             <div>Value: @comboBoxValueSample2</div>
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues2"
-                         Combo Chips MultiSelect
-                         Label="Multi select combo box & chips"
+                         Combo Chips
+                         MultiSelect
+                         Items="comboBoxItems"
                          Placeholder="Select an option"
-                         Items="comboBoxItems" />
+                         Label="Multi select combo box & chips" />
             <br />
             <div>Values: @string.Join(',', comboBoxValues2)</div>
         </div>

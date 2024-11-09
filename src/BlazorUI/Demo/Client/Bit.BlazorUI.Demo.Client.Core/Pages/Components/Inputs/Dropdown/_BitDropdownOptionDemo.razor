@@ -175,8 +175,8 @@
         <br />
         <div class="example-content">
             <BitDropdown Label="Responsive Dropdown"
+                         Responsive
                          Placeholder="Select an item"
-                         Responsive=true
                          TItem="BitDropdownOption<string>" TValue="string">
                 <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
                 <BitDropdownOption Text="Apple" Value="@("f-app")" />
@@ -610,8 +610,8 @@
         <div class="example-content">
             <BitDropdown @bind-Value="comboBoxValueSample2"
                          Combo Chips
-                         Label="Single select combo box & chips"
                          Placeholder="Select an option"
+                         Label="Single select combo box & chips"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in comboBoxItems)
                 {
@@ -623,8 +623,8 @@
             <br /><br />
             <BitDropdown @bind-Values="comboBoxValues2"
                          Combo Chips MultiSelect
-                         Label="Multi select combo box & chips"
                          Placeholder="Select an option"
+                         Label="Multi select combo box & chips"
                          TItem="BitDropdownOption<string>" TValue="string">
                 @foreach (var item in comboBoxItems)
                 {
@@ -644,8 +644,8 @@
         <div class="example-content">
             <BitDropdown @bind-Value="comboBoxValueSample3"
                          Combo Dynamic
-                         Label="Single select combo box & dynamic"
                          Placeholder="Select an option"
+                         Label="Single select combo box & dynamic"
                          DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
                          OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                          TItem="BitDropdownOption<string>" TValue="string">
