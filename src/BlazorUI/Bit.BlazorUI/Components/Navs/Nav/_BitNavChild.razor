@@ -130,17 +130,17 @@
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                         @if (childItems.Any() && Nav.IconOnly is false)
                         {
-                            <button @onclick="ToggleItem"
-                                    @onclick:preventDefault="true"
-                                    @onclick:stopPropagation="true"
-                                    tabindex="0"
-                                    type="button"
-                                    style="@Nav.Styles?.ToggleButton"
-                                    class="bit-nav-cbt @Nav.Classes?.ToggleButton"
-                                    aria-expanded="@(isExpanded ? "true" : "false")"
-                                    aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
+                            <div @onclick="ToggleItem"
+                                 @onclick:preventDefault="true"
+                                 @onclick:stopPropagation="true"
+                                 tabindex="0"
+                                 type="button"
+                                 style="@Nav.Styles?.ToggleButton"
+                                 class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                 aria-expanded="@(isExpanded ? "true" : "false")"
+                                 aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
                                 <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                            </button>
+                            </div>
                         }
                         <div style="@GetItemStyles()"
                              class="bit-nav-itm @GetItemClasses()">

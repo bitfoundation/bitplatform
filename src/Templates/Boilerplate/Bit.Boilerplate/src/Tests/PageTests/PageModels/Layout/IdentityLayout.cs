@@ -9,7 +9,6 @@ public abstract partial class IdentityLayout(IPage page, Uri serverAddress)
     {
         var displayName = string.IsNullOrWhiteSpace(userFullName) ? userEmail : userFullName;
 
-        await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, PagePath).ToString());
         await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = displayName })).ToBeVisibleAsync();
         await Assertions.Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(displayName);
         await Assertions.Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(displayName);

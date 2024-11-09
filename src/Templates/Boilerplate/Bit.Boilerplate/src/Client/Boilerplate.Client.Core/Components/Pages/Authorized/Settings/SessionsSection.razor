@@ -7,13 +7,13 @@
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
                 <BitPersona PrimaryText="@(currentSession.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                SecondaryText="@currentSession.Address"
-                TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
-                Size="BitPersonaSize.Size48"
-                Presence="@GetPresence(currentSession.RenewedOn)"
-                Styles="@(new() { Image = "width:50%;height:50%" })"
-                ImageInitials="✓"
-                ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
+                            SecondaryText="@currentSession.Address"
+                            TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
+                            Size="BitPersonaSize.Size48"
+                            Presence="@GetPresence(currentSession.RenewedOn)"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="✓"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitCard>
         }
 
@@ -22,25 +22,26 @@
             <br />
             <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
 
-            @foreach (var session in otherSessions)
-            {
-                <BitCard FullWidth>
-                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                        <BitPersona Class="session-persona"
-                                    PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                                    SecondaryText="@($"{session.Address} ({session.IP}) - {GetLastSeenOn(session.RenewedOn)}")"
-                                    Size="BitPersonaSize.Size48"
-                                    Presence="@GetPresence(session.RenewedOn)"
-                                    Styles="@(new() { Image = "width:50%;height:50%" })"
-                                    ImageInitials="@(session.IsValid ? "✓" : "✘")"
-                                    ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
-                        <BitSpacer />
-                        <BitButton Variant="BitVariant.Text"
-                                   OnClick="() => RevokeSession(session)"
-                                   IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" />
-                    </BitStack>
-                </BitCard>
-            }
+            <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
+                <RowTemplate Context="session">
+                    <BitCard FullWidth>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                            <BitPersona Class="session-persona"
+                                        PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
+                                        SecondaryText="@($"{session.Address} ({session.IP}) - {GetLastSeenOn(session.RenewedOn)}")"
+                                        Size="BitPersonaSize.Size48"
+                                        Presence="@GetPresence(session.RenewedOn)"
+                                        Styles="@(new() { Image = "width:50%;height:50%" })"
+                                        ImageInitials="@(session.IsValid ? "✓" : "✘")"
+                                        ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
+                            <BitSpacer />
+                            <BitButton Variant="BitVariant.Text"
+                                       OnClick="() => RevokeSession(session)"
+                                       IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" />
+                        </BitStack>
+                    </BitCard>
+                </RowTemplate>
+            </BitBasicList>
         }
     </BitStack>
 </section>

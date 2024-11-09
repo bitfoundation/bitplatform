@@ -6,40 +6,15 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AppInsightsJsSdkService : IApplicationInsights
 {
+    private TaskCompletionSource? telemetryInitializerIsAddedTcs;
+    private readonly TaskCompletionSource appInsightsJsFilesAreLoaded = new();
+
     private readonly ApplicationInsights applicationInsights = new();
-    private TaskCompletionSource? appInsightsReady;
 
     [AutoInject] private IJSRuntime jsRuntime = default!;
 
-    public async Task AddTelemetryInitializer(TelemetryItem telemetryItem)
-    {
-        await EnsureReady();
-        await applicationInsights.AddTelemetryInitializer(telemetryItem);
-    }
-
-    public async Task ClearAuthenticatedUserContext()
-    {
-        await EnsureReady();
-        await applicationInsights.ClearAuthenticatedUserContext();
-    }
-
-    public async Task<TelemetryContext> Context()
-    {
-        await EnsureReady();
-        return await applicationInsights.Context();
-    }
-
-    public async Task Flush()
-    {
-        await EnsureReady();
-        await applicationInsights.Flush();
-    }
-
     public CookieMgr GetCookieMgr()
     {
-        if (appInsightsReady?.Task.IsCompleted is false)
-            throw new InvalidOperationException("app insights is not ready");
-
         return applicationInsights.GetCookieMgr();
     }
 
@@ -48,110 +23,147 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
         applicationInsights.InitJSRuntime(jSRuntime);
     }
 
+    public async Task ClearAuthenticatedUserContext()
+    {
+        await EnsureApplicationInsightsIsReady();
+        await applicationInsights.ClearAuthenticatedUserContext();
+    }
+
+    public async Task<TelemetryContext> Context()
+    {
+        await EnsureApplicationInsightsIsReady();
+        return await applicationInsights.Context();
+    }
+
+    public async Task Flush()
+    {
+        await EnsureApplicationInsightsIsReady();
+        await applicationInsights.Flush();
+    }
+
     public async Task SetAuthenticatedUserContext(string authenticatedUserId, string? accountId = null, bool? storeInCookie = null)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.SetAuthenticatedUserContext(authenticatedUserId, accountId, storeInCookie);
     }
 
     public async Task StartTrackEvent(string name)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.StartTrackEvent(name);
     }
 
     public async Task StartTrackPage(string? name = null)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.StartTrackPage(name);
     }
 
     public async Task StopTrackEvent(string name, Dictionary<string, object?>? properties = null, Dictionary<string, decimal>? measurements = null)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.StopTrackEvent(name, properties, measurements);
     }
 
     public async Task StopTrackPage(string? name = null, string? url = null, Dictionary<string, object?>? customProperties = null, Dictionary<string, decimal>? measurements = null)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.StopTrackPage(name, url, customProperties, measurements);
     }
 
     public async Task TrackDependencyData(DependencyTelemetry dependency)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackDependencyData(dependency);
     }
 
     public async Task TrackEvent(EventTelemetry @event)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackEvent(@event);
     }
 
     public async Task TrackException(ExceptionTelemetry exception)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackException(exception);
     }
 
     public async Task TrackMetric(MetricTelemetry metric)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackMetric(metric);
     }
 
     public async Task TrackPageView(PageViewTelemetry? pageView = null)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackPageView(pageView);
     }
 
     public async Task TrackPageViewPerformance(PageViewPerformanceTelemetry pageViewPerformance)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackPageViewPerformance(pageViewPerformance);
     }
 
     public async Task TrackTrace(TraceTelemetry trace)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.TrackTrace(trace);
     }
 
     public async Task UpdateCfg(Config newConfig, bool mergeExisting = true)
     {
-        await EnsureReady();
+        await EnsureApplicationInsightsIsReady();
         await applicationInsights.UpdateCfg(newConfig, mergeExisting);
     }
 
-    private Task EnsureReady()
+    public async Task AddTelemetryInitializer(TelemetryItem telemetryItem)
     {
-        async void CheckForAppInsightsReady()
+        await EnsureAppInsightsJsFilesAreLoaded();
+        try
         {
+            await applicationInsights.AddTelemetryInitializer(telemetryItem);
+            telemetryInitializerIsAddedTcs!.SetResult();
+        }
+        catch (Exception exp)
+        {
+            telemetryInitializerIsAddedTcs!.SetException(exp);
+        }
+    }
+
+    private async Task EnsureApplicationInsightsIsReady()
+    {
+        await appInsightsJsFilesAreLoaded.Task;
+        await telemetryInitializerIsAddedTcs!.Task;
+    }
+
+    private async Task EnsureAppInsightsJsFilesAreLoaded()
+    {
+        try
+        {
+            if (telemetryInitializerIsAddedTcs is not null)
+                return;
+
+            telemetryInitializerIsAddedTcs = new();
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
             while (true)
             {
-                try
+                if (await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
+                    await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights"))
                 {
-                    var appInsightsInitialized = await jsRuntime!.InvokeAsync<bool>("window.hasOwnProperty", "appInsights");
-                    var appInsightsBlazorWrapperModuleInitialized = await jsRuntime!.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights");
-                    if (appInsightsInitialized && appInsightsBlazorWrapperModuleInitialized)
-                    {
-                        appInsightsReady.SetResult();
-                        break;
-                    }
+                    appInsightsJsFilesAreLoaded.SetResult();
+                    break;
                 }
-                catch { await Task.Delay(250); }
+                await Task.Delay(250, cts.Token);
             }
         }
-
-        if (appInsightsReady is null)
+        catch (Exception exp)
         {
-            appInsightsReady = new TaskCompletionSource();
-            CheckForAppInsightsReady();
+            appInsightsJsFilesAreLoaded.SetException(exp);
         }
-
-        return appInsightsReady!.Task;
     }
 }

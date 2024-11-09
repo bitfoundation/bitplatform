@@ -349,9 +349,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         return Content(html, "text/html");
     }
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
-    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
-
     private async Task<(string token, string url)> GenerateAutomaticSignInLink(User user, string? returnUrl, string originalAuthenticationMethod)
     {
         user.OtpRequestedOn = DateTimeOffset.Now;

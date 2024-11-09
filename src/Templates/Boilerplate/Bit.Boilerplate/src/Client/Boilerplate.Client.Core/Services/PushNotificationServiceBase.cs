@@ -17,7 +17,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     {
         if (await IsNotificationSupported(cancellationToken) is false)
         {
-            Logger.LogInformation("Notifications are not supported/allowed on this device.");
+            Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
             return;
         }
 
@@ -25,7 +25,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
         if (deviceInstallation is null)
         {
-            Logger.LogInformation("Could not retrieve device installation"); // Browser's incognito mode etc.
+            Logger.LogWarning("Could not retrieve device installation"); // Browser's incognito mode etc.
             return;
         }
 

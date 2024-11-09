@@ -1,5 +1,5 @@
 ﻿<CascadingAuthenticationState>
-    <AppInitializer />
+    <ClientAppCoordinator />
     <LayoutView Layout="@typeof(RootLayout)">
         <Router AppAssembly="@GetType().Assembly"
                 AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">

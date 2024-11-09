@@ -23,6 +23,8 @@ public class AppTelemetryContext : ITelemetryContext
 
     public string? Culture { get; set; } = CultureInfo.CurrentCulture.Name;
 
+    public string? Environment { get; set; } = AppEnvironment.Current;
+
     //#if (signalr == true)
     public bool IsOnline { get; set; }
     //#endif

@@ -19,6 +19,11 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        if (AppEnvironment.IsDev())
+        {
+            builder.Logging.AddDiagnosticLogger();
+        }
+
         services.AddClientWebProjectServices(configuration);
 
         services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);

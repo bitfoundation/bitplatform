@@ -104,7 +104,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        
+
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
         <Using Include="Boilerplate.Client.Core.Components.Pages" />
@@ -150,8 +150,6 @@
         <PackageReference Include="EmbedIO" />
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <!--/+:msbuild-conditional:noEmit -->
@@ -163,7 +161,7 @@
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
-    
+
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
         <CallTarget Targets="BuildCssFiles" />
@@ -171,6 +169,13 @@
 
     <Target Name="BuildCssFiles">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <!-- https://github.com/dotnet/runtime/issues/104599  -->
+    <Target Name="_FixAndroidAotInputs" DependsOnTargets="_AndroidAotInputs" BeforeTargets="_AndroidAotCompilation">
+        <ItemGroup Condition="$(EnableLLVM)">
+            <_AndroidAotInputs Remove="$(IntermediateLinkDir)**\System.Net.Sockets.dll" />
+        </ItemGroup>
     </Target>
 
 </Project>

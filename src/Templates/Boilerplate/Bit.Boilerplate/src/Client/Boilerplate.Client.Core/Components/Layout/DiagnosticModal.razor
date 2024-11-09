@@ -1,0 +1,71 @@
+@inherits AppComponentBase
+
+<div>
+    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal">
+        <BitStack FillContent Class="container">
+            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H3">Diagnostic</BitText>
+                <BitSpacer />
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           OnClick="() => isOpen = false"
+                           IconName="@BitIconName.ChromeClose" />
+            </BitStack>
+
+            <BitAccordion Title="Telemetry Context">
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           OnClick="CopyTelemetry"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Copy" />
+                <BitScrollablePane>
+                    <BitStack>
+                        @foreach (var (key, value) in telemetryContext.ToDictionary())
+                        {
+                            <BitText NoWrap><b>@key</b>: @value</BitText>
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+            </BitAccordion>
+
+            <BitStack Horizontal FitHeight Wrap>
+                <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
+                <BitDropdown FitWidth IsMultiSelect
+                             Items="logLevelItems"
+                             DefaultValues="defaultFilterLogLevels"
+                             OnValuesChange="HandleOnLogLevelFilter"
+                             TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+                <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                           OnClick="HandleOnSortClick"
+                           IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+            </BitStack>
+
+            <BitBasicList @ref="logStackRef"
+                          Style="height:unset"
+                          EnableVirtualization
+                          Items="filteredLogs.Indexed().ToArray()">
+                <EmptyContent>Nothing to show!</EmptyContent>
+                <RowTemplate Context="logIndex">
+                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight Gap="0" VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
+                        <BitButton IconOnly
+                                   Title="Copy"
+                                   Color="BitColor.Info"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Copy"
+                                   OnClick="() => CopyException(logIndex.item)" />
+                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">@logIndex.item.Message</BitText>
+                    </BitStack>
+                </RowTemplate>
+            </BitBasicList>
+        </BitStack>
+
+        <BitButton IconOnly
+                   OnClick="GoTop"
+                   Color="BitColor.Info"
+                   Class="go-top-button"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Up" />
+    </BitModal>
+</div>
