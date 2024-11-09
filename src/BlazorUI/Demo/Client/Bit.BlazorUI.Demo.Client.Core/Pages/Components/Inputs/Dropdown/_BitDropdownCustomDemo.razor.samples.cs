@@ -9,10 +9,10 @@ public partial class _BitDropdownCustomDemo
              Placeholder=""Select an item"" />
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true"" />
+             NameSelectors=""nameSelectors"" />
 
 <BitDropdown Label=""Required"" Required
              Items=""GetBasicCustoms()""
@@ -22,15 +22,15 @@ public partial class _BitDropdownCustomDemo
 <BitDropdown Label=""PreserveCalloutWidth""
              PreserveCalloutWidth
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
-             Placeholder=""Select an item"" />
+             Placeholder=""Select an item""
+             NameSelectors=""nameSelectors"" />
 
 <BitDropdown Label=""Disabled""
+             IsEnabled=""false""
              Items=""GetBasicCustoms()""
              DefaultValue=""@(""f-ora"")""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             IsEnabled=""false"" />";
+             NameSelectors=""nameSelectors"" />";
     private readonly string example1CsharpCode = @"
 public class Product
 {
@@ -141,16 +141,18 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 };";
 
     private readonly string example3RazorCode = @"
-<BitDropdown Label=""Single select"" FitWidth
+<BitDropdown Label=""Single select""
+             FitWidth
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
-             Placeholder=""Select an item"" />
+             Placeholder=""Select an item""
+             NameSelectors=""nameSelectors"" />
 
-<BitDropdown Label=""Multi select"" FitWidth
+<BitDropdown Label=""Multi select""
+             FitWidth
+             MultiSelect
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true"" />";
+             NameSelectors=""nameSelectors"" />";
     private readonly string example3CsharpCode = @"
 public class Product
 {
@@ -195,14 +197,14 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
     private readonly string example4RazorCode = @"
 <BitDropdown NoBorder
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
-             Placeholder=""Select an item"" />
+             Placeholder=""Select an item"" 
+             NameSelectors=""nameSelectors"" />
 
 <BitDropdown NoBorder
+             MultiSelect
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true"" />";
+             NameSelectors=""nameSelectors"" />";
     private readonly string example4CsharpCode = @"
 public class Product
 {
@@ -328,21 +330,20 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 
     private readonly string example7RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
-             Label=""Single select dropdown""
+             ShowClearButton
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""Select an option""
-             ShowClearButton=""true"" />
+             Label=""Single select dropdown""
+             Placeholder=""Select an option"" />
 <div>Value: @clearValue</div>
 
-
 <BitDropdown @bind-Values=""clearValues""
-             Label=""Multi select dropdown""
+             MultiSelect
+             ShowClearButton
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select options""
-             IsMultiSelect=""true""
-             ShowClearButton=""true"" />
+             Label=""Multi select dropdown""
+             NameSelectors=""nameSelectors"" />
 <div>Values: @string.Join(',', clearValues)</div>";
     private readonly string example7CsharpCode = @"
 private string? clearValue = ""f-app"";
@@ -389,41 +390,40 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 };";
 
     private readonly string example8RazorCode = @"
-<BitDropdown Label=""Single select & auto foucs""
+<BitDropdown Label=""Single select & auto focus""
+             ShowSearchBox
+             AutoFocusSearchBox
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             ShowSearchBox=""true""
-             AutoFocusSearchBox=""true""
+             NameSelectors=""nameSelectors""
              SearchBoxPlaceholder=""Search item"" />
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
+             ShowSearchBox
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true""
-             ShowSearchBox=""true""
+             NameSelectors=""nameSelectors""
              SearchBoxPlaceholder=""Search items"" />
 
 
-
 <BitDropdown Label=""Single select & auto focus""
+             ShowSearchBox
+             AutoFocusSearchBox
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             ShowSearchBox=""true""
-             AutoFocusSearchBox=""true""
-             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
-             SearchBoxPlaceholder=""Search item"" />
+             NameSelectors=""nameSelectors""
+             SearchBoxPlaceholder=""Search item""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"" />
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
+             ShowSearchBox
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true""
-             ShowSearchBox=""true""
-             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
-             SearchBoxPlaceholder=""Search items"" />";
+             NameSelectors=""nameSelectors""
+             SearchBoxPlaceholder=""Search items""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"" />";
     private readonly string example8CsharpCode = @"
 public class Product
 {
@@ -486,11 +486,11 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
     <ValidationMessage For=""@(() => validationModel.Category)"" />
 
     <BitDropdown @bind-Values=""validationModel.Products""
-                 Label=""Select min 1 and max 2 items""
+                 MultiSelect
                  Items=""GetBasicCustoms()""
-                 NameSelectors=""nameSelectors""
                  Placeholder=""Select items""
-                 IsMultiSelect=""true"" />
+                 NameSelectors=""nameSelectors""
+                 Label=""Select min 1 and max 2 items"" />
     <ValidationMessage For=""@(() => validationModel.Products)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
@@ -712,11 +712,11 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 <div>Selected Value: @controlledValue</div>
 
 <BitDropdown @bind-Values=""controlledValues""
+             MultiSelect
              Label=""Multi select""
              Items=""GetBasicCustoms()""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select items""
-             IsMultiSelect=""true"" />
+             NameSelectors=""nameSelectors"" />
 <div>Selected Values: @string.Join("","", controlledValues)</div>
 
 
@@ -730,7 +730,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 <div>Changed Value: @changedValue</div>
 
 <BitDropdown Label=""Multi select""
-             IsMultiSelect=""true""
+             MultiSelect
              Items=""GetBasicCustoms()""
              Placeholder=""Select items""
              NameSelectors=""nameSelectors""
@@ -749,7 +749,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 <div>Selected Value: @selectedItem1?.Value</div>
 
 <BitDropdown Label=""Multi select""
-             IsMultiSelect=""true""
+             MultiSelect
              Items=""GetBasicCustoms()""
              Placeholder=""Select items""
              DefaultValue=""@string.Empty""
@@ -808,32 +808,31 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 
     private readonly string example12RazorCode = @"
 <BitDropdown Label=""Single select""
+             Virtualize
              Items=""virtualizeCustoms1""
-             NameSelectors=""nameSelectors""
              Placeholder=""Select an item""
-             Virtualize=""true"" />
+             NameSelectors=""nameSelectors"" />
 
 <BitDropdown Label=""Multi select""
+             Virtualize
+             MultiSelect
              Items=""virtualizeCustoms2""
-             NameSelectors=""nameSelectors""
-             IsMultiSelect=""true""
              Placeholder=""Select items""
-             Virtualize=""true"" />
-
+             NameSelectors=""nameSelectors"" />
 
 
 <BitDropdown Label=""Single select""
-             Virtualize=""true""
+             Virtualize
              ItemsProvider=""LoadItems""
-             NameSelectors=""nameSelectors""
-             Placeholder=""Select an item"" />
+             Placeholder=""Select an item""
+             NameSelectors=""nameSelectors"" />
 
 <BitDropdown Label=""Multi select""
-             Virtualize=""true""
-             IsMultiSelect=""true""
+             Virtualize
+             MultiSelect
              ItemsProvider=""LoadItems""
-             NameSelectors=""nameSelectors""
-             Placeholder=""Select items"" />";
+             Placeholder=""Select items""
+             NameSelectors=""nameSelectors"" />";
     private readonly string example12CsharpCode = @"
 public class Product
 {
@@ -1046,34 +1045,35 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     private readonly string example15RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
-             Label=""Single select combo box & dynamic""
-             Placeholder=""Select an option""
              Items=""comboBoxCustoms""
+             Placeholder=""Select an option""
              NameSelectors=""comboBoxNameSelectors""
-             DynamicValueGenerator=""@((Product item) => item.Text ?? """")""
-             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)"" />
+             Label=""Single select combo box & dynamic""
+             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)""
+             DynamicValueGenerator=""@((Product item) => item.Text ?? """")"" />
 <div>Value: @comboBoxValueSample3</div>
 
 <BitDropdown @bind-Value=""comboBoxValueSample4""
+             Responsive
              Combo Chips Dynamic
-             Label=""Single select combo box, chips & dynamic""
-             Placeholder=""Select an option""
              Items=""comboBoxCustoms""
-             IsResponsive=""true""
+             Placeholder=""Select an option""
              NameSelectors=""comboBoxNameSelectors""
-             DynamicValueGenerator=""@((Product item) => item.Text ?? """")""
-             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)"" />
+             Label=""Single select combo box, chips & dynamic""
+             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)""
+             DynamicValueGenerator=""@((Product item) => item.Text ?? """")"" />
 <div>Value: @comboBoxValueSample4</div>
 
 <BitDropdown @bind-Values=""comboBoxValues3""
-             Combo Chips Dynamic IsMultiSelect
-             Label=""Multi select combo box, chips & dynamic""
-             Placeholder=""Select options""
+             Responsive
+             MultiSelect
+             Combo Chips Dynamic
              Items=""comboBoxCustoms""
-             IsResponsive=""true""
+             Placeholder=""Select options""
              NameSelectors=""comboBoxNameSelectors""
-             DynamicValueGenerator=""@((Product item) => item.Text ?? """")""
-             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)"" />
+             Label=""Multi select combo box, chips & dynamic""
+             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)""
+             DynamicValueGenerator=""@((Product item) => item.Text ?? """")"" />
 <div>Values: @string.Join(',', comboBoxValues3)</div>";
     private readonly string example15CsharpCode = @"
 private string comboBoxValueSample3 = default!;
@@ -1268,17 +1268,17 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 
     private readonly string example17RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
+             Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""لطفا انتخاب کنید""
-             Dir=""BitDir.Rtl"" />
+             Placeholder=""لطفا انتخاب کنید"" />
 
 <BitDropdown Label=""چند انتخابی""
+             MultiSelect
+             Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""انتخاب چند گزینه ای""
-             IsMultiSelect=""true""
-             Dir=""BitDir.Rtl"" />";
+             Placeholder=""انتخاب چند گزینه ای"" />";
     private readonly string example17CsharpCode = @"
 public class Product
 {
