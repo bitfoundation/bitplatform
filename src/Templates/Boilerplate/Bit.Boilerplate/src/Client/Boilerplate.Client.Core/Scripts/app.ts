@@ -8,7 +8,7 @@ class App {
     }
 
     public static showDiagnostic() {
-        return App.jsBridgeObj?.invokeMethodAsync("ShowDiagnostic");
+        return App.jsBridgeObj?.invokeMethodAsync('ShowDiagnostic');
     }
 
     public static applyBodyElementClasses(cssClasses: string[], cssVariables: any): void {
@@ -26,9 +26,11 @@ class App {
 
     //#if (notification == true)
     public static async getDeviceInstallation(vapidPublicKey: string) {
-        if (!("Notification" in window)) return null;
+        if (!('Notification' in window)) return null;
 
-        if (await Notification.requestPermission() != "granted") return null;
+        if (Notification.permission !== 'granted') {
+            if (await Notification.requestPermission() !== 'granted') return null;
+        }
 
         const registration = await navigator.serviceWorker.ready;
         if (!registration) return null;
@@ -44,9 +46,9 @@ class App {
             });
         }
         const pushChannel = subscription.toJSON();
-        const p256dh = pushChannel.keys!["p256dh"];
-        const auth = pushChannel.keys!["auth"];
-        return { installationId: `${p256dh}-${auth}`, platform: "browser", p256dh: p256dh, auth: auth, endpoint: pushChannel.endpoint };
+        const p256dh = pushChannel.keys!['p256dh'];
+        const auth = pushChannel.keys!['auth'];
+        return { installationId: `${p256dh}-${auth}`, platform: 'browser', p256dh: p256dh, auth: auth, endpoint: pushChannel.endpoint };
     };
     //#endif
 }
@@ -59,16 +61,13 @@ interface DotNetObject {
     dispose(): void;
 }
 
-(function () {
-    setCssWindowSizes();
+window.addEventListener('load', setCssWindowSizes);
+window.addEventListener('resize', setCssWindowSizes);
 
-    window.addEventListener('resize', setCssWindowSizes);
-
-    function setCssWindowSizes() {
-        document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
-        document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
-    }
-}());
+function setCssWindowSizes() {
+    document.documentElement.style.setProperty('--win-width', `${window.innerWidth}px`);
+    document.documentElement.style.setProperty('--win-height', `${window.innerHeight}px`);
+}
 
 BitTheme.init({
     system: true,
@@ -81,6 +80,6 @@ BitTheme.init({
             document.body.classList.remove('theme-dark');
         }
         const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
-        document.querySelector("meta[name=theme-color]")!.setAttribute('content', primaryBgColor);
+        document.querySelector('meta[name=theme-color]')!.setAttribute('content', primaryBgColor);
     }
 });
