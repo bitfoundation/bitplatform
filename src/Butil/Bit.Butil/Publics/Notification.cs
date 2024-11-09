@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -22,15 +23,19 @@ public class Notification(IJSRuntime js)
         {
             opts = new
             {
-                options.Tag,
-                options.Body,
-                options.Data,
-                options.Icon,
-                options.Lang,
-                options.Badge,
-                options.Silent,
-                options.RequireInteraction,
-                Dir = options.Dir.ToString().ToLower()
+                badge = options.Badge,
+                body = options.Body,
+                data = options.Data,
+                dir = options.Dir.ToString().ToLower(),
+                icon = options.Icon,
+                image = options.Image,
+                lang = options.Lang,
+                renotify = options.Renotify,
+                requireInteraction = options.RequireInteraction,
+                silent = options.Silent,
+                tag = options.Tag,
+                timestamp = options.Timestamp,
+                vibrate = options.Vibrate,
             };
         }
 
