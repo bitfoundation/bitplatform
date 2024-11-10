@@ -1,4 +1,9 @@
-﻿using Boilerplate.Shared.Dtos.Products;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Hubs;
+//#if (signalr == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
+using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Product;
 
 namespace Boilerplate.Server.Api.Controllers;
@@ -6,6 +11,10 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController
 {
+    //#if (signalr == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
     {
@@ -46,6 +55,10 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
+
         return entityToAdd.Map();
     }
 
@@ -58,6 +71,10 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
+
         return entityToUpdate.Map();
     }
 
@@ -67,6 +84,17 @@ public partial class ProductController : AppControllerBase, IProductController
         DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
     }
+
+    //#if (signalr == true)
+    private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
+    {
+        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).PublishMessage(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+    }
+    //#endif
 }
 

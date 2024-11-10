@@ -415,7 +415,9 @@
                 {
                     "condition": "(signalr != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Hubs/**"
+                        "src/Server/Boilerplate.Server.Api/Hubs/**",
+                        "src/Shared/Services/SharedPubSubMessages.cs",
+                        "src/Server/Boilerplate.Server.Api/Extensions/IClientProxyExtensions.cs"
                     ]
                 },
                 {

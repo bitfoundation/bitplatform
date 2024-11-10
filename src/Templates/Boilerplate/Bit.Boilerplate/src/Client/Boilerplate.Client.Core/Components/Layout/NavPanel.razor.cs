@@ -21,7 +21,7 @@ public partial class NavPanel
 
         SearchNavItems(null);
 
-        unsubOpenNavPanel = PubSubService.Subscribe(PubSubMessages.OPEN_NAV_PANEL, async _ =>
+        unsubOpenNavPanel = PubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
         {
             isMenuOpen = true;
             StateHasChanged();

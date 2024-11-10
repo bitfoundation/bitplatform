@@ -10,9 +10,9 @@
                             SecondaryText="@currentSession.Address"
                             TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
                             Size="BitPersonaSize.Size48"
-                            Presence="@GetPresence(currentSession.RenewedOn)"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
                             ImageInitials="✓"
+                            Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitCard>
         }

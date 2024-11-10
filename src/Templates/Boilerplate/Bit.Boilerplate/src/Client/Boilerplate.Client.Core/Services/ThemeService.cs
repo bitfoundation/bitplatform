@@ -22,7 +22,7 @@ public partial class ThemeService
         await bitDeviceCoordinator.ApplyTheme(isDark);
 
         var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
-        pubSubService.Publish(PubSubMessages.THEME_CHANGED, theme);
+        pubSubService.Publish(ClientPubSubMessages.THEME_CHANGED, theme);
 
         await cookie.Set(new()
         {

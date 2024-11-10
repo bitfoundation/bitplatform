@@ -53,7 +53,7 @@ public partial class IdentityController
         }
 
         //#if (signalr == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(method: "DisplayMessage", message, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).ShowMessage(message, cancellationToken));
         //#endif
 
         //#if (notification == true)

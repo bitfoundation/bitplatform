@@ -12,4 +12,11 @@ public class Parameters
     /// If the current page is part of the cross-layout pages that are rendered in multiple layouts.
     /// </summary>
     public const string IsCrossLayoutPage = nameof(IsCrossLayoutPage);
+
+    /// <summary>
+    /// Determines the connection status, with default behavior based on SignalR connection status.
+    /// If SignalR is not added to the project during initial project creation, this value will always be true by default.
+    /// Alternatively, you can implement custom logic to control this value.
+    /// </summary>
+    public const string IsOnline = nameof(IsOnline);
 }

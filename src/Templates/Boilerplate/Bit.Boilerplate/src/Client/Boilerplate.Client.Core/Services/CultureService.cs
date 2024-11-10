@@ -14,7 +14,7 @@ public partial class CultureService
         {
             await storageService.SetItem("Culture", cultureName, persistent: true);
             cultureInfoManager.SetCurrentCulture(cultureName!);
-            pubSubService.Publish(PubSubMessages.CULTURE_CHANGED, cultureName);
+            pubSubService.Publish(ClientPubSubMessages.CULTURE_CHANGED, cultureName);
         }
         else
         {

@@ -1,4 +1,9 @@
-﻿using Boilerplate.Shared.Dtos.Categories;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Hubs;
+//#if (signalr == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
+using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers;
@@ -6,6 +11,10 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
+    //#if (signalr == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
     {
@@ -46,6 +55,10 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
+
         return entityToAdd.Map();
     }
 
@@ -57,6 +70,10 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         DbContext.Update(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
 
         return entityToUpdate.Map();
     }
@@ -72,6 +89,17 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        //#if (signalr == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
     }
+
+    //#if (signalr == true)
+    private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
+    {
+        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).PublishMessage(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+    }
+    //#endif
 }
 

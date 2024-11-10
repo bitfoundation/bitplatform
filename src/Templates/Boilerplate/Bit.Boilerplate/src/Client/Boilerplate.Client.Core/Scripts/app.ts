@@ -26,12 +26,6 @@ class App {
 
     //#if (notification == true)
     public static async getDeviceInstallation(vapidPublicKey: string) {
-        if (!('Notification' in window)) return null;
-
-        if (Notification.permission !== 'granted') {
-            if (await Notification.requestPermission() !== 'granted') return null;
-        }
-
         const registration = await navigator.serviceWorker.ready;
         if (!registration) return null;
 

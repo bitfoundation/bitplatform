@@ -31,7 +31,8 @@
                             <BitPersona HidePersonaDetails
                                         ImageUrl="@imageUrl"
                                         PrimaryText="@User?.FullName"
-                                        Size=@BitPersonaSize.Size72 />
+                                        Size=@BitPersonaSize.Size72
+                                        Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                             <BitText Color="BitColor.Primary">
                                 @Localizer[nameof(AppStrings.UploadNewProfileImage)]
                             </BitText>

@@ -19,6 +19,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalr == true)
     private HubConnection? hubConnection;
+    [AutoInject] private Notification notification = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
     //#if (notification == true)
@@ -150,9 +151,18 @@ public partial class ClientAppCoordinator : AppComponentBase
             })
             .Build();
 
-        hubConnection.On<string>("DisplayMessage", async (message) =>
+        hubConnection.On<string>("SHOW_MESSAGE", async (message) =>
         {
-            SnackBarService.Show(message, "");
+            if (await notification.IsSupported())
+            {
+                // Show local notification
+                // Note that this code has nothing to do with push notification.
+                await notification.Show("Boilerplate", new() { Body = message });
+            }
+            else
+            {
+                SnackBarService.Show(message, "");
+            }
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>
@@ -161,6 +171,12 @@ public partial class ClientAppCoordinator : AppComponentBase
             });*/
 
             // You can also leverage IPubSubService to notify other components in the application.
+        });
+
+        hubConnection.On<string>("PUBLISH_MESSAGE", async (message) =>
+        {
+            logger.LogInformation("Message {Message} received from server.", message);
+            PubSubService.Publish(message);
         });
 
         hubConnection.Closed += HubConnectionDisconnected;
@@ -175,12 +191,14 @@ public partial class ClientAppCoordinator : AppComponentBase
     private async Task HubConnectionConnected(string? arg)
     {
         TelemetryContext.IsOnline = true;
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
         logger.LogInformation("SignalR connection established.");
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
     {
         TelemetryContext.IsOnline = false;
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, false);
 
         if (exception is null)
         {

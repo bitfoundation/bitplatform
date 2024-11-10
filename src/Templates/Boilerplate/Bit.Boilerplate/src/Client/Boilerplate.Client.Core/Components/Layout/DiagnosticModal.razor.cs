@@ -27,7 +27,7 @@ public partial class DiagnosticModal : IDisposable
 
     protected override Task OnInitAsync()
     {
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
+        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
             allLogs = [.. DiagnosticLogger.Store];
