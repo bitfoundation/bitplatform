@@ -137,7 +137,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
 
         hubConnection = new HubConnectionBuilder()
-            .WithAutomaticReconnect()
+            .WithAutomaticReconnect(new SignalrInfinitiesRetryPolicy())
             .WithUrl(hubAddress, options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;

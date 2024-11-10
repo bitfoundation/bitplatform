@@ -417,7 +417,8 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Hubs/**",
                         "src/Shared/Services/SharedPubSubMessages.cs",
-                        "src/Server/Boilerplate.Server.Api/Extensions/IClientProxyExtensions.cs"
+                        "src/Server/Boilerplate.Server.Api/Extensions/IClientProxyExtensions.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/SignalrInfinitiesRetryPolicy.cs"
                     ]
                 },
                 {
