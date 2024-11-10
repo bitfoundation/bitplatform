@@ -161,7 +161,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
             else
             {
-                SnackBarService.Show(message, "");
+                SnackBarService.Show("Boilerplate", message);
             }
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
