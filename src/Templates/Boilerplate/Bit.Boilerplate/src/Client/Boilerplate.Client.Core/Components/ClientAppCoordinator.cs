@@ -188,11 +188,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         await HubConnectionConnected(null);
     }
 
-    private async Task HubConnectionConnected(string? arg)
+    private async Task HubConnectionConnected(string? connectionId)
     {
         TelemetryContext.IsOnline = true;
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
-        logger.LogInformation("SignalR connection established.");
+        logger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
@@ -206,7 +206,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
         else
         {
-            ExceptionHandler.Handle(exception);
+            logger.LogError(exception, "SignalR connection lost.");
         }
     }
 
