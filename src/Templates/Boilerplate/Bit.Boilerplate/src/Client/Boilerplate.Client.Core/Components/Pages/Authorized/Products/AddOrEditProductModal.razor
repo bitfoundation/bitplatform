@@ -36,11 +36,10 @@
                     <ValidationMessage For="() => product.Name" />
 
                     <BitDropdown @bind-Value="selectedCategoryId"
-                                 IsMultiSelect="false"
                                  Items="allCategoryList"
-                                 OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = Guid.Parse(item.Value!); product.CategoryName = item.Text; })"
+                                 Label="@Localizer[(nameof(AppStrings.Category))]"
                                  Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
-                                 Label="@Localizer[(nameof(AppStrings.Category))]" />
+                                 OnSelectItem="((BitDropdownItem<string> item) => { product.CategoryId = Guid.Parse(item.Value!); product.CategoryName = item.Text; })" />
                     <ValidationMessage For="@(() => product.CategoryId)" />
 
                     <BitNumberField @bind-Value="product.Price"

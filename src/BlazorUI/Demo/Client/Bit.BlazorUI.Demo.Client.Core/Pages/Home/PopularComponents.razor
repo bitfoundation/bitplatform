@@ -5,7 +5,7 @@
     <div class="content-container">
         <BitText Typography="BitTypography.H3" Gutter>Popular components</BitText>
         <div class="component-list">
-            @foreach (var com in Components)
+            @foreach (var com in _components)
             {
                 <button @onclick="(() => SelectComponent(com))"
                         class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null) @BitCss.Class.Color.Foreground.Primary">
@@ -23,8 +23,8 @@
                 </button>
             }
         </div>
-        <BitCarousel Class="component-carousel" HideNextPrev OnChange="index => SelectComponent(Components[index])">
-            @foreach (var com in Components)
+        <BitCarousel Class="component-carousel" HideNextPrev OnChange="index => SelectComponent(_components[index])">
+            @foreach (var com in _components)
             {
                 <BitCarouselItem Style="width: 100%">
                     <button class="component-row @(com.Name == SelectedComponent?.Name ? "component-row--active" : null)">
@@ -81,7 +81,7 @@
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
                     <BitDropdown Label="Multi-select Dropdown"
-                                 IsMultiSelect
+                                 MultiSelect
                                  Items="DropdownItems"
                                  @bind-Values="SelectedDropdownValues"
                                  Placeholder="Select options"
@@ -164,7 +164,7 @@
 &ltdiv>Selected Items: @@string.Join(", ", SelectedDropdownValues)&lt/div>
                     </code><br /><code class="language-csharp">
 @@code {
-    private List&ltstring&gt SelectedDropdownValues = new() { "f-app", "f-ban" };
+    private IEnumerable&ltstring&gt SelectedDropdownValues = new() { "f-app", "f-ban" };
     private static List&ltBitDropdownItem&gt DropdownItems = new()
     {
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },

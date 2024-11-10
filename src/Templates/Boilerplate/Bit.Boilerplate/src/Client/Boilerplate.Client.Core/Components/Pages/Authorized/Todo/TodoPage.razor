@@ -39,7 +39,7 @@
                               Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]"
                               Styles="@(new() { InputContainer="border:none;background-color:var(--bit-clr-bg-sec)" })" />
                 <BitStack Class="todo-sort" Gap="2px" Horizontal AutoSize>
-                    <BitDropdown IsResponsive NoBorder FitWidth
+                    <BitDropdown Responsive NoBorder FitWidth
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
                                  TItem="BitDropdownOption<string>" TValue="string"
                                  Classes="@(new() { Callout="todo-sort-callout" })"

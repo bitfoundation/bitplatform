@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Bit.Butil;
 

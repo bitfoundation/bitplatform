@@ -113,16 +113,16 @@ public partial class _BitDropdownCustomDemo
 
 
     private string controlledValue = "f-app";
-    private ICollection<string> controlledValues = ["f-app", "f-ban"];
+    private IEnumerable<string> controlledValues = ["f-app", "f-ban"];
 
-    private Product? changedItem;
-    private Product[] changedItems = Array.Empty<Product>();
+    private string? changedValue;
+    private IEnumerable<string> changedValues = [];
 
     private Product? selectedItem1;
     private Product? selectedItem2;
 
     private string clearValue = "f-app";
-    private ICollection<string> clearValues = ["f-app", "f-ban"];
+    private IEnumerable<string> clearValues = ["f-app", "f-ban"];
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
@@ -131,9 +131,9 @@ public partial class _BitDropdownCustomDemo
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private ICollection<string> comboBoxValues1 = [];
-    private ICollection<string> comboBoxValues2 = [];
-    private ICollection<string> comboBoxValues3 = [];
+    private IEnumerable<string> comboBoxValues1 = [];
+    private IEnumerable<string> comboBoxValues2 = [];
+    private IEnumerable<string> comboBoxValues3 = [];
 
     protected override void OnInitialized()
     {
