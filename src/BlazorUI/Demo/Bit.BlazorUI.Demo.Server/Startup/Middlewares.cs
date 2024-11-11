@@ -49,7 +49,7 @@ public class Middlewares
         }
         app.UseStaticFiles();
 
-        app.UseCors(options => options.WithOrigins("https://0.0.0.0" /*BlazorHybrid*/, "app://0.0.0.0" /*BlazorHybrid*/)
+        app.UseCors(options => options.WithOrigins("https://0.0.0.0", "https://0.0.0.1" /*BlazorHybrid*/, "app://0.0.0.0", "app://0.0.0.1" /*BlazorHybrid*/)
             .AllowAnyHeader().AllowAnyMethod());
 
         app.UseResponseCaching();

@@ -1,16 +1,16 @@
 ﻿@font-face {
-    font-family: 'Fabric MDL2';
-    src: url('../fonts/FabMDL2.4.66.woff2') format("woff2");
-    font-weight: normal;
     font-style: normal;
     font-display: swap;
+    font-weight: normal;
+    font-family: 'Fabric MDL2';
+    src: url('../fonts/FabMDL2.4.66.woff2') format("woff2");
 }
 
 .bit-icon {
-    display: inline-block;
-    font-family: 'Fabric MDL2' !important;
     font-style: normal;
     font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2' !important;
 }
 
 .bit-icon--12PointStar:before { content: "\F505"; }

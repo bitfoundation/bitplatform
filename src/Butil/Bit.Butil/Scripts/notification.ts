@@ -3,17 +3,13 @@ var BitButil = BitButil || {};
 (function (butil: any) {
     butil.notification = {
         isSupported,
-        show,
         getPermission,
-        requestPermission
+        requestPermission,
+        show,
     };
 
     function isSupported() {
         return ('Notification' in window);
-    }
-
-    function show(title: string, options?: NotificationOptions) {
-        const notification = new Notification(title, options);
     }
 
     function getPermission() {
@@ -22,6 +18,15 @@ var BitButil = BitButil || {};
 
     async function requestPermission() {
         return await Notification.requestPermission();
+    }
+
+    function show(title: string, options?: NotificationOptions) {
+        for (const key in options) {
+            if (options.hasOwnProperty(key)) {
+                options[key] = options[key] === null ? undefined : options[key];
+            }
+        }
+        const notification = new Notification(title, options);
     }
 
 }(BitButil));

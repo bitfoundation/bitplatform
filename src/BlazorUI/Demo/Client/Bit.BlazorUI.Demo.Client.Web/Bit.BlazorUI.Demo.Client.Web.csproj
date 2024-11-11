@@ -24,13 +24,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.Bswup" Version="8.12.0-pre-14" />
+        <PackageReference Include="Bit.Bswup" Version="8.12.0-pre-15" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.12.0-pre-14">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="8.12.0-pre-15">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.12.0-pre-14">
+        <PackageReference Include="Bit.SourceGenerators" Version="8.12.0-pre-15">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
