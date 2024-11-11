@@ -143,15 +143,17 @@
                 else if (SelectedComponent?.Name == "FileUpload")
                 {
                     <pre class="code">
-                    <code class="language-cshtml">&ltBitFileUpload Label="Select files"
-               MultiSelect
+                    <code class="language-cshtml">&ltBitFileUpload AutoUpload
+               MultiSelect 
+               ChunkedUpload
+               Label="Select files"
                UploadUrl="@@UploadUrl"
                RemoveUrl="@@RemoveUrl"
-               Style="flex-grow:1; max-width:none;" /&gt
+               MaxSize="1024 * 1024 * 500" /&gt
                     </code><br/><code class="language-csharp">
 @@code {
-    private string UploadUrl = "FileUpload/UploadFile";
-    private string RemoveUrl = "FileUpload/RemoveFile";
+    private string UploadUrl = "/UploadFile";
+    private string RemoveUrl = "/RemoveFile";
 }</code></pre>
                 }
                 else if (SelectedComponent?.Name == "Dropdown")
