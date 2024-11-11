@@ -1,6 +1,6 @@
 ﻿namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil18ScreenOrientationPage
+public partial class Butil19ScreenOrientationPage
 {
     private ushort angle;
     
