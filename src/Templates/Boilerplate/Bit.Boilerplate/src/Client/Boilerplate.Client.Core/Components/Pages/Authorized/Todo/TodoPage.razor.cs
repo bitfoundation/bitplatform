@@ -22,7 +22,7 @@ public partial class TodoPage
     private string? underEditTodoItemTitle;
     private string newTodoTitle = string.Empty;
     private IList<TodoItemDto> allTodoItems = [];
-    private IList<TodoItemDto> viewTodoItems = default!;
+    private IList<TodoItemDto> viewTodoItems = [];
     private BitSearchBox searchBox = default!;
     private BitTextField newTodoInput = default!;
 
