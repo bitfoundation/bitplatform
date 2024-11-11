@@ -59,7 +59,7 @@ public partial class RootLayout : IDisposable
                 StateHasChanged();
             }));
 
-            //#if (signalr == true)
+            //#if (signalR == true)
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
                 isOnline = (bool)payload!;

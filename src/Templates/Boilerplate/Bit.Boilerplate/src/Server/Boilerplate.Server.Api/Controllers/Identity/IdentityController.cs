@@ -1,9 +1,9 @@
 ﻿//+:cnd:noEmit
 using Humanizer;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-//#if (signalr == true)
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Signalr;
+using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
@@ -26,7 +26,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
     [AutoInject] private AppUserClaimsPrincipalFactory userClaimsPrincipalFactory = default!;
-    //#if (signalr == true)
+    //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     //#if (notification == true)
@@ -264,12 +264,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
-        //#if (signalr == true || notification == true)
+        //#if (signalR == true || notification == true)
         var pushMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Push,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
         //#endif
 
-        //#if (signalr == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalrEvents.SHOW_MESSAGE, pushMessage, cancellationToken));
+        //#if (signalR == true)
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
@@ -323,10 +323,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         if (firstStepAuthenticationMethod != "SignalR")
         {
-            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalrEvents.SHOW_MESSAGE, message, cancellationToken));
+            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         }
         //#endif
 

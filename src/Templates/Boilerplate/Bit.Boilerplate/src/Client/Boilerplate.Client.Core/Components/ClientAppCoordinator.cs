@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
-//#if (signalr == true)
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
@@ -19,7 +19,7 @@ namespace Boilerplate.Client.Core.Components;
 /// </summary>
 public partial class ClientAppCoordinator : AppComponentBase
 {
-    //#if (signalr == true)
+    //#if (signalR == true)
     private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
     //#endif
@@ -112,7 +112,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             await pushNotificationService.RegisterDevice(CurrentCancellationToken);
             //#endif
 
-            //#if (signalr == true)
+            //#if (signalR == true)
             await ConnectSignalR();
             //#endif
         }
@@ -122,7 +122,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
     }
 
-    //#if (signalr == true)
+    //#if (signalR == true)
     private async Task ConnectSignalR()
     {
         if (hubConnection is not null)
@@ -131,7 +131,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
 
         hubConnection = new HubConnectionBuilder()
-            .WithAutomaticReconnect(new SignalrInfinitiesRetryPolicy())
+            .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
             .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
@@ -142,7 +142,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             })
             .Build();
 
-        hubConnection.On<string>(SignalrEvents.SHOW_MESSAGE, async (message) =>
+        hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
         {
             if (await notification.IsNotificationAvailable())
             {
@@ -164,7 +164,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         });
 
-        hubConnection.On<string>(SignalrEvents.PUBLISH_MESSAGE, async (message) =>
+        hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
             logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
@@ -240,7 +240,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         if (hubConnection is not null)
         {
             hubConnection.Closed -= HubConnectionDisconnected;

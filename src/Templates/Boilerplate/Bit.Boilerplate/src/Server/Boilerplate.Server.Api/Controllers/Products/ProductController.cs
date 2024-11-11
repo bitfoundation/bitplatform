@@ -1,6 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Signalr;
-//#if (signalr == true)
+using Boilerplate.Server.Api.SignalR;
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Products;
@@ -11,7 +11,7 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController
 {
-    //#if (signalr == true)
+    //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
@@ -55,7 +55,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
 
@@ -71,7 +71,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
 
@@ -85,15 +85,15 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
     }
 
-    //#if (signalr == true)
+    //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).SendAsync(SignalrEvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif
 }

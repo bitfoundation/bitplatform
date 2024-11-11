@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Services;
 
-public class SignalrInfinitiesRetryPolicy : IRetryPolicy
+public class SignalRInfinitiesRetryPolicy : IRetryPolicy
 {
     private static TimeSpan[] delays = new double[] { 1, 3, 5, 10, 15, 20, 30, 45, 59 }
         .Select(TimeSpan.FromSeconds)
