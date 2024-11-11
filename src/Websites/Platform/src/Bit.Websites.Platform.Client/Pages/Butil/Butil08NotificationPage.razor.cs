@@ -11,14 +11,12 @@ public partial class Butil08NotificationPage
     }
 
     private NotificationPermission? permissionResult = null;
-
     private async Task GetCurrentPermissionState()
     {
         permissionResult = await notification.GetPermission();
     }
 
     private NotificationPermission? requestPermissionResult = null;
-
     private async Task RequestPermission()
     {
         requestPermissionResult = await notification.RequestPermission();
@@ -34,12 +32,46 @@ public partial class Butil08NotificationPage
     private string isSupportedExampleCode =
 @"@inject Bit.Butil.Notification notification
 
+<BitText>Notification supported? [@isNotificationSupported]</BitText>
+
 <BitButton OnClick=""CheckIsSupported"">IsSupported</BitButton>
 
 @code {
+    private bool? isNotificationSupported;
+
     private async Task CheckIsSupported()
     {
-        var isNotificationSupported = await notification.IsSupported();
+        isNotificationSupported = await notification.IsSupported();
+    }
+}";
+    private string getPermissionExampleCode =
+@"@inject Bit.Butil.Notification notification
+
+<BitText>Current permission state: [@permissionResult]</BitText>
+
+<BitButton OnClick=""GetCurrentPermissionState"">GetPermission</BitButton>
+
+@code {
+    private NotificationPermission? permissionResult = null;
+
+    private async Task GetCurrentPermissionState()
+    {
+        permissionResult = await notification.GetPermission();
+    }
+}";
+    private string requestPermissionExampleCode =
+@"@inject Bit.Butil.Notification notification
+
+<BitText>Request permission result: [@requestPermissionResult]</BitText>
+
+<BitButton OnClick=""RequestPermission"">RequestPermission</BitButton>
+
+@code {
+    private NotificationPermission? requestPermissionResult = null;
+
+    private async Task RequestPermission()
+    {
+        requestPermissionResult = await notification.RequestPermission();
     }
 }";
     private string showExampleCode =
@@ -52,25 +84,5 @@ public partial class Butil08NotificationPage
     {
         await notification.Show(""title"", new() { Body = ""this is body."" });
     }
-}";
-    private string getPermissionExampleCode =
-@"@inject Bit.Butil.Console console
-
-<BitTextField @bind-Value=""value"" />
-
-<BitButton OnClick=""@(() => console.CountReset(value))"">CountReset</BitButton>
-
-@code {
-    private string value = ""Test"";
-}";
-    private string requestPermissionExampleCode =
-@"@inject Bit.Butil.Console console
-
-<BitTextField @bind-Value=""value"" />
-
-<BitButton OnClick=""@(() => console.Debug(value))"">Debug</BitButton>
-
-@code {
-    private string value = ""Test"";
 }";
 }
