@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
