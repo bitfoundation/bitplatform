@@ -184,6 +184,7 @@ jobs:
           echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
           echo A | xcopy .\bin\publish .\publish-result /s /e /h
+          powershell -Command "Get-ChildItem -Path '.\publish-result\runtimes' -Directory | Where-Object { $_.Name -notlike 'win*' } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }"
           dotnet tool restore
           dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows-x86.exe -r win-x86 --framework net8.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
