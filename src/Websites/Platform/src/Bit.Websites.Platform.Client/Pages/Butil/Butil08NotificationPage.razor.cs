@@ -6,7 +6,7 @@ public partial class Butil08NotificationPage
 {
     private async Task CheckIsSupported() 
     {
-        //var isNotificationSupported = await notification.IsSupported();
+        var isNotificationSupported = await notification.IsSupported();
     }
 
     private async Task ShowNotification()
