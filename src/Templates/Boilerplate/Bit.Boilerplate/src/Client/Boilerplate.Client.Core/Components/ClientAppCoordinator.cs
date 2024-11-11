@@ -148,7 +148,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection.On<string>("SHOW_MESSAGE", async (message) =>
         {
-            if (await notification.IsNotificationSupported())
+            if (await notification.IsNotificationPermissionGranted())
             {
                 // Show local notification
                 // Note that this code has nothing to do with push notification.

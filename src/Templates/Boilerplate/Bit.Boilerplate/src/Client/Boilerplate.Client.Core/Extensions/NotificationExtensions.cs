@@ -2,7 +2,7 @@
 
 public static class NotificationExtensions
 {
-    public static async Task<bool> IsNotificationSupported(this Notification notification)
+    public static async Task<bool> IsNotificationPermissionGranted(this Notification notification)
     {
         var isPresent = await notification.IsSupported();
         if (isPresent)
