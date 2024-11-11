@@ -61,27 +61,13 @@ public class Notification(IJSRuntime js)
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification</see>
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NotificationOptions))]
-    public async ValueTask Show(string title, NotificationOptions? options)
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(InternalNotificationOptions))]
+    public async ValueTask Show(string title, NotificationOptions? options = null)
     {
-        object? opts = null;
+        InternalNotificationOptions? opts = null;
         if (options is not null)
         {
-            opts = new
-            {
-                badge = options.Badge,
-                body = options.Body,
-                data = options.Data,
-                dir = options.Dir.ToString().ToLower(),
-                icon = options.Icon,
-                image = options.Image,
-                lang = options.Lang,
-                renotify = options.Renotify,
-                requireInteraction = options.RequireInteraction,
-                silent = options.Silent,
-                tag = options.Tag,
-                timestamp = options.Timestamp,
-                vibrate = options.Vibrate,
-            };
+            opts = new(options);
         }
 
         await js.InvokeVoidAsync("BitButil.notification.show", title, opts);
