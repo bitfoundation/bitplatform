@@ -18,14 +18,13 @@
         <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
         <div class="section-card-txt">
             To use the browser notification features you need to inject the Bit.Butil.Notification class and use it like this:
-            <CodeBox HideCopyButton>
+<CodeBox HideCopyButton>
 @@inject Bit.Butil.Notification notification
 
 @@code {
     await notification.IsSupported();
     await notification.Show("title", new() { Body = "this is body." });
-}
-            </CodeBox>
+}</CodeBox>
         </div>
     </section>
 
