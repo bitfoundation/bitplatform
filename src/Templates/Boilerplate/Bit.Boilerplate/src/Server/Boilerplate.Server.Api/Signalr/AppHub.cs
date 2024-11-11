@@ -17,8 +17,19 @@ public partial class AppHub : Hub
 
                 throw new HubException(nameof(AppStrings.UnauthorizedException));
             }
-
-            await base.OnConnectedAsync();
         }
+        else
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "AuthenticatedClients");
+        }
+
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AuthenticatedClients");
+
+        await base.OnDisconnectedAsync(exception);
     }
 }

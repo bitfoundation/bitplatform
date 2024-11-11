@@ -93,7 +93,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalr == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).SendAsync(SignalrEvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        await appHubContext.Clients.GroupExcept("AuthenticatedUsers", User.GetUserId().ToString()).SendAsync(SignalrEvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif
 }
