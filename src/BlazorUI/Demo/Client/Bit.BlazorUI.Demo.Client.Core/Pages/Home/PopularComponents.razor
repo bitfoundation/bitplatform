@@ -72,7 +72,9 @@
                 }
                 else if (SelectedComponent?.Name == "FileUpload")
                 {
-                    <BitFileUpload MultiSelect AutoUpload
+                    <BitFileUpload AutoUpload
+                                   MultiSelect 
+                                   ChunkedUpload
                                    Label="Select files"
                                    UploadUrl="@UploadUrl"
                                    RemoveUrl="@RemoveUrl"
