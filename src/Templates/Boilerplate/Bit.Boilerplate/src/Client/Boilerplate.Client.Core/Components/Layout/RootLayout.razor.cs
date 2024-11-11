@@ -20,7 +20,7 @@ public partial class RootLayout : IDisposable
     private bool? isCrossLayoutPage;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
-    private List<Action> disposables = [];
+    private List<Action> unsubscribers = [];
 
 
     [AutoInject] private Keyboard keyboard = default!;
@@ -41,18 +41,18 @@ public partial class RootLayout : IDisposable
         {
             navigationManager.LocationChanged += NavigationManagerLocationChanged;
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
-            disposables.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
             }));
-            disposables.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
                 StateHasChanged();
             }));
-            disposables.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
                 SetIsCrossLayout();
@@ -60,7 +60,7 @@ public partial class RootLayout : IDisposable
             }));
 
             //#if (signalr == true)
-            disposables.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
                 isOnline = (bool)payload!;
                 await InvokeAsync(StateHasChanged);
@@ -192,7 +192,7 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        disposables.ForEach(d => d.Invoke());
+        unsubscribers.ForEach(d => d.Invoke());
 
         _ = keyboard?.DisposeAsync();
     }
