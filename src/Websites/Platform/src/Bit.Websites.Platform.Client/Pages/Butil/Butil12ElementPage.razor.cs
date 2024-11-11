@@ -2,7 +2,7 @@
 
 namespace Bit.Websites.Platform.Client.Pages.Butil;
 
-public partial class Butil11ElementPage
+public partial class Butil12ElementPage
 {
     private string? attributeName;
     private string? currentAttribute;
