@@ -21,7 +21,7 @@ var BitButil = BitButil || {};
     }
 
     function show(title: string, options?: NotificationOptions) {
-        for (var key in options) {
+        for (const key in options) {
             if (options.hasOwnProperty(key)) {
                 options[key] = options[key] === null ? undefined : options[key];
             }
