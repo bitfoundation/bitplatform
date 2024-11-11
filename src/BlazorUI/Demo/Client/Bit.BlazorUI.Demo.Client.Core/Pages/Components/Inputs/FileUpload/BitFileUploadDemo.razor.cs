@@ -472,7 +472,8 @@ private string UploadUrl = $""/Upload"";";
 <BitFileUpload Label=""Select or drag and drop files""
                AutoUpload
                MultiSelect
-               UploadUrl=""@UploadUrl"" />";
+               UploadUrl=""@UploadUrl""
+               MaxSize=""1024 * 1024 * 1"" />";
     private readonly string example3CsharpCode = @"
 private string UploadUrl = $""/Upload"";";
 
