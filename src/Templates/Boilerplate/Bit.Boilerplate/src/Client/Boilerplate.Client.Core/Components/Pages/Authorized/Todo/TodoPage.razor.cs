@@ -20,10 +20,10 @@ public partial class TodoPage
     private bool isDeleteDialogOpen;
     private TodoItemDto? deletingTodoItem;
     private string? underEditTodoItemTitle;
-    private string newTodoTitle = string.Empty;
-    private IList<TodoItemDto> allTodoItems = [];
-    private IList<TodoItemDto> viewTodoItems = default!;
     private BitSearchBox searchBox = default!;
+    private string newTodoTitle = string.Empty;
+    private List<TodoItemDto> allTodoItems = [];
+    private List<TodoItemDto> viewTodoItems = [];
     private BitTextField newTodoInput = default!;
 
     protected override async Task OnInitAsync()

@@ -17,8 +17,8 @@ public partial class DiagnosticModal : IDisposable
     private IEnumerable<DiagnosticLog> allLogs = default!;
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
-    private readonly LogLevel[] defaultFilterLogLevels = [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
+    private readonly LogLevel[] defaultFilterLogLevels = AppEnvironment.IsDev() ? [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical] : [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
 
 
     [AutoInject] private Clipboard clipboard = default!;
