@@ -43,7 +43,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="8.12.0-pre-13" />
-        <PackageVersion Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0-rc.2.24474.3" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0-rc.2.24474.3" />
         <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.6" />
         <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.6" />

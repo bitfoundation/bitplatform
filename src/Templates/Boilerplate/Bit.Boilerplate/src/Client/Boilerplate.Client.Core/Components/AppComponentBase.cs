@@ -4,7 +4,11 @@ namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 {
-    [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    [CascadingParameter(Name = Parameters.IsOnline)] protected bool IsOnline { get; set; }
+    [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [AutoInject] protected IJSRuntime JSRuntime = default!;
 

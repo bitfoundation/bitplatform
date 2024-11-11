@@ -149,7 +149,7 @@ public static partial class Program
                 };
             });
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();

@@ -53,7 +53,6 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/jobs\//,
     /\/core\//,
-    /\/signalr\//,
     /\/healthchecks-ui/,
     /\/healthz/,
     /\/swagger/,

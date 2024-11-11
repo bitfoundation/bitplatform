@@ -10,12 +10,12 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
     public virtual string Token { get; set; }
-    public virtual Task<bool> IsNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
+    public virtual Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
     public abstract Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken);
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
-        if (await IsNotificationSupported(cancellationToken) is false)
+        if (await IsPushNotificationSupported(cancellationToken) is false)
         {
             Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
             return;

@@ -70,7 +70,7 @@ public partial class SignInPage : IDisposable
             SnackBarService.Error(ErrorQueryString);
         }
 
-        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
+        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
         {
             var source = (string?)payload;
 
@@ -88,7 +88,7 @@ public partial class SignInPage : IDisposable
 
             await InvokeAsync(StateHasChanged);
 
-            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
+            PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
         });
     }
 
@@ -128,7 +128,7 @@ public partial class SignInPage : IDisposable
             }
             else
             {
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
             }
         }
         catch (KnownException e)
@@ -170,7 +170,7 @@ public partial class SignInPage : IDisposable
             {
                 isOtpSent = true;
 
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
+                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
             }
         }
         catch (KnownException e)

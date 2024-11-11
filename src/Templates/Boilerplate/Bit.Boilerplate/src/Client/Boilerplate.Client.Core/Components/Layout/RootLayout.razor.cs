@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿//+:cnd:noEmit
+using System.Reflection;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -6,13 +7,20 @@ public partial class RootLayout : IDisposable
 {
     private BitDir? currentDir;
     private string? currentUrl;
+
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    private bool isOnline = true;
     private bool? isAuthenticated;
+
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
+    /// </summary>
     private bool? isCrossLayoutPage;
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
-    private Action unsubscribeThemeChange = default!;
-    private Action unsubscribeCultureChange = default!;
-    private Action unsubscribeRouteDataUpdated = default!;
+    private List<Action> unsubscribers = [];
 
 
     [AutoInject] private Keyboard keyboard = default!;
@@ -33,23 +41,31 @@ public partial class RootLayout : IDisposable
         {
             navigationManager.LocationChanged += NavigationManagerLocationChanged;
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
-            unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
-            });
-            unsubscribeThemeChange = pubSubService.Subscribe(PubSubMessages.THEME_CHANGED, async payload =>
+            }));
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
                 StateHasChanged();
-            });
-            unsubscribeRouteDataUpdated = pubSubService.Subscribe(PubSubMessages.ROUTE_DATA_UPDATED, async payload =>
+            }));
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
                 SetIsCrossLayout();
                 StateHasChanged();
-            });
+            }));
+
+            //#if (signalR == true)
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
+            {
+                isOnline = (bool)payload!;
+                await InvokeAsync(StateHasChanged);
+            }));
+            //#endif
 
             isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -154,7 +170,7 @@ public partial class RootLayout : IDisposable
 
     private void OpenDiagnosticModal()
     {
-        pubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
 
@@ -176,9 +192,7 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        unsubscribeThemeChange?.Invoke();
-        unsubscribeCultureChange?.Invoke();
-        unsubscribeRouteDataUpdated?.Invoke();
+        unsubscribers.ForEach(d => d.Invoke());
 
         _ = keyboard?.DisposeAsync();
     }

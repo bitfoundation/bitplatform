@@ -7,7 +7,7 @@ public partial class AppRouteDataPublisher : AppComponentBase
 
     protected override Task OnInitAsync()
     {
-        PubSubService.Publish(PubSubMessages.ROUTE_DATA_UPDATED, RouteData);
+        PubSubService.Publish(ClientPubSubMessages.ROUTE_DATA_UPDATED, RouteData);
 
         return base.OnInitAsync();
     }

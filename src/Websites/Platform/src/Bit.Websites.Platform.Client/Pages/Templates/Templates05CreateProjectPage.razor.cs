@@ -36,7 +36,7 @@ public partial class Templates05CreateProjectPage
         Default = false,
     };
 
-    private Parameter<bool> signalr = new()
+    private Parameter<bool> signalR = new()
     {
         Value = false,
         Default = false,
@@ -168,7 +168,7 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetAppInsightsCommand());
         }
 
-        if (signalr.IsModified)
+        if (signalR.IsModified)
         {
             finalCommand.Append(GetSignalRCommand());
         }
@@ -238,7 +238,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetSignalRCommand()
     {
-        return $"--signalr {signalr.Value.ToString().ToLowerInvariant()} ";
+        return $"--signalR {signalR.Value.ToString().ToLowerInvariant()} ";
     }
 
     private class Parameter<T>

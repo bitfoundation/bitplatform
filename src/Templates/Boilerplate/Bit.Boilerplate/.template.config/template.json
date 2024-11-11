@@ -183,7 +183,7 @@
                 }
             ]
         },
-        "signalr": {
+        "signalR": {
             "displayName": "Add SignalR?",
             "type": "parameter",
             "datatype": "bool",
@@ -430,9 +430,11 @@
                     ]
                 },
                 {
-                    "condition": "(signalr != true)",
+                    "condition": "(signalR != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Hubs/**"
+                        "src/Server/Boilerplate.Server.Api/SignalR/**",
+                        "src/Shared/Services/SharedPubSubMessages.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfinitiesRetryPolicy.cs"
                     ]
                 },
                 {
