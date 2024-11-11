@@ -39,6 +39,9 @@
                 <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
                            OnClick="HandleOnSortClick"
                            IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
+                <BitButton OnClick="ClearLogs"
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Outline">Clear logs</BitButton>
             </BitStack>
 
             <BitBasicList @ref="logStackRef"

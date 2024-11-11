@@ -11,14 +11,14 @@ public partial class DiagnosticModal : IDisposable
 {
     private bool isOpen;
     private string? searchText;
-    private bool isDescendingSort;
+    private bool isDescendingSort = true;
     private Action unsubscribe = default!;
     private IEnumerable<LogLevel> filterLogLevels = [];
     private IEnumerable<DiagnosticLog> allLogs = default!;
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
-    private readonly LogLevel[] defaultFilterLogLevels = [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
+    private readonly LogLevel[] defaultFilterLogLevels = AppEnvironment.IsDev() ? [LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical] : [LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
 
 
     [AutoInject] private Clipboard clipboard = default!;
@@ -43,11 +43,6 @@ public partial class DiagnosticModal : IDisposable
     {
         searchText = text;
         FilterLogs();
-    }
-
-    private void HandleOnLogLevelFilter(BitDropdownItem<LogLevel>[] items)
-    {
-        HandleOnLogLevelFilter(items.Select(i => i.Value));
     }
 
     private void HandleOnLogLevelFilter(IEnumerable<LogLevel> logLevels)
@@ -91,6 +86,13 @@ public partial class DiagnosticModal : IDisposable
     private async Task GoTop()
     {
         await logStackRef.RootElement.Scroll(0, 0);
+    }
+
+    private async Task ClearLogs()
+    {
+        DiagnosticLogger.Store.Clear();
+        allLogs = [];
+        FilterLogs();
     }
 
 
