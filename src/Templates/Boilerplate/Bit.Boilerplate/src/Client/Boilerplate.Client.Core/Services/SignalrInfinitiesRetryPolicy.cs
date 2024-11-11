@@ -1,21 +1,22 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Client.Core.Services;
 
 public class SignalrInfinitiesRetryPolicy : IRetryPolicy
 {
-    private IEnumerator<TimeSpan>? delays;
+    private static TimeSpan[] delays = new double[] { 1, 3, 5, 10, 15, 20, 30, 45, 59 }
+        .Select(TimeSpan.FromSeconds)
+        .ToArray();
 
     public TimeSpan? NextRetryDelay(RetryContext retryContext)
     {
-        if (retryContext.PreviousRetryCount == 0)
+        var index = retryContext.PreviousRetryCount;
+
+        if (index < delays.Length)
         {
-            delays?.Dispose();
-            delays = RetryDelegatingHandler.GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).GetEnumerator();
+            return delays[index];
         }
 
-        delays!.MoveNext();
-        return delays.Current;
+        return TimeSpan.FromMinutes(1);
     }
 }

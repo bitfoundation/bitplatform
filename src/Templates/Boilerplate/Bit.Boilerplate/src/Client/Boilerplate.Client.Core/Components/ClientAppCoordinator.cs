@@ -22,7 +22,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (signalr == true)
     private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
-    [AutoInject] private IServiceProvider serviceProvider = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -139,18 +138,11 @@ public partial class ClientAppCoordinator : AppComponentBase
                 options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-
-                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
-                {
-                    return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
-                        .Invoke(transportHandler: signalrHttpMessageHandler);
-                };
-
                 options.AccessTokenProvider = async () => await AuthTokenProvider.GetAccessToken();
             })
             .Build();
 
-        hubConnection.On<string>(SharedPubSubMessages.SignalrEvents.SHOW_MESSAGE, async (message) =>
+        hubConnection.On<string>(SignalrEvents.SHOW_MESSAGE, async (message) =>
         {
             if (await notification.IsNotificationAvailable())
             {
@@ -172,7 +164,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         });
 
-        hubConnection.On<string>(SharedPubSubMessages.SignalrEvents.PUBLISH_MESSAGE, async (message) =>
+        hubConnection.On<string>(SignalrEvents.PUBLISH_MESSAGE, async (message) =>
         {
             logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);

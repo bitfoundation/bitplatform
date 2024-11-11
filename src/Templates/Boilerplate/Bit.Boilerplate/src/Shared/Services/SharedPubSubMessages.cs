@@ -13,17 +13,17 @@ public static partial class SharedPubSubMessages
     //#else
     // To see examples of this class, checkout the admin panel sample.
     //#endif
+}
 
-    public static partial class SignalrEvents
-    {
-        /// <summary>
-        /// Sends a message to the clients that will published through PubSubService.
-        /// </summary>
-        public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
+public static partial class SignalrEvents
+{
+    /// <summary>
+    /// Sends a message to the clients that will published through PubSubService.
+    /// </summary>
+    public const string PUBLISH_MESSAGE = nameof(PUBLISH_MESSAGE);
 
-        /// <summary>
-        /// Shows message at client side.
-        /// </summary>
-        public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
-    }
+    /// <summary>
+    /// Shows message at client side.
+    /// </summary>
+    public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
 }

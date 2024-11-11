@@ -269,7 +269,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (signalr == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(pushMessage, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalrEvents.SHOW_MESSAGE, pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
@@ -326,7 +326,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (signalr == true)
         if (firstStepAuthenticationMethod != "SignalR")
         {
-            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(message, cancellationToken));
+            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalrEvents.SHOW_MESSAGE, message, cancellationToken));
         }
         //#endif
 

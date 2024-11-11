@@ -45,7 +45,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
         return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
-    public static IEnumerable<TimeSpan> GetDelaySequence(TimeSpan scaleFirstTry)
+    private static IEnumerable<TimeSpan> GetDelaySequence(TimeSpan scaleFirstTry)
     {
         TimeSpan maxValue = TimeSpan.MaxValue;
         var maxTimeSpanDouble = maxValue.Ticks - 1_000.0;

@@ -9,8 +9,7 @@ public partial class AppHub : Hub
     {
         if (Context.User.IsAuthenticated() is false)
         {
-            if (Context.GetHttpContext()?.Request?.Query?.TryGetValue("Authorization", out var _) is true ||
-                Context.GetHttpContext()?.Request?.Headers?.TryGetValue("Authorization", out var _) is true)
+            if (Context.GetHttpContext()?.Request?.Query?.TryGetValue("access_token", out var _) is true)
             {
                 // AppHub allows anonymous connections. However, if an Authorization is included
                 // and the user is not authenticated, it indicates the client has sent an invalid or expired access token.
