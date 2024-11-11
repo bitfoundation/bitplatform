@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace Boilerplate.Server.Api.Signalr;
+namespace Boilerplate.Server.Api.SignalR;
 
 [AllowAnonymous]
 public partial class AppHub : Hub

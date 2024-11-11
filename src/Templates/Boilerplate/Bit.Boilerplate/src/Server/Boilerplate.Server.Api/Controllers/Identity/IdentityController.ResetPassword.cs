@@ -2,7 +2,7 @@
 using Humanizer;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
-//#if (signalr == true)
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 //#endif
 
@@ -52,8 +52,8 @@ public partial class IdentityController
             sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        //#if (signalr == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalrEvents.SHOW_MESSAGE, message, cancellationToken));
+        //#if (signalR == true)
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         //#endif
 
         //#if (notification == true)

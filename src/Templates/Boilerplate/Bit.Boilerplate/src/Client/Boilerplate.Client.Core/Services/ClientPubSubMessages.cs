@@ -15,7 +15,7 @@ public static partial class ClientPubSubMessages
     public const string UPDATE_IDENTITY_HEADER_BACK_LINK = nameof(UPDATE_IDENTITY_HEADER_BACK_LINK);
     public const string IDENTITY_HEADER_BACK_LINK_CLICKED = nameof(IDENTITY_HEADER_BACK_LINK_CLICKED);
 
-    //#if (signalr == true)
+    //#if (signalR == true)
     public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
     //#endif
 

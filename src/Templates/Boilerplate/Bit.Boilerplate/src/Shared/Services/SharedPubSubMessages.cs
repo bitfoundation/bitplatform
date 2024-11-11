@@ -15,7 +15,7 @@ public static partial class SharedPubSubMessages
     //#endif
 }
 
-public static partial class SignalrEvents
+public static partial class SignalREvents
 {
     /// <summary>
     /// Sends a message to the clients that will published through PubSubService.
