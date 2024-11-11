@@ -173,9 +173,15 @@ public partial class ClientAppCoordinator : AppComponentBase
         hubConnection.Reconnected += HubConnectionConnected;
         hubConnection.Reconnecting += HubConnectionDisconnected;
 
-        await hubConnection.StartAsync(CurrentCancellationToken);
-
-        await HubConnectionConnected(null);
+        try
+        {
+            await hubConnection.StartAsync(CurrentCancellationToken);
+            await HubConnectionConnected(null);
+        }
+        catch (Exception exp)
+        {
+            await HubConnectionDisconnected(exp);
+        }
     }
 
     private async Task HubConnectionConnected(string? connectionId)
