@@ -22,8 +22,8 @@
 @@inject Bit.Butil.Notification notification
 
 @@code {
-    notification.IsSupported();
-    notification.Show("title", new() { Body = "this is body." });
+    await notification.IsSupported();
+    await notification.Show("title", new() { Body = "this is body." });
 }</CodeBox>
         </div>
     </section>
@@ -44,27 +44,9 @@
                     </BitPivotItem>
                     <BitPivotItem HeaderText="Result">
                         <br />
+                        <BitText>Notification supported? [@isNotificationSupported]</BitText>
+                        <br />
                         <BitButton OnClick="CheckIsSupported">IsSupported</BitButton>
-                        <br />
-                    </BitPivotItem>
-                </BitPivot>
-            </BitAccordion>
-            <br /><br />
-
-            <b>Show</b>: <br />
-            Requests a native notification to show to the user.
-            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification" target="_blank">MDN</a>).
-            <br /><br />
-            <BitAccordion Title="Sample">
-                <BitPivot>
-                    <BitPivotItem HeaderText="Code">
-                        <CodeBox>
-                            @showExampleCode
-                        </CodeBox>
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Result">
-                        <br />
-                        <BitButton OnClick="ShowNotification">Show</BitButton>
                         <br />
                     </BitPivotItem>
                 </BitPivot>
@@ -113,6 +95,27 @@
                     </BitPivotItem>
                 </BitPivot>
             </BitAccordion>
+            <br /><br />
+
+            <b>Show</b>: <br />
+            Requests a native notification to show to the user.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @showExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="ShowNotification">Show</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
         </div>
     </section>
 </div>
