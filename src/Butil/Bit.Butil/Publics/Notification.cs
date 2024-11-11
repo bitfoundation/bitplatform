@@ -1,5 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -11,6 +10,14 @@ namespace Bit.Butil;
 /// </summary>
 public class Notification(IJSRuntime js)
 {
+    /// <summary>
+    /// Checks if the runtime (browser or web-view) is supporting the Web Notification API.
+    /// </summary>
+    public async ValueTask<bool> IsSupported()
+    {
+        return await js.InvokeAsync<bool>("BitButil.notification.isSupported");
+    }
+
     /// <summary>
     /// Requests a native notification to show to the user.
     /// <br/>
