@@ -129,16 +129,9 @@ public partial class ClientAppCoordinator : AppComponentBase
             await hubConnection.DisposeAsync();
         }
 
-        var hubAddress = $"{HttpClient.BaseAddress}app-hub";
-        var access_token = await AuthTokenProvider.GetAccessToken();
-        if (access_token is not null)
-        {
-            hubAddress += $"?access_token={access_token}";
-        }
-
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect(new SignalrInfinitiesRetryPolicy())
-            .WithUrl(hubAddress, options =>
+            .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
             {
                 options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
@@ -148,12 +141,14 @@ public partial class ClientAppCoordinator : AppComponentBase
                     return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
                         .Invoke(transportHandler: signalrHttpMessageHandler);
                 };
+
+                options.AccessTokenProvider = AuthTokenProvider.GetAccessToken;
             })
             .Build();
 
         hubConnection.On<string>("SHOW_MESSAGE", async (message) =>
         {
-            if (await notification.IsSupported())
+            if (await notification.IsNotificationSupported())
             {
                 // Show local notification
                 // Note that this code has nothing to do with push notification.

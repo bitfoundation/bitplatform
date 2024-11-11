@@ -56,7 +56,7 @@ public partial class MainActivity : MauiAppCompatActivity
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
         //#if (notification == true)
-        PushNotificationService.IsNotificationSupported(default).ContinueWith(task =>
+        PushNotificationService.IsPushNotificationSupported(default).ContinueWith(task =>
         {
             if (task.Result)
             {

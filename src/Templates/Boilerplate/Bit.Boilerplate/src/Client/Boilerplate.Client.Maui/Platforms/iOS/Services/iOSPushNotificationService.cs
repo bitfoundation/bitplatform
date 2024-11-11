@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Maui.Platforms.iOS.Services;
 
 public partial class iOSPushNotificationService : PushNotificationServiceBase
 {
-    public async override Task<bool> IsNotificationSupported(CancellationToken cancellationToken)
+    public async override Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {

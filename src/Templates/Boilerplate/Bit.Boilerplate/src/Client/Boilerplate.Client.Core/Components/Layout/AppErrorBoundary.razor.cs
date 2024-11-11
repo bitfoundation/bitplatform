@@ -36,6 +36,6 @@ public partial class AppErrorBoundary
 
     private void ShowDiagnostic()
     {
-        pubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 }

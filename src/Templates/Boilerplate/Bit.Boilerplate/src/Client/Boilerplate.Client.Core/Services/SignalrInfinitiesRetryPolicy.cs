@@ -6,6 +6,6 @@ public class SignalrInfinitiesRetryPolicy : IRetryPolicy
 {
     public TimeSpan? NextRetryDelay(RetryContext retryContext)
     {
-        return TimeSpan.FromSeconds(5);
+        return TimeSpan.FromMilliseconds(1); // Retry policy is handling in HttpMessageHandlers/RetryDelegatingHandler.
     }
 }
