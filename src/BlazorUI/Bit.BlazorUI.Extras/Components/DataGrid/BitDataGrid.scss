@@ -32,12 +32,12 @@
 
     .col-sort-asc .sort-indicator:before,
     .col-sort-desc .sort-indicator:before {
-        //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
-        content: "\E96E";
+        content: "\E96F";
         font-style: normal;
         font-weight: normal;
         display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI', 'Fabric MDL2' !important;
+        transform: rotate(90deg);
+        font-family: 'Fabric MDL2 bit BlazorUI Extras', 'Fabric MDL2' !important;
     }
 
     .col-sort-desc .sort-indicator {
@@ -53,7 +53,7 @@
         font-style: normal;
         font-weight: normal;
         display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI', 'Fabric MDL2' !important;
+        font-family: 'Fabric MDL2 bit BlazorUI Extras', 'Fabric MDL2' !important;
     }
 
     .col-options {
