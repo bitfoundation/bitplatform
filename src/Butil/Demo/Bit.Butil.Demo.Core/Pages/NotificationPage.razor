@@ -24,6 +24,20 @@
 <hr />
 <br />
 
+<button @onclick="GetPermission">Get current permission</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="RequestPermission">Request permission</button>
+
+<br />
+<br />
+<hr />
+<br />
+
 <input @bind=@notifTitle />
 <br />
 <textarea @bind=@notifBody />
@@ -32,26 +46,25 @@
 
 <br />
 <br />
-<hr />
-<br />
-
-<button @onclick="GetPermission">Get current permission</button>
-
-<br />
-<br />
 
 @code {
     private string notifTitle;
     private string notifBody;
 
-    private async Task Show()
-    {
-        await notification.Show(notifTitle, new() { Body = notifBody });
-    }
-
     private async Task GetPermission()
     {
         var permission = await notification.GetPermission();
         await console.Log("Notification permission:", permission.ToString());
+    }
+
+    private async Task RequestPermission()
+    {
+        var permission = await notification.RequestPermission();
+        await console.Log("Notification permission:", permission.ToString());
+    }
+
+    private async Task Show()
+    {
+        await notification.Show(notifTitle, new() { Body = notifBody });
     }
 }
