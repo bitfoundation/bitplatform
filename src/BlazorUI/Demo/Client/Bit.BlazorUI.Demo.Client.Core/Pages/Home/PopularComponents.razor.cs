@@ -5,7 +5,7 @@ public partial class PopularComponents
     private bool showCode;
     private DateTimeOffset? SelectedDate;
 
-    private List<PopularComponent> Components =
+    private List<PopularComponent> _components =
     [
         new()
         {
@@ -43,7 +43,7 @@ public partial class PopularComponents
 
     protected override async Task OnInitAsync()
     {
-        SelectedComponent = Components[0];
+        SelectedComponent = _components[0];
         await base.OnInitAsync();
     }
 
@@ -68,7 +68,7 @@ public partial class PopularComponents
 
 
 
-    private ICollection<string?> SelectedDropdownValues = ["f-app", "f-ban"];
+    private IEnumerable<string?> SelectedDropdownValues = ["f-app", "f-ban"];
     private static List<BitDropdownItem<string>> DropdownItems =
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },

@@ -12,7 +12,7 @@
             @Localizer[nameof(AppStrings.AddCategory)]
         </BitButton>
         <BitStack Gap="0" FillContent>
-            <div style="overflow:auto">
+            <div class="grid-container">
                 <BitDataGrid @ref="dataGrid"
                              Class="categories-grid"
                              TGridItem="CategoryDto"

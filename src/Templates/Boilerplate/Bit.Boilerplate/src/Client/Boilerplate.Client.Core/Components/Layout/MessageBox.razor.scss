@@ -3,7 +3,7 @@
 section {
     padding: 1rem;
     min-width: 20rem;
-    max-height: var(--app-max-height-vh);
+    max-height: var(--app-height);
 
     @include lt-md {
         min-width: unset;
@@ -12,8 +12,8 @@ section {
 
 ::deep {
     .root {
-        width: var(--app-max-width);
-        height: var(--app-max-height);
+        width: var(--app-width);
+        height: var(--app-height);
         top: var(--app-inset-top);
         left: var(--app-inset-left);
         right: var(--app-inset-right);
@@ -28,7 +28,7 @@ section {
     }
 
     .stack {
-        max-height: calc(var(--app-max-height-vh) - 3rem);
+        max-height: calc(var(--app-height) - 3rem);
     }
 
     .body {

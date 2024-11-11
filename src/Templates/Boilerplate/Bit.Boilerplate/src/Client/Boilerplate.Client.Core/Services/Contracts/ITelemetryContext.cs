@@ -42,6 +42,8 @@ public interface ITelemetryContext
     public string? TimeZone { get; set; }
     public string? Culture { get; set; }
 
+    public string? Environment { get; set; }
+
     //#if (signalr == true)
     public bool IsOnline { get; set; }
     //#endif
@@ -58,6 +60,7 @@ public interface ITelemetryContext
             { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
             { nameof(Culture), Culture },
+            { nameof(Environment), Environment },
             //#if (signalr == true)
             { nameof(IsOnline), IsOnline }
             //#endif

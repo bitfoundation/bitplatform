@@ -15,6 +15,7 @@ public partial class RootLayout : IDisposable
     private Action unsubscribeRouteDataUpdated = default!;
 
 
+    [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
@@ -73,6 +74,16 @@ public partial class RootLayout : IDisposable
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
 
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
@@ -126,7 +137,7 @@ public partial class RootLayout : IDisposable
 
         var type = currentRouteData.PageType;
 
-        if (type.GetCustomAttribute<AuthorizeAttribute>(inherit: true) is not null)
+        if (type.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any())
         {
             isCrossLayoutPage = false;
             return;
@@ -139,6 +150,11 @@ public partial class RootLayout : IDisposable
         }
 
         isCrossLayoutPage = true;
+    }
+
+    private void OpenDiagnosticModal()
+    {
+        pubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
 
@@ -163,5 +179,7 @@ public partial class RootLayout : IDisposable
         unsubscribeThemeChange?.Invoke();
         unsubscribeCultureChange?.Invoke();
         unsubscribeRouteDataUpdated?.Invoke();
+
+        _ = keyboard?.DisposeAsync();
     }
 }

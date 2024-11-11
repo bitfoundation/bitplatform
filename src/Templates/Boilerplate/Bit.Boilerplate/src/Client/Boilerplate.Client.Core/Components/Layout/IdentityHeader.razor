@@ -30,7 +30,7 @@
             </BitLink>
         }
 
-        <BitSpacer />
+        <DiagnosticSpacer />
 
         <BitButton IconOnly
                    FixedColor
@@ -41,7 +41,7 @@
 
         @if (CultureInfoManager.MultilingualEnabled)
         {
-            <BitDropdown Items="cultures" IsResponsive
+            <BitDropdown Items="cultures" Responsive
                          FitWidth NoBorder Transparent
                          Classes="@(new() { Callout="language-callout" })"
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"

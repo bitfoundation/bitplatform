@@ -81,14 +81,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public bool Combo { get; set; }
 
     /// <summary>
-    /// The default key value that will be initially used to set selected item if the Value parameter is not set.
+    /// The default value that will be initially used to set selected item if the Value parameter is not set.
     /// </summary>
     [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
-    /// The default key value that will be initially used to set selected items in multi select mode if the Values parameter is not set.
+    /// The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.
     /// </summary>
-    [Parameter] public ICollection<TValue?>? DefaultValues { get; set; }
+    [Parameter] public IEnumerable<TValue?>? DefaultValues { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -127,26 +127,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// Enables the multi select mode.
-    /// </summary>
-    [Parameter] public bool IsMultiSelect { get; set; }
-
-    /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(ClearSearchBox))]
     public bool IsOpen { get; set; }
-
-    /// <summary>
-    /// Enables calling the select events when the same item is selected in single select mode.
-    /// </summary>
-    [Parameter] public bool IsReselectable { get; set; }
-
-    /// <summary>
-    /// Enables the responsive mode of the component for small screens.
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
 
     /// <summary>
     /// The list of items to display in the callout.
@@ -177,6 +162,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// The custom template for the label of the dropdown.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Enables the multi select mode.
+    /// </summary>
+    [Parameter] public bool MultiSelect { get; set; }
 
     /// <summary>
     /// The delimiter for joining the values to create the text of the dropdown in multi select mode.
@@ -217,7 +207,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// The callback that called when selected items change.
     /// </summary>
-    [Parameter] public EventCallback<TItem[]> OnValuesChange { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TValue>> OnValuesChange { get; set; }
 
     /// <summary>
     /// Alias of ChildContent.
@@ -254,6 +244,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// Disables automatic setting of the callout width and preserves its original width.
     /// </summary>
     [Parameter] public bool PreserveCalloutWidth { get; set; }
+
+    /// <summary>
+    /// Enables calling the select events when the same item is selected in single select mode.
+    /// </summary>
+    [Parameter] public bool Reselectable { get; set; }
+
+    /// <summary>
+    /// Enables the responsive mode of the component for small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
 
     /// <summary>
     /// The placeholder text of the SearchBox input.
@@ -312,9 +312,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// </summary>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetValues))]
-    public ICollection<TValue?>? Values { get; set; }
+    public IEnumerable<TValue?>? Values { get; set; }
 
-    [Parameter] public Expression<Func<ICollection<TValue?>?>>? ValuesExpression { get; set; }
+    [Parameter] public Expression<Func<IEnumerable<TValue?>?>>? ValuesExpression { get; set; }
 
     /// <summary>
     /// Enables virtualization to render only the visible items.
@@ -331,12 +331,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     /// <summary>
     /// A readonly list of the current selected items in multi-select mode.
     /// </summary>
-    public IReadOnlyList<TItem> SelectedItems => IsMultiSelect ? _selectedItems : [];
+    public IReadOnlyList<TItem> SelectedItems => MultiSelect ? _selectedItems : [];
 
     /// <summary>
     /// The current selected item in single-select mode.
     /// </summary>
-    public TItem? SelectedItem => IsMultiSelect ? default : _selectedItems.FirstOrDefault();
+    public TItem? SelectedItem => MultiSelect ? default : _selectedItems.FirstOrDefault();
 
     /// <summary>
     /// The ElementReference to the combo input element.
@@ -382,7 +382,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (item is null) return;
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             await HandleOnItemClick(item);
         }
@@ -471,7 +471,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         if (value is null) return false;
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             return Values?.Contains(value) ?? false;
         }
@@ -777,7 +777,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             if (ValuesHasBeenSet is false && DefaultValues is not null)
             {
@@ -802,7 +802,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     protected override void CreateFieldIdentifier()
     {
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             CreateFieldIdentifier(ValuesExpression, typeof(ICollection<TValue?>));
         }
@@ -818,7 +818,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (item is null) return;
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
@@ -881,13 +881,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
             await ClearComboBoxInput();
 
-            if (isSameItemSelected && IsReselectable is false) return;
+            if (isSameItemSelected && Reselectable is false) return;
 
             await OnSelectItem.InvokeAsync(item);
         }
 
         SetIsSelectedForSelectedItems();
-        await OnValuesChange.InvokeAsync([.. _selectedItems]);
+        await OnValuesChange.InvokeAsync([.. Values ?? []]);
     }
 
     private void UpdateSelectedItemsFromValues()
@@ -901,7 +901,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
 
         var comparer = EqualityComparer<TValue>.Default;
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             if (Values?.Any() ?? false)
             {
@@ -1068,12 +1068,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (IsEnabled is false) return;
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
-            await AssignValues(Array.Empty<TValue?>());
-            await OnValuesChange.InvokeAsync();
+            await AssignValues([]);
+            await OnValuesChange.InvokeAsync(Values);
         }
         else
         {
@@ -1093,7 +1093,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         _searchText = string.Empty;
 
-        if (_isResponsiveMode && IsMultiSelect)
+        if (_isResponsiveMode && MultiSelect)
         {
             await _comboBoxInputResponsiveRef.FocusAsync();
 
@@ -1113,7 +1113,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
                                                     _calloutId,
                                                     null,
                                                     IsOpen,
-                                                    IsResponsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+                                                    Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                                     DropDirection,
                                                     Dir is BitDir.Rtl,
                                                     _scrollContainerId,
@@ -1201,7 +1201,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
             _searchText = string.Empty;
 
-            if (_isResponsiveMode && IsMultiSelect) return;
+            if (_isResponsiveMode && MultiSelect) return;
 
             await CloseCallout();
         }
@@ -1237,7 +1237,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (_selectedItems.Any() is false) return;
 
-        if (IsMultiSelect)
+        if (MultiSelect)
         {
             var lastItem = _selectedItems.Last();
             await AddOrRemoveSelectedItem(lastItem);
@@ -1343,7 +1343,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     private string? GetText()
     {
-        return IsMultiSelect ? string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText)) : GetText(_selectedItems.FirstOrDefault());
+        return MultiSelect ? string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText)) : GetText(_selectedItems.FirstOrDefault());
     }
 
     private void OnSetValues()

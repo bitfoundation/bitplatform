@@ -6,7 +6,6 @@ public static class ILoggingBuilderExtensions
 {
     public static ILoggingBuilder AddDiagnosticLogger(this ILoggingBuilder builder)
     {
-        builder.Services.AddSessioned<DiagnosticLogger>();
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DiagnosticLoggerProvider>());
 
         return builder;

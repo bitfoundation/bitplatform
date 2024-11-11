@@ -64,7 +64,7 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight bit-drm-cdi") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
@@ -77,7 +77,7 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight bit-drm-cdi") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
@@ -130,17 +130,17 @@
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
                         @if (childItems.Any() && Nav.IconOnly is false)
                         {
-                            <button @onclick="ToggleItem"
-                                    @onclick:preventDefault="true"
-                                    @onclick:stopPropagation="true"
-                                    tabindex="0"
-                                    type="button"
-                                    style="@Nav.Styles?.ToggleButton"
-                                    class="bit-nav-cbt @Nav.Classes?.ToggleButton"
-                                    aria-expanded="@(isExpanded ? "true" : "false")"
-                                    aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight bit-drm-cdi") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                            </button>
+                            <div @onclick="ToggleItem"
+                                 @onclick:preventDefault="true"
+                                 @onclick:stopPropagation="true"
+                                 tabindex="0"
+                                 type="button"
+                                 style="@Nav.Styles?.ToggleButton"
+                                 class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                 aria-expanded="@(isExpanded ? "true" : "false")"
+                                 aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            </div>
                         }
                         <div style="@GetItemStyles()"
                              class="bit-nav-itm @GetItemClasses()">

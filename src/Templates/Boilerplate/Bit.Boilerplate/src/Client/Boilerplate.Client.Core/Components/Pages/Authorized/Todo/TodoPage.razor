@@ -7,7 +7,6 @@
 
 <section>
     <BitStack Class="stack">
-        <br />
         <BitStack Horizontal AutoHeight>
             <BitTextField @ref="newTodoInput"
                           Style="flex-grow:1"
@@ -23,7 +22,7 @@
                 @Localizer[nameof(AppStrings.Add)]
             </BitButton>
         </BitStack>
-        <br />
+        
         <BitStack Gap="0.25rem">
             <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="0.25rem" AutoHeight Class="todo-header">
                 <BitPivot SelectedKey="@selectedFilter" SelectedKeyChanged="FilterTodoItems" HeaderOnly>
@@ -40,7 +39,7 @@
                               Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]"
                               Styles="@(new() { InputContainer="border:none;background-color:var(--bit-clr-bg-sec)" })" />
                 <BitStack Class="todo-sort" Gap="2px" Horizontal AutoSize>
-                    <BitDropdown IsResponsive NoBorder FitWidth
+                    <BitDropdown Responsive NoBorder FitWidth
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
                                  TItem="BitDropdownOption<string>" TValue="string"
                                  Classes="@(new() { Callout="todo-sort-callout" })"
