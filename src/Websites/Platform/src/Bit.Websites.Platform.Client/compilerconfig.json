@@ -216,68 +216,74 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil08StoragePage.razor.css",
-        "inputFile": "Pages/Butil/Butil08StoragePage.razor.scss",
+        "outputFile": "Pages/Butil/Butil08NotificationPage.razor.css",
+        "inputFile": "Pages/Butil/Butil08NotificationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil09CookiePage.razor.css",
-        "inputFile": "Pages/Butil/Butil09CookiePage.razor.scss",
+        "outputFile": "Pages/Butil/Butil09StoragePage.razor.css",
+        "inputFile": "Pages/Butil/Butil09StoragePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil10HistoryPage.razor.css",
-        "inputFile": "Pages/Butil/Butil10HistoryPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil10CookiePage.razor.css",
+        "inputFile": "Pages/Butil/Butil10CookiePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil11ElementPage.razor.css",
-        "inputFile": "Pages/Butil/Butil11ElementPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil11HistoryPage.razor.css",
+        "inputFile": "Pages/Butil/Butil11HistoryPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil12WindowPage.razor.css",
-        "inputFile": "Pages/Butil/Butil12WindowPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil12ElementPage.razor.css",
+        "inputFile": "Pages/Butil/Butil12ElementPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil13DocumentPage.razor.css",
-        "inputFile": "Pages/Butil/Butil13DocumentPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil13WindowPage.razor.css",
+        "inputFile": "Pages/Butil/Butil13WindowPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil14NavigatorPage.razor.css",
-        "inputFile": "Pages/Butil/Butil14NavigatorPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil14DocumentPage.razor.css",
+        "inputFile": "Pages/Butil/Butil14DocumentPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil15LocationPage.razor.css",
-        "inputFile": "Pages/Butil/Butil15LocationPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil15NavigatorPage.razor.css",
+        "inputFile": "Pages/Butil/Butil15NavigatorPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil16ScreenPage.razor.css",
-        "inputFile": "Pages/Butil/Butil16ScreenPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil16LocationPage.razor.css",
+        "inputFile": "Pages/Butil/Butil16LocationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil17VisualViewportPage.razor.css",
-        "inputFile": "Pages/Butil/Butil17VisualViewportPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil17ScreenPage.razor.css",
+        "inputFile": "Pages/Butil/Butil17ScreenPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.css",
-        "inputFile": "Pages/Butil/Butil18ScreenOrientationPage.razor.scss",
+        "outputFile": "Pages/Butil/Butil18VisualViewportPage.razor.css",
+        "inputFile": "Pages/Butil/Butil18VisualViewportPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Butil/Butil19ScreenOrientationPage.razor.css",
+        "inputFile": "Pages/Butil/Butil19ScreenOrientationPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
