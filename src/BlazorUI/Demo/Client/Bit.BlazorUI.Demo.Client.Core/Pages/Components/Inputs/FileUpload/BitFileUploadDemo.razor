@@ -103,6 +103,7 @@
                            Label=""
                            UploadUrl="@UploadUrl"
                            RemoveUrl="@RemoveUrl"
+                           MaxSize="1024 * 1024 * 2"
                            SuccessfulUploadMessage="File upload succeeded"
                            NotAllowedExtensionErrorMessage="File type not supported"
                            AllowedExtensions="@(new List<string> { ".jpeg", ".jpg", ".png", ".bpm" })">
