@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -16,37 +17,6 @@ public class Notification(IJSRuntime js)
     public async ValueTask<bool> IsSupported()
     {
         return await js.InvokeAsync<bool>("BitButil.notification.isSupported");
-    }
-
-    /// <summary>
-    /// Requests a native notification to show to the user.
-    /// <br/>
-    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification</see>
-    /// </summary>
-    public async ValueTask Show(string title, NotificationOptions? options)
-    {
-        object? opts = null;
-        if (options is not null)
-        {
-            opts = new
-            {
-                badge = options.Badge,
-                body = options.Body,
-                data = options.Data,
-                dir = options.Dir.ToString().ToLower(),
-                icon = options.Icon,
-                image = options.Image,
-                lang = options.Lang,
-                renotify = options.Renotify,
-                requireInteraction = options.RequireInteraction,
-                silent = options.Silent,
-                tag = options.Tag,
-                timestamp = options.Timestamp,
-                vibrate = options.Vibrate,
-            };
-        }
-
-        await js.InvokeVoidAsync("BitButil.notification.show", title, opts);
     }
 
     /// <summary>
@@ -83,5 +53,37 @@ public class Notification(IJSRuntime js)
             "default" => NotificationPermission.Default,
             _ => NotificationPermission.Default
         };
+    }
+
+    /// <summary>
+    /// Requests a native notification to show to the user.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification</see>
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NotificationOptions))]
+    public async ValueTask Show(string title, NotificationOptions? options)
+    {
+        object? opts = null;
+        if (options is not null)
+        {
+            opts = new
+            {
+                badge = options.Badge,
+                body = options.Body,
+                data = options.Data,
+                dir = options.Dir.ToString().ToLower(),
+                icon = options.Icon,
+                image = options.Image,
+                lang = options.Lang,
+                renotify = options.Renotify,
+                requireInteraction = options.RequireInteraction,
+                silent = options.Silent,
+                tag = options.Tag,
+                timestamp = options.Timestamp,
+                vibrate = options.Vibrate,
+            };
+        }
+
+        await js.InvokeVoidAsync("BitButil.notification.show", title, opts);
     }
 }
