@@ -4,14 +4,10 @@ namespace Bit.Websites.Platform.Client.Pages.Butil;
 
 public partial class Butil08NotificationPage
 {
+    private bool? isNotificationSupported;
     private async Task CheckIsSupported() 
     {
-        var isNotificationSupported = await notification.IsSupported();
-    }
-
-    private async Task ShowNotification()
-    {
-        await notification.Show("title", new() { Body = "this is body." });
+        isNotificationSupported = await notification.IsSupported();
     }
 
     private NotificationPermission? permissionResult = null;
@@ -26,6 +22,11 @@ public partial class Butil08NotificationPage
     private async Task RequestPermission()
     {
         requestPermissionResult = await notification.RequestPermission();
+    }
+
+    private async Task ShowNotification()
+    {
+        await notification.Show("title", new() { Body = "this is body." });
     }
 
 
