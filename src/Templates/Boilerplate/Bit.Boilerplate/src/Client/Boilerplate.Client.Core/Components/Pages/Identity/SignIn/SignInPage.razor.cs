@@ -148,7 +148,7 @@ public partial class SignInPage : IDisposable
     {
         if (model.Email is null && model.PhoneNumber is null) return;
 
-        if(model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
+        if (model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
         {
             SnackBarService.Error(string.Format(AppStrings.EmailAddressAttribute_ValidationError, AppStrings.Email));
             return;
@@ -160,22 +160,15 @@ public partial class SignInPage : IDisposable
             return;
         }
 
-        try
+        var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+
+        _ = identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+
+        if (resend is false)
         {
-            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            isOtpSent = true;
 
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
-
-            if (resend is false)
-            {
-                isOtpSent = true;
-
-                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
-            }
-        }
-        catch (KnownException e)
-        {
-            SnackBarService.Error(e.Message);
+            PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
         }
     }
 
