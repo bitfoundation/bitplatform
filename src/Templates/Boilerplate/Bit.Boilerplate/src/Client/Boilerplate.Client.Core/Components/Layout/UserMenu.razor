@@ -13,7 +13,8 @@
                         ImageUrl="@imageUrl"
                         Size=@BitPersonaSize.Size32
                         PrimaryText="@user.DisplayName"
-                        Classes="@(new() { DetailsContainer="persona-details" })" />
+                        Classes="@(new() { DetailsContainer="persona-details" })"
+                        Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
         <Body>
@@ -26,8 +27,8 @@
                                     OnImageClick="GoToProfile"
                                     Size="BitPersonaSize.Size48"
                                     PrimaryText="@user.DisplayName"
-                                    Presence="BitPersonaPresence.Online"
-                                    SecondaryText="@(user.Email ?? user.PhoneNumber)">
+                                    SecondaryText="@(user.Email ?? user.PhoneNumber)"
+                                    Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
                             <ImageOverlayTemplate>
                                 <span>@Localizer[nameof(AppStrings.Edit)]</span>
                             </ImageOverlayTemplate>

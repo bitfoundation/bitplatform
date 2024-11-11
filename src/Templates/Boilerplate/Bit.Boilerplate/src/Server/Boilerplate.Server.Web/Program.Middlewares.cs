@@ -122,8 +122,8 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
-        //#if (signalr == true)
-        app.MapHub<Api.Hubs.AppHub>("/app-hub");
+        //#if (signalR == true)
+        app.MapHub<Api.SignalR.AppHub>("/app-hub");
         //#endif
 
         app.MapControllers().RequireAuthorization();

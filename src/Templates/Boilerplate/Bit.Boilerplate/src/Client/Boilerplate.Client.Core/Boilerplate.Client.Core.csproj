@@ -23,7 +23,7 @@
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
-        <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
+        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <!--/-:msbuild-conditional:noEmit -->

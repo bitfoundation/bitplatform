@@ -9,7 +9,7 @@
         if (++clickCount == 7)
         {
             clickCount = 0;
-            PubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+            PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
         }
     }
 }

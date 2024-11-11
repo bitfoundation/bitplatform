@@ -9,7 +9,7 @@ public partial class AuthorizedHeader : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
-        unsubscribePageTitleChanged = PubSubService.Subscribe(PubSubMessages.PAGE_TITLE_CHANGED, async payload =>
+        unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>
         {
             (pageTitle, pageSubtitle) = (ValueTuple<string?, string?>)payload!;
 
@@ -20,7 +20,7 @@ public partial class AuthorizedHeader : AppComponentBase
 
     private void OpenNavPanel()
     {
-        PubSubService.Publish(PubSubMessages.OPEN_NAV_PANEL);
+        PubSubService.Publish(ClientPubSubMessages.OPEN_NAV_PANEL);
     }
 
 

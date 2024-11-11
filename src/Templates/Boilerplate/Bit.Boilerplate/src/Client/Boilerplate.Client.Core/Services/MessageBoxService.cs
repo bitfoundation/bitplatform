@@ -34,7 +34,7 @@ public partial class MessageBoxService
 
         if (queue.TryDequeue(out var data))
         {
-            pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, data, persistent: true);
+            pubSubService.Publish(ClientPubSubMessages.SHOW_MESSAGE, data, persistent: true);
 
             await data.TaskCompletionSource.Task;
         }

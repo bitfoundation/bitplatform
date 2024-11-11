@@ -115,6 +115,6 @@ public partial class ProfileSection
 
     private void PublishUserDataUpdated()
     {
-        PubSubService.Publish(PubSubMessages.PROFILE_UPDATED, User);
+        PubSubService.Publish(ClientPubSubMessages.PROFILE_UPDATED, User);
     }
 }

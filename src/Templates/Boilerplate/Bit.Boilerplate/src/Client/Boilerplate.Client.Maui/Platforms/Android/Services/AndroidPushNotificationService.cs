@@ -7,7 +7,7 @@ namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
 public partial class AndroidPushNotificationService : PushNotificationServiceBase
 {
-    public async override Task<bool> IsNotificationSupported(CancellationToken cancellationToken)
+    public async override Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {

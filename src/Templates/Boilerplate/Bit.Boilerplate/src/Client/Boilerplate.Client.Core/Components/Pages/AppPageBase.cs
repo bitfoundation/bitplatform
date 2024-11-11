@@ -26,7 +26,7 @@ public abstract partial class AppPageBase : AppComponentBase
 
             if (string.IsNullOrEmpty(Title) is false)
             {
-                PubSubService.Publish(PubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
+                PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
             }
         }
     }

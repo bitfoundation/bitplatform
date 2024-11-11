@@ -31,7 +31,7 @@ public partial class UserMenu
                               .ToArray();
         }
 
-        unsubscribeUerDataUpdated = PubSubService.Subscribe(PubSubMessages.PROFILE_UPDATED, async payload =>
+        unsubscribeUerDataUpdated = PubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async payload =>
         {
             if (payload is null) return;
 

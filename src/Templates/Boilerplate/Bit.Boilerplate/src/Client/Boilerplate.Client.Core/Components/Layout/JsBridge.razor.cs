@@ -24,7 +24,7 @@ public partial class JsBridge : IDisposable
     [JSInvokable(nameof(ShowDiagnostic))]
     public async Task ShowDiagnostic()
     {
-        PubSubService.Publish(PubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
     public void Dispose()

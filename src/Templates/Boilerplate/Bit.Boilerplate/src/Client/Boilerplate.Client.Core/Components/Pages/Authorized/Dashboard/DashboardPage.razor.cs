@@ -11,9 +11,18 @@ public partial class DashboardPage
     [AutoInject] LazyAssemblyLoader lazyAssemblyLoader = default!;
 
     private bool isLoadingAssemblies = true;
+    //#if (signalR == true)
+    private Action? unsubscribe;
+    //#endif
 
     protected async override Task OnInitAsync()
     {
+        //#if (signalR == true)
+        unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>
+        {
+            NavigationManager.NavigateTo(Urls.DashboardPage, replace: true);
+        });
+        //#endif
         try
         {
             if (AppPlatform.IsBrowser)
@@ -33,4 +42,13 @@ public partial class DashboardPage
 
         await base.OnInitAsync();
     }
+
+    //#if (signalR == true)
+    protected override ValueTask DisposeAsync(bool disposing)
+    {
+        unsubscribe?.Invoke();
+
+        return base.DisposeAsync(disposing);
+    }
+    //#endif
 }

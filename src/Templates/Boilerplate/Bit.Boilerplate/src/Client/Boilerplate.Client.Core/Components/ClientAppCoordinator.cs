@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
-//#if (signalr == true)
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+using Microsoft.AspNetCore.Http.Connections;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
@@ -17,9 +18,9 @@ namespace Boilerplate.Client.Core.Components;
 /// </summary>
 public partial class ClientAppCoordinator : AppComponentBase
 {
-    //#if (signalr == true)
+    //#if (signalR == true)
     private HubConnection? hubConnection;
-    [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private Notification notification = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -110,7 +111,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             await pushNotificationService.RegisterDevice(CurrentCancellationToken);
             //#endif
 
-            //#if (signalr == true)
+            //#if (signalR == true)
             await ConnectSignalR();
             //#endif
         }
@@ -120,7 +121,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
     }
 
-    //#if (signalr == true)
+    //#if (signalR == true)
     private async Task ConnectSignalR()
     {
         if (hubConnection is not null)
@@ -128,31 +129,30 @@ public partial class ClientAppCoordinator : AppComponentBase
             await hubConnection.DisposeAsync();
         }
 
-        var hubAddress = $"{HttpClient.BaseAddress}app-hub";
-        var access_token = await AuthTokenProvider.GetAccessToken();
-        if (access_token is not null)
-        {
-            hubAddress += $"?access_token={access_token}";
-        }
-
         hubConnection = new HubConnectionBuilder()
-            .WithAutomaticReconnect()
-            .WithUrl(hubAddress, options =>
+            .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
+            .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
             {
-                options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+                options.Transports = HttpTransportType.WebSockets;
+                options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-                options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
-                {
-                    return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
-                        .Invoke(transportHandler: signalrHttpMessageHandler);
-                };
+                options.AccessTokenProvider = async () => await AuthTokenProvider.GetAccessToken();
             })
             .Build();
 
-        hubConnection.On<string>("DisplayMessage", async (message) =>
+        hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
         {
-            SnackBarService.Show(message, "");
+            if (await notification.IsNotificationAvailable())
+            {
+                // Show local notification
+                // Note that this code has nothing to do with push notification.
+                await notification.Show("Boilerplate", new() { Body = message });
+            }
+            else
+            {
+                SnackBarService.Show("Boilerplate", message);
+            }
 
             // The following code block is not required for Bit.BlazorUI components to perform UI changes. However, it may be necessary in other scenarios.
             /*await InvokeAsync(async () =>
@@ -161,6 +161,12 @@ public partial class ClientAppCoordinator : AppComponentBase
             });*/
 
             // You can also leverage IPubSubService to notify other components in the application.
+        });
+
+        hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
+        {
+            logger.LogInformation("Message {Message} received from server.", message);
+            PubSubService.Publish(message);
         });
 
         hubConnection.Closed += HubConnectionDisconnected;
@@ -172,15 +178,17 @@ public partial class ClientAppCoordinator : AppComponentBase
         await HubConnectionConnected(null);
     }
 
-    private async Task HubConnectionConnected(string? arg)
+    private async Task HubConnectionConnected(string? connectionId)
     {
         TelemetryContext.IsOnline = true;
-        logger.LogInformation("SignalR connection established.");
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
+        logger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
     {
         TelemetryContext.IsOnline = false;
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, false);
 
         if (exception is null)
         {
@@ -188,7 +196,12 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
         else
         {
-            ExceptionHandler.Handle(exception);
+            if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
+            {
+                await AuthenticationManager.RefreshToken();
+            }
+
+            logger.LogError(exception, "SignalR connection lost.");
         }
     }
 
@@ -226,7 +239,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        //#if (signalr == true)
+        //#if (signalR == true)
         if (hubConnection is not null)
         {
             hubConnection.Closed -= HubConnectionDisconnected;

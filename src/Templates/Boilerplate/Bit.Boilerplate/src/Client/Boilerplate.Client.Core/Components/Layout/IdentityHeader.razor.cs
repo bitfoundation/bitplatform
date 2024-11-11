@@ -18,7 +18,7 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
     protected override async Task OnInitAsync()
     {
-        unsubscribeUpdateBackLink = PubSubService.Subscribe(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, async payload =>
+        unsubscribeUpdateBackLink = PubSubService.Subscribe(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, async payload =>
         {
             backLinkPayload = (string?)payload;
 
@@ -38,7 +38,7 @@ public partial class IdentityHeader : AppComponentBase, IDisposable
 
     private async Task HandleBackLinkClick()
     {
-        PubSubService.Publish(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, backLinkPayload);
+        PubSubService.Publish(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, backLinkPayload);
     }
 
     private async Task ToggleTheme()

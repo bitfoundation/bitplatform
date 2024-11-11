@@ -20,7 +20,7 @@ public partial class WindowsAppInsightsTelemetryInitializer : ITelemetryInitiali
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserAgent)] = ITelemetryContext.Current.UserAgent;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.TimeZone)] = ITelemetryContext.Current.TimeZone;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.Culture)] = ITelemetryContext.Current.Culture;
-            //#if (signalr == true)
+            //#if (signalR == true)
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline.ToString().ToLowerInvariant();
             //#endif
         }

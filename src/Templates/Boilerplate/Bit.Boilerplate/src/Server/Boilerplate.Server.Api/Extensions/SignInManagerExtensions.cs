@@ -41,7 +41,7 @@ public static partial class SignInManagerExtensions
         string? authenticationMethod = null;
         string[] authenticationMethods = ["Email",
             "Sms",
-            //#if (notification == true || signalr == true)
+            //#if (notification == true || signalR == true)
             "Push", // => Native push notification, web push or SignalR message.
             //#endif
             "Social"];
