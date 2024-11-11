@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Hubs;
+using Boilerplate.Server.Api.Signalr;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR;
 //#endif
@@ -98,7 +98,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     //#if (signalr == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).PublishMessage(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        await appHubContext.Clients.AllExcept(User.GetUserId().ToString()).SendAsync(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif
 }

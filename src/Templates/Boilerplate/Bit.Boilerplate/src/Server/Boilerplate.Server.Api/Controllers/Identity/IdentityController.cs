@@ -3,7 +3,7 @@ using Humanizer;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 //#if (signalr == true)
 using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Hubs;
+using Boilerplate.Server.Api.Signalr;
 //#endif
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
@@ -269,7 +269,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (signalr == true)
-        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).ShowMessage(pushMessage, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
@@ -326,7 +326,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (signalr == true)
         if (firstStepAuthenticationMethod != "SignalR")
         {
-            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).ShowMessage(message, cancellationToken));
+            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(message, cancellationToken));
         }
         //#endif
 

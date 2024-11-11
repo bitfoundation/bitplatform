@@ -77,7 +77,7 @@ public static partial class Program
         }).WithTags("Test");
 
         //#if (signalr == true)
-        app.MapHub<Hubs.AppHub>("/app-hub");
+        app.MapHub<Signalr.AppHub>("/app-hub");
         //#endif
 
         app.MapControllers().RequireAuthorization();

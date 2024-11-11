@@ -1,7 +1,9 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Extensions.Logging;
 //#if (signalr == true)
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 //#endif
 //#if (appInsights == true)
@@ -133,20 +135,22 @@ public partial class ClientAppCoordinator : AppComponentBase
             .WithAutomaticReconnect(new SignalrInfinitiesRetryPolicy())
             .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
             {
-                options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+                options.Transports = HttpTransportType.WebSockets;
+                options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+
                 options.HttpMessageHandlerFactory = signalrHttpMessageHandler =>
                 {
                     return serviceProvider.GetRequiredService<HttpMessageHandlersChainFactory>()
                         .Invoke(transportHandler: signalrHttpMessageHandler);
                 };
 
-                options.AccessTokenProvider = AuthTokenProvider.GetAccessToken;
+                options.AccessTokenProvider = async () => await AuthTokenProvider.GetAccessToken();
             })
             .Build();
 
-        hubConnection.On<string>("SHOW_MESSAGE", async (message) =>
+        hubConnection.On<string>(SharedPubSubMessages.SignalrEvents.SHOW_MESSAGE, async (message) =>
         {
             if (await notification.IsNotificationAvailable())
             {
@@ -168,7 +172,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         });
 
-        hubConnection.On<string>("PUBLISH_MESSAGE", async (message) =>
+        hubConnection.On<string>(SharedPubSubMessages.SignalrEvents.PUBLISH_MESSAGE, async (message) =>
         {
             logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
@@ -201,6 +205,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         }
         else
         {
+            if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
+            {
+                await AuthenticationManager.RefreshToken();
+            }
+
             logger.LogError(exception, "SignalR connection lost.");
         }
     }
