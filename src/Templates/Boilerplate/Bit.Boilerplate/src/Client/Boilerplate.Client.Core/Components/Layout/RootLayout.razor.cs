@@ -11,7 +11,18 @@ public partial class RootLayout : IDisposable
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool isOnline = true;
+    private bool isOnline
+        //#if (signalR == true)
+            = false;
+        //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+           = true;
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+        //#endif
     private bool? isAuthenticated;
 
     /// <summary>
