@@ -166,23 +166,9 @@ jobs:
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-arm64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-arm64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x86\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x86.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x64\AdminPanel.Client.Windows.exe AdminPanel.Client.Windows-x64.exe
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          del .\bin\publish\AdminPanel.Client.Windows.exe
-          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish .\publish-result /s /e /h
-          cd .\publish-result
-          powershell -Command "Get-ChildItem -Path '.\runtimes' -Directory | Where-Object { $_.Name -notlike 'win*' } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }"
-          cd ..
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows-x86.exe -r win-x86 --framework net9.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x86 --framework net9.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
