@@ -8,12 +8,12 @@ public interface IAuthTokenProvider
 
     public ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
 
-    public ClaimsPrincipal ParseAccessToken(string? access_token)
+    public ClaimsPrincipal ParseAccessToken(string? access_token, bool validateExpiry)
     {
         if (string.IsNullOrEmpty(access_token) is true)
             return Anonymous();
 
-        var claims = ReadClaims(access_token);
+        var claims = ReadClaims(access_token, validateExpiry);
 
         if (claims is null)
             return Anonymous();
@@ -25,11 +25,11 @@ public interface IAuthTokenProvider
         return claimPrinciple;
     }
 
-    private IEnumerable<Claim>? ReadClaims(string access_token)
+    private IEnumerable<Claim>? ReadClaims(string access_token, bool validateExpiry)
     {
         var parsedClaims = DeserializeAccessToken(access_token);
 
-        if (long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
+        if (validateExpiry && long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
         {
             var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
             if (expirationDate <= DateTimeOffset.UtcNow)

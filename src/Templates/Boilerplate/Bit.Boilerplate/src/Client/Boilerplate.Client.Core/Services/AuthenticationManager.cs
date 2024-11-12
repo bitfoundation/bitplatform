@@ -79,17 +79,16 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         try
         {
             var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
-            var claimsPrinciple = tokenProvider.ParseAccessToken(access_token);
 
             bool inPrerenderSession = AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false;
 
-            if (claimsPrinciple.IsAuthenticated() is false && inPrerenderSession is false)
+            if (string.IsNullOrEmpty(access_token) && inPrerenderSession is false)
             {
                 try
                 {
                     await semaphore.WaitAsync();
-                    claimsPrinciple = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken());
-                    if (claimsPrinciple.IsAuthenticated() is false) // Check again after acquiring the lock.
+                    access_token = await tokenProvider.GetAccessToken();
+                    if (string.IsNullOrEmpty(access_token)) // Check again after acquiring the lock.
                     {
                         string? refresh_token = await storageService.GetItem("refresh_token");
 
@@ -103,7 +102,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                             {
                                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, CancellationToken.None);
                                 await StoreTokens(refreshTokenResponse!);
-                                claimsPrinciple = tokenProvider.ParseAccessToken(refreshTokenResponse!.AccessToken);
+                                access_token = refreshTokenResponse!.AccessToken;
                             }
                             catch (UnauthorizedException) // refresh_token is either invalid or expired.
                             {
@@ -118,7 +117,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 }
             }
 
-            return new AuthenticationState(claimsPrinciple);
+            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false /* For better UX in order to minimize Routes.razor's Authorizing loading duration. */));
         }
         catch (Exception exp)
         {
