@@ -79,7 +79,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         try
         {
             var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
-            var claimsPrinciple = IAuthTokenProvider.ParseAccessToken(access_token);
+            var claimsPrinciple = tokenProvider.ParseAccessToken(access_token);
 
             bool inPrerenderSession = AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false;
 
@@ -88,7 +88,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 try
                 {
                     await semaphore.WaitAsync();
-                    claimsPrinciple = IAuthTokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken());
+                    claimsPrinciple = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken());
                     if (claimsPrinciple.IsAuthenticated() is false) // Check again after acquiring the lock.
                     {
                         string? refresh_token = await storageService.GetItem("refresh_token");
@@ -103,7 +103,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                             {
                                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, CancellationToken.None);
                                 await StoreTokens(refreshTokenResponse!);
-                                claimsPrinciple = IAuthTokenProvider.ParseAccessToken(refreshTokenResponse!.AccessToken);
+                                claimsPrinciple = tokenProvider.ParseAccessToken(refreshTokenResponse!.AccessToken);
                             }
                             catch (UnauthorizedException) // refresh_token is either invalid or expired.
                             {
@@ -123,7 +123,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
-            return new AuthenticationState(IAuthTokenProvider.Anonymous());
+            return new AuthenticationState(tokenProvider.Anonymous());
         }
     }
 

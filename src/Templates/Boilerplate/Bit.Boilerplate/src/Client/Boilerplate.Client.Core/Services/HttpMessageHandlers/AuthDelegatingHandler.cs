@@ -21,7 +21,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
                 var access_token = await tokenProvider.GetAccessToken();
                 if (access_token is not null)
                 {
-                    if (IAuthTokenProvider.ParseAccessToken(access_token).IsAuthenticated() is false)
+                    if (tokenProvider.ParseAccessToken(access_token).IsAuthenticated() is false)
                         throw new UnauthorizedException();
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
