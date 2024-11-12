@@ -25,7 +25,5 @@ public class AppTelemetryContext : ITelemetryContext
 
     public string? Environment { get; set; } = AppEnvironment.Current;
 
-    //#if (signalR == true)
     public bool IsOnline { get; set; }
-    //#endif
 }
