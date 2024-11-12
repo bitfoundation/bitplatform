@@ -12,7 +12,7 @@
                             Size="BitPersonaSize.Size48"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
                             ImageInitials="✓"
-                            Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"
+                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
             </BitCard>
         }

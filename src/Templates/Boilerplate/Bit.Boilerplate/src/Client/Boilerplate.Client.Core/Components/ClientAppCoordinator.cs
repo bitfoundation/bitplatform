@@ -188,14 +188,12 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private async Task HubConnectionConnected(string? connectionId)
     {
-        TelemetryContext.IsOnline = true;
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
         logger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
     {
-        TelemetryContext.IsOnline = false;
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, false);
 
         if (exception is null)

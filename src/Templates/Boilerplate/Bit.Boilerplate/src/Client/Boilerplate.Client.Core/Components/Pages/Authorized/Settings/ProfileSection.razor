@@ -32,7 +32,7 @@
                                         ImageUrl="@imageUrl"
                                         PrimaryText="@User?.FullName"
                                         Size=@BitPersonaSize.Size72
-                                        Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                                        Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
                             <BitText Color="BitColor.Primary">
                                 @Localizer[nameof(AppStrings.UploadNewProfileImage)]
                             </BitText>

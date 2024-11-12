@@ -14,7 +14,7 @@
                         Size=@BitPersonaSize.Size32
                         PrimaryText="@user.DisplayName"
                         Classes="@(new() { DetailsContainer="persona-details" })"
-                        Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
+                        Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
         </Template>
         <Body>
@@ -28,7 +28,7 @@
                                     Size="BitPersonaSize.Size48"
                                     PrimaryText="@user.DisplayName"
                                     SecondaryText="@(user.Email ?? user.PhoneNumber)"
-                                    Presence="@(IsOnline ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
+                                    Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
                             <ImageOverlayTemplate>
                                 <span>@Localizer[nameof(AppStrings.Edit)]</span>
                             </ImageOverlayTemplate>

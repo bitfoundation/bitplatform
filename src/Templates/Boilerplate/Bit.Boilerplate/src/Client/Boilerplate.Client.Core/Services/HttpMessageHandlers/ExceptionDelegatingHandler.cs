@@ -1,8 +1,12 @@
-﻿using System.Net;
+﻿//+:cnd:noEmit
+using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer,
+    //#if (signalR != true)
+    PubSubService pubSubService,
+    //#endif
     JsonSerializerOptions jsonSerializerOptions, 
     HttpMessageHandler handler)
     : DelegatingHandler(handler)
@@ -57,5 +61,11 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
         {
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
+        //#if (signalR != true)
+        finally
+        {
+            pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+        }
+        //#endif
     }
 }

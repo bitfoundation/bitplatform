@@ -7,7 +7,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    [CascadingParameter(Name = Parameters.IsOnline)] protected bool IsOnline { get; set; }
+    [CascadingParameter(Name = Parameters.IsOnline)] protected bool? IsOnline { get; set; }
     [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [AutoInject] protected IJSRuntime JSRuntime = default!;
