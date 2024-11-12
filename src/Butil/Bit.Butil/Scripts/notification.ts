@@ -26,7 +26,14 @@ var BitButil = BitButil || {};
                 options[key] = options[key] === null ? undefined : options[key];
             }
         }
-        const notification = new Notification(title, options);
+
+        try {
+            const notification = new Notification(title, options);
+        } catch (e) {
+            navigator.serviceWorker?.getRegistration().then(reg => {
+                reg.showNotification(title, options);
+            });
+        }
     }
 
 }(BitButil));

@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace Bit.Butil;
 
 /// <summary>
-/// This service is used to configure and display desktop notifications to the user.
+/// This service is used to configure and display native notifications to the user.
 /// <br/>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification</see>
 /// </summary>
