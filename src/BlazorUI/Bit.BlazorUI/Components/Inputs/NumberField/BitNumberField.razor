@@ -105,7 +105,7 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
+                           class="bit-nfl-bic bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -123,7 +123,7 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                         <i style="@Styles?.DecrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
+                           class="bit-nfl-bic bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>
