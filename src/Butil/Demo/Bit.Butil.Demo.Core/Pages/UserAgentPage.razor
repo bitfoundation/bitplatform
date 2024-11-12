@@ -1,0 +1,38 @@
+﻿@page "/userAgent"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.UserAgent userAgent
+
+<PageTitle>UserAgent Samples</PageTitle>
+
+<h1>UserAgent</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.UserAgent userAgent
+
+@@code {
+    ...
+    var userAgentProps = await userAgent.Extract();
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick="Extract">Extract</button>
+
+<br />
+<br />
+
+@code {
+    private async Task Extract()
+    {
+        var userAgentProps = await userAgent.Extract();
+        await console.Log("UserAgent properties:", userAgentProps);
+    }
+}
