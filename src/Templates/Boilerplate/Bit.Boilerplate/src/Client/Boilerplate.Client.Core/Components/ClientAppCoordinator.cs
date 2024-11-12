@@ -86,13 +86,14 @@ public partial class ClientAppCoordinator : AppComponentBase
         try
         {
             var user = (await task).User;
-            TelemetryContext.UserId = user.IsAuthenticated() ? user.GetUserId() : null;
-            TelemetryContext.UserSessionId = user.IsAuthenticated() ? user.GetSessionId() : null;
+            var isAuthenticated = user.IsAuthenticated();
+            TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
+            TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
             var data = TelemetryContext.ToDictionary();
 
             //#if (appInsights == true)
-            if (user.IsAuthenticated())
+            if (isAuthenticated)
             {
                 _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
             }
