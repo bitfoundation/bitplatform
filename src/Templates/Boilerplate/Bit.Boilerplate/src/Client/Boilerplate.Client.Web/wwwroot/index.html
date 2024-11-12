@@ -4,19 +4,23 @@
     <base href="/">
     <meta charset="utf-8">
     <meta name="theme-color">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="The Boilerplate is built with ASP.NET Core, Identity, Web API, EF Core and Blazor.">
 
     <script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-        (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
+            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0')
     </script>
 
     <!--#if (captcha == "reCaptcha")-->
     <link rel="preconnect" href="https://www.google.com">
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <!--#endif-->
+    <!--#if (appInsights == true)-->
+    <link rel="preconnect" href="https://js.monitor.azure.com" crossorigin>
+    <!--#endif-->
+
 
     <link rel="preconnect" href="https://use-your-server-url-here.com">
 
@@ -30,7 +34,7 @@
     <link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" />
     <link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
     <link href="_content/Boilerplate.Client.Core/styles/app.css" rel="stylesheet" />
-    <link href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" rel="stylesheet" />
+    <link href="Boilerplate.Client.Web.styles.css" rel="stylesheet" />
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/blazor.webassembly.js"></script>
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
@@ -185,25 +189,23 @@
             }
         }
     </style>
-    <div>
-        <div id="app-container">
-            <div class="bit-lds-wrapper">
-                <div class="bit-lds-grid">
-                    <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-                </div>
-            </div>
-            <div id="bit-bswup">
-                <div class="bswup-progress-text"></div>
-                <svg class="bswup-container">
-                    <circle r="40%" cx="50%" cy="50%"></circle>
-                    <circle r="40%" cx="50%" cy="50%"></circle>
-                </svg>
+    <div id="app-container">
+        <div class="bit-lds-wrapper">
+            <div class="bit-lds-grid">
+                <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
             </div>
         </div>
-        <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
-        set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
-        <!-- <button id="bit-bswup-reload">Update</button> -->
+        <div id="bit-bswup">
+            <div class="bswup-progress-text"></div>
+            <svg class="bswup-container">
+                <circle r="40%" cx="50%" cy="50%"></circle>
+                <circle r="40%" cx="50%" cy="50%"></circle>
+            </svg>
+        </div>
     </div>
+    <!-- If you want the update to be applied after the user approves the new Pwa version and not automatically,
+    set autoReload parameter of startBswupProgress to false and uncomment the bit-bswup-reload button code. -->
+    <!-- <button id="bit-bswup-reload">Update</button> -->
     <script>
         const autoReload = true, showLogs = false, showAssets = false, appContainer = '#app-container', hideApp = false, handler = null;
         startBswupProgress(autoReload, showLogs, showAssets, appContainer, hideApp, handler);

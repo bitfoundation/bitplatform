@@ -136,7 +136,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// CultureInfo for the DatePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -277,14 +277,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The maximum date allowed for the DatePicker.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MaxDate { get; set; }
 
     /// <summary>
     /// The minimum date allowed for the DatePicker.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
@@ -346,14 +346,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Show month picker on top of date picker when visible.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether or not render the time-picker.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool ShowTimePicker { get; set; }
 
     /// <summary>
@@ -400,7 +400,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Show month picker on top of date picker when visible.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
@@ -422,14 +422,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Specifies the date and time of the date-picker when it is opened without any selected value.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public DateTimeOffset? StartingValue { get; set; }
 
     /// <summary>
     /// Whether the date-picker is rendered standalone or with the input component and callout.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetParameters))]
     public bool Standalone { get; set; }
 
 
@@ -489,7 +489,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         OnValueChanged += HandleOnValueChanged;
 
-        HandleParameterChanges();
+        OnSetParameters();
 
         base.OnInitialized();
     }
@@ -605,8 +605,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         var oldValue = CurrentValue.GetValueOrDefault(DateTimeOffset.Now);
@@ -643,10 +642,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        HandleParameterChanges();
+        OnSetParameters();
     }
 
-    private void HandleParameterChanges()
+    private void OnSetParameters()
     {
         _culture = Culture ?? CultureInfo.CurrentUICulture;
 
@@ -693,8 +692,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private async Task SelectDate(int dayIndex, int weekIndex)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsWeekDayOutOfMinAndMaxDate(dayIndex, weekIndex)) return;
 

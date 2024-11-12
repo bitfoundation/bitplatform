@@ -8,7 +8,7 @@ jobs:
   build-release:
     if: startsWith(github.event.pull_request.title, 'Prerelease') || startsWith(github.event.pull_request.title, 'Release') || startsWith(github.event.pull_request.title, 'Version')
     name: build and test for release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
 
@@ -19,17 +19,24 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
+        
+    - name: Setup .NET 6,7
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 -f net8.0
 
     - name: MSBuild prerelease
       run: dotnet build src/Bit-CI-release.sln
@@ -40,7 +47,7 @@ jobs:
   build:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build and test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
 
@@ -51,10 +58,17 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         global-json-file: src/global.json
+        
+    - name: Setup .NET 6,7
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools
@@ -64,7 +78,7 @@ jobs:
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI.sln -t:BeforeBuildTasks -m:1 -f net8.0
 
     - name: Build
       run: dotnet build src/Bit-CI.sln -p:WarningLevel=0 -p:RunCodeAnalysis=false

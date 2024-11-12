@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.Versioning;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -8,12 +8,24 @@ public static partial class AppPlatform
 
     public static bool IsBlazorHybridOrBrowser => IsBlazorHybrid || IsBrowser;
 
+    [SupportedOSPlatformGuard("android")]
     public static bool IsAndroid => OperatingSystem.IsAndroid();
-    public static bool IsIOS => OperatingSystem.IsIOS();
-    public static bool IsWindows => OperatingSystem.IsWindows();
-    public static bool IsBrowser => OperatingSystem.IsBrowser();
-    public static bool IsMacOS => OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || IsIosOnMacOS;
-    public static bool IsIosOnMacOS { get; set; }
 
-    public static string OSDescription { get; set; } = RuntimeInformation.OSDescription;
+    [SupportedOSPlatformGuard("ios")]
+    public static bool IsIOS => OperatingSystem.IsIOS() && !IsIosOnMacOS;
+
+    [SupportedOSPlatformGuard("windows")]
+    public static bool IsWindows => OperatingSystem.IsWindows();
+
+    /// <summary>
+    /// Blazor WebAssembly
+    /// </summary>
+    [SupportedOSPlatformGuard("browser")]
+    public static bool IsBrowser => OperatingSystem.IsBrowser();
+
+    [SupportedOSPlatformGuard("macOS")]
+    public static bool IsMacOS => OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || IsIosOnMacOS;
+
+    [SupportedOSPlatformGuard("ios")]
+    public static bool IsIosOnMacOS { get; set; }
 }

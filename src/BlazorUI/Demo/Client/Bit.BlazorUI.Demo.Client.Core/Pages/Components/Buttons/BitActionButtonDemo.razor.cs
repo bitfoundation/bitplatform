@@ -61,6 +61,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the action button in full width of its container with flex-start.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
@@ -72,6 +79,13 @@ public partial class BitActionButtonDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon name of the icon to render inside the button.",
+        },
+        new()
+        {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "null",
+            Description = "Removes the container of the text and only renders the icon.",
         },
         new()
         {

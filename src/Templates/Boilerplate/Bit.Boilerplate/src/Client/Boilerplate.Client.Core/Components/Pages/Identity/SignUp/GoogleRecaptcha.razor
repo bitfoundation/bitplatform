@@ -1,0 +1,9 @@
+@inherits AppComponentBase
+@inject ClientCoreSettings clientCoreSettings
+
+<script type="text/javascript">
+    function onloadCallback() { grecaptcha.render('grecaptcha_element'); };
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)" async defer></script>
+
+<div id="grecaptcha_element" data-sitekey="@(clientCoreSettings.GoogleRecaptchaSiteKey)"></div>

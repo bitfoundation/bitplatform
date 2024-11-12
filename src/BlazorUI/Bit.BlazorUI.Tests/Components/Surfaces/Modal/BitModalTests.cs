@@ -33,7 +33,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, isBlocking);
             parameters.Add(p => p.IsOpen, isModalOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
@@ -56,7 +56,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsModeless, isModeless);
+            parameters.Add(p => p.Modeless, isModeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -149,9 +149,9 @@ public class BitModalTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        var elementContent = com.Find(".bit-mdl-scn");
+        var elementContent = com.Find(".bit-mdl-ctn");
 
-        elementContent.MarkupMatches("<div class=\"bit-mdl-scn\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div id:ignore class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
@@ -209,33 +209,26 @@ public class BitModalTests : BunitTestContext
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            if (position.HasValue)
-            {
-                parameters.Add(p => p.Position, position.Value);
-            }
+            parameters.Add(p => p.Position, position);
         });
-
-        var modalElement = com.Find(".bit-mdl-doc");
 
         var positionClass = position switch
         {
             BitModalPosition.Center => "bit-mdl-ctr",
-
             BitModalPosition.TopLeft => "bit-mdl-tl",
             BitModalPosition.TopCenter => "bit-mdl-tc",
             BitModalPosition.TopRight => "bit-mdl-tr",
-
             BitModalPosition.CenterLeft => "bit-mdl-cl",
             BitModalPosition.CenterRight => "bit-mdl-cr",
-
             BitModalPosition.BottomLeft => "bit-mdl-bl",
             BitModalPosition.BottomCenter => "bit-mdl-bc",
             BitModalPosition.BottomRight => "bit-mdl-br",
-
             _ => "bit-mdl-ctr",
         };
 
-        Assert.IsTrue(modalElement.ClassList.Contains(positionClass));
+        var element = com.Find(".bit-mdl");
+
+        Assert.IsTrue(element.ClassList.Contains(positionClass));
     }
 
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;

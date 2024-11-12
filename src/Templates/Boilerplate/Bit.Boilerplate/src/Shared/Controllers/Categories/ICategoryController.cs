@@ -14,8 +14,8 @@ public interface ICategoryController : IAppController
     [HttpPut]
     Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken);
 
-    [HttpDelete("{id}")]
-    Task Delete(Guid id, CancellationToken cancellationToken);
+    [HttpDelete("{id}/{concurrencyStamp}")]
+    Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
 
     [HttpGet]
     Task<PagedResult<CategoryDto>> GetCategories(CancellationToken cancellationToken) => default!;

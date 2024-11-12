@@ -28,9 +28,9 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "CaretDownIconName",
-            Type = "string",
-            DefaultValue = "ChevronDown",
-            Description = "The icon name of the chevron down element of the dropdown. The default value is ChevronDown.",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The icon name of the chevron down element of the dropdown.",
         },
         new()
         {
@@ -74,14 +74,14 @@ public partial class BitDropdownDemo
             Name = "DefaultValue",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The default key value that will be initially used to set selected item if the Value parameter is not set.",
+            Description = "The default value that will be initially used to set selected item if the Value parameter is not set.",
         },
         new()
         {
             Name = "DefaultValues",
-            Type = "List<string>",
-            DefaultValue = "new List<string>()",
-            Description = "The default key value that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
+            Type = "IEnumerable<string?>?",
+            DefaultValue = "null",
+            Description = "The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
         },
         new()
         {
@@ -132,31 +132,10 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "IsMultiSelect",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the multi select mode.",
-        },
-        new()
-        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines the opening state of the callout. (two-way bound)",
-        },
-        new()
-        {
-            Name = "IsReselectable",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables calling the select events when the same item is selected in single select mode.",
-        },
-        new()
-        {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode of the component for small screens.",
         },
         new()
         {
@@ -201,6 +180,13 @@ public partial class BitDropdownDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template for the label of the dropdown.",
+        },
+        new()
+        {
+            Name = "MultiSelect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the multi select mode.",
         },
         new()
         {
@@ -252,7 +238,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnValuesChange",
-            Type = "EventCallback<TItem[]>",
+            Type = "EventCallback<IEnumerable<TValue>>",
             Description = "The callback that called when selected items change.",
         },
         new()
@@ -303,6 +289,20 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Disables automatic setting of the callout width and preserves its original width.",
+        },
+        new()
+        {
+            Name = "Reselectable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables calling the select events when the same item is selected in single select mode.",
+        },
+        new()
+        {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode of the component for small screens.",
         },
         new()
         {
@@ -379,9 +379,9 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "Values",
-            Type = "ICollection<TValue?>",
+            Type = "IEnumerable<TValue?>?",
             DefaultValue = "null",
-            Description = "The key values of the selected items in multi select mode. (two-way bound)",
+            Description = "The values of the selected items in multi select mode. (two-way bound)",
         },
         new()
         {
@@ -485,6 +485,13 @@ public partial class BitDropdownDemo
                    DefaultValue = "null",
                    Description = "The value of the dropdown item."
                },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the item is selected. This property's value is assigned by the component."
+               },
             ],
         },
         new()
@@ -578,6 +585,13 @@ public partial class BitDropdownDemo
                    Type = "TValue?",
                    DefaultValue = "null",
                    Description = "The value of the dropdown option."
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the option is selected. This property's value is assigned by the component."
                },
             ],
         },
@@ -697,6 +711,12 @@ public partial class BitDropdownDemo
                    Name = "ValueSetter",
                    Type = "Action<TItem, TItem>?",
                    Description = "The setter function for updating Value property of custom item in Dynamic ComboBox mode upon new item addition.",
+               },
+               new()
+               {
+                   Name = "IsSelected",
+                   Type = "string",
+                   Description = "The IsSelected field name of the custom input class. This property's value is assigned by the component.",
                }
             ],
         },
@@ -918,7 +938,6 @@ public partial class BitDropdownDemo
             ],
         }
     ];
-
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -948,7 +967,6 @@ public partial class BitDropdownDemo
             ]
         },
     ];
-
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()

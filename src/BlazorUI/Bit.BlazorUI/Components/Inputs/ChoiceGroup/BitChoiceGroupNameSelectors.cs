@@ -78,4 +78,9 @@ public class BitChoiceGroupNameSelectors<TItem, TValue>
     /// The Index field name of the custom input class. This property's value is set by the component at render.
     /// </summary>
     public string Index { get; set; } = nameof(BitChoiceGroupItem<TValue>.Index);
+
+    /// <summary>
+    /// The IsSelected field name of the custom input class. This property's value is assigned by the component.
+    /// </summary>
+    public string IsSelected { get; set; } = nameof(BitChoiceGroupItem<TValue>.IsSelected);
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class RequestHeadersDelegationHandler(AuthDelegatingHandler handler)
+public partial class RequestHeadersDelegationHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -11,7 +11,7 @@ public partial class RequestHeadersDelegationHandler(AuthDelegatingHandler handl
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Omit);
         request.SetBrowserResponseStreamingEnabled(true);
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (CultureInfoManager.MultilingualEnabled && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
         {
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
@@ -19,4 +19,3 @@ public partial class RequestHeadersDelegationHandler(AuthDelegatingHandler handl
         return await base.SendAsync(request, cancellationToken);
     }
 }
-

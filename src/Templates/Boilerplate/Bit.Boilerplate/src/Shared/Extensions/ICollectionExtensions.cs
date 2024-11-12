@@ -11,4 +11,9 @@ public static partial class ICollectionExtensions
         }
         return results;
     }
+
+    public static IEnumerable<(T item, int index)> Indexed<T>(this IEnumerable<T> source)
+    {
+        return source.Select((item, index) => (item, index));
+    }
 }

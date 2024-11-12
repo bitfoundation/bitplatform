@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Web;
-using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
@@ -9,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
-using Boilerplate.Client.Core.Services;
+
 
 namespace Boilerplate.Server.Web;
 
@@ -18,12 +17,19 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    private static void ConfiureMiddlewares(this WebApplication app)
+    public static void ConfigureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        app.UseForwardedHeaders();
+        var forwarededHeadersOptions = configuration.Get<ServerWebSettings>()!.ForwardedHeaders;
+
+        if (forwarededHeadersOptions is not null
+            && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
+        {
+            // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+            app.UseForwardedHeaders(forwarededHeadersOptions);
+        }
 
         if (CultureInfoManager.MultilingualEnabled)
         {
@@ -116,22 +122,24 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
-        //#if (signalr == true)
-        app.MapHub<Api.Hubs.AppHub>("/app-hub");
+        //#if (signalR == true)
+        app.MapHub<Api.SignalR.AppHub>("/app-hub");
         //#endif
 
         app.MapControllers().RequireAuthorization();
         //#endif
 
         app.UseSiteMap();
-        
+
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+            .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        if (AppRenderMode.PrerenderEnabled is false)
+        var webAppRenderMode = configuration.Get<ServerWebSettings>()!;
+
+        if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
         {
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }
@@ -139,14 +147,11 @@ public static partial class Program
 
     private static void UseSiteMap(this WebApplication app)
     {
-        var urls = typeof(Urls)
-            .GetFields()
-            .Select(f => f.GetValue(null)!.ToString()!)
-            .ToList()!;
+        var urls = Urls.All!;
 
         urls = CultureInfoManager.MultilingualEnabled ?
-            urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToList() :
-            urls;
+             urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
+             urls;
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 

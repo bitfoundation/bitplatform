@@ -12,6 +12,12 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? Actions { get; set; }
 
     /// <summary>
+    /// Determines the alignment of the content section of the message.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
     /// The content of message.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -24,7 +30,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.
     /// </summary>
-    [Parameter] public string CollapseIconName { get; set; } = "DoubleChevronUp";
+    [Parameter] public string CollapseIcon { get; set; } = "DoubleChevronUp";
 
     /// <summary>
     /// The general color of the message.
@@ -40,12 +46,18 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.
     /// </summary>
-    [Parameter] public string DismissIconName { get; set; } = "Cancel";
+    [Parameter] public string DismissIcon { get; set; } = "Cancel";
+
+    /// <summary>
+    /// Determines the elevation of the message, a scale from 1 to 24.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public int? Elevation { get; set; }
 
     /// <summary>
     /// Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.
     /// </summary>
-    [Parameter] public string ExpandIconName { get; set; } = "DoubleChevronDown";
+    [Parameter] public string ExpandIcon { get; set; } = "DoubleChevronDown";
 
     /// <summary>
     /// Prevents rendering the icon of the message.
@@ -73,6 +85,12 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public string? Role { get; set; }
 
     /// <summary>
+    /// The size of Message, Possible values: Small | Medium | Large
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
     /// </summary>
     [Parameter] public BitMessageClassStyles? Styles { get; set; }
@@ -97,6 +115,21 @@ public partial class BitMessage : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Start => "--bit-msg-justifycontent:flex-start",
+            BitAlignment.End => "--bit-msg-justifycontent:flex-end",
+            BitAlignment.Center => "--bit-msg-justifycontent:center",
+            BitAlignment.SpaceBetween => "--bit-msg-justifycontent:space-between",
+            BitAlignment.SpaceAround => "--bit-msg-justifycontent:space-around",
+            BitAlignment.SpaceEvenly => "--bit-msg-justifycontent:space-evenly",
+            BitAlignment.Baseline => "--bit-msg-justifycontent:baseline",
+            BitAlignment.Stretch => "--bit-msg-justifycontent:stretch",
+            _ => "--bit-msg-justifycontent:flex-start"
+        });
+
+        StyleBuilder.Register(() => Elevation is > 0 or < 25 ? $"--bit-msg-boxshadow:var(--bit-shd-{Elevation.Value})" : string.Empty);
     }
 
     protected override void RegisterCssClasses()
@@ -121,7 +154,24 @@ public partial class BitMessage : BitComponentBase
             BitColor.Warning => "bit-msg-wrn",
             BitColor.SevereWarning => "bit-msg-swr",
             BitColor.Error => "bit-msg-err",
+            BitColor.PrimaryBackground => "bit-msg-pbg",
+            BitColor.SecondaryBackground => "bit-msg-sbg",
+            BitColor.TertiaryBackground => "bit-msg-tbg",
+            BitColor.PrimaryForeground => "bit-msg-pfg",
+            BitColor.SecondaryForeground => "bit-msg-sfg",
+            BitColor.TertiaryForeground => "bit-msg-tfg",
+            BitColor.PrimaryBorder => "bit-msg-pbr",
+            BitColor.SecondaryBorder => "bit-msg-sbr",
+            BitColor.TertiaryBorder => "bit-msg-tbr",
             _ => "bit-msg-inf"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-msg-sm",
+            BitSize.Medium => "bit-msg-md",
+            BitSize.Large => "bit-msg-lg",
+            _ => "bit-msg-md"
         });
     }
 
@@ -140,6 +190,15 @@ public partial class BitMessage : BitComponentBase
         [BitColor.Success] = "Completed",
         [BitColor.Warning] = "Info",
         [BitColor.SevereWarning] = "Warning",
-        [BitColor.Error] = "ErrorBadge"
+        [BitColor.Error] = "ErrorBadge",
+        [BitColor.PrimaryBackground] = "Info",
+        [BitColor.SecondaryBackground] = "Info",
+        [BitColor.TertiaryBackground] = "Info",
+        [BitColor.PrimaryForeground] = "Info",
+        [BitColor.SecondaryForeground] = "Info",
+        [BitColor.TertiaryForeground] = "Info",
+        [BitColor.PrimaryBorder] = "Info",
+        [BitColor.SecondaryBorder] = "Info",
+        [BitColor.TertiaryBorder] = "Info"
     };
 }

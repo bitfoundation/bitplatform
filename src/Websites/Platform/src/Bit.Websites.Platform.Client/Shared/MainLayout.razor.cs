@@ -29,12 +29,12 @@ public partial class MainLayout : IDisposable
 
     private readonly List<BitNavItem> templatesNavItems =
     [
-        new BitNavItem { Text = "Overview", Url = "/templates/overview" },
-        new BitNavItem { Text = "Samples", Url = "/templates/samples" },
-        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started" },
-        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure" },
-        new BitNavItem { Text = "Create project", Url = "/templates/create-project" },
-        new BitNavItem { Text = "Run project", Url = "/templates/run-project" }
+        new BitNavItem { Text = "Overview", Url = "/templates", AdditionalUrls = [ "/templates/overview", "/boilerplate", "/boilerplate/overview" ] },
+        new BitNavItem { Text = "Samples", Url = "/templates/samples", AdditionalUrls = [ "/boilerplate/samples" ] },
+        new BitNavItem { Text = "Getting started", Url = "/templates/getting-started", AdditionalUrls = [ "/templates/development-prerequisites", "/boilerplate/getting-started", "/boilerplate/development-prerequisites" ] },
+        new BitNavItem { Text = "Project structure", Url = "/templates/project-structure", AdditionalUrls = [ "/boilerplate/project-structure" ] },
+        new BitNavItem { Text = "Create project", Url = "/templates/create-project", AdditionalUrls = [ "/boilerplate/create-project" ] },
+        new BitNavItem { Text = "Run project", Url = "/templates/run-project", AdditionalUrls = [ "/boilerplate/run-project" ] }
     ];
 
     private readonly List<BitNavItem> bswupNavItems =
@@ -63,6 +63,7 @@ public partial class MainLayout : IDisposable
         new BitNavItem { Text = "Clipboard", Url = "/butil/clipboard" },
         new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
         new BitNavItem { Text = "Console", Url = "/butil/console" },
+        new BitNavItem { Text = "Notification", Url = "/butil/notification" },
         new BitNavItem { Text = "Storage", Url = "/butil/storage" },
         new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
         new BitNavItem { Text = "History", Url = "/butil/history" },
@@ -97,7 +98,7 @@ public partial class MainLayout : IDisposable
     {
         var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
-        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
+        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("boilerplate");
         isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
         isButilDocRoute = currentUrl.Contains("butil");

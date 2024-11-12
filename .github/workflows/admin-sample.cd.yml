@@ -19,7 +19,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
@@ -36,26 +36,25 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --api Standalone
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --api Standalone --notification --captcha reCaptcha --signalR
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
+        files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Web/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Web/appsettings.Production.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WebAppRender.BlazorMode: BlazorWebAssembly
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
-
-    - name: Configure app render mode
-      run: |
-          sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' AdminPanel/src/Client/AdminPanel.Client.Core/Services/AppRenderMode.cs
       
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -72,18 +71,19 @@ jobs:
     - name: Publish adminpanel blazor wasm standalone
       run: |
           sed -i 's/adminpanel.bitplatform.dev/adminpanel-api.bitplatform.dev/g' AdminPanel/src/Client/AdminPanel.Client.Web/wwwroot/index.html
-          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:BlazorWebAssemblyStandalone=true -o ${{env.DOTNET_ROOT}}/static
+          dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:PwaEnabled=true -o ${{env.DOTNET_ROOT}}/static -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload static artifact
       uses: actions/upload-artifact@v4
       with:
         name: static-bundle
         path: ${{env.DOTNET_ROOT}}/static
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -137,22 +137,23 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json, AdminPanel\src\Shared\appsettings.json'
+        files: 'AdminPanel\src\Shared\appsettings.json, AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json, AdminPanel\src\Client\AdminPanel.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-adminpanel.bitplatform.dev
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Generate CSS/JS files
@@ -188,7 +189,7 @@ jobs:
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
   
     steps:
      
@@ -205,11 +206,11 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -217,13 +218,21 @@ jobs:
           fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/'
           fileName: 'AdminPanel.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './AdminPanel/src/Client/AdminPanel.Client.Maui/Platforms/Android'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.ADMINPANEL_GOOGLE_SERVICES_JSON_BASE64 }}
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
+        files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
@@ -252,7 +261,7 @@ jobs:
   
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macos-14
+    runs-on: macOS-15
   
     steps:
      
@@ -266,25 +275,26 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '15.4'
+        xcode-version: '16.0'
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Shared/appsettings.json'
+        files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret

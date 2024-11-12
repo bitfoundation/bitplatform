@@ -19,8 +19,9 @@ public partial class _BitDropdownOptionDemo
 </BitDropdown>
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
              Placeholder=""Select items""
-             IsMultiSelect=""true"" TItem=""BitDropdownOption<string>"" TValue=""string"">
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -143,9 +144,10 @@ private readonly List<BitDropdownItem<string>> basicItems =
     }
 </BitDropdown>
 
-<BitDropdown Label=""Multi select"" FitWidth
+<BitDropdown Label=""Multi select""
+             FitWidth
+             MultiSelect
              Placeholder=""Select items""
-             IsMultiSelect=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -178,8 +180,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown NoBorder
+             MultiSelect
              Placeholder=""Select items""
-             IsMultiSelect=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -203,8 +205,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
     private readonly string example5RazorCode = @"
 <BitDropdown Label=""Responsive Dropdown""
+             Responsive
              Placeholder=""Select an item""
-             IsResponsive=true
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" />
@@ -250,9 +252,9 @@ protected override void OnInitialized()
 
     private readonly string example7RazorCode = @"
 <BitDropdown @bind-Value=""clearValue""
+             ShowClearButton
              Label=""Single select dropdown""
              Placeholder=""Select an option""
-             ShowClearButton=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -263,10 +265,10 @@ protected override void OnInitialized()
 
 
 <BitDropdown @bind-Values=""clearValues""
-             Label=""Multi select dropdown""
+             MultiSelect
+             ShowClearButton
              Placeholder=""Select options""
-             IsMultiSelect=""true""
-             ShowClearButton=""true""
+             Label=""Multi select dropdown""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -294,9 +296,9 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
     private readonly string example8RazorCode = @"
 <BitDropdown Label=""Single select & auto focus""
+             ShowSearchBox
+             AutoFocusSearchBox
              Placeholder=""Select an item""
-             ShowSearchBox=""true""
-             AutoFocusSearchBox=""true""
              SearchBoxPlaceholder=""Search item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
@@ -306,9 +308,9 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
+             ShowSearchBox
              Placeholder=""Select items""
-             IsMultiSelect=""true""
-             ShowSearchBox=""true""
              SearchBoxPlaceholder=""Search items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
@@ -320,12 +322,12 @@ private readonly List<BitDropdownItem<string>> basicItems =
 
 
 <BitDropdown Label=""Single select & auto focus""
+             ShowSearchBox
+             AutoFocusSearchBox
              Placeholder=""Select an item""
-             ShowSearchBox=""true""
-             AutoFocusSearchBox=""true""
-             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search item""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.StartsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -333,12 +335,12 @@ private readonly List<BitDropdownItem<string>> basicItems =
 </BitDropdown>
 
 <BitDropdown Label=""Multi select""
+             MultiSelect
+             ShowSearchBox
              Placeholder=""Select items""
-             IsMultiSelect=""true""
-             ShowSearchBox=""true""
-             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()""
              SearchBoxPlaceholder=""Search items""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -384,9 +386,9 @@ private readonly List<BitDropdownItem<string>> basicItems =
     <ValidationMessage For=""@(() => validationModel.Category)"" />
 
     <BitDropdown @bind-Values=""validationModel.Products""
-                 Label=""Select min 1 and max 2 items""
+                 MultiSelect
                  Placeholder=""Select items""
-                 IsMultiSelect=""true""
+                 Label=""Select min 1 and max 2 items""
                  TItem=""BitDropdownOption<string>"" TValue=""string"">
         @foreach (var item in basicItems)
         {
@@ -596,9 +598,9 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <div>Selected Value: @controlledValue</div>
 
 <BitDropdown @bind-Values=""controlledValues""
+             MultiSelect
              Label=""Multi select""
              Placeholder=""Select items""
-             IsMultiSelect=""true""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -612,25 +614,25 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <BitDropdown Label=""Single select""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownOption<string>[] items) => changedItem = items.SingleOrDefault()"">
+             OnChange=""(string value) => changedValue = value"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>Changed Value: @changedItem?.Value</div>
+<div>Changed Value: @changedValue</div>
 
 <BitDropdown Label=""Multi select""
-             IsMultiSelect=""true""
+             MultiSelect
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             OnValuesChange=""(BitDropdownOption<string>[] items) => changedItems = items"">
+             OnValuesChange=""(IEnumerable<string> values) => changedValues = values"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>Changed Values: @string.Join("","", changedItems.Select(i => i.Value))</div>
+<div>Changed Values: @string.Join("","", changedValues)</div>
 
 
 
@@ -647,9 +649,9 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <div>Selected Value: @selectedItem1?.Value</div>
 
 <BitDropdown Label=""Multi select""
-             IsMultiSelect=""true""
-             DefaultValue=""@string.Empty""
+             MultiSelect
              Placeholder=""Select items""
+             DefaultValue=""@string.Empty""
              TItem=""BitDropdownOption<string>"" TValue=""string""
              OnSelectItem=""(BitDropdownOption<string> item) => selectedItem2 = item"">
     @foreach (var item in basicItems)
@@ -660,10 +662,10 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <div>Selected Value: @selectedItem2?.Value</div>";
     private readonly string example11CsharpCode = @"
 private string controlledValue = ""f-app"";
-private ICollection<string?> controlledValues = new[] { ""f-app"", ""f-ban"" };
+private IEnumerable<string?> controlledValues = [""f-app"", ""f-ban""];
 
-private BitDropdownOption<string>? changedItem;
-private BitDropdownOption<string>[] changedItems = Array.Empty<BitDropdownOption<string>>();
+private string? changedValue;
+private IEnumerable<string> changedValues = [];
 
 private BitDropdownOption<string>? selectedItem1;
 private BitDropdownOption<string>? selectedItem2;
@@ -697,7 +699,8 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <div>Value: @comboBoxValueSample1</div>
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues1""
-             Combo IsMultiSelect
+             Combo 
+             MultiSelect
              Label=""Multi select combo box""
              Placeholder=""Select an option""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -741,9 +744,10 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <div>Value: @comboBoxValueSample2</div>
 <br /><br />
 <BitDropdown @bind-Values=""comboBoxValues2""
-             Combo Chips IsMultiSelect
-             Label=""Multi select combo box & chips""
+             Combo Chips 
+             MultiSelect
              Placeholder=""Select an option""
+             Label=""Multi select combo box & chips""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in comboBoxItems)
     {
@@ -773,11 +777,11 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example14RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
-             Label=""Single select combo box & dynamic""
              Placeholder=""Select an option""
+             Label=""Single select combo box & dynamic""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
-             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -786,13 +790,13 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <div>Value: @comboBoxValueSample3</div>
         
 <BitDropdown @bind-Value=""comboBoxValueSample4""
+             Responsive
              Combo Chips Dynamic
-             Label=""Single select combo box, chips & dynamic""
              Placeholder=""Select an option""
-             IsResponsive=""true""
+             Label=""Single select combo box, chips & dynamic""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
-             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -801,14 +805,14 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <div>Value: @comboBoxValueSample4</div>
 
 <BitDropdown @bind-Values=""comboBoxValues3""
+             Responsive
+             MultiSelect
              Combo Chips Dynamic
-             Label=""Multi select combo box, chips & dynamic""
              Placeholder=""Select options""
-             IsMultiSelect=""true""
-             IsResponsive=""true""
+             Label=""Multi select combo box, chips & dynamic""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
              DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
-             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)""
-             TItem=""BitDropdownOption<string>"" TValue=""string"">
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
@@ -968,8 +972,8 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
 
     private readonly string example16RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
-             Placeholder=""لطفا انتخاب کنید""
              Dir=""BitDir.Rtl""
+             Placeholder=""لطفا انتخاب کنید""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {
@@ -978,9 +982,9 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
 </BitDropdown>
 
 <BitDropdown Label=""چند انتخابی""
-             Placeholder=""انتخاب چند گزینه ای""
-             IsMultiSelect=""true""
+             MultiSelect
              Dir=""BitDir.Rtl""
+             Placeholder=""انتخاب چند گزینه ای""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in rtlItems)
     {

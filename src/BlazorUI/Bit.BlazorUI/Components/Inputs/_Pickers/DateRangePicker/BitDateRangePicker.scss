@@ -718,19 +718,19 @@
 
 .bit-dtrp-tpr {
     display: flex;
-    flex-direction: column;
-    align-content: center;
-    align-items: center;
-    justify-content: space-between;
     gap: spacing(0.25);
+    align-items: center;
+    align-content: center;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .bit-dtrp-tdv {
     display: flex;
-    justify-content: center;
-    align-content: center;
     align-items: center;
+    align-content: center;
     font-size: spacing(2.5);
+    justify-content: center;
     font-weight: $tg-font-weight;
 }
 

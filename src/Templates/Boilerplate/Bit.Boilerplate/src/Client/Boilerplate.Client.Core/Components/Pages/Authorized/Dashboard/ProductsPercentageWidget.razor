@@ -1,0 +1,25 @@
+﻿@inherits AppComponentBase
+
+<section>
+    <BitCard FullSize Border="BitColorKind.Transparent" Class="card">
+        <BitStack Alignment="BitAlignment.Center" Gap="2rem">
+            <BitStack Gap="0">
+                <BitText Typography="BitTypography.H6">
+                    @Localizer[nameof(AppStrings.ProductsPercentagePerCategory)]
+                </BitText>
+                <BitText Typography="BitTypography.Body2">
+                    @Localizer[nameof(AppStrings.ProductsPercentagePerCategoryText)]
+                </BitText>
+            </BitStack>
+
+            @if (isLoading)
+            {
+                <BitGridLoading Style="padding:2rem" />
+            }
+            else
+            {
+                <BitChart Config="config" />
+            }
+        </BitStack>
+    </BitCard>
+</section>

@@ -1,21 +1,12 @@
 @import "../../../Styles/functions.scss";
 
 .bit-drm {
-    gap: spacing(1);
-    cursor: pointer;
     width: fit-content;
-    align-items: center;
-    display: inline-flex;
-    outline: transparent;
-    text-decoration: none;
-    box-sizing: border-box;
-    box-sizing: border-box;
-    justify-content: center;
+    color: $clr-fg-pri;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-    padding: spacing(1.0) spacing(1.5);
 
     @media (hover: hover) {
         &:hover {
@@ -28,10 +19,37 @@
     }
 
     &.bit-dis {
-        cursor: default;
         color: $clr-fg-dis;
         pointer-events: none;
+
+        .bit-drm-btn {
+            cursor: default;
+        }
     }
+
+    &.bit-rtl {
+        .bit-drm-rsp {
+            animation-name: bit-fade-show, bit-drp-trans-x-reverse;
+        }
+    }
+}
+
+.bit-drm-btn {
+    color: inherit;
+    gap: spacing(1);
+    cursor: pointer;
+    width: fit-content;
+    align-items: center;
+    display: inline-flex;
+    outline: transparent;
+    font-weight: inherit;
+    font-family: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: transparent;
+    padding: spacing(1.0) spacing(1.5);
 }
 
 .bit-drm-trn {
@@ -66,4 +84,11 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.bit-drm-rsp {
+    height: 100%;
+    max-height: unset;
+    box-shadow: $box-shadow-callout;
+    animation-name: bit-fade-show, bit-drp-trans-x;
 }

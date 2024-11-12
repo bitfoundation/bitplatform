@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Icon;
 [TestClass]
 public class BitIconTests : BunitTestContext
 {
-    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md";
+    private const string CLASS = "bit-ico bit-ico-pri bit-ico-md bit-ico-txt";
 
     [DataTestMethod]
     public void BitIconShouldRenderExpectedElement()
@@ -280,13 +280,13 @@ public class BitIconTests : BunitTestContext
 
         var sizeClass = size switch
         {
-            BitSize.Small => " bit-ico-sm",
-            BitSize.Medium => " bit-ico-md",
-            BitSize.Large => " bit-ico-lg",
-            _ => " bit-ico-md"
+            BitSize.Small => "bit-ico-sm",
+            BitSize.Medium => "bit-ico-md",
+            BitSize.Large => "bit-ico-lg",
+            _ => "bit-ico-md"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri{sizeClass}"" role=""img"" id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-pri bit-ico-txt {sizeClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod]
@@ -301,7 +301,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        component.MarkupMatches(@"<i class=""bit-ico bit-ico-pri bit-ico-lg"" role=""img"" id:ignore />");
+        component.MarkupMatches(@"<i class=""bit-ico bit-ico-pri bit-ico-txt bit-ico-lg"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod,
@@ -335,7 +335,7 @@ public class BitIconTests : BunitTestContext
             _ => " bit-ico-pri"
         };
 
-        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md {colorClass}"" role=""img"" id:ignore />");
+        component.MarkupMatches(@$"<i class=""bit-ico bit-ico-md bit-ico-txt {colorClass}"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod]
@@ -350,7 +350,7 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.Color, BitColor.Error);
         });
 
-        component.MarkupMatches(@"<i class=""bit-ico bit-ico-md bit-ico-err"" role=""img"" id:ignore />");
+        component.MarkupMatches(@"<i class=""bit-ico bit-ico-md bit-ico-txt bit-ico-err"" role=""img"" id:ignore />");
     }
 
     [DataTestMethod]

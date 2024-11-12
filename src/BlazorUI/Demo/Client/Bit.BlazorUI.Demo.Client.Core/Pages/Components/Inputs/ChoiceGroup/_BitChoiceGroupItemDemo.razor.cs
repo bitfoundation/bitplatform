@@ -9,26 +9,28 @@ public partial class _BitChoiceGroupItemDemo
     private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
 
-    private ChoiceGroupValidationModel validationModel = new();
     private string? successMessage;
+    private ChoiceGroupValidationModel validationModel = new();
 
 
-    private readonly List<BitChoiceGroupItem<string>> basicItems = new()
-    {
+    private readonly List<BitChoiceGroupItem<string>> basicItems =
+    [
         new() { Text = "Item A", Value = "A" },
-        new() { Text = "Item B", Value = "B" },
-        new() { Text = "Item C", Value = "C" },
-        new() { Text = "Item D", Value = "D" }
-    };
-    private readonly List<BitChoiceGroupItem<string>> disabledItems = new()
-    {
+    new() { Text = "Item B", Value = "B" },
+    new() { Text = "Item C", Value = "C" },
+    new() { Text = "Item D", Value = "D" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> disabledItems =
+    [
         new() { Text = "Item A", Value = "A" },
-        new() { Text = "Item B", Value = "B" },
-        new() { Text = "Item C", Value = "C", IsEnabled = false },
-        new() { Text = "Item D", Value = "D" }
-    };
-    private readonly List<BitChoiceGroupItem<string>> imageItems = new()
-    {
+    new() { Text = "Item B", Value = "B" },
+    new() { Text = "Item C", Value = "C", IsEnabled = false },
+    new() { Text = "Item D", Value = "D" }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> imageItems =
+    [
         new()
         {
             Text = "Bar",
@@ -47,33 +49,59 @@ public partial class _BitChoiceGroupItemDemo
             ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
             SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
         }
-    };
-    private readonly List<BitChoiceGroupItem<string>> iconItems = new()
-    {
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> inlineImageItems =
+    [
+        new()
+        {
+            Text = "Bar",
+            Value = "Bar",
+            ImageAlt = "alt for Bar image",
+            ImageSize = new BitImageSize(20, 20),
+            ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png",
+            SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png",
+        },
+        new()
+        {
+            Text = "Pie",
+            Value = "Pie",
+            ImageAlt = "alt for Pie image",
+            ImageSize = new BitImageSize(20, 20),
+            ImageSrc= "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png",
+            SelectedImageSrc = "https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png",
+        }
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> iconItems =
+    [
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
         new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsEnabled = false }
-    };
-    private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
-    {
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
+    [
         new() { Text = "Item A", Value = "A", Class = "custom-item" },
         new() { Text = "Item B", Value = "B", Style = "padding: 8px; border-radius: 20px; border: 1px solid gray;" },
         new() { Text = "Item C", Value = "C", Class = "custom-item" },
         new() { Text = "Item D", Value = "D", Class = "custom-item" }
-    };
-    private readonly List<BitChoiceGroupItem<string>> itemTemplateItems = new()
-    {
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> itemTemplateItems =
+    [
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
         new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar }
-    };
-    private readonly List<BitChoiceGroupItem<string>> rtlItems = new()
-    {
+    ];
+
+    private readonly List<BitChoiceGroupItem<string>> rtlItems =
+    [
         new() { Text = "بخش آ", Value = "A" },
         new() { Text = "بخش ب", Value = "B" },
         new() { Text = "بخش پ", Value = "C" },
         new() { Text = "بخش ت", Value = "D" }
-    };
+    ];
 
 
     private void HandleValidSubmit()
@@ -88,15 +116,22 @@ public partial class _BitChoiceGroupItemDemo
 
 
     private readonly string example1RazorCode = @"
-<BitChoiceGroup Label=""Basic Items"" Items=""basicItems"" DefaultValue=""basicItems[1].Value"" />";
+<BitChoiceGroup Label=""Basic Items""
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value"" />
+
+<BitChoiceGroup Label=""NoCircle""
+                NoCircle
+                Items=""basicItems""
+                DefaultValue=""basicItems[1].Value"" />";
     private readonly string example1CsharpCode = @"
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};";
+];";
 
     private readonly string example2RazorCode = @"
 <BitChoiceGroup Label=""Disabled ChoiceGroup""
@@ -108,29 +143,32 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
                 Items=""disabledItems""
                 DefaultValue=""@(""A"")"" />";
     private readonly string example2CsharpCode = @"
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};
+];
 
-private readonly List<BitChoiceGroupItem> disabledItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> disabledItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"", IsEnabled = false },
     new() { Text = ""Item D"", Value = ""D"" }
-};";
+];";
 
     private readonly string example3RazorCode = @"
 <BitChoiceGroup Label=""Image Items"" Items=""imageItems"" DefaultValue=""@(""Bar"")"" />
-<BitChoiceGroup Label=""Icon Items"" Items=""iconItems"" DefaultValue=""@(""Day"")"" />";
+<BitChoiceGroup Label=""Icon Items"" Items=""iconItems"" DefaultValue=""@(""Day"")"" />
+
+<BitChoiceGroup Label=""Image Items"" Items=""inlineImageItems"" DefaultValue=""@(""Bar"")"" Inline />
+<BitChoiceGroup Label=""Icon Items"" Items=""iconItems"" DefaultValue=""@(""Day"")"" Inline />";
     private readonly string example3CsharpCode = @"
-private readonly List<BitChoiceGroupItem> imageItems<string> = new()
-{
-    new BitChoiceGroupItem()
+private readonly List<BitChoiceGroupItem<string>> imageItems =
+[
+    new()
     {
         Text = ""Bar"",
         Value = ""Bar"",
@@ -139,7 +177,7 @@ private readonly List<BitChoiceGroupItem> imageItems<string> = new()
         ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
         SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
     },
-    new BitChoiceGroupItem()
+    new()
     {
         Text = ""Pie"",
         Value = ""Pie"",
@@ -148,14 +186,36 @@ private readonly List<BitChoiceGroupItem> imageItems<string> = new()
         ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
     }
-};
+];
 
-private readonly List<BitChoiceGroupItem> iconItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> inlineImageItems =
+[
+    new()
+    {
+        Text = ""Bar"",
+        Value = ""Bar"",
+        ImageAlt = ""alt for Bar image"",
+        ImageSize = new BitImageSize(20, 20),
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
+    },
+    new()
+    {
+        Text = ""Pie"",
+        Value = ""Pie"",
+        ImageAlt = ""alt for Pie image"",
+        ImageSize = new BitImageSize(20, 20),
+        ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
+        SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
+    }
+];
+
+private readonly List<BitChoiceGroupItem<string>> iconItems =
+[
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
-};";
+];";
 
     private readonly string example4RazorCode = @"
 <BitChoiceGroup Label=""Basic"" Items=""basicItems"" DefaultValue=""@(""A"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
@@ -163,17 +223,17 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
 <BitChoiceGroup Label=""Image"" Items=""imageItems"" DefaultValue=""@(""Bar"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />
 <BitChoiceGroup Label=""Icon"" Items=""iconItems"" DefaultValue=""@(""Day"")"" LayoutFlow=""BitLayoutFlow.Horizontal"" />";
     private readonly string example4CsharpCode = @"
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};
+];
 
-private readonly List<BitChoiceGroupItem> imageItems<string> = new()
-{
-    new BitChoiceGroupItem()
+private readonly List<BitChoiceGroupItem<string>> imageItems =
+[
+    new()
     {
         Text = ""Bar"",
         Value = ""Bar"",
@@ -182,7 +242,7 @@ private readonly List<BitChoiceGroupItem> imageItems<string> = new()
         ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png"",
         SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"",
     },
-    new BitChoiceGroupItem()
+    new()
     {
         Text = ""Pie"",
         Value = ""Pie"",
@@ -191,14 +251,14 @@ private readonly List<BitChoiceGroupItem> imageItems<string> = new()
         ImageSrc= ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png"",
         SelectedImageSrc = ""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"",
     }
-};
+];
 
-private readonly List<BitChoiceGroupItem> iconItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> iconItems =
+[
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar, IsEnabled = false }
-};";
+];";
 
     private readonly string example5RazorCode = @"
 <style>
@@ -227,7 +287,6 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
         width: 8px;
         height: 8px;
         border: none;
-        inset-block-start: 6px;
         inset-inline-start: 6px;
         background-color: whitesmoke;
     }
@@ -276,21 +335,21 @@ private readonly List<BitChoiceGroupItem> iconItems<string> = new()
                                    ItemChecked = ""custom-checked"",
                                    ItemLabelWrapper = ""custom-label-wrapper"" })"" />";
     private readonly string example5CsharpCode = @"
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};
+];
 
-private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
-{
+private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems =
+[
     new() { Text = ""Item A"", Value = ""A"", Class = ""custom-item"" },
     new() { Text = ""Item B"", Value = ""B"", Style = ""padding: 8px; border-radius: 20px; border: 1px solid gray;"" },
     new() { Text = ""Item C"", Value = ""C"", Class = ""custom-item"" },
     new() { Text = ""Item D"", Value = ""D"", Class = ""custom-item"" }
-};";
+];";
 
     private readonly string example6RazorCode = @"
 <style>
@@ -309,13 +368,13 @@ private readonly List<BitChoiceGroupItem<string>> itemStyleClassItems = new()
     </LabelTemplate>
 </BitChoiceGroup>";
     private readonly string example6CsharpCode = @"
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};";
+];";
 
     private readonly string example7RazorCode = @"
 <BitChoiceGroup Label=""One-way"" Items=""basicItems"" Value=""@oneWayValue"" />
@@ -327,13 +386,13 @@ private readonly List<BitChoiceGroupItem> basicItems<string> = new()
 private string oneWayValue = ""A"";
 private string twoWayValue = ""A"";
 
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};";
+];";
 
     private readonly string example8RazorCode = @"
 <style>
@@ -401,20 +460,20 @@ private string itemTemplateValue = ""Day"";
 private string itemTemplateValue2 = ""Day"";
 private string itemLabelTemplateValue = ""Day"";
 
-private readonly List<BitChoiceGroupItem<string>> basicItems = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};
+];
 
-private readonly List<BitChoiceGroupItem> itemTemplateItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> itemTemplateItems =
+[
     new() { Text = ""Day"", Value = ""Day"", IconName = BitIconName.CalendarDay },
     new() { Text = ""Week"", Value = ""Week"", IconName = BitIconName.CalendarWeek },
     new() { Text = ""Month"", Value = ""Month"", IconName = BitIconName.Calendar }
-};
+];
 
 private List<BitChoiceGroupItem<string>> itemTemplateItems2 = default!;
 protected override void OnInitialized()
@@ -490,11 +549,11 @@ public ChoiceGroupValidationModel validationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }
 
-private readonly List<BitChoiceGroupItem> basicItems<string> = new()
-{
+private readonly List<BitChoiceGroupItem<string>> basicItems =
+[
     new() { Text = ""Item A"", Value = ""A"" },
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
-};";
+];";
 }

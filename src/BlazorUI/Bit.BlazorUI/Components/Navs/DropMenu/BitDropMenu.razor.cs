@@ -40,8 +40,7 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// Determines the opening state of the callout of the drop menu.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(ToggleCallout))]
+    [Parameter, CallOnSet(nameof(ToggleCallout))]
     [ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
@@ -49,6 +48,16 @@ public partial class BitDropMenu : BitComponentBase
     /// The callback is called when the drop menu is clicked.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// The callback is called when the drop menu is dismissed.
+    /// </summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// Renders the drop menu in responsive mode on small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the drop menu.
@@ -70,6 +79,15 @@ public partial class BitDropMenu : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
+
+
+    [JSInvokable("CloseCallout")]
+    public async Task __CloseCalloutBeforeAnotherCalloutIsOpened()
+    {
+        await DismissCallout();
+
+        StateHasChanged();
+    }
 
 
 
@@ -101,6 +119,7 @@ public partial class BitDropMenu : BitComponentBase
     }
 
 
+
     private async Task HandleOnClick()
     {
         if (IsEnabled is false) return;
@@ -119,7 +138,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task CloseCallout()
     {
-        if (await AssignIsOpen(false) is false) return;
+        await DismissCallout();
 
         await ToggleCallout();
     }
@@ -134,7 +153,7 @@ public partial class BitDropMenu : BitComponentBase
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
                                 "",
@@ -143,5 +162,12 @@ public partial class BitDropMenu : BitComponentBase
                                 "",
                                 false,
                                 RootElementClass);
+    }
+
+    private async Task DismissCallout()
+    {
+        if (await AssignIsOpen(false) is false) return;
+
+        await OnDismiss.InvokeAsync();
     }
 }

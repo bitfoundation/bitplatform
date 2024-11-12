@@ -3,13 +3,13 @@ using Boilerplate.Shared.Controllers;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
+public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var delays = GetDelays(scaleFirstTry: TimeSpan.FromSeconds(3), maxRetries: 3).ToArray();
+        var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(3).ToArray();
 
         Exception? lastExp = null;
 
@@ -45,14 +45,14 @@ public partial class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
         return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
-    private static IEnumerable<TimeSpan> GetDelays(TimeSpan scaleFirstTry, int maxRetries)
+    private static IEnumerable<TimeSpan> GetDelaySequence(TimeSpan scaleFirstTry)
     {
         TimeSpan maxValue = TimeSpan.MaxValue;
         var maxTimeSpanDouble = maxValue.Ticks - 1_000.0;
         var i = 0;
         var targetTicksFirstDelay = scaleFirstTry.Ticks;
         var num = 0.0;
-        for (; i < maxRetries; i++)
+        for (; i < int.MaxValue; i++)
         {
             var num2 = i + Random.Shared.NextDouble();
             var next = Math.Pow(2.0, num2) * Math.Tanh(Math.Sqrt(4.0 * num2));

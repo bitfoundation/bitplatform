@@ -8,7 +8,7 @@ public partial class BitPanelDemo
         {
             Name = "AutoToggleScroll",
             Type = "bool",
-            DefaultValue = "true",
+            DefaultValue = "false",
             Description = "Enables the auto scrollbar toggle behavior of the Panel.",
         },
         new()
@@ -224,8 +224,44 @@ public partial class BitPanelDemo
 
 
 
+    private BitPanelClassStyles panelClassStyles = new() { Header = "header-margin" };
+
+    private bool IsBasicPanelOpen = false;
+
+    private bool IsPanelWithHeaderTextOpen = false;
+    private bool IsPanelWithCustomHeaderOpen = false;
+
+    private bool IsPanelWithFooterOpen = false;
+
+    private bool IsBlockingPanelOpen = false;
+    private bool IsModelessPanelOpen = false;
+    private bool IsAutoToggleScrollPanelOpen = false;
+
+    private bool IsOpenInPosition = false;
+
+    private bool IsStyledPanelOpen = false;
+    private bool IsClassedPanelOpen = false;
+    private bool IsPanelStylesOpen = false;
+    private bool IsPanelClassesOpen = false;
+
+    private bool IsRtlPanelOpen = false;
+
+    private BitPanel bitPanelRef = default!;
+
+    private double CustomPanelSize = 320;
+
+    private BitPanelPosition position;
+
+    private void OpenPanelInPosition(BitPanelPosition positionValue)
+    {
+        IsOpenInPosition = true;
+        position = positionValue;
+    }
+
+
+
     private readonly string example1RazorCode = @"
-<BitButton OnClick=@(() => IsBasicPanelOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsBasicPanelOpen = true"">Open Panel</BitButton>
 
 <BitPanel @bind-IsOpen=""IsBasicPanelOpen"">
     Content goes here.
@@ -235,10 +271,10 @@ private bool IsBasicPanelOpen = false;";
 
     private readonly string example2RazorCode = @"
 <BitLabel>Panel with header text</BitLabel>
-<BitButton OnClick=@(() => IsPanelWithHeaderTextOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsPanelWithHeaderTextOpen = true"">Open Panel</BitButton>
 
 <BitLabel>Panel with custom header content</BitLabel>
-<BitButton OnClick=@(() => IsPanelWithCustomHeaderOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsPanelWithCustomHeaderOpen = true"">Open Panel</BitButton>
 
 <BitPanel HeaderText=""Simple header"" @bind-IsOpen=""IsPanelWithHeaderTextOpen"">
     <p>
@@ -281,7 +317,7 @@ private bool IsPanelWithCustomHeaderOpen = false;";
 
     private readonly string example3RazorCode = @"
 <BitLabel>Panel with custom footer content</BitLabel>
-<BitButton OnClick=@(() => IsPanelWithFooterOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsPanelWithFooterOpen = true"">Open Panel</BitButton>
 
 <BitPanel Title=""BitPanel with custom footer content"" @bind-IsOpen=""IsPanelWithFooterOpen"">
     <ChildContent>
@@ -297,8 +333,8 @@ private bool IsPanelWithCustomHeaderOpen = false;";
         </p>
     </ChildContent>
     <FooterTemplate>
-        <BitButton OnClick=@(() => IsPanelWithFooterOpen = false)>Save</BitButton>
-        <BitButton Variant=""BitVariant.Outline"" OnClick=@(() => IsPanelWithFooterOpen = false)>Close</BitButton>
+        <BitButton OnClick=""() => IsPanelWithFooterOpen = false"">Save</BitButton>
+        <BitButton Variant=""BitVariant.Outline"" OnClick=""() => IsPanelWithFooterOpen = false"">Close</BitButton>
     </FooterTemplate>
 </BitPanel>";
     private readonly string example3CsharpCode = @"
@@ -306,13 +342,13 @@ private bool IsPanelWithFooterOpen = false;";
     
     private readonly string example4RazorCode = @"
 <BitLabel>Panel with IsBlocking = true</BitLabel>
-<BitButton OnClick=@(() => IsBlockingPanelOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsBlockingPanelOpen = true"">Open Panel</BitButton>
 
 <BitLabel>Panel with IsModeless = true</BitLabel>
-<BitButton OnClick=@(() => IsModelessPanelOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsModelessPanelOpen = true"">Open Panel</BitButton>
 
 <BitLabel>Panel with AutoToggleScroll = false</BitLabel>
-<BitButton OnClick=@(() => IsAutoToggleScrollPanelOpen = true)>Open Panel</BitButton>
+<BitButton OnClick=""() => IsAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>
 
 <BitLabel>Panel with ShowCloseButton = false</BitLabel>
 <BitButton OnClick=""() => bitPanelRef.Open()"">Open Panel</BitButton>
@@ -324,6 +360,7 @@ private bool IsPanelWithFooterOpen = false;";
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
 </BitPanel>
+
 <BitPanel HeaderText=""IsModeless = true"" @bind-IsOpen=""IsModelessPanelOpen"" IsModeless=""true"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -331,6 +368,7 @@ private bool IsPanelWithFooterOpen = false;";
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
 </BitPanel>
+
 <BitPanel HeaderText=""AutoToggleScroll = false"" @bind-IsOpen=""IsAutoToggleScrollPanelOpen"" AutoToggleScroll=""false"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -338,6 +376,7 @@ private bool IsPanelWithFooterOpen = false;";
         sagittis nunc, ut interdum ipsum vestibulum non.
     </p>
 </BitPanel>
+
 <BitPanel @ref=""bitPanelRef"" HeaderText=""ShowCloseButton = false"" ShowCloseButton=""false"">
     <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -446,7 +485,7 @@ private bool IsPanelStylesOpen = false;
 private bool IsPanelClassesOpen = false;";
 
     private readonly string example7RazorCode = @"
-<BitButton Dir=""BitDir.Rtl"" OnClick=@(() => IsRtlPanelOpen = true)>
+<BitButton Dir=""BitDir.Rtl"" OnClick=""() => IsRtlPanelOpen = true"">
     باز کردن پنل
 </BitButton>
 

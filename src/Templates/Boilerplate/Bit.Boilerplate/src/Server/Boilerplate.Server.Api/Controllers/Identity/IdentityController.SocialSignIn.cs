@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -34,7 +33,7 @@ public partial class IdentityController
         try
         {
             var email = info.Principal.GetEmail();
-            var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
+            var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
             var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 
@@ -53,12 +52,12 @@ public partial class IdentityController
 
                 if (string.IsNullOrEmpty(email) is false)
                 {
-                    await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, email, cancellationToken);
+                    await userEmailStore.SetEmailAsync(user, email, cancellationToken);
                 }
 
                 if (string.IsNullOrEmpty(phoneNumber) is false)
                 {
-                    await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
+                    await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
 
                 var result = await userManager.CreateAsync(user, password: Guid.NewGuid().ToString("N") /* Users can reset their password later. */);
@@ -73,17 +72,17 @@ public partial class IdentityController
 
             if (string.IsNullOrEmpty(email) is false && email == user.Email && await userManager.IsEmailConfirmedAsync(user) is false)
             {
-                await ((IUserEmailStore<User>)userStore).SetEmailConfirmedAsync(user, true, cancellationToken);
+                await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
             if (string.IsNullOrEmpty(phoneNumber) is false && phoneNumber == user.PhoneNumber && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
-                await ((IUserPhoneNumberStore<User>)userStore).SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
+                await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
-            (_, url) = await GenerateOtpTokenData(user, returnUrl); // Sign in with a magic link, and 2FA will be prompted if already enabled.
+            (_, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Social"); // Sign in with a magic link, and 2FA will be prompted if already enabled.
         }
         catch (Exception exp)
         {
@@ -96,8 +95,11 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Configuration.GetValue<string?>("WebClientUrl");
+        var webClientUrl = Configuration.Get<ServerApiSettings>()!.WebClientUrl;
         if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
 }

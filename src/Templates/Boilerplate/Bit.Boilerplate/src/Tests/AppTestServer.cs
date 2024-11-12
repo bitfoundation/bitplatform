@@ -1,86 +1,77 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.TestHost;
+﻿using System.Net.Sockets;
+using System.Net;
 using Boilerplate.Server.Api;
-using Boilerplate.Server.Api.Data;
+using Boilerplate.Server.Web;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
 public partial class AppTestServer : IAsyncDisposable
 {
-    private TestServer? testServer;
     private WebApplication? webApp;
 
-    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null)
+    public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
+    public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
+
+    public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,
+        Action<ConfigurationManager>? configureTestConfigurations = null)
     {
         if (webApp != null)
             throw new InvalidOperationException("Server is already built.");
 
         var builder = WebApplication.CreateBuilder(options: new()
         {
-            EnvironmentName = Environments.Development
+            EnvironmentName = Environments.Development,
+            ApplicationName = typeof(Server.Web.Program).Assembly.GetName().Name
         });
+
+        builder.Configuration["ServerAddress"] = WebAppServerAddress.ToString();
+        builder.WebHost.UseUrls(WebAppServerAddress.ToString());
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddSharedConfigurations();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
-        builder.WebHost.UseTestServer();
+        //#if (database  == 'Sqlite')
+        //Use in-memory Sqlite database for faster and more reliable testing
+        builder.Configuration["ConnectionStrings:SqliteConnectionString"] = "Data Source=BoilerplateDb;Mode=Memory;Cache=Shared;";
+        //#endif
+
+        configureTestConfigurations?.Invoke(builder.Configuration);
+
+        builder.AddTestProjectServices();
 
         configureTestServices?.Invoke(builder.Services);
-        builder.ConfigureApiServices();
-        builder.Services.AddSharedProjectServices();
 
         var app = webApp = builder.Build();
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         return this;
     }
 
     public async Task Start()
     {
-        if (webApp == null)
-            throw new InvalidOperationException($"Call {nameof(Build)} first.");
-
-        if (AppEnvironment.IsDev())
-        {
-            await using var scope = webApp.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
-        }
-
-        await webApp.StartAsync();
-
-        testServer = webApp.GetTestServer();
-    }
-
-    public HttpClient CreateClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateClient();
-    }
-
-    public HttpMessageHandler CreateHandler()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateHandler();
-    }
-
-    public RequestBuilder CreateRequest(string path)
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateRequest(path);
-    }
-
-    public WebSocketClient CreateWebSocketClient()
-    {
-        return (testServer ?? throw new InvalidOperationException()).CreateWebSocketClient();
+        await WebApp.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         if (webApp != null)
         {
+            await webApp.StopAsync();
             await webApp.DisposeAsync();
         }
-        testServer?.Dispose();
+    }
+
+    private static string GenerateServerUrl()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return $"http://127.0.0.1:{port}/";
     }
 }

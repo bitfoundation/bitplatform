@@ -9,8 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		.vsconfig = .vsconfig
+		settings.VisualStudio.json = settings.VisualStudio.json
 		Clean.bat = Clean.bat
 		src\Directory.Build.props = src\Directory.Build.props
+		src\Directory.Packages.props = src\Directory.Packages.props
 		global.json = global.json
 		README.md = README.md
 	EndProjectSection

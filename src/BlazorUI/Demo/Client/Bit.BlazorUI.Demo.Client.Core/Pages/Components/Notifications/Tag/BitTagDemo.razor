@@ -27,12 +27,16 @@
 
     <ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" Id="example3">
         <ExamplePreview>
+            <div>Display an icon within a BitTag to represent its content visually.</div>
+            <br />
             <BitTag Text="Calendar icon" IconName="@BitIconName.Calendar" />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="Dismiss" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <ExamplePreview>
+            <div>Use the OnDismiss feature in BitTag to provide a close button for the tag content.</div>
+            <br />
             @if (isDismissed is false)
             {
                 <BitTag IconName="@BitIconName.AlarmClock" Text="Dismiss me" OnDismiss="() => isDismissed = true" />
@@ -103,6 +107,8 @@
 
     <ComponentExampleBox Title="Template" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
+            <div>Customize the content inside BitTag using a template with different elements and components.</div>
+            <br />
             <BitTag>
                 <BitStack Horizontal Gap="0.5rem" Style="padding-inline: 0.5rem;">
                     <BitLabel>Custom content</BitLabel>
@@ -115,7 +121,7 @@
     <ComponentExampleBox Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
-            <br />
+            <br /><br />
             <div>Component's Style & Class:</div>
             <br />
             <div>
@@ -130,8 +136,9 @@
                 <br />
                 <BitTag Text="Styles"
                         IconName="@BitIconName.People"
-                        Styles="@(new() { Root = "border-color: darkblue; border-width: 0.25rem;",
-                                          Text = "color: darkblue; font-weight: 600;" })" />
+                        Styles="@(new() { Root = "border-color: red; background-color: transparent;",
+                                          Text = "color: tomato; font-weight: bold;",
+                                          Icon = "color: tomato;" })" />
                 &nbsp;
                 <BitTag Text="Classes"
                         IconName="@BitIconName.People"

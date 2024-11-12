@@ -15,7 +15,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
@@ -41,11 +41,12 @@ jobs:
       with:
         name: server-bundle
         path: server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}

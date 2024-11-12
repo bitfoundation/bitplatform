@@ -160,8 +160,7 @@ private bool AutoCloseIsOpen;";
 
 <h3>This is Container</h3>";
     private readonly string example3CsharpCode = @"
-private bool AbsoluteIsOpen;
-";
+private bool AbsoluteIsOpen;";
 
     private readonly string example4RazorCode = @"
 <style>
@@ -177,9 +176,9 @@ private bool AbsoluteIsOpen;
 <BitButton OnClick=""() => AutoToggleIsOpen = true"">Show Overlay</BitButton>
 
 <BitOverlay @bind-IsOpen=""AutoToggleIsOpen"" Class=""overlay"" AutoToggleScroll>
-    <BitStack HorizontalAlign=""BitAlignment.Stretch"">
+    <BitStack Alignment=""BitAlignment.Center"">
         <BitText Style=""color: dodgerblue;"" Typography=""BitTypography.H3"">Please wait...</BitText>
-        <BitProgress Indeterminate Thickness=""10""/>
+        <BitProgress Indeterminate Thickness=""10"" Style=""width: 19rem;""/>
     </BitStack>
 </BitOverlay>";
     private readonly string example4CsharpCode = @"
@@ -284,8 +283,6 @@ private bool AutoToggleIsOpen;";
     private readonly string example5CsharpCode = @"
 private bool EnabledScrollerIsOpen;
 private bool DisabledScrollerIsOpen;";
-
-
 
     private readonly string example6RazorCode = @"
 <style>

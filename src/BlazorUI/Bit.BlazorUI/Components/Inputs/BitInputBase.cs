@@ -55,7 +55,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, object>? InputHtmlAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? InputHtmlAttributes { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the element.
@@ -152,7 +152,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
                     break;
 
                 case nameof(InputHtmlAttributes):
-                    InputHtmlAttributes = (IReadOnlyDictionary<string, object>?)parameter.Value;
+                    InputHtmlAttributes = (Dictionary<string, object>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -359,7 +359,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
 
     protected async Task SetCurrentValueAsync(TValue? value)
     {
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (InvalidValueBinding()) return;
 
         Value = value;
 
@@ -368,6 +368,13 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable
         EditContext?.NotifyFieldChanged(FieldIdentifier);
 
         await OnChange.InvokeAsync(value);
+    }
+
+    protected bool InvalidValueBinding()
+    {
+        return (ValueHasBeenSet &&
+                ValueChanged.HasDelegate is false &&
+                OnChange.HasDelegate is false);
     }
 
 

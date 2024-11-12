@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
-using Humanizer;
 using QRCoder;
+using Humanizer;
 using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
@@ -16,7 +16,9 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private IUserStore<User> userStore = default!;
 
-    [AutoInject] private SmsService smsService = default!;
+    [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+
+    [AutoInject] private PhoneService phoneService = default!;
 
     [AutoInject] private EmailService emailService = default!;
 
@@ -42,23 +44,17 @@ public partial class UserController : AppControllerBase, IUserController
             ?? throw new ResourceNotFoundException();
 
         return user.Sessions
-            .OrderByDescending(s => s.RenewedOn)
             .Select(us =>
             {
                 var dto = us.Map();
 
-                var lastSeenDateTime = us.RenewedOn ?? us.StartedOn;
+                dto.RenewedOn = us.RenewedOn ?? us.StartedOn;
 
-                dto.LastSeenOn = DateTimeOffset.UtcNow - lastSeenDateTime < TimeSpan.FromMinutes(5)
-                                 ? Localizer[nameof(AppStrings.Online)]
-                                 : DateTimeOffset.UtcNow - lastSeenDateTime < TimeSpan.FromMinutes(15)
-                                    ? Localizer[nameof(AppStrings.Recently)]
-                                    : lastSeenDateTime.Humanize(culture: CultureInfo.CurrentUICulture);
-
-                dto.IsValid = DateTimeOffset.UtcNow - lastSeenDateTime < AppSettings.Identity.RefreshTokenExpiration;
+                dto.IsValid = DateTimeOffset.UtcNow - dto.RenewedOn < AppSettings.Identity.RefreshTokenExpiration;
 
                 return dto;
             })
+            .OrderByDescending(us => us.RenewedOn)
         .ToList();
     }
 
@@ -175,7 +171,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var link = new Uri(
             HttpContext.Request.GetWebClientUrl(),
-            $"{Urls.ProfilePage}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+            $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);
     }
@@ -199,7 +195,7 @@ public partial class UserController : AppControllerBase, IUserController
         if (tokenIsValid is false)
             throw new BadRequestException(nameof(AppStrings.InvalidToken));
 
-        await ((IUserEmailStore<User>)userStore).SetEmailAsync(user, request.Email, cancellationToken);
+        await userEmailStore.SetEmailAsync(user, request.Email, cancellationToken);
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded is false)
@@ -216,6 +212,7 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SendChangePhoneNumberToken(SendPhoneTokenRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) - AppSettings.Identity.PhoneNumberTokenLifetime;
@@ -231,12 +228,13 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
-        await smsService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
+        await phoneService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
     public async Task ChangePhoneNumber(ChangePhoneNumberRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var expired = (DateTimeOffset.Now - user!.PhoneNumberTokenRequestedOn) > AppSettings.Identity.PhoneNumberTokenLifetime;
@@ -306,7 +304,10 @@ public partial class UserController : AppControllerBase, IUserController
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrEmpty(unformattedKey))
         {
-            await userManager.ResetAuthenticatorKeyAsync(user);
+            IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
+            await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
+                userManager.GenerateNewAuthenticatorKey(), cancellationToken);
+            await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
             if (string.IsNullOrEmpty(unformattedKey))

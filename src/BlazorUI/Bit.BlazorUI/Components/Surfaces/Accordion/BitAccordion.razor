@@ -24,16 +24,19 @@
                 <div style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
                     @Title
                 </div>
-                <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
-                    @Description
-                </div>
+                @if (Description.HasValue())
+                {
+                    <div style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
+                        @Description
+                    </div>
+                }
             </div>
             <i style="@Styles?.ChevronDownIcon"
-               class="bit-icon bit-icon--ChevronDown bit-acd-hic@(IsExpanded ? " bit-acd-hex" : "") @Classes?.ChevronDownIcon" />
+               class="bit-icon bit-icon--ChevronRight bit-acd-hic@(IsExpanded ? " bit-acd-hex" : "") @Classes?.ChevronDownIcon" />
         }
     </button>
 
-    <div>
+    <div style="@Styles?.ContentContainer" class="bit-acd-cnt @Classes?.ContentContainer">
         <div role="region"
              style="@Styles?.Content"
              class="bit-acd-con @(IsExpanded ? "bit-acd-cex" : "bit-acd-cco") @Classes?.Content"

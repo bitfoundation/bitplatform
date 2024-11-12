@@ -1,0 +1,47 @@
+﻿@inherits AppComponentBase
+
+<section>
+    <BitStack>
+        @if (currentSession is not null)
+        {
+            <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
+            <BitCard FullWidth>
+                <BitPersona PrimaryText="@(currentSession.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
+                            SecondaryText="@currentSession.Address"
+                            TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
+                            Size="BitPersonaSize.Size48"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="✓"
+                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
+            </BitCard>
+        }
+
+        @if (otherSessions is not null && otherSessions.Any())
+        {
+            <br />
+            <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
+
+            <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
+                <RowTemplate Context="session">
+                    <BitCard FullWidth>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                            <BitPersona Class="session-persona"
+                                        PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
+                                        SecondaryText="@($"{session.Address} ({session.IP}) - {GetLastSeenOn(session.RenewedOn)}")"
+                                        Size="BitPersonaSize.Size48"
+                                        Presence="@GetPresence(session.RenewedOn)"
+                                        Styles="@(new() { Image = "width:50%;height:50%" })"
+                                        ImageInitials="@(session.IsValid ? "✓" : "✘")"
+                                        ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
+                            <BitSpacer />
+                            <BitButton Variant="BitVariant.Text"
+                                       OnClick="() => RevokeSession(session)"
+                                       IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" />
+                        </BitStack>
+                    </BitCard>
+                </RowTemplate>
+            </BitBasicList>
+        }
+    </BitStack>
+</section>

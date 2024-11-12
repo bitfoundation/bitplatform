@@ -4,6 +4,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;
     private bool _disposed;
+    private bool _isLoading;
     private bool _internalIsOpen;
     private string _containerId = default!;
     private TaskCompletionSource<BitDialogResult?>? _tcs = new();
@@ -17,7 +18,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Dialog.
     /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; } = true;
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Dialog will be positioned absolute instead of fixed.
@@ -25,7 +26,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
     [Parameter] public bool AbsolutePosition { get; set; }
 
     /// <summary>
-    /// Alias for childcontent
+    /// Alias for child content.
     /// </summary>
     [Parameter] public RenderFragment? Body { get; set; }
 
@@ -260,7 +261,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        _ = OnClose.InvokeAsync(e);
+        await OnClose.InvokeAsync(e);
 
         await DismissDialog(e);
     }
@@ -272,7 +273,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
         _tcs?.SetResult(Result);
         _tcs = null;
 
-        _ = OnCancel.InvokeAsync(e);
+        await OnCancel.InvokeAsync(e);
 
         await DismissDialog(e);
     }
@@ -284,9 +285,18 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
         _tcs?.SetResult(Result);
         _tcs = null;
 
-        _ = OnOk.InvokeAsync(e);
+        _isLoading = true;
 
-        await DismissDialog(e);
+        try
+        {
+            await OnOk.InvokeAsync(e);
+
+            await DismissDialog(e);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private string GetPositionClass() => Position switch

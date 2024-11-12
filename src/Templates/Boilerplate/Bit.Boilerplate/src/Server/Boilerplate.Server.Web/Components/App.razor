@@ -3,7 +3,7 @@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.Current;
+    var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;
 }
 
 <!DOCTYPE html>
@@ -14,13 +14,13 @@
 
     <meta charset="utf-8" />
     <meta name="theme-color">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="@localizer[nameof(AppStrings.DescriptionMetaTagValue)]" />
 
     <Script>
         // disable auto-zoom of iOS Safari when focusing an input
         (/iPad|iPhone|iPod/.test(navigator.userAgent)) &&
-            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0')
+            (document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover')
     </Script>
 
     @*#if (captcha == "reCaptcha")*@
@@ -32,8 +32,12 @@
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
+    @*#if (appInsights == true)*@
+    <Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+    <BlazorApplicationInsights.ApplicationInsightsInit @rendermode=renderMode />
+    @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" href="images/icons/bit-icon-512.png" />
-    @if (AppRenderMode.PwaEnabled)
+    @if (serverWebSettings.WebAppRender.PwaEnabled)
     {
         <Link rel="manifest" href="manifest.json" />
     }
@@ -46,9 +50,9 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
-    <Link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
+    <Link rel="stylesheet" href="Boilerplate.Server.Web.styles.css" />
 
-    @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
+    @if (renderMode != null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender))
     {
         <LoadingComponent />
     }
@@ -57,8 +61,10 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
-        @if (AppRenderMode.PwaEnabled)
+        <Script src="_framework/blazor.web.js?ver=8.0.404" autostart="false"></Script>
+        <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
+             This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
+        @if (serverWebSettings.WebAppRender.PwaEnabled)
         {
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
             <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>

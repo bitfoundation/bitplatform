@@ -1,4 +1,9 @@
-﻿using Boilerplate.Shared.Dtos.Categories;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.SignalR;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
+using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers;
@@ -6,6 +11,10 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
+    //#if (signalR == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
     {
@@ -20,11 +29,8 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        if (odataQuery.Skip is not null)
-            query = query.Skip(odataQuery.Skip.Value);
-
-        if (odataQuery.Top is not null)
-            query = query.Take(odataQuery.Top.Value);
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip!.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top!.Value);
 
         return new PagedResult<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
@@ -49,38 +55,51 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        //#if (signalR == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
+
         return entityToAdd.Map();
     }
 
     [HttpPut]
     public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.Categories.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
+        var entityToUpdate = dto.Map();
 
-        if (entityToUpdate is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
-
-        dto.Patch(entityToUpdate);
+        DbContext.Update(entityToUpdate);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        //#if (signalR == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
 
         return entityToUpdate.Map();
     }
 
-    [HttpDelete("{id}")]
-    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    [HttpDelete("{id}/{concurrencyStamp}")]
+    public async Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken)
     {
         if (await DbContext.Products.AnyAsync(p => p.CategoryId == id, cancellationToken))
         {
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id });
+        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
 
-        var affectedRows = await DbContext.SaveChangesAsync(cancellationToken);
+        await DbContext.SaveChangesAsync(cancellationToken);
 
-        if (affectedRows < 1)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
+        //#if (signalR == true)
+        await PublishDashboardDataChanged(cancellationToken);
+        //#endif
     }
+
+    //#if (signalR == true)
+    private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
+    {
+        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+    }
+    //#endif
 }
 

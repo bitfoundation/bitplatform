@@ -2,6 +2,9 @@
 using Humanizer;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -10,6 +13,7 @@ public partial class IdentityController
     [HttpPost]
     public async Task SendResetPasswordToken(SendResetPasswordTokenRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request)
                     ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
@@ -34,28 +38,35 @@ public partial class IdentityController
         var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
         var link = new Uri(HttpContext.Request.GetWebClientUrl(), url);
 
-        async Task SendEmail()
-        {
-            if (await userManager.IsEmailConfirmedAsync(user) is false) return;
+        List<Task> sendMessagesTasks = [];
 
-            await emailService.SendResetPasswordToken(user, token, link, cancellationToken);
+        if (await userManager.IsEmailConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(emailService.SendResetPasswordToken(user, token, link, cancellationToken));
         }
 
-        async Task SendSms()
-        {
-            if (await userManager.IsPhoneNumberConfirmedAsync(user) is false) return;
+        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token].ToString();
 
-            await smsService.SendSms(Localizer[nameof(AppStrings.ResetPasswordTokenSmsText), token], user.PhoneNumber!, cancellationToken);
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        await Task.WhenAll([SendEmail(), SendSms()]);
+        //#if (signalR == true)
+        sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+        //#endif
+
+        //#if (notification == true)
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
+        //#endif
+
+        await Task.WhenAll(sendMessagesTasks);
     }
-
-
 
     [HttpPost]
     public async Task ResetPassword(ResetPasswordRequestDto request, CancellationToken cancellationToken)
     {
+        request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
         var user = await userManager.FindUserAsync(request) ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.UserNotFound)]);
 
         var expired = (DateTimeOffset.Now - user.ResetPasswordTokenRequestedOn) > AppSettings.Identity.ResetPasswordTokenLifetime;

@@ -1,31 +1,41 @@
-﻿@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../Styles/abstracts/_media-queries.scss';
 
-.main {
-    flex-grow: 1;
-    display: flex;
-    padding: rem2(10px);
-    flex-direction: column;
+section {
+    padding: 1rem;
+    min-width: 20rem;
+    max-height: var(--app-height);
+
+    @include lt-md {
+        min-width: unset;
+    }
 }
 
-.header {
-    display: flex;
-}
+::deep {
+    .root {
+        width: var(--app-width);
+        height: var(--app-height);
+        top: var(--app-inset-top);
+        left: var(--app-inset-left);
+        right: var(--app-inset-right);
+        bottom: var(--app-inset-bottom);
+    }
 
-.title {
-    flex-grow: 1;
-}
+    .content {
+        @include lt-md {
+            min-width: 95%;
+            max-width: 95%;
+        }
+    }
 
-.body {
-    flex-grow: 1;
-    display: flex;
-    overflow: auto;
-    max-width: 90vw;
-    white-space: pre;
-    margin: rem2(10px) 0;
-}
+    .stack {
+        max-height: calc(var(--app-height) - 3rem);
+    }
 
-.footer {
-    display: flex;
-    justify-content: center;
+    .body {
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        overflow: auto;
+        white-space: pre;
+    }
 }

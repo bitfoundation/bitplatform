@@ -62,7 +62,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     /// CultureInfo for the TimePicker
     /// </summary>
     [Parameter, ResetClassBuilder]
-    [CallOnSet(nameof(HandleParameterChanges))]
+    [CallOnSet(nameof(OnSetCulture))]
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
@@ -330,8 +330,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
         if (AllowTextInput is false) return;
 
         CurrentValueAsString = e.Value?.ToString();
@@ -350,7 +349,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         await OnClick.InvokeAsync();
     }
 
-    private void HandleParameterChanges()
+    private void OnSetCulture()
     {
         _culture = Culture ?? CultureInfo.CurrentUICulture;
     }
@@ -517,8 +516,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     private async Task UpdateTime(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
 
         var rect = await _js.GetBoundingClientRect(_clockRef);
         var radius = rect.Width / 2;

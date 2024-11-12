@@ -1,23 +1,27 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-prs {
-    margin: 0;
-    padding: 0;
     display: flex;
     font-weight: 400;
     box-shadow: none;
+    color: $clr-fg-pri;
+    width: fit-content;
     position: relative;
     align-items: center;
     box-sizing: border-box;
+    justify-content: center;
     font-size: spacing(1.75);
-    color: $clr-fg-pri;
     font-family: $tg-font-family;
 
     &.bit-dis {
-        pointer-events: none;
         color: $clr-fg-dis;
+        pointer-events: none;
         background-color: $clr-bg-dis;
     }
+}
+
+.bit-prs-fwi {
+    width: 100%;
 }
 
 .bit-prs-cin {
@@ -31,10 +35,29 @@
     overflow: hidden;
     font-weight: 600;
     position: relative;
-    border-radius: 50%;
     align-items: center;
     justify-content: center;
-    background-color: $clr-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+}
+
+.bit-prs-him {
+    .bit-prs-imc {
+        border: none;
+        border-width: 0;
+    }
+}
+
+.bit-prs-crl {
+    .bit-prs-imc {
+        border-radius: 50%;
+    }
+}
+
+.bit-prs-sqr {
+    .bit-prs-imc {
+        border-radius: $shp-border-radius;
+    }
 }
 
 .bit-prs-imo {
@@ -47,7 +70,12 @@
     justify-content: center;
     font-size: spacing(1.75);
     transition: all 0.1s linear;
-    background-color: $clr-pri;
+    color: var(--bit-prs-coin-clr-txt);
+    background-color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-ini {
+    text-transform: uppercase;
 }
 
 .bit-prs-img {
@@ -64,8 +92,8 @@
     width: spacing(1);
     height: spacing(1);
     position: absolute;
-    align-items: center;
     border-radius: 50%;
+    align-items: center;
     right: spacing(-0.25);
     bottom: spacing(-0.25);
     font-size: spacing(0.5);
@@ -74,14 +102,6 @@
     forced-color-adjust: none;
     background-clip: border-box;
     border: spacing(0.125) $shp-border-style $clr-brd-sec;
-}
-
-.bit-prs-unk {
-    color: $clr-err;
-
-    .bit-prs-imc {
-        background-color: $clr-bg-sec;
-    }
 }
 
 .bit-prs-det {
@@ -97,9 +117,9 @@
 .bit-prs-ttx,
 .bit-prs-otx {
     overflow: hidden;
+    color: $clr-fg-pri;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: $clr-fg-pri;
 }
 
 .bit-prs-abt {
@@ -122,8 +142,8 @@
     justify-content: center;
     font-size: spacing(1.75);
     transform: translateX(-50%);
-    background-color: transparent;
     font-family: $tg-font-family;
+    background-color: transparent;
 
     @media (hover: hover) {
         &:hover {
@@ -201,9 +221,6 @@
 }
 
 .bit-prs-s24 {
-    min-height: spacing(3);
-    min-width: spacing(3);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(3);
@@ -230,9 +247,6 @@
 }
 
 .bit-prs-s32 {
-    min-height: spacing(4);
-    min-width: spacing(4);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(4);
@@ -259,9 +273,6 @@
 }
 
 .bit-prs-s40 {
-    min-height: spacing(5);
-    min-width: spacing(5);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(5);
@@ -303,12 +314,16 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.4);
+            bottom: spacing(-0.4);
+        }
+    }
 }
 
 .bit-prs-s48 {
-    min-height: spacing(6);
-    min-width: spacing(6);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(6);
@@ -350,12 +365,16 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.4);
+            bottom: spacing(-0.4);
+        }
+    }
 }
 
 .bit-prs-s56 {
-    min-height: spacing(7);
-    min-width: spacing(7);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(7);
@@ -397,12 +416,16 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-0.5);
+            bottom: spacing(-0.5);
+        }
+    }
 }
 
 .bit-prs-s72 {
-    min-height: spacing(9);
-    min-width: spacing(9);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(9);
@@ -446,12 +469,16 @@
     .bit-prs-otx {
         display: none;
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1);
+            bottom: spacing(-1);
+        }
+    }
 }
 
 .bit-prs-s100 {
-    min-height: spacing(12.5);
-    min-width: spacing(12.5);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         position: relative;
@@ -497,12 +524,16 @@
         font-weight: 400;
         font-size: spacing(1.75);
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1);
+            bottom: spacing(-1);
+        }
+    }
 }
 
 .bit-prs-s120 {
-    min-height: spacing(15);
-    min-width: spacing(15);
-
     .bit-prs-ima {
         flex: 0 0 auto;
         width: spacing(15);
@@ -548,4 +579,115 @@
         font-weight: 400;
         font-size: spacing(1.75);
     }
+
+    &.bit-prs-sqr {
+        .bit-prs-pre {
+            right: spacing(-1.5);
+            bottom: spacing(-1.5);
+        }
+    }
+}
+
+.bit-prs-fil {
+    color: var(--bit-prs-coin-clr-txt);
+    border-color: var(--bit-prs-coin-clr-bg);
+    background-color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-otl {
+    background-color: transparent;
+    color: var(--bit-prs-coin-clr-bg);
+    border-color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-txt {
+    border-color: transparent;
+    background-color: transparent;
+    color: var(--bit-prs-coin-clr-bg);
+}
+
+.bit-prs-pri {
+    --bit-prs-coin-clr-bg: #{$clr-pri};
+    --bit-prs-coin-clr-txt: #{$clr-pri-text};
+}
+
+.bit-prs-sec {
+    --bit-prs-coin-clr-bg: #{$clr-sec};
+    --bit-prs-coin-clr-txt: #{$clr-sec-text};
+}
+
+.bit-prs-ter {
+    --bit-prs-coin-clr-bg: #{$clr-ter};
+    --bit-prs-coin-clr-txt: #{$clr-ter-text};
+}
+
+.bit-prs-inf {
+    --bit-prs-coin-clr-bg: #{$clr-inf};
+    --bit-prs-coin-clr-txt: #{$clr-inf-text};
+}
+
+.bit-prs-suc {
+    --bit-prs-coin-clr-bg: #{$clr-suc};
+    --bit-prs-coin-clr-txt: #{$clr-suc-text};
+}
+
+.bit-prs-wrn {
+    --bit-prs-coin-clr-bg: #{$clr-wrn};
+    --bit-prs-coin-clr-txt: #{$clr-wrn-text};
+}
+
+.bit-prs-swr {
+    --bit-prs-coin-clr-bg: #{$clr-swr};
+    --bit-prs-coin-clr-txt: #{$clr-swr-text};
+}
+
+.bit-prs-err {
+    --bit-prs-coin-clr-bg: #{$clr-err};
+    --bit-prs-coin-clr-txt: #{$clr-err-text};
+}
+
+
+.bit-prs-pbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-pri};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-sbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-sec};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-tbg {
+    --bit-prs-coin-clr-bg: #{$clr-bg-ter};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-pfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-pri};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-sfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-sec};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-tfg {
+    --bit-prs-coin-clr-bg: #{$clr-fg-ter};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-pbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-pri};
+    --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+}
+
+.bit-prs-sbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-sec};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+}
+
+.bit-prs-tbr {
+    --bit-prs-coin-clr-bg: #{$clr-brd-ter};
+    --bit-prs-coin-clr-txt: #{$clr-bg-pri};
 }

@@ -252,7 +252,7 @@ public partial class BitTooltipDemo
 
 
     private BitTooltipPosition tooltipPosition;
-    private List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList = Enum.GetValues(typeof(BitTooltipPosition))
+    private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList = Enum.GetValues(typeof(BitTooltipPosition))
         .Cast<BitTooltipPosition>()
         .Select(enumValue => new BitDropdownItem<BitTooltipPosition>
         {
@@ -289,20 +289,55 @@ public partial class BitTooltipDemo
 </BitTooltip>";
 
     private readonly string example3RazorCode = @"
+<BitTooltip>
+    <Template>
+        <ul style=""padding: 0.5rem; margin: 0;"">
+            <li>1. One</li>
+            <li>2. Two</li>
+        </ul>
+    </Template>
+    <Anchor>
+        <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
+    </Anchor>
+</BitTooltip>";
+
+    private readonly string example4RazorCode = @"
+<BitTooltip @bind-IsShown=""isShown""
+            Text=""Text""
+            HideArrow=""hideArrow""
+            HideDelay=""(int)hideDelay""
+            ShowOnClick=""showOnClick""
+            ShowOnHover=""showOnHover""
+            Position=""tooltipPosition"">
+    <BitButton Variant=""BitVariant.Outline"">Anchor</BitButton>
+</BitTooltip>
+
+<BitDropdown Label=""Tooltip positions"" Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
+<BitSpinButton Label=""Hide delay"" @bind-Value=""hideDelay"" Mode=""BitSpinButtonMode.Inline"" />
+<BitToggle @bind-Value=""isShown"" Text=""Toggle tooltip state"" />
+<BitToggle @bind-Value=""hideArrow"" Text=""Hide tooltip arrow"" />
+<BitToggle @bind-Value=""showOnClick"" Text=""Show tooltip on click"" />
+<BitToggle @bind-Value=""showOnHover"" Text=""Show tooltip on hover"" />";
+    private readonly string example4CsharpCode = @"
+private bool isShown = true;
+private bool showOnClick = true;
+private bool showOnHover;
+private bool hideArrow;
+private double hideDelay = 800;
+
+private BitTooltipPosition tooltipPosition;
+
+private readonly List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList = Enum.GetValues(typeof(BitTooltipPosition))
+    .Cast<BitTooltipPosition>()
+    .Select(enumValue => new BitDropdownItem<BitTooltipPosition>
+    {
+        Value = enumValue,
+        Text = enumValue.ToString()
+    })
+    .ToList();";
+
+    private readonly string example5RazorCode = @"
 <style>
-    .custom-class .custom-content {
-        gap: 0.5rem;
-        padding: 0.5rem;
-        color: blueviolet;
-        border-radius: 1rem;
-        display: inline-flex;
-        box-shadow: aqua 0 0 0.5rem;
-    }
-
-    .custom-root {
-        text-shadow: aqua 0 0 0.5rem;
-    }
-
     .custom-tooltip {
         color: tomato;
         border: solid tomato;
@@ -316,40 +351,15 @@ public partial class BitTooltipDemo
 </style>
 
 
-<BitTooltip Text=""This is the tooltip text"" Class=""custom-class"">
-    <div class=""custom-content"">
-        <div>Item 1</div>
-        <div>Item 2</div>
-        <div>Item 3</div>
-    </div>
-</BitTooltip>
-
-
 <BitTooltip Text=""This is the tooltip text"" Styles=""@(new() { Tooltip = ""box-shadow: aqua 0 0 0.5rem;"" })"">
     <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>
 
-<BitTooltip Text=""This is the tooltip text""
-            Classes=""@(new() { Root = ""custom-root"",
-                               Tooltip = ""custom-tooltip"",
-                               Arrow = ""custom-arrow"" })"">
+<BitTooltip Text=""This is the tooltip text"" Classes=""@(new() { Tooltip = ""custom-tooltip"", Arrow = ""custom-arrow"" })"">
     <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
 </BitTooltip>";
 
-    private readonly string example4RazorCode = @"
-<BitTooltip>
-    <Template>
-        <ul style=""padding: 0.5rem; margin: 0;"">
-            <li>1. One</li>
-            <li>2. Two</li>
-        </ul>
-    </Template>
-    <Anchor>
-        <BitButton Variant=""BitVariant.Outline"">Hover over me</BitButton>
-    </Anchor>
-</BitTooltip>";
-
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitTooltip Dir=""BitDir.Rtl"">
     <Template>
         <ul style=""padding: 0.5rem; margin: 0;"">
@@ -361,39 +371,4 @@ public partial class BitTooltipDemo
         <BitButton Variant=""BitVariant.Outline"">نشانگر ماوس را روی من بیاورید</BitButton>
     </Anchor>
 </BitTooltip>";
-
-    private readonly string example6RazorCode = @"
-<BitTooltip @bind-IsShown=""isShown""
-            Text=""Text""
-            HideArrow=""hideArrow""
-            HideDelay=""(int)hideDelay""
-            ShowOnClick=""showOnClick""
-            ShowOnHover=""showOnHover""
-            Position=""tooltipPosition"">
-    <BitButton Variant=""BitVariant.Outline"">Anchor</BitButton>
-</BitTooltip>
-
-<BitDropdown Label=""Tooltip positions"" Items=""tooltipPositionList"" @bind-Value=""tooltipPosition"" />
-<BitSpinButton Label=""Hide delay"" @bind-Value=""hideDelay"" Mode=""BitSpinButtonMode.Inline"" />
-<BitToggle @bind-Value=""isShown"" DefaultText=""Toggle tooltip state"" />
-<BitToggle @bind-Value=""hideArrow"" DefaultText=""Toggle tooltip arrow"" />
-<BitToggle @bind-Value=""showOnClick"" DefaultText=""Show tooltip on click"" />
-<BitToggle @bind-Value=""showOnHover"" DefaultText=""Show tooltip on hover"" />";
-    private readonly string example6CsharpCode = @"
-private bool isShown = true;
-private bool showOnClick = true;
-private bool showOnHover;
-private bool hideArrow;
-private double hideDelay = 800;
-
-private BitTooltipPosition tooltipPosition;
-
-private List<BitDropdownItem<BitTooltipPosition>> tooltipPositionList = Enum.GetValues(typeof(BitTooltipPosition))
-    .Cast<BitTooltipPosition>()
-    .Select(enumValue => new BitDropdownItem<BitTooltipPosition>
-    {
-        Value = enumValue,
-        Text = enumValue.ToString()
-    })
-    .ToList();";
 }

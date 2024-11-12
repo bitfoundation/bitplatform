@@ -5,6 +5,15 @@ public partial class BitStackDemo
     [
         new()
         {
+            Name = "Alignment",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Defines whether to render Stack children both horizontally and vertically.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
             Name = "AutoHeight",
             Type = "bool",
             DefaultValue = "false",
@@ -37,6 +46,34 @@ public partial class BitStackDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom html element used for the root node. The default is \"div\"."
+        },
+        new()
+        {
+            Name = "FillContent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the direct children to occupy all of the root element's width."
+        },
+        new()
+        {
+            Name = "FitHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the height of the stack to fit its content."
+        },
+        new()
+        {
+            Name = "FitSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width and height of the stack to fit its content."
+        },
+        new()
+        {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width of the stack to fit its content."
         },
         new()
         {

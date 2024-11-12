@@ -30,8 +30,8 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "ChevronDownIcon",
-            Type = "string",
-            DefaultValue = "ChevronDown",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the chevron down part of the menu button.",
         },
         new()
@@ -378,6 +378,13 @@ public partial class BitMenuButtonDemo
                    Name = "Callout",
                    Type = "string?",
                    DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "CalloutContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the callout container of the BitMenuButton."
                },
                new()
@@ -407,6 +414,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the icon of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item wrapper of the BitMenuButton."
                },
                new()
                {

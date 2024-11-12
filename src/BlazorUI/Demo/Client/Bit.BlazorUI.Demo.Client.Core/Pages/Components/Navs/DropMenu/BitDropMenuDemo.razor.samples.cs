@@ -41,6 +41,16 @@ public partial class BitDropMenuDemo
 </BitDropMenu>";
 
     private readonly string example3RazorCode = @"
+<BitDropMenu Text=""Responsive"" Responsive>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+
+    private readonly string example4RazorCode = @"
 <BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
     <Template>
         <div style=""display:flex;gap:10px;"">
@@ -56,16 +66,16 @@ public partial class BitDropMenuDemo
     </Body>
 </BitDropMenu>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitDropMenu Text=""@($""Click me ({clickCounter})"")"" OnClick=""() => clickCounter++"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private int clickCounter;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -131,7 +141,7 @@ private int clickCounter;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitDropMenu Text=""منو"" Dir=""BitDir.Rtl"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>

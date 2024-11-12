@@ -9,31 +9,41 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Data.Configurations;
+//#if (notification == true)
+using Boilerplate.Server.Api.Models.PushNotification;
+//#endif
 
 namespace Boilerplate.Server.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid>(options), IDataProtectionKeyContext
 {
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
     //#if (sample == "Todo")
-    public DbSet<TodoItem> TodoItems { get; set; }
+    public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; } = default!;
+    public DbSet<Product> Products { get; set; } = default!;
+    //#endif
+    //#if (notification == true)
+    public DbSet<DeviceInstallation> DeviceInstallations { get; set; } = default!;
     //#endif
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(builder);
+        base.OnModelCreating(modelBuilder);
 
-        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         //#if (database != "Cosmos")
-        ConfigureIdentityTableNames(builder);
+        ConfigureIdentityTableNames(modelBuilder);
         //#else
-        ConfigureContainers(builder);
+        ConfigureContainers(modelBuilder);
+        //#endif
+
+        //#if (database != "Sqlite" && database != "Cosmos")
+        ConcurrencyStamp(modelBuilder);
         //#endif
     }
 
@@ -177,6 +187,49 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Product>()
             .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
         //#endif    
+
+        //#if (notification == true)
+        builder.Entity<DeviceInstallation>()
+            .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
+        //#endif
+    }
+    //#endif
+
+    //#if (database != "Sqlite" && database != "Cosmos")
+    private void ConcurrencyStamp(ModelBuilder modelBuilder)
+    {
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) ||
+            Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
+            return;
+        //#endif
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties()
+                .Where(p => p.Name is "ConcurrencyStamp"))
+            {
+                var builder = new PropertyBuilder(property);
+                builder.IsConcurrencyToken()
+                    .IsRowVersion();
+
+                //#if (IsInsideProjectTemplate == true)
+                if (Database.ProviderName.EndsWith("PostgreSQL", StringComparison.InvariantCulture))
+                {
+                    //#endif
+                    //#if (database == "PostgreSQL")
+                    if (property.ClrType == typeof(byte[]))
+                    {
+                        builder.HasConversion(new ValueConverter<byte[], uint>(
+                            v => BitConverter.ToUInt32(v, 0),
+                            v => BitConverter.GetBytes(v)));
+                    }
+                    //#endif
+                    //#if (IsInsideProjectTemplate == true)
+                }
+                //#endif
+            }
+        }
     }
     //#endif
 }

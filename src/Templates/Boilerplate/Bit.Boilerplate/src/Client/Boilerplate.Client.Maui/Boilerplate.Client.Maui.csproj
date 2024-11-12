@@ -16,14 +16,13 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.template</ApplicationId>
-        <ApplicationIdGuid>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
 
         <!-- Required for C# Hot Reload -->
-        <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+        <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
 
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
 
@@ -33,7 +32,7 @@
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' == 'Production'">
         <EnableLLVM>true</EnableLLVM>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>
         <MauiUseDefaultAotProfile Condition="Exists('custom.aprof')">false</MauiUseDefaultAotProfile>
@@ -43,12 +42,16 @@
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
         <EnableSGenConc>True</EnableSGenConc>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Production'">
+        <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
+        <EnableSGenConc>True</EnableSGenConc>
         <!--/+:msbuild-conditional:noEmit -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter -->
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
         <UseInterpreter Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">True</UseInterpreter>
         <PublishAot Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">false</PublishAot>
@@ -57,12 +60,12 @@
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
        to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
-    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
-        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' == 'Development'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Development.plist</CodesignEntitlements>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
-        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' == 'Production'">
+        <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
         <!--/+:msbuild-conditional:noEmit -->
         <MtouchInterpreter Condition=" '$(offlineDb)' == 'false'">-all</MtouchInterpreter>
@@ -71,9 +74,24 @@
         <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
-
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+        <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
+        <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" />
+        <!--/-:msbuild-conditional:noEmit -->
         <!-- Run the following commands to create custom.aprof file which improves the Android app performance -->
         <!-- dotnet add package Mono.AotProfiler.Android -->
         <!-- dotnet build -t:BuildAndStartAotProfiling -f net8.0-android -p:UseInterpreter=false -->
@@ -89,6 +107,7 @@
 
         <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
+        <Using Include="Boilerplate.Client.Core.Components.Pages" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Shared" />
@@ -117,11 +136,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.11.0" PrivateAssets="all" />
-        <PackageReference Include="Bit.SourceGenerators" Version="8.11.0" PrivateAssets="all" />
         <Content Remove="compilerconfig.json" />
         <None Include="compilerconfig.json" />
-        <Content Remove="Properties\launchSettings.json" />
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -129,24 +147,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="EmbedIO" Version="3.5.2" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.82" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />
-        <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.82" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.82" />
-        <PackageReference Include="Oscore.Maui.Android.InAppUpdates" Version="1.1.0" />
-        <PackageReference Include="Oscore.Maui.AppStoreInfo" Version="1.0.7" />
-        <PackageReference Include="Oscore.Maui.InAppReviews" Version="1.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.0" />
+        <PackageReference Include="EmbedIO" />
+        <PackageReference Include="Microsoft.Maui.Controls" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
+        <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.5" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.5" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" Version="2.2.2" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
+        <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" />
+        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
+        <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
 
@@ -156,7 +168,14 @@
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <!-- https://github.com/dotnet/runtime/issues/104599  -->
+    <Target Name="_FixAndroidAotInputs" DependsOnTargets="_AndroidAotInputs" BeforeTargets="_AndroidAotCompilation">
+        <ItemGroup Condition="$(EnableLLVM)">
+            <_AndroidAotInputs Remove="$(IntermediateLinkDir)**\System.Net.Sockets.dll" />
+        </ItemGroup>
     </Target>
 
 </Project>

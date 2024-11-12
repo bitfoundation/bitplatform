@@ -13,26 +13,20 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/ConfirmMessageBox.razor.css",
-        "inputFile": "Components/Layout/ConfirmMessageBox.razor.scss",
+        "outputFile": "Components/Layout/AuthorizedHeader.razor.css",
+        "inputFile": "Components/Layout/AuthorizedHeader.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/Footer.razor.css",
-        "inputFile": "Components/Layout/Footer.razor.scss",
+        "outputFile": "Components/Layout/DiagnosticModal.razor.css",
+        "inputFile": "Components/Layout/DiagnosticModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/Header.razor.css",
-        "inputFile": "Components/Layout/Header.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Layout/MainLayout.razor.css",
-        "inputFile": "Components/Layout/MainLayout.razor.scss",
+        "outputFile": "Components/Layout/IdentityHeader.razor.css",
+        "inputFile": "Components/Layout/IdentityHeader.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -43,14 +37,38 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/NavMenu.razor.css",
-        "inputFile": "Components/Layout/NavMenu.razor.scss",
+        "outputFile": "Components/Layout/NavBar.razor.css",
+        "inputFile": "Components/Layout/NavBar.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/SignOutConfirmModal.razor.css",
-        "inputFile": "Components/Layout/SignOutConfirmModal.razor.scss",
+        "outputFile": "Components/Layout/NavPanel.razor.css",
+        "inputFile": "Components/Layout/NavPanel.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Layout/RootContainer.razor.css",
+        "inputFile": "Components/Layout/RootContainer.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Layout/RootLayout.razor.css",
+        "inputFile": "Components/Layout/RootLayout.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Layout/SignOutConfirmDialog.razor.css",
+        "inputFile": "Components/Layout/SignOutConfirmDialog.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Layout/UserMenu.razor.css",
+        "inputFile": "Components/Layout/UserMenu.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -78,45 +96,40 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    // identity
     {
-        "outputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/ProfilePage.razor.scss",
+        "outputFile": "Components/Pages/Identity/Components/SocialRow.razor.css",
+        "inputFile": "Components/Pages/Identity/Components/SocialRow.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Profile/UserDataSection.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/UserDataSection.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/OtpPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/OtpPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/TwoFactorSection.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/SignInPage.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/SignInPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Profile/DeleteAccountSection.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/DeleteAccountSection.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/SignInPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/SignInPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Profile/DeleteAccountConfirmModal.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/DeleteAccountConfirmModal.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignIn/TfaPanel.razor.css",
+        "inputFile": "Components/Pages/Identity/SignIn/TfaPanel.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/Profile/ChangeEmailSection.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/ChangeEmailSection.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Components/Pages/Identity/Profile/ChangePhoneNumberSection.razor.css",
-        "inputFile": "Components/Pages/Identity/Profile/ChangePhoneNumberSection.razor.scss",
+        "outputFile": "Components/Pages/Identity/SignUp/SignUpPage.razor.css",
+        "inputFile": "Components/Pages/Identity/SignUp/SignUpPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -138,85 +151,116 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    // authorized
     {
-        "outputFile": "Components/Pages/Identity/SignInPage.razor.css",
-        "inputFile": "Components/Pages/Identity/SignInPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Settings/ChangeEmailSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/ChangeEmailSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Identity/SignUpPage.razor.css",
-        "inputFile": "Components/Pages/Identity/SignUpPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Settings/ChangePhoneNumberSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/ChangePhoneNumberSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Settings/DeleteAccountSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/DeleteAccountSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Settings/ProfileSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/ProfileSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Settings/SessionsSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/SessionsSection.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Settings/SettingsPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/SettingsPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/Pages/Authorized/Settings/TwoFactorSection.razor.css",
+        "inputFile": "Components/Pages/Authorized/Settings/TwoFactorSection.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     //#if (offlineDb == true)
     {
-        "outputFile": "Components/Pages/Offline/OfflineEditProfilePage.razor.css",
-        "inputFile": "Components/Pages/Offline/OfflineEditProfilePage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Offline/OfflineEditProfilePage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Offline/OfflineEditProfilePage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     //#endif
     //#if (sample == "Todo")
     {
-        "outputFile": "Components/Pages/Todo/TodoPage.razor.css",
-        "inputFile": "Components/Pages/Todo/TodoPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Todo/TodoPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Todo/TodoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     //#elif (sample == "Admin")
     {
-        "outputFile": "Components/Pages/Categories/AddOrEditCategoryPage.razor.css",
-        "inputFile": "Components/Pages/Categories/AddOrEditCategoryPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Categories/CategoriesPage.razor.css",
-        "inputFile": "Components/Pages/Categories/CategoriesPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Categories/CategoriesPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Categories/CategoriesPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/DashboardPage.razor.css",
-        "inputFile": "Components/Pages/Dashboard/DashboardPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Dashboard/DashboardPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Dashboard/DashboardPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/OverallStatsWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/OverallStatsWidget.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Dashboard/OverallStatsWidget.razor.css",
+        "inputFile": "Components/Pages/Authorized/Dashboard/OverallStatsWidget.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/ProductsCountPerCategoryWidget.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Dashboard/OverallStatusCard.razor.css",
+        "inputFile": "Components/Pages/Authorized/Dashboard/OverallStatusCard.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/ProductsPercentageWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/ProductsPercentageWidget.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Dashboard/ProductsCountPerCategoryWidget.razor.css",
+        "inputFile": "Components/Pages/Authorized/Dashboard/ProductsCountPerCategoryWidget.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Dashboard/ProductsSalesWidget.razor.css",
-        "inputFile": "Components/Pages/Dashboard/ProductsSalesWidget.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Dashboard/ProductsPercentageWidget.razor.css",
+        "inputFile": "Components/Pages/Authorized/Dashboard/ProductsPercentageWidget.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Products/AddOrEditProductModal.razor.css",
-        "inputFile": "Components/Pages/Products/AddOrEditProductModal.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.css",
+        "inputFile": "Components/Pages/Authorized/Products/AddOrEditProductModal.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Pages/Products/ProductsPage.razor.css",
-        "inputFile": "Components/Pages/Products/ProductsPage.razor.scss",
+        "outputFile": "Components/Pages/Authorized/Products/ProductsPage.razor.css",
+        "inputFile": "Components/Pages/Authorized/Products/ProductsPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     }

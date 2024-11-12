@@ -2,11 +2,11 @@
 
 public partial class GoogleRecaptchaHttpClient
 {
-    [AutoInject] protected AppSettings AppSettings = default!;
+    [AutoInject] protected ServerApiSettings AppSettings = default!;
 
     [AutoInject] protected HttpClient httpClient = default!;
 
-    public async ValueTask<bool> Verify(string? googleRecaptchaResponse, CancellationToken cancellationToken)
+    public virtual async ValueTask<bool> Verify(string? googleRecaptchaResponse, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse)) return false;
 

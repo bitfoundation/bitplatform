@@ -19,6 +19,7 @@
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
         var href = (isEnabled && (Nav.SelectedItem != Item || Nav.Reselectable)) ? url : null;
+        var itemKey = Nav.GetItemKey(Item);
     }
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
@@ -63,7 +64,7 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "bit-ico-r90")" aria-hidden="true" />
                                 <span class="bit-nav-ghd">@text</span>
                             </div>
                             <div title="@description"
@@ -76,7 +77,7 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
+                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "bit-ico-r90")" aria-hidden="true" />
                             <span class="bit-nav-ghd">@text</span>
                         </div>
                     }
@@ -99,131 +100,79 @@
         }
         else
         {
-            var padding = childItems.Any()
-            ? (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : 0))
-            : (Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : Nav.IndentPadding));
+            var padding = Nav.IconOnly ? 0
+            : Depth * Nav.IndentValue + (Nav.ReversedChevron ? Nav.IndentReversedPadding : (childItems.Any() ? 0 : Nav.IndentPadding));
 
-            <div name="@text"
-                 class="bit-nav-ict @GetItemContainerClasses()"
-                 style="padding-inline-start:@(padding)px; @GetItemContainerStyles()">
+            var desPadding = Nav.ReversedChevron is false && childItems.Any() ? Nav.IndentPadding : 0;
 
-                <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                    @if (childItems.Any())
-                    {
-                        <button @onclick="ToggleItem"
-                                type="button"
-                                tabindex="0"
-                                style="@Nav.Styles?.ToggleButton"
-                                class="bit-nav-cbt @Nav.Classes?.ToggleButton"
-                                aria-expanded="@(isExpanded ? "true" : "false")"
-                                aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                            <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon.HasValue() ? Nav.ChevronDownIcon : "ChevronDown") @(isExpanded ? "bit-nav-exp" : "")" aria-hidden="true" />
-                        </button>
-                    }
 
-                    @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
-                    {
-                        @template(Item)
-                    }
-                    else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
-                    {
-                        @Nav.ItemTemplate(Item)
-                    }
-                    else
-                    {
-                        @if (renderLink)
+            @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
+            {
+                @template(Item)
+            }
+            else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
+            {
+                @Nav.ItemTemplate(Item)
+            }
+            else
+            {
+                <_BitNavItemContainer Href="@href"
+                                      Target="@target"
+                                      OnClick="HandleOnClick"
+                                      RenderLink="renderLink"
+                                      Disabled="@(isEnabled is false)"
+                                      AriaLabel="@Nav.GetAriaLabel(Item)"
+                                      Title="@(title is not null ? title : text)"
+                                      Class="@($"bit-nav-ict {GetItemContainerClasses()}")"
+                                      Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
+                                      AriaCurrent="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
+                                      Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
+                    <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
+                        @if (childItems.Any() && Nav.IconOnly is false)
                         {
-                            <a @onclick="HandleOnClick"
-                               tabindex="-1"
-                               style="@GetItemStyles()"
-                               target="@target"
-                               aria-label="@Nav.GetAriaLabel(Item)"
-                               class="bit-nav-itm @GetItemClasses()"
-                               disabled="@(isEnabled is false)"
-                               href="@href"
-                               title="@(title is not null ? title : text)"
-                               aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
-                               rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
-                                @if (template is not null)
-                                {
-                                    @template(Item)
-                                }
-                                else if (Nav.ItemTemplate is not null)
-                                {
-                                    @Nav.ItemTemplate(Item)
-                                }
-                                else
-                                {
-                                    @if (iconName.HasValue())
-                                    {
-                                        <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
-                                    }
-                                    <span>@text</span>
-                                }
-                            </a>
+                            <div @onclick="ToggleItem"
+                                 @onclick:preventDefault="true"
+                                 @onclick:stopPropagation="true"
+                                 tabindex="0"
+                                 type="button"
+                                 style="@Nav.Styles?.ToggleButton"
+                                 class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                 aria-expanded="@(isExpanded ? "true" : "false")"
+                                 aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
+                                <i class="bit-icon bit-icon--@(Nav.ChevronDownIcon ?? "ChevronRight") @(Nav.ChevronDownIcon.HasNoValue() && isExpanded ? "bit-nav-exp" : "bit-ico-r90")" aria-hidden="true" />
+                            </div>
                         }
-                        else
-                        {
-                            <button @onclick="HandleOnClick"
-                                    type="button"
-                                    tabindex="-1"
-                                    style="@GetItemStyles()"
-                                    aria-label="@Nav.GetAriaLabel(Item)"
-                                    class="bit-nav-itm @GetItemClasses()"
-                                    disabled="@(isEnabled is false)"
-                                    title="@(title is not null ? title : text)"
-                                    aria-current="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)">
-                                @if (template is not null)
+                        <div style="@GetItemStyles()"
+                             class="bit-nav-itm @GetItemClasses()">
+                            @if (template is not null)
+                            {
+                                @template(Item)
+                            }
+                            else if (Nav.ItemTemplate is not null)
+                            {
+                                @Nav.ItemTemplate(Item)
+                            }
+                            else
+                            {
+                                @if (iconName.HasValue())
                                 {
-                                    @template(Item)
+                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                 }
-                                else if (Nav.ItemTemplate is not null)
-                                {
-                                    @Nav.ItemTemplate(Item)
-                                }
-                                else
-                                {
-                                    @if (iconName.HasValue())
-                                    {
-                                        <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic bit-icon bit-icon--@iconName @Nav.Classes?.ItemIcon" aria-hidden="true" />
-                                    }
-                                    <span>@text</span>
-                                }
-                            </button>
-                        }
-                    }
-                </div>
+                                <span style="@Nav.Styles?.ItemText" class="bit-nav-itx @Nav.Classes?.ItemText">@text</span>
+                            }
+                        </div>
+                    </div>
 
-                @if (description.HasValue())
-                {
-                    @if (renderLink)
+                    @if (description.HasValue() && Nav.IconOnly is false)
                     {
-                        <a @onclick="HandleOnClick"
-                           tabindex="-1"
-                           target="@target"
-                           title="@description"
-                           disabled="@(isEnabled is false)"
-                           href="@href"
-                           style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
-                           class="bit-nav-des @Nav.Classes?.Description"
-                           rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
+                        <div title="@description"
+                             class="bit-nav-des @Nav.Classes?.Description"
+                             style="padding-inline-start:@(desPadding)px;@Nav.Styles?.Description">
                             @description
-                        </a>
+                        </div>
                     }
-                    else
-                    {
-                        <button @onclick="HandleOnClick"
-                                type="button"
-                                tabindex="-1"
-                                title="@description"
-                                disabled="@(isEnabled is false)"
-                                style="padding-inline-start:@((Nav.ReversedChevron is false && childItems.Any()) ? 27 : 0)px; @Nav.Styles?.Description"
-                                class="bit-nav-des @Nav.Classes?.Description">
-                            @description
-                        </button>
-                    }
-                }
-            </div>
+                </_BitNavItemContainer>
+            }
         }
     }
 

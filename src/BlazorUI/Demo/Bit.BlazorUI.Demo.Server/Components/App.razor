@@ -36,7 +36,7 @@
         gtag('config', 'G-G1ET5L69QF');
     </Script>
     <!-- Google tag -->
-    <!-- Microsoft Clarity -->
+    <!-- Microsoft Clarity
     <Script>
         (function (c, l, a, r, i, t, y) {
             c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
@@ -44,13 +44,14 @@
             y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
         })(window, document, "clarity", "script", "ipec21ezsa");
     </Script>
-    <!-- Microsoft Clarity -->
+    Microsoft Clarity -->
 
     <Link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
+    <Link rel="stylesheet" href="Bit.BlazorUI.Demo.Server.styles.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
 
@@ -62,7 +63,7 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?v=9.0.0-rc.2.24474.3" autostart="false"></Script>
         @if (AppRenderMode.PwaEnabled)
         {
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>

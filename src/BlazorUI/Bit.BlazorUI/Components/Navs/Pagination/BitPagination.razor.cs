@@ -43,12 +43,12 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The icon name of the first button.
     /// </summary>
-    [Parameter] public string FirstIcon { get; set; } = "ChevronLeftEnd6";
+    [Parameter] public string? FirstIcon { get; set; }
 
     /// <summary>
     /// The icon name of the last button.
     /// </summary>
-    [Parameter] public string LastIcon { get; set; } = "ChevronRightEnd6";
+    [Parameter] public string? LastIcon { get; set; }
 
     /// <summary>
     /// The number of items to render in the middle of the pagination.
@@ -60,7 +60,7 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The icon name of the next button.
     /// </summary>
-    [Parameter] public string NextIcon { get; set; } = "ChevronRight";
+    [Parameter] public string? NextIcon { get; set; }
 
     /// <summary>
     /// The event callback for when selected page changes.
@@ -70,7 +70,7 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The icon name of the previous button.
     /// </summary>
-    [Parameter] public string PreviousIcon { get; set; } = "ChevronLeft";
+    [Parameter] public string? PreviousIcon { get; set; }
 
     /// <summary>
     /// The selected page number.

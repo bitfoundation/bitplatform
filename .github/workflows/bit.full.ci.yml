@@ -5,12 +5,16 @@ on:
 
 env:
   ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  SIMPLE_TEST_FILTER: "ClassName!~PageTests"
+  BLAZOR_SERVER_TEST_FILTER: "ClassName~PageTests.BlazorServer"
+  BLAZOR_WASM_TEST_FILTER: "ClassName~PageTests.BlazorWebAssembly"
+  MULTILINGUAL_DISABLED_TEST_FILTER: "ClassName!~LocalizationTests|TestCategory=MultilingualDisabled"
 
 jobs:
 
   build:
     name: build and test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
 
@@ -22,13 +26,27 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET 6,7
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      continue-on-error: true
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
 
     - name: Prepare environment
       run: |
-        cd src/Templates/Boilerplate && dotnet build -c Release
+        cd src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/
+        sed -i 's|"ServerAddress": "http://localhost:5030/",|"ServerAddress": "/",|' appsettings.json
+        cd ../../../../ && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
         dotnet workload install maui-tizen maui-android wasm-tools
@@ -41,25 +59,87 @@ jobs:
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
 
-    - name: Test Sqlite database option
+    - name: Simple tests (no --advancedTests)
+      id: simple-test
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
+        dotnet new bit-bp --name SimpleTest --database Sqlite
+        cd SimpleTest/src/Server/SimpleTest.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.simple-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./SimpleTest/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Test Sqlite database option
+      id: sqlite-test
+      run: |
+        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlite/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test SqlServer database option
+      id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
-        dotnet ef database update 
+        dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Test Multilingual disabled option
+      id: multilingual-disabled-test
+      run: |
+        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests
+        cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.multilingual-disabled-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./MultilingualDisabled/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |
@@ -104,17 +184,17 @@ jobs:
 
     - name: Test sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true --signalr true
-        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PWA=true -p:BlazorWebAssemblyStandalone=true -p:Environment=Staging
+        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalR --notification
+        dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalr false
-        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PWA=false -p:BlazorWebAssemblyStandalone=false -p:Environment=Development
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalR false --notification false
+        dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 -f net8.0
 
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release

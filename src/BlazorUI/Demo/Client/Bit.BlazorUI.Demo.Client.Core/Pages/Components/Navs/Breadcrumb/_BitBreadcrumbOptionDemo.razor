@@ -100,74 +100,97 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="OverflowIcon" RazorCode="@example3RazorCode" Id="example3">
+<ComponentExampleBox Title="Icons" RazorCode="@example3RazorCode" Id="example3">
     <ExamplePreview>
-        <div>Customize the overflow icon in BitBreadcrumb using different icon name values.</div>
+        <div>Customize the overflow icon, divider icon and item icons in BitBreadcrumb using different icon name values.</div>
         <br /><br />
         <div class="example-box">
             <div>
-                <div>BitIconName (ChevronDown)</div>
-                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.ChevronDown">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                <div>BitIconName (OverflowIcon: ChevronDown - DividerIcon: CaretRightSolid8)</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" DividerIconName="@BitIconName.CaretRightSolid8" OverflowIconName="@BitIconName.ChevronDown">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IconName="@BitIconName.AdminELogoInverse32" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IconName="@BitIconName.AppsContent" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IconName="@BitIconName.AzureIcon" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IconName="@BitIconName.ClassNotebookLogo16" IsSelected />
                 </BitBreadcrumb>
             </div>
             <br />
             <div>
-                <div>BitIconName (CollapseMenu)</div>
-                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.CollapseMenu">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                <div>BitIconName (OverflowIcon: CollapseMenu) with active ReversedIcon</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.CollapseMenu" ReversedIcon>
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IconName="@BitIconName.AdminELogoInverse32" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IconName="@BitIconName.AppsContent" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IconName="@BitIconName.AzureIcon" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IconName="@BitIconName.ClassNotebookLogo16" IsSelected />
                 </BitBreadcrumb>
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Class & Style" RazorCode="@example4RazorCode" Id="example4">
+<ComponentExampleBox Title="Templates" RazorCode="@example4RazorCode" Id="example4">
     <ExamplePreview>
-        <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
+        <div>Here are some examples of customizing the breadcrumb content.</div>
         <br /><br />
         <div class="example-box">
             <div>
-                <div>Options Class</div>
+                <div>DividerIconTemplate</div>
                 <BitBreadcrumb TItem="BitBreadcrumbOption">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" Class="custom-item" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" Class="custom-item" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" Class="custom-item" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" Class="custom-item" IsSelected />
-                </BitBreadcrumb>
-            </div>
-            <div>
-                <div>Options Style</div>
-                <BitBreadcrumb TItem="BitBreadcrumbOption">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" IsSelected />
+                    <DividerIconTemplate>
+                        <BitIcon IconName="@BitIconName.CaretRightSolid8" Color="BitColor.Warning" />
+                    </DividerIconTemplate>
+                    <Options>
+                        <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                    </Options>
                 </BitBreadcrumb>
             </div>
             <br />
             <div>
-                <div>Selected Option Class</div>
-                <BitBreadcrumb TItem="BitBreadcrumbOption" SelectedItemClass="custom-selected-item">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                <div>ItemTemplate & OverflowTemplate</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">
+                    <ItemTemplate Context="item">
+                        <div style="font-weight: bold; color: #d13438; font-style:italic;">
+                            @item.Text
+                        </div>
+                    </ItemTemplate>
+                    <OverflowTemplate Context="item">
+                        <div style="font-weight: bold; color: blueviolet; font-style:italic;">
+                            @item.Text
+                        </div>
+                    </OverflowTemplate>
+                    <Options>
+                        <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                        <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                    </Options>
                 </BitBreadcrumb>
             </div>
+            <br />
             <div>
-                <div>Selected Option Style</div>
-                <BitBreadcrumb TItem="BitBreadcrumbOption" SelectedItemStyle="color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;">
-                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
-                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                <div>Item's template & Item's overflow tTemplate</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" SelectedItemClass="custom-selected-item">
+                    <Options>
+                        <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb">
+                            <Template Context="item"><div style="color:green">@item.Text</div></Template>
+                            <OverflowTemplate Context="item"><div style="color:green;text-decoration:underline;">@item.Text</div></OverflowTemplate>
+                        </BitBreadcrumbOption>
+                        <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb">
+                            <Template Context="item"><div style="color:yellow">@item.Text</div></Template>
+                            <OverflowTemplate Context="item"><div style="color:yellow;text-decoration:underline;">@item.Text</div></OverflowTemplate>
+                        </BitBreadcrumbOption>
+                        <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb">
+                            <Template Context="item"><div style="color:red">@item.Text</div></Template>
+                            <OverflowTemplate Context="item"><div style="color:red;text-decoration:underline;">@item.Text</div></OverflowTemplate>
+                        </BitBreadcrumbOption>
+                        <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected>
+                            <Template Context="item"><div style="color:blue">@item.Text</div></Template>
+                            <OverflowTemplate Context="item"><div style="color:blue;text-decoration:underline;">@item.Text</div></OverflowTemplate>
+                        </BitBreadcrumbOption>
+                    </Options>
                 </BitBreadcrumb>
             </div>
         </div>
@@ -179,7 +202,7 @@
         <div>By clicking on the options, the Selected option will change and match the SelectedItemStyle.</div>
         <br /><br />
         <div class="example-box">
-            <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" SelectedItemStyle="color: dodgerblue;">
+            <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })">
                 <BitBreadcrumbOption Text="Option 1" IsSelected="@(SelectedOptionNumber == 1)" OnClick="() => SelectedOptionNumber = 1" />
                 <BitBreadcrumbOption Text="Option 2" IsSelected="@(SelectedOptionNumber == 2)" OnClick="() => SelectedOptionNumber = 2" />
                 <BitBreadcrumbOption Text="Option 3" IsSelected="@(SelectedOptionNumber == 3)" OnClick="() => SelectedOptionNumber = 3" />
@@ -222,7 +245,66 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+<ComponentExampleBox Title="Class & Style" RazorCode="@example7RazorCode" Id="example7">
+    <ExamplePreview>
+        <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
+        <br /><br />
+        <div class="example-box">
+            <div>
+                <div>Component's Style & Class:</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Class="custom-class">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+                <br />
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Style="font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+            <br />
+            <div>
+                <div>Option's Style & Class:</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" Class="custom-item-1" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" Class="custom-item-2" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" Class="custom-item-1" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" Class="custom-item-2" IsSelected />
+                </BitBreadcrumb>
+                <br />
+                <BitBreadcrumb TItem="BitBreadcrumbOption">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" Style="color: aqua; text-shadow: aqua 0 0 1rem;" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" Style="color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" Style="color: aqua; text-shadow: aqua 0 0 1rem;" IsSelected />
+                </BitBreadcrumb>
+            </div>
+            <br />
+            <div>
+                <div>Styles & Classes:</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Classes="@(new() { Item = "custom-item", SelectedItem = "custom-selected-item" })">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+                <br />
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Styles="@(new() { Item = "color: green;", SelectedItem = "color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" })">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
     <ExamplePreview>
         <div>Use BitBreadcrumb in right-to-left (RTL).</div>
         <br />

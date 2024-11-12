@@ -4,11 +4,14 @@
     <base href="/" />
     <meta charset="utf-8" />
     <meta name="theme-color">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <!--#if (captcha == "reCaptcha")-->
     <link rel="preconnect" href="https://www.google.com">
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <!--#endif-->
+    <!--#if (appInsights == true)-->
+    <link rel="preconnect" href="https://js.monitor.azure.com" crossorigin>
     <!--#endif-->
 
     <link rel="preconnect" href="https://use-your-server-url-here.com">
@@ -25,7 +28,6 @@
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
-    <link rel="stylesheet" href="_content/Boilerplate.Client.Core/Boilerplate.Client.Core.bundle.scp.css" />
     <link rel="stylesheet" href="Boilerplate.Client.Maui.styles.css" />
     <!--#if (windows == true)-->
     <link rel="stylesheet" href="Boilerplate.Client.Windows.styles.css" />

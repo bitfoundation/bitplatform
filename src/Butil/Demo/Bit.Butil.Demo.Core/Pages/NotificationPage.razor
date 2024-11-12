@@ -1,0 +1,70 @@
+﻿@page "/notification"
+@inject Bit.Butil.Console console
+@inject Bit.Butil.Notification notification
+
+<PageTitle>Notification Samples</PageTitle>
+
+<h1>Notification</h1>
+
+<pre style="font-family:Consolas">
+@@inject Bit.Butil.Notification notification
+
+@@code {
+    ...
+    await notification.Show("title", new() { body: "this is body" });
+    ...
+}
+</pre>
+
+<br />
+<hr />
+
+<h3>Open the DevTools console and start clicking on buttons</h3>
+
+<hr />
+<br />
+
+<button @onclick="GetPermission">Get current permission</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<button @onclick="RequestPermission">Request permission</button>
+
+<br />
+<br />
+<hr />
+<br />
+
+<input @bind=@notifTitle />
+<br />
+<textarea @bind=@notifBody />
+<br />
+<button @onclick="Show">Show</button>
+
+<br />
+<br />
+
+@code {
+    private string notifTitle;
+    private string notifBody;
+
+    private async Task GetPermission()
+    {
+        var permission = await notification.GetPermission();
+        await console.Log("Notification permission:", permission.ToString());
+    }
+
+    private async Task RequestPermission()
+    {
+        var permission = await notification.RequestPermission();
+        await console.Log("Notification permission:", permission.ToString());
+    }
+
+    private async Task Show()
+    {
+        await notification.Show(notifTitle, new() { Body = notifBody });
+    }
+}

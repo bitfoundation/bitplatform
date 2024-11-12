@@ -1,0 +1,32 @@
+@namespace Bit.BlazorUI
+
+@if (RenderLink)
+{
+    <a @onclick="OnClick"
+       rel="@Rel"
+       href="@Href"
+       tabindex="-1"
+       title="@Title"
+       class="@Class"
+       style="@Style"
+       target="@Target"
+       disabled="@Disabled"
+       aria-label="@AriaLabel"
+       aria-current="@AriaCurrent">
+        @ChildContent
+    </a>
+}
+else
+{
+    <button @onclick="OnClick"
+            type="button"
+            title="@Title"
+            tabindex="-1"
+            class="@Class"
+            style="@Style"
+            disabled="@Disabled"
+            aria-label="@AriaLabel"
+            aria-current="@AriaCurrent">
+        @ChildContent
+    </button>
+}

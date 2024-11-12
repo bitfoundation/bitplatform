@@ -83,6 +83,11 @@ public partial class BitChoiceGroupOption<TValue> : ComponentBase, IDisposable
     /// </summary>
     public int Index { get; internal set; }
 
+    /// <summary>
+    /// Determines if the option is selected. This property's value is assigned by the component.
+    /// </summary>
+    public bool IsSelected { get; internal set; }
+
 
 
     protected override async Task OnInitializedAsync()

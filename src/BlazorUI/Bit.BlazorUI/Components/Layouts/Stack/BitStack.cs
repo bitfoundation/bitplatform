@@ -5,6 +5,12 @@ namespace Bit.BlazorUI;
 public partial class BitStack : BitComponentBase
 {
     /// <summary>
+    /// Defines whether to render Stack children both horizontally and vertically.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
     /// Make the height of the stack auto.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -31,6 +37,30 @@ public partial class BitStack : BitComponentBase
     /// The custom html element used for the root node. The default is "div".
     /// </summary>
     [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Expand the direct children to occupy all of the root element's width.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FillContent { get; set; }
+
+    /// <summary>
+    /// Sets the height of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitHeight { get; set; }
+
+    /// <summary>
+    /// Sets the width and height of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitSize { get; set; }
+
+    /// <summary>
+    /// Sets the width of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitWidth { get; set; }
 
     /// <summary>
     /// Defines the spacing between Stack children.
@@ -84,6 +114,11 @@ public partial class BitStack : BitComponentBase
 
     protected override string RootElementClass => "bit-stc";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => FillContent ? "bit-stc-fcn" : string.Empty);
+    }
+
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
@@ -91,14 +126,24 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => $"gap:{Gap ?? "1rem"}");
 
         StyleBuilder.Register(() =>
-            (Horizontal && VerticalAlign is not null) || (Horizontal is false && HorizontalAlign is not null)
-                ? $"align-items:{_AlignmentMap[Horizontal ? VerticalAlign!.Value : HorizontalAlign!.Value]}"
-                : string.Empty);
+        {
+            var vAlign = VerticalAlign ?? Alignment;
+            var hAlign = HorizontalAlign ?? Alignment;
+
+            return (Horizontal && vAlign is not null) || (Horizontal is false && hAlign is not null)
+                ? $"align-items:{_AlignmentMap[Horizontal ? vAlign!.Value : hAlign!.Value]}"
+                : string.Empty;
+        });
 
         StyleBuilder.Register(() =>
-            (Horizontal && HorizontalAlign is not null) || (Horizontal is false && VerticalAlign is not null)
-                ? $"justify-content:{_AlignmentMap[Horizontal ? HorizontalAlign!.Value : VerticalAlign!.Value]}"
-                : string.Empty);
+        {
+            var vAlign = VerticalAlign ?? Alignment;
+            var hAlign = HorizontalAlign ?? Alignment;
+
+            return (Horizontal && hAlign is not null) || (Horizontal is false && vAlign is not null)
+            ? $"justify-content:{_AlignmentMap[Horizontal ? hAlign!.Value : vAlign!.Value]}"
+            : string.Empty;
+        });
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
 
@@ -106,6 +151,9 @@ public partial class BitStack : BitComponentBase
 
         StyleBuilder.Register(() => (AutoSize || AutoWidth) ? "width:auto" : string.Empty);
         StyleBuilder.Register(() => (AutoSize || AutoHeight) ? "height:auto" : string.Empty);
+
+        StyleBuilder.Register(() => (FitSize || FitWidth) ? "width:fit-content" : string.Empty);
+        StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

@@ -1,11 +1,13 @@
 ﻿//-:cnd:noEmit
-using Maui.AppStores;
-using Maui.InAppReviews;
-using Maui.Android.InAppUpdates;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
+//+:cnd:noEmit
+//#if (notification == true)
+using Plugin.LocalNotification;
+//#endif
+//-:cnd:noEmit
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
-using Microsoft.Maui.Platform;
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -32,17 +34,22 @@ public static partial class MauiProgram
 #if iOS
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
 #endif
-
-        AppPlatform.OSDescription = $"{DeviceInfo.Current.Manufacturer} {(AppPlatform.IsIosOnMacOS ? DevicePlatform.macOS : DeviceInfo.Current.Platform)} {DeviceInfo.Current.Version}";
+        ITelemetryContext.Current = new MauiTelemetryContext();
 
         var builder = MauiApp.CreateBuilder();
 
         builder
             .UseMauiApp<App>()
-            .UseAndroidInAppUpdates()
-            .UseInAppReviews()
-            .UseAppStoreInfo()
-            .Configuration.AddClientConfigurations();
+            .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
+
+        //+:cnd:noEmit
+        //#if (notification == true)
+        if (AppPlatform.IsWindows is false)
+        {
+            builder.UseLocalNotification();
+        }
+        //#endif
+        //-:cnd:noEmit
 
         builder.ConfigureServices();
 
@@ -57,7 +64,7 @@ public static partial class MauiProgram
                     {
                         var url = $"{userActivity.WebPageUrl.Path}?{userActivity.WebPageUrl.Query}";
 
-                        _ = Core.Routes.OpenUniversalLink(url);
+                        _ = Core.Components.Routes.OpenUniversalLink(url);
 
                         return true;
                     }
@@ -101,20 +108,25 @@ public static partial class MauiProgram
 #if Windows
             webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
-            if (AppEnvironment.IsDev() is false)
-            {
-                webView.EnsureCoreWebView2Async()
-                    .AsTask()
-                    .ContinueWith(async _ =>
+            webView.EnsureCoreWebView2Async()
+                .AsTask()
+                .ContinueWith(async _ =>
+                {
+                    await Application.Current!.Dispatcher.DispatchAsync(() =>
                     {
-                        await Application.Current!.Dispatcher.DispatchAsync(() =>
+                        webView.CoreWebView2.PermissionRequested += async (sender, args) =>
+                        {
+                            args.Handled = true;
+                            args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow;
+                        };
+                        if (AppEnvironment.IsDev() is false)
                         {
                             var settings = webView.CoreWebView2.Settings;
                             settings.IsZoomControlEnabled = false;
                             settings.AreBrowserAcceleratorKeysEnabled = false;
-                        });
+                        }
                     });
-            }
+                });
 
 #elif iOS || Mac
             webView.NavigationDelegate = new CustomWKNavigationDelegate();
@@ -124,13 +136,10 @@ public static partial class MauiProgram
             webView.ScrollView.Bounces = false;
             webView.Opaque = false;
 
-            if (AppEnvironment.IsDev())
+            if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
+                || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
             {
-                if ((DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && DeviceInfo.Current.Version >= new Version(13, 3))
-                    || (DeviceInfo.Current.Platform == DevicePlatform.iOS && DeviceInfo.Current.Version >= new Version(16, 4)))
-                {
-                    webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
-                }
+                webView.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
             }
 #elif Android
             webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));

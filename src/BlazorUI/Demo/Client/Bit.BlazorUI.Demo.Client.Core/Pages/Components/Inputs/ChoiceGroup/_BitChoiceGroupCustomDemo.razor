@@ -1,9 +1,17 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <BitChoiceGroup Label="Basic Customs"
-                        Items="basicCustoms"
-                        DefaultValue="basicCustoms[1].ItemValue"
-                        NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+        <div class="example-content">
+            <BitChoiceGroup Label="Basic Customs"
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
+
+            <BitChoiceGroup Label="NoCircle"
+                            NoCircle
+                            Items="basicCustoms"
+                            DefaultValue="basicCustoms[1].ItemValue"
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -16,7 +24,7 @@
                             IsEnabled="false"
                             Items="basicCustoms"
                             DefaultValue="@("A")"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
             <BitChoiceGroup Label="ChoiceGroup with Disabled Custom"
                             Items="disabledCustoms"
@@ -31,21 +39,44 @@
 <ComponentExampleBox Title="Images and Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>Showcases BitChoiceGroup with image and icon items.</div>
-        <br />
+        <br /><br />
         <div class="example-content">
             <BitChoiceGroup Label="Image Customs"
-                            DefaultValue="@("Bar")"
                             Items="imageCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
-                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
-                                                     ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
-                                                     ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
-                                                     ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
-                                                     SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
+                            DefaultValue="@("Bar")"
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
+                                                     Value = { Name = nameof(Order.ItemValue) },
+                                                     ImageSrc = { Name = nameof(Order.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(Order.ImageDescription) },
+                                                     ImageSize = { Name = nameof(Order.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(Order.SelectedImageAddress) }})" />
 
             <BitChoiceGroup Label="Icon Customs"
-                            DefaultValue="@("Day")"
                             Items="iconCustoms"
+                            DefaultValue="@("Day")"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     Value = { Selector = i => i.ItemValue },
+                                                     IconName = { Selector = i => i.IconName },
+                                                     IsEnabled = { Selector = i => i.IsDisabled is false } })" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Inline:</div><br />
+        <div class="example-content">
+            <BitChoiceGroup Label="Image Customs"
+                            Inline
+                            Items="inlineImageCustoms"
+                            DefaultValue="@("Bar")"
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
+                                                     Value = { Name = nameof(Order.ItemValue) },
+                                                     ImageSrc = { Name = nameof(Order.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(Order.ImageDescription) },
+                                                     ImageSize = { Name = nameof(Order.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(Order.SelectedImageAddress) }})" />
+
+            <BitChoiceGroup Label="Icon Customs"
+                            Inline
+                            Items="iconCustoms"
+                            DefaultValue="@("Day")"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name },
                                                      Value = { Selector = i => i.ItemValue },
                                                      IconName = { Selector = i => i.IconName },
@@ -63,7 +94,7 @@
                             Horizontal
                             DefaultValue="@("A")"
                             Items="basicCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
             <BitChoiceGroup Label="Disabled"
                             Horizontal
@@ -76,12 +107,12 @@
                             Horizontal
                             DefaultValue="@("Bar")"
                             Items="imageCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
-                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
-                                                     ImageSrc = { Name = nameof(ChoiceModel.ImageAddress) },
-                                                     ImageAlt = { Name = nameof(ChoiceModel.ImageDescription) },
-                                                     ImageSize = { Name = nameof(ChoiceModel.ImageSize) },
-                                                     SelectedImageSrc = { Name = nameof(ChoiceModel.SelectedImageAddress) }})" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
+                                                     Value = { Name = nameof(Order.ItemValue) },
+                                                     ImageSrc = { Name = nameof(Order.ImageAddress) },
+                                                     ImageAlt = { Name = nameof(Order.ImageDescription) },
+                                                     ImageSize = { Name = nameof(Order.ImageSize) },
+                                                     SelectedImageSrc = { Name = nameof(Order.SelectedImageAddress) }})" />
 
             <BitChoiceGroup Label="Icon"
                             Horizontal
@@ -106,7 +137,7 @@
                             Items="basicCustoms"
                             DefaultValue="basicCustoms[1].ItemValue"
                             Style="margin-inline: 16px; text-shadow: red 0 0 8px;"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
             <BitChoiceGroup Label="Classed ChoiceGroup"
                             Items="basicCustoms"
@@ -120,10 +151,10 @@
         <div class="example-content column">
             <BitChoiceGroup Items="itemStyleClassCustoms"
                             DefaultValue="itemStyleClassCustoms[1].ItemValue"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
-                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
-                                                     Class = { Name = nameof(ChoiceModel.Class) },
-                                                     Style = { Name = nameof(ChoiceModel.Style) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
+                                                     Value = { Name = nameof(Order.ItemValue) },
+                                                     Class = { Name = nameof(Order.Class) },
+                                                     Style = { Name = nameof(Order.Style) } })" />
         </div>
         <br /><br /><br /><br />
         <div><b>Styles</b> & <b>Classes</b>:</div>
@@ -136,7 +167,7 @@
                                               ItemLabel = "width: 100%; cursor: pointer;",
                                               ItemChecked = "--item-background: #87cefa24; --item-border: 1px solid dodgerblue;",
                                               ItemContainer = "padding: 8px; border-radius: 2px; background-color: var(--item-background); border: var(--item-border);" })"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
             <BitChoiceGroup Label="Classes"
                             Items="basicCustoms"
@@ -156,7 +187,7 @@
         <br />
         <BitChoiceGroup Items="basicCustoms"
                         DefaultValue="@("A")"
-                        NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })">
+                        NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })">
             <LabelTemplate>
                 <div class="custom-label">
                     Custom label <BitIcon IconName="@BitIconName.Filter" />
@@ -174,7 +205,7 @@
             <div>
                 <BitChoiceGroup Label="One-way" Value="@oneWayValue"
                                 Items="basicCustoms"
-                                NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                                NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
                 <br />
                 <BitTextField @bind-Value="oneWayValue" />
             </div>
@@ -197,7 +228,7 @@
             <BitChoiceGroup Label="ItemPrefixTemplate" Items="basicCustoms" DefaultValue="@string.Empty"
                             NameSelectors="@(new() { Text = { Selector = i => i.Name},
                                                      Value = { Selector = i => i.ItemValue },
-                                                     Index = nameof(ChoiceModel.Idx) })">
+                                                     Index = nameof(Order.Idx) })">
                 <ItemPrefixTemplate Context="item">
                     @(item.Idx + 1).&nbsp;
                 </ItemPrefixTemplate>
@@ -218,7 +249,7 @@
         <div class="example-content">
             <BitChoiceGroup Label="ItemTemplate" @bind-Value="itemTemplateValue"
                             Items="itemTemplateCustoms"
-                            NameSelectors="@(new() { Value = { Name = nameof(ChoiceModel.ItemValue) } })">
+                            NameSelectors="@(new() { Value = { Name = nameof(Order.ItemValue) } })">
                 <ItemTemplate Context="custom">
                     <div class="custom-container @(itemTemplateValue == custom.ItemValue ? "selected" : string.Empty)">
                         <div class="custom-circle"></div>
@@ -228,9 +259,9 @@
             </BitChoiceGroup>
 
             <BitChoiceGroup Label="Item's Template" Items="itemTemplateCustoms2" @bind-Value="itemTemplateValue2"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) },
-                                                     Value = { Name = nameof(ChoiceModel.ItemValue) },
-                                                     Template = { Name = nameof(ChoiceModel.Fragment) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) },
+                                                     Value = { Name = nameof(Order.ItemValue) },
+                                                     Template = { Name = nameof(Order.Fragment) } })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -244,7 +275,7 @@
                             Dir="BitDir.Rtl"
                             DefaultValue="@("A")"
                             Items="rtlCustoms"
-                            NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                            NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
 
             <BitChoiceGroup Label="غیرفعال"
                             Dir="BitDir.Rtl"
@@ -267,7 +298,7 @@
 
                 <BitChoiceGroup @bind-Value="validationModel.Value"
                                 Items="basicCustoms"
-                                NameSelectors="@(new() { Text = { Name = nameof(ChoiceModel.Name) }, Value = { Name = nameof(ChoiceModel.ItemValue) } })" />
+                                NameSelectors="@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })" />
                 <ValidationMessage For="@(() => validationModel.Value)" />
 
                 <br />
@@ -285,7 +316,7 @@
 </ComponentExampleBox>
 
 @code {
-    private List<ChoiceModel> itemTemplateCustoms2 = default!;
+    private List<Order> itemTemplateCustoms2 = default!;
 
     protected override void OnInitialized()
     {
@@ -296,27 +327,27 @@
                 Name = "Day",
                 ItemValue = "Day",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:red">@item.Name</span>
-    </div>)
+                                         <div class="custom-circle" />
+                                         <span style="color:red">@item.Name</span>
+                                     </div>)
             },
             new()
             {
                 Name = "Week",
                 ItemValue = "Week",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:green">@item.Name</span>
-    </div>)
+                                         <div class="custom-circle" />
+                                         <span style="color:green">@item.Name</span>
+                                     </div>)
             },
             new()
             {
                 Name = "Month",
                 ItemValue = "Month",
                 Fragment = (item => @<div class="custom-container @(itemTemplateValue2 == item.ItemValue ? "selected" : "")">
-        <div class="custom-circle" />
-        <span style="color:blue">@item.Name</span>
-    </div>)
+                                         <div class="custom-circle" />
+                                         <span style="color:blue">@item.Name</span>
+                                     </div>)
             }
         };
     }

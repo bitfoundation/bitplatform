@@ -58,8 +58,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "DecrementIconName",
-            Type = "string",
-            DefaultValue = "ChevronDownSmall",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom icon name for the decrement button.",
         },
         new()
@@ -93,8 +93,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "IncrementIconName",
-            Type = "string",
-            DefaultValue = "ChevronUpSmall",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom icon name for the increment button.",
         },
         new()

@@ -27,8 +27,13 @@ public static partial class ClaimsPrincipalExtensions
         return claimsPrincipal.GetEmail() ?? claimsPrincipal.GetUserName();
     }
 
-    public static string? GetSessionId(this ClaimsPrincipal claimsPrincipal)
+    /// <summary>
+    /// Returns the user session id stored in sessions column of user table after user sign in.
+    /// </summary>
+    public static Guid? GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
-        return claimsPrincipal.FindFirst("session-id")?.Value;
+        return claimsPrincipal.IsAuthenticated()
+            ? Guid.Parse(claimsPrincipal.FindFirst("session-id")!.Value) 
+            : null;
     }
 }

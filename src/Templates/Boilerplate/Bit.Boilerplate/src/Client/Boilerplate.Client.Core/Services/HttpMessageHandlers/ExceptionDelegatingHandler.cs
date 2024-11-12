@@ -1,10 +1,15 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿//+:cnd:noEmit
+using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer, JsonSerializerOptions jsonSerializerOptions, HttpClientHandler httpClientHandler)
-    : DelegatingHandler(httpClientHandler)
+public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer,
+    //#if (signalR != true)
+    PubSubService pubSubService,
+    //#endif
+    JsonSerializerOptions jsonSerializerOptions, 
+    HttpMessageHandler handler)
+    : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -56,5 +61,11 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
         {
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
+        //#if (signalR != true)
+        finally
+        {
+            pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+        }
+        //#endif
     }
 }

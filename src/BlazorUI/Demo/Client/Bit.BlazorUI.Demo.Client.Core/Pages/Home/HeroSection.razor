@@ -15,7 +15,7 @@
             <div class="component-box @BitCss.Class.Color.Background.Primary">
                 <BitDropdown Label="Select multiple products"
                              Items="_productDropdownItems"
-                             IsMultiSelect="true"
+                             MultiSelect="true"
                              Placeholder="Select an option"
                              Style="width: 326px; margin: 20px 0 20px 0"
                              TItem="BitDropdownItem<string>" TValue="string" />
@@ -62,10 +62,10 @@
                 </BitButton>
             </div>
             <BitProgress Thickness="20" Style="margin-bottom: 30px" Indeterminate />
-            <BitPivot HeadersOnly
-                      LinkSize="@BitSize.Large"
+            <BitPivot HeaderOnly
+                      Size="@BitSize.Large"
                       DefaultSelectedKey="Overview"
-                      LinkFormat="@BitPivotLinkFormat.Links"
+                      HeaderType="@BitPivotHeaderType.Link"
                       OnItemClick="@(item => _pivotSelectedKey = item.Key)">
                 <BitPivotItem HeaderText="Overview" Key="Overview"></BitPivotItem>
                 <BitPivotItem HeaderText="Features" Key="Features"></BitPivotItem>

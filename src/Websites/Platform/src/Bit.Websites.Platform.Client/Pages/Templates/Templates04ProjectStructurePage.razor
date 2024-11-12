@@ -1,4 +1,5 @@
 ﻿@page "/templates/project-structure"
+@page "/boilerplate/project-structure"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/project-structure"
@@ -12,7 +13,7 @@
         <div class="section-card-txt">
             To explore the structure of your project, start by creating a new project using the following command in the command line:
             <br />
-            <CodeBox>dotnet new bit-bp –-name MyFirstProject</CodeBox>
+            <CodeBox>dotnet new bit-bp --name MyFirstProject</CodeBox>
         </div>
         <div class="row-section-container">
             <div>
@@ -70,7 +71,7 @@
                             <br />
                             <br />
                             <code>
-                                &lt;PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+                                &lt;PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
                             </code>
                             <br />
                             <br />
@@ -149,24 +150,17 @@
             Additionally, it features an auto-update capability.
             <br />
             <br />
-            If you set BlazorWebAssemblyStandalone to true in the Directory.Build.props file, the Client.Web project can be published as a
+            Client.Web project can be published as a
             Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>,
             <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>,
             <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>, and others, without requiring ASP.NET Core.
-            <br />
-            <br />
-            We recommend keeping BlazorWebAssemblyStandalone set to false during development and only enabling it during the publishing process.
-            To do this, use the following command:
-            <br />
-            <CodeBox>dotnet publish MyFirstProject.Client.Web -c Release -p:BlazorWebAssemblyStandalone=true</CodeBox>
         </div>
     </section>
 
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Test Project</BitText>
-            A sample test project is provided to demonstrate how to add integration tests to your project in a way that replicates the real
-            behavior of a server, such as using SignalR. Additionally, it offers guidance on using dependency injection to mock server behavior and logic when needed.
+            A sample test project is provided to demonstrate how to add integration and UI tests to your project.
         </div>
     </section>
 </div>

@@ -1,10 +1,14 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
+
+    [AutoInject] private ILogger<NotAuthorizedPage> logger = default!;
 
     protected override async Task OnParamsSetAsync()
     {
@@ -19,11 +23,13 @@ public partial class NotAuthorizedPage
 
         // Let's update the access token by refreshing it when a refresh token is available.
         // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
-        // To prevent infinitie redirect loop, let's append refresh_token=false to the url, so we only redirect in case no refresh_token=false is present
+        // To prevent infinitie redirect loop, let's append try_refreshing_token=false to the url, so we only redirect in case no try_refreshing_token=false is present
 
         if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
             await AuthenticationManager.RefreshToken();
+
+            logger.LogInformation("Refreshing access token.");
 
             if ((await AuthenticationStateTask).User.IsAuthenticated())
             {
