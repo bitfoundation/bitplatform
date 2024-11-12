@@ -22,7 +22,7 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
                 if (access_token is not null)
                 {
                     if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
-                        throw new UnauthorizedException();
+                        throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
                 }
