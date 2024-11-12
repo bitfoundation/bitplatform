@@ -15,103 +15,103 @@ permissions:
 
 jobs:
 
-  # build_api_blazor:
-  #   name: build api + blazor web
-  #   runs-on: ubuntu-24.04
+  build_api_blazor:
+    name: build api + blazor web
+    runs-on: ubuntu-24.04
 
-  #   steps:
+    steps:
     
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
     
-  #   - name: Remove .NET 9 based global.json
-  #     run: |
-  #       rm src/global.json
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
     
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 22
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src/Templates/Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
 
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
-  #     env:
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-  #       WebAppRender.BlazorMode: BlazorWebAssembly
-  #       WebAppRender.PrerenderEnabled: true
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-  #       AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
+      env:
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WebAppRender.BlazorMode: BlazorWebAssembly
+        WebAppRender.PrerenderEnabled: true
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 
-  #   - name: Install wasm
-  #     run:  cd src && dotnet workload install wasm-tools
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools
 
-  #   - name: Generate CSS/JS files
-  #     run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
-  #   - name: Publish
-  #     run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+    - name: Publish
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
-  #   - name: Upload server artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: server-bundle
-  #       path: ${{env.DOTNET_ROOT}}/server
-  #       include-hidden-files: true # Required for wwwroot/.well-known folder
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
-  # deploy_api_blazor:
-  #   name: deploy api + blazor
-  #   needs: build_api_blazor
-  #   runs-on: ubuntu-24.04
-  #   environment:
-  #     name: 'production'
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
+    runs-on: ubuntu-24.04
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #   steps:
+    steps:
 
-  #     - name: Retrieve server bundle
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: server-bundle
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: server-bundle
 
-  #     - name: Delete DataProtectionCertificate.pfx
-  #       run: |
-  #           rm DataProtectionCertificate.pfx
+      - name: Delete DataProtectionCertificate.pfx
+        run: |
+            rm DataProtectionCertificate.pfx
 
-  #     - name: Extract identity certificate from env
-  #       uses: timheuer/base64-to-file@v1.2
-  #       with:
-  #           fileDir: './'
-  #           fileName: 'DataProtectionCertificate.pfx'
-  #           encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1.2
+        with:
+            fileDir: './'
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v3
-  #       with:
-  #         app-name: 'bit-todo'
-  #         slot-name: 'production'
-  #         publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-  #         package: .
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'bit-todo'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
 
-  #     - name: Purge cache
-  #       uses: jakejarvis/cloudflare-purge-action@v0.3.0
-  #       env:
-  #         CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-  #         CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      - name: Purge cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -182,195 +182,195 @@ jobs:
         name: win-exe-bundle
         path: TodoSample\src\Client\TodoSample.Client.Windows\Releases
   
-  # build_blazor_hybrid_android:
-  #   name: build blazor hybrid (android)
-  #   runs-on: ubuntu-24.04
+  build_blazor_hybrid_android:
+    name: build blazor hybrid (android)
+    runs-on: ubuntu-24.04
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
      
-  #   - name: Remove .NET 9 based global.json
-  #     run: |
-  #       rm src/global.json
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
     
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 22
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src/Templates/Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
   
-  #   - name: Extract Android signing key from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
-  #         fileName: 'TodoSample.keystore'
-  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
+          fileName: 'TodoSample.keystore'
+          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
-  #   - name: Extract Android signing key from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
-  #         fileName: 'google-services.json'
-  #         encodedString: ${{ secrets.TODO_GOOGLE_SERVICES_JSON_BASE64 }}
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.TODO_GOOGLE_SERVICES_JSON_BASE64 }}
   
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
-  #     env:
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
+      env:
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-  #   - name: Set app center secret
-  #     run: |
-  #         sed -i 's/appCenterSecret = null;/appCenterSecret = "de0219a6-fdcd-44f7-8c28-c108331ed27c";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
+    - name: Set app center secret
+      run: |
+          sed -i 's/appCenterSecret = null;/appCenterSecret = "de0219a6-fdcd-44f7-8c28-c108331ed27c";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
-  #   - name: Install maui
-  #     run: cd src && dotnet workload install maui-android
+    - name: Install maui
+      run: cd src && dotnet workload install maui-android
 
-  #   - name: Install Android Sdk platform tools
-  #     run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+    - name: Install Android Sdk platform tools
+      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
-  #   - name: Delete App Icon
-  #     run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
-  #   - name: Extract App Icon from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
-  #         fileName: 'appicon.svg'
-  #         encodedString: ${{ vars.TODO_ICON }}
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
 
-  #   - name: Delete App Splash Screen
-  #     run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
-  #   - name: Extract App Splash Screen from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
-  #         fileName: 'splash.svg'
-  #         encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
 
-  #   - name: Generate CSS/JS files
-  #     run: |
-  #         dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-  #         dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
-  #   - name: Build aab
-  #     run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
+    - name: Build aab
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-android
   
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: android-bundle
-  #       path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-bundle
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net8.0-android/*-Signed.*
         
-  # build_blazor_hybrid_ios:
-  #   name: build blazor hybrid (iOS-macOS)
-  #   runs-on: macOS-15
+  build_blazor_hybrid_ios:
+    name: build blazor hybrid (iOS-macOS)
+    runs-on: macOS-15
   
-  #   steps:
+    steps:
      
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
      
-  #   - name: Remove .NET 9 based global.json
-  #     run: |
-  #       rm src/global.json
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
     
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 22
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
 
-  #   - uses: maxim-lobanov/setup-xcode@v1.6.0
-  #     with:
-  #       xcode-version: '16.0'
+    - uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        xcode-version: '16.0'
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src/Templates/Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha
       
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
-  #     env:
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
+      env:
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
-  #   - name: Set app center secret
-  #     run: |
-  #         brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "f72e6774-1c83-404c-bca8-6e5198fb8e0e";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
+    - name: Set app center secret
+      run: |
+          brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "f72e6774-1c83-404c-bca8-6e5198fb8e0e";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
-  #   - name: Install maui
-  #     run: cd src && dotnet workload install maui
+    - name: Install maui
+      run: cd src && dotnet workload install maui
 
-  #   - name: Import Code-Signing Certificates
-  #     uses: apple-actions/import-codesign-certs@v3
-  #     with:
-  #       p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
-  #       p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+    - name: Import Code-Signing Certificates
+      uses: apple-actions/import-codesign-certs@v3
+      with:
+        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
-  #   - name: Download Apple Provisioning Profiles
-  #     uses: Apple-Actions/download-provisioning-profiles@v3
-  #     with:
-  #       bundle-id: 'com.bitplatform.Todo.Template'
-  #       issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
-  #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-  #       api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+    - name: Download Apple Provisioning Profiles
+      uses: Apple-Actions/download-provisioning-profiles@v3
+      with:
+        bundle-id: 'com.bitplatform.Todo.Template'
+        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-  #   - name: Delete App Icon
-  #     run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+    - name: Delete App Icon
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
-  #   - name: Extract App Icon from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
-  #         fileName: 'appicon.svg'
-  #         encodedString: ${{ vars.TODO_ICON }}
+    - name: Extract App Icon from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
+          fileName: 'appicon.svg'
+          encodedString: ${{ vars.TODO_ICON }}
 
-  #   - name: Delete App Splash Screen
-  #     run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
+    - name: Delete App Splash Screen
+      run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
-  #   - name: Extract App Splash Screen from env
-  #     uses: timheuer/base64-to-file@v1.2
-  #     with:
-  #         fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
-  #         fileName: 'splash.svg'
-  #         encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
+    - name: Extract App Splash Screen from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/'
+          fileName: 'splash.svg'
+          encodedString: ${{ vars.TODO_SPLASH_SCREEN }}
 
-  #   - name: Generate CSS/JS files
-  #     run: |
-  #         dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-  #         dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: |
+          dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+          dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
-  #   - name: Build ipa
-  #     run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
+    - name: Build ipa
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="Todo" -p:ApplicationId="com.bitplatform.Todo.Template" -f net8.0-ios
 
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: ios-bundle
-  #       path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-bundle
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
