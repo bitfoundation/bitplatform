@@ -42,7 +42,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// The icon name of the chevron down part of the menu button.
     /// </summary>
-    [Parameter] public string ChevronDownIcon { get; set; } = "ChevronDown";
+    [Parameter] public string? ChevronDownIcon { get; set; }
 
     /// <summary>
     /// The content of the menu button, that are BitMenuButtonOption components.

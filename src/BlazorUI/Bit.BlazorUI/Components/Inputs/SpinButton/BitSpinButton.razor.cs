@@ -59,7 +59,7 @@ public partial class BitSpinButton : BitInputBase<double>
     /// <summary>
     /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
+    [Parameter] public string? DecrementIconName { get; set; }
 
     /// <summary>
     /// The title to show when the mouse is placed on the decrement button.
@@ -89,7 +89,7 @@ public partial class BitSpinButton : BitInputBase<double>
     /// <summary>
     /// Custom icon name for the increment button.
     /// </summary>
-    [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
+    [Parameter] public string? IncrementIconName { get; set; }
 
     /// <summary>
     /// The title to show when the mouse is placed on the increment button.

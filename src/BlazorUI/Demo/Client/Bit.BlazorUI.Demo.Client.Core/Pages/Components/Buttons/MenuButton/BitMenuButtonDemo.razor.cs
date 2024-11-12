@@ -30,8 +30,8 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "ChevronDownIcon",
-            Type = "string",
-            DefaultValue = "ChevronDown",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The icon name of the chevron down part of the menu button.",
         },
         new()
