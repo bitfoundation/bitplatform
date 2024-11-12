@@ -44,9 +44,7 @@ public interface ITelemetryContext
 
     public string? Environment { get; set; }
 
-    //#if (signalR == true)
     public bool IsOnline { get; set; }
-    //#endif
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
@@ -61,9 +59,7 @@ public interface ITelemetryContext
             { nameof(TimeZone), TimeZone },
             { nameof(Culture), Culture },
             { nameof(Environment), Environment },
-            //#if (signalR == true)
             { nameof(IsOnline), IsOnline }
-            //#endif
         };
 
         if (AppPlatform.IsBlazorHybrid)

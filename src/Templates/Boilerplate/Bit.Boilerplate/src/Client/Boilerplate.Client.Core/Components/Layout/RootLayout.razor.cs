@@ -11,18 +11,7 @@ public partial class RootLayout : IDisposable
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    private bool isOnline
-        //#if (signalR == true)
-            = false;
-        //#else
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-           = true;
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-        //#endif
+    private bool? isOnline = null;
     private bool? isAuthenticated;
 
     /// <summary>
@@ -39,6 +28,7 @@ public partial class RootLayout : IDisposable
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
@@ -70,13 +60,12 @@ public partial class RootLayout : IDisposable
                 StateHasChanged();
             }));
 
-            //#if (signalR == true)
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
                 isOnline = (bool)payload!;
+                telemetryContext.IsOnline = isOnline is true;
                 await InvokeAsync(StateHasChanged);
             }));
-            //#endif
 
             isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 

@@ -7,7 +7,7 @@ public partial class RootContainer
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
-    [Parameter] public bool IsOnline { get; set; }
+    [Parameter] public bool? IsOnline { get; set; }
     [Parameter] public BitDir? CurrentDir { get; set; }
     [Parameter] public string? CurrentUrl { get; set; }
     [Parameter] public bool? IsAuthenticated { get; set; }
