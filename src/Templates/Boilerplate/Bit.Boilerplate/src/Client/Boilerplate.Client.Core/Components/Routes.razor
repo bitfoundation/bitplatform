@@ -7,7 +7,7 @@
                 <AppRouteDataPublisher RouteData="@routeData" />
                 <AuthorizeRouteView RouteData="@routeData">
                     <Authorizing>
-                        <LoadingComponent />
+                        <FullScreenLoadingComponent />
                     </Authorizing>
                     <NotAuthorized>
                         <NotAuthorizedPage />
@@ -19,7 +19,7 @@
                 <NotFoundPage />
             </NotFound>
             <Navigating>
-                <LoadingComponent />
+                <FullScreenLoadingComponent />
             </Navigating>
         </Router>
     </LayoutView>

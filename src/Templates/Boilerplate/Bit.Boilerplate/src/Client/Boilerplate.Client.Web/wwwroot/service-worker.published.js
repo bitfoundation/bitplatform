@@ -62,9 +62,14 @@ self.serverHandledUrls = [
 ];
 
 self.defaultUrl = "/";
-self.caseInsensitiveUrl = true;
-self.noPrerenderQuery = 'no-prerender=true';
-self.isPassive = self.disablePassiveFirstBoot = true;
+self.isPassive = true;
 self.errorTolerance = 'lax';
+self.caseInsensitiveUrl = true;
+
+
+// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following lines:
+// self.noPrerenderQuery = 'no-prerender=true';
+// self.isPassive = self.disablePassiveFirstBoot = true;
+
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
