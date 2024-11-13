@@ -46,7 +46,7 @@ public partial class App
             //#if (IsInsideProjectTemplate)
             /*
             //#endif
-            const int minimumSupportedWebViewVersion = 83;
+            const int minimumSupportedWebViewVersion = 84;
             //#if (IsInsideProjectTemplate)
             */
             //#endif
