@@ -6,6 +6,7 @@ public partial class SignOutConfirmDialog
 
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
 
+
     private async Task CloseModal()
     {
         IsOpen = false;

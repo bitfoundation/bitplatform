@@ -5,10 +5,10 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class UserMenu
 {
     private bool isOpen;
-    private bool showSignOut;
     private bool showCultures;
     private UserDto user = new();
     private string? profileImageUrl;
+    private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
 

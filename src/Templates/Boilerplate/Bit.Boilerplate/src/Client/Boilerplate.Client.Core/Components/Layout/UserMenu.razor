@@ -59,7 +59,7 @@
                             @Localizer[nameof(AppStrings.ProfileTitle)]
                         </BitActionButton>
 
-                        <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { showSignOut=true; isOpen=false; }">
+                        <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { isSignOutConfirmOpen=true; isOpen=false; }">
                             @Localizer[nameof(AppStrings.SignOut)]
                         </BitActionButton>
                     </BitStack>
@@ -96,4 +96,4 @@
     </BitDropMenu>
 </section>
 
-<SignOutConfirmDialog @bind-IsOpen="showSignOut"></SignOutConfirmDialog>
+<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" />

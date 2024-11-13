@@ -5,7 +5,7 @@ public partial class NavPanel
     private bool disposed;
     private bool isMenuOpen;
     private bool isMenuToggled;
-    private bool isSignOutModalOpen;
+    private bool isSignOutConfirmOpen;
     private List<BitNavItem> allNavItems = [];
     private Action unsubOpenNavPanel = default!;
     private BitSearchBox searchBoxRef = default!;
@@ -29,9 +29,9 @@ public partial class NavPanel
     }
 
 
-    private async Task DoSignOut()
+    private async Task ShowSignOutConfirm()
     {
-        isSignOutModalOpen = true;
+        isSignOutConfirmOpen = true;
         await CloseMenu();
     }
 
