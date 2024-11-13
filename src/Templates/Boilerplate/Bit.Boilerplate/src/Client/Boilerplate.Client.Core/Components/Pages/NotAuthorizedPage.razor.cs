@@ -4,6 +4,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
+    private bool isRefreshingToken;
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
@@ -27,7 +28,15 @@ public partial class NotAuthorizedPage
 
         if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
-            await AuthenticationManager.RefreshToken();
+            isRefreshingToken = true;
+            try
+            {
+                await AuthenticationManager.RefreshToken();
+            }
+            finally
+            {
+                isRefreshingToken = false;
+            }
 
             logger.LogInformation("Refreshing access token.");
 

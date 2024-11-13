@@ -8,7 +8,7 @@
     <section>
         <BitStack HorizontalAlign="BitAlignment.Center">
             <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
-            
+
             <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
                 @Localizer[nameof(AppStrings.ForbiddenException)]
             </BitText>
@@ -19,3 +19,8 @@
         </BitStack>
     </section>
 </AuthorizeView>
+
+@if (isRefreshingToken)
+{
+    <FullScreenLoadingComponent />
+}
