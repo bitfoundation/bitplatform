@@ -54,11 +54,11 @@ public partial class Templates05CreateProjectPage
 
     private Parameter<string> dotnetVersion = new()
     {
-        Value = "net8.0",
-        Default = "net8.0",
+        Value = "net9.0",
+        Default = "net9.0",
         Items = [
         new() { Text = ".NET 8", Value = "net8.0" },
-            new() { Text = ".NET 9", Value = "net9.0" },
+        new() { Text = ".NET 9", Value = "net9.0" },
         ]
     };
 
