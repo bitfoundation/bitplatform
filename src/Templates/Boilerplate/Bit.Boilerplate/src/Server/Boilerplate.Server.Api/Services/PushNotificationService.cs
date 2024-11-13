@@ -9,9 +9,10 @@ namespace Boilerplate.Server.Api.Services;
 
 public partial class PushNotificationService
 {
-    [AutoInject] private IAdsPushSenderFactory adsPushSenderFactory = default!;
+    [AutoInject] private IAdsPushSender adsPushSender = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private AppDbContext dbContext = default!;
+    [AutoInject] private ILogger<PushNotificationService> logger = default!;
 
     public async Task RegisterDevice([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
     {
@@ -23,7 +24,11 @@ public partial class PushNotificationService
 
         if (deviceInstallation is null)
         {
-            dbContext.DeviceInstallations.Add(deviceInstallation = new() { InstallationId = dto.InstallationId });
+            dbContext.DeviceInstallations.Add(deviceInstallation = new()
+            {
+                InstallationId = dto.InstallationId,
+                Platform = dto.Platform
+            });
         }
 
         dto.Patch(deviceInstallation);
@@ -48,8 +53,6 @@ public partial class PushNotificationService
 
     public async Task RequestPush(string? title = null, string? message = null, string? action = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
     {
-        var sender = adsPushSenderFactory.GetSender("Primary");
-
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         var query = dbContext.DeviceInstallations
@@ -84,9 +87,16 @@ public partial class PushNotificationService
                 : deviceInstallation.Platform is "apns" ? AdsPushTarget.Ios
                 : throw new NotImplementedException();
 
-            tasks.Add(sender.BasicSendAsync(target, deviceInstallation.PushChannel, payload, cancellationToken));
+            tasks.Add(adsPushSender.BasicSendAsync(target, deviceInstallation.PushChannel, payload, cancellationToken));
         }
 
-        await Task.WhenAll(tasks);
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch (Exception exp)
+        {
+            logger.LogError(exp, "Failed to send push notification.");
+        }
     }
 }

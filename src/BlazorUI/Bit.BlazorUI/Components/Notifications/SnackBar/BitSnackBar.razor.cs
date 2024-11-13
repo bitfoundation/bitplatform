@@ -34,6 +34,11 @@ public partial class BitSnackBar : BitComponentBase
     [Parameter] public string? DismissIconName { get; set; }
 
     /// <summary>
+    /// Enables the multiline mode of both title and body.
+    /// </summary>
+    [Parameter] public bool Multiline { get; set; }
+
+    /// <summary>
     /// Callback for when any snack bar is dismissed.
     /// </summary>
     [Parameter] public EventCallback OnDismiss { get; set; }

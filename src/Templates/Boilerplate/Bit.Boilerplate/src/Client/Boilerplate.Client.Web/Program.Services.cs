@@ -1,7 +1,4 @@
 ﻿//+:cnd:noEmit
-//#if (appInsights == true)
-using BlazorApplicationInsights;
-//#endif
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
@@ -12,16 +9,14 @@ public static partial class Program
 {
     public static void ConfigureServices(this WebAssemblyHostBuilder builder)
     {
-        // Services being registered here can get injected in web project only.
-
         var services = builder.Services;
         var configuration = builder.Configuration;
+        // The following services are blazor web assembly only.
 
-        services.AddClientWebProjectServices();
-
-        configuration.AddClientConfigurations();
-
+        builder.Logging.ConfigureLoggers();
         builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+
+        services.AddClientWebProjectServices(configuration);
 
         Uri.TryCreate(configuration.GetServerAddress(), UriKind.RelativeOrAbsolute, out var serverAddress);
 
@@ -30,36 +25,28 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.AddSessioned(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
-
-        //#if (appInsights == true)
-        services.AddBlazorApplicationInsights(x =>
-        {
-            x.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
-        },
-        async appInsights =>
-        {
-            await appInsights.AddTelemetryInitializer(new()
-            {
-                Tags = new Dictionary<string, object?>()
-                {
-                    { "ai.application.ver", typeof(Program).Assembly.GetName().Version!.ToString() }
-                }
-            });
-        });
-        //#endif
+        services.AddScoped(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
     }
 
-    public static void AddClientWebProjectServices(this IServiceCollection services)
+    public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddClientCoreProjectServices();
+        services.AddClientCoreProjectServices(configuration);
+        // The following services work both in blazor web assembly and server side for pre-rendering and blazor server.
 
-        // Services being registered here can get injected in both web project and server (during prerendering).
+        services.AddTransient<IPrerenderStateService, WebPrerenderStateService>();
 
-        services.AddTransient<IBitDeviceCoordinator, WebDeviceCoordinator>();
-        services.AddTransient<IExceptionHandler, WebExceptionHandler>();
+        services.AddScoped<IBitDeviceCoordinator, WebDeviceCoordinator>();
+        services.AddScoped<IExceptionHandler, WebExceptionHandler>();
+        services.AddScoped<IStorageService, BrowserStorageService>();
         //#if (notification == true)
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
+
+        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
+
+        services.AddOptions<ClientWebSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
     }
 }

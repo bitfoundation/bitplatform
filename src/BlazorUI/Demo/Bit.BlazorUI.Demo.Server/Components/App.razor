@@ -52,7 +52,6 @@
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/styles/app.css" />
     <Link rel="stylesheet" href="Bit.BlazorUI.Demo.Server.styles.css" />
-    <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.bundle.scp.css" />
     <Link rel="stylesheet" href="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism-okaidia-bit.css" />
 
     @if (AppRenderMode.PrerenderEnabled is false || noPrerender)
@@ -63,7 +62,7 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?v=9.0.0" autostart="false"></Script>
         @if (AppRenderMode.PwaEnabled)
         {
             <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>

@@ -1,0 +1,26 @@
+﻿<CascadingAuthenticationState>
+    <ClientAppCoordinator />
+    <LayoutView Layout="@typeof(RootLayout)">
+        <Router AppAssembly="@GetType().Assembly"
+                AdditionalAssemblies="@(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true))">
+            <Found Context="routeData">
+                <AppRouteDataPublisher RouteData="@routeData" />
+                <AuthorizeRouteView RouteData="@routeData">
+                    <Authorizing>
+                        <LoadingComponent />
+                    </Authorizing>
+                    <NotAuthorized>
+                        <NotAuthorizedPage />
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <AppRouteDataPublisher RouteData="@null" />
+                <NotFoundPage />
+            </NotFound>
+            <Navigating>
+                <LoadingComponent />
+            </Navigating>
+        </Router>
+    </LayoutView>
+</CascadingAuthenticationState>

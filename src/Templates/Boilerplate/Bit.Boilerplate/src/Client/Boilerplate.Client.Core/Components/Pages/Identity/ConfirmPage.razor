@@ -1,9 +1,9 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.ConfirmPage)]
 @attribute [Route("{culture?}" + Urls.ConfirmPage)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.ConfirmTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.ConfirmPageTitle)]</PageTitle>
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
@@ -12,7 +12,8 @@
         <BitPivot Alignment="BitAlignment.Center" Class="confirm-pivot">
             @if (showEmailConfirmation)
             {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]" IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]"
+                              IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
                     <BitStack FillContent>
                         @if (isEmailConfirmed is false)
                         {
@@ -21,11 +22,12 @@
                                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
                             </BitText>
 
-                            <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" class="confirm-form">
+                            <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" novalidate>
                                 <AppDataAnnotationsValidator />
 
                                 <BitStack FillContent>
                                     <BitTextField @bind-Value="emailModel.Email"
+                                                  AutoFocus TabIndex="1"
                                                   Type="BitInputType.Email"
                                                   Label="@Localizer[nameof(AppStrings.Email)]"
                                                   IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
@@ -33,6 +35,7 @@
                                     <ValidationMessage For="@(() => emailModel.Email)" />
 
                                     <BitTextField @bind-Value="emailModel.Token"
+                                                  TabIndex="2"
                                                   Type="BitInputType.Number"
                                                   AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                                   Label="@Localizer[nameof(AppStrings.EmailToken)]"
@@ -46,7 +49,7 @@
                             </EditForm>
                             <br />
                             <BitText Typography="BitTypography.Body1" Gutter>
-                                @Localizer[nameof(AppStrings.NotReceivedConfirmationEmailMessage)]
+                                @Localizer[nameof(AppStrings.NotReceivedEmailMessage)]
                             </BitText>
 
                             <BitText Typography="BitTypography.Body1" Gutter>
@@ -78,7 +81,8 @@
 
             @if (showPhoneConfirmation)
             {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]" IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
+                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]"
+                              IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
                     <BitStack FillContent>
                         @if (isPhoneConfirmed is false)
                         {
@@ -87,11 +91,12 @@
                                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
                             </BitText>
 
-                            <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" class="confirm-form">
+                            <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" novalidate>
                                 <AppDataAnnotationsValidator />
 
                                 <BitStack FillContent>
                                     <BitTextField @bind-Value="phoneModel.PhoneNumber"
+                                                  AutoFocus TabIndex="1"
                                                   Type="BitInputType.Tel"
                                                   Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                   IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
@@ -99,6 +104,7 @@
                                     <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
                                     <BitTextField @bind-Value="phoneModel.Token"
+                                                  TabIndex="2"
                                                   Type="BitInputType.Number"
                                                   AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                                                   Label="@Localizer[nameof(AppStrings.PhoneToken)]"
@@ -112,7 +118,7 @@
                             </EditForm>
                             <br />
                             <BitText Typography="BitTypography.Body1" Gutter>
-                                @Localizer[nameof(AppStrings.NotReceivedConfirmationPhoneMessage)]
+                                @Localizer[nameof(AppStrings.NotReceivedPhoneMessage)]
                             </BitText>
 
                             <BitButton IsLoading="isWaiting"

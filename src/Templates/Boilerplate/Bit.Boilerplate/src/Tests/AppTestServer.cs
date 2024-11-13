@@ -32,7 +32,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         //#if (database  == 'Sqlite')
         //Use in-memory Sqlite database for faster and more reliable testing
@@ -47,7 +47,7 @@ public partial class AppTestServer : IAsyncDisposable
 
         var app = webApp = builder.Build();
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         return this;
     }

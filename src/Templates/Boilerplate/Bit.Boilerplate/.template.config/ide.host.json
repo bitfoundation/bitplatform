@@ -12,6 +12,9 @@
             "id": "helpUrl"
         },
         {
+            "id": "framework"
+        },
+        {
             "id": "database"
         },
         {
@@ -30,7 +33,7 @@
             "id": "sample"
         },
         {
-            "id": "signalr"
+            "id": "signalR"
         },
         {
             "id": "offlineDb"
@@ -43,6 +46,9 @@
         },
         {
             "id": "appCenter"
+        },
+        {
+            "id": "notification"
         },
         {
             "id": "serverUrl",

@@ -25,4 +25,6 @@ public partial class ProductDto
 
     [Display(Name = nameof(AppStrings.Category))]
     public string? CategoryName { get; set; }
+
+    public byte[] ConcurrencyStamp { get; set; } = [];
 }

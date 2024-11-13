@@ -10,7 +10,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     private List<TItem> _internalItems = [];
     private List<TItem> _displayItems = [];
     private List<TItem> _overflowItems = [];
-    private string _internalDividerIconName = default!;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 
     private string _calloutId = default!;
@@ -26,7 +25,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the breadcrumb.
+    /// </summary>
+    [Parameter] public BitBreadcrumbClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Render a custom divider in place of the default chevron >
@@ -34,9 +40,21 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     [Parameter] public string? DividerIconName { get; set; }
 
     /// <summary>
+    /// The custom template content to render divider icon.
+    /// </summary>
+    [Parameter] public RenderFragment? DividerIconTemplate { get; set; }
+
+    /// <summary>
     /// Collection of BreadLists to render.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = [];
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public IList<TItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// The custom template content to render each item.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// The maximum number of BreadLists to display before coalescing.
@@ -48,6 +66,18 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitBreadcrumbNameSelectors<TItem>? NameSelectors { get; set; }
+
+    /// <summary>
+    /// Callback for when the BreadList item clicked.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Alias of the ChildContent.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -62,22 +92,27 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// Render a custom overflow icon in place of the default icon.
     /// </summary>
-    [Parameter] public string OverflowIconName { get; set; } = "More";
+    [Parameter] public string? OverflowIconName { get; set; }
 
     /// <summary>
-    /// Callback for when the BreadList item clicked.
+    /// The custom template content to render each overflow icon.
     /// </summary>
-    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+    [Parameter] public RenderFragment? OverflowIconTemplate { get; set; }
 
     /// <summary>
-    /// The class HTML attribute for Selected Item.
+    /// The custom template content to render each item in overflow list.
     /// </summary>
-    [Parameter] public string? SelectedItemClass { get; set; }
+    [Parameter] public RenderFragment<TItem>? OverflowTemplate { get; set; }
 
     /// <summary>
-    /// The style HTML attribute for Selected Item.
+    /// Reverses the positions of the icon and the item text of the item content.
     /// </summary>
-    [Parameter] public string? SelectedItemStyle { get; set; }
+    [Parameter] public bool ReversedIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the breadcrumb.
+    /// </summary>
+    [Parameter] public BitBreadcrumbClassStyles? Styles { get; set; }
 
 
 
@@ -112,6 +147,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
     protected override string RootElementClass => "bit-brc";
 
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
     protected override Task OnInitializedAsync()
     {
         _calloutId = $"BitBreadcrumb-{UniqueId}-callout";
@@ -120,38 +165,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
+        OnSetParameters();
+
         return base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        _internalDividerIconName = Dir == BitDir.Rtl ? "ChevronLeft" : "ChevronRight";
-
-        if (ChildContent is null)
-        {
-            _items = [.. Items];
-        }
-
-        if (_items.Any())
-        {
-            bool shouldCallSetItemsToShow = false;
-
-            shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
-            _internalItems = [.. _items];
-
-            shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
-            _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
-
-            shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
-            _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
-
-            if (shouldCallSetItemsToShow)
-            {
-                SetItemsToShow();
-            }
-        }
-
-        await base.OnParametersSetAsync();
     }
 
 
@@ -160,6 +176,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     {
         if (IsEnabled is false) return;
         if (GetIsEnabled(item) is false) return;
+        if (OnItemClick.HasDelegate is false) return;
 
         await OnItemClick.InvokeAsync(item);
 
@@ -177,6 +194,29 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         }
     }
 
+    private void OnSetParameters()
+    {
+        if (ChildContent is null && Options is null)
+        {
+            _items = [.. Items];
+        }
+
+        if (_items.Any() is false) return;
+
+        bool shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
+        _internalItems = [.. _items];
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        if (shouldCallSetItemsToShow is false) return;
+
+        SetItemsToShow();
+    }
+
     private void SetItemsToShow()
     {
         _displayItems.Clear();
@@ -184,7 +224,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
         if (_internalMaxDisplayedItems >= _internalItems.Count)
         {
-            _displayItems = _internalItems.ToList();
+            _displayItems = [.. _internalItems];
             return;
         }
 
@@ -206,33 +246,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
                 _displayItems.Add(item);
             }
         }
-    }
-
-    private string GetClasses(TItem item)
-    {
-        var classes = new List<string>();
-
-        if (GetItemClass(item).HasValue())
-        {
-            classes.Add(GetItemClass(item)!);
-        }
-
-        if (GetIsSelected(item))
-        {
-            classes.Add("bit-brc-sel");
-        }
-
-        if (GetIsSelected(item) && SelectedItemClass.HasValue())
-        {
-            classes.Add(SelectedItemClass!);
-        }
-
-        if (GetIsEnabled(item) is false)
-        {
-            classes.Add("bit-brc-disi");
-        }
-
-        return string.Join(" ", classes);
     }
 
     private string? GetKey(TItem item)
@@ -257,25 +270,99 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
     }
 
-    private string GetStyles(TItem item)
+    private string GetClasses(TItem item, bool isOverflowItem)
+    {
+        var classes = new List<string>();
+
+        if (GetItemClass(item).HasValue())
+        {
+            classes.Add(GetItemClass(item)!);
+        }
+
+        if (GetIsSelected(item))
+        {
+            classes.Add("bit-brc-sel");
+        }
+
+        if (isOverflowItem)
+        {
+            if (Classes?.OverflowItem.HasValue() ?? false)
+            {
+                classes.Add(Classes.OverflowItem!);
+            }
+
+            if (GetIsSelected(item) && (Classes?.OverflowSelectedItem.HasValue() ?? false))
+            {
+                classes.Add(Classes.OverflowSelectedItem!);
+            }
+        }
+        else
+        {
+            if (Classes?.Item.HasValue() ?? false)
+            {
+                classes.Add(Classes.Item!);
+            }
+
+            if (GetIsSelected(item) && (Classes?.SelectedItem.HasValue() ?? false))
+            {
+                classes.Add(Classes.SelectedItem!);
+            }
+        }
+
+        if (GetIsEnabled(item) is false)
+        {
+            classes.Add("bit-brc-dis");
+        }
+
+        if (GetReversedIcon(item))
+        {
+            classes.Add("bit-brc-rvi");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetStyles(TItem item, bool isOverflowItem)
     {
         var styles = new List<string>();
 
         if (GetItemStyle(item).HasValue())
         {
-            styles.Add(GetItemStyle(item)!);
+            styles.Add(GetItemStyle(item)!.Trim(';'));
         }
 
-        if (GetIsSelected(item) && SelectedItemStyle.HasValue())
+        if (isOverflowItem)
         {
-            styles.Add(SelectedItemStyle!);
+            if (Styles?.OverflowItem.HasValue() ?? false)
+            {
+                styles.Add(Styles.OverflowItem!.Trim(';'));
+            }
+
+            if (GetIsSelected(item) && (Styles?.OverflowSelectedItem.HasValue() ?? false))
+            {
+                styles.Add(Styles.OverflowSelectedItem!.Trim(';'));
+            }
+        }
+        else
+        {
+            if (Styles?.Item.HasValue() ?? false)
+            {
+                styles.Add(Styles.Item!.Trim(';'));
+            }
+
+            if (GetIsSelected(item) && (Styles?.SelectedItem.HasValue() ?? false))
+            {
+                styles.Add(Styles.SelectedItem!.Trim(';'));
+            }
         }
 
-        return string.Join(" ", styles);
+        return string.Join(';', styles);
     }
 
     private string? GetItemHref(TItem item)
     {
+        if (GetIsEnabled(item) is false) return null;
+
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
             return breadcrumbItem.Href;
@@ -362,6 +449,50 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
+    private string? GetIconName(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.IconName;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.IconName;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+    }
+
+    private bool GetReversedIcon(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.ReversedIcon ?? ReversedIcon;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.ReversedIcon ?? ReversedIcon;
+        }
+
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.ReversedIcon.Selector is not null)
+        {
+            return NameSelectors.ReversedIcon.Selector!(item) ?? ReversedIcon;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.ReversedIcon.Name, ReversedIcon);
+    }
+
     private bool GetIsSelected(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
@@ -386,6 +517,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
     private bool GetIsEnabled(TItem item)
     {
+        if (IsEnabled is false) return false;
+
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
             return breadcrumbItem.IsEnabled;
@@ -404,6 +537,54 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         }
 
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private RenderFragment<TItem>? GetOverflowTemplate(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.OverflowTemplate as RenderFragment<TItem>;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.OverflowTemplate as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.OverflowTemplate.Selector is not null)
+        {
+            return NameSelectors.OverflowTemplate.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.OverflowTemplate.Name);
+    }
+
+    private RenderFragment<TItem>? GetTemplate(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
     private async Task OpenCallout()

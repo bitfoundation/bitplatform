@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Tests;
+﻿using Boilerplate.Tests.Extensions;
+
+namespace Boilerplate.Tests;
 
 [TestClass]
 public partial class IdentityPagesTests : PageTest
@@ -26,11 +28,11 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GotoAsync(new Uri(server.WebAppServerAddress, Urls.SignInPage).ToString());
 
-        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInTitle);
+        await Expect(Page).ToHaveTitleAsync(AppStrings.SignInPageTitle);
 
-        const string email = "test@bitplatform.dev";
-        const string password = "123456";
-        const string userFullName = "Boilerplate test account";
+        const string email = TestData.DefaultTestEmail;
+        const string password = TestData.DefaultTestPassword;
+        const string userFullName = TestData.DefaultTestFullName;
 
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
@@ -38,34 +40,14 @@ public partial class IdentityPagesTests : PageTest
 
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
-        await Expect(Page.Locator(".bit-prs").First).ToContainTextAsync(userFullName);
-        await Expect(Page.Locator(".bit-prs").Last).ToContainTextAsync(userFullName);
+        await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(userFullName);
+        await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        var options = base.ContextOptions();
-        options.RecordVideoDir = GetVideoDirectory(TestContext);
-        return options;
-    }
+    public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
 
     [TestCleanup]
-    public async ValueTask Cleanup()
-    {
-        await Context.CloseAsync();
-        if (TestContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
-        {
-            var directory = GetVideoDirectory(TestContext);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
-        }
-    }
-
-    private static string GetVideoDirectory(TestContext testContext)
-    {
-        var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
-        return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
-    }
+    public async ValueTask Cleanup() => await this.FinalizeVideoRecording();
 }

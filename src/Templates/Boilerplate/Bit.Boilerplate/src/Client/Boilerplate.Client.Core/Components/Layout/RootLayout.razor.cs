@@ -1,5 +1,5 @@
-﻿using Boilerplate.Client.Core.Components.Layout.Identity;
-using Boilerplate.Client.Core.Components.Layout.Main;
+﻿//+:cnd:noEmit
+using System.Reflection;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -7,17 +7,28 @@ public partial class RootLayout : IDisposable
 {
     private BitDir? currentDir;
     private string? currentUrl;
+
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    private bool? isOnline = null;
     private bool? isAuthenticated;
-    private bool? isAnonymousPage;
+
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
+    /// </summary>
+    private bool? isCrossLayoutPage;
     private AppThemeType? currentTheme;
-    private Action unsubscribeThemeChange = default!;
-    private Action unsubscribeCultureChange = default!;
+    private RouteData? currentRouteData;
+    private List<Action> unsubscribers = [];
 
 
-    [AutoInject] private IThemeService themeService = default!;
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private Keyboard keyboard = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
@@ -31,17 +42,30 @@ public partial class RootLayout : IDisposable
         {
             navigationManager.LocationChanged += NavigationManagerLocationChanged;
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
-            unsubscribeCultureChange = pubSubService.Subscribe(PubSubMessages.CULTURE_CHANGED, async _ =>
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
-            });
-            unsubscribeThemeChange = pubSubService.Subscribe(PubSubMessages.THEME_CHANGED, async payload =>
+            }));
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
                 StateHasChanged();
-            });
+            }));
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
+            {
+                currentRouteData = (RouteData?)payload;
+                SetIsCrossLayout();
+                StateHasChanged();
+            }));
+
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
+            {
+                isOnline = (bool)payload!;
+                telemetryContext.IsOnline = isOnline is true;
+                await InvokeAsync(StateHasChanged);
+            }));
 
             isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
@@ -64,6 +88,16 @@ public partial class RootLayout : IDisposable
         // ErrorBoundaryRef.Recover();
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
@@ -90,15 +124,6 @@ public partial class RootLayout : IDisposable
     }
 
 
-    private Type GetCurrentLayout()
-    {
-        return isAuthenticated is null
-                ? typeof(EmptyLayout)
-                : isAuthenticated is true
-                    ? typeof(MainLayout)
-                    : typeof(IdentityLayout);
-    }
-
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
@@ -106,16 +131,58 @@ public partial class RootLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        var path = navigationManager.GetPath();
+        var path = navigationManager.GetUriPath();
 
         currentUrl = Urls.All.SingleOrDefault(pageUrl =>
         {
-            return pageUrl.Length == 1
+            return pageUrl == Urls.HomePage
                     ? pageUrl == path
                     : path.StartsWith(pageUrl);
         });
+    }
 
-        isAnonymousPage = Urls.CrossLayoutPages.Any(ap => currentUrl == ap);
+    private void SetIsCrossLayout()
+    {
+        // The cross-layout pages are the pages that are getting rendered in multiple layouts (authenticated and unauthenticated).
+
+        if (currentRouteData is null)
+        {
+            isCrossLayoutPage = true;
+            return;
+        }
+
+        var type = currentRouteData.PageType;
+
+        if (type.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any())
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        if (type.Namespace?.Contains("Client.Core.Components.Pages.Identity") ?? false)
+        {
+            isCrossLayoutPage = false;
+            return;
+        }
+
+        isCrossLayoutPage = true;
+    }
+
+    private void OpenDiagnosticModal()
+    {
+        pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+    }
+
+
+    private string GetMainCssClass()
+    {
+        var authClass = isAuthenticated is false ? "unauthenticated"
+                      : isAuthenticated is true ? "authenticated"
+                      : string.Empty;
+
+        var crossClass = isCrossLayoutPage is true ? " cross-layout" : string.Empty;
+
+        return authClass + crossClass;
     }
 
 
@@ -125,7 +192,8 @@ public partial class RootLayout : IDisposable
 
         authManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
-        unsubscribeThemeChange();
-        unsubscribeCultureChange();
+        unsubscribers.ForEach(d => d.Invoke());
+
+        _ = keyboard?.DisposeAsync();
     }
 }

@@ -2,19 +2,20 @@
 @attribute [Route("{culture?}" + Urls.NotAuthorizedPage)]
 @inherits AppPageBase
 
+<PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
+
 <AuthorizeView>
-    <div class="main">
-        <div><img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" /></div>
-        <h2 class="title">
-            @Localizer[nameof(AppStrings.ForbiddenException)]
-        </h2>
-        <h4 class="description">
-            @Localizer[nameof(AppStrings.YouAreSignInAs)] @user.GetDisplayName()
-        </h4>
-        <div class="buttons">
-            <BitButton OnClick="WrapHandled(SignIn)">
-                @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
-            </BitButton>
-        </div>
-    </div>
+    <section>
+        <BitStack HorizontalAlign="BitAlignment.Center">
+            <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
+            
+            <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
+                @Localizer[nameof(AppStrings.ForbiddenException)]
+            </BitText>
+
+            <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
+
+            <BitButton OnClick="WrapHandled(SignIn)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
+        </BitStack>
+    </section>
 </AuthorizeView>

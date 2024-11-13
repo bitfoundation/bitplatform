@@ -416,6 +416,12 @@ public partial class BitDataGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
+        catch(JSException ex)
+        {
+            // it seems it's safe to just ignore this exception here.
+            // otherwise it will blow up the MAUI app in a page refresh for example.
+            Console.WriteLine(ex.Message);
+        }
     }
 
     private void CloseColumnOptions()

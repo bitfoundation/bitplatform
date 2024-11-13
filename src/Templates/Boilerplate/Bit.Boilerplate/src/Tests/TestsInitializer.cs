@@ -1,10 +1,15 @@
 ﻿//+:cnd:noEmit
 using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Data;
-using Boilerplate.Tests.PageTests.PageModels.Identity;
 //#if (database  == 'Sqlite')
 using Microsoft.Data.Sqlite;
 //#endif
+//#if (advancedTests == true)
+using Boilerplate.Tests.PageTests.PageModels.Identity;
+using Boilerplate.Tests.Extensions;
+using Boilerplate.Client.Web;
+//#endif
+using Microsoft.Extensions.Hosting;
 
 namespace Boilerplate.Tests;
 
@@ -16,16 +21,24 @@ public partial class TestsInitializer
     //#endif
 
     [AssemblyInitialize]
-    public static async Task Initialize(TestContext _)
+    public static async Task Initialize(TestContext testContext)
     {
         await using var testServer = new AppTestServer();
 
-        await testServer.Build().Start();
+        await testServer.Build(
+        //#if (advancedTests == true)
+        configureTestConfigurations: configuration =>
+        {
+            //Run assembly initialization test in BlazorWebAssembly mode to cache .wasm files
+            configuration["WebAppRender:BlazorMode"] = BlazorWebAppMode.BlazorWebAssembly.ToString();
+        }
+        //#endif
+        ).Start();
 
         await InitializeDatabase(testServer);
 
         //#if (advancedTests == true)
-        await InitializeAuthenticationState(testServer);
+        await InitializeAuthenticationState(testServer, testContext);
         //#endif
     }
 
@@ -36,7 +49,7 @@ public partial class TestsInitializer
     //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)
     {
-        if (AppEnvironment.IsDev())
+        if (testServer.WebApp.Environment.IsDevelopment())
         {
             await using var scope = testServer.WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -52,33 +65,37 @@ public partial class TestsInitializer
     }
 
     //#if (advancedTests == true)
-    private static async Task InitializeAuthenticationState(AppTestServer testServer)
+    private static async Task InitializeAuthenticationState(AppTestServer testServer, TestContext testContext)
     {
-        var playwrightPage = new PageTest();
+        var playwrightPage = new PageTest() { TestContext = testContext };
         await playwrightPage.Setup();
         await playwrightPage.BrowserSetup();
-        await playwrightPage.ContextSetup();
-        await playwrightPage.PageSetup();
+        var currentMethodFullName = $"{typeof(TestsInitializer).FullName}.{(nameof(InitializeAuthenticationState))}";
+        var options = new BrowserNewContextOptions().EnableVideoRecording(testContext, currentMethodFullName);
+        var context = await playwrightPage.NewContextAsync(options);
+        await context.EnableBlazorWasmCaching();
 
-        var signinPage = new SignInPage(playwrightPage.Page, testServer.WebAppServerAddress);
+        var page = await context.NewPageAsync();
+        var signinPage = new SignInPage(page, testServer.WebAppServerAddress);
+
+        Assertions.SetDefaultExpectTimeout(30_000); // Extended timeout for initial WebAssembly load and caching
 
         await signinPage.Open();
         await signinPage.AssertOpen();
 
-        var signedInPage = await signinPage.SignIn();
+        Assertions.SetDefaultExpectTimeout(10_000); // Standard timeout for subsequent tests
+
+        var signedInPage = await signinPage.SignInWithEmail();
         await signedInPage.AssertSignInSuccess();
 
-        var state = await playwrightPage.Page.Context.StorageStateAsync();
+        var state = await page.Context.StorageStateAsync();
         if (string.IsNullOrEmpty(state))
             throw new InvalidOperationException("Authentication state is null or empty.");
 
         AuthenticationState = state.Replace(testServer.WebAppServerAddress.OriginalString.TrimEnd('/'), "[ServerAddress]");
 
-        if (playwrightPage.Page.Context.Browser is IBrowser browser)
-        {
-            await browser.CloseAsync();
-            await browser.DisposeAsync();
-        }
+        await context.Browser!.CloseAsync();
+        await context.Browser!.DisposeAsync();
     }
     //#endif
 }

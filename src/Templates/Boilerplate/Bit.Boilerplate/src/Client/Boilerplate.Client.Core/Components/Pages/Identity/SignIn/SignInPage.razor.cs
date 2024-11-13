@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -26,6 +27,7 @@ public partial class SignInPage : IDisposable
 
 
     [AutoInject] private ILocalHttpServer localHttpServer = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private IExternalNavigationService externalNavigationService = default!;
 
@@ -48,7 +50,7 @@ public partial class SignInPage : IDisposable
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
-        model.DeviceInfo = AppPlatform.OSDescription;
+        model.DeviceInfo = telemetryContext.OS;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
@@ -68,7 +70,7 @@ public partial class SignInPage : IDisposable
             SnackBarService.Error(ErrorQueryString);
         }
 
-        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(PubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
+        unsubscribeIdentityHeaderBackLinkClicked = PubSubService.Subscribe(ClientPubSubMessages.IDENTITY_HEADER_BACK_LINK_CLICKED, async payload =>
         {
             var source = (string?)payload;
 
@@ -86,7 +88,7 @@ public partial class SignInPage : IDisposable
 
             await InvokeAsync(StateHasChanged);
 
-            PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
+            PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, null);
         });
     }
 
@@ -126,7 +128,7 @@ public partial class SignInPage : IDisposable
             }
             else
             {
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
+                PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, TfaPayload);
             }
         }
         catch (KnownException e)
@@ -146,22 +148,27 @@ public partial class SignInPage : IDisposable
     {
         if (model.Email is null && model.PhoneNumber is null) return;
 
-        try
+        if (model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
         {
-            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
-
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
-
-            if (resend is false)
-            {
-                isOtpSent = true;
-
-                PubSubService.Publish(PubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
-            }
+            SnackBarService.Error(string.Format(AppStrings.EmailAddressAttribute_ValidationError, AppStrings.Email));
+            return;
         }
-        catch (KnownException e)
+
+        if (model.PhoneNumber is not null && new PhoneAttribute().IsValid(model.PhoneNumber) is false)
         {
-            SnackBarService.Error(e.Message);
+            SnackBarService.Error(string.Format(AppStrings.PhoneAttribute_ValidationError, AppStrings.PhoneNumber));
+            return;
+        }
+
+        var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+
+        _ = identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+
+        if (resend is false)
+        {
+            isOtpSent = true;
+
+            PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
         }
     }
 
@@ -182,6 +189,6 @@ public partial class SignInPage : IDisposable
 
     public void Dispose()
     {
-        unsubscribeIdentityHeaderBackLinkClicked();
+        unsubscribeIdentityHeaderBackLinkClicked?.Invoke();
     }
 }

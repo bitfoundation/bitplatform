@@ -1,19 +1,12 @@
 ﻿namespace Boilerplate.Tests.PageTests.PageModels.Layout;
 
-public partial class MainLayout(IPage page, Uri serverAddress, string pagePath, string pageTitle)
+public abstract partial class MainLayout(IPage page, Uri serverAddress)
+    : RootLayout(page, serverAddress)
 {
-    private IResponse response;
-
-    public virtual async Task Open()
+    public virtual async Task AssertSignOut()
     {
-        response = (await page.GotoAsync(new Uri(serverAddress, pagePath).ToString()))!;
-    }
-
-    public virtual async Task AssertOpen()
-    {
-        Assert.IsNotNull(response);
-        Assert.AreEqual(StatusCodes.Status200OK, response.Status);
-
-        await Assertions.Expect(page).ToHaveTitleAsync(pageTitle);
+        await Assertions.Expect(Page).ToHaveURLAsync(new Uri(WebAppServerAddress, PagePath).ToString());
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeHiddenAsync();
+        await Assertions.Expect(Page.Locator(".bit-prs.persona")).ToBeHiddenAsync();
     }
 }

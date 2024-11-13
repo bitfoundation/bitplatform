@@ -3,7 +3,7 @@
 @typeparam TItem
 
 <CascadingValue Value="this" IsFixed="true">
-    <div style="display:none" hidden>@ChildContent</div>
+    <div style="display:none" hidden>@(Options ?? ChildContent)</div>
 </CascadingValue>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -14,81 +14,213 @@
      aria-label="@AriaLabel">
 
     <div @onclick="CloseCallout" @onclick:stopPropagation
-         style="display:@(_isCalloutOpen ? "block" : "none")"
-         class="bit-brc-ovl"></div>
+         style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-brc-ovl @Classes?.Overlay"></div>
 
-    <div class="bit-brc-iwp">
-        <ul>
-            @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
-            {
-                <li @key="GetKey(item)">
-                    @if (_overflowItems.Any() && index == _internalOverflowIndex)
-                    {
-                        <button id="@_overflowAnchorId"
-                                type="button"
-                                class="bit-brc-obt"
-                                aria-label="@OverflowAriaLabel" @onclick="OpenCallout">
-                            <span class="bit-brc-oic">
-                                <i class="bit-icon bit-icon--@OverflowIconName" />
-                            </span>
-                        </button>
-                    }
-                    else
-                    {
-                        if (GetItemHref(item).HasValue())
+    <ul style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
+        @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
+        {
+            <li style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper" @key="GetKey(item)">
+                @if (index == _internalOverflowIndex && _overflowItems.Any())
+                {
+                    <button id="@_overflowAnchorId"
+                            type="button"
+                            style="@Styles?.OverflowButton"
+                            class="bit-brc-obt @Classes?.OverflowButton"
+                            aria-label="@OverflowAriaLabel" @onclick="OpenCallout"
+                            disabled="@(IsEnabled is false)">
+                        @if (OverflowIconTemplate is not null)
                         {
-                            <a href="@GetItemHref(item)"
-                               aria-current="@(GetIsSelected(item) ? "page" : null)"
-                               style="@GetStyles(item)"
-                               class="bit-brc-itm @GetClasses(item)">
-                                @GetItemText(item)
-                            </a>
+                            @OverflowIconTemplate
                         }
                         else
                         {
-                            <button type="button"
-                                    aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                    style="@GetStyles(item)"
-                                    class="bit-brc-itm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                                @GetItemText(item)
-                            </button>
+                            <i style="@Styles?.OverflowButtonIcon" class="bit-icon bit-icon--@(OverflowIconName ?? "More") @Classes?.OverflowButtonIcon" />
                         }
+                    </button>
+                }
+                else
+                {
+                    var template = GetTemplate(item);
+                    if (GetItemHref(item).HasValue())
+                    {
+                        <a href="@GetItemHref(item)"
+                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                           style="@GetStyles(item, false)"
+                           class="bit-brc-itm @GetClasses(item, false)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                        </a>
+                    }
+                    else if (OnItemClick.HasDelegate)
+                    {
+                        <button type="button"
+                                aria-current="@(GetIsSelected(item) ? "page" : null)"
+                                disabled="@(GetIsEnabled(item) is false)"
+                                style="@GetStyles(item, false)"
+                                class="bit-brc-itm @GetClasses(item, true)" @onclick="() => HandleOnItemClick(item)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                        </button>
+                    }
+                    else 
+                    {
+                        <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                              style="@GetStyles(item, false)"
+                              class="bit-brc-nii @GetClasses(item, false)">
+                            @if (template is not null)
+                            {
+                                @template(item)
+                            }
+                            else if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.ItemIcon" class="bit-icon bit-icon--@iconName @Classes?.ItemIcon" />
+                                }
+                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                            }
+                        </span>
+                    }
+                }
+            </li>
+
+            @if (index != _displayItems.Count - 1)
+            {
+                <li style="@Styles?.Divider" class="@Classes?.Divider">
+                    @if (DividerIconTemplate is not null)
+                    {
+                        @DividerIconTemplate
+                    }
+                    else
+                    {
+                        <i style="@Styles?.DividerIcon"
+                           class="bit-brc-div bit-icon bit-icon--@(DividerIconName ?? "ChevronRight bit-brc-trd") @Classes?.DividerIcon" />
                     }
                 </li>
-
-                @if (index != _displayItems.Count - 1)
-                {
-                    <i class="bit-brc-sep bit-icon bit-icon--@(DividerIconName ?? _internalDividerIconName)" />
-                }
             }
-        </ul>
-    </div>
+        }
+    </ul>
 
     <div id="@_calloutId"
          tabindex="0"
          role="listbox"
-         class="bit-brc-cal">
-        <ul id="@_scrollContainerId" class="bit-brc-scn">
+         style="@Styles?.Callout"
+         class="bit-brc-cal @Classes?.Callout">
+        <ul style="@Styles?.CalloutContainer" id="@_scrollContainerId" class="bit-brc-scn @Classes?.CalloutContainer">
             @foreach (var item in _overflowItems)
             {
-                <li @key="GetKey(item)">
+                var overflowTemplate = GetOverflowTemplate(item);
+                <li style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper" @key="GetKey(item)">
                     @if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
-                           style="@GetStyles(item)"
-                           class="bit-brc-oitm @GetClasses(item)">
-                            @GetItemText(item)
+                           style="@GetStyles(item, true)"
+                           class="bit-brc-ofi @GetClasses(item, true)">
+                            @if (overflowTemplate is not null)
+                            {
+                                @overflowTemplate(item)
+                            }
+                            else if (OverflowTemplate is not null)
+                            {
+                                @OverflowTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                }
+                                <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                            }
                         </a>
                     }
-                    else
+                    else if (OnItemClick.HasDelegate)
                     {
                         <button type="button"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                style="@GetStyles(item)"
-                                class="bit-brc-oitm @GetClasses(item)" @onclick="() => HandleOnItemClick(item)">
-                            @GetItemText(item)
+                                disabled="@(GetIsEnabled(item) is false)"
+                                style="@GetStyles(item, true)"
+                                class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnItemClick(item)">
+                            @if (overflowTemplate is not null)
+                            {
+                                @overflowTemplate(item)
+                            }
+                            else if (OverflowTemplate is not null)
+                            {
+                                @OverflowTemplate(item)
+                            }
+                            else
+                            {
+                                var iconName = GetIconName(item);
+                                @if (iconName.HasValue())
+                                {
+                                    <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                }
+                                <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                            }
                         </button>
+                    }
+                    else
+                    {
+                        <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                              style="@GetStyles(item, true)"
+                              class="bit-brc-ofn @GetClasses(item, true)">
+                              @if (overflowTemplate is not null)
+                              {
+                                  @overflowTemplate(item)
+                              }
+                              else if (OverflowTemplate is not null)
+                              {
+                                  @OverflowTemplate(item)
+                              }
+                              else
+                              {
+                                  var iconName = GetIconName(item);
+                                  @if (iconName.HasValue())
+                                  {
+                                      <i style="@Styles?.OverflowItemIcon" class="bit-icon bit-icon--@iconName @Classes?.OverflowItemIcon" />
+                                  }
+                                  <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                              }
+                        </span>
                     }
                 </li>
             }

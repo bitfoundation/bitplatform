@@ -19,10 +19,10 @@ public static partial class Program
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
-        builder.Configuration.AddClientConfigurations();
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
-        if (AppEnvironment.IsDev() && OperatingSystem.IsWindows())
+        if (builder.Environment.IsDevelopment() && OperatingSystem.IsWindows())
         {
             builder.WebHost.UseUrls("http://localhost:5030", "http://*:5030");
         }
@@ -32,7 +32,7 @@ public static partial class Program
         var app = builder.Build();
 
         //#if (api == "Integrated")
-        if (AppEnvironment.IsDev())
+        if (builder.Environment.IsDevelopment())
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -40,7 +40,7 @@ public static partial class Program
         }
         //#endif
 
-        app.ConfiureMiddlewares();
+        app.ConfigureMiddlewares();
 
         await app.RunAsync();
     }

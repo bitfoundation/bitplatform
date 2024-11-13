@@ -147,6 +147,9 @@
     <data name="ConflictException" xml:space="preserve">
     <value>Request could not be processed because of conflict in the request</value>
   </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>Access to the requested resource is forbidden</value>
   </data>
@@ -182,13 +185,16 @@
     <value>All</value>
   </data>
     <data name="Alphabetical" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>A-Z</value>
   </data>
     <data name="Completed" xml:space="preserve">
     <value>Completed</value>
   </data>
     <data name="Date" xml:space="preserve">
     <value>Date</value>
+  </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>Settings</value>
   </data>
     <data name="Settings" xml:space="preserve">
     <value>Settings</value>
@@ -229,6 +235,9 @@
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>Change phone number token has been sent to you</value>
   </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>The token has been sent to you</value>
+  </data>
     <data name="SessionsTitle" xml:space="preserve">
     <value>Sessions</value>
   </data>
@@ -250,11 +259,20 @@
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>There is nothing here.</value>
   </data>
-    <data name="UnknwonDevice" xml:space="preserve">
+    <data name="UnknownDevice" xml:space="preserve">
     <value>Unknown device</value>
+  </data>
+    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>Please update webview through google play.</value>
+  </data>
+    <data name="Ok" xml:space="preserve">
+    <value>Ok</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
@@ -264,7 +282,10 @@
     <data name="FullName" xml:space="preserve">
     <value>FullName</value>
   </data>
-    <data name="TermsTitle" xml:space="preserve">
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
     <value>Terms</value>
   </data>
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
@@ -327,9 +348,6 @@
     <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
-    <data name="TermsAccepted" xml:space="preserve">
-    <value>Is accept terms?</value>
-  </data>
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>You must agree to our terms.</value>
   </data>
@@ -384,6 +402,9 @@
     <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>
+    <data name="Recover" xml:space="preserve">
+    <value>Recover</value>
+  </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>Oops, something went wrong...</value>
   </data>
@@ -432,6 +453,9 @@
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>We have sent a confirmation token to your email address.</value>
   </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
     <data name="ConfirmTitle" xml:space="preserve">
     <value>Confirm your account</value>
   </data>
@@ -477,7 +501,7 @@
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>Confirm Phone Number</value>
   </data>
-    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>Haven’t you received the token on your phone?</value>
   </data>
     <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
@@ -522,7 +546,7 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>An error occurred while uploading file</value>
   </data>
-    <data name="ForgotPassword" xml:space="preserve">
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>Forgot password</value>
   </data>
     <data name="ForgotPasswordTitle" xml:space="preserve">
@@ -546,11 +570,17 @@
     <data name="HomeMessage" xml:space="preserve">
     <value>Create your multi-mode (WASM, Server, Hybrid, pre-rendering) Blazor app easily in the shortest time ever!</value>
   </data>
-    <data name="HomeTitle" xml:space="preserve">
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>Home</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
     <value>Build all of your apps</value>
   </data>
-    <data name="HomeTitle2" xml:space="preserve">
+    <data name="HomePanelSubtitle" xml:space="preserve">
     <value>using what you already know and love</value>
+  </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>Watch video</value>
   </data>
     <data name="LearnMore" xml:space="preserve">
     <value>Learn more</value>
@@ -561,7 +591,7 @@
     <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>A set of performant, easy-to-customize and beautiful Blazor components</value>
   </data>
-    <data name="BitBoilerplateMessage" xml:space="preserve">
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
     <value>A feature-rich .NET project template that works everywhere seamlessly</value>
   </data>
     <data name="DescriptionMetaTagValue" xml:space="preserve">
@@ -579,8 +609,8 @@
     <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
-    <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
-    <value>Haven’t you received the confirmation email?</value>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>Haven’t you received the email?</value>
   </data>
     <data name="Or" xml:space="preserve">
     <value>or</value>
@@ -593,6 +623,12 @@
   </data>
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>Resend Email Token</value>
+  </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>Reset password</value>
@@ -618,7 +654,7 @@
     <data name="Save" xml:space="preserve">
     <value>Save</value>
   </data>
-    <data name="SignInTitle" xml:space="preserve">
+    <data name="SignInPageTitle" xml:space="preserve">
     <value>Sign in</value>
   </data>
     <data name="SignInPanelTitle" xml:space="preserve">
@@ -666,8 +702,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>Sign up</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpPageTitle" xml:space="preserve">
     <value>Sign up</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>Get started today</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>Create new account with</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>Submit</value>
@@ -683,9 +725,6 @@
   </data>
     <data name="SelectBirthDate" xml:space="preserve">
     <value>Select your birth date</value>
-  </data>
-    <data name="ResetPassword" xml:space="preserve">
-    <value>Reset password</value>
   </data>
     <data name="Action" xml:space="preserve">
     <value>Action</value>
@@ -969,6 +1008,9 @@
     <data name="AboutTitle" xml:space="preserve">
     <value>About</value>
   </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>Nothing found!</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
@@ -977,18 +1019,24 @@
     <value>No todos yet</value>
   </data>
     <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>Search some todo...</value>
+    <value>Search todo...</value>
   </data>
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>Todo item could not be found</value>
   </data>
-    <data name="TodoTitle" xml:space="preserve">
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
     <value>Todo</value>
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
     <!--#elif (sample == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>Admin panel</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Products count</value>
   </data>
@@ -1022,8 +1070,8 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>Enter product name</value>
   </data>
-    <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>Last 30 days category count</value>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>Categories with product count</value>
   </data>
     <data name="ProductSales" xml:space="preserve">
     <value>Product sales</value>
@@ -1087,6 +1135,9 @@
   </data>
     <data name="EditProduct" xml:space="preserve">
     <value>Edit product</value>
+  </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>Dashboard</value>
   </data>
     <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>

@@ -1,13 +1,13 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.SignInPage)]
 @attribute [Route("{culture?}" + Urls.SignInPage)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.SignInTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.SignInPageTitle)]</PageTitle>
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <EditForm OnValidSubmit="WrapHandled(DoSignIn)" Model="model">
+        <EditForm Model="model" OnValidSubmit="WrapHandled(DoSignIn)" novalidate>
             <AppDataAnnotationsValidator />
 
             <BitStack HorizontalAlign="BitAlignment.Center">

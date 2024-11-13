@@ -4,27 +4,33 @@
 {
     @ChildContent
 }
-else if (ErrorContent is null)
+else if (ErrorContent is not null)
 {
-    <div class="main">
-        <div class="header">
-            <BitButton OnClick="Recover" IconName="@BitIconName.ChromeClose" Variant="BitVariant.Text" />
-        </div>
-        <div>
-            <img src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
-        </div>
-        <h1 class="title">@localizer[nameof(AppStrings.SomethingWentWrong)]</h1>
-        @if (showException)
-        {
-            <div class="exception">@CurrentException?.ToString()</div>
-        }
-        <div class="buttons">
-            <BitButton OnClick="Refresh">@localizer[nameof(AppStrings.Refresh)]</BitButton>
-            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Home)]</BitButton>
-        </div>
-    </div>
+    @ErrorContent(CurrentException)
 }
 else
 {
-    @ErrorContent(CurrentException)
+    <main>
+        <BitStack Alignment="BitAlignment.Center">
+            <BitImage Src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
+
+            <BitText Color="BitColor.Error" Typography="BitTypography.H3">
+                @localizer[nameof(AppStrings.SomethingWentWrong)]
+            </BitText>
+
+            @if (showException)
+            {
+                <div class="exception">
+                    @CurrentException?.ToString()
+                </div>
+            }
+
+            <BitStack Horizontal Alignment="BitAlignment.Center" AutoHeight>
+                <BitButton OnClick="Refresh">@localizer[nameof(AppStrings.Refresh)]</BitButton>
+                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Home)]</BitButton>
+                <BitButton OnClick="Recover" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Recover)]</BitButton>
+                <BitButton OnClick="ShowDiagnostic" Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Diagnostic" />
+            </BitStack>
+        </BitStack>
+    </main>
 }

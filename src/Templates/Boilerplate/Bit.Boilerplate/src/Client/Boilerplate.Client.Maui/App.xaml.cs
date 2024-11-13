@@ -1,11 +1,4 @@
-﻿//+:cnd:noEmit
-using Maui.AppStores;
-//#if (notification == true)
-using Plugin.LocalNotification;
-//#endif
-using System.Runtime.InteropServices;
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace Boilerplate.Client.Maui;
 
@@ -14,17 +7,18 @@ public partial class App
     private readonly Page mainPage;
     private readonly IExceptionHandler exceptionHandler;
     private readonly IBitDeviceCoordinator deviceCoordinator;
-    private readonly IStorageService storageService;
+    private readonly IStringLocalizer<AppStrings> localizer;
 
     public App(MainPage mainPage,
         IExceptionHandler exceptionHandler,
         IBitDeviceCoordinator deviceCoordinator,
-        IStorageService storageService)
+        IStorageService storageService,
+        IStringLocalizer<AppStrings> localizer)
     {
         this.exceptionHandler = exceptionHandler;
         this.deviceCoordinator = deviceCoordinator;
-        this.storageService = storageService;
         this.mainPage = new NavigationPage(mainPage);
+        this.localizer = localizer;
 
         InitializeComponent();
     }
@@ -42,44 +36,35 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
-            //#if (notification == true)
-            if (await LocalNotificationCenter.Current.AreNotificationsEnabled() == false)
-            {
-                await LocalNotificationCenter.Current.RequestNotificationPermission();
-            }
-            //#endif
+//-:cnd:noEmit
+#if Android
 
-            await CheckForUpdates();
+            //+:cnd:noEmit
+            //#if (framework == 'net9.0')
+            const int minimumSupportedWebViewVersion = 94;
+            //#elif (framework == 'net8.0')
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            const int minimumSupportedWebViewVersion = 83;
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
+            //#endif
+            //-:cnd:noEmit
+
+            if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
+        webViewVersion.Major < minimumSupportedWebViewVersion)
+            {
+                await App.Current!.Windows.First().Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
+                await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={Android.Webkit.WebView.CurrentWebViewPackage.PackageName}");
+            }
+//-:cnd:noEmit
+#endif
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp);
         }
-    }
-
-    private async Task CheckForUpdates()
-    {
-        await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
-
-        try
-        {
-            if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
-            {
-                if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
-                {
-                    await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
-
-                    // It's an opportune moment to request an update. (:
-                    // https://github.com/oscoreio/Maui.AppStoreInfo
-                    if (await App.Current!.MainPage!.DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
-                    {
-                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
-                    }
-                }
-            }
-        }
-        catch (InvalidOperationException) when ((AppPlatform.IsIOS || AppPlatform.IsMacOS) && AppEnvironment.IsDev()) { }
-        catch (FileNotFoundException) { }
-        catch (COMException) { }
     }
 }

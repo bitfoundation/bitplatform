@@ -62,10 +62,11 @@
         }
 
         .component-box--transparent {
+            gap: 1rem;
             display: flex;
-            justify-content: flex-start;
             width: rem2(360px);
             margin-bottom: rem2(40px);
+            justify-content: flex-start;
         }
 
         .tab-content {

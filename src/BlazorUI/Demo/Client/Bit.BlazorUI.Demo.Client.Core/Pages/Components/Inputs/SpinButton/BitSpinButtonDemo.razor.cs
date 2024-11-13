@@ -58,8 +58,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "DecrementIconName",
-            Type = "string",
-            DefaultValue = "ChevronDownSmall",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom icon name for the decrement button.",
         },
         new()
@@ -107,8 +107,8 @@ public partial class BitSpinButtonDemo
         new()
         {
             Name = "IncrementTitle",
-            Type = "string",
-            DefaultValue = "ChevronUpSmall",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The title to show when the mouse is placed on the increment button.",
         },
         new()

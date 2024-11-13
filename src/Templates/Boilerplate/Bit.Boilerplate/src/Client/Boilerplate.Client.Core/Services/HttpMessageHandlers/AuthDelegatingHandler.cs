@@ -1,27 +1,33 @@
 ﻿using System.Net.Http.Headers;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
     IJSRuntime jsRuntime,
-    IServiceProvider serviceProvider, 
-    IStorageService storageService, 
+    IServiceProvider serviceProvider,
+    IStorageService storageService,
     HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        if (request.Headers.Authorization is null)
-        {
-            var access_token = await tokenProvider.GetAccessToken();
-            if (access_token is not null)
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
-            }
-        }
+        var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
 
         try
         {
+            if (request.Headers.Authorization is null && isRefreshTokenRequest is false)
+            {
+                var access_token = await tokenProvider.GetAccessToken();
+                if (access_token is not null)
+                {
+                    if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
+                        throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
+
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                }
+            }
+
             return await base.SendAsync(request, cancellationToken);
         }
         catch (KnownException _) when (_ is ForbiddenException or UnauthorizedException)
@@ -29,10 +35,10 @@ public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
-            if (jsRuntime.IsInitialized() is false) 
+            if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false)
                 throw; // We don't have access to refresh_token during pre-rendering.
 
-            if (request.RequestUri?.LocalPath?.Contains("api/Identity/Refresh", StringComparison.InvariantCultureIgnoreCase) is true)
+            if (isRefreshTokenRequest)
                 throw; // To prevent refresh token loop
 
             var refresh_token = await storageService.GetItem("refresh_token");

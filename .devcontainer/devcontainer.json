@@ -3,7 +3,7 @@
     "hostRequirements": {
         "cpus": 4
     },
-    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/1ebffeb0-f090-4001-9f13-69f112936a70/5dbc249b375cca13ec4d97d48ea93b28/dotnet-sdk-8.0.402-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && dotnet dev-certs https --trust &&  find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
+    "onCreateCommand": "wget https://download.visualstudio.microsoft.com/download/pr/308f16a9-2ecf-4a42-b8bb-c1233de985fd/be6e87045ab21935bd8bb98ce69026c4/dotnet-sdk-9.0.100-linux-x64.tar.gz -O $HOME/dotnet.tar.gz && export DOTNET_ROOT=$HOME/.dotnet && mkdir -p \"$DOTNET_ROOT\" && tar zxf $HOME/dotnet.tar.gz -C \"$DOTNET_ROOT\" && export PATH=$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH && find . -type f -name '*.csproj' -exec sed -i 's/Microsoft.NET.Sdk.BlazorWebAssembly/Microsoft.NET.Sdk.Web/g' {} \\;",
     "waitFor": "onCreateCommand",
     "customizations": {
         "codespaces": {

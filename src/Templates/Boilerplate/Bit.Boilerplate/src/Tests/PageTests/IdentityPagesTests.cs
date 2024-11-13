@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Tests.PageTests.PageModels.Identity;
-using Boilerplate.Server.Api.Models.Identity;
+using Boilerplate.Tests.Services;
 using Boilerplate.Server.Api.Data;
+using Boilerplate.Tests.PageTests.PageModels;
+using Boilerplate.Tests.PageTests.PageModels.Identity;
 
-namespace Boilerplate.Tests.PageTests;
+namespace Boilerplate.Tests.PageTests.BlazorServer;
 
 [TestClass]
 public partial class IdentityPagesTests : PageTestBase
@@ -20,103 +21,304 @@ public partial class IdentityPagesTests : PageTestBase
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Work_With_ValidCredentials()
+    [DataRow("ValidCredentials")]
+    [DataRow("InvalidCredentials")]
+    public async Task SignIn(string mode)
     {
         var signInPage = new SignInPage(Page, WebAppServerAddress);
 
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var signedInPage = await signInPage.SignIn();
-        await signedInPage.AssertSignInSuccess();
+        switch (mode)
+        {
+            case "ValidCredentials":
+                var identityHomePage = await signInPage.SignInWithEmail();
+                await identityHomePage.AssertSignInSuccess();
+                break;
+            case "InvalidCredentials":
+                await signInPage.SignInWithEmail(email: "invalid@bitplatform.dev", password: "invalid");
+                await signInPage.AssertSignInFailed();
+                break;
+            default:
+                throw new NotSupportedException();
+        }
     }
 
     [TestMethod]
-    public async Task SignIn_Should_Fail_With_InvalidCredentials()
-    {
-        var signInPage = new SignInPage(Page, WebAppServerAddress);
-
-        await signInPage.Open();
-        await signInPage.AssertOpen();
-
-        await signInPage.SignIn(email: "invalid@bitplatform.dev", password: "invalid");
-        await signInPage.AssetNotSignedIn();
-    }
-
-    [TestMethod]
-    public async Task SignOut_Should_WorkAsExpected()
+    public async Task SignOut()
     {
         await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
 
         var email = $"{Guid.NewGuid()}@gmail.com";
-        var user = new User
-        {
-            EmailConfirmed = true,
-            UserName = email,
-            NormalizedUserName = email.ToUpperInvariant(),
-            Email = email,
-            NormalizedEmail = email.ToUpperInvariant(),
-            SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
-            ConcurrencyStamp = "315e1a26-5b3a-4544-8e91-2760cd28e231",
-            PasswordHash = "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", // 123456
-        };
-
-        dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync();
+        var user = await userService.AddUser(email);
 
         var signInPage = new SignInPage(Page, WebAppServerAddress);
 
         await signInPage.Open();
         await signInPage.AssertOpen();
 
-        var signedInPage = await signInPage.SignIn(email);
-        await signedInPage.AssertSignInSuccess(email);
+        var identityHomePage = await signInPage.SignInWithEmail(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
         await dbContext.Entry(user).ReloadAsync();
         Assert.AreEqual(1, user.Sessions.Count);
 
-        await signedInPage.SignOut();
-        await signedInPage.AssertSignOut();
+        var mainHomePage = await identityHomePage.SignOut();
+        await mainHomePage.AssertSignOut();
 
         await dbContext.Entry(user).ReloadAsync();
         Assert.AreEqual(0, user.Sessions.Count);
     }
 
     [TestMethod]
-    public async Task SignUp_Should_Work_With_MagicLink()
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    public async Task SignUp(string mode)
     {
         var signupPage = new SignUpPage(Page, WebAppServerAddress);
 
         await signupPage.Open();
         await signupPage.AssertOpen();
 
-        await signupPage.SignUp();
-        await signupPage.AssertSignUp();
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        var confirmPage = await signupPage.SignUp(email);
+        await confirmPage.AssertOpen();
 
-        await signupPage.OpenEmail();
-        await signupPage.AssertConfirmationEmailContent();
+        IdentityHomePage identityHomePage;
+        switch (mode)
+        {
+            case "Token":
+                var confirmationEmail = await signupPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
+                var token = await confirmationEmail.GetToken();
+                identityHomePage = await confirmPage.ConfirmByToken(token);
+                break;
+            case "MagicLink":
+                confirmationEmail = await signupPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
+                identityHomePage = await confirmationEmail.OpenMagicLink<IdentityHomePage>();
+                break;
+            case "InvalidToken":
+                await confirmPage.ConfirmByToken("111111");
+                await confirmPage.AssertInvalidToken();
+                return;
+            default:
+                throw new NotSupportedException();
+        }
 
-        await signupPage.ConfirmByMagicLink();
-        await signupPage.AssertConfirm();
+        await identityHomePage.AssertOpen();
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
     }
 
     [TestMethod]
-    public async Task SignUp_Should_Work_With_OtpCode()
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    [DataRow("TooManyRequests")]
+    [DataRow("NotExisted")]
+    public async Task ForgotPassword(string mode)
     {
-        var signupPage = new SignUpPage(Page, WebAppServerAddress);
+        var email = await CreateNewUser();
 
-        await signupPage.Open();
-        await signupPage.AssertOpen();
+        var forgotPasswordPage = new ForgotPasswordPage(Page, WebAppServerAddress);
 
-        await signupPage.SignUp();
-        await signupPage.AssertSignUp();
+        await forgotPasswordPage.Open();
+        await forgotPasswordPage.AssertOpen();
 
-        await signupPage.OpenEmail();
-        await signupPage.AssertConfirmationEmailContent();
+        if (mode is "NotExisted")
+        {
+            await forgotPasswordPage.ForgotPassword("not-existed@bitplatform.dev");
+            await forgotPasswordPage.AssertUserNotFound();
+            return;
+        }
 
-        await signupPage.ConfirmByOtp();
-        await signupPage.AssertConfirm();
+        var resetPasswordPage = await forgotPasswordPage.ForgotPassword(email);
+        await resetPasswordPage.AssertOpen();
+
+        const string newPassword = "new_password";
+        switch (mode)
+        {
+            case "Token":
+                var resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+                await resetPasswordEmail.AssertContent();
+                var token = await resetPasswordEmail.GetToken();
+                await resetPasswordPage.ContinueByToken(token);
+                break;
+            case "MagicLink":
+                resetPasswordEmail = await forgotPasswordPage.OpenResetPasswordEmail();
+                await resetPasswordEmail.AssertContent();
+                resetPasswordPage = await resetPasswordEmail.OpenMagicLink();
+                break;
+            case "InvalidToken":
+                await resetPasswordPage.ContinueByToken("111111");
+                await resetPasswordPage.SetPassword(newPassword);
+                await resetPasswordPage.AssertInvalidToken();
+                return;
+            case "TooManyRequests":
+                await Page.GoBackAsync();
+                await forgotPasswordPage.ForgotPassword(email);
+                await forgotPasswordPage.AssertTooManyRequests();
+                return;
+            default:
+                throw new NotSupportedException();
+        }
+        await resetPasswordPage.AssertValidToken();
+
+        await resetPasswordPage.SetPassword(newPassword);
+        await resetPasswordPage.AssertSetPassword();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var identityHomePage = await signInPage.SignInWithEmail(email, newPassword);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+    }
+
+    [TestMethod]
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("MagicLink")]
+    [DataRow("TooManyRequests")]
+    public async Task ChangeEmail(string mode)
+    {
+        var email = await CreateNewUser();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var identityHomePage = await signInPage.SignInWithEmail(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+
+        var settingsPage = new SettingsPage(Page, WebAppServerAddress);
+
+        await settingsPage.Open();
+        await settingsPage.AssertOpen();
+
+        await settingsPage.ExpandAccount();
+        await settingsPage.AssertExpandAccount(email);
+
+        var newEmail = $"{Guid.NewGuid()}@gmail.com";
+        await settingsPage.ChangeEmail(newEmail);
+        await settingsPage.AssertChangeEmail();
+
+        switch (mode)
+        {
+            case "Token":
+                var confirmationEmail = await settingsPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
+                var token = await confirmationEmail.GetToken();
+                await settingsPage.ConfirmEmailByToken(token);
+                break;
+            case "MagicLink":
+                confirmationEmail = await settingsPage.OpenConfirmationEmail();
+                await confirmationEmail.AssertContent();
+                settingsPage = await confirmationEmail.OpenMagicLink();
+                break;
+            case "InvalidToken":
+                await settingsPage.ConfirmEmailByToken("111111");
+                await settingsPage.AssertEmailInvalidToken();
+                return;
+            case "TooManyRequests":
+                await settingsPage.ClickOnPhoneTab();
+                await settingsPage.ClickOnEmailTab();
+                await settingsPage.ChangeEmail(newEmail);
+                await settingsPage.AssertTooManyRequestsForChangeEmail();
+                return;
+            default:
+                throw new NotSupportedException();
+        }
+        await settingsPage.AssertConfirmEmailSuccess();
+
+        signInPage = await settingsPage.SignOut();
+        await signInPage.AssertOpen();
+        await signInPage.AssertSignOut();
+
+        await signInPage.SignInWithEmail(email);
+        await signInPage.AssertSignInFailed();
+
+        settingsPage = await signInPage.SignInWithEmail<SettingsPage>(newEmail);
+        await settingsPage.AssertSignInSuccess(newEmail, userFullName: null);
+    }
+
+    [TestMethod]
+    [DataRow("Token")]
+    [DataRow("InvalidToken")]
+    [DataRow("TooManyRequests")]
+    public async Task ChangePhone(string mode)
+    {
+        var email = await CreateNewUser();
+
+        var signInPage = new SignInPage(Page, WebAppServerAddress);
+
+        await signInPage.Open();
+        await signInPage.AssertOpen();
+
+        var identityHomePage = await signInPage.SignInWithEmail(email);
+        await identityHomePage.AssertSignInSuccess(email, userFullName: null);
+
+        var settingsPage = new SettingsPage(Page, WebAppServerAddress);
+
+        await settingsPage.Open();
+        await settingsPage.AssertOpen();
+
+        await settingsPage.ExpandAccount();
+        await settingsPage.ClickOnPhoneTab();
+        await settingsPage.AssertPhoneTab(null);
+
+        var phone = $"+1{Random.Shared.Next(1111111111, int.MaxValue)}";
+        await settingsPage.ChangePhone(phone);
+        await settingsPage.AssertChangePhone();
+
+        switch (mode)
+        {
+            case "Token":
+                var token = settingsPage.GetPhoneToken();
+                await settingsPage.ConfirmPhoneByToken(token);
+                await settingsPage.AssertConfirmPhoneSuccess();
+
+                signInPage = await settingsPage.SignOut();
+                await signInPage.AssertOpen();
+                await signInPage.AssertSignOut();
+
+                await signInPage.ClickOnPhoneTab();
+                await signInPage.AssertPhoneTab();
+
+                settingsPage = await signInPage.SignInWithPhone<SettingsPage>(phone);
+                await settingsPage.AssertSignInSuccess(email, userFullName: null);
+                return;
+            case "InvalidToken":
+                await settingsPage.ConfirmPhoneByToken("111111");
+                await settingsPage.AssertPhoneInvalidToken();
+                return;
+            case "TooManyRequests":
+                await settingsPage.ClickOnEmailTab();
+                await settingsPage.ClickOnPhoneTab();
+                await settingsPage.ChangePhone(phone);
+                await settingsPage.AssertTooManyRequestsForChangePhone();
+                return;
+            default:
+                throw new NotSupportedException();
+        }
+    }
+
+    private async Task<string> CreateNewUser()
+    {
+        await using var scope = TestServer.WebApp.Services.CreateAsyncScope();
+
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userService = new UserService(dbContext);
+        var email = $"{Guid.NewGuid()}@gmail.com";
+        await userService.AddUser(email);
+
+        return email;
     }
 }

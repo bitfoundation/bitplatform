@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.IO.Compression;
 using Microsoft.Net.Http.Headers;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
@@ -17,19 +16,21 @@ public static partial class Program
     public static void AddServerWebProjectServices(this WebApplicationBuilder builder)
     {
         // Services being registered here can get injected in server project only.
-
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddClientWebProjectServices();
+        if (AppEnvironment.IsDev())
+        {
+            builder.Logging.AddDiagnosticLogger();
+        }
+
+        services.AddClientWebProjectServices(configuration);
+
+        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
 
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-        services.AddOptions<ForwardedHeadersOptions>()
-            .Bind(configuration.GetRequiredSection("ForwardedHeaders"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
 
         services.AddResponseCaching();
 
@@ -52,6 +53,11 @@ public static partial class Program
         services.AddAntiforgery();
         //#endif
 
+        services.AddOptions<ServerWebSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         AddBlazor(builder);
     }
 
@@ -60,9 +66,8 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddTransient<IAuthTokenProvider, ServerSideAuthTokenProvider>();
-
-        services.AddTransient(sp =>
+        services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+        services.AddScoped(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
             // Key headers such as Authorization and AcceptLanguage headers are added in Client/Core/Services/HttpMessageHandlers. 
@@ -81,7 +86,7 @@ public static partial class Program
                 BaseAddress = serverAddress
             };
 
-            var forwardedHeadersOptions = sp.GetRequiredService<IOptionsSnapshot<ForwardedHeadersOptions>>().Value;
+            var forwardedHeadersOptions = sp.GetRequiredService<ServerWebSettings>().ForwardedHeaders;
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {

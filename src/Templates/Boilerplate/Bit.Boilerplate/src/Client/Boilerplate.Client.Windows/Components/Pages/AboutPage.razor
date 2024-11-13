@@ -1,40 +1,23 @@
 @attribute [Route(Urls.AboutPage)]
 @attribute [Route("{culture?}" + Urls.AboutPage)]
-@inherits AppComponentBase
+@inherits AppPageBase
 
-<div class="page-container">
-    <section class="page-section about-section">
-        <h1 class="about-section-title">About</h1>
-
-        <div class="about-section-desc">
+<section>
+    <BitStack Gap="3rem">
+        <BitText Typography="BitTypography.Body1">
             For Razor pages that are exclusively dependent on native Maui features for Android, iOS, Windows, and macOS functionality,
-            <br />
             consider using Client/Maui project instead of placing them in Client/Core project.
             <br />
             This approach allows direct access to native features without the need for dependency injection (DI) or publish-subscribe messaging patterns.
-        </div>
+        </BitText>
 
-        <BitStack VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceAround">
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>App Name:</BitLabel>
-                <BitLabel>@appName</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>App Version:</BitLabel>
-                <BitLabel>@appVersion</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>OS:</BitLabel>
-                <BitLabel>@os</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>Environment:</BitLabel>
-                <BitLabel>@AppEnvironment.Current</BitLabel>
-            </BitStack>
-            <BitStack Horizontal Gap=".5rem">
-                <BitLabel>Process Id:</BitLabel>
-                <BitLabel>@processId</BitLabel>
-            </BitStack>
+        <BitStack AutoWidth>
+            <BitText>App Name: <b>@appName</b></BitText>
+            <BitText>App Version: <b>@appVersion</b></BitText>
+            <BitText>OS: <b>@os</b></BitText>
+            <BitText>Web View: <b>@webView</b></BitText>
+            <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>
+            <BitText>Process Id: <b>@processId</b></BitText>
         </BitStack>
-    </section>
-</div>
+    </BitStack>
+</section>

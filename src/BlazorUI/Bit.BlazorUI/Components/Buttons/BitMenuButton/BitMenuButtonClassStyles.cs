@@ -28,9 +28,14 @@ public class BitMenuButtonClassStyles
     public string? OperatorButtonText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the callout container of the BitMenuButton.
+    /// Custom CSS classes/styles for the callout of the BitMenuButton.
     /// </summary>
     public string? Callout { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout container of the BitMenuButton.
+    /// </summary>
+    public string? CalloutContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the chevron down button of the BitMenuButton.
@@ -51,6 +56,11 @@ public class BitMenuButtonClassStyles
     /// Custom CSS classes/styles for the icon of the BitMenuButton.
     /// </summary>
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each item wrapper of the BitMenuButton.
+    /// </summary>
+    public string? ItemWrapper { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each item of the BitMenuButton.

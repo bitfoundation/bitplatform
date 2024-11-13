@@ -50,6 +50,11 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// The callback is called when the drop menu is dismissed.
+    /// </summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
     /// Renders the drop menu in responsive mode on small screens.
     /// </summary>
     [Parameter] public bool Responsive { get; set; }
@@ -77,9 +82,9 @@ public partial class BitDropMenu : BitComponentBase
 
 
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task __CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (await AssignIsOpen(false) is false) return;
+        await DismissCallout();
 
         StateHasChanged();
     }
@@ -133,7 +138,7 @@ public partial class BitDropMenu : BitComponentBase
 
     private async Task CloseCallout()
     {
-        if (await AssignIsOpen(false) is false) return;
+        await DismissCallout();
 
         await ToggleCallout();
     }
@@ -157,5 +162,12 @@ public partial class BitDropMenu : BitComponentBase
                                 "",
                                 false,
                                 RootElementClass);
+    }
+
+    private async Task DismissCallout()
+    {
+        if (await AssignIsOpen(false) is false) return;
+
+        await OnDismiss.InvokeAsync();
     }
 }

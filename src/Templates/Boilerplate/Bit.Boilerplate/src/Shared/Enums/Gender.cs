@@ -3,7 +3,7 @@
 [JsonConverter(typeof(JsonStringEnumConverter<Gender>))]
 public enum Gender
 {
+    Other,
     Male,
     Female,
-    Other
 }

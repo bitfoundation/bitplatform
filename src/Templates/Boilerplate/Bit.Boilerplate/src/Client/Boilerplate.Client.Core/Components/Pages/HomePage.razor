@@ -1,15 +1,15 @@
 ﻿@attribute [Route(Urls.HomePage)]
-@attribute [Route("{culture?}" + Urls.HomePage)]
+@attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.HomeTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="home-stack">
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="stack">
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
-            @Localizer[nameof(AppStrings.HomeTitle)]
+            @Localizer[nameof(AppStrings.HomePanelTitle)]
             <br />
-            @Localizer[nameof(AppStrings.HomeTitle2)]
+            @Localizer[nameof(AppStrings.HomePanelSubtitle)]
         </BitText>
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
@@ -39,17 +39,17 @@
             </BitStack>
         </BitCard>
 
-        <BitStack Horizontal Gap="2rem" Class="home-products-stack">
+        <BitStack Horizontal Gap="2rem" Class="products-stack">
             <BitCard Style="padding:3rem" FullWidth>
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
                         @Localizer[nameof(AppStrings.BitBlazorUIMessage)]
                     </BitText>
-                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
-                        Watch video
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=ahgpbDAshmY">
+                        @Localizer[nameof(AppStrings.WatchVideo)]
                     </BitButton>
-                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                    <BitLink Href="https://blazorui.bitplatform.dev/" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
                             @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
@@ -60,14 +60,14 @@
 
             <BitCard Style="padding:3rem" FullWidth>
                 <BitStack HorizontalAlign="BitAlignment.Center">
-                    <BitText Typography="BitTypography.H5">bit Boilerplate</BitText>
+                    <BitText Typography="BitTypography.H5">bit project template</BitText>
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
-                        @Localizer[nameof(AppStrings.BitBoilerplateMessage)]
+                        @Localizer[nameof(AppStrings.BitProjectTemplateMessage)]
                     </BitText>
-                    <BitButton Variant="BitVariant.Outline" Href="https://youtube.com">
-                        Watch video
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=UjdWBvb0xac">
+                        @Localizer[nameof(AppStrings.WatchVideo)]
                     </BitButton>
-                    <BitLink Href="https://bitplatform.dev" NoUnderline>
+                    <BitLink Href="https://bitplatform.dev/templates/overview/" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
                             @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />

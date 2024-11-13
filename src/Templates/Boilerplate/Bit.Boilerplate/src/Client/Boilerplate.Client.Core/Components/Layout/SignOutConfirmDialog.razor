@@ -1,0 +1,9 @@
+﻿@inherits AppComponentBase
+
+<BitDialog @bind-IsOpen="IsOpen"
+           OnDismiss="CloseModal"
+           OnOk="WrapHandled(SignOut)"
+           OkText="@Localizer[nameof(AppStrings.SignOut)]"
+           CancelText="@Localizer[nameof(AppStrings.Cancel)]"
+           Title="@Localizer[nameof(AppStrings.SignOut)]"
+           Message="@Localizer[nameof(AppStrings.SignOutPrompt)]" />

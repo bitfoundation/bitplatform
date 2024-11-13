@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.WebView2.Core;
+﻿//+:cnd:noEmit
+using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.WebView;
 
 namespace Boilerplate.Client.Windows;
@@ -7,10 +8,19 @@ public partial class MainWindow
 {
     public MainWindow()
     {
-        AppPlatform.IsBlazorHybrid = true;
         var services = new ServiceCollection();
-        services.AddClientWindowsProjectServices();
+        ConfigurationBuilder configurationBuilder = new();
+        configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
+        var configuration = configurationBuilder.Build();
+        services.AddClientWindowsProjectServices(configuration);
         InitializeComponent();
+        //#if (appInsights == true)
+        AppWebView.RootComponents.Insert(0, new()
+        {
+            ComponentType = typeof(BlazorApplicationInsights.ApplicationInsightsInit),
+            Selector = "head::after"
+        });
+        //#endif
         AppWebView.Services = services.BuildServiceProvider();
         if (CultureInfoManager.MultilingualEnabled)
         {
@@ -18,7 +28,7 @@ public partial class MainWindow
                 App.Current.Properties["Culture"]?.ToString() ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        AppWebView.Services.GetRequiredService<IPubSubService>().Subscribe(PubSubMessages.CULTURE_CHANGED, async culture =>
+        AppWebView.Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
             App.Current.Shutdown();
             Application.Restart();
@@ -38,8 +48,12 @@ public partial class MainWindow
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;
             }
+            bool hasBlazorStarted = false;
             AppWebView.WebView.NavigationCompleted += async delegate
             {
+                if (hasBlazorStarted)
+                    return;
+                hasBlazorStarted = true;
                 await AppWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };

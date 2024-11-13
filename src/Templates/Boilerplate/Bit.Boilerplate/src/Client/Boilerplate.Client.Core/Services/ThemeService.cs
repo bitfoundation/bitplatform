@@ -1,9 +1,9 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class ThemeService : IThemeService
+public partial class ThemeService
 {
     [AutoInject] private Cookie cookie = default!;
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
@@ -22,7 +22,7 @@ public partial class ThemeService : IThemeService
         await bitDeviceCoordinator.ApplyTheme(isDark);
 
         var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
-        pubSubService.Publish(PubSubMessages.THEME_CHANGED, theme);
+        pubSubService.Publish(ClientPubSubMessages.THEME_CHANGED, theme);
 
         await cookie.Set(new()
         {

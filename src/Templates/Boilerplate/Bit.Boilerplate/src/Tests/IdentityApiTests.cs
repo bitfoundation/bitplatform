@@ -26,8 +26,8 @@ public partial class IdentityApiTests
 
         await authenticationManager.SignIn(new()
         {
-            Email = "test@bitplatform.dev",
-            Password = "123456"
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
         }, default);
 
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();

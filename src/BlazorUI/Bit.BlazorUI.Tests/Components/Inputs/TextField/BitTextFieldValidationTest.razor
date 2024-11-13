@@ -2,7 +2,7 @@
     <DataAnnotationsValidator />
 
     <BitTextField MaxLength="MaxLength"
-                  IsMultiline="IsMultiline"
+                  Multiline="Multiline"
                   Type="Type"
                   Placeholder="@Placeholder"
                   ReadOnly="ReadOnly"
@@ -21,14 +21,14 @@
                   OnKeyUp="HandleKeyUp"
                   AriaLabel="@AriaLabel"
                   Label="@Label"
-                  IsUnderlined="IsUnderlined"
-                  HasBorder="HasBorder"
+                  Underlined="Underlined"
+                  NoBorder="NoBorder"
                   DefaultValue="@DefaultValue"
                   Description="@Description"
                   Prefix="@Prefix"
                   Suffix="@Suffix"
                   Rows="Rows"
-                  IsResizable="IsResizable"
+                  Resizable="Resizable"
                   AutoComplete="@AutoComplete">
     </BitTextField>
 
@@ -37,7 +37,7 @@
 @code {
     [Parameter] public int MaxLength { get; set; } = -1;
     [Parameter] public string IconName { get; set; }
-    [Parameter] public bool IsMultiline { get; set; }
+    [Parameter] public bool Multiline { get; set; }
     [Parameter] public bool IsEnabled { get; set; } = true;
     [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public bool Required { get; set; }
@@ -52,9 +52,9 @@
     [Parameter] public string DefaultValue { get; set; }
     [Parameter] public string Description { get; set; }
     [Parameter] public string ErrorMessage { get; set; }
-    [Parameter] public bool IsUnderlined { get; set; }
-    [Parameter] public bool HasBorder { get; set; }
-    [Parameter] public bool IsResizable { get; set; }
+    [Parameter] public bool Underlined { get; set; }
+    [Parameter] public bool NoBorder { get; set; }
+    [Parameter] public bool Resizable { get; set; }
     [Parameter] public int Rows { get; set; }
     [Parameter] public string AutoComplete { get; set; }
     [Parameter] public BitTextFieldTestModel TestModel { get; set; }

@@ -1,31 +1,33 @@
-﻿using Boilerplate.Shared.Controllers.PushNotification;
-using Boilerplate.Shared.Dtos.PushNotification;
+﻿using Boilerplate.Shared.Dtos.PushNotification;
+using Boilerplate.Shared.Controllers.PushNotification;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class PushNotificationServiceBase : IPushNotificationService
 {
+    [AutoInject] protected ILogger<PushNotificationServiceBase> Logger = default!;
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
-    [AutoInject] protected IConfiguration configuration = default!;
-    [AutoInject] protected IJSRuntime jsRuntime = default!;
-    [AutoInject] protected JsonSerializerOptions jsonSerializerOptions = default!;
 
     public virtual string Token { get; set; }
-    public virtual bool NotificationsSupported => false;
-    public virtual async Task<DeviceInstallationDto> GetDeviceInstallation()
-    {
-        return await jsRuntime.GetDeviceInstallation(configuration.GetRequiredValue<string>("AdsPush:Primary:Vapid:PublicKey"));
-    }
+    public virtual Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
+    public abstract Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken);
 
     public async Task RegisterDevice(CancellationToken cancellationToken)
     {
-        if (NotificationsSupported is false)
+        if (await IsPushNotificationSupported(cancellationToken) is false)
+        {
+            Logger.LogWarning("Notifications are not supported/allowed on this platform/device.");
             return;
+        }
 
-        var deviceInstallation = await GetDeviceInstallation();
+        var deviceInstallation = await GetDeviceInstallation(cancellationToken);
 
         if (deviceInstallation is null)
+        {
+            Logger.LogWarning("Could not retrieve device installation"); // Browser's incognito mode etc.
             return;
+        }
 
         await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
     }

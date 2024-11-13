@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -34,7 +33,7 @@ public partial class IdentityController
         try
         {
             var email = info.Principal.GetEmail();
-            var phoneNumber = info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value;
+            var phoneNumber = phoneService.NormalizePhoneNumber(info.Principal.Claims.FirstOrDefault(c => c.Type is ClaimTypes.HomePhone or ClaimTypes.MobilePhone or ClaimTypes.OtherPhone)?.Value);
 
             var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 
@@ -96,8 +95,11 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Configuration.GetValue<string?>("WebClientUrl");
+        var webClientUrl = Configuration.Get<ServerApiSettings>()!.WebClientUrl;
         if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
         return LocalRedirect($"~{url}");
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]
+    private static partial void LogSocialSignInCallbackFailed(ILogger logger, Exception exp, string loginProvider, string principal);
 }

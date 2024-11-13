@@ -23,6 +23,12 @@ public partial class Templates05CreateProjectPage
         Value = false,
         Default = false,
     };
+    
+    private Parameter<bool> notification = new()
+    {
+        Value = false,
+        Default = false,
+    };
 
     private Parameter<bool> appInsight = new()
     {
@@ -30,7 +36,7 @@ public partial class Templates05CreateProjectPage
         Default = false,
     };
 
-    private Parameter<bool> signalr = new()
+    private Parameter<bool> signalR = new()
     {
         Value = false,
         Default = false,
@@ -152,12 +158,17 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetOfflineDbCommand());
         }
 
+        if (notification.IsModified)
+        {
+            finalCommand.Append(GetNotificationCommand());
+        }
+
         if (appInsight.IsModified)
         {
             finalCommand.Append(GetAppInsightsCommand());
         }
 
-        if (signalr.IsModified)
+        if (signalR.IsModified)
         {
             finalCommand.Append(GetSignalRCommand());
         }
@@ -215,6 +226,11 @@ public partial class Templates05CreateProjectPage
         return $"--offlineDb {offlineDb.Value.ToString().ToLowerInvariant()} ";
     }
 
+    private string GetNotificationCommand()
+    {
+        return $"--notification {notification.Value.ToString().ToLowerInvariant()} ";
+    }
+
     private string GetAppInsightsCommand()
     {
         return $"--appInsights {appInsight.Value.ToString().ToLowerInvariant()} ";
@@ -222,7 +238,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetSignalRCommand()
     {
-        return $"--signalr {signalr.Value.ToString().ToLowerInvariant()} ";
+        return $"--signalR {signalR.Value.ToString().ToLowerInvariant()} ";
     }
 
     private class Parameter<T>

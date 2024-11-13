@@ -8,7 +8,7 @@ public partial class SnackBar : IDisposable
 
     protected override Task OnInitAsync()
     {
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_SNACK, async args =>
+        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_SNACK, async args =>
         {
             var (title, body, color) = (ValueTuple<string, string, BitColor>)args!;
 

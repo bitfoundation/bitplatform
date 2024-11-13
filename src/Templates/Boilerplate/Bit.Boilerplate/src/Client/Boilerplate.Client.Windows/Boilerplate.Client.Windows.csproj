@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
@@ -19,14 +19,15 @@
 
     <ItemGroup>
         <Using Include="Boilerplate.Client.Core.Components.Layout" />
+        <Using Include="Boilerplate.Client.Core.Components.Pages" />
         <Using Include="Boilerplate.Client.Core.Services.Contracts" />
         <Using Include="Boilerplate.Client.Core.Services" />
         <Using Include="Boilerplate.Shared" />
         <Watch Remove="*.scss" />
 
         <PackageReference Include="EmbedIO" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
@@ -53,6 +54,8 @@
 
     <ItemGroup>
       <Resource Include="Resources\**\*.*" />
+      <Content Remove="appsettings*.json" />
+      <EmbeddedResource Include="appsettings*.json" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -60,7 +63,7 @@
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
 </Project>

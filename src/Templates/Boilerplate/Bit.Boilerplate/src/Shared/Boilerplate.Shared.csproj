@@ -1,17 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
     </PropertyGroup>
-
-    <ItemGroup>
-        <Content Remove="appsettings*.json" />
-        <EmbeddedResource Include="appsettings*.json" />
-        <EmbeddedResource Update="appsettings.*.json">
-            <DependentUpon>appsettings.json</DependentUpon>
-        </EmbeddedResource>
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authorization" />
@@ -20,6 +12,8 @@
         <PackageReference Include="Microsoft.Extensions.Localization" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+        <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
         <PackageReference Include="System.Text.Json" />
         <PackageReference Include="Riok.Mapperly" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -42,6 +36,9 @@
             <StronglyTypedClassName>AppStrings</StronglyTypedClassName>
             <PublicClass>true</PublicClass>
         </EmbeddedResource>
+        <EmbeddedResource Update="Resources\AppStrings.*.resx">
+            <DependentUpon>Resources\AppStrings.resx</DependentUpon>
+        </EmbeddedResource>
         <EmbeddedResource Update="Resources\IdentityStrings.resx">
             <Generator>MSBuild:Compile</Generator>
             <LastGenOutput>Resources\IdentityStrings.Designer.cs</LastGenOutput>
@@ -51,6 +48,20 @@
             <StronglyTypedClassName>IdentityStrings</StronglyTypedClassName>
             <PublicClass>true</PublicClass>
         </EmbeddedResource>
+        <EmbeddedResource Update="Resources\IdentityStrings.*.resx">
+            <DependentUpon>Resources\IdentityStrings.resx</DependentUpon>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
+        <EmbeddedResource Update="appsettings.*.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+        </EmbeddedResource>
+        <Compile Update="Urls.*.cs">
+            <DependentUpon>Urls.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>

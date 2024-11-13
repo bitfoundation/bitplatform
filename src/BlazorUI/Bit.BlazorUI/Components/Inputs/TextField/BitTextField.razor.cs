@@ -5,24 +5,15 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;
+    private string? _inputMode;
     private bool _isPasswordRevealed;
-    private BitInputType _elementType;
+    private BitInputType? _elementType;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
 
 
-
-    /// <summary>
-    /// AutoComplete is a string that maps to the autocomplete attribute of the HTML input element.
-    /// </summary>
-    [Parameter] public string? AutoComplete { get; set; }
-
-    /// <summary>
-    /// Determines if the text field is auto focused on first render.
-    /// </summary>
-    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Whether to show the reveal password button for input type 'password'.
@@ -50,38 +41,16 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
-    /// Whether or not the text field is borderless.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool HasBorder { get; set; } = true;
-
-    /// <summary>
-    /// Whether or not the text field is a Multiline text field.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsMultiline { get; set; }
-
-    /// <summary>
-    /// Whether or not the text field is underlined.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsUnderlined { get; set; }
-
-    /// <summary>
-    /// For multiline text fields, whether or not the field is resizable.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsResizable { get; set; } = true;
-
-    /// <summary>
     /// The icon name for the icon shown in the far right end of the text field.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Specifies whether to remove any leading or trailing whitespace from the value.
+    /// Sets the inputmode html attribute of the input element.
     /// </summary>
-    [Parameter] public bool IsTrimmed { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(SetInputMode))]
+    public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// Label displayed above the text field and read by screen readers.
@@ -99,6 +68,28 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public int MaxLength { get; set; } = -1;
 
     /// <summary>
+    /// Whether or not the text field is a Multiline text field.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Multiline { get; set; }
+
+    /// <summary>
+    /// Removes the border of the text input.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
+
+    /// <summary>
+    /// Callback for when the input clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves into the input
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
     /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
@@ -109,11 +100,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
-
-    /// <summary>
     /// Callback for when a keyboard key is pressed
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
@@ -122,11 +108,6 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Callback for When a keyboard key is released
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
-
-    /// <summary>
-    /// Callback for when the input clicked.
-    /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
     /// Input placeholder text.
@@ -145,14 +126,20 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
-    /// For multiline text, Number of rows.
+    /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
-    [Parameter] public int Rows { get; set; } = 3;
+    [Parameter, ResetClassBuilder]
+    public bool Resizable { get; set; }
 
     /// <summary>
     /// Aria label for the reveal password button.
     /// </summary>
     [Parameter] public string? RevealPasswordAriaLabel { get; set; }
+
+    /// <summary>
+    /// For multiline text, Number of rows.
+    /// </summary>
+    [Parameter] public int? Rows { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitTextField.
@@ -171,11 +158,27 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
+    /// The value of the tabindex html attribute of the input element.
+    /// </summary>
+    [Parameter] public string? TabIndex { get; set; }
+
+    /// <summary>
+    /// Specifies whether to remove any leading or trailing whitespace from the value.
+    /// </summary>
+    [Parameter] public bool Trim { get; set; }
+
+    /// <summary>
     /// Input type.
     /// </summary>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(SetElementType))]
-    public BitInputType Type { get; set; } = BitInputType.Text;
+    public BitInputType? Type { get; set; }
+
+    /// <summary>
+    /// Whether or not the text field is underlined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
 
 
@@ -193,15 +196,15 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => IsMultiline && Type == BitInputType.Text
-                                    ? $"bit-tfl-{(IsResizable ? "mln" : "mlf")}"
+        ClassBuilder.Register(() => Multiline && Type is null or BitInputType.Text
+                                    ? $"bit-tfl-{(Resizable ? "mln" : "mlf")}"
                                     : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-tfl-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => HasBorder is false ? "bit-tfl-nbd" : string.Empty);
+        ClassBuilder.Register(() => NoBorder ? "bit-tfl-nbd" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tfl-fcs {Classes?.Focused}" : string.Empty);
 
@@ -229,26 +232,18 @@ public partial class BitTextField : BitTextInputBase<string?>
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender is false || IsEnabled is false) return;
-
-        if (AutoFocus)
-        {
-            await InputElement.FocusAsync();
-        }
-    }
-
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
-        result = IsTrimmed ? value?.Trim() : value;
+        result = Trim ? value?.Trim() : value;
         parsingErrorMessage = null;
         return true;
     }
 
 
+    private void SetInputMode()
+    {
+        _inputMode = InputMode?.ToString().ToLower();
+    }
 
     private void SetElementType()
     {

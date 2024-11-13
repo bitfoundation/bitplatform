@@ -1,11 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') AND ('$(framework)' == 'net9.0' OR '$(framework)' == '')">
+        <!--/-:msbuild-conditional:noEmit -->
+        <!-- Add Microsoft.EntityFrameworkCore.Tasks package to make automated db context optimize work -->
+        <EFOptimizeContext Condition="'$(Configuration)'=='Release'">true</EFOptimizeContext>
+        <DbContextName>OfflineDbContext</DbContextName>
+        <EFStartupProject>..\..\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj</EFStartupProject>
+        <!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,8 +30,9 @@
         <PackageReference Include="Bit.BlazorUI.Icons" />
         <PackageReference Include="Bit.BlazorUI.Assets" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
-        <PackageReference Condition=" '$(signalr)' == 'true' OR '$(signalr)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
+        <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Bit.BlazorUI.Extras" />
         <!--/-:msbuild-conditional:noEmit -->
@@ -30,6 +40,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -67,11 +79,11 @@
 
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json" Outputs="wwwroot\scripts\app.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Environment)' == 'Production' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <Target Name="BuildCssFiles">
-        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass .:. Styles/app.scss:wwwroot/styles/app.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

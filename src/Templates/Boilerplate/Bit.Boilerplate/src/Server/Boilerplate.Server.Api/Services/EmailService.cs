@@ -15,7 +15,7 @@ public partial class EmailService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ILogger<EmailService> logger = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private AppSettings appSettings = default!;
+    [AutoInject] private ServerApiSettings appSettings = default!;
 
     public async Task SendResetPasswordToken(User user, string token, Uri link, CancellationToken cancellationToken)
     {
@@ -116,7 +116,7 @@ public partial class EmailService
     {
         var emailResult = await fluentEmail.To(toEmailAddress, toName)
                                            .Subject(subject)
-                                           .SetFrom(appSettings.Email.DefaultFromEmail, emailLocalizer[nameof(EmailStrings.DefaultFromName)])
+                                           .SetFrom(appSettings.Email!.DefaultFromEmail, emailLocalizer[nameof(EmailStrings.DefaultFromName)])
                                            .Body(body, isHtml: true)
                                            .SendAsync(cancellationToken);
 

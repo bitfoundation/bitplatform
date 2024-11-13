@@ -8,5 +8,5 @@ public class BitDropdownMultiSelectTestModel
     [Required]
     [MaxLength(2)]
     [MinLength(2)]
-    public ICollection<string> Values { get; set; }
+    public IEnumerable<string> Values { get; set; }
 }

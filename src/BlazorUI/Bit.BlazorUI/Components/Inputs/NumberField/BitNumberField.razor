@@ -70,15 +70,17 @@
                name="@Name"
                step="@_step"
                id="@_inputId"
-               autocomplete="off"
                readonly="@ReadOnly"
                required="@Required"
                style="@Styles?.Input"
+               autofocus="@AutoFocus"
+               inputmode="@GetInputMode()"
                placeholder="@Placeholder"
                aria-labelledby="@_labelId"
                value="@CurrentValueAsString"
                disabled="@(IsEnabled is false)"
                class="bit-nfl-inp @Classes?.Input"
+               autocomplete="@(AutoComplete ?? "off")"
                type="@(NumberFormat.HasValue() ? "text" : "number")"
                aria-valuemin="@_min"
                aria-valuemax="@_max"
@@ -103,7 +105,7 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@IncrementIconName @Classes?.IncrementIcon" />
+                           class="bit-nfl-bic bit-icon bit-icon--@(IncrementIconName ?? "ChevronDownSmall bit-ico-r180") @Classes?.IncrementIcon" />
                     </span>
                 </button>
 
@@ -121,7 +123,7 @@
                         aria-disabled="@(IsEnabled is false)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                         <i style="@Styles?.DecrementIcon"
-                           class="bit-nfl-bic bit-icon bit-icon--@DecrementIconName @Classes?.DecrementIcon" />
+                           class="bit-nfl-bic bit-icon bit-icon--@(DecrementIconName ?? "ChevronDownSmall") @Classes?.DecrementIcon" />
                     </span>
                 </button>
             </span>

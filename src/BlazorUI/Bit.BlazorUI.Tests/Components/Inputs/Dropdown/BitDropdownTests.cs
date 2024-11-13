@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.Dropdown;
 public class BitDropdownTests : BunitTestContext
 {
     private string _bitDropdownValue;
-    private ICollection<string> _bitDropdownValues;
+    private IEnumerable<string> _bitDropdownValues;
 
     [DataTestMethod,
       DataRow(true),
@@ -78,7 +78,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsResponsive, true);
+            parameters.Add(p => p.Responsive, true);
             parameters.Add(p => p.Label, labelFragment);
         });
 
@@ -102,7 +102,7 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.IsResponsive, true);
+            parameters.Add(p => p.Responsive, true);
 
             if (string.IsNullOrEmpty(labelFragment) is false)
             {
@@ -155,7 +155,7 @@ public class BitDropdownTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
         });
 
         var bitDropdown = component.Find(".bit-drp");
@@ -184,7 +184,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
         });
 
         Assert.AreEqual(items.FindAll(i => i.ItemType == BitDropdownItemType.Header).Count, component.FindAll(".bit-drp-ihd").Count);
@@ -234,7 +234,7 @@ public class BitDropdownTests : BunitTestContext
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, true);
+            parameters.Add(p => p.MultiSelect, true);
             parameters.Add(p => p.DefaultValues, defaultSelectedMultipleValueList);
         });
 
@@ -289,7 +289,7 @@ public class BitDropdownTests : BunitTestContext
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, true);
+            parameters.Add(p => p.MultiSelect, true);
             parameters.Add(p => p.DefaultValues, defaultSelectedMultipleValueList);
             parameters.Add(p => p.Values, selectedMultipleValueList);
         });
@@ -326,7 +326,7 @@ public class BitDropdownTests : BunitTestContext
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Values, selectedMultipleValueList);
             parameters.Add(p => p.Value, value);
             parameters.Add(p => p.Placeholder, placeholder);
@@ -444,7 +444,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.IsReselectable, notifyOnReselect);
+            parameters.Add(p => p.Reselectable, notifyOnReselect);
             parameters.Add(p => p.DefaultValue, defaultValue);
             parameters.Add(p => p.OnSelectItem, () => itemSelected = true);
         });
@@ -479,7 +479,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.OnValuesChange, () => itemsSelected++);
         });
 
@@ -547,7 +547,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
             parameters.Add(p => p.IsEnabled, true);
-            parameters.Add(p => p.IsMultiSelect, true);
+            parameters.Add(p => p.MultiSelect, true);
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Values, _bitDropdownValues);
             parameters.Add(p => p.ValuesChanged, HandleValuesChanged);
@@ -725,7 +725,7 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.TestModel, new BitDropdownMultiSelectTestModel { Values = _bitDropdownValues });
         });
 
-        var isInvalid = (_bitDropdownValues?.Count ?? 0) != 2;
+        var isInvalid = (_bitDropdownValues?.Count() ?? 0) != 2;
 
         var selectTag = component.Find("select");
         Assert.IsFalse(selectTag.HasAttribute("aria-invalid"));
@@ -853,7 +853,7 @@ public class BitDropdownTests : BunitTestContext
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.ShowSearchBox, true);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
         });
 
@@ -903,11 +903,17 @@ public class BitDropdownTests : BunitTestContext
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
         var items = GetRangeDropdownItems(500);
+
+        // To ensure a consistent display structure in the Virtualize component across .NET 9 and .NET 8,
+        // we've set the default value of MaxItemCount to 100. This means that even if a higher value is specified,
+        // only a maximum of 100 items will be rendered by default.
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 100);
+
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
             parameters.Add(p => p.Virtualize, virtualize);
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
             parameters.Add(p => p.Items, items);
 
             if (itemSize.HasValue)
@@ -931,6 +937,7 @@ public class BitDropdownTests : BunitTestContext
         {
             //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
+            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
             if (actualRenderedItemCount < expectedRenderedItemCount)
@@ -969,7 +976,8 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronDown"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-ico-r90"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronRight"));
         }
     }
 
@@ -989,7 +997,8 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(iconFragment))
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronDown"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-ico-r90"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronRight"));
         }
         else
         {
@@ -1026,7 +1035,7 @@ public class BitDropdownTests : BunitTestContext
         _bitDropdownValue = value;
     }
 
-    private void HandleValuesChanged(ICollection<string> values)
+    private void HandleValuesChanged(IEnumerable<string> values)
     {
         _bitDropdownValues = values;
     }
@@ -1049,9 +1058,9 @@ public class BitDropdownTests : BunitTestContext
         new() { Text = "Banana", Value = "f-ban" },
         new() { Text = "Broccoli", Value = "v-bro" }
     };
-    
 
-    private static ICollection<BitDropdownItem<string>> GetRangeDropdownItems(int count) => 
+
+    private static ICollection<BitDropdownItem<string>> GetRangeDropdownItems(int count) =>
         Enumerable.Range(1, count).Select(item => new BitDropdownItem<string>
         {
             ItemType = BitDropdownItemType.Normal,

@@ -2,7 +2,8 @@
 using System.Net.Sockets;
 using EmbedIO;
 using EmbedIO.Actions;
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components;
+using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Services;
 
@@ -28,13 +29,22 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    _ = Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                 }
                 catch (Exception exp)
                 {
                     exceptionHandler.Handle(exp);
                 }
             }));
+
+        localHttpServer.HandleHttpException(async (context, exception) =>
+        {
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
+            {
+                { "StatusCode" , exception.StatusCode },
+                { "RequestUri" , context.Request.Url },
+            });
+        });
 
         _ = localHttpServer.RunAsync(cancellationToken)
             .ContinueWith(task =>

@@ -1,44 +1,50 @@
 ﻿using System.Reflection;
+using Boilerplate.Client.Web;
+using Boilerplate.Tests.Extensions;
 using Microsoft.AspNetCore.Builder;
 
 namespace Boilerplate.Tests.PageTests;
 
 [TestClass]
-public partial class PageTestBase : PageTest
+public abstract partial class PageTestBase : PageTest
 {
     public AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
     public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
+    public virtual BlazorWebAppMode BlazorRenderMode => BlazorWebAppMode.BlazorServer;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
+        await Context.EnableBlazorWasmCaching();
+
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
         var configureTestServer = currentTestMethod!.GetCustomAttribute<ConfigureTestServerAttribute>();
         if (configureTestServer is not null)
         {
-            await (Task)GetType().GetMethod(configureTestServer.MethodName)!.Invoke(this, [TestServer])!;
+            var configureTestServerMethod = GetType()
+                .GetMethod(configureTestServer.MethodName, BindingFlags.Public | BindingFlags.Instance)
+                ?? throw new InvalidOperationException($"Method '{configureTestServer.MethodName}' not found.");
+            var currentTestMethodArguments = GetTestMethodArguments();
+            await (Task)configureTestServerMethod.Invoke(this, [TestServer, .. currentTestMethodArguments])!;
             return;
         }
 
         var autoStartTestServer = currentTestMethod!.GetCustomAttribute<AutoStartTestServerAttribute>();
         if (autoStartTestServer is null || autoStartTestServer.AutoStart)
         {
-            await TestServer.Build().Start();
+            await TestServer.Build(configureTestConfigurations: configuration =>
+            {
+                configuration["WebAppRender:BlazorMode"] = BlazorRenderMode.ToString();
+            }).Start();
         }
     }
 
     [TestCleanup]
     public async ValueTask CleanupTestServer()
     {
-        await Context.CloseAsync();
-        if (TestContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
-        {
-            var directory = GetVideoDirectory(TestContext);
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, true);
-        }
+        await this.FinalizeVideoRecording();
 
         if (TestServer is not null)
         {
@@ -49,7 +55,7 @@ public partial class PageTestBase : PageTest
     public override BrowserNewContextOptions ContextOptions()
     {
         var options = base.ContextOptions();
-        options.RecordVideoDir = GetVideoDirectory(TestContext);
+        options.EnableVideoRecording(TestContext);
 
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
@@ -62,16 +68,26 @@ public partial class PageTestBase : PageTest
         var configureBrowserContext = currentTestMethod!.GetCustomAttribute<ConfigureBrowserContextAttribute>();
         if (configureBrowserContext is not null)
         {
-            GetType().GetMethod(configureBrowserContext.MethodName)!.Invoke(this, [options]);
+            var configureBrowserContextMethod = GetType()
+                .GetMethod(configureBrowserContext.MethodName, BindingFlags.Public | BindingFlags.Instance)
+                ?? throw new InvalidOperationException($"Method '{configureBrowserContext.MethodName}' not found.");
+            var currentTestMethodArguments = GetTestMethodArguments();
+            configureBrowserContextMethod.Invoke(this, [options, .. currentTestMethodArguments]);
         }
 
         return options;
     }
 
-    private static string GetVideoDirectory(TestContext testContext)
+    private string?[]? GetTestMethodArguments()
     {
-        var testMethodFullName = $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
-        return Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
+        var testContextType = TestContext.GetType();
+        var testMethodField = testContextType.GetField("_testMethod", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Field '_testMethod' not found.");
+        var testMethod = testMethodField.GetValue(TestContext) ?? throw new InvalidOperationException("Field '_testMethod' is null.");
+        var testMethodType = testMethod.GetType();
+        var serializedDataProperty = testMethodType.GetProperty("SerializedData", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new InvalidOperationException("Property 'SerializedData' not found.");
+        var serializedData = (string?[]?)serializedDataProperty.GetValue(testMethod);
+        if (serializedData is null) return [];
+        return serializedData.Where((_, index) => index % 2 == 1).Select(x => x?.Trim('"')).ToArray();
     }
 }
 

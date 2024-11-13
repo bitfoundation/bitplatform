@@ -31,7 +31,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.MultiSelect, isMultiSelect);
         });
 
         var bitFileUpload = com.Find(".bit-upl-fi");

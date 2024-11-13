@@ -16,6 +16,23 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "framework": {
+            "type": "parameter",
+            "description": "The target framework for the project.",
+            "datatype": "choice",
+            "defaultValue": "net8.0",
+            "choices": [
+                {
+                    "choice": "net8.0",
+                    "description": "Target net8.0"
+                },
+                {
+                    "choice": "net9.0",
+                    "description": "Target net9.0"
+                }
+            ],
+            "replaces": "net9.0"
+        },
         "helpUrl": {
             "displayName": "More info at",
             "type": "parameter",
@@ -166,7 +183,7 @@
                 }
             ]
         },
-        "signalr": {
+        "signalR": {
             "displayName": "Add SignalR?",
             "type": "parameter",
             "datatype": "bool",
@@ -332,7 +349,7 @@
             "path": "README.md"
         },
         {
-            "path": "Boilerplate.sln"
+            "path": "Boilerplate.Web.slnf"
         }
     ],
     "sources": [
@@ -389,9 +406,9 @@
                         "src/Shared/Controllers/Categories/**",
                         "src/Shared/Controllers/Products/**",
                         "src/Shared/Controllers/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
                     ]
                 },
                 {
@@ -402,20 +419,22 @@
                         "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
                         "src/Shared/Controllers/Todo/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Todo/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Todo/**"
                     ]
                 },
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Data/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Offline/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Offline/**"
                     ]
                 },
                 {
-                    "condition": "(signalr != true)",
+                    "condition": "(signalR != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Hubs/**"
+                        "src/Server/Boilerplate.Server.Api/SignalR/**",
+                        "src/Shared/Services/SharedPubSubMessages.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfinitiesRetryPolicy.cs"
                     ]
                 },
                 {
@@ -453,15 +472,16 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/GoogleRecaptcha.razor",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
                         "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
                     ]
                 },
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Maui/Services/MauiTelemetryInitializer.cs",
-                        "src/Client/Boilerplate.Client.Windows/Services/WindowsTelemetryInitializer.cs"
+                        "src/Client/Boilerplate.Client.Maui/Services/MauiAppInsightsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Windows/Services/WindowsAppInsightsTelemetryInitializer.cs",
+                        "src/Client/Boilerplate.Client.Core/Services/AppInsightsJsSdkService.cs"
                     ]
                 },
                 {
@@ -486,9 +506,12 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/Tests/PageTests/**",
-                        "src/Tests/TestInitializer.cs",
                         "src/Tests/Services/CulturedStringLocalizer.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                        "src/Tests/Services/EmailReaderService.cs",
+                        "src/Tests/Services/UserService.cs",
+                        "src/Tests/Services/FakePhoneService.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
+                        "src/Tests/Extensions/PlaywrightCacheExtensions.cs"
                     ]
                 },
                 {
@@ -497,6 +520,24 @@
                         "src/Tests/IdentityApiTests.cs",
                         "src/Tests/IdentityPagesTests.cs"
                     ]
+                },
+                {
+                    "condition": "(framework == \"net8.0\")",
+                    "exclude": [
+                        "global.json",
+                        "src/Directory.Packages.props"
+                    ],
+                    "rename": {
+                        "global8.json": "global.json",
+                        "src/Directory.Packages8.props": "src/Directory.Packages.props"
+                    }
+                },
+                {
+                  "condition": "(framework == \"net9.0\")",
+                  "exclude": [
+                    "global8.json",
+                    "src/Directory.Packages8.props"
+                  ]
                 }
             ]
         }

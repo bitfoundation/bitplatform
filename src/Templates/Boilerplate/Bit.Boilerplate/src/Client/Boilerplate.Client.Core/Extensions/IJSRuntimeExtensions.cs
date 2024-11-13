@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using System.Reflection;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
@@ -10,6 +11,11 @@ public static partial class IJSRuntimeExtensions
     public static ValueTask<string> GetBrowserPlatform(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeAsync<string>("App.getPlatform");
+    }
+
+    public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeAsync<string>("App.getTimeZone");
     }
 
     public static ValueTask ApplyBodyElementClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
@@ -41,13 +47,17 @@ public static partial class IJSRuntimeExtensions
     /// </summary>
     public static bool IsInitialized(this IJSRuntime jsRuntime)
     {
+        if (jsRuntime is null)
+            return false;
+
         var type = jsRuntime.GetType();
 
         return type.Name switch
         {
             "UnsupportedJavaScriptRuntime" => false, // pre-rendering
             "RemoteJSRuntime" /* blazor server */ => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!,
-            _ => true // blazor wasm / hybrid
+            "WebViewJSRuntime" /* blazor hybrid */ => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is not null,
+            _ => true // blazor wasm
         };
     }
 }

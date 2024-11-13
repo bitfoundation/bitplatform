@@ -8,7 +8,7 @@ using Java.Net;
 using Android.Gms.Tasks;
 using Firebase.Messaging;
 //#endif
-using Boilerplate.Client.Core;
+using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Platforms.Android;
 
@@ -16,9 +16,9 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                         DataSchemes = ["https", "http"],
                         DataHosts = ["use-your-server-url-here.com"],
                         // the following app links will be opened in app instead of browser if the app is installed on Android device.
-                        DataPaths = ["/"],
+                        DataPaths = [Urls.HomePage],
                         DataPathPrefixes = [
-                            "/en-US", "en-GB", "/fa-IR", "fr-FR",
+                            "/en-US", "/en-GB", "/fa-IR", "/nl-NL",
                             Urls.ConfirmPage, Urls.ForgotPasswordPage, Urls.SettingsPage, Urls.ResetPasswordPage, Urls.SignInPage, Urls.SignUpPage, Urls.NotAuthorizedPage, Urls.NotFoundPage, Urls.TermsPage, Urls.AboutPage,
                             //#if (sample == "Admin")
                             Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
@@ -45,6 +45,9 @@ public partial class MainActivity : MauiAppCompatActivity
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        // https://github.com/dotnet/maui/issues/24742
+        Theme?.ApplyStyle(Resource.Style.OptOutEdgeToEdgeEnforcement, force: false);
+
         base.OnCreate(savedInstanceState);
 
         var url = Intent?.DataString;
@@ -53,8 +56,13 @@ public partial class MainActivity : MauiAppCompatActivity
             _ = Routes.OpenUniversalLink(new URL(url).File ?? Urls.HomePage);
         }
         //#if (notification == true)
-        if (PushNotificationService.NotificationsSupported)
-            FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+        PushNotificationService.IsPushNotificationSupported(default).ContinueWith(task =>
+        {
+            if (task.Result)
+            {
+                FirebaseMessaging.Instance.GetToken().AddOnSuccessListener(this);
+            }
+        });
         //#endif
     }
 

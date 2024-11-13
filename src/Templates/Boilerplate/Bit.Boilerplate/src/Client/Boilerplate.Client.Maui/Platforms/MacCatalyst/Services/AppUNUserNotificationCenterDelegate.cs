@@ -1,5 +1,4 @@
-﻿using Foundation;
-using UserNotifications;
+﻿using UserNotifications;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 public partial class AppUNUserNotificationCenterDelegate : UNUserNotificationCenterDelegate

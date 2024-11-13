@@ -35,17 +35,14 @@ jobs:
       with:
         node-version: 22
 
-    # - name: Enable pre rendering
-    #   run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs
-        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 #if (notifications == true)
-        AdsPush.Primary.Vapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
+        AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
     - name: Install wasm
@@ -72,6 +69,7 @@ jobs:
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -149,31 +147,20 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src\Client\Boilerplate.Client.Core\appsettings.json, src\Shared\appsettings.json'
+        files: 'src\Shared\appsettings.json, src\Client\Boilerplate.Client.Core\appsettings.json, src\Client\Boilerplate.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+        WindowsUpdate.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
 
     - name: Publish
       run: |
-          cd src\Client\Boilerplate.Client.Windows\
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
-          ren .\bin\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
-          ren .\bin\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
-          ren .\bin\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish
-          del .\bin\publish\Boilerplate.Client.Windows.exe
-          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish .\publish-result /s /e /h
+        cd src\Client\Boilerplate.Client.Windows\
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           dotnet tool restore
-          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.8-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework net9.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -210,7 +197,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 
@@ -226,16 +213,16 @@ jobs:
           dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
   
     - name: Build aab
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net9.0-android
   
     - name: Build apk
-      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net8.0-android
+      run: dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -f net9.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: android-bundle
-        path: src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.*
+        path: src/Client/Boilerplate.Client.Maui/bin/Release/net9.0-android/*-Signed.*
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS-macOS)
@@ -262,7 +249,7 @@ jobs:
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+        files: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
 
@@ -289,10 +276,10 @@ jobs:
           dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -t:BeforeBuildTasks --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net8.0-ios
+      run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ env.IOS_CODE_SIGN_PROVISION }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -f net9.0-ios
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: iOS-bundle
-        path: src/Client/Boilerplate.Client.Maui/bin/release/net8.0-ios/ios-arm64/publish/*.ipa
+        path: src/Client/Boilerplate.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa

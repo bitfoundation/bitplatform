@@ -203,8 +203,12 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
 <BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
 <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"">
+        <BitNavOption Text=""Dashboard"" IconName=""@BitIconName.ViewDashboard"" />
+        <BitNavOption Text=""Categories"" IconName=""@BitIconName.BuildQueue"" />
+        <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
+    </BitNavOption>
     <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" />
-    <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" />
     <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" />
     <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
     <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" />

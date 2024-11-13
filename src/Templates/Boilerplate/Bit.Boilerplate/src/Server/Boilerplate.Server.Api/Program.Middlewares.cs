@@ -9,12 +9,19 @@ public static partial class Program
     /// <summary>
     /// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-8.0#middleware-order
     /// </summary>
-    private static void ConfiureMiddlewares(this WebApplication app)
+    private static void ConfigureMiddlewares(this WebApplication app)
     {
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        app.UseForwardedHeaders();
+        var forwardedHeadersOptions = configuration.Get<ServerApiSettings>()!.ForwardedHeaders;
+
+        if (forwardedHeadersOptions is not null 
+            && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))
+        {
+            // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
+            app.UseForwardedHeaders(forwardedHeadersOptions);
+        }
 
         if (CultureInfoManager.MultilingualEnabled)
         {
@@ -32,7 +39,7 @@ public static partial class Program
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
-        if(env.IsDevelopment() is false)
+        if (env.IsDevelopment() is false)
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
@@ -69,8 +76,8 @@ public static partial class Program
             QueryStringParameter = queryStringParameter
         }).WithTags("Test");
 
-        //#if (signalr == true)
-        app.MapHub<Hubs.AppHub>("/app-hub");
+        //#if (signalR == true)
+        app.MapHub<SignalR.AppHub>("/app-hub");
         //#endif
 
         app.MapControllers().RequireAuthorization();

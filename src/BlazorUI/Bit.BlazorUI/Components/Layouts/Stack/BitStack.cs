@@ -45,6 +45,24 @@ public partial class BitStack : BitComponentBase
     public bool FillContent { get; set; }
 
     /// <summary>
+    /// Sets the height of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitHeight { get; set; }
+
+    /// <summary>
+    /// Sets the width and height of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitSize { get; set; }
+
+    /// <summary>
+    /// Sets the width of the stack to fit its content.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
     /// Defines the spacing between Stack children.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -133,6 +151,9 @@ public partial class BitStack : BitComponentBase
 
         StyleBuilder.Register(() => (AutoSize || AutoWidth) ? "width:auto" : string.Empty);
         StyleBuilder.Register(() => (AutoSize || AutoHeight) ? "height:auto" : string.Empty);
+
+        StyleBuilder.Register(() => (FitSize || FitWidth) ? "width:fit-content" : string.Empty);
+        StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

@@ -13,6 +13,15 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitBreadcrumbClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "DividerIconName",
             Type = "string?",
             DefaultValue = "null",
@@ -20,10 +29,24 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "DividerIconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template content to render divider icon."
+        },
+        new()
+        {
             Name = "Items",
             Type = "IList<TItem>",
-            DefaultValue = "new List<TItem>()",
-            Description = "Collection of breadcrumbs to render"
+            DefaultValue = "[]",
+            Description = "Collection of BreadLists to render."
+        },
+        new()
+        {
+            Name = "ItemTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "The custom template content to render each item."
         },
         new()
         {
@@ -40,6 +63,19 @@ public partial class BitBreadcrumbDemo
             Description = "Names and selectors of the custom input type properties.",
             LinkType = LinkType.Link,
             Href = "#name-selectors"
+        },
+        new()
+        {
+            Name = "OnItemClick",
+            Type = "EventCallback<TItem>",
+            Description = "Callback for when the breadcrumb item clicked."
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of the ChildContent."
         },
         new()
         {
@@ -64,23 +100,33 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
-            Name = "OnItemClick",
-            Type = "EventCallback<TItem>",
-            Description = "Callback for when the breadcrumb item clicked."
+            Name = "OverflowIconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue= "null",
+            Description = "The custom template content to render each overflow icon."
         },
         new()
         {
-            Name = "SelectedItemClass",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The CSS class attribute for the selected item."
+            Name = "OverflowTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue= "null",
+            Description = "The custom template content to render each item in overflow list."
         },
         new()
         {
-            Name = "SelectedItemStyle",
-            Type = "string?",
+            Name = "ReversedIcon",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the positions of the icon and the item text of the item content."
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitBreadcrumbClassStyles?",
             DefaultValue = "null",
-            Description = "The style attribute for selected item."
+            Description = "Custom CSS styles for different parts of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         }
     ];
 
@@ -124,6 +170,18 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "string?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new()
+               {
+                   Name = "ReversedIcon",
+                   Type = "bool?",
+                   Description = "Reverses the positions of the icon and the item text of the item content.",
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the item as the selected item.",
@@ -140,6 +198,18 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "Action<BitBreadcrumbItem>?",
                    Description = "Click event handler of the breadcrumb item.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item in overflow list.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item.",
                }
             ]
         },
@@ -181,6 +251,18 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "string?",
+                   Description = "Name of an icon to render next to the item text.",
+               },
+               new()
+               {
+                   Name = "ReversedIcon",
+                   Type = "bool?",
+                   Description = "Reverses the positions of the icon and the item text of the item content.",
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "bool",
                    Description = "Display the breadcrumb option as the selected option.",
@@ -197,8 +279,161 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "EventCallback<BitBreadcrumbOption>",
                    Description = "Click event handler of the breadcrumb option.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item in overflow list.",
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "RenderFragment<BitBreadcrumbItem>?",
+                   Description = "The custom template for the item.",
                }
             ]
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitBreadcrumbClassStyles",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitBreadcrumb.",
+               },
+               new()
+               {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay of the BitBreadcrumb.",
+               },
+               new()
+               {
+                   Name = "ItemContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item container of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow button of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowButtonIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow button icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item wrapper of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Item",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "ItemText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each item text of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "SelectedItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the selected item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Divider",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the divider of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "DividerIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the divider icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "Callout",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout element of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "CalloutContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the callout container of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemWrapper",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow item wrapper of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item icon of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowItemText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for each overflow item text of the BitBreadcrumb."
+               },
+               new()
+               {
+                   Name = "OverflowSelectedItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overflow selected item of the BitBreadcrumb."
+               }
+            ],
         },
         new()
         {
@@ -253,6 +488,24 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "IconName",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.IconName))",
+                   Description = "The IconName field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "ReversedIcon",
+                   Type = "BitNameSelectorPair<TItem, bool?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.ReversedIcon))",
+                   Description = "The ReversedIcon field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "IsSelected",
                    Type = "BitNameSelectorPair<TItem, bool>",
                    DefaultValue = "new(nameof(BitBreadcrumbItem.IsSelected))",
@@ -274,6 +527,24 @@ public partial class BitBreadcrumbDemo
                    Name = "OnClick",
                    Type = "Action<TItem>?",
                    Description = "Click event handler of the item.",
+               },
+               new()
+               {
+                   Name = "OverflowTemplate",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.OverflowTemplate))",
+                   Description = "The OverflowTemplate field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Template",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Template))",
+                   Description = "The Template field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
                }
             ],
         },

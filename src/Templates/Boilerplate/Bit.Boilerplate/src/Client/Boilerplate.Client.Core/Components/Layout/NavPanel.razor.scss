@@ -1,0 +1,78 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    top: 0;
+    padding: 1rem;
+    position: sticky;
+    overflow: hidden auto;
+    height: var(--app-height);
+    min-width: var(--nav-menu-width);
+    max-width: var(--nav-menu-width);
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    @include lt-md {
+        z-index: 3;
+        padding: 0;
+        position: fixed;
+        height: unset !important;
+        top: var(--app-inset-top);
+        bottom: var(--app-inset-bottom);
+
+        &.closed {
+            display: none;
+        }
+    }
+}
+
+.bit-macos {
+    section {
+        height: -webkit-fill-available;
+
+        ::deep .panel {
+            height: -webkit-fill-available;
+        }
+    }
+}
+
+.menu-overlay {
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    min-height: 100vh;
+
+    @include gt-sm {
+        display: none;
+    }
+}
+
+::deep {
+    .panel {
+        width: auto;
+        display: flex;
+        padding: 0.5rem;
+        min-height: 100%;
+        height: fit-content;
+        flex-direction: column;
+        background-color: $bit-color-background-secondary;
+
+        @include lt-md {
+            padding: 1rem;
+        }
+    }
+
+    .toggle-btn {
+        @include lt-md {
+            display: none;
+        }
+    }
+
+    a {
+        text-decoration: none;
+    }
+}

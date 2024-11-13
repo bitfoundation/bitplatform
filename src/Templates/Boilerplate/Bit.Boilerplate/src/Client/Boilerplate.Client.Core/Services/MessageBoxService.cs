@@ -6,7 +6,7 @@ public partial class MessageBoxService
     private readonly ConcurrentQueue<MessageBoxData> queue = new();
 
 
-    [AutoInject] private readonly IPubSubService pubSubService = default!;
+    [AutoInject] private readonly PubSubService pubSubService = default!;
 
 
     public Task<bool> Show(string message, string title = "")
@@ -34,7 +34,7 @@ public partial class MessageBoxService
 
         if (queue.TryDequeue(out var data))
         {
-            pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, data);
+            pubSubService.Publish(ClientPubSubMessages.SHOW_MESSAGE, data, persistent: true);
 
             await data.TaskCompletionSource.Task;
         }

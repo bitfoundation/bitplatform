@@ -261,6 +261,37 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFillContent(bool fillContent)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FillContent, fillContent);
+        });
+
+        var cssClass = fillContent ? " bit-stc-fcn" : null;
+
+        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""{STYLE}"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFillContentChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FillContent, true);
+        });
+
+        component.MarkupMatches(@$"<div class=""bit-stc bit-stc-fcn"" style=""{STYLE}"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
         DataRow("10px"),
         DataRow("1rem"),
         DataRow(null)

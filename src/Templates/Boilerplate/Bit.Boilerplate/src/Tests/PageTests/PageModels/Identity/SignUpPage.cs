@@ -1,16 +1,15 @@
 ﻿//+:cnd:noEmit
-using System.Text.RegularExpressions;
-using Boilerplate.Server.Api.Resources;
+using Boilerplate.Tests.PageTests.PageModels.Email;
 using Boilerplate.Tests.PageTests.PageModels.Layout;
-using MsgReader.Mime;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
 
 public partial class SignUpPage(IPage page, Uri serverAddress)
-    : MainLayout(page, serverAddress, Urls.SignUpPage, AppStrings.SingUpTitle)
+    : MainLayout(page, serverAddress)
 {
-    private string email;
-    private IPage emailPage;
+    private string? email;
+    public override string PagePath => Urls.SignUpPage;
+    public override string PageTitle => AppStrings.SignUpPageTitle;
 
     public override async Task Open()
     {
@@ -18,83 +17,37 @@ public partial class SignUpPage(IPage page, Uri serverAddress)
 
         //#if (captcha == "reCaptcha")
         //Override behavior of the javascript recaptcha function on the browser
-        await page.WaitForFunctionAsync("window.grecaptcha?.getResponse !== undefined");
-        await page.EvaluateAsync("window.grecaptcha.getResponse = () => 'not-empty';");
+        await Page.WaitForFunctionAsync("window.grecaptcha?.getResponse !== undefined");
+        await Page.EvaluateAsync("window.grecaptcha.getResponse = () => 'not-empty';");
         //#endif
     }
 
-    public async Task SignUp()
+    public override async Task AssertOpen()
     {
-        email = $"{Guid.NewGuid()}@gmail.com";
+        await base.AssertOpen();
 
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync("123456");
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true }).ClickAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Main)).ToContainTextAsync(AppStrings.SignUp);
+        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.EmailPlaceholder)).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByPlaceholder(AppStrings.PasswordPlaceholder)).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true })).ToBeVisibleAsync();
     }
 
-    public async Task AssertSignUp()
+    public async Task<ConfirmPage> SignUp(string email, string password = TestData.DefaultTestPassword)
     {
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText })).ToBeVisibleAsync();
+        this.email = email;
+        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true }).ClickAsync();
+
+        return new(Page, WebAppServerAddress) { EmailAddress = email };
     }
 
-    public async Task OpenEmail()
+    public async Task<ConfirmationEmail<ConfirmPage>> OpenConfirmationEmail()
     {
-        var html = ReadEmlAndGetHtmlBody(email);
-        emailPage = await page.Context.NewPageAsync();
-        await emailPage.SetContentAsync(html);
-    }
+        Assert.IsNotNull(email, $"Call {nameof(SignUp)} method first.");
 
-    public async Task AssertConfirmationEmailContent()
-    {
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.WelcomeToApp);
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(new Regex(EmailStrings.EmailConfirmationMessageSubtitle.Replace("{0}", ".*")));
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.EmailConfirmationMessageBodyToken);
-        await Assertions.Expect(emailPage.GetByRole(AriaRole.Main)).ToContainTextAsync(EmailStrings.EmailConfirmationMessageBodyLink);
-    }
-
-    public async Task ConfirmByOtp()
-    {
-        var optCode = await emailPage.GetByText(new Regex("^\\d{6}$")).TextContentAsync();
-        await page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(optCode!);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
-    }
-
-    public async Task ConfirmByMagicLink()
-    {
-        var optLink = emailPage.GetByRole(AriaRole.Link, new() { Name = new Uri(serverAddress, Urls.ConfirmPage).ToString() });
-        await Assertions.Expect(optLink).ToBeVisibleAsync();
-        await optLink.ClickAsync();
-        page = emailPage;
-    }
-
-    public async Task AssertConfirm()
-    {
-        await Assertions.Expect(page).ToHaveURLAsync(serverAddress.ToString());
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = email })).ToBeVisibleAsync();
-        await Assertions.Expect(page.Locator(".bit-prs").First).ToContainTextAsync(email);
-        await Assertions.Expect(page.Locator(".bit-prs").Last).ToContainTextAsync(email);
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
-        await Assertions.Expect(page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
-    }
-
-    private static string ReadEmlAndGetHtmlBody(string toMailAddress)
-    {
-        var email = LoadLastEmailFor(toMailAddress);
-
-        Assert.IsNotNull(email);
-        Assert.AreEqual("info@Boilerplate.com", email.Headers.From.Address);
-        Assert.AreEqual(EmailStrings.DefaultFromName, email.Headers.From.DisplayName);
-        Assert.IsTrue(Regex.IsMatch(email.Headers.Subject, EmailStrings.ConfirmationEmailSubject.Replace("{0}", "\\d{6}")), "Email subject does not match.");
-
-        return email.HtmlBody.GetBodyAsText();
-    }
-
-    private static Message? LoadLastEmailFor(string toMailAddress)
-    {
-        var emailsDirectory = Path.Combine(AppContext.BaseDirectory, "App_Data", "sent-emails");
-        var messages = new DirectoryInfo(emailsDirectory).GetFiles().Select(Message.Load);
-        return messages
-            .Where(m => m.Headers.To[0].Address == toMailAddress)
-            .MaxBy(m => m.Headers.DateSent);
+        var confirmationEmail = new ConfirmationEmail<ConfirmPage>(Page.Context, WebAppServerAddress);
+        await confirmationEmail.Open(email);
+        return confirmationEmail;
     }
 }

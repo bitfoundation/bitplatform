@@ -11,6 +11,11 @@ public partial class MauiExceptionHandler : ExceptionHandlerBase
 {
     protected override void Handle(Exception exception, Dictionary<string, object> parameters)
     {
+        exception = UnWrapException(exception);
+
+        if (IgnoreException(exception))
+            return;
+
         base.Handle(exception, parameters);
     }
 }

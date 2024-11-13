@@ -74,7 +74,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::8.12.0-pre-03;"),
+            command:"dotnet new install Bit.Boilerplate::8.12.0;"),
         ],
 
         [CommandGroup.Additional] =
@@ -126,9 +126,6 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui';",
             command:"code --install-extension ms-dotnettools.dotnet-maui;"),
-
-            (text:@"echo 'Install the RESX Editor extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=DominicVonk.vscode-resx-editor';",
-            command:"code --install-extension DominicVonk.vscode-resx-editor;"),
         ],
         [CommandGroup.Virtualization] =
         [

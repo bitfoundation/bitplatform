@@ -1,5 +1,5 @@
-//+:cnd:noEmit
-// bit version: 8.12.0-pre-03
+﻿//+:cnd:noEmit
+// bit version: 8.12.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -31,7 +31,17 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js"
+        //#if (framework == "net9.0")
+        url: "_framework/blazor.web.js?ver=9.0.0"
+        //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+        url: "_framework/blazor.web.js?ver=8.0.11"
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+        //#endif
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"
@@ -43,7 +53,6 @@ self.serverHandledUrls = [
     /\/odata\//,
     /\/jobs\//,
     /\/core\//,
-    /\/signalr\//,
     /\/healthchecks-ui/,
     /\/healthz/,
     /\/swagger/,

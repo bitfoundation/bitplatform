@@ -1,4 +1,5 @@
 ﻿@page "/templates/run-project"
+@page "/boilerplate/run-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/run-project"
@@ -57,28 +58,26 @@
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Blazor Mode Selection</BitText>
-            To choose between Blazor modes, refer to the Client.Core/Services/AppRenderMode.cs file. By default, for development it
-            is Blazor Server and for Production it is Blazor Auto.
+            To choose between Blazor modes, refer to the Client.Web/appsettings.json file. By default, for development it
+            is Blazor Server and for Production it is Blazor Auto (appsettings.Production.json).
             <br />
             Blazor Auto is selected for production to optimize the user experience. On the first visit, the website will load quickly
             in Blazor Server mode, while Blazor WebAssembly files are downloaded in the background. Subsequent visits will utilize Blazor
             WebAssembly, enhancing performance.
-            <CodeBox>public static IComponentRenderMode? Current =&gt;
-    AppEnvironment.IsDev()
-    ? BlazorServer // For better development experience.
-    : BlazorAuto;  // For better production experience.</CodeBox>
+            <CodeBox>"WebAppRender": {
+    "PrerenderEnabled": false,
+    "BlazorMode": "BlazorServer" // BlazorServer, BlazorWebAssembly, BlazorAuto
+}</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Debugging in Blazor WebAssembly</BitText>
             To debug the project in Blazor WebAssembly mode, change the Current value to BlazorWebAssembly for development. To fully
             utilize debugging features, set the Launch profile to Server.Web-BlazorWebAssembly.
             <br />
-            <br />
-            <BitText Typography="BitTypography.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitText>
-            To run the project in Blazor WebAssembly Standalone mode, set <i>BlazorWebAssemblyStandalone</i> to true in the Directory.Build.props file.
-            Additionally, run Client.Web in addition to server project.
-            <br />
             <div class="image-container">
                 <img class="image" src="images/templates/launch-options.webp" />
             </div>
+            <br />
+            <BitText Typography="BitTypography.H5" Gutter>Running in Blazor WebAssembly Standalone Mode</BitText>
+            To run the project in Blazor WebAssembly Standalone mode, run Client.Web in addition to server project.
         </div>
     </section>
     <br />
