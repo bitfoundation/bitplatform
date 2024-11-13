@@ -61,7 +61,7 @@ jobs:
     - name: Simple tests (no --advancedTests)
       id: simple-test
       run: |
-        dotnet new bit-bp --name SimpleTest --database Sqlite
+        dotnet new bit-bp --name SimpleTest --database Sqlite --framework net8.0
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -104,7 +104,7 @@ jobs:
     - name: Test SqlServer database option
       id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -124,7 +124,7 @@ jobs:
     - name: Test Multilingual disabled option
       id: multilingual-disabled-test
       run: |
-        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests
+        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests --framework net8.0
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
@@ -142,7 +142,7 @@ jobs:
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
+        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build
         cd ../../../../
@@ -150,7 +150,7 @@ jobs:
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
+        dotnet new bit-bp --name TestMySql --database MySql --framework net8.0
         cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build
         cd ../../../../
@@ -160,35 +160,35 @@ jobs:
 
     - name: Test file storage options
       run: |
-        dotnet new bit-bp --name TestLocal --filesStorage Local
+        dotnet new bit-bp --name TestLocal --filesStorage Local --framework net8.0
         cd TestLocal/src/Server/TestLocal.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage
+        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage --framework net9.0
         cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
         dotnet build
 
     - name: Test backend setup options
       run: |
-        dotnet new bit-bp --name TestStandalone --api Standalone
+        dotnet new bit-bp --name TestStandalone --api Standalone --framework net8.0
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
         dotnet build
         cd ../
         cd TestStandalone.Server.Web/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestIntegrated --api Integrated
+        dotnet new bit-bp --name TestIntegrated --api Integrated --framework net9.0
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build
 
     - name: Test sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalR --notification
+        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalR --notification --framework net9.0
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalR false --notification false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalR false --notification false --framework net8.0
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks
@@ -216,7 +216,7 @@ jobs:
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
         dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive --framework net9.0
-        dotnet new bit-empty --name SsrPerPage --interactivity None
+        dotnet new bit-empty --name SsrPerPage --interactivity None --framework net8.0
 
     - name: Build blazor empty based projects
       run: |
