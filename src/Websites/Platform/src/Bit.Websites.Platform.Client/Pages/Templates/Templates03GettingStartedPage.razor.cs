@@ -15,10 +15,10 @@ public partial class Templates03GettingStartedPage
     private string dotnetVersion = "net8.0";
     private string copyButtonText = "Copy commands";
 
-    private List<(string text, string command)> GetSelectedComands()
+    private List<(string text, string command)> GetSelectedCommands()
     {
-        List<(string text, string command)> result = new()
-        {
+        List<(string text, string command)> result =
+        [
             (text:"echo 'Set execution policy';",
             command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
 
@@ -39,7 +39,7 @@ public partial class Templates03GettingStartedPage
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
             command:"dotnet new install Bit.Boilerplate::8.12.0;")
-        };
+        ];
 
         if (enableVirtualization)
         {
@@ -115,12 +115,12 @@ public partial class Templates03GettingStartedPage
 
     private string GetReadyToRunSelectedCommands()
     {
-        return string.Join(" ", GetSelectedComands().Select(c => $"{c.text} {c.command}"));
+        return string.Join(" ", GetSelectedCommands().Select(c => $"{c.text} {c.command}"));
     }
 
     private string GetDisplayableSelectedCommands()
     {
-        return string.Join($"{Environment.NewLine}", GetSelectedComands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
+        return string.Join($"{Environment.NewLine}", GetSelectedCommands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
     }
 
     private async Task CopyCommandsToClipboard()
