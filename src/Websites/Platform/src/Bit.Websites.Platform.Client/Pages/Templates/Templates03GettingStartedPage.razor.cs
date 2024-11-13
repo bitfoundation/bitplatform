@@ -102,12 +102,12 @@ public partial class Templates03GettingStartedPage
                 (text: @"echo 'Install the .NET MAUI extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui';",
                 command: "code --install-extension ms-dotnettools.dotnet-maui;")]
             );
+        }
 
-            if (installVs)
-            {
-                result.Add((text: @"echo 'Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/';",
-                    command: $"winget install --id Microsoft.VisualStudio.2022.Community --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb{(enableCrossPlatform ? " --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Android.SDK.MAUI" : "")}\" --accept-source-agreements --accept-package-agreements --disable-interactivity;"));
-            }
+        if (installVs)
+        {
+            result.Add((text: @"echo 'Install Visual Studio 2022 Community Edition https://visualstudio.microsoft.com/downloads/';",
+                command: $"winget install --id Microsoft.VisualStudio.2022.Community --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb{(enableCrossPlatform ? " --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Android.SDK.MAUI" : "")}\" --accept-source-agreements --accept-package-agreements --disable-interactivity;"));
         }
 
         return result;
