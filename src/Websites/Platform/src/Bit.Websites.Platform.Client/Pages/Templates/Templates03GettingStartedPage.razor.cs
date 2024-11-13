@@ -12,7 +12,7 @@ public partial class Templates03GettingStartedPage
     private bool enableCrossPlatform;
     private string devOS = "Windows";
     private bool enableVirtualization;
-    private string dotnetVersion = "net8.0";
+    private string dotnetVersion = "net9.0";
     private string copyButtonText = "Copy commands";
 
     private List<(string text, string command)> GetSelectedCommands()
