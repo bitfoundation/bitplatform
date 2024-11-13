@@ -50,9 +50,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
 
     /// <summary>
-    /// The icon name of the chevron down element of the dropdown. The default value is ChevronDown.
+    /// The icon name of the chevron down element of the dropdown.
     /// </summary>
-    [Parameter] public string CaretDownIconName { get; set; } = "ChevronDown";
+    [Parameter] public string? CaretDownIconName { get; set; }
 
     /// <summary>
     /// The custom template for the chevron down element of the dropdown.

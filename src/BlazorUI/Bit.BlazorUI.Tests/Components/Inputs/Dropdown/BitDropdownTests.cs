@@ -976,7 +976,8 @@ public class BitDropdownTests : BunitTestContext
         }
         else
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronDown"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-ico-r90"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronRight"));
         }
     }
 
@@ -996,7 +997,8 @@ public class BitDropdownTests : BunitTestContext
 
         if (string.IsNullOrEmpty(iconFragment))
         {
-            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronDown"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-ico-r90"));
+            Assert.IsTrue(component.Find(".bit-drp-wrp > .bit-drp-icn > i").ClassList.Contains("bit-icon--ChevronRight"));
         }
         else
         {

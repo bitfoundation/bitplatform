@@ -26,6 +26,8 @@
         <Watch Remove="*.scss" />
 
         <PackageReference Include="EmbedIO" />
+
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />

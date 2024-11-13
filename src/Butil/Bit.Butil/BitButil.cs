@@ -20,6 +20,7 @@ public static class BitButil
         services.AddTransient<Notification>();
         services.AddTransient<Screen>();
         services.AddTransient<ScreenOrientation>();
+        services.AddTransient<UserAgent>();
         services.AddTransient<VisualViewport>();
         services.AddTransient<Window>();
 

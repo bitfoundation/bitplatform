@@ -70,12 +70,12 @@
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
         @*#if (framework == "net9.0")*@
-        <Script src="_framework/blazor.web.js?ver=9.0.100-rc.2.24474.11" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?ver=9.0.0" autostart="false"></Script>
         @*#else*@
             @*#if (IsInsideProjectTemplate == true)*@
             /*
             @*#endif)*@
-        <Script src="_framework/blazor.web.js?ver=8.0.403" autostart="false"></Script>
+        <Script src="_framework/blazor.web.js?ver=8.0.11" autostart="false"></Script>
             @*#if (IsInsideProjectTemplate == true)*@
             */
             @*#endif)*@
