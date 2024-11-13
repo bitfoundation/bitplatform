@@ -1,10 +1,20 @@
 ﻿<style>
-    .bit-lds-wrapper {
+    .bit-lds-wrapper-nfs {
         top: 50%;
         left: 50%;
         z-index: -1;
         position: absolute;
         transform: translate(-50%, -50%);
+    }
+    
+    .bit-lds-wrapper-fs {
+        inset: 0;
+        display: flex;
+        z-index: 999999;
+        position: fixed;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bit-clr-bg-pri);
     }
 
     .bit-lds-grid div {
@@ -92,7 +102,7 @@
     }
 </style>
 
-<div class="bit-lds-wrapper">
+<div class="@(FullScreen ? "bit-lds-wrapper-fs" : "bit-lds-wrapper-nfs")">
     <div class="bit-lds-grid">
         <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
