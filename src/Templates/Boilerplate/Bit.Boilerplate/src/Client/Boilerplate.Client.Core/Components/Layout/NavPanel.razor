@@ -62,9 +62,9 @@
 
             <BitSpacer />
 
-            <BitActionButton OnClick="DoSignOut"
-                             IconOnly="isToggled"
+            <BitActionButton IconOnly="isToggled"
                              FullWidth="!isToggled"
+                             OnClick="ShowSignOutConfirm"
                              IconName="@BitIconName.SignOut"
                              Title="@Localizer[nameof(AppStrings.SignOut)]">
                 @(isToggled ? "" : Localizer[nameof(AppStrings.SignOut)])
@@ -73,4 +73,4 @@
     </BitCard>
 </section>
 
-<SignOutConfirmDialog @bind-IsOpen=isSignOutModalOpen></SignOutConfirmDialog>
+<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" />
