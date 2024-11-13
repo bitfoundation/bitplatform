@@ -14,7 +14,7 @@
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
     <br />
-    <BitSticky Top="90px">
+    <BitSticky Top="110px">
         <CodeBox>
             @GetFinalCommand()
         </CodeBox>
@@ -50,7 +50,7 @@
             Refer to the <a href="https://dotnet.microsoft.com/en-us/platform/support/policy" target="_blank">.NET Support Policy</a>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
@@ -77,7 +77,7 @@
             </div>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
@@ -108,7 +108,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
@@ -121,7 +121,7 @@
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
                 <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
@@ -134,7 +134,7 @@
             but no separate Windows application will be included.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
                 <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
@@ -147,7 +147,7 @@
             seamlessly across all supported platforms.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
@@ -161,7 +161,7 @@
             errors and informational messages.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
                 <BitToggle @bind-Value="signalR.Value" OnText="true" OffText="false" />
@@ -174,11 +174,11 @@
             <br />
             <br />
             <b>Note:</b>
-            <br />  
+            <br />
             This setting does not affect the enabling or disabling of Blazor Server.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
@@ -215,7 +215,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item lg">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
@@ -231,7 +231,7 @@
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item lg">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
@@ -290,7 +290,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
                 <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
