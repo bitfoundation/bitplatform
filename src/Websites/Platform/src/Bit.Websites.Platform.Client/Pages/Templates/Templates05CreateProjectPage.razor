@@ -39,6 +39,19 @@
 
         <BitGridItem Class="grid-item">
             <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>.NET</BitText>
+                <BitDropdown Placeholder="Choose .NET version" Items="@dotnetVersion.Items" @bind-Value="@dotnetVersion.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetDotNetVersionCommand()
+            </CodeBox>
+            <br />
+            Refer to the <a href="https://dotnet.microsoft.com/en-us/platform/support/policy" target="_blank">.NET Support Policy</a>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item">
+            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
             </div>
@@ -235,8 +248,6 @@
                         <br />
                         <br />
                         Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
-                        If you require a database not listed among the options, select Other. After project creation, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
-                        package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
                         <br />
                         <br />
                         For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
