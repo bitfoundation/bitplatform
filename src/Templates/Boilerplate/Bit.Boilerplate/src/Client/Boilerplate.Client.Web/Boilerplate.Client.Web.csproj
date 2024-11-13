@@ -1,19 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <BlazorEnableTimeZoneSupport>true</BlazorEnableTimeZoneSupport>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
         <!-- To change MultilingualEnabled's value, checkout Directory.Build.props -->
         <InvariantGlobalization Condition="'$(MultilingualEnabled)' == 'false'">true</InvariantGlobalization>
         <HybridGlobalization Condition="'$(MultilingualEnabled)' == 'true'">true</HybridGlobalization>
-        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
-        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ServiceWorkerAssetsManifest Condition=" '$(PwaEnabled)' == 'true' ">service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources Condition=" '$(PwaEnabled)' == 'true' ">false</BlazorCacheBootResources>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
+        <WasmEnableSIMD Condition=" '$(framework)' == 'net8.0'">false</WasmEnableSIMD>
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
@@ -24,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />

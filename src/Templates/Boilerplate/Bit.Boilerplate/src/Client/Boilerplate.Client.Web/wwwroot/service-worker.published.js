@@ -1,4 +1,4 @@
-//+:cnd:noEmit
+﻿//+:cnd:noEmit
 // bit version: 8.12.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
@@ -31,7 +31,17 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        url: "_framework/blazor.web.js?ver=8.0.404"
+        //#if (framework == "net9.0")
+        url: "_framework/blazor.web.js?ver=9.0.0"
+        //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+        url: "_framework/blazor.web.js?ver=8.0.11"
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+        //#endif
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"

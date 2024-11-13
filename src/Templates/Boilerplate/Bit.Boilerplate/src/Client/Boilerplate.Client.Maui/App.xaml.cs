@@ -38,12 +38,28 @@ public partial class App
 
 //-:cnd:noEmit
 #if Android
+
+            //+:cnd:noEmit
+            //#if (framework == 'net9.0')
+            const int minimumSupportedWebViewVersion = 94;
+            //#elif (framework == 'net8.0')
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            const int minimumSupportedWebViewVersion = 83;
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
+            //#endif
+            //-:cnd:noEmit
+
             if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
-        webViewVersion.Major < 83)
+        webViewVersion.Major < minimumSupportedWebViewVersion)
             {
                 await App.Current!.Windows.First().Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
                 await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={Android.Webkit.WebView.CurrentWebViewPackage.PackageName}");
             }
+//-:cnd:noEmit
 #endif
         }
         catch (Exception exp)

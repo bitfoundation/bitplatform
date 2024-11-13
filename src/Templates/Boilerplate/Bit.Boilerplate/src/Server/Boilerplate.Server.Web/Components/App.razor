@@ -1,9 +1,17 @@
 ﻿@using Boilerplate.Client.Web.Components
+@using Microsoft.AspNetCore.Components.Routing
 @*+:cnd:noEmit*@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
     var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;
+    @*#if (framework == "net9.0")*@
+    if (HttpContext.AcceptsInteractiveRouting() is false)
+    {
+        // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
+        renderMode = null;
+    }
+    @*#endif*@
 }
 
 <!DOCTYPE html>
@@ -61,7 +69,17 @@
 
     @if (HttpContext.Request.IsCrawlerClient() is false)
     {
-        <Script src="_framework/blazor.web.js?ver=8.0.404" autostart="false"></Script>
+        @*#if (framework == "net9.0")*@
+        <Script src="_framework/blazor.web.js?ver=9.0.0" autostart="false"></Script>
+        @*#else*@
+            @*#if (IsInsideProjectTemplate == true)*@
+            /*
+            @*#endif)*@
+        <Script src="_framework/blazor.web.js?ver=8.0.11" autostart="false"></Script>
+            @*#if (IsInsideProjectTemplate == true)*@
+            */
+            @*#endif)*@
+        @*#endif)*@
         <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
              This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
         @if (serverWebSettings.WebAppRender.PwaEnabled)

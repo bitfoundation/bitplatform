@@ -903,6 +903,12 @@ public class BitDropdownTests : BunitTestContext
         //https://bunit.dev/docs/test-doubles/emulating-ijsruntime.html#-jsinterop-emulation
         const double viewportHeight = 1_000_000_000;
         var items = GetRangeDropdownItems(500);
+
+        // To ensure a consistent display structure in the Virtualize component across .NET 9 and .NET 8,
+        // we've set the default value of MaxItemCount to 100. This means that even if a higher value is specified,
+        // only a maximum of 100 items will be rendered by default.
+        AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", 100);
+
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.IsEnabled, true);
@@ -931,6 +937,7 @@ public class BitDropdownTests : BunitTestContext
         {
             //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + (2 * component.Instance.OverscanCount);
+            expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, 100);
 
             //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
             if (actualRenderedItemCount < expectedRenderedItemCount)
@@ -1051,9 +1058,9 @@ public class BitDropdownTests : BunitTestContext
         new() { Text = "Banana", Value = "f-ban" },
         new() { Text = "Broccoli", Value = "v-bro" }
     };
-    
 
-    private static ICollection<BitDropdownItem<string>> GetRangeDropdownItems(int count) => 
+
+    private static ICollection<BitDropdownItem<string>> GetRangeDropdownItems(int count) =>
         Enumerable.Range(1, count).Select(item => new BitDropdownItem<string>
         {
             ItemType = BitDropdownItemType.Normal,
