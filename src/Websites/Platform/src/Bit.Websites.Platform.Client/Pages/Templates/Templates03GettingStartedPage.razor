@@ -112,25 +112,21 @@
                                     <div>To install .NET SDK on Linux(Ubuntu) run the following commands:</div>
                                     @if (dotnetVersion is "net9.0")
                                     {
-                                        <CodeBox>
-                                            wget https://download.visualstudio.microsoft.com/download/pr/308f16a9-2ecf-4a42-b8bb-c1233de985fd/be6e87045ab21935bd8bb98ce69026c4/dotnet-sdk-9.0.100-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-                                            mkdir -p $HOME/.dotnet
-                                            tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-                                            echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-                                            export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-                                            rm $HOME/dotnet.tar.gz
-                                        </CodeBox>
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/308f16a9-2ecf-4a42-b8bb-c1233de985fd/be6e87045ab21935bd8bb98ce69026c4/dotnet-sdk-9.0.100-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+rm $HOME/dotnet.tar.gz</CodeBox>
                                     }
                                     else
                                     {
-                                        <CodeBox>
-                                            wget https://download.visualstudio.microsoft.com/download/pr/4e3b04aa-c015-4e06-a42e-05f9f3c54ed2/74d1bb68e330eea13ecfc47f7cf9aeb7/dotnet-sdk-8.0.404-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
-                                            mkdir -p $HOME/.dotnet
-                                            tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
-                                            echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
-                                            export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
-                                            rm $HOME/dotnet.tar.gz
-                                        </CodeBox>
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/4e3b04aa-c015-4e06-a42e-05f9f3c54ed2/74d1bb68e330eea13ecfc47f7cf9aeb7/dotnet-sdk-8.0.404-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+rm $HOME/dotnet.tar.gz</CodeBox>
                                     }
                                 </BitAccordion>
                             }
@@ -271,24 +267,20 @@
                         <BitAccordion Title="Install extensions commands">
                             @if (showCrossPlatform)
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-vscode-remote.remote-containers
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                    code --install-extension ms-dotnettools.dotnet-maui
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
+code --install-extension ms-dotnettools.dotnet-maui</CodeBox>
                             }
                             else
                             {
-                                <CodeBox>
-                                    code --install-extension ms-dotnettools.csdevkit
-                                    code --install-extension ms-vscode-remote.remote-containers
-                                    code --install-extension ms-dotnettools.blazorwasm-companion
-                                    code --install-extension glenn2223.live-sass
-                                    code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion
-                                </CodeBox>
+                                <CodeBox>code --install-extension ms-dotnettools.csdevkit
+code --install-extension ms-vscode-remote.remote-containers
+code --install-extension ms-dotnettools.blazorwasm-companion
+code --install-extension glenn2223.live-sass
+code --install-extension kevin-chatham.aspnetcorerazor-html-css-class-completion</CodeBox>
                             }
                         </BitAccordion>
                     </div>
