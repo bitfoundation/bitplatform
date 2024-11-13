@@ -1,4 +1,4 @@
-{
+﻿{
     "$schema": "http://json.schemastore.org/template",
     "author": "bit platform",
     "classifications": [
@@ -20,7 +20,7 @@
             "type": "parameter",
             "description": "The target framework for the project.",
             "datatype": "choice",
-            "defaultValue": "net8.0",
+            "defaultValue": "net9.0",
             "choices": [
                 {
                     "choice": "net8.0",
