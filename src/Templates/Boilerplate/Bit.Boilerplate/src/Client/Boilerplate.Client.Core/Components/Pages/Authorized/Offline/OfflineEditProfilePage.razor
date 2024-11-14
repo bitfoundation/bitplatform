@@ -1,4 +1,4 @@
-@attribute [Route(Urls.OfflineEditProfilePage)]
+﻿@attribute [Route(Urls.OfflineEditProfilePage)]
 @attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
 @attribute [Authorize]
 @inherits AppPageBase
@@ -12,9 +12,7 @@
         </BitText>
 
         <BitText Class="max-width">
-            You can use Entity Framework Core with SQLite directly in your mobile or web apps.
-            This allows efficient data management within the app without relying on external libraries,
-            simplifying development and enhancing reliability.
+            @Localizer[nameof(AppStrings.OfflineEditProfileMessage)]
         </BitText>
 
         @if (isLoading)
