@@ -3,12 +3,18 @@
 @attribute [Authorize]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.EditProfileTitle)]</PageTitle>
+<PageTitle>@Localizer[nameof(AppStrings.OfflineEditProfileTitle)]</PageTitle>
 
 <section>
     <BitStack Alignment="BitAlignment.Center">
         <BitText Typography="BitTypography.H3">
-            @Localizer[nameof(AppStrings.EditProfileTitle)]
+            @Localizer[nameof(AppStrings.OfflineEditProfileTitle)]
+        </BitText>
+
+        <BitText Class="max-width">
+            You can use Entity Framework Core with SQLite directly in your mobile or web apps.
+            This allows efficient data management within the app without relying on external libraries,
+            simplifying development and enhancing reliability.
         </BitText>
 
         @if (isLoading)
@@ -16,7 +22,7 @@
             <BitEllipsisLoading />
         }
 
-        <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" novalidate>
+        <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" novalidate class="max-width">
             <AppDataAnnotationsValidator />
 
             <BitStack FillContent>

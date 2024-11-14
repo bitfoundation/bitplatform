@@ -24,8 +24,31 @@
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
         <BitImage Alt="bitplatform GitHub stars"
-             Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
-
+                  Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
+        <BitAccordion Title="Statistics">
+            <BitPivot Styles="@(new() { Body = "max-height:300px;overflow:auto" })">
+                <BitPivotItem HeaderText="GitHub">
+                    @if (isGitHubLoading)
+                    {
+                        <BitRippleLoading />
+                    }
+                    else
+                    {
+                        <pre>@gitHubStatsString</pre>
+                    }
+                </BitPivotItem>
+                <BitPivotItem HeaderText="Nuget">
+                    @if (isNugetLoading)
+                    {
+                        <BitRippleLoading />
+                    }
+                    else
+                    {
+                        <pre>@nugetStatsString</pre>
+                    }
+                </BitPivotItem>
+            </BitPivot>
+        </BitAccordion>
         <br />
 
         <BitCard FullWidth Style="padding:4rem">
