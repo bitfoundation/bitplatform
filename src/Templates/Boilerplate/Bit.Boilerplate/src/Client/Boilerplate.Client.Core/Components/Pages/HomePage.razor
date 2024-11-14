@@ -23,6 +23,8 @@
                    Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
             @Localizer[nameof(AppStrings.GitHubRepo)]
         </BitButton>
+        <BitImage Alt="bitplatform GitHub stars"
+             Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
 
         <br />
 
@@ -35,6 +37,9 @@
                         @Localizer[nameof(AppStrings.LearnMore)]
                         <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
                     </BitStack>
+                </BitLink>
+                <BitLink Href="https://www.nuget.org/profiles/bit-foundation" NoUnderline>
+                    <BitImage Src="https://img.shields.io/badge/packages_download-5.5M-blue.svg?logo=nuget" Alt="nuget downloads" />
                 </BitLink>
             </BitStack>
         </BitCard>
