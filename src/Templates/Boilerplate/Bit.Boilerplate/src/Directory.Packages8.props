@@ -69,7 +69,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
-        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.0.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="8.2.6" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11" />
@@ -85,7 +85,7 @@
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
-        <PackageVersion Include="System.Text.Json" Version="9.0.0" />
+        <PackageVersion Include="System.Text.Json" Version="8.0.5" />
         <PackageVersion Include="coverlet.collector" Version="6.0.2" />
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
