@@ -278,9 +278,12 @@
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Edit profile</value>
   </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>EF Core / Sqlite powered offline edit form right into your web/mobile/desktop apps!</value>
+  </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
-    <value>FullName</value>
+    <value>Full name</value>
   </data>
     <data name="TermsPageTitle" xml:space="preserve">
     <value>Terms</value>
