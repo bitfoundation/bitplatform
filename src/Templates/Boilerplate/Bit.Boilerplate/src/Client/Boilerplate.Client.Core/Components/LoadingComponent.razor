@@ -1,8 +1,11 @@
-﻿<style>
+﻿@* Note: keep in mind that any changes to this file should be exactly applied to the loading implementations *@
+@* of the `index.html` files of the `Client.Web` and `Client.Maui` projects. *@
+
+<style>
     .bit-lds-wrapper-nfs {
         top: 50%;
         left: 50%;
-        z-index: -1;
+        z-index: @zIndex;
         position: absolute;
         transform: translate(-50%, -50%);
     }

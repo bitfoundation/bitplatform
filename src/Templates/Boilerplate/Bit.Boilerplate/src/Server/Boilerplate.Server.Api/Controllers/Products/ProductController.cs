@@ -4,9 +4,9 @@ using Boilerplate.Server.Api.SignalR;
 using Microsoft.AspNetCore.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Controllers.Product;
+using Boilerplate.Shared.Controllers.Products;
 
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers.Products;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController

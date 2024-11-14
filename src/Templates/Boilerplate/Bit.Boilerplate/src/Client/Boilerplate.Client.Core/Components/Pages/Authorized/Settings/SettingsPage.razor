@@ -12,13 +12,15 @@
 
 <section>
     <BitStack Class="stack">
-        <Accordion Name="@Urls.SettingsSections.Profile" @bind-Value="@openedAccordion"
+        <Accordion @bind-Value="@openedAccordion"
+                   Name="@Urls.SettingsSections.Profile"
                    Title="@Localizer[nameof(AppStrings.ProfileTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
             <ProfileSection Loading="isLoading" User="user" />
         </Accordion>
 
-        <Accordion Name="@Urls.SettingsSections.Account" @bind-Value="@openedAccordion"
+        <Accordion @bind-Value="@openedAccordion"
+                   Name="@Urls.SettingsSections.Account"
                    Title="@Localizer[nameof(AppStrings.AccountTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.AccountSubtitle)]">
             <BitPivot Alignment="BitAlignment.Center">
@@ -39,13 +41,15 @@
             </BitPivot>
         </Accordion>
 
-        <Accordion Name="@Urls.SettingsSections.Tfa" @bind-Value="@openedAccordion"
+        <Accordion @bind-Value="@openedAccordion"
+                   Name="@Urls.SettingsSections.Tfa"
                    Title="@Localizer[nameof(AppStrings.TfaTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.TfaSubtitle)]">
             <TwoFactorSection />
         </Accordion>
 
-        <Accordion Name="@Urls.SettingsSections.Sessions" @bind-Value="@openedAccordion"
+        <Accordion @bind-Value="@openedAccordion"
+                   Name="@Urls.SettingsSections.Sessions"
                    Title="@Localizer[nameof(AppStrings.SessionsTitle)]"
                    Subtitle="@Localizer[nameof(AppStrings.SessionsSubtitle)]">
             <SessionsSection />

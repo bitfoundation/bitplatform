@@ -3,26 +3,31 @@ using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class AuthDelegatingHandler(IAuthTokenProvider tokenProvider,
-    IJSRuntime jsRuntime,
-    IServiceProvider serviceProvider,
-    IStorageService storageService,
-    HttpMessageHandler handler)
-    : DelegatingHandler(handler)
+public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
+                                           IConfiguration configuration,
+                                           IStorageService storageService,
+                                           IServiceProvider serviceProvider,
+                                           IAuthTokenProvider tokenProvider,
+                                           IStringLocalizer<AppStrings> localizer,
+                                           HttpMessageHandler handler) : DelegatingHandler(handler)
 {
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var serverAddress = configuration.GetServerAddress();
         var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
 
         try
         {
-            if (request.Headers.Authorization is null && isRefreshTokenRequest is false)
+            if (request.RequestUri?.AbsoluteUri.Contains(serverAddress) is true &&
+                request.Headers.Authorization is null &&
+                isRefreshTokenRequest is false)
             {
                 var access_token = await tokenProvider.GetAccessToken();
                 if (access_token is not null)
                 {
                     if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
-                        throw new UnauthorizedException(nameof(AppStrings.YouNeedToSignIn));
+                        throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
                 }
