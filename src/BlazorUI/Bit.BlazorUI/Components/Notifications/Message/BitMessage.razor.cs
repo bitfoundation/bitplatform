@@ -44,7 +44,7 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public RenderFragment? Content { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name to replace the dismiss icon.
+    /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.
     /// </summary>
     [Parameter] public string? DismissIcon { get; set; }
 
@@ -57,7 +57,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom Fabric icon name for the expand icon in Truncate mode.
     /// </summary>
-    [Parameter] public string ExpandIcon { get; set; }
+    [Parameter] public string? ExpandIcon { get; set; }
 
     /// <summary>
     /// Prevents rendering the icon of the message.
