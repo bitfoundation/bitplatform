@@ -32,14 +32,14 @@
         @if (Truncate && Multiline is false)
         {
             <button style="@Styles?.ExpanderButton" class="bit-msg-exb @Classes?.ExpanderButton" @onclick="ToggleExpand" type="button">
-                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi bit-icon bit-icon--@(_isExpanded ? CollapseIcon : ExpandIcon) @Classes?.ExpanderIcon" aria-hidden="true" />
+                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi bit-icon bit-icon--@(_isExpanded ? (CollapseIcon ?? "DoubleChevronUp") : (ExpandIcon ?? "DoubleChevronUp bit-ico-r180")) @Classes?.ExpanderIcon" aria-hidden="true" />
             </button>
         }
 
         @if (OnDismiss.HasDelegate)
         {
             <button style="@Styles?.DismissButton" class="bit-msg-dmb @Classes?.DismissButton" @onclick="OnDismiss" type="button">
-                <i style="@Styles?.DismissIcon" class="bit-msg-dmi bit-icon bit-icon--@DismissIcon @Classes?.DismissIcon" aria-hidden="true" />
+                <i style="@Styles?.DismissIcon" class="bit-msg-dmi bit-icon bit-icon--@(DismissIcon ?? "Cancel") @Classes?.DismissIcon" aria-hidden="true" />
             </button>
         }
     </div>
