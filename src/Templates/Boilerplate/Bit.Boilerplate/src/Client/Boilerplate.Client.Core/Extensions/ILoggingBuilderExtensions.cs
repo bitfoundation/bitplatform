@@ -13,8 +13,6 @@ public static class ILoggingBuilderExtensions
 
     public static ILoggingBuilder ConfigureLoggers(this ILoggingBuilder loggingBuilder)
     {
-        loggingBuilder.ClearProviders();
-
         if (AppEnvironment.IsDev())
         {
             loggingBuilder.AddDebug();
@@ -22,9 +20,8 @@ public static class ILoggingBuilderExtensions
 
         if (!AppPlatform.IsBrowser)
         {
+            // Browser has its own BrowserConsoleLogger.
             loggingBuilder.AddConsole();
-            // DiagnosticLogger is already logging in browser's console.
-            // But Console logger is still useful in Visual Studio's Device Log (Android, iOS) or BrowserStack etc.
         }
 
         loggingBuilder.AddDiagnosticLogger();

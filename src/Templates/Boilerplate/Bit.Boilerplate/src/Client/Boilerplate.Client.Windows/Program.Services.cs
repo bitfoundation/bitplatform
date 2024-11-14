@@ -42,10 +42,7 @@ public static partial class Program
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventSourceLogger();
 
-            if (AppPlatform.IsWindows)
-            {
-                loggingBuilder.AddEventLog();
-            }
+            loggingBuilder.AddEventLog();
             //#if (appCenter == true)
             if (Microsoft.AppCenter.AppCenter.Configured)
             {
