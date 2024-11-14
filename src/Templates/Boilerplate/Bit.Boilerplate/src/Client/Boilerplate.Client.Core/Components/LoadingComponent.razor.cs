@@ -10,21 +10,19 @@ public partial class LoadingComponent
     /// </summary>
     [Parameter] public bool FullScreen { get; set; }
 
-
-    /// <summary>
-    /// Since we are using this component in multiple places with different circumstances,
-    /// we have to use different z-index value for the root of the component.
-    /// 
-    /// 1. The first place that utilizes this loading component is the App.razor for non-prerendered apps
-    /// to show a minimum content before the Blazor runtime starts and tries to render other components.
-    /// In this state the loading will render with the z-index of -1 so after the Blazor renders the actual
-    /// components of the app it will vanish under the main content.
-    /// 
-    /// 2. The next place that this component gets rendered, is in the Navigating parameter of the Blazor Router.
-    /// In this location the component needs to be rendered with a high value of the z-index so it can be shown
-    /// over other components that are already rendered. we are using the OnAfterRender lifecycle method to apply
-    /// the new value of the z-index since in this state unlike the App.razor (that has a no @rendermode) the component 
-    /// will have its Blazor lifecycle running and active.
+    /// <summary> 
+    /// This component is used in different parts of the application under varying conditions.
+    ///
+    /// 1. In App.razor, for non-prerendered applications, this component displays minimal content before
+    /// Blazor fully loads. Since it doesn’t automatically get removed after the app loads, the z-index is set to -1 
+    /// to ensure that once Blazor renders the main components, the loader falls behind the main content and becomes hidden.
+    /// Additionally, the z-index will not change because @rendermode in App.razor is null, which prevents the OnAfterRender 
+    /// method from being invoked.
+    ///
+    /// 2. In other parts of the project, like during Authorizing and Navigating, the component is automatically 
+    /// removed from the screen, so a negative z-index is unnecessary and could actually cause it to be invisible. 
+    /// In these cases, it needs a higher z-index to ensure it appears above other components. The new z-index value 
+    /// is applied in the OnAfterRender lifecycle method.
     /// </summary>
     private int zIndex = -1;
     protected override void OnAfterRender(bool firstRender)

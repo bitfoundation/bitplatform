@@ -62,7 +62,7 @@
 
     @if (renderMode != null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender))
     {
-        <LoadingComponent />
+        <LoadingComponent @rendermode="null" />
     }
 
     <Routes @rendermode=renderMode />
