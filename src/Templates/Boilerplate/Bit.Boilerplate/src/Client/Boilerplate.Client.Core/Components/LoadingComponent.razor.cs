@@ -23,8 +23,8 @@ public partial class LoadingComponent
     /// 2. The next place that this component gets rendered, is in the Navigating parameter of the Blazor Router.
     /// In this location the component needs to be rendered with a high value of the z-index so it can be shown
     /// over other components that are already rendered. we are using the OnAfterRender lifecycle method to apply
-    /// the new value of the z-index since in this state unlike the App.razor the component will have its Blazor
-    /// lifecycle running and active.
+    /// the new value of the z-index since in this state unlike the App.razor (that has a no @rendermode) the component 
+    /// will have its Blazor lifecycle running and active.
     /// </summary>
     private int zIndex = -1;
     protected override void OnAfterRender(bool firstRender)
