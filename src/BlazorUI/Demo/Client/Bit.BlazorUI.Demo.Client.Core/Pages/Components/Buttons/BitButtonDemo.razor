@@ -193,7 +193,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ComponentExampleBox Title="Rel" RazorCode="@example8RazorCode" Id="example8">
+        <ExamplePreview>
+            <div>Use BitButton as a hyperlink to external URLs, with a rel attribute.</div>
+            <br />
+            <div class="example-content">
+                <BitButton Rel="BitAnchorRel.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev with a rel attribute (nofollow)
+                </BitButton>
+
+                <BitButton Rel="BitAnchorRel.NoFollow | BitAnchorRel.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
+                </BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <ExamplePreview>
             <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
             <br />
@@ -225,7 +241,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div>Here are some examples of customizing the button content.</div>
             <br />
@@ -275,7 +291,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div>
                 Managing button click event (OnClick).
@@ -287,7 +303,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example11RazorCode" Id="example11">
+    <ComponentExampleBox Title="Size" RazorCode="@example12RazorCode" Id="example12">
         <ExamplePreview>
             <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
             <br />
@@ -329,7 +345,17 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="FullWidth" RazorCode="@example13RazorCode" Id="example13">
+        <ExamplePreview>
+            <div>Setting the FullWidth makes the button occupy 100% of its container's width.</div>
+            <br />
+            <div>
+                <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br />
@@ -443,7 +469,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
@@ -486,7 +512,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <ExamplePreview>
             <div>Use BitButton in right-to-left (RTL).</div>
             <br />
