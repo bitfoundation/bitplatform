@@ -1,10 +1,10 @@
-﻿using Boilerplate.Shared.Controllers.Home;
+﻿using Boilerplate.Shared.Controllers.Statistics;
 using Boilerplate.Shared.Dtos.Home;
 
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers.Statistics;
 
 [ApiController, Route("api/[controller]/[action]")]
-public partial class HomeController : AppControllerBase, IHomeController
+public partial class StatisticsController : AppControllerBase, IStatisticsController
 {
     [AutoInject] private HttpClient httpClient = default!;
 

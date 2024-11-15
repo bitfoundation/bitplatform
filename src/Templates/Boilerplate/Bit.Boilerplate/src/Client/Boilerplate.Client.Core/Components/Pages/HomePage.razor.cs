@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Home;
+﻿using Boilerplate.Shared.Controllers.Statistics;
 using Boilerplate.Shared.Dtos.Home;
 
 namespace Boilerplate.Client.Core.Components.Pages;
@@ -12,7 +12,7 @@ public partial class HomePage
     [CascadingParameter] private BitDir? currentDir { get; set; }
 
 
-    [AutoInject] private IHomeController homeController = default!;
+    [AutoInject] private IStatisticsController statisticsController = default!;
 
 
     private bool isNugetLoading;
@@ -50,7 +50,7 @@ public partial class HomePage
         try
         {
             isNugetLoading = true;
-            nugetStats = await homeController.GetNugetStats(packageId, CurrentCancellationToken);
+            nugetStats = await statisticsController.GetNugetStats(packageId, CurrentCancellationToken);
             nugetStatsString = JsonSerializer.Serialize(nugetStats, new JsonSerializerOptions { WriteIndented = true });
         }
         finally
