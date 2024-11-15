@@ -14,11 +14,13 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var serverAddress = configuration.GetServerAddress();
         var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
 
         try
         {
-            if (request.Headers.Authorization is null &&
+            if (request.RequestUri?.AbsoluteUri.Contains(serverAddress) is true &&
+                request.Headers.Authorization is null &&
                 isRefreshTokenRequest is false)
             {
                 var access_token = await tokenProvider.GetAccessToken();
