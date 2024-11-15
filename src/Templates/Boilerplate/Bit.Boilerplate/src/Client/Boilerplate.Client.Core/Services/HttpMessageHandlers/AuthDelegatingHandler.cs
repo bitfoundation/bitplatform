@@ -55,14 +55,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
             // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
-            await authManager.RefreshToken();
-
-            var access_token = await tokenProvider.GetAccessToken();
-
-            if (string.IsNullOrEmpty(access_token)) throw;
-
-            if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
-                throw;
+            var access_token = await authManager.RefreshToken(cancellationToken);
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
 

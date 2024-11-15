@@ -32,7 +32,11 @@ public partial class NotAuthorizedPage
             StateHasChanged();
             try
             {
-                await AuthenticationManager.RefreshToken();
+                await AuthenticationManager.RefreshToken(CurrentCancellationToken);
+            }
+            catch (UnauthorizedException)
+            {
+                RedirectToSignInPage();
             }
             finally
             {
@@ -41,20 +45,11 @@ public partial class NotAuthorizedPage
 
             logger.LogInformation("Refreshing access token.");
 
-            if ((await AuthenticationStateTask).User.IsAuthenticated())
+            if (ReturnUrl is not null)
             {
-                if (ReturnUrl is not null)
-                {
-                    var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
-                }
+                var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
             }
-        }
-
-        if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
-        {
-            // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
-            RedirectToSignInPage();
         }
 
         await base.OnAfterFirstRenderAsync();

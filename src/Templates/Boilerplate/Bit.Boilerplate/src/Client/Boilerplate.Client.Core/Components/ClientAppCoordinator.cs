@@ -205,7 +205,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken();
+                await AuthenticationManager.RefreshToken(CurrentCancellationToken);
             }
 
             logger.LogError(exception, "SignalR connection lost.");
