@@ -57,3 +57,15 @@
         transform: scaleX(-1);
     }
 }
+
+[dir=rtl] {
+    .bitdatagrid-paginator {
+        .go-next, .go-last {
+            transform: scaleX(1);
+        }
+
+        .go-previous, .go-first {
+            transform: scaleX(-1);
+        }
+    }
+}
