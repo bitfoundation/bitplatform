@@ -59,6 +59,11 @@ jobs:
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
+    - name: Configure bswup
+      run: |
+          sed -i 's/\/\/ self.noPrerenderQuery/self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+          sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 

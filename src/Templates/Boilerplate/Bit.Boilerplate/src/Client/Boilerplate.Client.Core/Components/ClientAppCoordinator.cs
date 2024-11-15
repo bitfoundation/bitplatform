@@ -132,7 +132,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
-            .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
+            .WithUrl(new Uri(AbsoluteServerAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
@@ -205,7 +205,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken();
+                await AuthenticationManager.RefreshToken(CurrentCancellationToken);
             }
 
             logger.LogError(exception, "SignalR connection lost.");

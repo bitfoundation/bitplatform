@@ -6,7 +6,7 @@
 /// Employing Microsoft.Extensions.Logging implementations (like Sentry.Extensions.Logging) will result in
 /// automatic exception logging due to the logger.LogError method call within the ExceptionHandlerBase class.
 /// </summary>
-public partial class WindowsExceptionHandler : ExceptionHandlerBase
+public partial class WindowsExceptionHandler : ClientExceptionHandlerBase
 {
     protected override void Handle(Exception exception, Dictionary<string, object> parameters)
     {

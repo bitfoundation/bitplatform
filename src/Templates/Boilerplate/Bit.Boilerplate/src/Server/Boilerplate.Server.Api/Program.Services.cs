@@ -131,11 +131,11 @@ public static partial class Program
 
         services.AddAntiforgery();
 
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]))
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]))
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -260,6 +260,11 @@ public static partial class Program
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
+
+        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)

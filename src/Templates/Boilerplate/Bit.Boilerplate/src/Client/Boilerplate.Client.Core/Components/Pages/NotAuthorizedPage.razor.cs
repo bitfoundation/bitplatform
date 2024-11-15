@@ -4,6 +4,7 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
+    private bool isRefreshingToken;
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
@@ -27,24 +28,28 @@ public partial class NotAuthorizedPage
 
         if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
-            await AuthenticationManager.RefreshToken();
+            isRefreshingToken = true;
+            StateHasChanged();
+            try
+            {
+                await AuthenticationManager.RefreshToken(CurrentCancellationToken);
+            }
+            catch (UnauthorizedException)
+            {
+                RedirectToSignInPage();
+            }
+            finally
+            {
+                isRefreshingToken = false;
+            }
 
             logger.LogInformation("Refreshing access token.");
 
-            if ((await AuthenticationStateTask).User.IsAuthenticated())
+            if (ReturnUrl is not null)
             {
-                if (ReturnUrl is not null)
-                {
-                    var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
-                }
+                var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
+                NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
             }
-        }
-
-        if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
-        {
-            // If neither the refresh_token nor the access_token is present, proceed to the sign-in page.
-            RedirectToSignInPage();
         }
 
         await base.OnAfterFirstRenderAsync();

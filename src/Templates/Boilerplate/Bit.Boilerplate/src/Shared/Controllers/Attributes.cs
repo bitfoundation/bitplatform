@@ -38,10 +38,18 @@ internal partial class HttpPatchAttribute(string? template = null) : Attribute
 
 /// <summary>
 /// Avoid retrying the request upon failure.
-/// <see cref="Services.HttpMessageHandlers.RetryDelegatingHandler" />
 /// </summary>
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
 public partial class NoRetryPolicyAttribute : Attribute
+{
+
+}
+
+/// <summary>
+/// Avoid validating / using access token
+/// </summary>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
+public partial class AnonymousApiAttribute : Attribute
 {
 
 }

@@ -69,7 +69,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
-        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="8.2.6" />
+        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.1.0" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11" />

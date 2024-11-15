@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers.Categories;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class CategoryController : AppControllerBase, ICategoryController
