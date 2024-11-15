@@ -61,6 +61,9 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
             if (string.IsNullOrEmpty(access_token)) throw;
 
+            if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
+                throw;
+
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
 
             return await base.SendAsync(request, cancellationToken);

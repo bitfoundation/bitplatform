@@ -11,7 +11,7 @@ public interface IUserController : IAppController
     [HttpGet]
     Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken);
 
-    [HttpPost]
+    [HttpPost, NoRetryPolicy]
     Task SignOut(CancellationToken cancellationToken);
 
     [HttpPost("{id}")]
