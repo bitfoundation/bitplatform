@@ -69,6 +69,19 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
+    /// <summary>
+    /// Handles the process of determining the user's authentication state based on the availability of access and refresh tokens.
+    /// 
+    /// - If no access / refresh token exists, an anonymous user object is returned to Blazor.
+    /// - If no access token exists at all, but a refresh token is available, an attempt is made to renew the access token using the refresh token.
+    ///   - This is a rare scenario, as the access token is not automatically removed upon expiration.
+    ///   - Note: Refreshing the token can take time due to server or network delays. During this period, the `Authorizing` fragment in `Routes.razor` will be displayed, which is a simple loading component.
+    /// 
+    /// - If an access token exists, a ClaimsPrincipal is created from it regardless of its expiration status. This ensures:
+    ///   - Users can access anonymous-allowed pages without unnecessary delays caused by token refresh attempts **during app startup**.
+    ///   - For protected pages, it is typical for these pages to make HTTP requests to secured APIs. In such cases, the `AuthDelegatingHandler.cs`
+    ///     validates the access token and refreshes it if necessary, keeping Blazor updated with the latest authentication state.
+    /// </summary>
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
@@ -117,7 +130,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 }
             }
 
-            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false /* For better UX in order to minimize Routes.razor's Authorizing loading duration. */));
+            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false));
         }
         catch (Exception exp)
         {

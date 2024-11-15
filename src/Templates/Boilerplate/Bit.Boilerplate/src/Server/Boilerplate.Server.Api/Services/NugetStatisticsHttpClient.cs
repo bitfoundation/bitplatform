@@ -10,7 +10,7 @@ public partial class NugetStatisticsHttpClient
     {
         var url = $"/query?q=packageid:{packageId}";
 
-        var response = await httpClient.GetFromJsonAsync<NugetStatsDto>(url, cancellationToken)
+        var response = await httpClient.GetFromJsonAsync(url, ServerJsonContext.Default.Options.GetTypeInfo<NugetStatsDto>(), cancellationToken)
                                 ?? throw new ResourceNotFoundException(packageId);
 
         return response;

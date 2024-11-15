@@ -43,7 +43,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
         var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
         var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
 
-        return controllerType.GetCustomAttribute<NoRetryPolicyAttribute>() is not null ||
+        return controllerType.GetCustomAttribute<NoRetryPolicyAttribute>(inherit: true) is not null ||
                method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 

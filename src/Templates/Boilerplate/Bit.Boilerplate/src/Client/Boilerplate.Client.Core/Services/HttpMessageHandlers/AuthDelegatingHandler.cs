@@ -77,7 +77,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
         var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
         var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
-        return controllerType.GetCustomAttribute<AnonymousApiAttribute>() is not null ||
+        return controllerType.GetCustomAttribute<AnonymousApiAttribute>(inherit: true) is not null ||
                method.GetCustomAttribute<AnonymousApiAttribute>() is not null;
     }
 }
