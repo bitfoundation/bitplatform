@@ -39,6 +39,18 @@
                                 <td>Total stars</td>
                                 <td>@gitHubStats.StargazersCount.ToString("N0")</td>
                             </tr>
+                            <tr>
+                                <td>Forks count</td>
+                                <td>@gitHubStats.ForksCount.ToString("N0")</td>
+                            </tr>
+                            <tr>
+                                <td>Open issues count</td>
+                                <td>@gitHubStats.OpenIssuesCount.ToString("N0")</td>
+                            </tr>
+                            <tr>
+                                <td>Subscribers count</td>
+                                <td>@gitHubStats.SubscribersCount.ToString("N0")</td>
+                            </tr>
                         </table>
                     }
                     else
@@ -54,6 +66,10 @@
                     else if(nugetStats is not null)
                     {
                         <table>
+                            <tr>
+                                <td>Version</td>
+                                <td>@nugetStats.Data.FirstOrDefault()?.Version</td>
+                            </tr>
                             <tr>
                                 <td>Total downloads</td>
                                 <td>@nugetStats.Data.Sum(d => d.TotalDownloads).ToString("N0")</td>
