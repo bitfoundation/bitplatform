@@ -24,12 +24,12 @@ public partial class LoadingComponent
     /// In these cases, it needs a higher z-index to ensure it appears above other components. The new z-index value 
     /// is applied in the OnAfterRender lifecycle method.
     /// </summary>
-    private int zIndex = -1;
+    private string zIndex = "-1";
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            zIndex = 999999;
+            zIndex = "999999";
             StateHasChanged();
         }
 
