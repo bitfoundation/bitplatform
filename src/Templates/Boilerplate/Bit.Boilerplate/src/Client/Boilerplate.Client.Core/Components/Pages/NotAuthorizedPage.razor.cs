@@ -29,6 +29,7 @@ public partial class NotAuthorizedPage
         if (string.IsNullOrEmpty(refresh_token) is false && ReturnUrl?.Contains("try_refreshing_token=false", StringComparison.InvariantCulture) is null or false)
         {
             isRefreshingToken = true;
+            StateHasChanged();
             try
             {
                 await AuthenticationManager.RefreshToken();

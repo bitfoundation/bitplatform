@@ -4,7 +4,6 @@ using Boilerplate.Shared.Controllers.Identity;
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
-                                           IConfiguration configuration,
                                            IStorageService storageService,
                                            IServiceProvider serviceProvider,
                                            IAuthTokenProvider tokenProvider,
