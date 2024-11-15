@@ -1,0 +1,18 @@
+﻿using Boilerplate.Shared.Dtos.Statistics;
+
+namespace Boilerplate.Server.Api.Services;
+
+public partial class NugetStatisticsHttpClient
+{
+    [AutoInject] protected HttpClient httpClient = default!;
+
+    public virtual async ValueTask<NugetStatsDto> GetPackageStats(string packageId, CancellationToken cancellationToken)
+    {
+        var url = $"/query?q=packageid:{packageId}";
+
+        var response = await httpClient.GetFromJsonAsync<NugetStatsDto>(url, cancellationToken)
+                                ?? throw new ResourceNotFoundException(packageId);
+
+        return response;
+    }
+}

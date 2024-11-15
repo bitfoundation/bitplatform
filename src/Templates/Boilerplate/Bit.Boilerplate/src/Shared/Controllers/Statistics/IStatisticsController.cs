@@ -1,4 +1,4 @@
-﻿using Boilerplate.Shared.Dtos.Home;
+﻿using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Shared.Controllers.Statistics;
 

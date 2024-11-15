@@ -1,5 +1,5 @@
 ﻿using Boilerplate.Shared.Controllers.Statistics;
-using Boilerplate.Shared.Dtos.Home;
+using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 

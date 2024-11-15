@@ -8,8 +8,8 @@ using Boilerplate.Shared.Dtos.Products;
 //#endif
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
-using Boilerplate.Shared.Dtos.Home;
 //#endif
+using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Shared.Dtos;
 
