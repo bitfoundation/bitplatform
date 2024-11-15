@@ -48,7 +48,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            if (await storageService.GetItem("refresh_token") is not null)
+            if (string.IsNullOrEmpty(await storageService.GetItem("access_token")) is false)
             {
                 await userController.SignOut(cancellationToken);
             }
@@ -79,7 +79,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
                 await StoreTokens(refreshTokenResponse!);
-                NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
                 return refreshTokenResponse.AccessToken;
             }
             catch (UnauthorizedException) // refresh_token is either invalid or expired.
@@ -90,12 +89,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 }
                 await storageService.RemoveItem("access_token");
                 await storageService.RemoveItem("refresh_token");
-                NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
                 throw;
             }
         }
         finally
         {
+            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
             semaphore.Release();
         }
     }

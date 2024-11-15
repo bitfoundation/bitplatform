@@ -25,7 +25,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 request.Headers.Authorization is null)
             {
                 var access_token = await tokenProvider.GetAccessToken();
-                if (access_token is not null)
+                if (string.IsNullOrEmpty(access_token) is false)
                 {
                     if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
@@ -50,7 +50,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 throw; // To prevent refresh token loop
 
             var refresh_token = await storageService.GetItem("refresh_token");
-            if (refresh_token is null) throw;
+            if (string.IsNullOrEmpty(refresh_token)) throw;
 
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
