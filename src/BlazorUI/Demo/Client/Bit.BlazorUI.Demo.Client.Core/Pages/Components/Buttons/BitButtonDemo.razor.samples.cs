@@ -152,6 +152,15 @@ private async Task AutoLoadingClick()
 </BitButton>";
 
     private readonly string example8RazorCode = @"
+<BitButton Rel=""BitAnchorRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Open bitplatform.dev with a rel attribute (nofollow)
+</BitButton>
+
+<BitButton Rel=""BitAnchorRel.NoFollow | BitAnchorRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
+</BitButton>";
+
+    private readonly string example9RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
     <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
@@ -163,7 +172,7 @@ private async Task AutoLoadingClick()
         <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
     </div>
 </EditForm>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -182,7 +191,7 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -229,7 +238,7 @@ private async Task HandleValidSubmit()
         </div>
     </LoadingTemplate>
 </BitButton>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool templateIsLoading;
 
 private async Task LoadingTemplateClick()
@@ -239,12 +248,12 @@ private async Task LoadingTemplateClick()
     templateIsLoading = false;
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private int clickCounter;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
@@ -271,7 +280,10 @@ private int clickCounter;";
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
+<BitButton FullWidth IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Full Width Button</BitButton>";
+
+    private readonly string example14RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
@@ -343,7 +355,7 @@ private int clickCounter;";
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -417,7 +429,7 @@ private int clickCounter;";
                               Spinner = ""custom-spinner"" })"">
     Click me
 </BitButton>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
 
@@ -435,7 +447,7 @@ private async Task LoadingClassesClick()
     classesIsLoading = false;
 }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
     دکمه با آیکن
 </BitButton>
