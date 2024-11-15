@@ -1,4 +1,6 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Reflection;
+using System.Net.Http.Headers;
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -8,17 +10,19 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                                            IServiceProvider serviceProvider,
                                            IAuthTokenProvider tokenProvider,
                                            IStringLocalizer<AppStrings> localizer,
+                                           AbsoluteServerAddressProvider absoluteServerAddress,
                                            HttpMessageHandler handler) : DelegatingHandler(handler)
 {
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
+        var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try
         {
-            if (request.Headers.Authorization is null &&
-                isRefreshTokenRequest is false)
+            if (isInternalRequest && /* We will restrict sending the access token to our own server only. */
+                HasAnonymousApiAttribute(request) is false &&
+                request.Headers.Authorization is null)
             {
                 var access_token = await tokenProvider.GetAccessToken();
                 if (access_token is not null)
@@ -40,6 +44,8 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false)
                 throw; // We don't have access to refresh_token during pre-rendering.
 
+            var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
+
             if (isRefreshTokenRequest)
                 throw; // To prevent refresh token loop
 
@@ -59,5 +65,19 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
             return await base.SendAsync(request, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// <see cref="AnonymousApiAttribute"/>
+    /// </summary>
+    private static bool HasAnonymousApiAttribute(HttpRequestMessage request)
+    {
+        if (request.Options.TryGetValue(new(RequestOptionNames.IControllerType), out Type? controllerType) is false)
+            return false;
+
+        var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
+        var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
+        return controllerType.GetCustomAttribute<AnonymousApiAttribute>() is not null ||
+               method.GetCustomAttribute<AnonymousApiAttribute>() is not null;
     }
 }

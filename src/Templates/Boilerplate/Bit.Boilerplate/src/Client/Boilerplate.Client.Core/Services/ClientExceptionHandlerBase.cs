@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using System.Reflection;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;

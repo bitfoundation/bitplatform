@@ -132,7 +132,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection = new HubConnectionBuilder()
             .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
-            .WithUrl($"{HttpClient.BaseAddress}app-hub", options =>
+            .WithUrl(new Uri(AbsoluteServerAddress, "app-hub"), options =>
             {
                 options.Transports = HttpTransportType.WebSockets;
                 options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;

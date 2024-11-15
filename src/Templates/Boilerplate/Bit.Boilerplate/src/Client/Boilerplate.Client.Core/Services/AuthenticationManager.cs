@@ -66,11 +66,6 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     public async Task RefreshToken()
     {
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            await cookie.Remove("access_token");
-        }
-        await storageService.RemoveItem("access_token");
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
@@ -106,6 +101,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                             }
                             catch (UnauthorizedException) // refresh_token is either invalid or expired.
                             {
+                                if (AppPlatform.IsBlazorHybrid is false)
+                                {
+                                    await cookie.Remove("access_token");
+                                }
+                                await storageService.RemoveItem("access_token");
                                 await storageService.RemoveItem("refresh_token");
                             }
                         }

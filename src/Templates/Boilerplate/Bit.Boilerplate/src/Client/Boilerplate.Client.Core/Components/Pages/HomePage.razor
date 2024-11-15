@@ -28,23 +28,41 @@
         <BitAccordion Title="Statistics">
             <BitPivot Styles="@(new() { Body = "max-height:300px;overflow:auto" })">
                 <BitPivotItem HeaderText="GitHub">
-                    @if (isGitHubLoading)
+                    @if (isLoading)
                     {
                         <BitRippleLoading />
                     }
+                    else if (gitHubStats is not null)
+                    {
+                        <table>
+                            <tr>
+                                <td>Total stars</td>
+                                <td>@gitHubStats.StargazersCount.ToString("N0")</td>
+                            </tr>
+                        </table>
+                    }
                     else
                     {
-                        <pre>@gitHubStatsString</pre>
+                        <BitText Typography="BitTypography.H4">Stats could not be loaded.</BitText>
                     }
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Nuget">
-                    @if (isNugetLoading)
+                    @if (isLoading)
                     {
                         <BitRippleLoading />
                     }
+                    else if(nugetStats is not null)
+                    {
+                        <table>
+                            <tr>
+                                <td>Total downloads</td>
+                                <td>@nugetStats.Data.Sum(d => d.TotalDownloads).ToString("N0")</td>
+                            </tr>
+                        </table>
+                    }
                     else
                     {
-                        <pre>@nugetStatsString</pre>
+                        <BitText Typography="BitTypography.H4">Stats could not be loaded.</BitText>
                     }
                 </BitPivotItem>
             </BitPivot>

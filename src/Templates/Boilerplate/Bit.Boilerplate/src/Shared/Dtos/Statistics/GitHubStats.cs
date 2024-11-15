@@ -1,5 +1,4 @@
-﻿namespace Boilerplate.Client.Core.Components.Pages;
-
+﻿namespace Boilerplate.Shared.Dtos.Statistics;
 
 public record GitHubStats(
     [property: JsonPropertyName("id")] int Id,
@@ -13,10 +12,7 @@ public record GitHubStats(
     [property: JsonPropertyName("language")] string Language,
     [property: JsonPropertyName("forks_count")] int ForksCount,
     [property: JsonPropertyName("open_issues_count")] int OpenIssuesCount,
-    [property: JsonPropertyName("topics")] IReadOnlyList<string> Topics,
     [property: JsonPropertyName("default_branch")] string DefaultBranch,
     [property: JsonPropertyName("network_count")] int NetworkCount,
     [property: JsonPropertyName("subscribers_count")] int SubscribersCount
 );
-
-

@@ -1,16 +1,15 @@
-﻿using System.Net;
+﻿using EmbedIO;
+using System.Net;
 using System.Net.Sockets;
-using EmbedIO;
 using EmbedIO.Actions;
 using Boilerplate.Client.Core.Components;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
-    [AutoInject] private IConfiguration configuration;
     [AutoInject] private IExceptionHandler exceptionHandler;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
     private WebServer? localHttpServer;
 
@@ -25,7 +24,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
 
                     ctx.Redirect(url);
 

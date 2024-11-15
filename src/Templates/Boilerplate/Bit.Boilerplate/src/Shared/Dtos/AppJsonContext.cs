@@ -20,6 +20,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(RestErrorInfo))]
+[JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 //#if (notification == true)
 [JsonSerializable(typeof(DeviceInstallationDto))]
