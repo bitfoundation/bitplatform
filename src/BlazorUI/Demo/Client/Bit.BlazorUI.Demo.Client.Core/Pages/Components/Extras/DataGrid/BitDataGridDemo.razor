@@ -36,7 +36,9 @@
                             <BitDataGridPropertyColumn Property="@(c => c.Medals.Total)" Sortable="true" />
                         </BitDataGrid>
                     </div>
-                    <BitDataGridPaginator Value="@pagination1" />
+                    <BitDataGridPaginator Value="@pagination1">
+                        <TextTemplate Context="state">P @(state.CurrentPageIndex + 1) of @(state.LastPageIndex + 1)</TextTemplate>
+                    </BitDataGridPaginator>
                 </div>
             </ExamplePreview>
         </ComponentExampleBox>
