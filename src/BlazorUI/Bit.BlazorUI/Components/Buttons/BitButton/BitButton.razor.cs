@@ -131,7 +131,7 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
-    public BitAnchorRel? Rel { get; set; }
+    public BitLinkRel? Rel { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
@@ -282,6 +282,6 @@ public partial class BitButton : BitComponentBase
             return;
         }
 
-        _rel = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(r => Rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
+        _rel = BitLinkRelUtils.GetRels(Rel.Value);
     }
 }

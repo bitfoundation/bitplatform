@@ -152,11 +152,11 @@ private async Task AutoLoadingClick()
 </BitButton>";
 
     private readonly string example8RazorCode = @"
-<BitButton Rel=""BitAnchorRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+<BitButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
     Open bitplatform.dev with a rel attribute (nofollow)
 </BitButton>
 
-<BitButton Rel=""BitAnchorRel.NoFollow | BitAnchorRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+<BitButton Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
     Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
 </BitButton>";
 
