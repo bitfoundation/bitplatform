@@ -13,7 +13,9 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         int? responseStatusCode = null;
         try
         {
-            return await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
+            responseStatusCode = (int?)response.StatusCode;
+            return response;
         }
         catch (RestException exp)
         {
@@ -27,7 +29,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         }
         finally
         {
-            logger.LogInformation("Received HTTP response for {Uri} after {Duration}ms - {StatusCode}",
+            logger.Log(responseStatusCode is null or >= 400 ? LogLevel.Warning : LogLevel.Information, "Received HTTP response for {Uri} after {Duration}ms - {StatusCode}",
                 request.RequestUri,
                 stopwatch.ElapsedMilliseconds,
                 responseStatusCode);
