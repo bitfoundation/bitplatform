@@ -40,6 +40,18 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     protected override async Task OnInitAsync()
     {
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            if (CultureInfoManager.MultilingualEnabled)
+            {
+                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                                                     await storageService.GetItem("Culture") ?? // 2- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
+            }
+
+            await SetupBodyClasses();
+        }
+
         if (InPrerenderSession is false)
         {
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
@@ -66,18 +78,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
-        }
-
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            if (CultureInfoManager.MultilingualEnabled)
-            {
-                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
-                                                     await storageService.GetItem("Culture") ?? // 2- User settings
-                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
-            }
-
-            await SetupBodyClasses();
         }
 
         await base.OnInitAsync();
