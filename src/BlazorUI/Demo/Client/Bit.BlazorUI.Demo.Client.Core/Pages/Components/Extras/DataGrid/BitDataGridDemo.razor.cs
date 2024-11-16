@@ -472,11 +472,11 @@ public partial class BitDataGridDemo
             try
             {
                 var query = new Dictionary<string, object?>
-                    {
-                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                {
+                    { "search", $"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                    };
+                };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -491,7 +491,7 @@ public partial class BitDataGridDemo
                     query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
                 }
 
-                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+                var url = NavigationManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
@@ -525,7 +525,7 @@ public partial class BitDataGridDemo
                     query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+                var url = NavigationManager.GetUriWithQueryParameters("Products/GetProducts", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
@@ -825,7 +825,9 @@ public class MedalsModel
             </BitDataGridTemplateColumn>
         </BitDataGrid>
     </div>
-    <BitDataGridPaginator Value=""@pagination2"" />
+    <BitDataGridPaginator Value=""@pagination2"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount}"")"">
+        <TextTemplate Context=""state"">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+    </BitDataGridPaginator>
 </div>";
     private readonly string example2CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
@@ -870,6 +872,7 @@ public class MedalsModel
     private readonly string example3RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
+@inject NavigationManager NavManager
 
 <style>
     .grid {
