@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
@@ -16,7 +15,7 @@ public partial class DiagnosticLoggerProvider : ILoggerProvider
     {
         return new DiagnosticLogger()
         {
-            CategoryName = categoryName
+            Category = categoryName
         };
     }
 

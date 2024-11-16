@@ -19,6 +19,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
 
     /// <summary>
     /// Sign in and return whether the user requires two-factor authentication.
@@ -30,38 +31,51 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         if (response.RequiresTwoFactor) return true;
 
-        await OnNewToken(response!, request.RememberMe);
+        await StoreTokens(response!, request.RememberMe);
 
         return false;
     }
 
-    public async Task OnNewToken(TokenResponseDto response, bool? rememberMe = null)
+    public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
-        await StoreTokens(response, rememberMe);
+        if (rememberMe is null)
+        {
+            rememberMe = await storageService.IsPersistent("refresh_token");
+        }
 
-        var state = await GetAuthenticationStateAsync();
+        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
+        await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
 
-        NotifyAuthenticationStateChanged(Task.FromResult(state));
+        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
+        {
+            await cookie.Set(new()
+            {
+                Name = "access_token",
+                Value = response.AccessToken,
+                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
+                Path = "/",
+                SameSite = SameSite.Strict,
+                Secure = AppEnvironment.IsDev() is false
+            });
+        }
+
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
     public async Task SignOut(CancellationToken cancellationToken)
     {
         try
         {
-            if (string.IsNullOrEmpty(await storageService.GetItem("access_token")) is false)
-            {
-                await userController.SignOut(cancellationToken);
-            }
+            await userController.SignOut(cancellationToken);
+        }
+        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException)
+        {
+            // The user might sign out while the app is offline, making token refresh attempts fail.
+            // These exceptions are intentionally ignored in this case.
         }
         finally
         {
-            await storageService.RemoveItem("access_token");
-            await storageService.RemoveItem("refresh_token");
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                await cookie.Remove("access_token");
-            }
-            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+            await ClearTokens();
         }
     }
 
@@ -70,7 +84,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         try
         {
             await semaphore.WaitAsync();
-
+            authLogger.LogInformation("Refreshing access token");
             try
             {
                 string? refresh_token = await storageService.GetItem("refresh_token");
@@ -78,23 +92,17 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
-                await StoreTokens(refreshTokenResponse!);
-                return refreshTokenResponse.AccessToken;
+                await StoreTokens(refreshTokenResponse);
+                return refreshTokenResponse.AccessToken!;
             }
             catch (UnauthorizedException) // refresh_token is either invalid or expired.
             {
-                if (AppPlatform.IsBlazorHybrid is false)
-                {
-                    await cookie.Remove("access_token");
-                }
-                await storageService.RemoveItem("access_token");
-                await storageService.RemoveItem("refresh_token");
+                await ClearTokens();
                 throw;
             }
         }
         finally
         {
-            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
             semaphore.Release();
         }
     }
@@ -123,27 +131,14 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
     }
 
-    private async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
+    private async Task ClearTokens()
     {
-        if (rememberMe is null)
+        await storageService.RemoveItem("access_token");
+        await storageService.RemoveItem("refresh_token");
+        if (AppPlatform.IsBlazorHybrid is false)
         {
-            rememberMe = await storageService.IsPersistent("refresh_token");
+            await cookie.Remove("access_token");
         }
-
-        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
-        await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
-
-        if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized())
-        {
-            await cookie.Set(new()
-            {
-                Name = "access_token",
-                Value = response.AccessToken,
-                MaxAge = rememberMe is true ? response.ExpiresIn : null, // to create a session cookie
-                Path = "/",
-                SameSite = SameSite.Strict,
-                Secure = AppEnvironment.IsDev() is false
-            });
-        }
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 }

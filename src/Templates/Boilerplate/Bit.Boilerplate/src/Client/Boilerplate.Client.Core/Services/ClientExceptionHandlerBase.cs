@@ -1,6 +1,5 @@
 ﻿//+:cnd:noEmit
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Client.Core.Services;

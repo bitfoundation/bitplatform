@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace Boilerplate.Client.Core.Components.Pages;
+﻿namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class NotAuthorizedPage
 {
@@ -8,8 +6,6 @@ public partial class NotAuthorizedPage
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
-
-    [AutoInject] private ILogger<NotAuthorizedPage> logger = default!;
 
     protected override async Task OnParamsSetAsync()
     {
@@ -42,8 +38,6 @@ public partial class NotAuthorizedPage
             {
                 isRefreshingToken = false;
             }
-
-            logger.LogInformation("Refreshing access token.");
 
             if (ReturnUrl is not null)
             {

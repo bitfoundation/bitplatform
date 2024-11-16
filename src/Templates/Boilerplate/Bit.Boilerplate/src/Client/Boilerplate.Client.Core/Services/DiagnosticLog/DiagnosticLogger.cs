@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace Boilerplate.Client.Core.Services.DiagnosticLog;
+﻿namespace Boilerplate.Client.Core.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger : ILogger, IDisposable
 {
@@ -8,7 +6,7 @@ public partial class DiagnosticLogger : ILogger, IDisposable
 
     private IDictionary<string, object?>? currentState;
 
-    public string? CategoryName { get; set; }
+    public string? Category { get; set; }
 
     public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
@@ -32,7 +30,15 @@ public partial class DiagnosticLogger : ILogger, IDisposable
 
         var message = formatter(state, exception);
 
-        Store.Add(new() { CreatedOn = DateTimeOffset.Now, Level = logLevel, Message = message, Exception = exception, State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString()) });
+        Store.Add(new()
+        {
+            CreatedOn = DateTimeOffset.Now,
+            Level = logLevel,
+            Message = message,
+            Exception = exception,
+            Category = Category,
+            State = currentState?.ToDictionary(i => i.Key, i => i.Value?.ToString())
+        });
     }
 
     public void Dispose()

@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <div>
     <BitModal @bind-IsOpen="isOpen" FullSize Class="modal">
@@ -58,7 +58,7 @@
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Copy"
                                    OnClick="() => CopyException(logIndex.item)" />
-                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">@logIndex.item.Message</BitText>
+                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">@($"{logIndex.item.Category}: {logIndex.item.Message}")</BitText>
                     </BitStack>
                 </RowTemplate>
             </BitBasicList>

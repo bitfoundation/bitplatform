@@ -1,6 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Controllers.PushNotification;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 

@@ -46,6 +46,7 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.Extensions.Logging" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />

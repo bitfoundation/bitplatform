@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Logging;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Http.Connections;
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
 //#endif
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components;
 
@@ -21,6 +21,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (signalR == true)
     private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
+    [AutoInject] private ILogger<HubConnection> signalRLogger = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -31,18 +32,31 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
+    [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
     protected override async Task OnInitAsync()
     {
-        AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            if (CultureInfoManager.MultilingualEnabled)
+            {
+                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                                                     await storageService.GetItem("Culture") ?? // 2- User settings
+                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
+            }
+
+            await SetupBodyClasses();
+        }
 
         if (InPrerenderSession is false)
         {
+            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+            AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -66,19 +80,12 @@ public partial class ClientAppCoordinator : AppComponentBase
             AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
         }
 
-        if (AppPlatform.IsBlazorHybrid)
-        {
-            if (CultureInfoManager.MultilingualEnabled)
-            {
-                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
-                                                     await storageService.GetItem("Culture") ?? // 2- User settings
-                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
-            }
-
-            await SetupBodyClasses();
-        }
-
         await base.OnInitAsync();
+    }
+
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
@@ -166,7 +173,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
-            logger.LogInformation("Message {Message} received from server.", message);
+            signalRLogger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
         });
 
@@ -190,7 +197,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     private async Task HubConnectionConnected(string? connectionId)
     {
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
-        logger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
+        signalRLogger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
     }
 
     private async Task HubConnectionDisconnected(Exception? exception)
@@ -199,16 +206,20 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            logger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
+            signalRLogger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
         }
         else
         {
+            signalRLogger.LogWarning(exception, "SignalR connection lost.");
+
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken(CurrentCancellationToken);
+                try
+                {
+                    await AuthenticationManager.RefreshToken(CurrentCancellationToken);
+                }
+                catch { }
             }
-
-            logger.LogError(exception, "SignalR connection lost.");
         }
     }
 
@@ -244,6 +255,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         //#if (signalR == true)

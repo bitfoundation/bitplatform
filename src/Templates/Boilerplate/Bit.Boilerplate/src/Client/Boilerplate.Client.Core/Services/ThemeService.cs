@@ -26,10 +26,12 @@ public partial class ThemeService
 
         await cookie.Set(new()
         {
-            MaxAge = 30 * 24 * 3600,
             Name = "bit.Theme",
-            Secure = AppEnvironment.IsDev() is false,
             Value = Uri.EscapeDataString(newThemeName),
+            MaxAge = 30 * 24 * 3600,
+            Path = "/",
+            SameSite = SameSite.Strict,
+            Secure = AppEnvironment.IsDev() is false
         });
 
         return theme;
