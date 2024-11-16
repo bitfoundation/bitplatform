@@ -218,14 +218,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         finally
         {
-            try
+            if (user is not null)
             {
-                if (user is not null)
-                {
-                    await userManager.UpdateAsync(user);
-                }
+                await userManager.UpdateAsync(user);
             }
-            catch (ConflictException) { /* When access_token gets expired and user navigates to the page that sends multiple requests in parallel, multiple concurrent refresh token api call happens and this will results into concurrency exception during updating session's renewed on. */ }
         }
     }
 

@@ -77,7 +77,7 @@ public partial class ConfirmPage
         {
             var signInResponse =  await identityController.ConfirmEmail(new() { Email = emailModel.Email, Token = emailModel.Token }, CurrentCancellationToken);
 
-            await AuthenticationManager.OnNewToken(signInResponse, true);
+            await AuthenticationManager.StoreTokens(signInResponse, true);
 
             NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 
@@ -103,7 +103,7 @@ public partial class ConfirmPage
         {
             var signInResponse =  await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
 
-            await AuthenticationManager.OnNewToken(signInResponse, true);
+            await AuthenticationManager.StoreTokens(signInResponse, true);
 
             NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 

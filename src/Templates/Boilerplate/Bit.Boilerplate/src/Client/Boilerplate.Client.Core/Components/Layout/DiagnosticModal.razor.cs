@@ -1,5 +1,4 @@
 ﻿using Boilerplate.Client.Core.Services.DiagnosticLog;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -59,7 +58,7 @@ public partial class DiagnosticModal : IDisposable
 
     private void FilterLogs()
     {
-        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
+        filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true || l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
                               .Where(l => filterLogLevels.Contains(l.Level));
         if (isDescendingSort)
         {
@@ -80,7 +79,7 @@ public partial class DiagnosticModal : IDisposable
     {
         var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
 
-        await clipboard.WriteText($"{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}");
+        await clipboard.WriteText($"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}");
     }
 
     private async Task GoTop()
