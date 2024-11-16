@@ -220,7 +220,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             if (user is not null)
             {
-                await userManager.UpdateAsync(user);
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
             }
         }
     }
