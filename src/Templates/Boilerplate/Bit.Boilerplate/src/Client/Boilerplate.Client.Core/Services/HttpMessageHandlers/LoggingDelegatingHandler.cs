@@ -10,21 +10,27 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
         logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, request.RequestUri);
 
         var stopwatch = Stopwatch.StartNew();
-
-        HttpResponseMessage? response = null;
-
+        int? responseStatusCode = null;
         try
         {
-            response = await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken);
+        }
+        catch (RestException exp)
+        {
+            responseStatusCode = (int)exp.StatusCode;
+            throw;
+        }
+        catch (HttpRequestException exp)
+        {
+            responseStatusCode = (int?)exp.StatusCode;
+            throw;
         }
         finally
         {
             logger.LogInformation("Received HTTP response for {Uri} after {Duration}ms - {StatusCode}",
                 request.RequestUri,
                 stopwatch.ElapsedMilliseconds,
-                response is null ? -1 : (int)response.StatusCode);
+                responseStatusCode);
         }
-
-        return response;
     }
 }
