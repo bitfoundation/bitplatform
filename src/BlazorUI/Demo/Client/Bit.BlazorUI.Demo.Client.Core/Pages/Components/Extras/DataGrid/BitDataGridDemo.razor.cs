@@ -288,7 +288,7 @@ public partial class BitDataGridDemo
                 {
                     Name = "Value",
                     Type = "BitDataGridPaginationState",
-                    DefaultValue = "null",
+                    DefaultValue = "",
                     Description = "Specifies the associated pagination state. This parameter is required.",
                     LinkType = LinkType.Link,
                     Href = "#pagination-state"
