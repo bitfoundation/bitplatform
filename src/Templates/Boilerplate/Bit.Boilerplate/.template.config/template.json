@@ -511,7 +511,8 @@
                         "src/Tests/Services/UserService.cs",
                         "src/Tests/Services/FakePhoneService.cs",
                         "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
-                        "src/Tests/Extensions/PlaywrightCacheExtensions.cs"
+                        "src/Tests/Extensions/PlaywrightCacheExtensions.cs",
+                        "src/Tests/Extensions/BrowserContextExtensions.cs"
                     ]
                 },
                 {
