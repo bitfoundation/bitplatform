@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace Boilerplate.Tests.Extensions;
 
-public static partial class PlaywrightCacheExtensions
+public static partial class PlaywrightAssetCachingExtensions
 {
-    private static readonly ConcurrentDictionary<string, (byte[] Body, Dictionary<string, string> Headers)> cachedResponses = [];
+    public static ConcurrentDictionary<string, (byte[] Body, Dictionary<string, string> Headers)> CachedResponses { get; } = [];
 
     public static Task EnableBlazorWasmCaching(this IPage page) => page.EnableAssetCaching(BlazorWasmRegex());
 
@@ -27,12 +27,12 @@ public static partial class PlaywrightCacheExtensions
     {
         var url = new Uri(route.Request.Url).PathAndQuery;
 
-        if (cachedResponses.TryGetValue(url, out var cachedResponse) is false)
+        if (CachedResponses.TryGetValue(url, out var cachedResponse) is false)
         {
             var response = await route.FetchAsync();
             var body = await response.BodyAsync();
             cachedResponse = (body, response.Headers);
-            cachedResponses[url] = cachedResponse;
+            CachedResponses[url] = cachedResponse;
         }
 
         await route.FulfillAsync(new RouteFulfillOptions
@@ -43,10 +43,15 @@ public static partial class PlaywrightCacheExtensions
         });
     }
 
-    public static void ClearCache() => cachedResponses.Clear();
+    public static void ClearBlazorWasmCache() => ClearCache(BlazorWasmRegex());
 
-    public static bool ContainsAsset(Regex regex) => cachedResponses.Keys.Any(regex.IsMatch);
+    public static void ClearCache() => CachedResponses.Clear();
 
+    public static void ClearCache(Regex regex) => CachedResponses.Where(x => regex.IsMatch(x.Key)).ToList().ForEach(key => CachedResponses.TryRemove(key));
+
+    public static void ClearCache(string url) => CachedResponses.Where(x => url.Contains(x.Key)).ToList().ForEach(key => CachedResponses.TryRemove(key));
+
+    //Glob pattern: /_framework/*.{wasm|pdb|dat}?v=sha256-*
     [GeneratedRegex(@"\/_framework\/[\w\.]+\.((wasm)|(pdb)|(dat))\?v=sha256-.+")]
-    private static partial Regex BlazorWasmRegex();
+    public static partial Regex BlazorWasmRegex();
 }
