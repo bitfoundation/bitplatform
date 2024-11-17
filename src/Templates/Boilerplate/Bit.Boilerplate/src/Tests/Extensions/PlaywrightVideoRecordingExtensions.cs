@@ -32,7 +32,7 @@ public static class PlaywrightVideoRecordingExtensions
         char[] notAllowedChars = [')', '"', '<', '>', '|', '*', '?', '\r', '\n', .. Path.GetInvalidFileNameChars()];
         testMethodFullName = new string(testMethodFullName.Where(ch => !notAllowedChars.Contains(ch)).ToArray()).Replace('(', '_').Replace(',', '_');
 
-        var dir = Path.Combine(testContext.TestResultsDirectory!, "..", "..", "Videos", testMethodFullName);
+        var dir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "TestResults", "Videos", testMethodFullName);
         return Path.GetFullPath(dir);
     }
 

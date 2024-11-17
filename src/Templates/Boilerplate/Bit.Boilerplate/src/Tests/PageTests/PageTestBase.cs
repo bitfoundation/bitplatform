@@ -22,7 +22,9 @@ public abstract partial class PageTestBase : PageTest
             await Context.EnableHydrationCheck();
 
         if (EnableBlazorWasmCaching)
-        await Context.EnableBlazorWasmCaching();
+            await Context.EnableBlazorWasmCaching();
+
+        await Context.SetBlazorWebAssemblyServerAddress(WebAppServerAddress.OriginalString);
 
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
 
