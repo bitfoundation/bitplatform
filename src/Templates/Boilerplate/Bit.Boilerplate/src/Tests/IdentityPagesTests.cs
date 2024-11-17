@@ -49,5 +49,5 @@ public partial class IdentityPagesTests : PageTest
     public override BrowserNewContextOptions ContextOptions() => base.ContextOptions().EnableVideoRecording(TestContext);
 
     [TestCleanup]
-    public async ValueTask Cleanup() => await this.FinalizeVideoRecording();
+    public async ValueTask Cleanup() => await Context.FinalizeVideoRecording(TestContext);
 }
