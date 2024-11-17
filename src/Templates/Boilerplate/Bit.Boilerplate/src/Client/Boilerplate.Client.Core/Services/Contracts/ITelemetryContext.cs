@@ -37,7 +37,7 @@ public interface ITelemetryContext
     public string? AppVersion { get; set; }
     public string? WebView { get; set; }
 
-    public string? Location { get; set; }
+    public string? PageUrl { get; set; }
 
     public string? UserAgent { get; set; }
 
@@ -57,7 +57,7 @@ public interface ITelemetryContext
             { nameof(AppSessionId), AppSessionId },
             { nameof(OS), OS },
             { nameof(AppVersion), AppVersion },
-            { nameof(Location), Location },
+            { nameof(PageUrl), PageUrl },
             { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
             { nameof(Culture), Culture },

@@ -60,7 +60,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.Location = NavigationManager.Uri;
+            TelemetryContext.PageUrl = NavigationManager.Uri;
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
@@ -86,7 +86,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.Location = e.Location;
+        TelemetryContext.PageUrl = e.Location;
         navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
