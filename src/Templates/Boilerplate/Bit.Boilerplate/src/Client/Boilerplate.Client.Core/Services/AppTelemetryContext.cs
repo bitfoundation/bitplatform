@@ -17,6 +17,8 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual string? WebView { get; set; }
 
+    public virtual string? Location { get; set; }
+
     public virtual string? UserAgent { get; set; }
 
     public string? TimeZone { get; set; }

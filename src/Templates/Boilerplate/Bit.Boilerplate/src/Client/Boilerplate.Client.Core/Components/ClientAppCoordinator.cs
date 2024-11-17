@@ -60,6 +60,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            TelemetryContext.Location = NavigationManager.Uri;
             if (AppPlatform.IsBlazorHybrid is false)
             {
                 TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
@@ -85,6 +86,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        TelemetryContext.Location = e.Location;
         navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
@@ -97,8 +99,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
-            var data = TelemetryContext.ToDictionary();
-
             //#if (appInsights == true)
             if (isAuthenticated)
             {
@@ -110,6 +110,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
             //#endif
 
+            var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
                 authLogger.LogInformation("Authentication state changed.");
@@ -145,7 +146,18 @@ public partial class ClientAppCoordinator : AppComponentBase
                 options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-                options.AccessTokenProvider = async () => await AuthTokenProvider.GetAccessToken();
+                options.AccessTokenProvider = async () =>
+                {
+                    var access_token = await AuthTokenProvider.GetAccessToken();
+
+                    if (string.IsNullOrEmpty(access_token) is false &&
+                        AuthTokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
+                    {
+                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
+                    }
+
+                    return access_token;
+                };
             })
             .Build();
 
@@ -214,11 +226,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                try
-                {
-                    await AuthenticationManager.RefreshToken(CurrentCancellationToken);
-                }
-                catch { }
+                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
             }
         }
     }
