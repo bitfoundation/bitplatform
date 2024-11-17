@@ -17,11 +17,6 @@ public partial class NotAuthorizedPage
     protected override async Task OnAfterFirstRenderAsync()
     {
         var refresh_token = await StorageService.GetItem("refresh_token");
-        if (string.IsNullOrEmpty(refresh_token))
-        {
-            await SignOut();
-            return;
-        }
 
         // Let's update the access token by refreshing it when a refresh token is available.
         // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
@@ -38,6 +33,7 @@ public partial class NotAuthorizedPage
                 {
                     var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
                     NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
+                    return;
                 }
             }
             finally
@@ -47,11 +43,18 @@ public partial class NotAuthorizedPage
             }
         }
 
+        if (AuthTokenProvider.ParseAccessToken(await AuthTokenProvider.GetAccessToken(), validateExpiry: true).IsAuthenticated() is false)
+        {
+            await SignOut();
+        }
+
         await base.OnAfterFirstRenderAsync();
     }
 
     private async Task SignOut()
     {
         await AuthenticationManager.SignOut(CurrentCancellationToken);
+        var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
     }
 }
