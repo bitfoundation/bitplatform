@@ -19,7 +19,7 @@ public partial class NotAuthorizedPage
         var refresh_token = await StorageService.GetItem("refresh_token");
         if (string.IsNullOrEmpty(refresh_token))
         {
-            RedirectToSignInPage();
+            await SignOut();
             return;
         }
 
@@ -50,16 +50,8 @@ public partial class NotAuthorizedPage
         await base.OnAfterFirstRenderAsync();
     }
 
-    private async Task SignIn()
+    private async Task SignOut()
     {
         await AuthenticationManager.SignOut(CurrentCancellationToken);
-
-        RedirectToSignInPage();
-    }
-
-    private void RedirectToSignInPage()
-    {
-        var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
     }
 }
