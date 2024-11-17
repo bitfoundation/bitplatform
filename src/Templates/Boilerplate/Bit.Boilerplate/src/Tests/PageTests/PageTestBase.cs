@@ -10,7 +10,7 @@ public abstract partial class PageTestBase : PageTest
 {
     public AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
-    public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
+    public virtual Uri WebAppServerAddress => TestServer.WebAppServerAddress;
     public virtual BlazorWebAppMode BlazorRenderMode => BlazorWebAppMode.BlazorServer;
     public virtual bool PreRenderEnabled => false;
     public virtual bool EnableBlazorWasmCaching => true;
