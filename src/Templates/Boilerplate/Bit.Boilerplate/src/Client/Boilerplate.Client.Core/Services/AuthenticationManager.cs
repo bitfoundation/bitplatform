@@ -79,12 +79,16 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
     }
 
-    public async Task<string> RefreshToken(CancellationToken cancellationToken)
+    public async Task<string?> RefreshToken(string requestedBy, CancellationToken cancellationToken)
     {
         try
         {
+            var access_token_BeforeLockValue = await tokenProvider.GetAccessToken();
             await semaphore.WaitAsync();
-            authLogger.LogInformation("Refreshing access token");
+            var access_token_AfterLockValue = await tokenProvider.GetAccessToken();
+            if (access_token_BeforeLockValue != access_token_AfterLockValue)
+                return access_token_AfterLockValue; // It was renewed by a concurrent refresh token request.
+            authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
                 string? refresh_token = await storageService.GetItem("refresh_token");
@@ -95,10 +99,15 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 await StoreTokens(refreshTokenResponse);
                 return refreshTokenResponse.AccessToken!;
             }
-            catch (UnauthorizedException) // refresh_token is either invalid or expired.
+            catch (Exception exp)
             {
-                await ClearTokens();
-                throw;
+                if (exp is UnauthorizedException)
+                {
+                    // refresh_token is either invalid or expired.
+                    await ClearTokens();
+                }
+                authLogger.LogError(exp, "Refreshing access token requested by {RequestedBy} failed", requestedBy);
+                return null;
             }
         }
         finally

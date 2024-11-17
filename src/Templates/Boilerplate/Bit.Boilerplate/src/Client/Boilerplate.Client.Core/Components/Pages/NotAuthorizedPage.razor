@@ -11,18 +11,20 @@
 else
 {
     <AuthorizeView>
-        <section>
-            <BitStack HorizontalAlign="BitAlignment.Center">
-                <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
+        <Authorized>
+            <section>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
-                <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
-                    @Localizer[nameof(AppStrings.ForbiddenException)]
-                </BitText>
+                    <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.ForbiddenException)]
+                    </BitText>
 
-                <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
+                    <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
 
-                <BitButton OnClick="WrapHandled(SignIn)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
-            </BitStack>
-        </section>
+                    <BitButton OnClick="WrapHandled(SignOut)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
+                </BitStack>
+            </section>
+        </Authorized>
     </AuthorizeView>
 }

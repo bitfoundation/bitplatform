@@ -51,7 +51,7 @@ public abstract partial class PageTestBase : PageTest
     [TestCleanup]
     public async ValueTask CleanupTestServer()
     {
-        await this.FinalizeVideoRecording();
+        await Context.FinalizeVideoRecording(TestContext);
 
         if (TestServer is not null)
         {
@@ -69,7 +69,7 @@ public abstract partial class PageTestBase : PageTest
         var isAuthenticated = currentTestMethod!.GetCustomAttribute<AutoAuthenticateAttribute>() is not null;
         if (isAuthenticated)
         {
-            options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
+            options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.ToString());
         }
 
         var configureBrowserContext = currentTestMethod!.GetCustomAttribute<ConfigureBrowserContextAttribute>();
