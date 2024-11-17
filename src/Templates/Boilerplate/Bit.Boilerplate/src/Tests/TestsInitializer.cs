@@ -70,10 +70,13 @@ public partial class TestsInitializer
         var playwrightPage = new PageTest() { TestContext = testContext };
         await playwrightPage.Setup();
         await playwrightPage.BrowserSetup();
+
         var currentMethodFullName = $"{typeof(TestsInitializer).FullName}.{(nameof(InitializeAuthenticationState))}";
         var options = new BrowserNewContextOptions().EnableVideoRecording(testContext, currentMethodFullName);
         var context = await playwrightPage.NewContextAsync(options);
+
         await context.EnableBlazorWasmCaching();
+        await context.SetBlazorWebAssemblyServerAddress(testServer.WebAppServerAddress.ToString());
 
         var page = await context.NewPageAsync();
         var signinPage = new SignInPage(page, testServer.WebAppServerAddress);
