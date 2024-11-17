@@ -94,6 +94,7 @@ public partial class TestsInitializer
 
         AuthenticationState = state.Replace(testServer.WebAppServerAddress.OriginalString.TrimEnd('/'), "[ServerAddress]");
 
+        await context.FinalizeVideoRecording(testContext, currentMethodFullName);
         await context.Browser!.CloseAsync();
         await context.Browser!.DisposeAsync();
     }

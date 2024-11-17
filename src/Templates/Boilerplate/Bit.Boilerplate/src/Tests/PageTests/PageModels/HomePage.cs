@@ -42,10 +42,10 @@ public partial class IdentityHomePage(IPage page, Uri serverAddress)
     public override string PagePath => Urls.HomePage;
     public override string PageTitle => AppStrings.HomePageTitle;
 
-    public async Task<MainHomePage> SignOut()
+    public new async Task<MainHomePage> SignOut()
     {
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
-        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.Locator(".bit-crd.panel").GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut, Exact = true }).ClickAsync();
 
         return new MainHomePage(Page, WebAppServerAddress);
     }

@@ -19,8 +19,8 @@ public abstract partial class IdentityLayout(IPage page, Uri serverAddress)
 
     public async Task<SignInPage> SignOut()
     {
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
-        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.Locator(".bit-crd.panel").GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut, Exact = true }).ClickAsync();
 
         return new SignInPage(Page, WebAppServerAddress) { ReturnUrl = new Uri(Page.Url).PathAndQuery.TrimStart('/') };
     }
