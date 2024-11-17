@@ -336,7 +336,6 @@ public partial class IdentityPagesTests : PageTestBase
 
         await settingsPage.ExpandAccount();
         await settingsPage.ClickOnDeleteTab();
-        await settingsPage.ClickOnDeleteTab();
 
         signInPage = await settingsPage.DeleteUser();
         await signInPage.AssertSignOut();
