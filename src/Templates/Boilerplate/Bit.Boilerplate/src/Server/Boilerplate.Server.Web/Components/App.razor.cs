@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Localization;
 
 namespace Boilerplate.Server.Web.Components;
 
-[StreamRendering(enabled: true)]
 public partial class App
 {
     private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);

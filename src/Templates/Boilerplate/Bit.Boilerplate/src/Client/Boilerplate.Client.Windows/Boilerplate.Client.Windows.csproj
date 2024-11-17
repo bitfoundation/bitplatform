@@ -15,6 +15,7 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+        <NoWarn Condition="('$(framework)' == 'net9.0' OR '$(framework)' == '')">$(NoWarn);WPF0001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

@@ -26,6 +26,12 @@ public partial class HomePage
                 statisticsController.GetNugetStats(packageId: "Bit.BlazorUI", CurrentCancellationToken),
                 statisticsController.GetGitHubStats(CurrentCancellationToken));
         }
+        catch
+        {
+            // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs** and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
+            // These external API calls are provided as sample references for anonymous API usage in pre-rendering anonymous pages, and comprehensive exception handling is not intended for these examples.  
+            // However, the logic in other HTTP message handlers, such as **LoggingDelegatingHandler** and **RetryDelegatingHandler**, effectively addresses most scenarios.
+        }
         finally
         {
             isLoading = false;
