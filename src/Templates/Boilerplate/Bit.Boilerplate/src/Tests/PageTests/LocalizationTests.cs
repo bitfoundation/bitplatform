@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Boilerplate.Tests.Services;
 using Boilerplate.Tests.PageTests.PageModels;
+using Boilerplate.Tests.Extensions;
 
 namespace Boilerplate.Tests.PageTests.BlazorServer;
 
@@ -37,6 +38,7 @@ public partial class LocalizationTests : PageTestBase
         var localizer = StringLocalizerFactory.Create<AppStrings>(cultureName);
         var homePage = new MainHomePage(Page, WebAppServerAddress);
         await Page.GotoAsync($"{WebAppServerAddress}?culture={cultureName}");
+        await Page.WaitForHydrationToComplete();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
     }
 
@@ -47,6 +49,7 @@ public partial class LocalizationTests : PageTestBase
         var localizer = StringLocalizerFactory.Create<AppStrings>(cultureName);
         var homePage = new MainHomePage(Page, WebAppServerAddress);
         await Page.GotoAsync(new Uri(WebAppServerAddress, cultureName).ToString());
+        await Page.WaitForHydrationToComplete();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
     }
 }

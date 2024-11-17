@@ -10,12 +10,18 @@ public abstract partial class PageTestBase : PageTest
 {
     public AppTestServer TestServer { get; set; } = new();
     public WebApplication WebApp => TestServer.WebApp;
-    public Uri WebAppServerAddress => TestServer.WebAppServerAddress;
+    public virtual Uri WebAppServerAddress => TestServer.WebAppServerAddress;
     public virtual BlazorWebAppMode BlazorRenderMode => BlazorWebAppMode.BlazorServer;
+    public virtual bool PreRenderEnabled => false;
+    public virtual bool EnableBlazorWasmCaching => true;
 
     [TestInitialize]
     public async Task InitializeTestServer()
     {
+        if (PreRenderEnabled)
+            await Context.EnableHydrationCheck();
+
+        if (EnableBlazorWasmCaching)
         await Context.EnableBlazorWasmCaching();
 
         var currentTestMethod = GetType().GetMethod(TestContext.TestName!);
@@ -32,10 +38,11 @@ public abstract partial class PageTestBase : PageTest
         }
 
         var autoStartTestServer = currentTestMethod!.GetCustomAttribute<AutoStartTestServerAttribute>();
-        if (autoStartTestServer is null || autoStartTestServer.AutoStart)
+        if (autoStartTestServer?.AutoStart != false)
         {
             await TestServer.Build(configureTestConfigurations: configuration =>
             {
+                configuration["WebAppRender:PrerenderEnabled"] = PreRenderEnabled.ToString();
                 configuration["WebAppRender:BlazorMode"] = BlazorRenderMode.ToString();
             }).Start();
         }
@@ -44,7 +51,7 @@ public abstract partial class PageTestBase : PageTest
     [TestCleanup]
     public async ValueTask CleanupTestServer()
     {
-        await this.FinalizeVideoRecording();
+        await Context.FinalizeVideoRecording(TestContext);
 
         if (TestServer is not null)
         {
@@ -62,7 +69,7 @@ public abstract partial class PageTestBase : PageTest
         var isAuthenticated = currentTestMethod!.GetCustomAttribute<AutoAuthenticateAttribute>() is not null;
         if (isAuthenticated)
         {
-            options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.OriginalString);
+            options.StorageState = TestsInitializer.AuthenticationState.Replace("[ServerAddress]", WebAppServerAddress.ToString());
         }
 
         var configureBrowserContext = currentTestMethod!.GetCustomAttribute<ConfigureBrowserContextAttribute>();

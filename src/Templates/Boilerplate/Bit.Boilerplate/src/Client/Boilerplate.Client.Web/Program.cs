@@ -12,6 +12,19 @@ public static partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+        //#if (advancedTests == true)
+        //Pass configuration to BlazorWebAssembly
+        //More info: https://stackoverflow.com/questions/60831359/how-are-string-args-passed-to-program-main-in-a-blazor-webassembly-app
+        try
+        {
+            var js = (IJSInProcessRuntime)builder.Services.BuildServiceProvider().GetRequiredService<IJSRuntime>();
+            var startupParams = js.Invoke<string[]>("startupParams");
+            var configData = startupParams.Select(p => p.Split('=')).ToDictionary(p => p[0], p => p[1]);
+            builder.Configuration.AddInMemoryCollection(configData!);
+        }
+        catch { }
+        //#endif
+
         AppEnvironment.Set(builder.HostEnvironment.Environment);
 
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
