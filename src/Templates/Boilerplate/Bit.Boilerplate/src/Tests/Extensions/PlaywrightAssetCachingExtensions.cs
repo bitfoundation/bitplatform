@@ -43,6 +43,10 @@ public static partial class PlaywrightAssetCachingExtensions
         });
     }
 
+    public static bool ContainsAsset(Regex regex) => CachedResponses.Keys.Any(regex.IsMatch);
+
+    public static bool ContainsAsset(string url) => CachedResponses.Keys.Any(url.Contains);
+
     public static void ClearBlazorWasmCache() => ClearCache(BlazorWasmRegex());
 
     public static void ClearCache() => CachedResponses.Clear();
