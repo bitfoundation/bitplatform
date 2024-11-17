@@ -3,7 +3,7 @@ using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
-[Route("api/[controller]/[action]/"), AnonymousApi]
+[Route("api/[controller]/[action]/")]
 public interface IIdentityController : IAppController
 {
     [HttpPost]

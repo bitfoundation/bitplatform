@@ -46,10 +46,12 @@ public partial class NoRetryPolicyAttribute : Attribute
 }
 
 /// <summary>
-/// Avoid validating / using access token
+/// This attribute enforces client-side validation of access tokens expiry to optimize application performance.
+/// By checking token expiration locally, we can avoid unnecessary server requests that enhances overall response times and streamlines the refresh token process.
+/// Note: This requires the client's date and time settings to be accurate, as incorrect settings may cause validation to fail.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
-public partial class AnonymousApiAttribute : Attribute
+public partial class AuthorizedApiAttribute : Attribute
 {
 
 }

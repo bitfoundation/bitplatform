@@ -21,7 +21,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
         try
         {
             if (isInternalRequest && /* We will restrict sending the access token to our own server only. */
-                HasAnonymousApiAttribute(request) is false &&
+                HasAuthorizedApiAttribute(request) is false &&
                 request.Headers.Authorization is null)
             {
                 var access_token = await tokenProvider.GetAccessToken();
@@ -67,16 +67,16 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
     }
 
     /// <summary>
-    /// <see cref="AnonymousApiAttribute"/>
+    /// <see cref="AuthorizedApiAttribute"/>
     /// </summary>
-    private static bool HasAnonymousApiAttribute(HttpRequestMessage request)
+    private static bool HasAuthorizedApiAttribute(HttpRequestMessage request)
     {
         if (request.Options.TryGetValue(new(RequestOptionNames.IControllerType), out Type? controllerType) is false)
             return false;
 
         var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
         var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
-        return controllerType.GetCustomAttribute<AnonymousApiAttribute>(inherit: true) is not null ||
-               method.GetCustomAttribute<AnonymousApiAttribute>() is not null;
+        return controllerType.GetCustomAttribute<AuthorizedApiAttribute>(inherit: true) is not null ||
+               method.GetCustomAttribute<AuthorizedApiAttribute>() is not null;
     }
 }

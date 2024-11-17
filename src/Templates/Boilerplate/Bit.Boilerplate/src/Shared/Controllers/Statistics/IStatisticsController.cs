@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Statistics;
 
-[Route("api/[controller]/[action]/"), AnonymousApi]
+[Route("api/[controller]/[action]/")]
 public interface IStatisticsController : IAppController
 {
     [HttpGet("{packageId}")]

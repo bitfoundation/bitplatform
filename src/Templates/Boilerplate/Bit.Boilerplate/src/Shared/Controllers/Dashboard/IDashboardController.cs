@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Dashboard;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IDashboardController : IAppController
 {
     [HttpGet]
