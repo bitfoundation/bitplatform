@@ -1,6 +1,6 @@
 ﻿using Boilerplate.Server.Api.Services;
-using Boilerplate.Shared.Controllers.Statistics;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Controllers.Statistics;
 
 namespace Boilerplate.Server.Api.Controllers.Statistics;
 
@@ -13,7 +13,6 @@ public partial class StatisticsController : AppControllerBase, IStatisticsContro
     [HttpGet("{packageId}")]
     public async Task<NugetStatsDto> GetNugetStats(string packageId, CancellationToken cancellationToken)
     {
-        var stats = await nugetHttpClient.GetPackageStats(packageId, cancellationToken);
-        return stats;
+        return await nugetHttpClient.GetPackageStats(packageId, cancellationToken);
     }
 }

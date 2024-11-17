@@ -18,7 +18,7 @@ public static class ILoggingBuilderExtensions
             loggingBuilder.AddDebug();
         }
 
-        if (!AppPlatform.IsBrowser) // Browser has its own BrowserConsoleLogger.
+        if (!AppPlatform.IsBrowser) // Browser has its own WebAssemblyConsoleLoggerProvider.
         {
             loggingBuilder.AddConsole(); // Device Log / logcat
         }
