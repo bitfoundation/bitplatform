@@ -32,8 +32,8 @@ public partial class SettingsPage
         {
             user = await userController.GetCurrentUser(CurrentCancellationToken);
 
-            var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={access_token}").ToString();
+            var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
         }
         finally
         {

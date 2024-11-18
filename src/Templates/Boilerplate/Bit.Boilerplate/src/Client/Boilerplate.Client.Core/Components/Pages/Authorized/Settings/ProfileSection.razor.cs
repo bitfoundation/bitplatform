@@ -22,12 +22,12 @@ public partial class ProfileSection
 
     protected override async Task OnInitAsync()
     {
-        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
+        var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
 
-        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
+        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={accessToken}";
 
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={access_token}").ToString();
-        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={access_token}").ToString();
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
+        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
     }

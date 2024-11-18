@@ -148,15 +148,15 @@ public partial class ClientAppCoordinator : AppComponentBase
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
                 options.AccessTokenProvider = async () =>
                 {
-                    var access_token = await AuthTokenProvider.GetAccessToken();
+                    var accessToken = await AuthTokenProvider.GetAccessToken();
 
-                    if (string.IsNullOrEmpty(access_token) is false &&
-                        AuthTokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
+                    if (string.IsNullOrEmpty(accessToken) is false &&
+                        AuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                     {
-                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
+                        return await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
                     }
 
-                    return access_token;
+                    return accessToken;
                 };
             })
             .Build();
@@ -226,7 +226,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
+                await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
             }
         }
     }
