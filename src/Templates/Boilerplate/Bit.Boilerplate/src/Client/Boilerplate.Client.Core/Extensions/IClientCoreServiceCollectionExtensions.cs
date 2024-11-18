@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
-using Microsoft.EntityFrameworkCore;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;

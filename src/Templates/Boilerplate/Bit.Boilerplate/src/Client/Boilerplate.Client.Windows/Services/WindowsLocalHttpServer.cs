@@ -7,6 +7,9 @@ using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Windows.Services;
 
+/// <summary>
+/// <inheritdoc cref="ILocalHttpServer"/>
+/// </summary>
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private IExceptionHandler exceptionHandler;

@@ -159,7 +159,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     /// <summary>
-    /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful.
+    /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful <see cref="AppUserClaimsPrincipalFactory.SessionClaims"/>
     /// </summary>
     private UserSession CreateUserSession(string? device)
     {

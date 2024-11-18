@@ -142,8 +142,8 @@ public partial class ClientAppCoordinator : AppComponentBase
             .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
             .WithUrl(new Uri(AbsoluteServerAddress, "app-hub"), options =>
             {
+                options.SkipNegotiation = true;
                 options.Transports = HttpTransportType.WebSockets;
-                options.SkipNegotiation = options.Transports is HttpTransportType.WebSockets;
                 // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                 // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
                 options.AccessTokenProvider = async () =>

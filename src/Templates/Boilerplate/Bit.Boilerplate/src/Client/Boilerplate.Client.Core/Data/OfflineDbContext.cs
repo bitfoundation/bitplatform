@@ -1,7 +1,6 @@
 ﻿using Boilerplate.Shared.Dtos.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.Extensions.Options;
 
 namespace Boilerplate.Client.Core.Data;
 

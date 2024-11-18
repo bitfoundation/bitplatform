@@ -46,7 +46,7 @@ public interface ITelemetryContext
 
     public string? Environment { get; set; }
 
-    public bool IsOnline { get; set; }
+    public bool? IsOnline { get; set; }
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {

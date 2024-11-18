@@ -36,6 +36,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
         }
         catch (KnownException _) when (_ is ForbiddenException or UnauthorizedException)
         {
+            // Notes about ForbiddenException (403):
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 

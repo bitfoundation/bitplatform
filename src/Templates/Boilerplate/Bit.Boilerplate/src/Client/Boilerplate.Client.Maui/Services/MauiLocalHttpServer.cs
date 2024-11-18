@@ -6,6 +6,9 @@ using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Services;
 
+/// <summary>
+/// <inheritdoc cref="ILocalHttpServer"/>
+/// </summary>
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
     [AutoInject] private IExceptionHandler exceptionHandler;
