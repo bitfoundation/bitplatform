@@ -108,17 +108,17 @@ public partial class AuthenticationManager : AuthenticationStateProvider
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
-                string? refresh_token = await storageService.GetItem("refresh_token");
-                if (string.IsNullOrEmpty(refresh_token))
+                string? refreshToken = await storageService.GetItem("refresh_token");
+                if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, cancellationToken);
                 await StoreTokens(refreshTokenResponse);
                 return refreshTokenResponse.AccessToken!;
             }
             catch (UnauthorizedException)
             {
-                // refresh_token is either invalid or expired.
+                // refreshToken is either invalid or expired.
                 await ClearTokens();
                 throw;
             }
@@ -142,9 +142,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
+            var accessToken = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
-            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false));
+            return new AuthenticationState(tokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
         }
         catch (Exception exp)
         {
@@ -155,11 +155,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     private async Task ClearTokens()
     {
-        await storageService.RemoveItem("access_token");
-        await storageService.RemoveItem("refresh_token");
+        await storageService.RemoveItem("accessToken");
+        await storageService.RemoveItem("refreshToken");
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            await cookie.Remove("access_token");
+            await cookie.Remove("accessToken");
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
