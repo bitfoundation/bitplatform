@@ -239,6 +239,10 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     {
         parameters ??= [];
 
+        if (AppPlatform.IsBlazorHybridOrBrowser is false)
+        {
+            parameters[nameof(InPrerenderSession)] = InPrerenderSession;
+        }
         parameters["ComponentType"] = GetType().FullName;
 
         ExceptionHandler.Handle(exp, parameters, lineNumber, memberName, filePath);
