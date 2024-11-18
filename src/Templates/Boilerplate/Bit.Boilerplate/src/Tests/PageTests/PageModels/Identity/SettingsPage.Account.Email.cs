@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels.Email;
 
 namespace Boilerplate.Tests.PageTests.PageModels.Identity;
@@ -64,6 +65,7 @@ public partial class SettingsPage
     {
         await Page.GetByPlaceholder(AppStrings.EmailTokenPlaceholder).FillAsync(token);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EmailTokenConfirmButtonText }).ClickAsync();
+        await Page.WaitForHydrationToComplete();
     }
 
     public async Task AssertConfirmEmailSuccess()

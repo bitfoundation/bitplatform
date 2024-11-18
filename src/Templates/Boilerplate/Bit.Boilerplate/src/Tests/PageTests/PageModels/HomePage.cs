@@ -18,7 +18,7 @@ public partial class MainHomePage(IPage page, Uri serverAddress)
     {
         await Assertions.Expect(Page).ToHaveTitleAsync(localizer[nameof(AppStrings.HomePageTitle)]);
 
-        await Assertions.Expect(Page.GetByText(localizer[nameof(AppStrings.HomePanelTitle)] + " " + localizer[nameof(AppStrings.HomePanelSubtitle)])).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Heading, new() { Level = 4, Name = localizer[nameof(AppStrings.HomePanelTitle)] + " " + localizer[nameof(AppStrings.HomePanelSubtitle)] })).ToBeVisibleAsync();
 
         await Assertions.Expect(Page.GetByText(localizer[nameof(AppStrings.HomeMessage)])).ToBeVisibleAsync();
 
