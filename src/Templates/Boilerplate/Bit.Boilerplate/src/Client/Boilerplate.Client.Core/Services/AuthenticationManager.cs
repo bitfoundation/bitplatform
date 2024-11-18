@@ -100,11 +100,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token_BeforeLockValue = await tokenProvider.GetAccessToken();
+            var accessTokenBeforeLock = await tokenProvider.GetAccessToken();
             await semaphore.WaitAsync();
-            var access_token_AfterLockValue = await tokenProvider.GetAccessToken();
-            if (access_token_BeforeLockValue != access_token_AfterLockValue)
-                return access_token_AfterLockValue!; // It was renewed by a concurrent refresh token request.
+            var accessTokenAfterLock = await tokenProvider.GetAccessToken();
+            if (accessTokenBeforeLock != accessTokenAfterLock)
+                return accessTokenAfterLock!; // It was renewed by a concurrent refresh token request.
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
