@@ -155,11 +155,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
     private async Task ClearTokens()
     {
-        await storageService.RemoveItem("accessToken");
-        await storageService.RemoveItem("refreshToken");
+        await storageService.RemoveItem("access_token");
+        await storageService.RemoveItem("refresh_token");
         if (AppPlatform.IsBlazorHybrid is false)
         {
-            await cookie.Remove("accessToken");
+            await cookie.Remove("access_token");
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
