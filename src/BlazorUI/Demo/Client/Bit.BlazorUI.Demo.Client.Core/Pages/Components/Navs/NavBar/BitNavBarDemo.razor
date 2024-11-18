@@ -1,27 +1,27 @@
-﻿@page "/components/navmenu"
+﻿@page "/components/navbar"
 
-<PageOutlet Url="components/navmenu"
-            Title="NavMenu"
-            Description="navmenu component of the bit BlazorUI components" />
+<PageOutlet Url="components/navbar"
+            Title="NavBar"
+            Description="navbar component of the bit BlazorUI components" />
 
 <div>
-    <ComponentDemo ComponentName="NavMenu"
+    <ComponentDemo ComponentName="NavBar"
                    ComponentDescription="A navigation menu provides links to the main areas of an app or site."
                    ComponentParameters="componentParameters"
                    ComponentSubClasses="componentSubClasses"
                    ComponentSubEnums="componentSubEnums"
-                   Notes="The BitNavMenu is a Multi-API component which can accept the list of Items in 3 different ways: BitNavMenuItem class, a custom Generic class, and BitNavMenuOption component.">
+                   Notes="The BitNavBar is a Multi-API component which can accept the list of Items in 3 different ways: BitNavBarItem class, a custom Generic class, and BitNavBarOption component.">
         <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
             <BitPivotItem HeaderText="Item">
-                <_BitNavMenuItemDemo />
+                <_BitNavBarItemDemo />
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Custom">
-                <_BitNavMenuCustomDemo />
+                <_BitNavBarCustomDemo />
             </BitPivotItem>
 
             <BitPivotItem HeaderText="Option">
-                <_BitNavMenuOptionDemo />
+                <_BitNavBarOptionDemo />
             </BitPivotItem>
         </BitPivot>
     </ComponentDemo>

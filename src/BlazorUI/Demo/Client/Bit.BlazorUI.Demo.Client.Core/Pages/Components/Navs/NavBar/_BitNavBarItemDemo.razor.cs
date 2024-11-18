@@ -1,8 +1,8 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
-public partial class _BitNavMenuItemDemo
+public partial class _BitNavBarItemDemo
 {
-    private static readonly List<BitNavMenuItem> basicNavMenuItems =
+    private static readonly List<BitNavBarItem> basicNavBarItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
         new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },

@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TItem : class
+public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;
     internal TItem? _currentItem;
@@ -16,7 +16,7 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
 
     /// <summary>
-    /// The accent color of the nav.
+    /// The accent color of the navbar.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
@@ -27,12 +27,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitNav component.
+    /// Custom CSS classes for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavMenuClassStyles? Classes { get; set; }
+    [Parameter] public BitNavBarClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the nav.
+    /// The general color of the navbar.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -43,25 +43,13 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
-    /// Renders the nav in a width to only fit its content.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FitWidth { get; set; }
-
-    /// <summary>
-    /// Renders the nav in full width of its container element.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullWidth { get; set; }
-
-    /// <summary>
-    /// Only renders the icon of each nav item.
+    /// Only renders the icon of each navbar item.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool IconOnly { get; set; }
 
     /// <summary>
-    /// A collection of item to display in the navigation bar.
+    /// A collection of items to display in the navbar.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
@@ -75,7 +63,7 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetMode))]
-    public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+    public BitNavMode Mode { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -103,32 +91,26 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     [Parameter] public bool Reselectable { get; set; }
 
     /// <summary>
-    /// Reverses the location of the expander chevron.
-    /// </summary>
-    [Parameter] public bool ReversedChevron { get; set; }
-
-    /// <summary>
-    /// Selected item to show in the BitNav.
+    /// Selected item to show in the navbar.
     /// </summary>
     [Parameter, TwoWayBound]
-    [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitNav component.
+    /// Custom CSS styles for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavMenuClassStyles? Styles { get; set; }
+    [Parameter] public BitNavBarClassStyles? Styles { get; set; }
 
 
 
     internal string? GetClass(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Class;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Class;
         }
@@ -145,12 +127,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetIconName(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.IconName;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.IconName;
         }
@@ -167,12 +149,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal bool GetIsEnabled(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.IsEnabled;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.IsEnabled;
         }
@@ -189,12 +171,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetKey(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Key;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Key;
         }
@@ -211,12 +193,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetStyle(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Style;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Style;
         }
@@ -233,12 +215,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetTarget(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Target;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Target;
         }
@@ -255,12 +237,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal RenderFragment<TItem>? GetTemplate(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Template as RenderFragment<TItem>;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Template as RenderFragment<TItem>;
         }
@@ -277,12 +259,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetText(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Text;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Text;
         }
@@ -299,12 +281,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetTitle(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Title;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Title;
         }
@@ -321,12 +303,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal string? GetUrl(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.Url;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.Url;
         }
@@ -343,12 +325,12 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
     internal IEnumerable<string>? GetAdditionalUrls(TItem item)
     {
-        if (item is BitNavMenuItem navItem)
+        if (item is BitNavBarItem navItem)
         {
             return navItem.AdditionalUrls;
         }
 
-        if (item is BitNavMenuOption navOption)
+        if (item is BitNavBarOption navOption)
         {
             return navOption.AdditionalUrls;
         }
@@ -377,13 +359,13 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     }
 
 
-    internal void RegisterOption(BitNavMenuOption option)
+    internal void RegisterOption(BitNavBarOption option)
     {
         _items.Add((option as TItem)!);
         StateHasChanged();
     }
 
-    internal void UnregisterOption(BitNavMenuOption option)
+    internal void UnregisterOption(BitNavBarOption option)
     {
         _items.Remove((option as TItem)!);
         StateHasChanged();
@@ -397,59 +379,56 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
 
 
 
-    protected override string RootElementClass => "bit-nmn";
+    protected override string RootElementClass => "bit-nbr";
 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => FitWidth ? "bit-nav-ftw" : string.Empty);
-        ClassBuilder.Register(() => FullWidth ? "bit-nav-flw" : string.Empty);
-
-        ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
+        ClassBuilder.Register(() => IconOnly ? "bit-nbr-ion" : string.Empty);
 
         ClassBuilder.Register(() => Accent switch
         {
-            BitColor.Primary => "bit-nav-apri",
-            BitColor.Secondary => "bit-nav-asec",
-            BitColor.Tertiary => "bit-nav-ater",
-            BitColor.Info => "bit-nav-ainf",
-            BitColor.Success => "bit-nav-asuc",
-            BitColor.Warning => "bit-nav-awrn",
-            BitColor.SevereWarning => "bit-nav-aswr",
-            BitColor.Error => "bit-nav-aerr",
-            BitColor.PrimaryBackground => "bit-nav-apbg",
-            BitColor.SecondaryBackground => "bit-nav-asbg",
-            BitColor.TertiaryBackground => "bit-nav-atbg",
-            BitColor.PrimaryForeground => "bit-nav-apfg",
-            BitColor.SecondaryForeground => "bit-nav-asfg",
-            BitColor.TertiaryForeground => "bit-nav-atfg",
-            BitColor.PrimaryBorder => "bit-nav-apbr",
-            BitColor.SecondaryBorder => "bit-nav-asbr",
-            BitColor.TertiaryBorder => "bit-nav-atbr",
-            _ => "bit-nav-apbg",
+            BitColor.Primary => "bit-nbr-apri",
+            BitColor.Secondary => "bit-nbr-asec",
+            BitColor.Tertiary => "bit-nbr-ater",
+            BitColor.Info => "bit-nbr-ainf",
+            BitColor.Success => "bit-nbr-asuc",
+            BitColor.Warning => "bit-nbr-awrn",
+            BitColor.SevereWarning => "bit-nbr-aswr",
+            BitColor.Error => "bit-nbr-aerr",
+            BitColor.PrimaryBackground => "bit-nbr-apbg",
+            BitColor.SecondaryBackground => "bit-nbr-asbg",
+            BitColor.TertiaryBackground => "bit-nbr-atbg",
+            BitColor.PrimaryForeground => "bit-nbr-apfg",
+            BitColor.SecondaryForeground => "bit-nbr-asfg",
+            BitColor.TertiaryForeground => "bit-nbr-atfg",
+            BitColor.PrimaryBorder => "bit-nbr-apbr",
+            BitColor.SecondaryBorder => "bit-nbr-asbr",
+            BitColor.TertiaryBorder => "bit-nbr-atbr",
+            _ => "bit-nbr-apbg",
         });
 
         ClassBuilder.Register(() => Color switch
         {
-            BitColor.Primary => "bit-nav-pri",
-            BitColor.Secondary => "bit-nav-sec",
-            BitColor.Tertiary => "bit-nav-ter",
-            BitColor.Info => "bit-nav-inf",
-            BitColor.Success => "bit-nav-suc",
-            BitColor.Warning => "bit-nav-wrn",
-            BitColor.SevereWarning => "bit-nav-swr",
-            BitColor.Error => "bit-nav-err",
-            BitColor.PrimaryBackground => "bit-nav-pbg",
-            BitColor.SecondaryBackground => "bit-nav-sbg",
-            BitColor.TertiaryBackground => "bit-nav-tbg",
-            BitColor.PrimaryForeground => "bit-nav-pfg",
-            BitColor.SecondaryForeground => "bit-nav-sfg",
-            BitColor.TertiaryForeground => "bit-nav-tfg",
-            BitColor.PrimaryBorder => "bit-nav-pbr",
-            BitColor.SecondaryBorder => "bit-nav-sbr",
-            BitColor.TertiaryBorder => "bit-nav-tbr",
-            _ => "bit-nav-pri",
+            BitColor.Primary => "bit-nbr-pri",
+            BitColor.Secondary => "bit-nbr-sec",
+            BitColor.Tertiary => "bit-nbr-ter",
+            BitColor.Info => "bit-nbr-inf",
+            BitColor.Success => "bit-nbr-suc",
+            BitColor.Warning => "bit-nbr-wrn",
+            BitColor.SevereWarning => "bit-nbr-swr",
+            BitColor.Error => "bit-nbr-err",
+            BitColor.PrimaryBackground => "bit-nbr-pbg",
+            BitColor.SecondaryBackground => "bit-nbr-sbg",
+            BitColor.TertiaryBackground => "bit-nbr-tbg",
+            BitColor.PrimaryForeground => "bit-nbr-pfg",
+            BitColor.SecondaryForeground => "bit-nbr-sfg",
+            BitColor.TertiaryForeground => "bit-nbr-tfg",
+            BitColor.PrimaryBorder => "bit-nbr-pbr",
+            BitColor.SecondaryBorder => "bit-nbr-sbr",
+            BitColor.TertiaryBorder => "bit-nbr-tbr",
+            _ => "bit-nbr-pri",
         });
     }
 
@@ -497,8 +476,8 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
     private void SetSelectedItemByCurrentUrl()
     {
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = _items.FirstOrDefault(item => GetUrl(item) == currentUrl ||
-                                                        (GetAdditionalUrls(item)?.Contains(currentUrl) ?? false));
+        var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.InvariantCultureIgnoreCase) ||
+                                                        (GetAdditionalUrls(item)?.Select(u => u.ToLower()).Contains(currentUrl.ToLower()) ?? false));
 
         if (currentItem is not null)
         {
@@ -517,11 +496,6 @@ public partial class BitNavMenu<TItem> : BitComponentBase, IDisposable where TIt
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
-    }
-
-    private void OnSetSelectedItem()
-    {
-        if (SelectedItem is null) return;
     }
 
 

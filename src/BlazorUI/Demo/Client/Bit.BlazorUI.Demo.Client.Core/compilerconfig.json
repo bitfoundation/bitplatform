@@ -240,8 +240,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Navs/NavMenu/BitNavMenuDemo.razor.css",
-        "inputFile": "Pages/Components/Navs/NavMenu/BitNavMenuDemo.razor.scss",
+        "outputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.css",
+        "inputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

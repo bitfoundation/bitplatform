@@ -1,6 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
-public partial class BitNavMenuDemo
+public partial class BitNavBarDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [

@@ -14,12 +14,12 @@
         <div style="display:none" hidden>@(Options ?? ChildContent)</div>
     </CascadingValue>
 
-    <ul role="list" class="bit-nmn-ul">
+    <ul role="list" class="bit-nbr-ul">
         @foreach (var item in _items)
         {
-            <li class="bit-nmn-li" title="@GetTitle(item)">
-                <i class="bit-nmn-ico bit-icon bit-icon--@GetIconName(item)" />
-                <span class="bit-nmn-txt">@GetText(item)</span>
+            <li class="bit-nbr-li" title="@GetTitle(item)">
+                <i class="bit-nbr-ico bit-icon bit-icon--@GetIconName(item)" />
+                <span class="bit-nbr-txt">@GetText(item)</span>
             </li>
         }
     </ul>

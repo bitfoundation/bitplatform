@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitNavMenuClassStyles
+public class BitNavBarClassStyles
 {
     /// <summary>
     /// Custom CSS classes/styles for the root element of the BitNav.

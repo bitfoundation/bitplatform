@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitNavMenuItem
+public class BitNavBarItem
 {
     /// <summary>
     /// Custom CSS class for the nav item.
@@ -40,12 +40,12 @@ public class BitNavMenuItem
     /// <summary>
     /// The custom template for the nav item to render.
     /// </summary>
-    public RenderFragment<BitNavMenuItem>? Template { get; set; }
+    public RenderFragment<BitNavBarItem>? Template { get; set; }
 
     /// <summary>
     /// Text to render for the nav item.
     /// </summary>
-    public string Text { get; set; } = string.Empty;
+    public string? Text { get; set; }
 
     /// <summary>
     /// Text for the tooltip of the nav item.

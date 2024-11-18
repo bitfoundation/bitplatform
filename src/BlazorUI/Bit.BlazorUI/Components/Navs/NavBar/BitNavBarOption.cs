@@ -1,12 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitNavMenuOption : ComponentBase, IDisposable
+public partial class BitNavBarOption : ComponentBase, IDisposable
 {
     private bool _disposed;
 
 
 
-    [CascadingParameter] protected BitNavMenu<BitNavMenuOption> NavMenu { get; set; } = default!;
+    [CascadingParameter] protected BitNavBar<BitNavBarOption> NavBar { get; set; } = default!;
 
 
 
@@ -48,7 +48,7 @@ public partial class BitNavMenuOption : ComponentBase, IDisposable
     /// <summary>
     /// The custom template for the nav option to render.
     /// </summary>
-    [Parameter] public RenderFragment<BitNavMenuOption>? Template { get; set; }
+    [Parameter] public RenderFragment<BitNavBarOption>? Template { get; set; }
 
     /// <summary>
     /// Text to render for the nav option.
@@ -74,7 +74,7 @@ public partial class BitNavMenuOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        NavMenu?.RegisterOption(this);
+        NavBar?.RegisterOption(this);
 
         await base.OnInitializedAsync();
     }
@@ -90,7 +90,7 @@ public partial class BitNavMenuOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        NavMenu?.UnregisterOption(this);
+        NavBar?.UnregisterOption(this);
 
         _disposed = true;
     }
