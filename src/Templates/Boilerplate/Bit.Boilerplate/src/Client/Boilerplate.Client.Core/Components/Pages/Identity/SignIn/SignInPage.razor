@@ -13,7 +13,7 @@
             <BitStack HorizontalAlign="BitAlignment.Center">
                 @if (requiresTwoFactor is false)
                 {
-                    @if (isOtpSent is false)
+                    @if (isOtpRequested is false)
                     {
                         <SignInPanel IsWaiting="isWaiting" Model="model" OnSocialSignIn="SocialSignIn" OnSendOtp="SendOtp" />
                     }
