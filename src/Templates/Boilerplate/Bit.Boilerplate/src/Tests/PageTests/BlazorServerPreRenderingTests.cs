@@ -1,4 +1,5 @@
-﻿using Boilerplate.Tests.PageTests.PageModels;
+﻿using Boilerplate.Tests.Extensions;
+using Boilerplate.Tests.PageTests.PageModels;
 
 namespace Boilerplate.Tests.PageTests.BlazorServer.PreRendering;
 
@@ -23,6 +24,8 @@ public partial class PreRenderingTests : PageTestBase
     [ConfigureBrowserContext(nameof(JavaScriptDisabled))]
     public async Task PreRenderedHtml()
     {
+        await Context.DisableHydrationCheck();
+
         var homePage = new MainHomePage(Page, WebAppServerAddress);
         await homePage.Open();
         await homePage.AssertOpen();
