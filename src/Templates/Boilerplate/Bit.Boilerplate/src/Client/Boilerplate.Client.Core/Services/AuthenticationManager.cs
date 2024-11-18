@@ -106,7 +106,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                     // refresh_token is either invalid or expired.
                     await ClearTokens();
                 }
-                authLogger.LogError(exp, "Refreshing access token requested by {RequestedBy} failed", requestedBy);
+                exceptionHandler.Handle(exp, new()
+                {
+                    { "AdditionalData", "Refreshing access token failed." },
+                    { "RefreshTokenRequestedBy", requestedBy }
+                });
                 return null;
             }
         }

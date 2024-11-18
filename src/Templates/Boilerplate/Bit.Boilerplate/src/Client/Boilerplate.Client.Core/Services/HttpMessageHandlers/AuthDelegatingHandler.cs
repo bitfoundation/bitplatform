@@ -21,17 +21,15 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
         try
         {
             if (isInternalRequest && /* We will restrict sending the access token to our own server only. */
-                HasAuthorizedApiAttribute(request) is false &&
                 request.Headers.Authorization is null)
             {
                 var access_token = await tokenProvider.GetAccessToken();
-                if (string.IsNullOrEmpty(access_token) is false)
+                if (string.IsNullOrEmpty(access_token) is false && HasAuthorizedApiAttribute(request))
                 {
                     if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
-
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
                 }
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
             }
 
             return await base.SendAsync(request, cancellationToken);
