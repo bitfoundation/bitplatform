@@ -38,9 +38,10 @@
                     <ValidationMessage For="() => contactUsModel.Email" />
 
                     <BitTextField @bind-Value="@contactUsModel.Message"
+                                  Required
+                                  Multiline
+                                  Resizable
                                   Label="Message"
-                                  IsRequired=true
-                                  IsMultiline=true
                                   Class="contact-text-field"
                                   Placeholder="Enter your message" />
                     <ValidationMessage For="() => contactUsModel.Message" />
