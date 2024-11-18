@@ -97,7 +97,7 @@
                 <LabelTemplate>
                     @if (FileUploadIsEmpty())
                     {
-                        <div class="browse-file">
+                        <div class="browse-file" @onclick="() => bitFileUpload.Browse()">
                             <div class="browse-file-header">
                                 <i class="bit-icon bit-icon--CloudUpload" />
                                 <div>
