@@ -1,0 +1,54 @@
+﻿@attribute [Route(Urls.OfflineEditProfilePage)]
+@attribute [Route("{culture?}" + Urls.OfflineEditProfilePage)]
+@attribute [Authorize]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.OfflineEditProfileTitle)]</PageTitle>
+
+<section>
+    <BitStack Alignment="BitAlignment.Center">
+        <BitText Typography="BitTypography.H3">
+            @Localizer[nameof(AppStrings.OfflineEditProfileTitle)]
+        </BitText>
+
+        <BitText Class="max-width">
+            @Localizer[nameof(AppStrings.OfflineEditProfileMessage)]
+        </BitText>
+
+        @if (isLoading)
+        {
+            <BitEllipsisLoading />
+        }
+
+        <EditForm Model="userToEdit" OnValidSubmit="WrapHandled(DoSave)" novalidate class="max-width">
+            <AppDataAnnotationsValidator />
+
+            <BitStack FillContent>
+                <BitTextField @bind-Value="userToEdit.FullName"
+                              Label="@Localizer[nameof(AppStrings.FullName)]"
+                              Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
+                <ValidationMessage For="@(() => userToEdit.FullName)" />
+
+                <BitDatePicker IsResponsive @bind-Value="userToEdit.BirthDate"
+                               Class="edit-profile-dtp"
+                               Label="@Localizer[nameof(AppStrings.BirthDate)]"
+                               GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
+                               Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
+                <ValidationMessage For="@(() => userToEdit.BirthDate)" />
+
+                <BitChoiceGroup Horizontal
+                                @bind-Value="userToEdit.Gender"
+                                TItem="BitChoiceGroupOption<Gender>" TValue="Gender"
+                                Label="@Localizer[nameof(AppStrings.Gender)]">
+                    <BitChoiceGroupOption Value="Gender.Male" Text="@Localizer[nameof(AppStrings.GenderMale)]" />
+                    <BitChoiceGroupOption Value="Gender.Female" Text="@Localizer[nameof(AppStrings.GenderFemale)]" />
+                    <BitChoiceGroupOption Value="Gender.Other" Text="@Localizer[nameof(AppStrings.GenderOther)]" />
+                </BitChoiceGroup>
+
+                <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit" Title="@Localizer[nameof(AppStrings.Save)]">
+                    @Localizer[nameof(AppStrings.Save)]
+                </BitButton>
+            </BitStack>
+        </EditForm>
+    </BitStack>
+</section>

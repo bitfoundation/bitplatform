@@ -1,4 +1,5 @@
 ﻿@page "/templates/create-project"
+@page "/boilerplate/create-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/create-project"
@@ -13,7 +14,7 @@
         Let's make our next cross platform project a success with Bit.Boilerplate.
     </BitText>
     <br />
-    <BitSticky Top="90px">
+    <BitSticky Top="110px">
         <CodeBox>
             @GetFinalCommand()
         </CodeBox>
@@ -37,6 +38,19 @@
         </BitGridItem>
 
         <BitGridItem Class="grid-item">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>.NET</BitText>
+                <BitDropdown Placeholder="Choose .NET version" Items="@dotnetVersion.Items" @bind-Value="@dotnetVersion.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetDotNetVersionCommand()
+            </CodeBox>
+            <br />
+            Refer to the <a href="https://dotnet.microsoft.com/en-us/platform/support/policy" target="_blank">.NET Support Policy</a>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
                 <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
@@ -63,7 +77,7 @@
             </div>
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
                 <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
@@ -94,7 +108,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
                 <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
@@ -107,7 +121,7 @@
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
                 <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
@@ -120,7 +134,7 @@
             but no separate Windows application will be included.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
                 <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
@@ -133,7 +147,7 @@
             seamlessly across all supported platforms.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
                 <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
@@ -147,10 +161,10 @@
             errors and informational messages.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
-                <BitToggle @bind-Value="signalr.Value" OnText="true" OffText="false" />
+                <BitToggle @bind-Value="signalR.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
@@ -160,11 +174,11 @@
             <br />
             <br />
             <b>Note:</b>
-            <br />  
+            <br />
             This setting does not affect the enabling or disabling of Blazor Server.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
                 <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
@@ -201,7 +215,7 @@
             }
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item lg">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
@@ -217,7 +231,7 @@
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item" ColumnSpan="2">
+        <BitGridItem Class="grid-item lg">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
                 <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
@@ -234,8 +248,6 @@
                         <br />
                         <br />
                         Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
-                        If you require a database not listed among the options, select Other. After project creation, you can add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a>
-                        package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
                         <br />
                         <br />
                         For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
@@ -276,6 +288,18 @@
                     </div>
                     break;
             }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
+                <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetNotificationCommand()
+            </CodeBox>
+            Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
         </BitGridItem>
 
         <BitGridItem Class="grid-item" ColumnSpan="2">

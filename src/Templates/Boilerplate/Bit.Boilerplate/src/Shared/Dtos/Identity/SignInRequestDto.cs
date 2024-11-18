@@ -13,6 +13,7 @@ public partial class SignInRequestDto : IdentityRequestDto
     /// For either Otp or magic link
     /// </summary>
     /// <example>null</example>
+    [StringLength(6)]
     [Display(Name = nameof(AppStrings.Otp))]
     public string? Otp { get; set; }
 
@@ -27,17 +28,6 @@ public partial class SignInRequestDto : IdentityRequestDto
     [Display(Name = nameof(AppStrings.TwoFactorCode))]
     public string? TwoFactorCode { get; set; }
 
-    /// <summary>
-    /// Two factor token received by email or sms
-    /// </summary>
-    /// <example>null</example>
-    [Display(Name = nameof(AppStrings.TwoFactorToken))]
-    public string? TwoFactorToken { get; set; }
-
-    /// <example>null</example>
-    [Display(Name = nameof(AppStrings.TwoFactorRecoveryCode))]
-    public string? TwoFactorRecoveryCode { get; set; }
-
     /// <example>Samsung Android 14</example>
     public string? DeviceInfo { get; set; }
 
@@ -47,7 +37,10 @@ public partial class SignInRequestDto : IdentityRequestDto
 
         if (string.IsNullOrEmpty(Password) && string.IsNullOrEmpty(Otp))
         {
-            result.Add(new ValidationResult(errorMessage: nameof(AppStrings.EitherProvidePasswordOrOtp), [nameof(Password), nameof(Otp)]));
+            result.Add(new ValidationResult(
+                errorMessage: nameof(AppStrings.EitherProvidePasswordOrOtp),
+                memberNames: [nameof(Password), nameof(Otp)]
+            ));
         }
 
         return result;

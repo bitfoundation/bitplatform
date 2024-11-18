@@ -22,7 +22,7 @@ public static partial class HttpRequestExtensions
     {
         var configuration = req.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
 
-        var webClientUrl = configuration.GetValue<string?>("WebClientUrl");
+        var webClientUrl = configuration.Get<ServerApiSettings>()!.WebClientUrl;
 
         if (string.IsNullOrEmpty(webClientUrl) is false)
             return new Uri(webClientUrl);

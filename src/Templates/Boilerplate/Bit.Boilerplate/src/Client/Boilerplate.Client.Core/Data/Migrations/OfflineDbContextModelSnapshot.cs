@@ -12,7 +12,7 @@ partial class OfflineDbContextModelSnapshot : ModelSnapshot
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+        modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
         modelBuilder.Entity("Boilerplate.Shared.Dtos.Identity.UserDto", b =>
             {
@@ -58,7 +58,7 @@ partial class OfflineDbContextModelSnapshot : ModelSnapshot
                         BirthDate = 1306790461440000000L,
                         Email = "test@bitplatform.dev",
                         FullName = "Boilerplate test account",
-                        Gender = 2,
+                        Gender = 0,
                         Password = "123456",
                         PhoneNumber = "+31684207362",
                         UserName = "test"

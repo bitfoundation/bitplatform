@@ -1,0 +1,27 @@
+@inherits AppComponentBase
+
+<section>
+    <BitStack FillContent HorizontalAlign="BitAlignment.Center" Class="max-width">
+        <BitText Typography="BitTypography.H6" Color="BitColor.Error" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.DeleteAccount)]
+        </BitText>
+
+        <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+            @Localizer[nameof(AppStrings.DeleteAccountPrompt)]
+        </BitText>
+        <br />
+        <BitButton Color="BitColor.Error"
+                   Variant="BitVariant.Outline"
+                   OnClick="() => isDialogOpen = true">
+            @Localizer[nameof(AppStrings.DeleteAccount)]
+        </BitButton>
+        <br />
+    </BitStack>
+</section>
+
+<BitDialog OnOk="WrapHandled(DeleteAccount)"
+           @bind-IsOpen="isDialogOpen"
+           OkText="@Localizer[nameof(AppStrings.Yes)]"
+           CancelText="@Localizer[nameof(AppStrings.No)]"
+           Title="@Localizer[nameof(AppStrings.DeleteAccount)]"
+           Message="@Localizer[nameof(AppStrings.DeleteAccountPrompt)]" />

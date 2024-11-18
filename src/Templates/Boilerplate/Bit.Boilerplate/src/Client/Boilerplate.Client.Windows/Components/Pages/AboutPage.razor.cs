@@ -4,17 +4,26 @@ namespace Boilerplate.Client.Windows.Components.Pages;
 
 public partial class AboutPage
 {
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
+
+    protected override string? Title => Localizer[nameof(AppStrings.AboutTitle)];
+    protected override string? Subtitle => string.Empty;
+
+
     private string appName = default!;
     private string appVersion = default!;
     private string os = default!;
+    private string webView = default!;
     private string processId = default!;
 
-    protected async override Task OnInitAsync()
+
+    protected override async Task OnInitAsync()
     {
         var asm = typeof(AboutPage).Assembly;
         appName = asm.GetCustomAttribute<AssemblyTitleAttribute>()!.Title;
-        appVersion = asm.GetName().Version!.ToString();
-        os = AppPlatform.OSDescription;
+        appVersion = telemetryContext.AppVersion!;
+        os = telemetryContext.OS!;
+        webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
 
         await base.OnInitAsync();

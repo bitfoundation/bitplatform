@@ -49,6 +49,34 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "FillContent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the direct children to occupy all of the root element's width."
+        },
+        new()
+        {
+            Name = "FitHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the height of the stack to fit its content."
+        },
+        new()
+        {
+            Name = "FitSize",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width and height of the stack to fit its content."
+        },
+        new()
+        {
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Sets the width of the stack to fit its content."
+        },
+        new()
+        {
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",

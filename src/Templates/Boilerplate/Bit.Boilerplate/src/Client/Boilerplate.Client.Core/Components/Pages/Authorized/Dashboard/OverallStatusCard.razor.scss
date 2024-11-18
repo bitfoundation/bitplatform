@@ -1,0 +1,9 @@
+@import '../../../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: calc(50% - 12px);
+
+    @include lt-md {
+        width: 100%;
+    }
+}

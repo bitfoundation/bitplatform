@@ -33,6 +33,8 @@ namespace System.Threading.Tasks;
 ///         // The total time is 150ms 👍
 ///     }
 /// }
+/// 
+/// See HomePage.razor.cs's OnInitAsync example.
 /// </summary>
 public static partial class TupleExtensions
 {

@@ -72,59 +72,74 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="OverflowIcon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Icons" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
-        <div>Customize the overflow icon in BitBreadcrumb using different icon name values.</div>
+        <div>Customize the overflow icon, divider icon and item icons in BitBreadcrumb using different icon name values.</div>
         <br /><br />
         <div class="example-box">
             <div>
-                <div>BitIconName (ChevronDown)</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                <div>BitIconName (OverflowIcon: ChevronDown - DividerIcon: CaretRightSolid8)</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon"
                                NameSelectors="nameSelectors"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
+                               DividerIconName="@BitIconName.CaretRightSolid8"
                                OverflowIconName="@BitIconName.ChevronDown" />
             </div>
             <br />
             <div>
-                <div>BitIconName (CollapseMenu)</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                <div>BitIconName (OverflowIcon: CollapseMenu) with active ReversedIcon</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon"
                                NameSelectors="nameSelectors"
                                MaxDisplayedItems="3"
                                OverflowIndex="2"
-                               OverflowIconName="@BitIconName.CollapseMenu" />
+                               OverflowIconName="@BitIconName.CollapseMenu"
+                               ReversedIcon />
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Class & Style" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="Templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
-        <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
+        <div>Here are some examples of customizing the breadcrumb content.</div>
         <br /><br />
         <div class="example-box">
             <div>
-                <div>Items Class</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
-                               NameSelectors="nameSelectors" />
-            </div>
-            <div>
-                <div>Items Style</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
-                               NameSelectors="nameSelectors" />
+                <div>DividerIconTemplate</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors">
+                    <DividerIconTemplate>
+                        <BitIcon IconName="@BitIconName.CaretRightSolid8" Color="BitColor.Warning" />
+                    </DividerIconTemplate>
+                </BitBreadcrumb>
             </div>
             <br />
             <div>
-                <div>Selected Item Class</div>
+                <div>ItemTemplate & OverflowTemplate</div>
                 <BitBreadcrumb Items="CustomBreadcrumbItems"
                                NameSelectors="nameSelectors"
-                               SelectedItemClass="custom-selected-item" />
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2">
+                    <ItemTemplate Context="item">
+                        <div style="font-weight: bold; color: #d13438; font-style:italic;">
+                            @item.Name
+                        </div>
+                    </ItemTemplate>
+                    <OverflowTemplate Context="item">
+                        <div style="font-weight: bold; color: blueviolet; font-style:italic;">
+                            @item.Name
+                        </div>
+                    </OverflowTemplate>
+                </BitBreadcrumb>
             </div>
+            <br />
             <div>
-                <div>Selected Item Style</div>
-                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                <div>Item's template & Item's overflow tTemplate</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemTemplateItems"
                                NameSelectors="nameSelectors"
-                               SelectedItemStyle="color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" />
+                               MaxDisplayedItems="3"
+                               OverflowIndex="2" />
             </div>
         </div>
     </ExamplePreview>
@@ -139,8 +154,8 @@
                            NameSelectors="nameSelectors"
                            MaxDisplayedItems="3"
                            OverflowIndex="2"
-                           OnItemClick="(PageInfoModel model) => HandleOnCustomClick(model)"
-                           SelectedItemStyle="color: dodgerblue;" />
+                           OnItemClick="(PageInfo model) => HandleOnCustomClick(model)"
+                           Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -155,7 +170,7 @@
                                NameSelectors="nameSelectors"
                                MaxDisplayedItems="@MaxDisplayedItems"
                                OverflowIndex="@OverflowIndex"
-                               OnItemClick="(PageInfoModel model) => HandleOnCustomizedCustomClick(model)" />
+                               OnItemClick="(PageInfo model) => HandleOnCustomizedCustomClick(model)" />
             </div>
             <div class="operators">
                 <div>
@@ -172,7 +187,46 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Class & Style" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
+        <br /><br />
+        <div class="example-box">
+            <div>
+                <div>Component's Style & Class:</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors" 
+                               Class="custom-class" />
+                <br />
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors" 
+                               Style="font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;" />
+            </div>
+            <br />
+            <div>
+                <div>Item's Style & Class:</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithClass"
+                               NameSelectors="nameSelectors" />
+                <br />
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithStyle"
+                               NameSelectors="nameSelectors" />
+            </div>
+            <br />
+            <div>
+                <div>Styles & Classes:</div>
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               Classes="@(new() { Item = "custom-item", SelectedItem = "custom-selected-item" })" />
+                <br />
+                <BitBreadcrumb Items="CustomBreadcrumbItems"
+                               NameSelectors="nameSelectors"
+                               Styles="@(new() { Item = "color: green;", SelectedItem = "color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;" })" />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>Use BitBreadcrumb in right-to-left (RTL).</div>
         <br />
@@ -185,3 +239,33 @@
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+@code {
+    private readonly List<PageInfo> CustomBreadcrumbItemTemplateItems =
+    [
+        new()
+        {
+            Name = "Item 1", Address = "/components/breadcrumb",
+            Fragment = (item => @<div style="color:green">@item.Name</div>),
+            OverflowFragment = (item => @<div style="color:green;text-decoration:underline;">@item.Name</div>)
+        },
+        new ()
+        {
+            Name = "Item 2", Address = "/components/breadcrumb",
+            Fragment = (item => @<div style="color:yellow">@item.Name</div>),
+            OverflowFragment = (item => @<div style="color:yellow;text-decoration:underline;">@item.Name</div>)
+        },
+        new()
+        {
+            Name = "Item 3", Address = "/components/breadcrumb",
+            Fragment = (item => @<div style="color:red">@item.Name</div>),
+            OverflowFragment = (item => @<div style="color:red;text-decoration:underline;">@item.Name</div>)
+        },
+        new()
+        {
+            Name = "Item 4", Address = "/components/breadcrumb", IsCurrent = true,
+            Fragment = (item => @<div style="color:blue">@item.Name</div>),
+            OverflowFragment = (item => @<div style="color:blue;text-decoration:underline;">@item.Name</div>)
+        }
+    ];
+}

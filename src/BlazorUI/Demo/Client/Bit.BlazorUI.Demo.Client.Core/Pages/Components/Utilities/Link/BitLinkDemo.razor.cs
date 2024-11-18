@@ -36,6 +36,15 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "Rel",
+            Type = "BitLinkRel?",
+            DefaultValue = "null",
+            Description = "If Href provided, specifies the relationship between the current document and the linked document.",
+            LinkType = LinkType.Link,
+            Href = "#link-rel",
+        },
+        new()
+        {
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
@@ -89,6 +98,97 @@ public partial class BitLinkDemo
                     Name = "UnfencedTop",
                     Description = "Allows embedded fenced frames to navigate the top-level frame.",
                     DefaultValue = "_unfencedTop",
+                }
+            ]
+        }
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "link-rel",
+            Name = "BitLinkRel",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Alternate",
+                    Value = "1",
+                    Description = "Provides a link to an alternate representation of the document. (i.e. print page, translated or mirror)"
+                },
+                new()
+                {
+                    Name = "Author",
+                    Value = "2",
+                    Description = "Provides a link to the author of the document."
+                },
+                new()
+                {
+                    Name = "Bookmark",
+                    Value = "4",
+                    Description = "Permanent URL used for bookmarking."
+                },
+                new()
+                {
+                    Name = "External",
+                    Value = "8",
+                    Description = "Indicates that the referenced document is not part of the same site as the current document."
+                },
+                new()
+                {
+                    Name = "Help",
+                    Value = "16",
+                    Description = "Provides a link to a help document."
+                },
+                new()
+                {
+                    Name = "License",
+                    Value = "32",
+                    Description = "Provides a link to licensing information for the document."
+                },
+                new()
+                {
+                    Name = "Next",
+                    Value = "64",
+                    Description = "Provides a link to the next document in the series."
+                },
+                new()
+                {
+                    Name = "NoFollow",
+                    Value = "128",
+                    Description = @"Links to an unendorsed document, like a paid link. (""NoFollow"" is used by Google, to specify that the Google search spider should not follow that link)"
+                },
+                new()
+                {
+                    Name = "NoOpener",
+                    Value = "256",
+                    Description = "Requires that any browsing context created by following the hyperlink must not have an opener browsing context."
+                },
+                new()
+                {
+                    Name = "NoReferrer",
+                    Value = "512",
+                    Description = "Makes the referrer unknown. No referrer header will be included when the user clicks the hyperlink."
+                },
+                new()
+                {
+                    Name = "Prev",
+                    Value = "1024",
+                    Description = "The previous document in a selection."
+                },
+                new()
+                {
+                    Name = "Search",
+                    Value = "2048",
+                    Description = "Links to a search tool for the document."
+                },
+                new()
+                {
+                    Name = "Tag",
+                    Value = "4096",
+                    Description = "A tag (keyword) for the current document."
                 }
             ]
         }
@@ -177,6 +277,10 @@ private void HandleOnClick()
 ";
 
     private readonly string example7RazorCode = @"
+<BitLink Rel=""BitLinkRel.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
+<BitLink Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -188,6 +292,6 @@ private void HandleOnClick()
 <BitLink Style=""color: goldenrod; font-weight:bold"" Href=""https://github.com/bitfoundation/bitplatform"">Link with style</BitLink>
 <BitLink Class=""custom-class"" Href=""https://github.com/bitfoundation/bitplatform"">Link with class</BitLink>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitLink Dir=""BitDir.Rtl"" Href=""https://github.com/bitfoundation/bitplatform"">پیوند راست به چپ</BitLink>";
 }

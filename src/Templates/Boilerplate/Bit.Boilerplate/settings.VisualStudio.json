@@ -1,0 +1,6 @@
+﻿/* Visual Studio Settings File */
+{
+    "debugging.general.disableJITOptimization": true,
+    "environment.documents.saveWithSpecificEncoding": true,
+    "environment.documents.saveEncoding": "utf-8;65001"
+}

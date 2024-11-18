@@ -30,6 +30,14 @@ button {
     position: absolute;
 }
 
+.bit-ico-r90 {
+    transform: rotate(90deg);
+}
+
+.bit-ico-r180 {
+    transform: rotate(180deg);
+}
+
 @keyframes bit-fade-show {
     0% {
         opacity: 0;

@@ -1,4 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
+using System;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Link;
@@ -598,6 +600,53 @@ public class BitLinkTests : BunitTestContext
             component.MarkupMatches(@"<button data-val-test=""bit"" class=""bit-lnk"" type=""button"" id:ignore>I'm a link</button>");
         }
     }
+
+    [DataTestMethod,
+        DataRow(null, null),
+        DataRow(null, BitLinkRel.Bookmark),
+        DataRow(null, BitLinkRel.Bookmark | BitLinkRel.Alternate),
+        DataRow("https://bitplatform.dev", null),
+        DataRow("https://bitplatform.dev", BitLinkRel.Bookmark),
+        DataRow("https://bitplatform.dev", BitLinkRel.Bookmark | BitLinkRel.Alternate),
+        DataRow("#go-to-section", null),
+        DataRow("#go-to-section", BitLinkRel.Bookmark),
+        DataRow("#go-to-section", BitLinkRel.Bookmark | BitLinkRel.Alternate)
+    ]
+    public void BitLinkShouldRespectTarget(string href, BitLinkRel? rel)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Rel, rel);
+            parameters.Add(p => p.Href, href);
+        });
+
+        if (href.HasValue())
+        {
+            if (href.StartsWith('#'))
+            {
+                component.MarkupMatches(@"<a class=""bit-lnk"" id:ignore></a>");
+            }
+            else
+            {
+                if (rel.HasValue)
+                {
+                    var rels = string.Join(" ", Enum.GetValues(typeof(BitLinkRel)).Cast<BitLinkRel>().Where(r => rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
+
+                    component.MarkupMatches(@$"<a rel=""{rels}"" href=""{href}"" class=""bit-lnk"" id:ignore></a>");
+                }
+                else
+                {
+                    component.MarkupMatches(@$"<a class=""bit-lnk"" href=""{href}"" id:ignore></a>");
+                }
+            }
+        }
+        else
+        {
+            component.MarkupMatches(@"<button class=""bit-lnk"" type=""button"" id:ignore></button>");
+        }
+    }
+
+
 
     private void MatchSimpleMarkup(IRenderedComponent<BitLink> component, string href)
     {

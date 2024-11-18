@@ -50,12 +50,21 @@ public partial class _BitNavItemDemo
 
     private static readonly List<BitNavItem> IconOnlyNavMenu =
     [
-        new() { Text = "Home", IconName = BitIconName.Home, Url = "https://bitplatform.dev/" },
-        new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-        new() { Text = "AdminPanel sample", IconName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
-        new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
-        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsEnabled = false },
-        new() { Text = "Contact us", IconName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { 
+            Text = "AdminPanel sample", 
+            IconName = BitIconName.LocalAdmin,
+            ChildItems = 
+            [
+                new() { Text = "Dashboard", IconName = BitIconName.ViewDashboard },
+                new() { Text = "Categories", IconName = BitIconName.BuildQueue },
+                new() { Text = "Products", IconName = BitIconName.Product },
+            ]
+        },
+        new() { Text = "Todo sample", IconName = BitIconName.ToDoLogoOutline},
+        new() { Text = "BlazorUI", IconName = BitIconName.F12DevTools },
+        new() { Text = "Bit academy", IconName = BitIconName.LearningTools, IsEnabled = false },
+        new() { Text = "Contact us", IconName = BitIconName.Contact },
     ];
 
     private static readonly List<BitNavItem> CarNavMenu =
@@ -389,24 +398,8 @@ private static readonly List<BitNavItem> BitPlatformNavMenu =
 ];";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
-<BitNav Items=""IconOnlyNavMenu"" IconOnly=""iconOnly"" />";
-    private readonly string example3CsharpCode = @"
-private bool iconOnly;
-
-private static readonly List<BitNavItem> IconOnlyNavMenu =
-[
-    new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-    new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-    new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
-    new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-    new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsEnabled = false },
-    new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
-];";
-
-    private readonly string example4RazorCode = @"
 <BitNav Items=""CarNavMenu"" RenderType=""BitNavRenderType.Grouped"" />";
-    private readonly string example4CsharpCode = @"
+    private readonly string example3CsharpCode = @"
 private static readonly List<BitNavItem> CarNavMenu =
 [
     new()
@@ -466,7 +459,7 @@ private static readonly List<BitNavItem> CarNavMenu =
     },
 ];";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <div>Basic</div>
 <BitNav Items=""FoodNavMenu""
         DefaultSelectedItem=""FoodNavMenu[0].Items[2]""
@@ -482,7 +475,7 @@ private static readonly List<BitNavItem> CarNavMenu =
                 Label=""Select Item""
                 Items=""FoodMenuDropdownItems""
                 OnSelectItem=""(item) => SelectedItemNav = Flatten(FoodNavMenu).FirstOrDefault(i => i.Text == item.Value)"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private static readonly List<BitNavItem> FoodNavMenu =
 [
     new()
@@ -611,6 +604,31 @@ private static readonly List<BitDropdownItem> FoodMenuDropdownItems = new()
 private static List<BitNavItem> Flatten(IList<BitNavItem> e) => e.SelectMany(c => Flatten(c.Items)).Concat(e).ToList();
 private BitNavItem SelectedItemNav = FoodNavMenu[0].Items[2];
 private string SelectedItemText = FoodNavMenu[0].Items[2].Text;";
+
+    private readonly string example5RazorCode = @"
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav Items=""IconOnlyNavMenu"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly"" />";
+    private readonly string example5CsharpCode = @"
+private bool iconOnly;
+
+private static readonly List<BitNavItem> IconOnlyNavMenu =
+[
+    new() { Text = ""Home"", IconName = BitIconName.Home },
+    new() { 
+        Text = ""AdminPanel sample"", 
+        IconName = BitIconName.LocalAdmin,
+        ChildItems = 
+        [
+            new() { Text = ""Dashboard"", IconName = BitIconName.ViewDashboard },
+            new() { Text = ""Categories"", IconName = BitIconName.BuildQueue },
+            new() { Text = ""Products"", IconName = BitIconName.Product },
+        ]
+    },
+    new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline},
+    new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools },
+    new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, IsEnabled = false },
+    new() { Text = ""Contact us"", IconName = BitIconName.Contact },
+];";
 
     private readonly string example6RazorCode = @"
 <style>

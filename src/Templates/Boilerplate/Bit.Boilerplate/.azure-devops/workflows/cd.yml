@@ -9,7 +9,7 @@ variables:
   ConnectionStrings.SqlServerConnectionString: $(DB_CONNECTION_STRING)
   DataProtectionCertificatePassword: $(API_DATA_PROTECTION_CERTIFICATE_PASSWORD)
   ServerAddress: 'https://use-your-server-url-here.com/'
-  WindowsUpdateSettings.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+  WindowsUpdate.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
 
 jobs:
 
@@ -17,7 +17,7 @@ jobs:
   displayName: 'build api + blazor web'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
   - task: UseDotNet@2
@@ -28,16 +28,9 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
-  # - task: Bash@3
-  #   displayName: 'Enable pre rendering'
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #         'sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/Client/Boilerplate.Client.Core/Services/AppRenderMode.cs'
-    
   - task: Bash@3
     displayName: 'Install wasm'
     inputs:
@@ -50,7 +43,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Web/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -89,7 +82,7 @@ jobs:
   displayName: 'deploy api + blazor'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
 
@@ -160,7 +153,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
   - task: FileTransform@2
@@ -168,7 +161,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Windows/appsettings.json'
 
   - task: Bash@3
     displayName: 'Generate CSS/JS files'
@@ -182,20 +175,9 @@ jobs:
       targetType: 'inline'
       script: |
         cd src\Client\Boilerplate.Client.Windows\
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64
-        ren .\bin\publish-arm64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-arm64.exe
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86
-        ren .\bin\publish-x86\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x86.exe
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64
-        ren .\bin\publish-x64\Boilerplate.Client.Windows.exe Boilerplate.Client.Windows-x64.exe
-        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\bin\publish
-        del .\bin\publish\Boilerplate.Client.Windows.exe
-        echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-        echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-        echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-        echo A | xcopy .\bin\publish .\publish-result /s /e /h
-        dotnet tool restore
-        dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows-x86.exe -r win-x86 --framework net8.0.8-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
+        dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          dotnet tool restore
+          dotnet vpk pack -u Boilerplate.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework net9.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'Boilerplate'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -208,7 +190,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'ubuntu-22.04'
+    vmImage: 'ubuntu-24.04'
 
   steps:
   - task: UseDotNet@2
@@ -219,7 +201,7 @@ jobs:
 
   - task: NodeTool@1
     inputs:
-      versionSpec: '20.x'
+      versionSpec: '22.x'
     displayName: 'Install Node.js'
 
   - task: Bash@3
@@ -250,7 +232,7 @@ jobs:
     inputs:
       fileType: 'json'
       folderPath: './'
-      targetFiles: 'src/Client/Boilerplate.Client.Core/appsettings.json, src/Shared/appsettings.json'
+      targetFiles: 'src/Shared/appsettings.json, src/Client/Boilerplate.Client.Core/appsettings.json, src/Client/Boilerplate.Client.Maui/appsettings.json'
   
   - script: |
       dotnet build src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
@@ -262,17 +244,17 @@ jobs:
     displayName: 'Build aab'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net9.0-android'
 
   - task: Bash@3
     displayName: 'Build apk'
     inputs:
       targetType: 'inline'
-      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net8.0-android'
+      script: 'dotnet build src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="$(ANDROID_RELEASE_KEYSTORE_PASSWORD)" -p:AndroidSigningStorePass="$(ANDROID_RELEASE_SIGNING_PASSWORD)" -f net9.0-android'
 
   - script: |
       mkdir drop
-      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net8.0-android/*-Signed.* drop/
+      cp ./src/Client/Boilerplate.Client.Maui/bin/Release/net9.0-android/*-Signed.* drop/
     failOnStderr: true
     displayName: Copy apk/aab files to drop folder
 

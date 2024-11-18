@@ -88,19 +88,6 @@ public partial class _BitNavOptionDemo
 </BitNav>";
 
     private readonly string example3RazorCode = @"
-<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
-<BitNav TItem=""BitNavOption"" IconOnly=""iconOnly"">
-    <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-    <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-    <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-    <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-    <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
-    <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
-</BitNav>";
-    private readonly string example3CsharpCode = @"
-private bool iconOnly;";
-
-    private readonly string example4RazorCode = @"
 < BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">
     <BitNavOption Text=""Mercedes-Benz""
                   ExpandAriaLabel=""Mercedes-Benz Expanded""
@@ -133,7 +120,7 @@ private bool iconOnly;";
     </BitNavOption>
 </BitNav>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
                   IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
@@ -191,7 +178,7 @@ private bool iconOnly;";
              FitWidth
              Label=""Select Item""
              Items=""FoodMenuDropdownItems"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private string SelectedOptionKey;
 
 private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
@@ -211,6 +198,23 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     new() { Text = ""Ice Cream"", Value = ""Ice Cream"" },
     new() { Text = ""Cookie"", Value = ""Cookie"" },
 ];";
+
+    private readonly string example5RazorCode = @"
+<BitToggle @bind-Value=""iconOnly"" Label=""Hide texts?"" Inline />
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" IconOnly=""iconOnly"">
+    <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"">
+        <BitNavOption Text=""Dashboard"" IconName=""@BitIconName.ViewDashboard"" />
+        <BitNavOption Text=""Categories"" IconName=""@BitIconName.BuildQueue"" />
+        <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
+    </BitNavOption>
+    <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" />
+    <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" />
+    <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" IsEnabled=""false"" />
+    <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" />
+</BitNav>";
+    private readonly string example5CsharpCode = @"
+private bool iconOnly;";
 
     private readonly string example6RazorCode = @"
 <BitNav TItem=""BitNavOption"" RenderType=""BitNavRenderType.Grouped"">

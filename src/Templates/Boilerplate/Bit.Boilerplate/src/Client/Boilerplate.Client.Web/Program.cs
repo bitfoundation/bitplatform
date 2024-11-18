@@ -1,5 +1,4 @@
-﻿//-:cnd:noEmit
-using System.Web;
+﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -13,21 +12,33 @@ public static partial class Program
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+        //#if (advancedTests == true)
+        //Pass configuration to BlazorWebAssembly
+        //More info: https://stackoverflow.com/questions/60831359/how-are-string-args-passed-to-program-main-in-a-blazor-webassembly-app
+        try
+        {
+            var js = (IJSInProcessRuntime)builder.Services.BuildServiceProvider().GetRequiredService<IJSRuntime>();
+            var startupParams = js.Invoke<string[]>("startupParams");
+            var configData = startupParams.Select(p => p.Split('=')).ToDictionary(p => p[0], p => p[1]);
+            builder.Configuration.AddInMemoryCollection(configData!);
+        }
+        catch { }
+        //#endif
+
         AppEnvironment.Set(builder.HostEnvironment.Environment);
+
+        builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web");
 
         if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") != "true")
         {
             // By default, App.razor adds Routes and HeadOutlet.
             // The following is only required for blazor webassembly standalone.
-            builder.RootComponents.Add<Routes>("#app-container");
             builder.RootComponents.Add<HeadOutlet>("head::after");
+            //#if (appInsights == true)
+            builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>(selector: "head::after");
+            //#endif
+            builder.RootComponents.Add<Routes>("#app-container");
         }
-
-        //+:cnd:noEmit
-        //#if (appInsights == true)
-        builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>("head::after");
-        //#endif
-        //-:cnd:noEmit
 
         builder.ConfigureServices();
 
@@ -45,7 +56,7 @@ public static partial class Program
 
             var navigationManager = host.Services.GetRequiredService<NavigationManager>();
 
-            var culture = navigationManager.GetCultureFromUri() ?? // 1- Culture query string OR Route data request culture
+            var culture = new Uri(navigationManager.Uri).GetCulture() ?? // 1- Culture query string OR Route data request culture
                           cultureCookie ?? // 2- User settings
                           CultureInfo.CurrentUICulture.Name; // 3- OS/Browser settings
 

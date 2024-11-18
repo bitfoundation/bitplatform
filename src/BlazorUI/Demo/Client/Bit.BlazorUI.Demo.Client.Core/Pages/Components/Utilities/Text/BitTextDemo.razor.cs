@@ -257,6 +257,11 @@ public partial class BitTextDemo
 <BitText Typography=""BitTypography.Overline"">Overline. this is overline text.</BitText>";
 
     private string example2RazorCode = @"
+<BitText Align=""BitTextAlign.Start"">Start</BitText>
+<BitText Align=""BitTextAlign.Center"">Center</BitText>
+<BitText Align=""BitTextAlign.End"">End</BitText>";
+
+    private string example3RazorCode = @"
 <BitText Foreground=""BitColorKind.Primary"">Primary foreground</BitText>
 <BitText Foreground=""BitColorKind.Secondary"">Secondary foreground</BitText>
 <BitText Foreground=""BitColorKind.Tertiary"">Tertiary foreground</BitText>
@@ -265,7 +270,7 @@ public partial class BitTextDemo
     <BitText Foreground=""BitColorKind.Transparent"">Transparent foreground</BitText>
 </div>";
 
-    private string example3RazorCode = @"
+    private string example4RazorCode = @"
 <BitText Color=""BitColor.Primary"">Primary color</BitText>
 <BitText Color=""BitColor.Secondary"">Secondary color</BitText>
 <BitText Color=""BitColor.Tertiary"">Tertiary color</BitText>

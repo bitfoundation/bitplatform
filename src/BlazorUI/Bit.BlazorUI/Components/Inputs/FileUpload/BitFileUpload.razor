@@ -9,24 +9,20 @@
 
     @if (LabelTemplate is not null)
     {
-        <label for="@InputId">
-            @LabelTemplate
-        </label>
+        @LabelTemplate
     }
     else if (Label.HasValue())
     {
-        <label class="bit-upl-lbl" for="@InputId">
-            @Label
-        </label>
+        <button class="bit-upl-lbl" @onclick="Browse">@Label</button>
     }
 
     <input @ref="_inputRef" @onchange="HandleOnChange"
-           class="bit-upl-fi"
-           id="@InputId"
            type="file"
+           id="@InputId"
+           class="bit-upl-fi"
+           multiple="@Multiple"
            disabled="@(IsEnabled is false)"
            aria-labelledby="@(Label.HasValue() ? Label : null)"
-           multiple="@IsMultiSelect"
            accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
 
     @if (Files is not null)

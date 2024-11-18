@@ -3,10 +3,10 @@ namespace Bit.BlazorUI;
 
 public enum BitSnackBarPosition
 {
-    TopLeft,
+    TopStart,
     TopCenter,
-    TopRight,
-    BottomLeft,
+    TopEnd,
+    BottomStart,
     BottomCenter,
-    BottomRight,
+    BottomEnd,
 }

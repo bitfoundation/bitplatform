@@ -37,7 +37,7 @@
                 </div>
             }
 
-            @if (IsMultiline && Type == BitInputType.Text)
+            @if (Multiline && Type is null or BitInputType.Text)
             {
                 <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
                           @onclick="@HandleOnClick"
@@ -48,14 +48,16 @@
                           @onfocusout="@HandleOnFocusOut"
                           @onchange="@HandleOnStringValueChangeAsync"
                           @oninput="@HandleOnStringValueInputAsync"
-                          rows="@Rows"
                           name="@Name"
                           id="@_inputId"
+                          rows="@(Rows ?? 3)"
+                          tabindex="@TabIndex"
                           readonly="@ReadOnly"
                           required="@Required"
                           style="@Styles?.Input"
                           autofocus="@AutoFocus"
                           maxlength="@MaxLength"
+                          inputmode="@_inputMode"
                           placeholder="@Placeholder"
                           value="@CurrentValueAsString"
                           disabled=@(IsEnabled is false)
@@ -80,9 +82,11 @@
                        type="@_inputType"
                        readonly="@ReadOnly"
                        required="@Required"
+                       tabindex="@TabIndex"
                        style="@Styles?.Input"
                        autofocus="@AutoFocus"
                        maxlength="@MaxLength"
+                       inputmode="@_inputMode"
                        placeholder="@Placeholder"
                        autocomplete="@AutoComplete"
                        value="@CurrentValueAsString"

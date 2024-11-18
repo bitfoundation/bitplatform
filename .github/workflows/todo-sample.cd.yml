@@ -1,4 +1,4 @@
-name: Todo Sample CD
+﻿name: Todo Sample CD
 
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
@@ -17,61 +17,70 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     
     - name: Checkout source code
       uses: actions/checkout@v4
     
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WebAppRender.BlazorMode: BlazorWebAssembly
+        WebAppRender.PrerenderEnabled: true
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Configure app render mode
+    - name: Configure bswup
       run: |
-          sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
-          sed -i 's/BlazorAuto;/BlazorWebAssembly;/g' TodoSample/src/Client/TodoSample.Client.Core/Services/AppRenderMode.cs
+          sed -i 's/\/\/ self.noPrerenderQuery/self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+          sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true -p:PublishTrimmed=true -p:TrimMode=partial -p:JsonSerializerIsReflectionEnabledByDefault=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4
       with:
         name: server-bundle
         path: ${{env.DOTNET_ROOT}}/server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -118,34 +127,35 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
 
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global.json
+        global-json-file: src\Templates\Boilerplate\Bit.Boilerplate\global8.json
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --framework net8.0
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Shared\appsettings.json'
+        files: 'TodoSample\src\Shared\appsettings.json, TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Client\TodoSample.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WindowsUpdateSettings.FilesUrl: https://windows-todo.bitplatform.dev
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
-      shell: pwsh
 
     - name: Delete App Splash Screen
       run: rm TodoSample/src/Client/TodoSample.Client.Windows/Resources/SplashScreen.png
@@ -163,20 +173,9 @@ jobs:
     - name: Publish
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-arm64 -r win-arm64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-arm64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-arm64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x86 -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x86\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x86.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish-x64 -r win-x64 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          ren .\bin\publish-x64\TodoSample.Client.Windows.exe TodoSample.Client.Windows-x64.exe
-          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\bin\publish -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
-          del .\bin\publish\TodoSample.Client.Windows.exe
-          echo D | xcopy .\bin\publish-arm64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x86 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish-x64 .\publish-result /s /e /h
-          echo A | xcopy .\bin\publish .\publish-result /s /e /h
+          dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
           dotnet tool restore
-          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows-x86.exe -r win-x86 --framework net8.0.8-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework net8.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -186,28 +185,32 @@ jobs:
   
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
   
     steps:
      
     - name: Checkout source code
       uses: actions/checkout@v4
      
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -215,13 +218,21 @@ jobs:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/'
           fileName: 'TodoSample.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+
+    - name: Extract Android signing key from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Platforms/Android'
+          fileName: 'google-services.json'
+          encodedString: ${{ secrets.TODO_GOOGLE_SERVICES_JSON_BASE64 }}
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret
@@ -270,39 +281,44 @@ jobs:
         
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
-    runs-on: macos-14
+    runs-on: macOS-15
   
     steps:
      
     - name: Checkout source code
       uses: actions/checkout@v4
      
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '15.4'
+        xcode-version: '16.0'
 
     - name: Create project from Boilerplate
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
       
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Shared/appsettings.json'
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Set app center secret

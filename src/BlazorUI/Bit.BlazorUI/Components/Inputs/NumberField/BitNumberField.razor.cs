@@ -79,7 +79,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Custom icon name for the decrement button.
     /// </summary>
-    [Parameter] public string DecrementIconName { get; set; } = "ChevronDownSmall";
+    [Parameter] public string? DecrementIconName { get; set; }
 
     /// <summary>
     /// Initial value of the number field.
@@ -104,7 +104,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Custom icon name for the increment button.
     /// </summary>
-    [Parameter] public string IncrementIconName { get; set; } = "ChevronUpSmall";
+    [Parameter] public string? IncrementIconName { get; set; }
 
     /// <summary>
     /// The position of the label in regards to the number field.
@@ -584,5 +584,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             _step = (TValue)(object)1;
         }
+    }
+
+    private string GetInputMode()
+    {
+        return (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float))
+            ? "decimal"
+            : "numeric";
     }
 }

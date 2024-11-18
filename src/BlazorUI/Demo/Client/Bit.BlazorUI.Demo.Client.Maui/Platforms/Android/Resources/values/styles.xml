@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <style name="OptOutEdgeToEdgeEnforcement">
+        <!-- https://github.com/dotnet/maui/issues/24742 -->
+    </style>
+</resources>

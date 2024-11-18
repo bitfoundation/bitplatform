@@ -6,43 +6,32 @@ public partial class Templates05CreateProjectPage
 {
     private string name = "MyFirstProject";
 
-    private Parameter<bool> windows = new()
-    {
-        Value = true,
-        Default = true,
-    };
-
-    private Parameter<bool> appCenter = new()
-    {
-        Value = false,
-        Default = false,
-    };
-
-    private Parameter<bool> offlineDb = new()
-    {
-        Value = false,
-        Default = false,
-    };
-
-    private Parameter<bool> appInsight = new()
-    {
-        Value = false,
-        Default = false,
-    };
-
-    private Parameter<bool> signalr = new()
-    {
-        Value = false,
-        Default = false,
-    };
+    private Parameter<bool> windows = new() { Value = true, Default = true };
+    private Parameter<bool> appCenter = new() { Value = false, Default = false };
+    private Parameter<bool> offlineDb = new() { Value = false, Default = false };
+    private Parameter<bool> notification = new() { Value = false, Default = false };
+    private Parameter<bool> appInsight = new() { Value = false, Default = false };
+    private Parameter<bool> signalR = new() { Value = false, Default = false };
 
     private Parameter<string> captcha = new()
     {
-        Value = "reCaptcha",
-        Default = "reCaptcha",
-        Items = [
+        Value = "None",
+        Default = "None",
+        Items = 
+        [
             new() { Text = "None", Value = "None" },
             new() { Text = "reCaptcha", Value = "reCaptcha" },
+        ]
+    };
+
+    private Parameter<string> dotnetVersion = new()
+    {
+        Value = "net9.0",
+        Default = "net9.0",
+        Items = 
+        [
+            new() { Text = ".NET 8", Value = "net8.0" },
+            new() { Text = ".NET 9", Value = "net9.0" },
         ]
     };
 
@@ -50,7 +39,8 @@ public partial class Templates05CreateProjectPage
     {
         Value = "GitHub",
         Default = "GitHub",
-        Items = [
+        Items = 
+        [
             new() { Text = "None", Value = "None" },
             new() { Text = "GitHub", Value = "GitHub" },
             new() { Text = "Azure", Value = "Azure" },
@@ -61,7 +51,8 @@ public partial class Templates05CreateProjectPage
     {
         Value = "None",
         Default = "None",
-        Items = [
+        Items = 
+        [
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
             new() { Text = "Todo", Value = "Todo" },
@@ -72,7 +63,8 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Sqlite",
         Default = "Sqlite",
-        Items = [
+        Items = 
+        [
             new() { Text = "Sqlite", Value = "Sqlite" },
             new() { Text = "SqlServer", Value = "SqlServer" },
             new() { Text = "PostgreSQL", Value = "PostgreSQL" },
@@ -86,7 +78,8 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Local",
         Default = "Local",
-        Items = [
+        Items = 
+        [
             new() { Text = "Local", Value = "Local" },
             new() { Text = "AzureBlobStorage", Value = "AzureBlobStorage" },
             new() { Text = "Other", Value = "Other" },
@@ -97,7 +90,8 @@ public partial class Templates05CreateProjectPage
     {
         Value = "Integrated",
         Default = "Integrated",
-        Items = [
+        Items = 
+        [
             new() { Text = "Integrated", Value = "Integrated" },
             new() { Text = "Standalone", Value = "Standalone" },
         ]
@@ -110,6 +104,11 @@ public partial class Templates05CreateProjectPage
         if (captcha.IsModified)
         {
             finalCommand.Append(GetCaptchaCommand());
+        }
+
+        if (dotnetVersion.IsModified)
+        {
+            finalCommand.Append(GetDotNetVersionCommand());
         }
 
         if (pipeline.IsModified)
@@ -152,12 +151,17 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetOfflineDbCommand());
         }
 
+        if (notification.IsModified)
+        {
+            finalCommand.Append(GetNotificationCommand());
+        }
+
         if (appInsight.IsModified)
         {
             finalCommand.Append(GetAppInsightsCommand());
         }
 
-        if (signalr.IsModified)
+        if (signalR.IsModified)
         {
             finalCommand.Append(GetSignalRCommand());
         }
@@ -173,6 +177,11 @@ public partial class Templates05CreateProjectPage
     private string GetCaptchaCommand()
     {
         return $"--captcha {captcha.Value} ";
+    }
+
+    private string GetDotNetVersionCommand()
+    {
+        return $"--framework {dotnetVersion.Value} ";
     }
 
     private string GetPipelineCommand()
@@ -215,6 +224,11 @@ public partial class Templates05CreateProjectPage
         return $"--offlineDb {offlineDb.Value.ToString().ToLowerInvariant()} ";
     }
 
+    private string GetNotificationCommand()
+    {
+        return $"--notification {notification.Value.ToString().ToLowerInvariant()} ";
+    }
+
     private string GetAppInsightsCommand()
     {
         return $"--appInsights {appInsight.Value.ToString().ToLowerInvariant()} ";
@@ -222,7 +236,7 @@ public partial class Templates05CreateProjectPage
 
     private string GetSignalRCommand()
     {
-        return $"--signalr {signalr.Value.ToString().ToLowerInvariant()} ";
+        return $"--signalR {signalR.Value.ToString().ToLowerInvariant()} ";
     }
 
     private class Parameter<T>

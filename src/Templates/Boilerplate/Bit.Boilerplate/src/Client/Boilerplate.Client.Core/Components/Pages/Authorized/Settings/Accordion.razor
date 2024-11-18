@@ -1,0 +1,24 @@
+@inherits AppComponentBase
+
+<BitAccordion NoBorder
+              OnClick="HandleOnClick"
+              IsExpanded="Value == Name"
+              Classes="@(new() { Header=BitCss.Class.Color.Background.Secondary })">
+
+    <HeaderTemplate>
+        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+            <BitStack Gap="0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">@Title</BitText>
+                <BitText Color="BitColor.SecondaryForeground" Typography="BitTypography.Body2">
+                    @Subtitle
+                </BitText>
+            </BitStack>
+
+            <BitIcon IconName="@(Value == Name ? BitIconName.ChevronUp : BitIconName.ChevronDown)" Color="BitColor.Tertiary" />
+        </BitStack>
+    </HeaderTemplate>
+
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+</BitAccordion>

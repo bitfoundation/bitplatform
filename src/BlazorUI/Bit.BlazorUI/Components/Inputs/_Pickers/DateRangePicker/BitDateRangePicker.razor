@@ -170,7 +170,7 @@
                                         class="bit-dtrp-nbt @Classes?.NextMonthNavButton">
                                     <i aria-hidden="true"
                                        style="@Styles?.NextMonthNavIcon"
-                                       class="bit-icon bit-icon--Down @Classes?.NextMonthNavIcon" />
+                                       class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextMonthNavIcon" />
                                 </button>
                                 @if (ShowCloseButton && Standalone is false)
                                 {
@@ -344,7 +344,7 @@
                                             class="bit-dtrp-nbt @Classes?.NextYearNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearNavIcon"
-                                           class="bit-icon bit-icon--Down @Classes?.NextYearNavIcon" />
+                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearNavIcon" />
                                     </button>
                                     @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
                                     {
@@ -462,7 +462,7 @@
                                             class="bit-dtrp-nbt @Classes?.NextYearRangeNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearRangeNavIcon"
-                                           class="bit-icon bit-icon--Down @Classes?.NextYearRangeNavIcon" />
+                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearRangeNavIcon" />
                                     </button>
                                 </div>
                             </div>
@@ -547,7 +547,7 @@
                                             class="bit-dtrp-tbt @Classes?.StartTimeIncreaseHourButton"
                                             disabled="@startTimeIncreaseHourDisabled"
                                             aria-disabled="@startTimeIncreaseHourDisabled">
-                                        <i style="@Styles?.StartTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimeIncreaseHourIcon" aria-hidden="true" />
+                                        <i style="@Styles?.StartTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.StartTimeIncreaseHourIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_startTimeHourInputRef"
                                            @bind="@_startTimeHourView"
@@ -583,7 +583,7 @@
                                             class="bit-dtrp-tbt @Classes?.StartTimeIncreaseMinuteButton"
                                             disabled="@startTimeIncreaseMinuteDisabled"
                                             aria-disabled="@startTimeIncreaseMinuteDisabled">
-                                        <i style="@Styles?.StartTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.StartTimeIncreaseMinuteIcon" aria-hidden="true" />
+                                        <i style="@Styles?.StartTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.StartTimeIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_startTimeMinuteInputRef"
                                            @bind="@_startTimeMinuteView"
@@ -648,7 +648,7 @@
                                             class="bit-dtrp-tbt @Classes?.EndTimeIncreaseHourButton"
                                             disabled="@endTimeIncreaseHourDisabled"
                                             aria-disabled="@endTimeIncreaseHourDisabled">
-                                        <i style="@Styles?.EndTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimeIncreaseHourIcon" aria-hidden="true" />
+                                        <i style="@Styles?.EndTimeIncreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.EndTimeIncreaseHourIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_endTimeHourInputRef"
                                            @bind="@_endTimeHourView"
@@ -684,7 +684,7 @@
                                             class="bit-dtrp-tbt @Classes?.EndTimeIncreaseMinuteButton"
                                             disabled="@endTimeIncreaseMinuteDisabled"
                                             aria-disabled="@endTimeIncreaseMinuteDisabled">
-                                        <i style="@Styles?.EndTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.EndTimeIncreaseMinuteIcon" aria-hidden="true" />
+                                        <i style="@Styles?.EndTimeIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.EndTimeIncreaseMinuteIcon" aria-hidden="true" />
                                     </button>
                                     <input @ref="_endTimeMinuteInputRef"
                                            @bind="@_endTimeMinuteView"

@@ -27,6 +27,9 @@ public static partial class ClaimsPrincipalExtensions
         return claimsPrincipal.GetEmail() ?? claimsPrincipal.GetUserName();
     }
 
+    /// <summary>
+    /// Returns the user session id stored in sessions column of user table after user sign in.
+    /// </summary>
     public static Guid? GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
         return claimsPrincipal.IsAuthenticated()

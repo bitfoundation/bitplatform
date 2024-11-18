@@ -28,9 +28,9 @@ public partial class BitMessage : BitComponentBase
     [Parameter] public BitMessageClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.
+    /// Custom Fabric icon name for the collapse icon in Truncate mode.
     /// </summary>
-    [Parameter] public string CollapseIcon { get; set; } = "DoubleChevronUp";
+    [Parameter] public string? CollapseIcon { get; set; }
 
     /// <summary>
     /// The general color of the message.
@@ -46,7 +46,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.
     /// </summary>
-    [Parameter] public string DismissIcon { get; set; } = "Cancel";
+    [Parameter] public string? DismissIcon { get; set; }
 
     /// <summary>
     /// Determines the elevation of the message, a scale from 1 to 24.
@@ -55,9 +55,9 @@ public partial class BitMessage : BitComponentBase
     public int? Elevation { get; set; }
 
     /// <summary>
-    /// Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.
+    /// Custom Fabric icon name for the expand icon in Truncate mode.
     /// </summary>
-    [Parameter] public string ExpandIcon { get; set; } = "DoubleChevronDown";
+    [Parameter] public string? ExpandIcon { get; set; }
 
     /// <summary>
     /// Prevents rendering the icon of the message.

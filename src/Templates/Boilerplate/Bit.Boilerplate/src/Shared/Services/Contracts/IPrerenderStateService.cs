@@ -3,17 +3,24 @@
 namespace Boilerplate.Shared.Services.Contracts;
 
 /// <summary>
-/// This service simplifies the process of persisting application state in Pre-Rendering mode
-/// (explained in this documentation: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state).
-/// If your project does not require prerendering to be enabled, you can completely remove this service and its usages from your project.
+/// The Client.Core codebase is designed to support various Blazor hosting models, including Hybrid and WebAssembly, 
+/// which may or may not enable pre-rendering. To ensure consistent behavior across all scenarios, 
+/// the `IPrerenderStateService` interface is introduced. This service provides the `GetValue` method for data retrieval, 
+/// such as during the `OnInitAsync` method in components like UserMenu.
+///
+/// The `WebPrerenderStateService` implementation of `IPrerenderStateService` facilitates pre-rendering by using 
+/// PersistentComponentState to persist data across renders, simplifies the process of managing application state in pre-rendering scenarios outlined in 
+/// the documentation: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state.
+/// 
+/// For cases where pre-rendering is unnecessary, such as in Blazor Hybrid, a `NoopPrerenderStateService` is provided. This implementation simply executes the provided 
+/// function and returns its result without persisting any state.
+///
+/// If pre-rendering is not required for your project, this service and its related dependencies can be safely removed.
 /// </summary>
 public interface IPrerenderStateService : IAsyncDisposable
 {
     /// <summary>
-    /// Instead of using ApplicationState.TryTakeFromJson, ApplicationState.RegisterOnPersisting, 
-    /// and ApplicationState.PersistAsJson (explained here: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state),
-    /// one can easily use the following method (<see cref="GetValue"/>) in the OnInit lifecycle method of the Blazor components or pages
-    /// to retrieve everything that requires an async-await (like current user's info).
+    /// <inheritdoc cref="IPrerenderStateService"/>
     /// </summary>
     Task<T?> GetValue<T>(Func<Task<T?>> factory,
         [CallerLineNumber] int lineNumber = 0,

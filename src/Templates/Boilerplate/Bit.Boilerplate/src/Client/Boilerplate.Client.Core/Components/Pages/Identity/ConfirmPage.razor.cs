@@ -13,10 +13,6 @@ public partial class ConfirmPage
     private readonly ConfirmEmailRequestDto emailModel = new();
     private readonly ConfirmPhoneRequestDto phoneModel = new();
 
-    private string? errorMessage;
-    private ElementReference messageRef = default!;
-
-
     [AutoInject] private IIdentityController identityController = default!;
 
 
@@ -81,7 +77,7 @@ public partial class ConfirmPage
         {
             var signInResponse =  await identityController.ConfirmEmail(new() { Email = emailModel.Email, Token = emailModel.Token }, CurrentCancellationToken);
 
-            await AuthenticationManager.OnNewToken(signInResponse, true);
+            await AuthenticationManager.StoreTokens(signInResponse, true);
 
             NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 
@@ -107,7 +103,7 @@ public partial class ConfirmPage
         {
             var signInResponse =  await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
 
-            await AuthenticationManager.OnNewToken(signInResponse, true);
+            await AuthenticationManager.StoreTokens(signInResponse, true);
 
             NavigationManager.NavigateTo(Urls.HomePage, replace: true);
 
@@ -128,7 +124,6 @@ public partial class ConfirmPage
     private async Task WrapRequest(Func<Task> action)
     {
         isWaiting = true;
-        errorMessage = null;
 
         try
         {
@@ -136,8 +131,7 @@ public partial class ConfirmPage
         }
         catch (KnownException e)
         {
-            errorMessage = e.Message;
-            await messageRef.ScrollIntoView();
+            SnackBarService.Error(e.Message);
         }
         finally
         {

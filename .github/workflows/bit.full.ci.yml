@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
 
 env:
-  ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  ConnectionStrings__SqlServerConnectionString: 'Data Source=localhost; Initial Catalog=BoilerplateTestDb;Application Name=Boilerplate;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rdP@ssw0rd;'
+  SIMPLE_TEST_FILTER: "ClassName!~PageTests"
+  BLAZOR_SERVER_TEST_FILTER: "ClassName~PageTests.BlazorServer"
+  BLAZOR_WASM_TEST_FILTER: "ClassName~PageTests.BlazorWebAssembly"
+  MULTILINGUAL_DISABLED_TEST_FILTER: "ClassName!~LocalizationTests|TestCategory=MultilingualDisabled"
 
 jobs:
 
   build:
     name: build and test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
 
@@ -22,16 +26,27 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+
     - uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 22
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      continue-on-error: true
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
 
     - name: Prepare environment
       run: |
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
-        dotnet workload install maui-tizen maui-android wasm-tools
+        dotnet workload install maui-tizen maui-android wasm-tools wasm-tools-net8
         ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
     - name: Install sql server
@@ -41,80 +56,142 @@ jobs:
         sa-password: P@ssw0rdP@ssw0rd
         show-log: true
 
-    - name: Test Sqlite database option
+    - name: Simple tests (no --advancedTests)
+      id: simple-test
       run: |
-        dotnet new bit-bp --name TestSqlite --database Sqlite
+        dotnet new bit-bp --name SimpleTest --database Sqlite --framework net8.0
+        cd SimpleTest/src/Server/SimpleTest.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet build
+        pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.SIMPLE_TEST_FILTER }}"
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.simple-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./SimpleTest/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Test Sqlite database option
+      id: sqlite-test
+      run: |
+        dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests --framework net9.0
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
         dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet build
+        pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlite-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlite/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test SqlServer database option
+      id: sqlserver-test
       run: |
-        dotnet new bit-bp --name TestSqlServer --database SqlServer
+        dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
         dotnet ef migrations add InitialMigration
-        dotnet ef database update 
+        dotnet ef database update
         cd ../../Tests
-        dotnet test
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.sqlserver-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Test Multilingual disabled option
+      id: multilingual-disabled-test
+      run: |
+        dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests --framework net8.0
+        cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
+        dotnet tool restore
+        dotnet ef migrations add InitialMigration
+        dotnet ef database update
+        cd ../../Tests
+        dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+
+    - name: Upload Tests Artifact
+      uses: actions/upload-artifact@v4.4.1
+      if: ${{ !env.ACT && failure() && steps.multilingual-disabled-test.conclusion == 'failure' }}
+      with:
+        name: tests-artifact
+        path: ./MultilingualDisabled/src/Tests/TestResults
+        retention-days: 14
 
     - name: Test PostgreSQL, Cosmos, MySql, Other database options
       run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL
+        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestCosmos --database Cosmos
+        dotnet new bit-bp --name TestCosmos --database Cosmos --framework net9.0
         cd TestCosmos/src/Server/TestCosmos.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql
+        dotnet new bit-bp --name TestMySql --database MySql --framework net8.0
         cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other
+        dotnet new bit-bp --name TestOther --database Other --framework net9.0
         cd TestOther/src/Server/TestOther.Server.Api/
         dotnet build
 
     - name: Test file storage options
       run: |
-        dotnet new bit-bp --name TestLocal --filesStorage Local
+        dotnet new bit-bp --name TestLocal --filesStorage Local --framework net8.0
         cd TestLocal/src/Server/TestLocal.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage
+        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage --framework net9.0
         cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
         dotnet build
 
     - name: Test backend setup options
       run: |
-        dotnet new bit-bp --name TestStandalone --api Standalone
+        dotnet new bit-bp --name TestStandalone --api Standalone --framework net8.0
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
         dotnet build
         cd ../
         cd TestStandalone.Server.Web/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestIntegrated --api Integrated
+        dotnet new bit-bp --name TestIntegrated --api Integrated --framework net9.0
         cd TestIntegrated/src/Server/TestIntegrated.Server.Web/
         dotnet build
 
     - name: Test sample configuration 1
       run: |
-        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb true --windows true --appInsights true --appCenter true --signalr true
+        dotnet new bit-bp --name TestProject --database Cosmos --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --appCenter --signalR --notification --framework net9.0
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
       run: |
-        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalr false
+        dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --appCenter false --signalR false --notification false --framework net8.0
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development
 
     - name: Run BeforeBuildTasks
       continue-on-error: true # Error MSB4057, not all csproj files have BeforeBuildTasks target.
-      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 
+      run: dotnet build src/Bit-CI-release.sln -t:BeforeBuildTasks -m:1 -f net9.0
 
     - name: Release build bit blazor ui + butil + bswup + besql + bup + code analyzers + source generators
       run: dotnet build src/Bit-CI-release.sln -c Release
@@ -136,8 +213,8 @@ jobs:
         cd src/Templates/BlazorEmpty && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.BlazorEmpty.0.0.0.nupkg && cd ../../../
-        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive
-        dotnet new bit-empty --name SsrPerPage --interactivity None
+        dotnet new bit-empty --name AutoGlobal --interactivity Auto --all-interactive --framework net9.0
+        dotnet new bit-empty --name SsrPerPage --interactivity None --framework net8.0
 
     - name: Build blazor empty based projects
       run: |

@@ -147,6 +147,9 @@
     <data name="ConflictException" xml:space="preserve">
     <value>درخواست به دلیل مغایرت داشتن پردازش نشد</value>
   </data>
+    <data name="NotAuthorizedPageTitle" xml:space="preserve">
+    <value>403</value>
+  </data>
     <data name="ForbiddenException" xml:space="preserve">
     <value>دسترسی به منابع درخواست شده ممنوع است</value>
   </data>
@@ -182,7 +185,7 @@
     <value>همه</value>
   </data>
     <data name="Alphabetical" xml:space="preserve">
-    <value>الفبایی</value>
+    <value>ا-ی</value>
   </data>
     <data name="Completed" xml:space="preserve">
     <value>تمام شده</value>
@@ -190,8 +193,32 @@
     <data name="Date" xml:space="preserve">
     <value>تاریخ</value>
   </data>
+    <data name="SettingsPageTitle" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+    <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+    <data name="Dark" xml:space="preserve">
+    <value>تیره</value>
+  </data>
+    <data name="Light" xml:space="preserve">
+    <value>روشن</value>
+  </data>
+    <data name="Language" xml:space="preserve">
+    <value>زبان</value>
+  </data>
+    <data name="SelectLanguage" xml:space="preserve">
+    <value>انتخاب زبان</value>
+  </data>
+    <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
+  </data>
+    <data name="ProfileSubtitle" xml:space="preserve">
+    <value>داده های پروفایل خود را تغییر دهید</value>
   </data>
     <data name="EditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل</value>
@@ -208,6 +235,15 @@
     <data name="SuccessfulSendChangePhoneNumberTokenMessage" xml:space="preserve">
     <value>توکن تغییر شماره تلفن برای شما ارسال شد</value>
   </data>
+    <data name="SuccessfulSendTokenMessage" xml:space="preserve">
+    <value>توکن برای شما ارسال شد</value>
+  </data>
+    <data name="SessionsTitle" xml:space="preserve">
+    <value>جلسه ها</value>
+  </data>
+    <data name="SessionsSubtitle" xml:space="preserve">
+    <value>جلسه های فعال شما در دستگاههای مختلف</value>
+  </data>
     <data name="UserSessionsTitle" xml:space="preserve">
     <value>سشن‌های شما</value>
   </data>
@@ -223,26 +259,36 @@
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>حذف سشن با موفقیت انجام شد</value>
   </data>
+    <data name="NotFoundPageTitle" xml:space="preserve">
+    <value>404</value>
+  </data>
     <data name="NotFoundText" xml:space="preserve">
     <value>چیزی پیدا نشد.</value>
   </data>
-    <data name="UnknwonDevice" xml:space="preserve">
+    <data name="UnknownDevice" xml:space="preserve">
     <value>دستگاه نامشخص</value>
+  </data>
+    <data name="UpdateWebViewThroughGooglePlay" xml:space="preserve">
+    <value>لطفا وب ویو را از طریق Google Play آپدیت کنید</value>
+  </data>
+    <data name="Ok" xml:space="preserve">
+    <value>باشه</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
   </data>
-    <!--#endif-->
-    <!--#if (signalr == true) -->
-    <data name="TwoFactorTokenPushText" xml:space="preserve">
-    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>نام کامل</value>
   </data>
-    <data name="TermsTitle" xml:space="preserve">
+    <data name="TermsPageTitle" xml:space="preserve">
+    <value>شرایط</value>
+  </data>
+    <data name="Terms" xml:space="preserve">
     <value>شرایط</value>
   </data>
     <data name="ProfileUpdatedSuccessfullyMessage" xml:space="preserve">
@@ -265,6 +311,9 @@
   </data>
     <data name="NewEmailPlaceholder" xml:space="preserve">
     <value>ایمیل جدید را وارد کنید</value>
+  </data>
+    <data name="Phone" xml:space="preserve">
+    <value>تلفن</value>
   </data>
     <data name="PhoneNumber" xml:space="preserve">
     <value>شماره تلفن</value>
@@ -301,9 +350,6 @@
   </data>
     <data name="Error" xml:space="preserve">
     <value>خطا</value>
-  </data>
-    <data name="TermsAccepted" xml:space="preserve">
-    <value>آیا شرایط را قبول دارید؟</value>
   </data>
     <data name="YouHaveToAcceptTerms" xml:space="preserve">
     <value>شما باید با شرایط ما موافقت کنید.</value>
@@ -359,8 +405,14 @@
     <data name="Refresh" xml:space="preserve">
     <value>تلاش مجدد</value>
   </data>
+    <data name="Recover" xml:space="preserve">
+    <value>بازیابی</value>
+  </data>
     <data name="SomethingWentWrong" xml:space="preserve">
     <value>اوه! به نظر مشکلی پیش اومده...</value>
+  </data>
+    <data name="BackToHome" xml:space="preserve">
+    <value>بازگشت به خانه</value>
   </data>
     <data name="UserLockedOut" xml:space="preserve">
     <value>کاربر قفل شده است. دوباره امتحان کنید در {0}</value>
@@ -403,6 +455,9 @@
   </data>
     <data name="ConfirmEmailSubtitle" xml:space="preserve">
     <value>ما یک توکن به آدرس ایمیل شما ارسال کرده ایم.</value>
+  </data>
+    <data name="ConfirmPageTitle" xml:space="preserve">
+    <value>تایید</value>
   </data>
     <data name="ConfirmTitle" xml:space="preserve">
     <value>تایید حساب کاربری</value>
@@ -449,7 +504,7 @@
     <data name="PhoneTokenConfirmButtonText" xml:space="preserve">
     <value>تایید شماره تلفن</value>
   </data>
-    <data name="NotReceivedConfirmationPhoneMessage" xml:space="preserve">
+    <data name="NotReceivedPhoneMessage" xml:space="preserve">
     <value>آیا توکن تلفن خود را دریافت نکرده اید؟</value>
   </data>
     <data name="ResendConfirmationPhoneTokenMessage" xml:space="preserve">
@@ -463,6 +518,12 @@
   </data>
     <data name="PhoneConfirmationSuccessMessage" xml:space="preserve">
     <value>اکنون می توانید با حساب کاربری خود وارد شوید.</value>
+  </data>
+    <data name="AccountTitle" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+    <data name="AccountSubtitle" xml:space="preserve">
+    <value>ایمیل یا شماره تلفن حساب کاربری خود را تغییر دهید</value>
   </data>
     <data name="DeleteAccount" xml:space="preserve">
     <value>حذف حساب</value>
@@ -488,7 +549,7 @@
     <data name="FileUploadFailed" xml:space="preserve">
     <value>هنگام بارگذاری فایل خطایی رخ داد</value>
   </data>
-    <data name="ForgotPassword" xml:space="preserve">
+    <data name="ForgotPasswordPageTitle" xml:space="preserve">
     <value>فراموشی رمزعبور</value>
   </data>
     <data name="ForgotPasswordTitle" xml:space="preserve">
@@ -515,8 +576,29 @@
     <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
   </data>
-    <data name="HomeTitle" xml:space="preserve">
-    <value>صفحه اصلی Boilerplate</value>
+    <data name="HomePageTitle" xml:space="preserve">
+    <value>خانه</value>
+  </data>
+    <data name="HomePanelTitle" xml:space="preserve">
+    <value>تمام اپهای خود را بسازید</value>
+  </data>
+    <data name="HomePanelSubtitle" xml:space="preserve">
+    <value>با استفاده چیزی که میدانید و دوستش دارید</value>
+  </data>
+    <data name="WatchVideo" xml:space="preserve">
+    <value>مشاهده ویدئو</value>
+  </data>
+    <data name="LearnMore" xml:space="preserve">
+    <value>بیشتر بدانید</value>
+  </data>
+    <data name="BitPlatformMessage" xml:space="preserve">
+    <value>ابزارهایی برای دولوپرهای دات نت در پلتفرهای گوناگون</value>
+  </data>
+    <data name="BitBlazorUIMessage" xml:space="preserve">
+    <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
+  </data>
+    <data name="BitProjectTemplateMessage" xml:space="preserve">
+    <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
   </data>
     <data name="InvalidConfirmationTokenMessage" xml:space="preserve">
     <value>به نظر می رسد لینک تایید نامعتبر است یا منقضی شده است.</value>
@@ -530,8 +612,8 @@
     <data name="No" xml:space="preserve">
     <value>نه</value>
   </data>
-    <data name="NotReceivedConfirmationEmailMessage" xml:space="preserve">
-    <value>ایمیل تایید را دریافت نکرده اید؟</value>
+    <data name="NotReceivedEmailMessage" xml:space="preserve">
+    <value>ایمیلی دریافت نکرده اید؟</value>
   </data>
     <data name="Or" xml:space="preserve">
     <value>یا</value>
@@ -544,6 +626,12 @@
   </data>
     <data name="ResendEmailTokenButtonText" xml:space="preserve">
     <value>ارسال دوباره ایمیل</value>
+  </data>
+    <data name="ResetPasswordPageTitle" xml:space="preserve">
+    <value>ریست رمز عبور</value>
+  </data>
+    <data name="ResetPassword" xml:space="preserve">
+    <value>ریست رمز عبور</value>
   </data>
     <data name="ResetPasswordTitle" xml:space="preserve">
     <value>ریست رمز عبور</value>
@@ -569,8 +657,17 @@
     <data name="Save" xml:space="preserve">
     <value>ذخیره</value>
   </data>
-    <data name="SignInTitle" xml:space="preserve">
+    <data name="SignInPageTitle" xml:space="preserve">
     <value>ورود به برنامه</value>
+  </data>
+    <data name="SignInPanelTitle" xml:space="preserve">
+    <value>خوش آمدید</value>
+  </data>
+    <data name="SignInPanelSubtitle" xml:space="preserve">
+    <value>وارد حساب کاربری خود شوید با</value>
+  </data>
+    <data name="Continue" xml:space="preserve">
+    <value>ادامه</value>
   </data>
     <data name="SocialSignedInTitle" xml:space="preserve">
     <value>ورود سوشال</value>
@@ -608,8 +705,14 @@
     <data name="SignUp" xml:space="preserve">
     <value>ثبت نام</value>
   </data>
-    <data name="SingUpTitle" xml:space="preserve">
+    <data name="SignUpPageTitle" xml:space="preserve">
     <value>ثبت نام</value>
+  </data>
+    <data name="SignUpPanelTitle" xml:space="preserve">
+    <value>امروز آغاز کنید</value>
+  </data>
+    <data name="SignUpPanelSubtitle" xml:space="preserve">
+    <value>یک اکانت جدید بسازید با</value>
   </data>
     <data name="Submit" xml:space="preserve">
     <value>ارسال</value>
@@ -625,9 +728,6 @@
   </data>
     <data name="SelectBirthDate" xml:space="preserve">
     <value>تاریخ تولد خود را انتخاب کنید</value>
-  </data>
-    <data name="ResetPassword" xml:space="preserve">
-    <value>ریست رمز عبور</value>
   </data>
     <data name="Action" xml:space="preserve">
     <value>عملیات</value>
@@ -674,11 +774,41 @@
     <data name="RememberMe" xml:space="preserve">
     <value>من رو به خاطر بسپار؟</value>
   </data>
+    <data name="Copy" xml:space="preserve">
+    <value>کپی</value>
+  </data>
+    <data name="Copied" xml:space="preserve">
+    <value>کپی شد</value>
+  </data>
+    <data name="TfaTitle" xml:space="preserve">
+    <value>احراز هویت دو عاملی</value>
+  </data>
+    <data name="TfaSubtitle" xml:space="preserve">
+    <value>احراز هویت چند عاملی حساب کاربری خود را مدیریت کنید</value>
+  </data>
     <data name="TwoFactorCode" xml:space="preserve">
-    <value>کد احراز هویت</value>
+    <value>کد 2-عاملی</value>
   </data>
     <data name="TwoFactorRecoveryCode" xml:space="preserve">
     <value>کد بازیابی</value>
+  </data>
+    <data name="TfaPanelTitle" xml:space="preserve">
+    <value>احراز هویت 2-عاملی</value>
+  </data>
+    <data name="TfaPanelSubtitle" xml:space="preserve">
+    <value>یک کد جدید از برنامه احراز هویت خود دریافت کنید یا از کد بازیابی خود استفاده کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayTitle" xml:space="preserve">
+    <value>راه دیگری را آزمایش کنید</value>
+  </data>
+    <data name="TfaPanelAnotherWaySubtitle" xml:space="preserve">
+    <value>شما میتوانید یک کد جدید در ایمیل یا تلفن خود دریافت کنید.</value>
+  </data>
+    <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
+    <value>Get code</value>
+  </data>
+    <data name="TwoFactorAuthTitle" xml:space="preserve">
+    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
@@ -729,7 +859,7 @@
     <value>تأیید</value>
   </data>
     <data name="TfaRecoveryCodesHeader" xml:space="preserve">
-    <value>کدهای بازیابی</value>
+    <value>بازیابی</value>
   </data>
     <data name="TfaRecoveryCodesZeroLeftTitle" xml:space="preserve">
     <value>هیچ کد بازیابی ندارید.</value>
@@ -765,7 +895,7 @@
     <value>کدهای بازیابی:</value>
   </data>
     <data name="TfaAuthAppHeader" xml:space="preserve">
-    <value>برنامه Authenticator</value>
+    <value>برنامه</value>
   </data>
     <data name="TfaAuthAppWarningTitle" xml:space="preserve">
     <value>اگر کلید احراز هویت خود را بازنشانی کنید، برنامه احراز هویت شما تا زمانی که آن را دوباره پیکربندی نکنید، کار نخواهد کرد.</value>
@@ -777,7 +907,7 @@
     <value>کلید احراز هویت را بازنشانی کنید</value>
   </data>
     <data name="TfaDisable2faHeader" xml:space="preserve">
-    <value>2FA را غیرفعال کنید</value>
+    <value>غیرفعالسازی</value>
   </data>
     <data name="TfaDisable2faWarningTitle" xml:space="preserve">
     <value>این عمل فقط 2FA را غیرفعال می کند.</value>
@@ -815,6 +945,21 @@
     <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
   </data>
+    <data name="OtpPanelTitle" xml:space="preserve">
+    <value>{0} خود را بررسی کنید</value>
+  </data>
+    <data name="OtpPanelSubtitle" xml:space="preserve">
+    <value>{0} خود را با ورود کد ارسال شده به {1} تایید کنید</value>
+  </data>
+    <data name="Code" xml:space="preserve">
+    <value>کد</value>
+  </data>
+    <data name="OtpResendMessage" xml:space="preserve">
+    <value>آیا کدی دریافت نکردید?</value>
+  </data>
+    <data name="Resend" xml:space="preserve">
+    <value>ارسال دوباره</value>
+  </data>
     <data name="OtpPlaceholder" xml:space="preserve">
     <value>رمز یکبار مصرف را وارد کنید</value>
   </data>
@@ -839,13 +984,13 @@
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
     <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
   </data>
-    <data name="TwoFactorTokenSmsText" xml:space="preserve">
+    <data name="TwoFactorTokenShortText" xml:space="preserve">
     <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
-    <data name="OtpSmsText" xml:space="preserve">
+    <data name="OtpShortText" xml:space="preserve">
     <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
   </data>
-    <data name="ResetPasswordTokenSmsText" xml:space="preserve">
+    <data name="ResetPasswordTokenShortText" xml:space="preserve">
     <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
@@ -869,6 +1014,9 @@
     <data name="AboutTitle" xml:space="preserve">
     <value>درباره</value>
   </data>
+    <data name="NothingFound" xml:space="preserve">
+    <value>چیزی پیدا نشد!</value>
+  </data>
     <!--#if (sample == "Todo") -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>افزودن یک کار</value>
@@ -877,18 +1025,24 @@
     <value>هنوز کاری ثبت نشده</value>
   </data>
     <data name="TodoSearchPlaceholder" xml:space="preserve">
-    <value>جستجو در کارها...</value>
+    <value>جستجوی کارها...</value>
   </data>
     <data name="ToDoItemCouldNotBeFound" xml:space="preserve">
     <value>کار پیدا نشد</value>
   </data>
-    <data name="TodoTitle" xml:space="preserve">
+    <data name="TodoPageTitle" xml:space="preserve">
+    <value>کار</value>
+  </data>
+    <data name="Todo" xml:space="preserve">
     <value>کار</value>
   </data>
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>حذف کار</value>
   </data>
     <!--#elif (sample == "Admin") -->
+    <data name="AdminPanel" xml:space="preserve">
+    <value>پنل ادمین</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>تعداد محصولات</value>
   </data>
@@ -922,8 +1076,8 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>نام محصول را وارد کنید</value>
   </data>
-    <data name="Last30DaysCategoryCount" xml:space="preserve">
-    <value>تعداد دسته های ۳۰ روز گذشته</value>
+    <data name="CategoriesWithProductCount" xml:space="preserve">
+    <value>تعداد دسته های دارای محصول</value>
   </data>
     <data name="ProductSales" xml:space="preserve">
     <value>فروش محصولات</value>
@@ -988,8 +1142,14 @@
     <data name="EditProduct" xml:space="preserve">
     <value>ویرایش محصول</value>
   </data>
+    <data name="DashboardPageTitle" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
     <data name="Dashboard" xml:space="preserve">
     <value>داشبورد</value>
+  </data>
+    <data name="DashboardSubtitle" xml:space="preserve">
+    <value>داده های تحلیلی شما</value>
   </data>
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">

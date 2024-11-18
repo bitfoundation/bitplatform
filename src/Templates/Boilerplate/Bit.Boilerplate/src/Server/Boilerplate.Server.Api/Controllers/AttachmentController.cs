@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
-using Boilerplate.Server.Api.Models.Identity;
+﻿using Boilerplate.Server.Api.Models.Identity;
 using FluentStorage.Blobs;
 using ImageMagick;
 

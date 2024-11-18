@@ -27,15 +27,15 @@ public class BitFileUploadTests : BunitTestContext
        DataRow(true),
        DataRow(false)
     ]
-    public void BitFileUploadMultipleAttributeTest(bool isMultiSelect)
+    public void BitFileUploadMultipleAttributeTest(bool isMultiple)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
-            parameters.Add(p => p.IsMultiSelect, isMultiSelect);
+            parameters.Add(p => p.Multiple, isMultiple);
         });
 
         var bitFileUpload = com.Find(".bit-upl-fi");
-        Assert.AreEqual(isMultiSelect, bitFileUpload.HasAttribute("multiple"));
+        Assert.AreEqual(isMultiple, bitFileUpload.HasAttribute("multiple"));
     }
 
     [TestMethod]

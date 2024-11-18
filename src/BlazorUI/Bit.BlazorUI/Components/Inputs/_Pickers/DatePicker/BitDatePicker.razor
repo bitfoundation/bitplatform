@@ -173,7 +173,7 @@
                                         aria-disabled="@nextDisabled">
                                     <i aria-hidden="true"
                                        style="@Styles?.NextMonthNavIcon"
-                                       class="bit-icon bit-icon--Down @Classes?.NextMonthNavIcon" />
+                                       class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextMonthNavIcon" />
                                 </button>
                                 @if (ShowCloseButton && Standalone is false)
                                 {
@@ -346,7 +346,7 @@
                                             class="bit-dtp-nbt @Classes?.NextYearNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearNavIcon"
-                                           class="bit-icon bit-icon--Down @Classes?.NextYearNavIcon" />
+                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearNavIcon" />
                                     </button>
                                     @if (_showTimePickerAsOverlayInternal && ShowTimePicker)
                                     {
@@ -464,7 +464,7 @@
                                             class="bit-dtp-nbt @Classes?.NextYearRangeNavButton">
                                         <i aria-hidden="true"
                                            style="@Styles?.NextYearRangeNavIcon"
-                                           class="bit-icon bit-icon--Down @Classes?.NextYearRangeNavIcon" />
+                                           class="bit-icon bit-icon--Up bit-ico-r180 @Classes?.NextYearRangeNavIcon" />
                                     </button>
                                 </div>
                             </div>
@@ -553,7 +553,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerIncreaseHourButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerIncreaseHourButton">
-                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerIncreaseHourIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.TimePickerIncreaseHourIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeHourRef"
                                        @bind="@_hourView"
@@ -589,7 +589,7 @@
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.TimePickerIncreaseMinuteButton"
                                         class="bit-dtp-tbt @Classes?.TimePickerIncreaseMinuteButton">
-                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronUpSmall @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
+                                    <i style="@Styles?.TimePickerIncreaseMinuteIcon" class="bit-icon bit-icon--ChevronDownSmall bit-ico-r180 @Classes?.TimePickerIncreaseMinuteIcon" aria-hidden="true" />
                                 </button>
                                 <input @ref="_inputTimeMinuteRef"
                                        @bind="@_minuteView"

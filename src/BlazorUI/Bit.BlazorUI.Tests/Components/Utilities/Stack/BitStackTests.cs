@@ -261,6 +261,37 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFillContent(bool fillContent)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FillContent, fillContent);
+        });
+
+        var cssClass = fillContent ? " bit-stc-fcn" : null;
+
+        component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""{STYLE}"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFillContentChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FillContent, true);
+        });
+
+        component.MarkupMatches(@$"<div class=""bit-stc bit-stc-fcn"" style=""{STYLE}"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
         DataRow("10px"),
         DataRow("1rem"),
         DataRow(null)
@@ -390,6 +421,52 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod,
+        DataRow(null),
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch)
+    ]
+    public void BitStackShouldRespectAlignment(BitAlignment? alignment)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        if (alignment.HasValue)
+        {
+            var jc = _AlignmentMap[alignment.Value];
+            var ai = _AlignmentMap[alignment.Value];
+
+            component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:{ai};justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+        }
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectAlignmentChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.SpaceBetween);
+        });
+
+        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:space-between;justify-content:space-between"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
         DataRow(BitAlignment.Start),
         DataRow(BitAlignment.End),
         DataRow(BitAlignment.Center),
@@ -467,7 +544,7 @@ public class BitStackTests : BunitTestContext
         DataRow(BitAlignment.Baseline),
         DataRow(BitAlignment.Stretch)
     ]
-    public void BitStackShouldRespectBitAlignment(BitAlignment verticalAlign)
+    public void BitStackShouldRespectVerticalAlign(BitAlignment verticalAlign)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -595,20 +672,20 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectFull(bool full)
+    public void BitStackShouldRespectAutoSize(bool autoSize)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
-            parameters.Add(p => p.AutoSize, full);
+            parameters.Add(p => p.AutoSize, autoSize);
         });
 
-        var style = full ? "width:auto;height:auto;" : null;
+        var style = autoSize ? "width:auto;height:auto;" : null;
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
-    public void BitStackShouldRespectFullChangingAfterRender()
+    public void BitStackShouldRespectAutoSizeChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
 
@@ -626,7 +703,7 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectFullWidth(bool autoWidth)
+    public void BitStackShouldRespectAutoWidth(bool autoWidth)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -639,7 +716,7 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitStackShouldRespectFullWidthChangingAfterRender()
+    public void BitStackShouldRespectAutoWidthChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
 
@@ -657,7 +734,7 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectFullHeight(bool autoHeight)
+    public void BitStackShouldRespectAutoHeight(bool autoHeight)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -670,7 +747,7 @@ public class BitStackTests : BunitTestContext
     }
 
     [DataTestMethod]
-    public void BitStackShouldRespectFullHeightChangingAfterRender()
+    public void BitStackShouldRespectAutoHeightChangingAfterRender()
     {
         var component = RenderComponent<BitStack>();
 
@@ -694,7 +771,7 @@ public class BitStackTests : BunitTestContext
         DataRow(false, false, true),
         DataRow(false, false, false)
     ]
-    public void BitStackShouldRespectFullAndFullWidthAndFullHeight(bool autoSize, bool autoWidth, bool autoHeight)
+    public void BitStackShouldRespectAutoSizeAndAutoWidthAndAutoHeight(bool autoSize, bool autoWidth, bool autoHeight)
     {
         var component = RenderComponent<BitStack>(parameters =>
         {
@@ -716,5 +793,98 @@ public class BitStackTests : BunitTestContext
         }
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFitHeight(bool fitHeight)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FitHeight, fitHeight);
+        });
+
+        var style = fitHeight ? "height:fit-content;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFitHeightChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FitHeight, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}height:fit-content;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFitWidth(bool fitWidth)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FitWidth, fitWidth);
+        });
+
+        var style = fitWidth ? "width:fit-content;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFitWidthChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FitWidth, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}width:fit-content;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectFitSize(bool fitSize)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FitSize, fitSize);
+        });
+
+        var style = fitSize ? "width:fit-content;height:fit-content;" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [DataTestMethod]
+    public void BitStackShouldRespectFitSizeChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.SetParametersAndRender(parameters =>
+        {
+            parameters.Add(p => p.FitSize, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}width:fit-content;height:fit-content;"" class=""bit-stc"" id:ignore></div>");
     }
 }

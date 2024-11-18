@@ -1,0 +1,15 @@
+@inherits AppComponentBase
+
+<BitSpacer @onclick="HandleOnClick" Style="height:100%" />
+
+@code {
+    private int clickCount = 0;
+    private async Task HandleOnClick()
+    {
+        if (++clickCount == 7)
+        {
+            clickCount = 0;
+            PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
+        }
+    }
+}

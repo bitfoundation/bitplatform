@@ -1,5 +1,5 @@
 var BitBesql = BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '8.11.1-pre-04';
+BitBesql.version = window['bit-besql version'] = '9.0.0-pre-01';
 
 async function synchronizeDbWithCache(file) {
 
@@ -25,14 +25,14 @@ async function synchronizeDbWithCache(file) {
 
             if (res) {
                 console.log(`Restoring ${res.byteLength} bytes.`);
-                window.Module.FS.writeFile(backupPath, new Uint8Array(res));
+                window.Blazor.runtime.Module.FS.writeFile(backupPath, new Uint8Array(res));
                 return 0;
             }
         }
         return -1;
     }
 
-    if (window.Module.FS.analyzePath(backupPath).exists) {
+    if (window.Blazor.runtime.Module.FS.analyzePath(backupPath).exists) {
 
         const waitFlush = new Promise((done, _) => {
             setTimeout(done, 10);
@@ -40,7 +40,7 @@ async function synchronizeDbWithCache(file) {
 
         await waitFlush;
 
-        const data = window.Module.FS.readFile(backupPath);
+        const data = window.Blazor.runtime.Module.FS.readFile(backupPath);
 
         const blob = new Blob([data], {
             type: 'application/octet-stream',
@@ -58,7 +58,7 @@ async function synchronizeDbWithCache(file) {
 
         await db.cache.put(cachePath, response);
 
-        window.Module.FS.unlink(backupPath);
+        window.Blazor.runtime.Module.FS.unlink(backupPath);
 
         return 1;
     }

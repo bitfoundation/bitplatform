@@ -35,22 +35,27 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Filters files by extension.
     /// </summary>
-    [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = new List<string> { "*" };
+    [Parameter] public IReadOnlyCollection<string> AllowedExtensions { get; set; } = ["*"];
 
     /// <summary>
     /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
     /// </summary>
-    [Parameter] public bool AutoChunkSizeEnabled { get; set; }
+    [Parameter] public bool AutoChunkSize { get; set; }
+
+    /// <summary>
+    /// Automatically resets the file-upload before starting to browse for files.
+    /// </summary>
+    [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
     /// Automatically starts the upload file(s) process immediately after selecting the file(s).
     /// </summary>
-    [Parameter] public bool AutoUploadEnabled { get; set; }
+    [Parameter] public bool AutoUpload { get; set; }
 
     /// <summary>
-    /// Enables or disables the chunked upload feature.
+    /// Enables the chunked upload.
     /// </summary>
-    [Parameter] public bool ChunkedUploadEnabled { get; set; } = true;
+    [Parameter] public bool ChunkedUpload { get; set; }
 
     /// <summary>
     /// The size of each chunk of file upload in bytes.
@@ -70,9 +75,9 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     [Parameter] public string FailedRemoveMessage { get; set; } = "File remove failed";
 
     /// <summary>
-    /// Enables multi-file select and upload.
+    /// Enables multi-file selection.
     /// </summary>
-    [Parameter] public bool IsMultiSelect { get; set; }
+    [Parameter] public bool Multiple { get; set; }
 
     /// <summary>
     /// The text of select file button.
@@ -192,12 +197,12 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
     /// <summary>
-    /// General upload status.
+    /// The general status of the upload.
     /// </summary>
     public BitFileUploadStatus UploadStatus { get; private set; }
 
     /// <summary>
-    /// File input id.
+    /// The id of the file input element.
     /// </summary>
     public string? InputId { get; private set; }
 
@@ -207,7 +212,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     public bool IsRemoving { get; private set; }
 
     /// <summary>
-    /// Starts Uploading the file(s).
+    /// Starts uploading the file(s).
     /// </summary>
     public async Task Upload(BitFileInfo? fileInfo = null, string? uploadUrl = null)
     {
@@ -234,12 +239,11 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Pause upload.
+    /// Pauses the upload.
     /// </summary>
     /// <param name="fileInfo">
-    /// null => all files | else => specific file
+    /// null (default) => all files | else => specific file
     /// </param>
-    /// <returns></returns>
     public void PauseUpload(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
@@ -258,12 +262,11 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Cancel upload.
+    /// Cancels the upload.
     /// </summary>
     /// <param name="fileInfo">
-    /// null => all files | else => specific file
+    /// null (default) => all files | else => specific file
     /// </param>
-    /// <returns></returns>
     public void CancelUpload(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
@@ -287,7 +290,6 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     /// <param name="fileInfo">
     /// null => all files | else => specific file
     /// </param>
-    /// <returns></returns>
     public async Task RemoveFile(BitFileInfo? fileInfo = null)
     {
         if (Files is null) return;
@@ -311,14 +313,27 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Open a file selection dialog
+    /// Opens a file selection dialog.
     /// </summary>
-    /// <returns></returns>
     public async Task Browse()
     {
         if (IsEnabled is false) return;
 
+        if (AutoReset)
+        {
+            await Reset();
+        }
+
         await _js.BitFileUploadBrowse(_inputRef);
+    }
+
+    /// <summary>
+    /// Resets the file-upload.
+    /// </summary>
+    public async Task Reset()
+    {
+        Files = [];
+        await _js.BitFileUploadReset(UniqueId, _inputRef);
     }
 
 
@@ -327,7 +342,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     /// Receive upload progress notification from underlying javascript.
     /// </summary>
     [JSInvokable("HandleChunkUploadProgress")]
-    public async Task HandleChunkUploadProgress(int index, long loaded)
+    public async Task __HandleChunkUploadProgress(int index, long loaded)
     {
         if (Files is null) return;
 
@@ -343,14 +358,14 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     /// Receive upload finished notification from underlying JavaScript.
     /// </summary>
     [JSInvokable("HandleChunkUpload")]
-    public async Task HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
+    public async Task __HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
     {
         if (Files is null || UploadStatus == BitFileUploadStatus.Paused) return;
 
         var file = Files[fileIndex];
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
-        file.TotalUploadedSize += ChunkedUploadEnabled ? _internalChunkSize : file.Size;
+        file.TotalUploadedSize += ChunkedUpload ? _internalChunkSize : file.Size;
         file.LastChunkUploadedSize = 0;
 
         UpdateChunkSize(fileIndex);
@@ -417,13 +432,13 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     {
         var url = AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
-        Files = await _js.BitFileUploadReset(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
+        Files = await _js.BitFileUploadSetup(UniqueId, _dotnetObj, _inputRef, url, UploadRequestHttpHeaders);
 
         if (Files is null) return;
 
         await OnChange.InvokeAsync([.. Files]);
 
-        if (AutoUploadEnabled)
+        if (AutoUpload)
         {
             await Upload();
         }
@@ -462,7 +477,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 
         long to;
         long from = 0;
-        if (ChunkedUploadEnabled)
+        if (ChunkedUpload)
         {
             from = fileInfo.TotalUploadedSize;
             if (fileInfo.Size > _internalChunkSize)
@@ -502,7 +517,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 
     private void UpdateChunkSize(int fileIndex)
     {
-        if (Files is null || AutoChunkSizeEnabled is false) return;
+        if (Files is null || AutoChunkSize is false) return;
 
         var dtNow = DateTime.UtcNow;
         var duration = (dtNow - Files[fileIndex].StartTimeUpload.GetValueOrDefault(dtNow)).TotalMilliseconds;
@@ -667,7 +682,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 
     private void OnSetChunkSize()
     {
-        _internalChunkSize = ChunkSize.HasValue is false || AutoChunkSizeEnabled
+        _internalChunkSize = ChunkSize.HasValue is false || AutoChunkSize
                                 ? MIN_CHUNK_SIZE
                                 : ChunkSize.Value;
     }
@@ -692,6 +707,12 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
                 await _dropZoneRef.DisposeAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException ex)
+            {
+                // it seems it's safe to just ignore this exception here.
+                // otherwise it will blow up the MAUI app in a page refresh for example.
+                Console.WriteLine(ex.Message);
+            }
         }
 
         if (_dotnetObj is not null)
@@ -700,7 +721,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 
             try
             {
-                await _js.BitFileUploadDispose(UniqueId);
+                await _js.BitFileUploadClear(UniqueId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

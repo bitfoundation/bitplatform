@@ -6,7 +6,7 @@ public partial class _BitBreadcrumbCustomDemo
     private uint OverflowIndex = 2;
     private uint MaxDisplayedItems = 3;
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItems =
+    private readonly List<PageInfo> CustomBreadcrumbItems =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb" },
         new() { Name = "Custom 2", Address = "/components/breadcrumb" },
@@ -14,7 +14,7 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItemsDisabled =
+    private readonly List<PageInfo> CustomBreadcrumbItemsDisabled =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", IsEnabled = false },
         new() { Name = "Custom 2", Address = "/components/breadcrumb", IsEnabled = false },
@@ -22,23 +22,31 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItemsWithClass =
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithIcon =
     [
-        new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlClass = "custom-item" },
-        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlClass = "custom-item", IsCurrent = true }
+        new() { Name = "Custom 1", Address = "/components/breadcrumb", Icon = BitIconName.AdminELogoInverse32 },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", Icon = BitIconName.AppsContent },
+        new() { Name = "Custom 3", Address = "/components/breadcrumb", Icon = BitIconName.AzureIcon },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", Icon = BitIconName.ClassNotebookLogo16, IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItemsWithStyle =
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
+    [
+        new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlClass = "custom-item-2" },
+        new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlClass = "custom-item-1" },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlClass = "custom-item-2", IsCurrent = true }
+    ];
+
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithStyle =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb", HtmlStyle = "color: aqua; text-shadow: aqua 0 0 1rem;" },
         new() { Name = "Custom 3", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;" },
-        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlStyle = "color: dodgerblue; text-shadow: dodgerblue 0 0 1rem;", IsCurrent = true }
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", HtmlStyle = "color: aqua; text-shadow: aqua 0 0 1rem;", IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItemsWithControlled =
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithControlled =
     [
         new() { Name = "Custom 1" },
         new() { Name = "Custom 2" },
@@ -48,7 +56,7 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 6", IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> CustomBreadcrumbItemsWithCustomized =
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithCustomized =
     [
         new() { Name = "Custom 1" },
         new() { Name = "Custom 2" },
@@ -56,7 +64,7 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", IsCurrent = true }
     ];
 
-    private readonly List<PageInfoModel> RtlCustomBreadcrumbItems =
+    private readonly List<PageInfo> RtlCustomBreadcrumbItems =
     [
         new() { Name = "پوشه اول" },
         new() { Name = "پوشه دوم", IsCurrent = true },
@@ -66,22 +74,25 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "پوشه ششم" },
     ];
 
-    private BitBreadcrumbNameSelectors<PageInfoModel> nameSelectors = new()
+    private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     {
         Text = { Selector = c => c.Name },
         Href = { Selector = c => c.Address },
         IsSelected = { Selector = c => c.IsCurrent },
         Class = { Selector = c => c.HtmlClass },
-        Style = { Selector = c => c.HtmlStyle }
+        Style = { Selector = c => c.HtmlStyle },
+        IconName = { Selector = c => c.Icon },
+        Template = { Name = nameof(PageInfo.Fragment) },
+        OverflowTemplate = { Name = nameof(PageInfo.OverflowFragment) }
     };
 
-    private void HandleOnCustomClick(PageInfoModel model)
+    private void HandleOnCustomClick(PageInfo model)
     {
         CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
         model.IsCurrent = true;
     }
 
-    private void HandleOnCustomizedCustomClick(PageInfoModel model)
+    private void HandleOnCustomizedCustomClick(PageInfo model)
     {
         CustomBreadcrumbItemsWithCustomized.First(i => i.IsCurrent).IsCurrent = false;
         model.IsCurrent = true;
@@ -90,7 +101,7 @@ public partial class _BitBreadcrumbCustomDemo
     private void AddCustomItem()
     {
         ItemsCount++;
-        CustomBreadcrumbItemsWithCustomized.Add(new PageInfoModel()
+        CustomBreadcrumbItemsWithCustomized.Add(new PageInfo()
         {
             Name = $"Custom {ItemsCount}"
         });

@@ -13,13 +13,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "AutoFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Determines if the text field is auto focused on first render.",
-        },
-        new()
-        {
             Name = "CanRevealPassword",
             Type = "bool",
             DefaultValue = "false",
@@ -30,9 +23,9 @@ public partial class BitTextFieldDemo
             Name = "Classes",
             Type = "BitTextFieldClassStyles?",
             DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the BitTextField.",
             LinkType = LinkType.Link,
             Href = "#textfield-class-styles",
-            Description = "Custom CSS classes for different parts of the BitTextField.",
         },
         new()
         {
@@ -57,34 +50,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "HasBorder",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether or not the text field is borderless.",
-        },
-        new()
-        {
-            Name = "IsMultiline",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the text field is a Multiline text field.",
-        },
-        new()
-        {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the text field is underlined.",
-        },
-        new()
-        {
-            Name = "IsResizable",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "For multiline text fields, whether or not the field is resizable.",
-        },
-        new()
-        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
@@ -92,10 +57,12 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "IsTrimmed",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
+            Name = "InputMode",
+            Type = "BitInputMode?",
+            DefaultValue = "null",
+            Description = "Sets the inputmode html attribute of the input element.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode",
         },
         new()
         {
@@ -117,6 +84,26 @@ public partial class BitTextFieldDemo
             Type = "int",
             DefaultValue = "-1",
             Description = "Specifies the maximum number of characters allowed in the input.",
+        },
+        new()
+        {
+            Name = "Multiline",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the text field is a Multiline text field.",
+        },
+        new()
+        {
+            Name = "NoBorder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the text field is borderless.",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback for when the input clicked.",
         },
         new()
         {
@@ -150,12 +137,6 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "Callback for when the input clicked.",
-        },
-        new()
-        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -177,10 +158,10 @@ public partial class BitTextFieldDemo
         },
         new()
         {
-            Name = "Rows",
-            Type = "int",
-            DefaultValue = "3",
-            Description = "For multiline text, Number of rows.",
+            Name = "Resizable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "For multiline text fields, whether or not the field is resizable.",
         },
         new()
         {
@@ -188,6 +169,13 @@ public partial class BitTextFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Suffix displayed after the text field contents. This is not included in the value. \r\n Ensure a descriptive label is present to assist screen readers, as the value does not include the suffix.",
+        },
+        new()
+        {
+            Name = "Rows",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "For multiline text, Number of rows.",
         },
         new()
         {
@@ -214,13 +202,27 @@ public partial class BitTextFieldDemo
         },
         new()
         {
+            Name = "Trim",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Specifies whether to remove any leading or trailing whitespace from the value.",
+        },
+        new()
+        {
             Name = "Type",
             Type = "BitInputType",
             DefaultValue = "BitInputType.Text",
             Description = "Input type.",
             LinkType = LinkType.Link,
             Href = "#input-type-enum"
-        }
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the text field is underlined.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -394,6 +396,63 @@ public partial class BitTextFieldDemo
                     Value="5",
                 }
             ]
+        },
+        new()
+        {
+            Id = "input-mode",
+            Name = "BitInputMode",
+            Description = "This allows a browser to display an appropriate virtual keyboard.",
+            Items =
+            [
+                new()
+                {
+                    Name= "None",
+                    Description="The input expects text characters.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Standard input keyboard for the user's current locale.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Decimal",
+                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Numeric",
+                    Description="Numeric input keyboard, but only requires the digits 0–9.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Tel",
+                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Search",
+                    Description="A virtual keyboard optimized for search input.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Email",
+                    Description="A virtual keyboard optimized for entering email addresses.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Url",
+                    Description="A keypad optimized for entering URLs.",
+                    Value="7",
+                }
+            ]
         }
     ];
 
@@ -461,20 +520,20 @@ public partial class BitTextFieldDemo
 <BitTextField Label=""Auto focused"" AutoFocus />";
 
     private readonly string example2RazorCode = @"
-<BitTextField Label=""Basic"" IsUnderlined />
-<BitTextField Label=""Placeholder"" IsUnderlined Placeholder=""Enter a text..."" />
-<BitTextField Label=""Disabled"" IsUnderlined IsEnabled=""false"" />
-<BitTextField Label=""Required"" IsUnderlined Required />";
+<BitTextField Label=""Basic"" Underlined />
+<BitTextField Label=""Placeholder"" Underlined Placeholder=""Enter a text..."" />
+<BitTextField Label=""Disabled"" Underlined IsEnabled=""false"" />
+<BitTextField Label=""Required"" Underlined Required />";
 
     private readonly string example3RazorCode = @"
-<BitTextField Label=""Basic"" Placeholder=""Enter a text..."" HasBorder=""false"" />
-<BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" HasBorder=""false"" IsEnabled=""false"" />
-<BitTextField Label=""Required"" Placeholder=""Enter a text..."" HasBorder=""false"" Required />";
+<BitTextField Label=""Basic"" Placeholder=""Enter a text..."" NoBorder />
+<BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" NoBorder IsEnabled=""false"" />
+<BitTextField Label=""Required"" Placeholder=""Enter a text..."" NoBorder Required />";
 
     private readonly string example4RazorCode = @"
-<BitTextField Label=""Resizable"" IsMultiline />
-<BitTextField Label=""Unresizable (Fixed)"" IsMultiline IsResizable=""false"" />
-<BitTextField Label=""Rows = 10"" IsMultiline Rows=""10"" />";
+<BitTextField Label=""Multiline"" Multiline />
+<BitTextField Label=""Resizable"" Multiline Resizable />
+<BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />";
 
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />
@@ -544,7 +603,7 @@ private string? debounceValue;
 private string? throttleValue;";
 
     private readonly string example10RazorCode = @"
-<BitTextField Label=""Trimmed"" IsTrimmed @bind-Value=""trimmedValue"" />
+<BitTextField Label=""Trimmed"" Trim @bind-Value=""trimmedValue"" />
 <pre>[@trimmedValue]</pre>
 
 <BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
@@ -722,8 +781,8 @@ private void HandleInvalidSubmit() { }";
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />
 
-<BitTextField IsUnderlined 
-              Dir=""BitDir.Rtl""
+<BitTextField Underlined 
               Label=""تقویم"" 
+              Dir=""BitDir.Rtl""
               IconName=""@BitIconName.Calendar"" />";
 }

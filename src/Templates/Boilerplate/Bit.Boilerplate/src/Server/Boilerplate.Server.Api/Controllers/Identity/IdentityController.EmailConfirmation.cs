@@ -55,7 +55,7 @@ public partial class IdentityController
         if (updateResult.Succeeded is false)
             throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp,{user.OtpRequestedOn?.ToUniversalTime()}"));
+        var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}"));
 
         await SignIn(new() { Email = request.Email, Otp = token }, cancellationToken);
     }

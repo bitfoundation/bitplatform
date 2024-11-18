@@ -2,22 +2,19 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Windows.Services;
-using Boilerplate.Client.Windows.Configuration;
 
 namespace Boilerplate.Client.Windows;
 
 public static partial class Program
 {
-    public static void AddClientWindowsProjectServices(this IServiceCollection services)
+    public static void AddClientWindowsProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Services being registered here can get injected in windows project only.
+        services.AddClientCoreProjectServices(configuration);
 
-        ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddClientConfigurations();
-        var configuration = configurationBuilder.Build();
-        services.TryAddTransient<IConfiguration>(sp => configuration);
-
-        services.TryAddSingleton(sp =>
+        services.AddScoped<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
+        services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
             HttpClient httpClient = new(handler)
@@ -27,38 +24,30 @@ public static partial class Program
             return httpClient;
         });
 
-        services.AddWpfBlazorWebView();
-        if (AppEnvironment.IsDev())
-        {
-            services.AddBlazorWebViewDeveloperTools();
-        }
-
-        services.TryAddTransient<IStorageService, WindowsStorageService>();
-        services.TryAddTransient<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
-        services.TryAddTransient<IExceptionHandler, WindowsExceptionHandler>();
+        services.AddSingleton(sp => configuration);
+        services.AddSingleton<IStorageService, WindowsStorageService>();
         services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
+        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
+        services.AddSingleton(ITelemetryContext.Current!);
+        //#if (notification == true)
+        services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
+        //#endif
+
+        services.AddWpfBlazorWebView();
+        services.AddBlazorWebViewDeveloperTools();
 
         services.AddLogging(loggingBuilder =>
         {
+            loggingBuilder.ConfigureLoggers();
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-            loggingBuilder.AddEventLog();
             loggingBuilder.AddEventSourceLogger();
-            if (AppEnvironment.IsDev())
-            {
-                loggingBuilder.AddDebug();
-            }
-            loggingBuilder.AddConsole();
-            //#if (appCenter == true)
-            if (Microsoft.AppCenter.AppCenter.Configured)
-            {
-                loggingBuilder.AddAppCenter(options => { });
-            }
-            //#endif
+
+            loggingBuilder.AddEventLog();
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {
-                config.TelemetryInitializers.Add(new WindowsTelemetryInitializer());
-                var connectionString = configuration["ApplicationInsights:ConnectionString"];
+                config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
+                var connectionString = configuration.Get<ClientWindowsSettings>()!.ApplicationInsights?.ConnectionString;
                 if (string.IsNullOrEmpty(connectionString) is false)
                 {
                     config.ConnectionString = connectionString;
@@ -70,10 +59,9 @@ public static partial class Program
             //#endif
         });
 
-        services.AddOptions<WindowsUpdateSettings>()
-            .Bind(configuration.GetRequiredSection(nameof(WindowsUpdateSettings)))
+        services.AddOptions<ClientWindowsSettings>()
+            .Bind(configuration)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddClientCoreProjectServices();
     }
 }

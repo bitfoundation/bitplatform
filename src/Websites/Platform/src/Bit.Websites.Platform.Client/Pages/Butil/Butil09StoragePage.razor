@@ -1,0 +1,191 @@
+﻿@page "/butil/storage"
+@inherits AppComponentBase
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.SessionStorage sessionStorage
+
+<PageOutlet Url="butil/storage"
+            Title="Storage - Butil"
+            Description="Storage class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Storage</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the Storage class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To use the browser storage features you need to inject the Bit.Butil.Storage class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.LocalStorage localStorage
+@@inject Bit.Butil.SessionStorage sessionStorage
+
+@@code {
+    await localStorage.SetItem("my-key", "my-value");
+    await sessionStorage.SetItem("my-key2", "my-value2");
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>GetLength</b>: <br />
+            Returns an integer representing the number of data items stored in the Storage object
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/length" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getLengthExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@GetLength">GetLength</BitButton>
+                        <br />
+                        <br />
+                        <div>LocalStorage length: @localLength</div>
+                        <br />
+                        <div>SessionStorage length: @sessionLength</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetKey</b>: <br />
+            When passed a number n, this method will return the name of the nth key in the storage
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/key" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getKeyExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitSpinButton @bind-Value="keyIndex" Mode="BitSpinButtonMode.Inline" Min="0" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitButton OnClick="@GetKey">GetKey</BitButton>
+                        <br />
+                        <br />
+                        <div>LocalStorage key: @localKey</div>
+                        <br />
+                        <div>SessionStorage key: @sessionKey</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetItem</b>: <br />
+            When passed a key name, will return that key's value
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/getItem" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getItemExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="currentLocalItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="currentSessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <br />
+                        <BitButton OnClick="@GetItem">GetItem</BitButton>
+                        <br />
+                        <br />
+                        <div>LocalStorage item: @currentLocalItem</div>
+                        <br />
+                        <div>SessionStorage item: @currentSessionItem</div>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>SetItem</b>: <br />
+            When passed a key name and value, will add that key to the storage, or update that key's value if it already exists
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @setItemExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="newLocalItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="newSessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <br />
+                        <BitButton OnClick="@SetItem">SetItem</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>RemoveItem</b>: <br />
+            When passed a key name, will remove that key from the storage
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/removeItem" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @removeItemExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitTextField @bind-Value="localItemKey" Label="LocalStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <BitTextField @bind-Value="sessionItemKey" Label="SessionStorage key" Style="max-width: 18.75rem;" />
+                        <br />
+                        <br />
+                        <BitButton OnClick="@RemoveItem">RemoveItem</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Clear</b>: <br />
+            When invoked, will empty all keys out of the storage
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Storage/clear" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @clearItemExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="@Clear">Clear</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Notification" PrevUrl="/butil/notification" Next="Cookie" NextUrl="/butil/cookie" />

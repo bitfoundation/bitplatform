@@ -3,10 +3,10 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net8.0'">
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -26,7 +26,7 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net8.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net9.0'">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildCss"/>
     </Target>
@@ -36,7 +36,7 @@
     </Target>
 
     <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.icons.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=." StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

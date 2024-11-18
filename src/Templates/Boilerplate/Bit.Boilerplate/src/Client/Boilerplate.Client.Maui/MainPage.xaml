@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
-    xmlns:core="clr-namespace:Boilerplate.Client.Core;assembly=Boilerplate.Client.Core"
+    xmlns:core="clr-namespace:Boilerplate.Client.Core.Components;assembly=Boilerplate.Client.Core"
     xmlns:themeColors="clr-namespace:Boilerplate.Client.Core.Styles;assembly=Boilerplate.Client.Core"
     BackgroundColor="{AppThemeBinding Light={x:Static themeColors:ThemeColors.PrimaryLightBgColor},
                                       Dark={x:Static themeColors:ThemeColors.PrimaryDarkBgColor}}">

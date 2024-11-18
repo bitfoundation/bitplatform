@@ -2,6 +2,10 @@
 
 public partial class BitLink : BitComponentBase
 {
+    private string? _rel;
+
+
+
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
@@ -14,7 +18,9 @@ public partial class BitLink : BitComponentBase
     /// <summary>
     /// URL the link points to.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// Styles the link to have no underline at any state.
@@ -26,6 +32,13 @@ public partial class BitLink : BitComponentBase
     /// Callback for when the link clicked.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public BitLinkRel? Rel { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link.
@@ -61,5 +74,16 @@ public partial class BitLink : BitComponentBase
         if (IsEnabled is false) return;
 
         await _js.ScrollElementIntoView(Href![1..]);
+    }
+
+    private void OnSetHrefAndRel()
+    {
+        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        _rel = BitLinkRelUtils.GetRels(Rel.Value);
     }
 }

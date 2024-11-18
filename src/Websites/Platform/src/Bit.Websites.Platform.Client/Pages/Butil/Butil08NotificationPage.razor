@@ -1,0 +1,126 @@
+﻿@page "/butil/notification"
+@inherits AppComponentBase
+@inject Bit.Butil.Notification notification
+
+<PageOutlet Url="butil/notification"
+            Title="Notification - Butil"
+            Description="Notification class of the bit Butil" />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Gutter>Notification</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        How to use the Notification class of the bit Butil?
+    </BitText>
+    <br />
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Usage</BitText>
+        <div class="section-card-txt">
+            To use the browser notification features you need to inject the Bit.Butil.Notification class and use it like this:
+<CodeBox HideCopyButton>
+@@inject Bit.Butil.Notification notification
+
+@@code {
+    await notification.IsSupported();
+    await notification.Show("title", new() { Body = "this is body." });
+}</CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <BitText Typography="BitTypography.H5" Gutter>Methods</BitText>
+        <div class="section-card-txt">
+            <br />
+            <b>IsSupported</b>: <br />
+            Checks if the runtime (browser or web-view) is supporting the Web Notification API.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @isSupportedExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitText>Notification supported? [@isNotificationSupported]</BitText>
+                        <br />
+                        <BitButton OnClick="CheckIsSupported">IsSupported</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>GetPermission</b>: <br />
+            Gets the current permission of the Notification API.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @getPermissionExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitText>Current permission state: [@permissionResult]</BitText>
+                        <br />
+                        <BitButton OnClick="GetCurrentPermissionState">GetPermission</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>RequestPermission</b>: <br />
+            Requests permission from the user for the current origin to display notifications.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static" target="_blank">MDN</a>).
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @requestPermissionExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitText>Request permission result: [@requestPermissionResult]</BitText>
+                        <br />
+                        <BitButton OnClick="RequestPermission">RequestPermission</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+
+            <b>Show</b>: <br />
+            Requests a native notification to show to the user.
+            (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification" target="_blank">MDN</a>).
+            <br/>
+            <b>Note</b>: The Notification api has some limitation on Android and for it to work properly a
+            Service Worker needs to be registered first.
+            <br /><br />
+            <BitAccordion Title="Sample">
+                <BitPivot>
+                    <BitPivotItem HeaderText="Code">
+                        <CodeBox>
+                            @showExampleCode
+                        </CodeBox>
+                    </BitPivotItem>
+                    <BitPivotItem HeaderText="Result">
+                        <br />
+                        <BitButton OnClick="ShowNotification">Show</BitButton>
+                        <br />
+                    </BitPivotItem>
+                </BitPivot>
+            </BitAccordion>
+            <br /><br />
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="Console" PrevUrl="/butil/console" Next="Storage" NextUrl="/butil/storage" />

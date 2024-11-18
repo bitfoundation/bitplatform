@@ -20,9 +20,9 @@ public partial class CultureInfoManager
     [
         ("English US", CreateCultureInfo("en-US")),
         ("English UK", CreateCultureInfo("en-GB")),
-        ("Française", CreateCultureInfo("fr-FR")),
+        ("Dutch", CreateCultureInfo("nl-NL")),
         ("فارسی", CreateCultureInfo("fa-IR"))
-        // Adding new cultures requires changing HomePage.razor's routes and MainActivity's DataPathPrefixes.
+        // Adding new cultures requires changing MainActivity's DataPathPrefixes.
     ];
 
     public static CultureInfo CreateCultureInfo(string name)
@@ -39,7 +39,7 @@ public partial class CultureInfoManager
 
     public void SetCurrentCulture(string cultureName)
     {
-        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Culture.Name == cultureName).Culture ?? DefaultCulture;
+        var cultureInfo = SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;

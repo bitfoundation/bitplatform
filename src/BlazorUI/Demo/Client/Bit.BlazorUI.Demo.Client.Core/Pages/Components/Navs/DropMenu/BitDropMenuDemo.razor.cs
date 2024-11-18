@@ -57,6 +57,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "OnDismiss",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback is called when the drop menu is dismissed."
+        },
+        new()
+        {
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",

@@ -12,7 +12,7 @@ public partial class MessageBox
 
     protected override Task OnInitAsync()
     {
-        unsubscribe = PubSubService.Subscribe(PubSubMessages.SHOW_MESSAGE, async args =>
+        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_MESSAGE, async args =>
         {
             var data = (MessageBoxData)args!;
 

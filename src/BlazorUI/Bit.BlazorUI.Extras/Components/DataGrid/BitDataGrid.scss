@@ -32,12 +32,12 @@
 
     .col-sort-asc .sort-indicator:before,
     .col-sort-desc .sort-indicator:before {
-        //background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M 2 3.25 L 12 20.75 L 22 3.25 L 12 10 z" /></svg>');
-        content: "\E96E";
+        content: "\E96F";
         font-style: normal;
         font-weight: normal;
         display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI' !important;
+        transform: rotate(90deg);
+        font-family: 'Fabric MDL2 bit BlazorUI Extras';
     }
 
     .col-sort-desc .sort-indicator {
@@ -53,7 +53,7 @@
         font-style: normal;
         font-weight: normal;
         display: inline-block;
-        font-family: 'Fabric MDL2 bit BlazorUI' !important;
+        font-family: 'Fabric MDL2 bit BlazorUI Extras';
     }
 
     .col-options {
@@ -116,10 +116,12 @@
         flex-grow: 1;
         display: flex; /* So that we can make col-title-text expand as much as possible, and still hide overflow with ellipsis */
         min-width: 0px;
+        font-size: 1rem;
     }
     /* If the column is sortable, its title is rendered as a button element for accessibility and to support navigation by tab */
     button.col-title {
         border: none;
+        color: inherit;
         cursor: pointer;
         background: none;
         position: relative;

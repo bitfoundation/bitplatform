@@ -49,7 +49,7 @@
 }
 
 .bit-nav-exp {
-    transform: rotate(-180deg);
+    transform: rotate(-90deg);
 }
 
 .bit-nav-gcb {
@@ -85,6 +85,7 @@
 }
 
 .bit-nav-ict {
+    all: unset;
     width: 100%;
     display: flex;
     cursor: pointer;
@@ -176,7 +177,7 @@
     }
 
     .bit-nav-sel {
-        border: none;
+        //border: none;
     }
 }
 
