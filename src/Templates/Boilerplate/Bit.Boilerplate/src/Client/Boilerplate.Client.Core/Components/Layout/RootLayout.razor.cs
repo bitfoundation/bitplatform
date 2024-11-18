@@ -62,7 +62,7 @@ public partial class RootLayout : IDisposable
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
-                telemetryContext.IsOnline = isOnline;
+                telemetryContext.IsOnline = isOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));
 

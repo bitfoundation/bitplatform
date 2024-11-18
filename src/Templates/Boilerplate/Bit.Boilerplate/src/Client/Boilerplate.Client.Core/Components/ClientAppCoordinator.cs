@@ -153,7 +153,7 @@ public partial class ClientAppCoordinator : AppComponentBase
                     if (string.IsNullOrEmpty(access_token) is false &&
                         AuthTokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
                     {
-                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
+                        return await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
                     }
 
                     return access_token;
@@ -189,20 +189,17 @@ public partial class ClientAppCoordinator : AppComponentBase
             PubSubService.Publish(message);
         });
 
+        hubConnection.Closed += HubConnectionDisconnected;
+        hubConnection.Reconnected += HubConnectionConnected;
+        hubConnection.Reconnecting += HubConnectionDisconnected;
+
         try
         {
             await hubConnection.StartAsync(CurrentCancellationToken);
-            await HubConnectionConnected(null);
         }
         catch (Exception exp)
         {
             await HubConnectionDisconnected(exp);
-        }
-        finally
-        {
-            hubConnection.Closed += HubConnectionDisconnected;
-            hubConnection.Reconnected += HubConnectionConnected;
-            hubConnection.Reconnecting += HubConnectionDisconnected;
         }
     }
 
@@ -226,7 +223,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
+                await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
             }
         }
     }
