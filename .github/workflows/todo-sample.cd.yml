@@ -145,7 +145,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --framework net8.0
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --framework net8.0
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -156,10 +156,6 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
-      shell: pwsh
 
     - name: Delete App Splash Screen
       run: rm TodoSample/src/Client/TodoSample.Client.Windows/Resources/SplashScreen.png
