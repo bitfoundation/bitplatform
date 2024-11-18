@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitButton : BitComponentBase
 {
+    private string? _rel;
     private int? _tabIndex;
     private BitButtonType _buttonType;
 
@@ -65,9 +66,17 @@ public partial class BitButton : BitComponentBase
     public bool FixedColor { get; set; }
 
     /// <summary>
+    /// Expand the button width to 100% of the available width.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// The name of the icon to render inside the button.
@@ -116,6 +125,13 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReversedIcon { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public BitLinkRel? Rel { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
@@ -211,6 +227,8 @@ public partial class BitButton : BitComponentBase
         ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
 
         ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -254,5 +272,16 @@ public partial class BitButton : BitComponentBase
         await OnClick.InvokeAsync(e);
 
         await AssignIsLoading(false);
+    }
+
+    private void OnSetHrefAndRel()
+    {
+        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        _rel = BitLinkRelUtils.GetRels(Rel.Value);
     }
 }

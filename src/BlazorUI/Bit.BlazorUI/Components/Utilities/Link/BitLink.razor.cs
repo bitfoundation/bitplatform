@@ -38,7 +38,7 @@ public partial class BitLink : BitComponentBase
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefAndRel))]
-    public BitAnchorRel? Rel { get; set; }
+    public BitLinkRel? Rel { get; set; }
 
     /// <summary>
     /// If Href provided, specifies how to open the link.
@@ -84,6 +84,6 @@ public partial class BitLink : BitComponentBase
             return;
         }
 
-        _rel = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(r => Rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
+        _rel = BitLinkRelUtils.GetRels(Rel.Value);
     }
 }

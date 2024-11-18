@@ -42,16 +42,7 @@ public static partial class Program
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventSourceLogger();
 
-            if (AppPlatform.IsWindows)
-            {
-                loggingBuilder.AddEventLog();
-            }
-            //#if (appCenter == true)
-            if (Microsoft.AppCenter.AppCenter.Configured)
-            {
-                loggingBuilder.AddAppCenter(options => options.IncludeScopes = true);
-            }
-            //#endif
+            loggingBuilder.AddEventLog();
             //#if (appInsights == true)
             loggingBuilder.AddApplicationInsights(config =>
             {

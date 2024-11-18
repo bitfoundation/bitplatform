@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
-using Microsoft.AspNetCore.Components.Forms;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
@@ -33,7 +32,7 @@ public partial class SignInPage : IDisposable
 
 
     private bool isWaiting;
-    private bool isOtpSent;
+    private bool isOtpRequested;
     private bool requiresTwoFactor;
     private readonly SignInRequestDto model = new();
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
@@ -76,7 +75,7 @@ public partial class SignInPage : IDisposable
 
             if (source == OtpPayload)
             {
-                isOtpSent = false;
+                isOtpRequested = false;
                 model.Otp = null;
             }
 
@@ -112,7 +111,7 @@ public partial class SignInPage : IDisposable
     private async Task DoSignIn()
     {
         if (isWaiting) return;
-        if (isOtpSent && string.IsNullOrWhiteSpace(model.Otp)) return;
+        if (isOtpRequested && string.IsNullOrWhiteSpace(model.Otp)) return;
 
         isWaiting = true;
 
@@ -162,14 +161,14 @@ public partial class SignInPage : IDisposable
 
         var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-        _ = identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
-
         if (resend is false)
         {
-            isOtpSent = true;
+            isOtpRequested = true;
 
             PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
         }
+
+        await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
     }
 
     private async Task SendTfaToken()

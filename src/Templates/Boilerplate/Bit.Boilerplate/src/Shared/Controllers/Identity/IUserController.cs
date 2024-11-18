@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IUserController : IAppController
 {
     [HttpGet]
@@ -11,7 +11,7 @@ public interface IUserController : IAppController
     [HttpGet]
     Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken);
 
-    [HttpPost]
+    [HttpPost, NoRetryPolicy]
     Task SignOut(CancellationToken cancellationToken);
 
     [HttpPost("{id}")]

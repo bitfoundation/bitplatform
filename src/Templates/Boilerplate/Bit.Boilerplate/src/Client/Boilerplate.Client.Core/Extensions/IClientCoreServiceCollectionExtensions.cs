@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
-using Microsoft.EntityFrameworkCore;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
@@ -10,7 +9,6 @@ using BlazorApplicationInsights.Interfaces;
 using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -30,6 +28,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<LazyAssemblyLoader>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
+        services.AddScoped<AbsoluteServerAddressProvider>(sp => new() { GetAddress = () => sp.GetRequiredService<HttpClient>().BaseAddress! /* Read AbsoluteServerAddressProvider's comments for more info. */ });
 
         // The following services must be unique to each app session.
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
@@ -58,14 +57,16 @@ public static partial class IClientCoreServiceCollectionExtensions
         // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
-            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])]);
             return constructedHttpMessageHandler;
         });
         services.AddScoped<AuthDelegatingHandler>();
         services.AddScoped<RetryDelegatingHandler>();
+        services.AddScoped<LoggingDelegatingHandler>();
         services.AddScoped<ExceptionDelegatingHandler>();
         services.AddScoped<RequestHeadersDelegationHandler>();
         services.AddScoped(serviceProvider =>
@@ -76,26 +77,11 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
+        if (AppPlatform.IsBrowser)
         {
-            var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
-            var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
-
-            dirPath = Path.Combine(dirPath, "App_Data");
-
-            Directory.CreateDirectory(dirPath);
-
-            var dbPath = Path.Combine(dirPath, "Offline.db");
-
-            options
-                // .UseModel(OfflineDbContextModel.Instance)
-                .UseSqlite($"Data Source={dbPath}");
-
-            options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
-                    .EnableDetailedErrors(AppEnvironment.IsDev());
-        });
+            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+        }
+        services.AddBesqlDbContextFactory<OfflineDbContext>();
         //#endif
 
         //#if (appInsights == true)

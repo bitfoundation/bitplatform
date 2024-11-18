@@ -8,14 +8,49 @@ public partial class BitDataGridPaginator : IDisposable
     private readonly EventCallbackSubscriber<BitDataGridPaginationState> _totalItemCountChanged;
 
     /// <summary>
-    /// Specifies the associated <see cref="BitDataGridPaginationState"/>. This parameter is required.
+    /// The title of the go to first page button.
     /// </summary>
-    [Parameter, EditorRequired] public BitDataGridPaginationState Value { get; set; } = default!;
+    [Parameter] public string GoToFirstButtonTitle { get; set; } = "Go to first page";
+
+    /// <summary>
+    /// The title of the go to previous page button.
+    /// </summary>
+    [Parameter] public string GoToPrevButtonTitle { get; set; } = "Go to previous page";
+
+    /// <summary>
+    /// The title of the go to next page button.
+    /// </summary>
+    [Parameter] public string GoToNextButtonTitle { get; set; } = "Go to next page";
+
+    /// <summary>
+    /// The title of the go to last page button.
+    /// </summary>
+    [Parameter] public string GoToLastButtonTitle { get; set; } = "Go to last page";
+
+    /// <summary>
+    /// Optionally supplies a format for rendering the page count summary.
+    /// </summary>
+    [Parameter] public Func<BitDataGridPaginationState, string>? SummaryFormat { get; set; }
 
     /// <summary>
     /// Optionally supplies a template for rendering the page count summary.
     /// </summary>
-    [Parameter] public RenderFragment? SummaryTemplate { get; set; }
+    [Parameter] public RenderFragment<BitDataGridPaginationState>? SummaryTemplate { get; set; }
+
+    /// <summary>
+    /// The optional custom format for the main text of the paginator in the middle of it.
+    /// </summary>
+    [Parameter] public Func<BitDataGridPaginationState, string>? TextFormat { get; set; }
+
+    /// <summary>
+    /// The optional custom template for the main text of the paginator in the middle of it.
+    /// </summary>
+    [Parameter] public RenderFragment<BitDataGridPaginationState>? TextTemplate { get; set; }
+
+    /// <summary>
+    /// Specifies the associated <see cref="BitDataGridPaginationState"/>. This parameter is required.
+    /// </summary>
+    [Parameter, EditorRequired] public BitDataGridPaginationState Value { get; set; } = default!;
 
     /// <summary>
     /// Constructs an instance of <see cref="BitDataGridPaginator" />.

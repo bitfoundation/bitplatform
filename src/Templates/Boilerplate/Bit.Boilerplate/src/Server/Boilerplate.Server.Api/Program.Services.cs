@@ -131,11 +131,11 @@ public static partial class Program
 
         services.AddAntiforgery();
 
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]))
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]))
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -189,10 +189,16 @@ public static partial class Program
 
             });
             //#elif (database == "MySql")
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
@@ -254,6 +260,11 @@ public static partial class Program
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
+
+        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)

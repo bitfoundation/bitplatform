@@ -1,4 +1,4 @@
-using Bit.Besql.Demo.Client.Data;
+﻿using Bit.Besql.Demo.Client.Data;
 using Bit.Besql.Demo.Client.Pages;
 using Bit.Besql.Demo.Components;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +31,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

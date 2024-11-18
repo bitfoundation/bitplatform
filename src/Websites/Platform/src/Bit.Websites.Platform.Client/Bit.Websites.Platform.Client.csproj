@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <InvariantGlobalization>true</InvariantGlobalization>
-        <!-- Disabled WasmSIMD because of dotnet 8 rc issue on safari (iOS 16 and older devices)  -->
-        <WasmEnableSIMD>false</WasmEnableSIMD>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
@@ -14,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,20 +22,20 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.Butil" Version="8.12.0" />
-        <PackageReference Include="Bit.BlazorUI" Version="8.12.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="8.12.0" />
+        <PackageReference Include="Bit.Butil" Version="9.0.0" />
+        <PackageReference Include="Bit.BlazorUI" Version="9.0.0" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="9.0.0" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="8.12.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="8.12.0">
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="9.0.0" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="8.12.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

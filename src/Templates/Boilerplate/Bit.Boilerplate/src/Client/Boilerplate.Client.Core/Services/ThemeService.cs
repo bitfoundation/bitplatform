@@ -24,14 +24,6 @@ public partial class ThemeService
         var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
         pubSubService.Publish(ClientPubSubMessages.THEME_CHANGED, theme);
 
-        await cookie.Set(new()
-        {
-            MaxAge = 30 * 24 * 3600,
-            Name = "bit.Theme",
-            Secure = AppEnvironment.IsDev() is false,
-            Value = Uri.EscapeDataString(newThemeName),
-        });
-
         return theme;
     }
 }

@@ -17,7 +17,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
     [AutoInject] private IPrerenderStateService prerenderStateService;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
+    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
 
     /// <summary>
     /// Sign in and return whether the user requires two-factor authentication.
@@ -29,104 +31,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider
 
         if (response.RequiresTwoFactor) return true;
 
-        await OnNewToken(response!, request.RememberMe);
+        await StoreTokens(response!, request.RememberMe);
 
         return false;
     }
 
-    public async Task OnNewToken(TokenResponseDto response, bool? rememberMe = null)
-    {
-        await StoreTokens(response, rememberMe);
-
-        var state = await GetAuthenticationStateAsync();
-
-        NotifyAuthenticationStateChanged(Task.FromResult(state));
-    }
-
-    public async Task SignOut(CancellationToken cancellationToken)
-    {
-        try
-        {
-            if (await storageService.GetItem("refresh_token") is not null)
-            {
-                await userController.SignOut(cancellationToken);
-            }
-        }
-        finally
-        {
-            await storageService.RemoveItem("access_token");
-            await storageService.RemoveItem("refresh_token");
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                await cookie.Remove("access_token");
-            }
-            NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
-        }
-    }
-
-    public async Task RefreshToken()
-    {
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            await cookie.Remove("access_token");
-        }
-        await storageService.RemoveItem("access_token");
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
-    }
-
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
-    {
-        try
-        {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
-
-            bool inPrerenderSession = AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false;
-
-            if (string.IsNullOrEmpty(access_token) && inPrerenderSession is false)
-            {
-                try
-                {
-                    await semaphore.WaitAsync();
-                    access_token = await tokenProvider.GetAccessToken();
-                    if (string.IsNullOrEmpty(access_token)) // Check again after acquiring the lock.
-                    {
-                        string? refresh_token = await storageService.GetItem("refresh_token");
-
-                        if (string.IsNullOrEmpty(refresh_token) is false)
-                        {
-                            // We refresh the access_token to ensure a seamless user experience, preventing unnecessary 'NotAuthorized' page redirects and improving overall UX.
-                            // This method is triggered after 401 and 403 server responses in AuthDelegationHandler,
-                            // as well as when accessing pages without the required permissions in NotAuthorizedPage, ensuring that any recent claims granted to the user are promptly reflected.
-
-                            try
-                            {
-                                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, CancellationToken.None);
-                                await StoreTokens(refreshTokenResponse!);
-                                access_token = refreshTokenResponse!.AccessToken;
-                            }
-                            catch (UnauthorizedException) // refresh_token is either invalid or expired.
-                            {
-                                await storageService.RemoveItem("refresh_token");
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }
-
-            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false /* For better UX in order to minimize Routes.razor's Authorizing loading duration. */));
-        }
-        catch (Exception exp)
-        {
-            exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
-            return new AuthenticationState(tokenProvider.Anonymous());
-        }
-    }
-
-    private async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
+    public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
         if (rememberMe is null)
         {
@@ -148,5 +58,100 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 Secure = AppEnvironment.IsDev() is false
             });
         }
+
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+    }
+
+    public async Task SignOut(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await userController.SignOut(cancellationToken);
+        }
+        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException)
+        {
+            // The user might sign out while the app is offline, making token refresh attempts fail.
+            // These exceptions are intentionally ignored in this case.
+        }
+        finally
+        {
+            await ClearTokens();
+        }
+    }
+
+    public async Task<string?> RefreshToken(string requestedBy, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var access_token_BeforeLockValue = await tokenProvider.GetAccessToken();
+            await semaphore.WaitAsync();
+            var access_token_AfterLockValue = await tokenProvider.GetAccessToken();
+            if (access_token_BeforeLockValue != access_token_AfterLockValue)
+                return access_token_AfterLockValue; // It was renewed by a concurrent refresh token request.
+            authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
+            try
+            {
+                string? refresh_token = await storageService.GetItem("refresh_token");
+                if (string.IsNullOrEmpty(refresh_token))
+                    throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
+                await StoreTokens(refreshTokenResponse);
+                return refreshTokenResponse.AccessToken!;
+            }
+            catch (Exception exp)
+            {
+                if (exp is UnauthorizedException)
+                {
+                    // refresh_token is either invalid or expired.
+                    await ClearTokens();
+                }
+                exceptionHandler.Handle(exp, new()
+                {
+                    { "AdditionalData", "Refreshing access token failed." },
+                    { "RefreshTokenRequestedBy", requestedBy }
+                });
+                return null;
+            }
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    /// <summary>
+    /// Handles the process of determining the user's authentication state based on the availability of access and refresh tokens.
+    /// 
+    /// - If no access / refresh token exists, an anonymous user object is returned to Blazor.
+    /// - If an access token exists, a ClaimsPrincipal is created from it regardless of its expiration status. This ensures:
+    ///   - Users can access anonymous-allowed pages without unnecessary delays caused by token refresh attempts **during app startup**.
+    ///   - For protected pages, it is typical for these pages to make HTTP requests to secured APIs. In such cases, the `AuthDelegatingHandler.cs`
+    ///     validates the access token and refreshes it if necessary, keeping Blazor updated with the latest authentication state.
+    /// </summary>
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        try
+        {
+            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
+
+            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false));
+        }
+        catch (Exception exp)
+        {
+            exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
+            return new AuthenticationState(tokenProvider.Anonymous());
+        }
+    }
+
+    private async Task ClearTokens()
+    {
+        await storageService.RemoveItem("access_token");
+        await storageService.RemoveItem("refresh_token");
+        if (AppPlatform.IsBlazorHybrid is false)
+        {
+            await cookie.Remove("access_token");
+        }
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 }

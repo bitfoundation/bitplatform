@@ -207,7 +207,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties()
-                .Where(p => p.Name is "ConcurrencyStamp"))
+                .Where(p => p.Name is "ConcurrencyStamp" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
                 var builder = new PropertyBuilder(property);
                 builder.IsConcurrencyToken()
@@ -218,12 +218,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 {
                     //#endif
                     //#if (database == "PostgreSQL")
-                    if (property.ClrType == typeof(byte[]))
-                    {
-                        builder.HasConversion(new ValueConverter<byte[], uint>(
-                            v => BitConverter.ToUInt32(v, 0),
-                            v => BitConverter.GetBytes(v)));
-                    }
+                    builder.HasConversion(new ValueConverter<byte[], uint>(
+                        v => BitConverter.ToUInt32(v, 0),
+                        v => BitConverter.GetBytes(v)));
                     //#endif
                     //#if (IsInsideProjectTemplate == true)
                 }

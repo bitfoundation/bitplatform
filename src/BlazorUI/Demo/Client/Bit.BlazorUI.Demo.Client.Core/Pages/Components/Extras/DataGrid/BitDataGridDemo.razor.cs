@@ -212,6 +212,133 @@ public partial class BitDataGridDemo
                     Description = "Optionally specifies sorting rules for this column.",
                  },
             ],
+        },
+        new()
+         {
+            Id = "BitDataGridPaginator",
+            Title = "BitDataGridPaginator",
+            Description = "A component that provides a user interface for pagination.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "GoToFirstButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to first page",
+                    Description = "The title of the go to first page button.",
+                },
+                new()
+                {
+                    Name = "GoToPrevButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to previous page",
+                    Description = "The title of the go to previous page button.",
+                },
+                new()
+                {
+                    Name = "GoToNextButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to next page",
+                    Description = "The title of the go to next page button.",
+                },
+                new()
+                {
+                    Name = "GoToLastButtonTitle",
+                    Type = "string",
+                    DefaultValue = "Go to last page",
+                    Description = "The title of the go to last page button.",
+                },
+                new()
+                {
+                    Name = "SummaryFormat",
+                    Type = "Func<BitDataGridPaginationState, string>?",
+                    DefaultValue = "null",
+                    Description = "Optionally supplies a format for rendering the page count summary.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "SummaryTemplate",
+                    Type = "RenderFragment<BitDataGridPaginationState>?",
+                    DefaultValue = "null",
+                    Description = "Optionally supplies a template for rendering the page count summary.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "TextFormat",
+                    Type = "Func<BitDataGridPaginationState, string>?",
+                    DefaultValue = "null",
+                    Description = "The optional custom format for the main text of the paginator in the middle of it.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "TextTemplate",
+                    Type = "RenderFragment<BitDataGridPaginationState>?",
+                    DefaultValue = "null",
+                    Description = "The optional custom template for the main text of the paginator in the middle of it.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+                new()
+                {
+                    Name = "Value",
+                    Type = "BitDataGridPaginationState",
+                    DefaultValue = "",
+                    Description = "Specifies the associated pagination state. This parameter is required.",
+                    LinkType = LinkType.Link,
+                    Href = "#pagination-state"
+                },
+            ],
+
+        },
+        new()
+         {
+            Id = "pagination-state",
+            Title = "BitDataGridPaginationState",
+            Description = "A component that provides a user interface for pagination.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "CurrentPageIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Gets the current zero-based page index.",
+                },
+                new()
+                {
+                    Name = "ItemsPerPage",
+                    Type = "int",
+                    DefaultValue = "10",
+                    Description = "Gets or sets the number of items on each page.",
+                },
+                new()
+                {
+                    Name = "LastPageIndex",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "Gets the zero-based index of the last page, if known. The value will be null until TotalItemCount is known.",
+                },
+                new()
+                {
+                    Name = "TotalItemCount",
+                    Type = "int?",
+                    DefaultValue = "null",
+                    Description = "Gets the total number of items across all pages, if known. The value will be null until an associated BitDataGrid assigns a value after loading data.",
+                },
+                new()
+                {
+                    Name = "TotalItemCountChanged",
+                    Type = "EventHandler<int?>?",
+                    DefaultValue = "null",
+                    Description = "An event that is raised when the total item count has changed.",
+                },
+            ],
 
         },
     ];
@@ -345,11 +472,11 @@ public partial class BitDataGridDemo
             try
             {
                 var query = new Dictionary<string, object?>
-                    {
-                    { "search",$"recalling_firm:\"{_virtualSampleNameFilter}\"" },
+                {
+                    { "search", $"recalling_firm:\"{_virtualSampleNameFilter}\"" },
                     { "skip", req.StartIndex },
                     { "limit", req.Count }
-                    };
+                };
 
                 var sort = req.GetSortByProperties().SingleOrDefault();
 
@@ -364,7 +491,7 @@ public partial class BitDataGridDemo
                     query.Add("sort", $"{sortByColumnName}:{(sort.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}");
                 }
 
-                var url = NavManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
+                var url = NavigationManager.GetUriWithQueryParameters("https://api.fda.gov/food/enforcement.json", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.FoodRecallQueryResult, req.CancellationToken);
 
@@ -398,7 +525,7 @@ public partial class BitDataGridDemo
                     query.Add("$orderby", string.Join(", ", req.GetSortByProperties().Select(p => $"{p.PropertyName} {(p.Direction == BitDataGridSortDirection.Ascending ? "asc" : "desc")}")));
                 }
 
-                var url = NavManager.GetUriWithQueryParameters("Products/GetProducts", query);
+                var url = NavigationManager.GetUriWithQueryParameters("Products/GetProducts", query);
 
                 var data = await HttpClient.GetFromJsonAsync(url, AppJsonContext.Default.PagedResultProductDto);
 
@@ -698,7 +825,9 @@ public class MedalsModel
             </BitDataGridTemplateColumn>
         </BitDataGrid>
     </div>
-    <BitDataGridPaginator Value=""@pagination2"" />
+    <BitDataGridPaginator Value=""@pagination2"" SummaryFormat=""@(v => $""Total: {v.TotalItemCount}"")"">
+        <TextTemplate Context=""state"">@(state.CurrentPageIndex + 1) / @(state.LastPageIndex + 1)</TextTemplate>
+    </BitDataGridPaginator>
 </div>";
     private readonly string example2CsharpCode = @"
 private IQueryable<CountryModel> allCountries;
@@ -743,6 +872,7 @@ public class MedalsModel
     private readonly string example3RazorCode = @"
 @using System.Text.Json;
 @inject HttpClient HttpClient
+@inject NavigationManager NavManager
 
 <style>
     .grid {

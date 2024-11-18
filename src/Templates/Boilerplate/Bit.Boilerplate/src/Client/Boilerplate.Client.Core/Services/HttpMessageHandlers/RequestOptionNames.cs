@@ -2,7 +2,7 @@
 
 /// <summary>
 /// The generated HTTP client proxy by Bit.SourceGenerators will automatically include these request options in the constructed HttpRequestMessage.
-/// You can access these values within HTTP message handlers, such as  <see cref="AuthDelegatingHandler"/>.
+/// You can access these values within HTTP message handlers, such as  <see cref="AuthDelegatingHandler.HasAuthorizedApiAttribute(HttpRequestMessage)"/>.
 /// </summary>
 public partial class RequestOptionNames
 {

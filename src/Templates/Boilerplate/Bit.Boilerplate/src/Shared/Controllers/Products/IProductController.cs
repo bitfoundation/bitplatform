@@ -1,8 +1,8 @@
 ﻿using Boilerplate.Shared.Dtos.Products;
 
-namespace Boilerplate.Shared.Controllers.Product;
+namespace Boilerplate.Shared.Controllers.Products;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IProductController : IAppController
 {
     [HttpGet("{id}")]

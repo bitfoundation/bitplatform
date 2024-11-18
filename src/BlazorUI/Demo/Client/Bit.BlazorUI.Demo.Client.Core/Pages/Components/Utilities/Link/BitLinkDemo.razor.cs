@@ -37,7 +37,7 @@ public partial class BitLinkDemo
         new()
         {
             Name = "Rel",
-            Type = "BitAnchorRel?",
+            Type = "BitLinkRel?",
             DefaultValue = "null",
             Description = "If Href provided, specifies the relationship between the current document and the linked document.",
             LinkType = LinkType.Link,
@@ -108,7 +108,7 @@ public partial class BitLinkDemo
         new()
         {
             Id = "link-rel",
-            Name = "BitAnchorRel",
+            Name = "BitLinkRel",
             Description = "",
             Items =
             [
@@ -277,8 +277,8 @@ private void HandleOnClick()
 ";
 
     private readonly string example7RazorCode = @"
-<BitLink Rel=""BitAnchorRel.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
-<BitLink Rel=""BitAnchorRel.NoFollow | BitAnchorRel.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
+<BitLink Rel=""BitLinkRel.NoFollow"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow)</BitLink>
+<BitLink Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://github.com/bitfoundation/bitplatform"">Link with a rel attribute (nofollow & noreferrer)</BitLink>";
 
     private readonly string example8RazorCode = @"
 <style>

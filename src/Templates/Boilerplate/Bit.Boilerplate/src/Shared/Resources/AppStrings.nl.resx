@@ -275,6 +275,9 @@
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Profiel bewerken</value>
   </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>EF Core/Sqlite-aangedreven offline bewerkingsformulieren direct in uw web-/mobiele/desktop-apps!</value>
+  </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>Volledige naam</value>
@@ -1067,7 +1070,7 @@
     <data name="EnterProductName" xml:space="preserve">
     <value>Voer de productnaam in</value>
   </data>
-  <data name="CategoriesWithProductCount" xml:space="preserve">
+    <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Aantal categorieën met product</value>
   </data>
     <data name="ProductSales" xml:space="preserve">

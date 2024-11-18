@@ -96,7 +96,7 @@ public partial class PushNotificationService
         }
         catch (Exception exp)
         {
-            logger.LogError(exp, "Failed to send push notification.");
+            logger.LogWarning(exp, "Failed to send push notification.");
         }
     }
 }

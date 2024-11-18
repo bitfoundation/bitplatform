@@ -1,9 +1,11 @@
-﻿using System.IO.IsolatedStorage;
+﻿//+:cnd:noEmit
 using System.IO;
 using System.Windows;
-using System.Collections;
 using Microsoft.Win32;
+using System.Collections;
 using System.Windows.Media;
+using System.Windows.Threading;
+using System.IO.IsolatedStorage;
 using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Windows;
@@ -17,14 +19,24 @@ public partial class App
         var splash = new SplashScreen(typeof(App).Assembly, @"Resources\SplashScreen.png");
         splash.Show(autoClose: true, topMost: true);
 
-        Resources["PrimaryBgColor"] = new BrushConverter().ConvertFrom(IsDarkTheme() ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor);
+        ConfigureAppTheme();
     }
 
-    private static bool IsDarkTheme()
+    private void ConfigureAppTheme()
     {
+        //#if (framework == 'net9.0')
+        ThemeMode = ThemeMode.System;
+        Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml", UriKind.Absolute)
+        });
+        //#endif
+
         using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
         var value = key?.GetValue("AppsUseLightTheme");
-        return value is int i && i == 0;
+        var isDark = value is int i && i == 0;
+
+        Resources["PrimaryBgColor"] = new BrushConverter().ConvertFrom(isDark ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor);
     }
 
     const string WindowsStorageFilename = "windows.storage.json";
@@ -53,7 +65,7 @@ public partial class App
         writer.Write(JsonSerializer.Serialize(Properties));
     }
 
-    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         try
         {
@@ -62,8 +74,8 @@ public partial class App
         catch
         {
             var errorMessage = e.Exception.ToString();
-            System.Windows.Clipboard.SetText(errorMessage);
-            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Clipboard.SetText(errorMessage);
+            System.Windows.MessageBox.Show(errorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         e.Handled = true;

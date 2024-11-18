@@ -5,10 +5,10 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class UserMenu
 {
     private bool isOpen;
-    private bool showSignOut;
     private bool showCultures;
     private UserDto user = new();
     private string? profileImageUrl;
+    private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
 
@@ -42,9 +42,8 @@ public partial class UserMenu
 
         user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
 
-        var serverAddress = Configuration.GetServerAddress();
         var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
-        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={access_token}").ToString();
 
         await base.OnInitAsync();
     }

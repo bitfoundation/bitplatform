@@ -1,6 +1,8 @@
 @inherits AppComponentBase
 
-<BitAccordion OnClick="HandleOnClick" IsExpanded="Value == Name"
+<BitAccordion NoBorder
+              OnClick="HandleOnClick"
+              IsExpanded="Value == Name"
               Classes="@(new() { Header=BitCss.Class.Color.Background.Secondary })">
 
     <HeaderTemplate>

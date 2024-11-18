@@ -278,6 +278,9 @@
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
   </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
+  </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>نام کامل</value>

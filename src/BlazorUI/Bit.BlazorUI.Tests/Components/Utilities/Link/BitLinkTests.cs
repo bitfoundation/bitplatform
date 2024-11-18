@@ -603,16 +603,16 @@ public class BitLinkTests : BunitTestContext
 
     [DataTestMethod,
         DataRow(null, null),
-        DataRow(null, BitAnchorRel.Bookmark),
-        DataRow(null, BitAnchorRel.Bookmark | BitAnchorRel.Alternate),
+        DataRow(null, BitLinkRel.Bookmark),
+        DataRow(null, BitLinkRel.Bookmark | BitLinkRel.Alternate),
         DataRow("https://bitplatform.dev", null),
-        DataRow("https://bitplatform.dev", BitAnchorRel.Bookmark),
-        DataRow("https://bitplatform.dev", BitAnchorRel.Bookmark | BitAnchorRel.Alternate),
+        DataRow("https://bitplatform.dev", BitLinkRel.Bookmark),
+        DataRow("https://bitplatform.dev", BitLinkRel.Bookmark | BitLinkRel.Alternate),
         DataRow("#go-to-section", null),
-        DataRow("#go-to-section", BitAnchorRel.Bookmark),
-        DataRow("#go-to-section", BitAnchorRel.Bookmark | BitAnchorRel.Alternate)
+        DataRow("#go-to-section", BitLinkRel.Bookmark),
+        DataRow("#go-to-section", BitLinkRel.Bookmark | BitLinkRel.Alternate)
     ]
-    public void BitLinkShouldRespectTarget(string href, BitAnchorRel? rel)
+    public void BitLinkShouldRespectTarget(string href, BitLinkRel? rel)
     {
         var component = RenderComponent<BitLink>(parameters =>
         {
@@ -630,7 +630,7 @@ public class BitLinkTests : BunitTestContext
             {
                 if (rel.HasValue)
                 {
-                    var rels = string.Join(" ", Enum.GetValues(typeof(BitAnchorRel)).Cast<BitAnchorRel>().Where(r => rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
+                    var rels = string.Join(" ", Enum.GetValues(typeof(BitLinkRel)).Cast<BitLinkRel>().Where(r => rel.Value.HasFlag(r)).Select(r => r.ToString().ToLower()));
 
                     component.MarkupMatches(@$"<a rel=""{rels}"" href=""{href}"" class=""bit-lnk"" id:ignore></a>");
                 }

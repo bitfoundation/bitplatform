@@ -1,4 +1,4 @@
-{
+﻿{
     "activitycontinuation": {
         "apps": [ "76WD644YU8.com.bitplatform.AdminPanel.Template", "76WD644YU8.com.bitplatform.Todo.Template" ]
     },
@@ -18,6 +18,7 @@
                     "NOT /swagger/*",
                     "NOT /signin/*",
                     "NOT /.well-known/*",
+                    "NOT /sitemap.xml",
                     "*"
                 ]
             },
@@ -34,6 +35,7 @@
                     "NOT /swagger/*",
                     "NOT /signin/*",
                     "NOT /.well-known/*",
+                    "NOT /sitemap.xml",
                     "*"
                 ]
             }
