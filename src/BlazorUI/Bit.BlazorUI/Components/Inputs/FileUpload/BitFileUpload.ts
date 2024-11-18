@@ -2,14 +2,14 @@
     export class FileUpload {
         private static _fileUploaders: BitFileUploader[] = [];
 
-        public static reset(
+        public static setup(
             id: string,
             dotnetReference: DotNetObject,
             inputElement: HTMLInputElement,
             uploadEndpointUrl: string,
             headers: Record<string, string>) {
 
-            FileUpload._fileUploaders = FileUpload._fileUploaders.filter(u => u.id !== id);
+            FileUpload.clear(id);
 
             const files = Array.from(inputElement.files!).map((file, index) => ({
                 name: file.name,
@@ -50,7 +50,7 @@
             }
         }
 
-        public static setupDragDrop(dropZoneElement: HTMLElement, inputFile: HTMLInputElement) {
+        public static setupDragDrop(dropZoneElement: HTMLElement, inputElement: HTMLInputElement) {
 
             function onDragHover(e: DragEvent) {
                 e.preventDefault();
@@ -62,15 +62,15 @@
 
             function onDrop(e: DragEvent) {
                 e.preventDefault();
-                inputFile.files = e.dataTransfer!.files;
+                inputElement.files = e.dataTransfer!.files;
                 const event = new Event('change', { bubbles: true });
-                inputFile.dispatchEvent(event);
+                inputElement.dispatchEvent(event);
             }
 
             function onPaste(e: ClipboardEvent) {
-                inputFile.files = e.clipboardData!.files;
+                inputElement.files = e.clipboardData!.files;
                 const event = new Event('change', { bubbles: true });
-                inputFile.dispatchEvent(event);
+                inputElement.dispatchEvent(event);
             }
 
             dropZoneElement.addEventListener("dragenter", onDragHover);
@@ -91,12 +91,17 @@
 
         }
 
-        public static browse(inputFile: HTMLInputElement) {
-            inputFile.click();
+        public static browse(inputElement: HTMLInputElement) {
+            inputElement.click();
         }
 
-        public static dispose(id: string) {
+        public static clear(id: string) {
             FileUpload._fileUploaders = FileUpload._fileUploaders.filter(u => u.id !== id);
+        }
+
+        public static reset(id: string, inputElement: HTMLInputElement,) {
+            FileUpload.clear(id);
+            inputElement.value = '';
         }
     }
 
