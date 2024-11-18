@@ -74,7 +74,7 @@ public partial class App
         {
             var errorMessage = e.Exception.ToString();
             System.Windows.Clipboard.SetText(errorMessage);
-            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            System.Windows.MessageBox.Show(errorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         e.Handled = true;

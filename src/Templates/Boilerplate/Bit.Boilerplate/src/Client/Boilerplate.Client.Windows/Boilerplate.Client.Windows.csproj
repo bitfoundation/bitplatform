@@ -6,7 +6,6 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
-        <UseWindowsForms>true</UseWindowsForms>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
         <StartupObject>Boilerplate.Client.Windows.Program</StartupObject>
@@ -36,9 +35,6 @@
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" />
-        <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
