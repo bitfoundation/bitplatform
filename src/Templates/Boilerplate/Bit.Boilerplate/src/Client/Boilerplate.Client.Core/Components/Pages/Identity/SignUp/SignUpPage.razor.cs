@@ -46,7 +46,7 @@ public partial class SignUpPage
                 queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
             }
             var confirmUrl = NavigationManager.GetUriWithQueryParameters(Urls.ConfirmPage, queryParams);
-            NavigationManager.NavigateTo(confirmUrl);
+            NavigationManager.NavigateTo(confirmUrl, replace: true);
         }
         catch (KnownException e)
         {
