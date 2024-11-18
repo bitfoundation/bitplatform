@@ -1,4 +1,4 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -34,11 +34,9 @@ public static partial class Program
             // By default, App.razor adds Routes and HeadOutlet.
             // The following is only required for blazor webassembly standalone.
             builder.RootComponents.Add<HeadOutlet>("head::after");
-            //+:cnd:noEmit
             //#if (appInsights == true)
             builder.RootComponents.Add<BlazorApplicationInsights.ApplicationInsightsInit>(selector: "head::after");
             //#endif
-            //-:cnd:noEmit
             builder.RootComponents.Add<Routes>("#app-container");
         }
 

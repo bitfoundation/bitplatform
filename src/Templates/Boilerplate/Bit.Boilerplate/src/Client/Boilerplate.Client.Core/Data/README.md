@@ -1,10 +1,8 @@
-## bit entity framework core sqlite (bit Besql)
+﻿## bit entity framework core sqlite (bit Besql)
 
 How to use `Bit.Besql`:
 
 The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.EntityFrameworkCore.Sqlite` with [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-8.0#new-dbcontext-instances).
-
-To get start, simply install `Bit.Besql` and use `services.AddBesqlDbContextFactory` instead of `services.AddDbContextFactory`.
 
 In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
 ```js
@@ -16,11 +14,11 @@ URL.createObjectURL(blob);
 
 **Migration**
 
-Set `Server` as the Startup Project in solution explorer and set `Client.Core` it as the Default Project in Package Manager Console and run the following commands:
+Set `Server.Web` as the Startup Project in solution explorer and set `Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
 Add-Migration InitialMigration -OutputDir Data\Migrations -Context OfflineDbContext
 ```
-Or open a terminal in your Server project directory and run followings:
+Or open a terminal in your Server.Web project directory and run followings:
 ```bash
 dotnet ef migrations add InitialMigration --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj
 ```
@@ -35,18 +33,12 @@ To enhance the performance of your models, consider compiling them using EF Core
 
 To implement this optimization, follow these steps in the Package Manager Console:
 
-1. Make sure `Boilerplate.Server` is set as the default startup project, and `Boilerplate.Client.Core` is the default project in the Package Manager Console.
+1. Make sure `Server.Web` is set as the default startup project, and `Client.Core` is the default project in the Package Manager Console.
 
 2. Run the following command:
 
     ```powershell
     Optimize-DbContext -Context OfflineDbContext -OutputDir Data/CompiledModel -Namespace Boilerplate.Client.Core.Data
-    ```
-
-3. Uncomment the following line in the `Boilerplate.Client.Core/Extensions/IServiceCollectionExtensions.cs` file:
-
-    ```csharp
-    .UseModel(OfflineDbContextModel.Instance)
     ```
 
 By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.

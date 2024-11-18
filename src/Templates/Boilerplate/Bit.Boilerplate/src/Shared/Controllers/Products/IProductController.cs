@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Products;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IProductController : IAppController
 {
     [HttpGet("{id}")]

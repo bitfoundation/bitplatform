@@ -4,6 +4,7 @@ using System.Windows;
 using Microsoft.Win32;
 using System.Collections;
 using System.Windows.Media;
+using System.Windows.Threading;
 using System.IO.IsolatedStorage;
 using Boilerplate.Client.Core.Styles;
 
@@ -64,7 +65,7 @@ public partial class App
         writer.Write(JsonSerializer.Serialize(Properties));
     }
 
-    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         try
         {
@@ -73,8 +74,8 @@ public partial class App
         catch
         {
             var errorMessage = e.Exception.ToString();
-            System.Windows.Clipboard.SetText(errorMessage);
-            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Clipboard.SetText(errorMessage);
+            System.Windows.MessageBox.Show(errorMessage, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         e.Handled = true;

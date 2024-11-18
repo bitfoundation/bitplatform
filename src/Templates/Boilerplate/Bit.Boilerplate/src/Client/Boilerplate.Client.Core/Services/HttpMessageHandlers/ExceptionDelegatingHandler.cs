@@ -64,7 +64,10 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
         //#if (signalR != true)
         finally
         {
-            pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+            if (isInternalRequest)
+            {
+                pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
+            }
         }
         //#endif
     }

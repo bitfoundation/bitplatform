@@ -1,6 +1,8 @@
 ﻿//+:cnd:noEmit
 using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.WebView;
+using System.Drawing;
+using System.Diagnostics;
 
 namespace Boilerplate.Client.Windows;
 
@@ -30,8 +32,9 @@ public partial class MainWindow
         }
         AppWebView.Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
+            string executablePath = Environment.ProcessPath!;
+            Process.Start(executablePath);
             App.Current.Shutdown();
-            Application.Restart();
         });
         AppWebView.Loaded += async delegate
         {

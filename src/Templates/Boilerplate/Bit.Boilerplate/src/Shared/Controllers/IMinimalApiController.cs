@@ -1,6 +1,5 @@
 ﻿namespace Boilerplate.Shared.Controllers;
 
-[AnonymousApi]
 public interface IMinimalApiController : IAppController
 {
     [HttpGet("api/minimal-api-sample/{routeParameter}{?queryStringParameter}")]

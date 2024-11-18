@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
-using Microsoft.EntityFrameworkCore;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
@@ -78,26 +77,11 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
+        if (AppPlatform.IsBrowser)
         {
-            var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
-            var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
-
-            dirPath = Path.Combine(dirPath, "App_Data");
-
-            Directory.CreateDirectory(dirPath);
-
-            var dbPath = Path.Combine(dirPath, "Offline.db");
-
-            options
-                // .UseModel(OfflineDbContextModel.Instance)
-                .UseSqlite($"Data Source={dbPath}");
-
-            options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
-                    .EnableDetailedErrors(AppEnvironment.IsDev());
-        });
+            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+        }
+        services.AddBesqlDbContextFactory<OfflineDbContext>();
         //#endif
 
         //#if (appInsights == true)

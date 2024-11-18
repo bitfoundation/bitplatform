@@ -21,23 +21,22 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
         try
         {
             if (isInternalRequest && /* We will restrict sending the access token to our own server only. */
-                HasAnonymousApiAttribute(request) is false &&
                 request.Headers.Authorization is null)
             {
                 var access_token = await tokenProvider.GetAccessToken();
-                if (string.IsNullOrEmpty(access_token) is false)
+                if (string.IsNullOrEmpty(access_token) is false && HasAuthorizedApiAttribute(request))
                 {
                     if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
-
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
                 }
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
             }
 
             return await base.SendAsync(request, cancellationToken);
         }
         catch (KnownException _) when (_ is ForbiddenException or UnauthorizedException)
         {
+            // Notes about ForbiddenException (403):
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
@@ -67,16 +66,16 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
     }
 
     /// <summary>
-    /// <see cref="AnonymousApiAttribute"/>
+    /// <see cref="AuthorizedApiAttribute"/>
     /// </summary>
-    private static bool HasAnonymousApiAttribute(HttpRequestMessage request)
+    private static bool HasAuthorizedApiAttribute(HttpRequestMessage request)
     {
         if (request.Options.TryGetValue(new(RequestOptionNames.IControllerType), out Type? controllerType) is false)
             return false;
 
         var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
         var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
-        return controllerType.GetCustomAttribute<AnonymousApiAttribute>(inherit: true) is not null ||
-               method.GetCustomAttribute<AnonymousApiAttribute>() is not null;
+        return controllerType.GetCustomAttribute<AuthorizedApiAttribute>(inherit: true) is not null ||
+               method.GetCustomAttribute<AuthorizedApiAttribute>() is not null;
     }
 }

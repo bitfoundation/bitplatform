@@ -46,7 +46,7 @@ public interface ITelemetryContext
 
     public string? Environment { get; set; }
 
-    public bool IsOnline { get; set; }
+    public bool? IsOnline { get; set; }
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
@@ -60,6 +60,7 @@ public interface ITelemetryContext
             { nameof(PageUrl), PageUrl },
             { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
+            { "ClientDateTime", DateTimeOffset.UtcNow.ToString("u") },
             { nameof(Culture), Culture },
             { nameof(Environment), Environment },
             { nameof(IsOnline), IsOnline }

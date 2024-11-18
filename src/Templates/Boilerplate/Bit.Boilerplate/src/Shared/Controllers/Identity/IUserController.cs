@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Identity;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface IUserController : IAppController
 {
     [HttpGet]

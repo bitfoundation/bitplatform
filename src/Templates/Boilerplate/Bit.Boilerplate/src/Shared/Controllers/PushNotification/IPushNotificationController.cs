@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.PushNotification;
 
-[Route("api/[controller]/[action]/"), AnonymousApi]
+[Route("api/[controller]/[action]/")]
 public interface IPushNotificationController : IAppController
 {
     [HttpPost]

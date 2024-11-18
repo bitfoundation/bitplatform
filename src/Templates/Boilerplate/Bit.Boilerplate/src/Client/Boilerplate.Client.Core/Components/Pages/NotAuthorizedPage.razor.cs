@@ -32,7 +32,7 @@ public partial class NotAuthorizedPage
                 if (string.IsNullOrEmpty(access_token) is false && ReturnUrl is not null)
                 {
                     var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
-                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false");
+                    NavigationManager.NavigateTo($"{ReturnUrl}{@char}try_refreshing_token=false", replace: true);
                     return;
                 }
             }
@@ -43,7 +43,7 @@ public partial class NotAuthorizedPage
             }
         }
 
-        if (AuthTokenProvider.ParseAccessToken(await AuthTokenProvider.GetAccessToken(), validateExpiry: true).IsAuthenticated() is false)
+        if ((await AuthenticationStateTask).User.IsAuthenticated() is false)
         {
             await SignOut();
         }

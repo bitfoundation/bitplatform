@@ -8,16 +8,6 @@ public partial class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        //+:cnd:noEmit
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
-        {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-        //-:cnd:noEmit
-
         AppPlatform.IsBlazorHybrid = true;
         ITelemetryContext.Current = new WindowsTelemetryContext();
 
