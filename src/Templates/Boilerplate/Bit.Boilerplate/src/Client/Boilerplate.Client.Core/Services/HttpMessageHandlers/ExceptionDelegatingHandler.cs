@@ -4,9 +4,7 @@ using System.Net;
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
 public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer,
-                                                //#if (signalR != true)
                                                 PubSubService pubSubService,
-                                                //#endif
                                                 JsonSerializerOptions jsonSerializerOptions,
                                                 AbsoluteServerAddressProvider absoluteServerAddress,
                                                 HttpMessageHandler handler) : DelegatingHandler(handler)
@@ -61,7 +59,6 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
         {
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
-        //#if (signalR != true)
         finally
         {
             if (isInternalRequest)
@@ -69,6 +66,5 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
-        //#endif
     }
 }

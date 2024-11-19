@@ -191,30 +191,27 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         try
         {
+            hubConnection.Closed += HubConnectionStateChange;
+            hubConnection.Reconnected += HubConnectionConnected;
+            hubConnection.Reconnecting += HubConnectionStateChange;
+
             await hubConnection.StartAsync(CurrentCancellationToken);
-            await HubConnectionConnected(null);
         }
         catch (Exception exp)
         {
-            await HubConnectionDisconnected(exp);
-        }
-        finally
-        {
-            hubConnection.Closed += HubConnectionDisconnected;
-            hubConnection.Reconnected += HubConnectionConnected;
-            hubConnection.Reconnecting += HubConnectionDisconnected;
+            await HubConnectionStateChange(exp);
         }
     }
 
-    private async Task HubConnectionConnected(string? connectionId)
+    private async Task HubConnectionConnected(string? _)
     {
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
-        signalRLogger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
+        signalRLogger.LogInformation("SignalR connection established.");
     }
 
-    private async Task HubConnectionDisconnected(Exception? exception)
+    private async Task HubConnectionStateChange(Exception? exception)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, false);
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
 
         if (exception is null)
         {
@@ -269,9 +266,9 @@ public partial class ClientAppCoordinator : AppComponentBase
         //#if (signalR == true)
         if (hubConnection is not null)
         {
-            hubConnection.Closed -= HubConnectionDisconnected;
+            hubConnection.Closed -= HubConnectionStateChange;
             hubConnection.Reconnected -= HubConnectionConnected;
-            hubConnection.Reconnecting -= HubConnectionDisconnected;
+            hubConnection.Reconnecting -= HubConnectionStateChange;
             await hubConnection.DisposeAsync();
         }
         //#endif
