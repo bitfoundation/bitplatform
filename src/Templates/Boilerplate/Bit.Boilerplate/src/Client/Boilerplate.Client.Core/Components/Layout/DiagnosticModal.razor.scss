@@ -32,7 +32,9 @@ section {
     .log-modal {
         overflow: auto;
         max-width: 40rem;
+        max-height: 40rem;
         white-space: nowrap;
         width: min(40rem, 100%);
+        height: min(40rem, 100%);
     }
 }
