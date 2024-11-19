@@ -34,7 +34,7 @@ section {
         max-width: 40rem;
         max-height: 40rem;
         white-space: nowrap;
-        width: min(40rem, 100%);
-        height: min(40rem, 100%);
+        height: min(20rem, var(--app-height) - 4rem);
+        width: min(40rem, calc(var(--app-width) - 2rem));
     }
 }
