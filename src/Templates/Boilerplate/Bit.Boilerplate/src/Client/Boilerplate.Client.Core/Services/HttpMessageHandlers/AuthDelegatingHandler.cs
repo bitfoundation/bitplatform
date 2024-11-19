@@ -16,6 +16,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault("LogScopeData")!;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try
@@ -27,7 +28,10 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 if (string.IsNullOrEmpty(accessToken) is false && HasAuthorizedApiAttribute(request))
                 {
                     if (tokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                    {
+                        logScopeData["ClientSideAccessTokenValidationFailed"] = true;
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                    }
                 }
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
@@ -53,6 +57,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
+            logScopeData["RefreshTokenRequested"] = true;
             var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler), cancellationToken);
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

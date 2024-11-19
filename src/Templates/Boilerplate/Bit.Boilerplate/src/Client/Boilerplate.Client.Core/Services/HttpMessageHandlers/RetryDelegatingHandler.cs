@@ -13,6 +13,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
 
         Exception? lastExp = null;
 
+        int retryCount = 0;
         foreach (var delay in delays)
         {
             try
@@ -23,7 +24,8 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             {
                 if (HasNoRetryPolicyAttribute(request))
                     throw;
-
+                retryCount++;
+                request.Options.Set(new("RetryCount"), retryCount);
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }

@@ -4,8 +4,7 @@ using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
-                                                PubSubService pubSubService,
+public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                                                 IStringLocalizer<AppStrings> localizer,
                                                 JsonSerializerOptions jsonSerializerOptions,
                                                 AbsoluteServerAddressProvider absoluteServerAddress,
@@ -13,10 +12,7 @@ public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, request.RequestUri);
-        IEnumerable<string>? requestId = null;
-        HttpStatusCode? statusCode = null;
-        var stopwatch = Stopwatch.StartNew();
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault("LogScopeData")!;
 
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
@@ -24,8 +20,11 @@ public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
-            statusCode = response.StatusCode;
-            response.Headers.TryGetValues("Request-Id", out requestId);
+            if (response.Headers.TryGetValues("Request-Id", out var requestId))
+            {
+                logScopeData["RequestId"] = requestId.First();
+            }
+            logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;
 
@@ -60,6 +59,8 @@ public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
 
             response.EnsureSuccessStatusCode();
 
+            request.Options.Set(new("LogLevel"), LogLevel.Information);
+
             return response;
         }
         catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
@@ -74,12 +75,6 @@ public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
             {
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
-
-            logger.Log(statusCode is null or >= HttpStatusCode.BadRequest ? LogLevel.Warning : LogLevel.Information, "Received HTTP response for {Uri} after {Duration}ms - {StatusCode} - {RequestId}",
-                        request.RequestUri,
-                        stopwatch.ElapsedMilliseconds,
-                        statusCode,
-                        requestId);
         }
     }
 }
