@@ -1,6 +1,7 @@
 ﻿//+:cnd:noEmit
 //#if (offlineDb == true)
 using Boilerplate.Client.Core.Data;
+using Microsoft.EntityFrameworkCore;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights;
@@ -57,8 +58,8 @@ public static partial class IClientCoreServiceCollectionExtensions
         // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
-        var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
-                    [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
+            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])]);
             return constructedHttpMessageHandler;
@@ -79,7 +80,30 @@ public static partial class IClientCoreServiceCollectionExtensions
         {
             AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
         }
-        services.AddBesqlDbContextFactory<OfflineDbContext>();
+        services.AddBesqlDbContextFactory<OfflineDbContext>((optionsBuilder) =>
+        {
+            var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
+            var dirPath = isRunningInsideDocker ? "/container_volume"
+                                                : AppPlatform.IsBlazorHybridOrBrowser ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
+                                                : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+
+            dirPath = Path.Combine(dirPath, "App_Data");
+
+            Directory.CreateDirectory(dirPath);
+
+            var dbPath = Path.Combine(dirPath, "Offline.db");
+
+            optionsBuilder
+                .UseSqlite($"Data Source={dbPath}");
+
+            if (AppEnvironment.IsProd())
+            {
+                optionsBuilder.UseModel(OfflineDbContextModel.Instance);
+            }
+
+            optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
+                    .EnableDetailedErrors(AppEnvironment.IsDev());
+        });
         //#endif
 
         //#if (appInsights == true)
