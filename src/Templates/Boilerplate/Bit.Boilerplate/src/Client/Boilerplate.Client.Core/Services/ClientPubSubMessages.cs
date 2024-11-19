@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Components;
+
 namespace Boilerplate.Client.Core.Services;
 
 public static partial class ClientPubSubMessages
@@ -11,7 +13,7 @@ public static partial class ClientPubSubMessages
     public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
     public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
     /// <summary>
-    /// <inheritdoc ParameterName />
+    /// <inheritdoc cref="Parameters.IsOnline"/>
     /// </summary>
     public const string IS_ONLINE_CHANGED = nameof(IS_ONLINE_CHANGED);
     public const string PAGE_TITLE_CHANGED = nameof(PAGE_TITLE_CHANGED);
