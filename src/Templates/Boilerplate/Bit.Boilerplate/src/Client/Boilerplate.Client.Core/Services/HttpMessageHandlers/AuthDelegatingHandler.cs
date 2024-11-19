@@ -61,7 +61,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
             logScopeData["RefreshTokenRequested"] = true;
-            var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler), cancellationToken);
+            var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler));
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
