@@ -42,8 +42,6 @@ public partial class UserMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        // Http Client sample:
-        // user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
         user = await userController.GetCurrentUser(CurrentCancellationToken);
 
         var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
