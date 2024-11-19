@@ -21,7 +21,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (signalR == true)
     private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
-    [AutoInject] private ILogger<HubConnection> signalRLogger = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -34,6 +33,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
+    [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
@@ -185,7 +185,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
-            signalRLogger.LogInformation("Message {Message} received from server.", message);
+            logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
         });
 
@@ -206,7 +206,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     private async Task HubConnectionConnected(string? _)
     {
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
-        signalRLogger.LogInformation("SignalR connection established.");
+        logger.LogInformation("SignalR connection established.");
     }
 
     private async Task HubConnectionStateChange(Exception? exception)
@@ -215,11 +215,11 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            signalRLogger.LogInformation("SignalR state changed {State}", hubConnection!.State);
+            logger.LogInformation("SignalR state changed {State}", hubConnection!.State);
         }
         else
         {
-            signalRLogger.LogWarning(exception, "SignalR connection lost.");
+            logger.LogWarning(exception, "SignalR connection lost.");
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
