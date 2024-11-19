@@ -1,22 +1,31 @@
 ﻿//+:cnd:noEmit
+using System.Diagnostics;
 using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer,
+public partial class ExceptionDelegatingHandler(ILogger<HttpClient> logger,
                                                 PubSubService pubSubService,
+                                                IStringLocalizer<AppStrings> localizer,
                                                 JsonSerializerOptions jsonSerializerOptions,
                                                 AbsoluteServerAddressProvider absoluteServerAddress,
                                                 HttpMessageHandler handler) : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, request.RequestUri);
+        IEnumerable<string>? requestId = null;
+        HttpStatusCode? statusCode = null;
+        var stopwatch = Stopwatch.StartNew();
+
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
+            statusCode = response.StatusCode;
+            response.Headers.TryGetValues("Request-Id", out requestId);
 
             serverCommunicationSuccess = true;
 
@@ -65,6 +74,12 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
             {
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
+
+            logger.Log(statusCode is null or >= HttpStatusCode.BadRequest ? LogLevel.Warning : LogLevel.Information, "Received HTTP response for {Uri} after {Duration}ms - {StatusCode} - {RequestId}",
+                        request.RequestUri,
+                        stopwatch.ElapsedMilliseconds,
+                        statusCode,
+                        requestId);
         }
     }
 }

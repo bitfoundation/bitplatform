@@ -153,7 +153,7 @@ public partial class ClientAppCoordinator : AppComponentBase
                     if (string.IsNullOrEmpty(accessToken) is false &&
                         AuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                     {
-                        return await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
+                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
                     }
 
                     return accessToken;
@@ -223,7 +223,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
+                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
             }
         }
     }
