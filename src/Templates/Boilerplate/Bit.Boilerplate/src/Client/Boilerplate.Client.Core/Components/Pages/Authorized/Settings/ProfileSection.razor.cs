@@ -17,6 +17,7 @@ public partial class ProfileSection
     private string? profileImageUrl;
     private string? profileImageUploadUrl;
     private string? removeProfileImageHttpUrl;
+    private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
 
