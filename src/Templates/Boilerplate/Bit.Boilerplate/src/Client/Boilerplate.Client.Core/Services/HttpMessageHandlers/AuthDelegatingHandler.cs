@@ -16,7 +16,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault("LogScopeData")!;
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try

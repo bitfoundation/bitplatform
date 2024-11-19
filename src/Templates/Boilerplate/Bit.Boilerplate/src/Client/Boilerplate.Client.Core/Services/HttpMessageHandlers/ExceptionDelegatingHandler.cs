@@ -12,7 +12,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault("LogScopeData")!;
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
 
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
@@ -59,7 +59,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
             response.EnsureSuccessStatusCode();
 
-            request.Options.Set(new("LogLevel"), LogLevel.Information);
+            request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
 
             return response;
         }

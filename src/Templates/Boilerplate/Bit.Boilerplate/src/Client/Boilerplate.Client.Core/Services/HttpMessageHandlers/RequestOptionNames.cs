@@ -6,9 +6,11 @@
 /// </summary>
 public partial class RequestOptionNames
 {
-    public const string IControllerType = nameof(IControllerType);
+    public const string LogLevel = nameof(LogLevel);
     public const string ActionName = nameof(ActionName);
-    public const string ActionParametersInfo = nameof(ActionParametersInfo);
     public const string RequestType = nameof(RequestType);
     public const string ResponseType = nameof(ResponseType);
+    public const string LogScopeData = nameof(LogScopeData);
+    public const string IControllerType = nameof(IControllerType);
+    public const string ActionParametersInfo = nameof(ActionParametersInfo);
 }
