@@ -17,7 +17,7 @@
 
         <BitStack FillContent Gap="2rem">
             <BitStack FillContent>
-                <BitPivot Alignment="BitAlignment.Center" HeaderOnly SelectedKey="@selectedKey" SelectedKeyChanged="OnSelectedKeyChanged">
+                <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="HandleOnPivotChange">
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey" />
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]" Key="@PhoneKey" />
                 </BitPivot>
@@ -43,6 +43,7 @@
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
                     }
+                    <br />
                     <BitTextField @bind-Value="Model.Password"
                                   TabIndex="2"
                                   CanRevealPassword="true"
