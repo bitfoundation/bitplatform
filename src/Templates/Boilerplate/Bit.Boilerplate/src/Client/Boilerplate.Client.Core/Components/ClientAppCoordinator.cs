@@ -90,10 +90,17 @@ public partial class ClientAppCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
+    private SemaphoreSlim semaphore = new(1, 1);
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
+            await semaphore.WaitAsync(CurrentCancellationToken);
+            // About Semaphore: The following code may take significant time to execute.
+            // During this period, the authentication state could change. For instance, the app might start with the user authenticated, but they could sign out while this method is running.
+            // To handle such scenarios, we must ensure the code below runs in a safe and sequential manner, preventing parallel execution.
+            // Without this safeguard, SignalR or push notifications might incorrectly associate the device with a user who has already signed out.
+
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
@@ -127,6 +134,10 @@ public partial class ClientAppCoordinator : AppComponentBase
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
+        }
+        finally
+        {
+            semaphore.Release();
         }
     }
 
