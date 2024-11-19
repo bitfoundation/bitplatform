@@ -31,12 +31,15 @@
 
             <BitStack Horizontal FitHeight Wrap>
                 <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
-                <BitDropdown FitWidth MultiSelect
+                <BitDropdown FitWidth
+                             MultiSelect
                              Items="logLevelItems"
                              DefaultValues="defaultFilterLogLevels"
                              OnValuesChange="HandleOnLogLevelFilter"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
-                <BitDropdown FitWidth MultiSelect
+                <BitDropdown FitWidth
+                             MultiSelect
+                             ShowSearchBox
                              Items="allCategoryItems"
                              DefaultValues="defaultCategoryItems"
                              OnValuesChange="HandleOnCategoryFilter"
