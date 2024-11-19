@@ -36,7 +36,7 @@
                                         PrimaryText="@User?.FullName"
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
-                            <BitLink Color="BitColor.Primary" OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                            <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
                                 <BitText>@Localizer[nameof(AppStrings.UploadNewProfileImage)]</BitText>
                             </BitLink>
                         }
