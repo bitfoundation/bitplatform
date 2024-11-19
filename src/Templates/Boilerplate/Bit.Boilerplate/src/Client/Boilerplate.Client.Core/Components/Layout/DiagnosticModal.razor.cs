@@ -119,13 +119,18 @@ public partial class DiagnosticModal : IDisposable
         ResetLogs();
     }
 
+    private async Task ReloadLogs()
+    {
+        ResetLogs();
+    }
+
     private void ResetLogs()
     {
         allLogs = [.. DiagnosticLogger.Store];
 
         defaultCategoryItems = allLogs.Select(l => l.Category!)
                                       .Where(c => string.IsNullOrWhiteSpace(c) is false)
-                                      .Distinct().ToArray();
+                                      .Distinct().Order().ToArray();
 
         filterCategories = defaultCategoryItems;
         allCategoryItems = defaultCategoryItems.Select(c => new BitDropdownItem<string>() { Text = c, Value = c }).ToArray();
