@@ -46,12 +46,17 @@
                              TItem="BitDropdownItem<string>" TValue="string">
                     <TextTemplate>Categories</TextTemplate>
                 </BitDropdown>
-                <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                <BitButton IconOnly
                            OnClick="HandleOnSortClick"
+                           Color="BitColor.SecondaryBackground"
                            IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
                 <BitButton OnClick="ClearLogs"
                            Color="BitColor.Info"
                            Variant="BitVariant.Outline">Clear logs</BitButton>
+                <BitButton IconOnly
+                           OnClick="ReloadLogs"
+                           IconName="@BitIconName.Refresh"
+                           Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
@@ -69,7 +74,7 @@
                                    IconName="@BitIconName.Copy"
                                    OnClick="() => CopyException(logIndex.item)" />
                         <BitButton IconOnly
-                                   Title="Copy"
+                                   Title="Details"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.GiftboxOpen"
