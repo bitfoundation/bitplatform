@@ -34,6 +34,7 @@ public partial class SignInPage : IDisposable
     private bool isWaiting;
     private bool isOtpRequested;
     private bool requiresTwoFactor;
+    private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
@@ -119,7 +120,9 @@ public partial class SignInPage : IDisposable
         {
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
-            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
+            var request = CreateRequestFromModel();
+
+            requiresTwoFactor = await AuthenticationManager.SignIn(request, CurrentCancellationToken);
 
             if (requiresTwoFactor is false)
             {
@@ -147,19 +150,21 @@ public partial class SignInPage : IDisposable
     {
         if (model.Email is null && model.PhoneNumber is null) return;
 
-        if (model.Email is not null && new EmailAddressAttribute().IsValid(model.Email) is false)
+        var request = CreateRequestFromModel();
+
+        if (request.Email is not null && new EmailAddressAttribute().IsValid(request.Email) is false)
         {
             SnackBarService.Error(string.Format(AppStrings.EmailAddressAttribute_ValidationError, AppStrings.Email));
             return;
         }
 
-        if (model.PhoneNumber is not null && new PhoneAttribute().IsValid(model.PhoneNumber) is false)
+        if (request.PhoneNumber is not null && new PhoneAttribute().IsValid(request.PhoneNumber) is false)
         {
             SnackBarService.Error(string.Format(AppStrings.PhoneAttribute_ValidationError, AppStrings.PhoneNumber));
             return;
         }
 
-        var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+        var identityRequest = new IdentityRequestDto { UserName = request.UserName, Email = request.Email, PhoneNumber = request.PhoneNumber };
 
         if (resend is false)
         {
@@ -175,7 +180,9 @@ public partial class SignInPage : IDisposable
     {
         try
         {
-            await identityController.SendTwoFactorToken(model, CurrentCancellationToken);
+            var request = CreateRequestFromModel();
+
+            await identityController.SendTwoFactorToken(request, CurrentCancellationToken);
 
             SnackBarService.Success(Localizer[nameof(AppStrings.TfaTokenSentMessage)]);
         }
@@ -183,6 +190,38 @@ public partial class SignInPage : IDisposable
         {
             SnackBarService.Error(e.Message);
         }
+    }
+
+    private void HandleOnSignInPanelTabChange(SignInPanelTab tab)
+    {
+        currentSignInPanelTab = tab;
+    }
+
+    private SignInRequestDto CreateRequestFromModel()
+    {
+        var request = new SignInRequestDto()
+        {
+            DeviceInfo = model.DeviceInfo,
+            Email = model.Email,
+            Otp = model.Otp,
+            Password = model.Password,
+            PhoneNumber = model.PhoneNumber,
+            RememberMe = model.RememberMe,
+            TwoFactorCode = model.TwoFactorCode,
+            UserName = model.UserName,
+        };
+
+        if (currentSignInPanelTab is SignInPanelTab.Email)
+        {
+            request.PhoneNumber = null;
+        }
+
+        if (currentSignInPanelTab is SignInPanelTab.Phone)
+        {
+            request.Email = null;
+        }
+
+        return request;
     }
 
 

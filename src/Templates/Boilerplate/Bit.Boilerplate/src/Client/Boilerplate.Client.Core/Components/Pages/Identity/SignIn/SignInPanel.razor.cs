@@ -12,24 +12,22 @@ public partial class SignInPanel
 
     [Parameter] public EventCallback OnSendOtp { get; set; }
 
+    [Parameter] public EventCallback<SignInPanelTab> OnTabChange { get; set; }
+
 
     private const string EmailKey = nameof(EmailKey);
     private const string PhoneKey = nameof(PhoneKey);
 
-    private string selectedKey = EmailKey;
-
-    private void OnSelectedKeyChanged(string key)
+    private async Task HandleOnPivotChange(BitPivotItem item)
     {
-        selectedKey = key;
-
-        if (key == EmailKey)
+        if (item.Key is EmailKey)
         {
-            Model.PhoneNumber = null;
+            await OnTabChange.InvokeAsync(SignInPanelTab.Email);
         }
 
-        if (key == PhoneKey)
+        if (item.Key is PhoneKey)
         {
-            Model.Email = null;
+            await OnTabChange.InvokeAsync(SignInPanelTab.Phone);
         }
     }
 }
