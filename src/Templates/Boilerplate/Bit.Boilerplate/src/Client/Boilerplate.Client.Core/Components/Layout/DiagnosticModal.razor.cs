@@ -10,10 +10,15 @@ public partial class DiagnosticModal : IDisposable
 {
     private bool isOpen;
     private string? searchText;
+    private bool isLogModalOpen;
+    private DiagnosticLog? selectedLog;
     private bool isDescendingSort = true;
     private Action unsubscribe = default!;
+    private string[] defaultCategoryItems = [];
+    private IEnumerable<string> filterCategories = [];
     private IEnumerable<LogLevel> filterLogLevels = [];
     private IEnumerable<DiagnosticLog> allLogs = default!;
+    private BitDropdownItem<string>[] allCategoryItems = [];
     private IEnumerable<DiagnosticLog> filteredLogs = default!;
     private BitBasicList<(DiagnosticLog, int)> logStackRef = default!;
     private readonly BitDropdownItem<LogLevel>[] logLevelItems = Enum.GetValues<LogLevel>().Select(v => new BitDropdownItem<LogLevel>() { Value = v, Text = v.ToString() }).ToArray();
@@ -29,7 +34,7 @@ public partial class DiagnosticModal : IDisposable
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
         {
             isOpen = true;
-            allLogs = [.. DiagnosticLogger.Store];
+            ResetLogs();
             HandleOnLogLevelFilter(defaultFilterLogLevels);
             await InvokeAsync(StateHasChanged);
         });
@@ -50,6 +55,12 @@ public partial class DiagnosticModal : IDisposable
         FilterLogs();
     }
 
+    private void HandleOnCategoryFilter(IEnumerable<string> categories)
+    {
+        filterCategories = categories;
+        FilterLogs();
+    }
+
     private void HandleOnSortClick()
     {
         isDescendingSort = !isDescendingSort;
@@ -59,7 +70,8 @@ public partial class DiagnosticModal : IDisposable
     private void FilterLogs()
     {
         filteredLogs = allLogs.WhereIf(string.IsNullOrEmpty(searchText) is false, l => l.Message?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true || l.Category?.Contains(searchText!, StringComparison.InvariantCultureIgnoreCase) is true)
-                              .Where(l => filterLogLevels.Contains(l.Level));
+                              .Where(l => filterLogLevels.Contains(l.Level))
+                              .Where(l => filterCategories.Contains(l.Category));
         if (isDescendingSort)
         {
             filteredLogs = filteredLogs.OrderByDescending(l => l.CreatedOn);
@@ -75,11 +87,25 @@ public partial class DiagnosticModal : IDisposable
         await clipboard.WriteText(string.Join(Environment.NewLine, telemetryContext.ToDictionary().Select(c => $"{c.Key}: {c.Value}")));
     }
 
-    private async Task CopyException(DiagnosticLog log)
+    private async Task CopyException(DiagnosticLog? log)
     {
-        var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
+        if (log is null) return;
 
-        await clipboard.WriteText($"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}");
+        await clipboard.WriteText(GetContent(log));
+    }
+
+    private async Task OpenLog(DiagnosticLog log)
+    {
+        selectedLog = log;
+        isLogModalOpen = true;
+    }
+
+    private static string GetContent(DiagnosticLog? log)
+    {
+        if (log is null) return string.Empty;
+
+        var stateToCopy = string.Join(Environment.NewLine, log.State?.Select(i => $"{i.Key}: {i.Value}") ?? []);
+        return $"{log.Category}{Environment.NewLine}{log.Message}{Environment.NewLine}{log.Exception?.ToString()}{Environment.NewLine}{stateToCopy}";
     }
 
     private async Task GoTop()
@@ -90,12 +116,25 @@ public partial class DiagnosticModal : IDisposable
     private async Task ClearLogs()
     {
         DiagnosticLogger.Store.Clear();
-        allLogs = [];
+        ResetLogs();
+    }
+
+    private void ResetLogs()
+    {
+        allLogs = [.. DiagnosticLogger.Store];
+
+        defaultCategoryItems = allLogs.Select(l => l.Category!)
+                                      .Where(c => string.IsNullOrWhiteSpace(c) is false)
+                                      .Distinct().ToArray();
+
+        filterCategories = defaultCategoryItems;
+        allCategoryItems = defaultCategoryItems.Select(c => new BitDropdownItem<string>() { Text = c, Value = c }).ToArray();
+
         FilterLogs();
     }
 
 
-    private static BitColor GetColor(LogLevel level)
+    private static BitColor GetColor(LogLevel? level)
     {
         return level switch
         {
