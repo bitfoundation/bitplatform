@@ -1,4 +1,5 @@
-﻿using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Shared.Dtos.Identity;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -13,9 +14,10 @@ public partial class UserMenu
     private BitChoiceGroupItem<string>[] cultures = default!;
 
     [AutoInject] private Cookie cookie = default!;
+    [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private CultureService cultureService = default!;
+    [AutoInject] private IUserController userController = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private ThemeService themeService { get; set; } = default!;
-    [AutoInject] private CultureService cultureService { get; set; } = default!;
 
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
@@ -40,7 +42,7 @@ public partial class UserMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
+        user = await userController.GetCurrentUser(CurrentCancellationToken);
 
         var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
         profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();

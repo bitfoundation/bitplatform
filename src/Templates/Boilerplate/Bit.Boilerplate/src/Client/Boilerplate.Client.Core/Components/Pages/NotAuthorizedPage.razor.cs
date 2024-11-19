@@ -28,7 +28,7 @@ public partial class NotAuthorizedPage
             StateHasChanged();
             try
             {
-                var accessToken = await AuthenticationManager.TryRefreshToken(requestedBy: nameof(NotAuthorizedPage), CurrentCancellationToken);
+                var accessToken = await AuthenticationManager.RefreshToken(requestedBy: nameof(NotAuthorizedPage));
                 if (string.IsNullOrEmpty(accessToken) is false && ReturnUrl is not null)
                 {
                     var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.

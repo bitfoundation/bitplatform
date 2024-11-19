@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Components;
+
 namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface ITelemetryContext
@@ -46,6 +48,9 @@ public interface ITelemetryContext
 
     public string? Environment { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
     public bool? IsOnline { get; set; }
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)

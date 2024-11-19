@@ -21,7 +21,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#if (signalR == true)
     private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
-    [AutoInject] private ILogger<HubConnection> signalRLogger = default!;
     //#endif
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -34,6 +33,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
+    [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
@@ -90,10 +90,22 @@ public partial class ClientAppCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
+    private SemaphoreSlim semaphore = new(1, 1);
+
+    /// <summary>
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
+    /// ensuring the user is correctly set or cleared as needed.
+    /// </summary>
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
         {
+            await semaphore.WaitAsync(CurrentCancellationToken);
+            // About Semaphore: The following code may take significant time to execute.
+            // During this period, the authentication state could change. For instance, the app might start with the user authenticated, but they could sign out while this method is running.
+            // To handle such scenarios, we must ensure the code below runs in a safe and sequential manner, preventing parallel execution.
+            // Without this safeguard, SignalR or push notifications might incorrectly associate the device with a user who has already signed out.
+
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
@@ -128,6 +140,10 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             ExceptionHandler.Handle(exp);
         }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
     //#if (signalR == true)
@@ -153,7 +169,7 @@ public partial class ClientAppCoordinator : AppComponentBase
                     if (string.IsNullOrEmpty(accessToken) is false &&
                         AuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                     {
-                        return await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubConnectionBuilder), CurrentCancellationToken);
+                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
                     }
 
                     return accessToken;
@@ -185,48 +201,46 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
-            signalRLogger.LogInformation("Message {Message} received from server.", message);
+            logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
         });
 
         try
         {
+            hubConnection.Closed += HubConnectionStateChange;
+            hubConnection.Reconnected += HubConnectionConnected;
+            hubConnection.Reconnecting += HubConnectionStateChange;
+
             await hubConnection.StartAsync(CurrentCancellationToken);
             await HubConnectionConnected(null);
         }
         catch (Exception exp)
         {
-            await HubConnectionDisconnected(exp);
-        }
-        finally
-        {
-            hubConnection.Closed += HubConnectionDisconnected;
-            hubConnection.Reconnected += HubConnectionConnected;
-            hubConnection.Reconnecting += HubConnectionDisconnected;
+            await HubConnectionStateChange(exp);
         }
     }
 
-    private async Task HubConnectionConnected(string? connectionId)
+    private async Task HubConnectionConnected(string? _)
     {
         PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, true);
-        signalRLogger.LogInformation("SignalR connection {ConnectionId} established.", connectionId);
+        logger.LogInformation("SignalR connection established.");
     }
 
-    private async Task HubConnectionDisconnected(Exception? exception)
+    private async Task HubConnectionStateChange(Exception? exception)
     {
-        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, false);
+        PubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
 
         if (exception is null)
         {
-            signalRLogger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
+            logger.LogInformation("SignalR state changed {State}", hubConnection!.State);
         }
         else
         {
-            signalRLogger.LogWarning(exception, "SignalR connection lost.");
+            logger.LogWarning(exception, "SignalR connection lost.");
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.TryRefreshToken(requestedBy: nameof(HubException), CurrentCancellationToken);
+                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException));
             }
         }
     }
@@ -269,9 +283,9 @@ public partial class ClientAppCoordinator : AppComponentBase
         //#if (signalR == true)
         if (hubConnection is not null)
         {
-            hubConnection.Closed -= HubConnectionDisconnected;
+            hubConnection.Closed -= HubConnectionStateChange;
             hubConnection.Reconnected -= HubConnectionConnected;
-            hubConnection.Reconnecting -= HubConnectionDisconnected;
+            hubConnection.Reconnecting -= HubConnectionStateChange;
             await hubConnection.DisposeAsync();
         }
         //#endif

@@ -16,6 +16,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try
@@ -27,7 +28,10 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 if (string.IsNullOrEmpty(accessToken) is false && HasAuthorizedApiAttribute(request))
                 {
                     if (tokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                    {
+                        logScopeData["ClientSideAccessTokenValidationFailed"] = true;
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
+                    }
                 }
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
@@ -36,6 +40,9 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
         }
         catch (KnownException _) when (_ is ForbiddenException or UnauthorizedException)
         {
+            if (isInternalRequest is false)
+                throw;
+
             // Notes about ForbiddenException (403):
             // Let's update the access token by refreshing it when a refresh token is available.
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
@@ -53,7 +60,8 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
 
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
-            var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler), cancellationToken);
+            logScopeData["RefreshTokenRequested"] = true;
+            var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler));
 
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -62,7 +70,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
     }
 
     /// <summary>
-    /// <see cref="AuthorizedApiAttribute"/>
+    /// <inheritdoc cref="AuthorizedApiAttribute"/>
     /// </summary>
     private static bool HasAuthorizedApiAttribute(HttpRequestMessage request)
     {
