@@ -79,39 +79,48 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
     }
 
-    public async Task<string?> RefreshToken(string requestedBy, CancellationToken cancellationToken)
+    public async Task<string?> TryRefreshToken(string requestedBy, CancellationToken cancellationToken)
     {
         try
         {
-            var access_token_BeforeLockValue = await tokenProvider.GetAccessToken();
+            return await RefreshToken(requestedBy, cancellationToken);
+        }
+        catch (Exception exp)
+        {
+            exceptionHandler.Handle(exp, new()
+            {
+                { "AdditionalData", "Refreshing access token failed." },
+                { "RefreshTokenRequestedBy", requestedBy }
+            });
+            return null;
+        }
+    }
+
+    public async Task<string> RefreshToken(string requestedBy, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var accessTokenBeforeLock = await tokenProvider.GetAccessToken();
             await semaphore.WaitAsync();
-            var access_token_AfterLockValue = await tokenProvider.GetAccessToken();
-            if (access_token_BeforeLockValue != access_token_AfterLockValue)
-                return access_token_AfterLockValue; // It was renewed by a concurrent refresh token request.
+            var accessTokenAfterLock = await tokenProvider.GetAccessToken();
+            if (accessTokenBeforeLock != accessTokenAfterLock)
+                return accessTokenAfterLock!; // It was renewed by a concurrent refresh token request.
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
-                string? refresh_token = await storageService.GetItem("refresh_token");
-                if (string.IsNullOrEmpty(refresh_token))
+                string? refreshToken = await storageService.GetItem("refresh_token");
+                if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, cancellationToken);
                 await StoreTokens(refreshTokenResponse);
                 return refreshTokenResponse.AccessToken!;
             }
-            catch (Exception exp)
+            catch (UnauthorizedException)
             {
-                if (exp is UnauthorizedException)
-                {
-                    // refresh_token is either invalid or expired.
-                    await ClearTokens();
-                }
-                exceptionHandler.Handle(exp, new()
-                {
-                    { "AdditionalData", "Refreshing access token failed." },
-                    { "RefreshTokenRequestedBy", requestedBy }
-                });
-                return null;
+                // refreshToken is either invalid or expired.
+                await ClearTokens();
+                throw;
             }
         }
         finally
@@ -133,9 +142,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
+            var accessToken = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
-            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false));
+            return new AuthenticationState(tokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
         }
         catch (Exception exp)
         {

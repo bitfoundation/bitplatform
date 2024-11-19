@@ -39,8 +39,8 @@ const overrideSwaggerAuthorizeEvent = (swagger) => {
         originalAuthorize(args);
 
         if (!getCookie(ACCESS_TOKEN_COOKIE_NAME)) {
-            const access_token = args.bearerAuth.value;
-            const jwt = parseJwt(access_token);
+            const accessToken = args.bearerAuth.value;
+            const jwt = parseJwt(accessToken);
             setCookie(ACCESS_TOKEN_COOKIE_NAME, args.bearerAuth.value, parseInt(jwt.exp));
         }
 
@@ -204,17 +204,17 @@ const signIn = async (swagger, userName, email, phone, password) => {
     })
     if (response.ok) {
         const result = await response.json();
-        const access_token = result.accessToken;
+        const accessToken = result.accessToken;
         accessTokenExpiresIn = result.expiresIn;
 
-        const authorizationObject = getAuthorizationRequestObject(access_token);
+        const authorizationObject = getAuthorizationRequestObject(accessToken);
         swagger.authActions.authorize(authorizationObject);
     } else {
         alert(await response.text())
     }
 }
 
-const getAuthorizationRequestObject = (access_token) => {
+const getAuthorizationRequestObject = (accessToken) => {
     return {
         "bearerAuth": {
             "name": "Bearer",
@@ -224,7 +224,7 @@ const getAuthorizationRequestObject = (access_token) => {
                 "name": "Authorization",
                 "in": "header"
             },
-            value: access_token
+            value: accessToken
         },
     };
 }

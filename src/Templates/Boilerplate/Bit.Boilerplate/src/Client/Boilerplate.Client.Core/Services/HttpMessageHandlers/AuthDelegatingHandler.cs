@@ -23,13 +23,13 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             if (isInternalRequest && /* We will restrict sending the access token to our own server only. */
                 request.Headers.Authorization is null)
             {
-                var access_token = await tokenProvider.GetAccessToken();
-                if (string.IsNullOrEmpty(access_token) is false && HasAuthorizedApiAttribute(request))
+                var accessToken = await tokenProvider.GetAccessToken();
+                if (string.IsNullOrEmpty(accessToken) is false && HasAuthorizedApiAttribute(request))
                 {
-                    if (tokenProvider.ParseAccessToken(access_token, validateExpiry: true).IsAuthenticated() is false)
+                    if (tokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
                 }
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
             return await base.SendAsync(request, cancellationToken);
@@ -41,25 +41,21 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
 
             if (AppPlatform.IsBlazorHybrid is false && jsRuntime.IsInitialized() is false)
-                throw; // We don't have access to refresh_token during pre-rendering.
+                throw; // We don't have access to refreshToken during pre-rendering.
 
             var isRefreshTokenRequest = request.RequestUri?.LocalPath?.Contains(IIdentityController.RefreshUri, StringComparison.InvariantCultureIgnoreCase) is true;
 
             if (isRefreshTokenRequest)
                 throw; // To prevent refresh token loop
 
-            var refresh_token = await storageService.GetItem("refresh_token");
-            if (string.IsNullOrEmpty(refresh_token)) throw;
+            var refreshToken = await storageService.GetItem("refresh_token");
+            if (string.IsNullOrEmpty(refreshToken)) throw;
 
             var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
 
-            // In the AuthenticationStateProvider, the access_token is refreshed using the refresh_token (if available).
-            var access_token = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler), cancellationToken);
+            var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler), cancellationToken);
 
-            if (string.IsNullOrEmpty(access_token))
-                throw;
-
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access_token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             return await base.SendAsync(request, cancellationToken);
         }
