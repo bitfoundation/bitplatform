@@ -16,12 +16,6 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
 
     /// <summary>
-    /// The accent color of the navbar.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Accent { get; set; }
-
-    /// <summary>
     /// Items to render as children.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -387,28 +381,6 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
         ClassBuilder.Register(() => IconOnly ? "bit-nbr-ion" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-nbr-apri",
-            BitColor.Secondary => "bit-nbr-asec",
-            BitColor.Tertiary => "bit-nbr-ater",
-            BitColor.Info => "bit-nbr-ainf",
-            BitColor.Success => "bit-nbr-asuc",
-            BitColor.Warning => "bit-nbr-awrn",
-            BitColor.SevereWarning => "bit-nbr-aswr",
-            BitColor.Error => "bit-nbr-aerr",
-            BitColor.PrimaryBackground => "bit-nbr-apbg",
-            BitColor.SecondaryBackground => "bit-nbr-asbg",
-            BitColor.TertiaryBackground => "bit-nbr-atbg",
-            BitColor.PrimaryForeground => "bit-nbr-apfg",
-            BitColor.SecondaryForeground => "bit-nbr-asfg",
-            BitColor.TertiaryForeground => "bit-nbr-atfg",
-            BitColor.PrimaryBorder => "bit-nbr-apbr",
-            BitColor.SecondaryBorder => "bit-nbr-asbr",
-            BitColor.TertiaryBorder => "bit-nbr-atbr",
-            _ => "bit-nbr-apbg",
-        });
-
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-nbr-pri",
@@ -496,6 +468,18 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         {
             _navigationManager.LocationChanged -= OnLocationChanged;
         }
+    }
+
+
+
+    private async Task HandleOnClick(TItem item)
+    {
+
+    }
+
+    private string GetCssClass(TItem item, bool isEnabled)
+    {
+        return $"bit-nbr-itm {GetClass(item)} {(isEnabled ? "" : "bit-nbr-dis")}";
     }
 
 

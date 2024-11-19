@@ -1,4 +1,30 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <ExamplePreview>
+        <BitNavBar TItem="BitNavBarOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" Id="example2">
+    <ExamplePreview>
+        <div>Disabled:</div><br />
+        <BitNavBar TItem="BitNavBarOption" IsEnabled="false">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+        <br /><br /><br /><br />
+        <div>Disabled item:</div><br />
+        <BitNavBar TItem="BitNavBarOption">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" IsEnabled="false" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
     </ExamplePreview>
 </ComponentExampleBox>

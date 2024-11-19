@@ -1,41 +1,48 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-nbr {
-    color: $clr-fg-pri;
+    font-weight: $tg-font-weight;
     font-family: $tg-font-family;
 
     &.bit-dis {
         cursor: none;
         pointer-events: none;
-        background-color: transparent;
 
-        .bit-nbr-itm,
-        .bit-nbr-iic {
+        .bit-nbr-itm {
             color: $clr-fg-dis;
         }
     }
 }
 
-.bit-nbr-ul {
-    margin: 0;
-    padding: 0;
+.bit-nbr-cnt {
     display: flex;
-    list-style-type: none;
     justify-content: space-around;
 }
 
-.bit-nbr-li {
+.bit-nbr-itm {
     display: flex;
+    cursor: pointer;
     gap: spacing(0.5);
+    color: $clr-fg-pri;
     padding: spacing(1);
     align-items: center;
+    text-decoration: none;
     flex-direction: column;
+    background: transparent;
+
+    @media (hover:hover) {
+        &:hover {
+            color: var(--bit-nbr-clr);
+        }
+    }
 }
 
 .bit-nbr-ico {
+    font-size: 1rem;
 }
 
 .bit-nbr-txt {
+    font-size: 0.85rem;
 }
 
 .bit-nbr-ion {
@@ -45,133 +52,13 @@
 }
 
 .bit-nbr-sel {
+    font-weight: 600;
     color: var(--bit-nbr-clr);
-
-    @media (hover:hover) {
-        &:hover {
-            .bit-nbr-li {
-                color: var(--bit-nbr-clr-text);
-            }
-        }
-    }
-
-    .bit-nbr-li {
-        font-weight: 600;
-        color: $clr-fg-pri;
-    }
 }
 
 .bit-nbr-dis {
+    color: $clr-fg-dis;
     pointer-events: none;
-
-    .bit-nbr-itm,
-    .bit-nbr-iic {
-        color: $clr-fg-dis;
-        pointer-events: none;
-    }
-}
-
-
-.bit-nbr-apri {
-    --bit-nbr-clr-text: #{$clr-pri-text};
-    --bit-nbr-clr-hover: #{$clr-pri-hover};
-    --bit-nbr-clr-active: #{$clr-pri-active};
-}
-
-.bit-nbr-asec {
-    --bit-nbr-clr-text: #{$clr-sec-text};
-    --bit-nbr-clr-hover: #{$clr-sec-hover};
-    --bit-nbr-clr-active: #{$clr-sec-active};
-}
-
-.bit-nbr-ater {
-    --bit-nbr-clr-text: #{$clr-ter-text};
-    --bit-nbr-clr-hover: #{$clr-ter-hover};
-    --bit-nbr-clr-active: #{$clr-ter-active};
-}
-
-.bit-nbr-ainf {
-    --bit-nbr-clr-text: #{$clr-inf-text};
-    --bit-nbr-clr-hover: #{$clr-inf-hover};
-    --bit-nbr-clr-active: #{$clr-inf-active};
-}
-
-.bit-nbr-asuc {
-    --bit-nbr-clr-text: #{$clr-suc-text};
-    --bit-nbr-clr-hover: #{$clr-suc-hover};
-    --bit-nbr-clr-active: #{$clr-suc-active};
-}
-
-.bit-nbr-awrn {
-    --bit-nbr-clr-text: #{$clr-wrn-text};
-    --bit-nbr-clr-hover: #{$clr-wrn-hover};
-    --bit-nbr-clr-active: #{$clr-wrn-active};
-}
-
-.bit-nbr-aswr {
-    --bit-nbr-clr-text: #{$clr-swr-text};
-    --bit-nbr-clr-hover: #{$clr-swr-hover};
-    --bit-nbr-clr-active: #{$clr-swr-active};
-}
-
-.bit-nbr-aerr {
-    --bit-nbr-clr-text: #{$clr-err-text};
-    --bit-nbr-clr-hover: #{$clr-err-hover};
-    --bit-nbr-clr-active: #{$clr-err-active};
-}
-
-.bit-nbr-apbg {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-bg-pri-hover};
-    --bit-nbr-clr-active: #{$clr-bg-pri-active};
-}
-
-.bit-nbr-asbg {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-bg-sec-hover};
-    --bit-nbr-clr-active: #{$clr-bg-sec-active};
-}
-
-.bit-nbr-atbg {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-bg-ter-hover};
-    --bit-nbr-clr-active: #{$clr-bg-ter-active};
-}
-
-.bit-nbr-apfg {
-    --bit-nbr-clr-text: #{$clr-bg-pri};
-    --bit-nbr-clr-hover: #{$clr-fg-pri-hover};
-    --bit-nbr-clr-active: #{$clr-fg-pri-active};
-}
-
-.bit-nbr-asfg {
-    --bit-nbr-clr-text: #{$clr-bg-pri};
-    --bit-nbr-clr-hover: #{$clr-fg-sec-hover};
-    --bit-nbr-clr-active: #{$clr-fg-sec-active};
-}
-
-.bit-nbr-atfg {
-    --bit-nbr-clr-text: #{$clr-bg-pri};
-    --bit-nbr-clr-hover: #{$clr-fg-ter-hover};
-    --bit-nbr-clr-active: #{$clr-fg-ter-active};
-}
-
-.bit-nbr-apbr {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-brd-pri-hover};
-    --bit-nbr-clr-active: #{$clr-brd-pri-active};
-}
-
-.bit-nbr-asbr {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-brd-sec-hover};
-    --bit-nbr-clr-active: #{$clr-brd-sec-active};
-}
-
-.bit-nbr-atbr {
-    --bit-nbr-clr-text: #{$clr-fg-pri};
-    --bit-nbr-clr-hover: #{$clr-brd-ter-hover};
-    --bit-nbr-clr-active: #{$clr-brd-ter-active};
 }
 
 

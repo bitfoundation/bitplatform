@@ -1,5 +1,22 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
+        <BitNavBar Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
 
+<ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <ExamplePreview>
+        <div>Disabled:</div><br />
+        <BitNavBar Items="basicNavBarCustoms" IsEnabled="false"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+        <br /><br /><br /><br />
+        <div>Disabled item:</div><br />
+        <BitNavBar Items="basicNavBarCustomsDisabled"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon },
+                                            IsEnabled = { Selector = item => item.Disabled is false } })" />
     </ExamplePreview>
 </ComponentExampleBox>

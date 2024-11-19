@@ -11,62 +11,62 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
 
 
     /// <summary>
-    /// Custom CSS class for the nav option.
+    /// Custom CSS class for the navbar option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
-    /// The custom data for the nav option to provide additional state.
+    /// The custom data for the navbar option to provide additional state.
     /// </summary>
     [Parameter] public object? Data { get; set; }
 
     /// <summary>
-    /// Name of an icon to render next to the nav option.
+    /// Name of an icon to render next to the navbar option.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the nav option is enabled.
+    /// Whether or not the navbar option is enabled.
     /// </summary>
     [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// A unique value to use as a key or id of the nav option.
+    /// A unique value to use as a key or id of the navbar option.
     /// </summary>
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
-    /// Custom CSS style for the nav option.
+    /// Custom CSS style for the navbar option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
-    /// Link target, specifies how to open the nav option's link.
+    /// Link target, specifies how to open the navbar option's link.
     /// </summary>
     [Parameter] public string? Target { get; set; }
 
     /// <summary>
-    /// The custom template for the nav option to render.
+    /// The custom template for the navbar option to render.
     /// </summary>
     [Parameter] public RenderFragment<BitNavBarOption>? Template { get; set; }
 
     /// <summary>
-    /// Text to render for the nav option.
+    /// Text to render for the navbar option.
     /// </summary>
     [Parameter] public string Text { get; set; } = string.Empty;
 
     /// <summary>
-    /// Text for the tooltip of the nav option.
+    /// Text for the tooltip of the navbar option.
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// The nav option's link URL.
+    /// The navbar option's link URL.
     /// </summary>
     [Parameter] public string? Url { get; set; }
 
     /// <summary>
-    /// Alternative URLs to be considered when auto mode tries to detect the selected nav option by the current URL.
+    /// Alternative URLs to be considered when auto mode tries to detect the selected navbar option by the current URL.
     /// </summary>
     [Parameter] public IEnumerable<string>? AdditionalUrls { get; set; }
 

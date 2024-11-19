@@ -14,13 +14,23 @@
         <div style="display:none" hidden>@(Options ?? ChildContent)</div>
     </CascadingValue>
 
-    <ul role="list" class="bit-nbr-ul">
+    <div class="bit-nbr-cnt">
         @foreach (var item in _items)
         {
-            <li class="bit-nbr-li" title="@GetTitle(item)">
+            var itm = item;
+            var url = GetUrl(item);
+            var isEnabled = GetIsEnabled(item);
+
+            <_BitNavBarChild Href="@url"
+                             Title="@GetTitle(item)"
+                             Style="@GetStyle(item)"
+                             Target="@GetTarget(item)"
+                             Disabled="@(isEnabled is false)"
+                             OnClick="() => HandleOnClick(itm)"
+                             Class="@GetCssClass(item, isEnabled)">
                 <i class="bit-nbr-ico bit-icon bit-icon--@GetIconName(item)" />
                 <span class="bit-nbr-txt">@GetText(item)</span>
-            </li>
+            </_BitNavBarChild>
         }
-    </ul>
+    </div>
 </nav>
