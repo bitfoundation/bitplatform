@@ -91,6 +91,11 @@ public partial class ClientAppCoordinator : AppComponentBase
     }
 
     private SemaphoreSlim semaphore = new(1, 1);
+
+    /// <summary>
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
+    /// ensuring the user is correctly set or cleared as needed.
+    /// </summary>
     private async void AuthenticationStateChanged(Task<AuthenticationState> task)
     {
         try
