@@ -1,14 +1,14 @@
 ﻿<Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="9.0.0" />
-        <PackageVersion Include="Bit.BlazorUI" Version="9.0.0" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.0.0" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.0.0" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.0.0" />
-        <PackageVersion Include="Bit.Bswup" Version="9.0.0" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.0.0" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="9.0.0" />
+        <PackageVersion Include="Bit.Butil" Version="9.0.1" />
+        <PackageVersion Include="Bit.BlazorUI" Version="9.0.1" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.0.1" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.0.1" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.0.1" />
+        <PackageVersion Include="Bit.Bswup" Version="9.0.1" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.0.1" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="9.0.1" />
         <PackageVersion Include="libphonenumber-csharp" Version="8.13.50" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
@@ -42,7 +42,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.0.3.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.0.0" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.0.1" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
         <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.6" />
