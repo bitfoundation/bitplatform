@@ -218,7 +218,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            signalRLogger.LogInformation("SignalR connection lost."); // Was triggered intentionally by either server or client.
+            signalRLogger.LogInformation("SignalR state changed {State}", hubConnection!.State);
         }
         else
         {
