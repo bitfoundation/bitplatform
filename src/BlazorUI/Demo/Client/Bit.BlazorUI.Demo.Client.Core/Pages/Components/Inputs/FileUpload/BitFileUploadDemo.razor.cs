@@ -435,7 +435,7 @@ public partial class BitFileUploadDemo
             Name = "CancelUpload",
             Type = "(BitFileInfo? fileInfo = null) => void",
             DefaultValue = "",
-            Description = "Pauses the upload.",
+            Description = "Cancels the upload.",
             LinkType = LinkType.Link,
             Href = "#file-info"
         },
