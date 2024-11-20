@@ -17,8 +17,14 @@
 
         <BitStack FillContent Gap="2rem">
             <BitStack FillContent>
-                <BitPivot Alignment="BitAlignment.Center" SelectedKey="@selectedKey" SelectedKeyChanged="OnSelectedKeyChanged">
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey">
+                <BitPivot Alignment="BitAlignment.Center" HeaderOnly OnChange="HandleOnPivotChange">
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]" Key="@EmailKey" />
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Phone)]" Key="@PhoneKey" />
+                </BitPivot>
+
+                <BitStack Gap="0" FillContent>
+                    @if (selectedKey is EmailKey)
+                    {
                         <BitTextField @bind-Value="Model.Email"
                                       AutoFocus TabIndex="1"
                                       Type="BitInputType.Email"
@@ -26,9 +32,9 @@
                                       Label="@Localizer[nameof(AppStrings.Email)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.Email)" />
-                    </BitPivotItem>
-
-                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.PhoneNumber)]" Key="@PhoneKey">
+                    }
+                    else
+                    {
                         <BitTextField @bind-Value="Model.PhoneNumber"
                                       AutoFocus TabIndex="1"
                                       Type="BitInputType.Tel"
@@ -36,10 +42,8 @@
                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                         <ValidationMessage For="@(() => Model.PhoneNumber)" />
-                    </BitPivotItem>
-                </BitPivot>
-
-                <BitStack Gap="0" FillContent>
+                    }
+                    <br />
                     <BitTextField @bind-Value="Model.Password"
                                   TabIndex="2"
                                   CanRevealPassword="true"

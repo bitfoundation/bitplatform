@@ -5,11 +5,6 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AuthenticationManager : AuthenticationStateProvider
 {
-    /// <summary>
-    /// To prevent multiple simultaneous refresh token requests.
-    /// </summary>
-    private readonly SemaphoreSlim semaphore = new(1, maxCount: 1);
-
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -79,32 +74,23 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
     }
 
-    public async Task<string?> TryRefreshToken(string requestedBy, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await RefreshToken(requestedBy, cancellationToken);
-        }
-        catch (Exception exp)
-        {
-            exceptionHandler.Handle(exp, new()
-            {
-                { "AdditionalData", "Refreshing access token failed." },
-                { "RefreshTokenRequestedBy", requestedBy }
-            });
-            return null;
-        }
-    }
+    /// <summary>
+    /// To prevent multiple simultaneous refresh token requests.
+    /// </summary>
+    private TaskCompletionSource<string?>? refreshTokenTsc = null;
 
-    public async Task<string> RefreshToken(string requestedBy, CancellationToken cancellationToken)
+    public Task<string?> RefreshToken(string requestedBy)
     {
-        try
+        if (refreshTokenTsc is null)
         {
-            var accessTokenBeforeLock = await tokenProvider.GetAccessToken();
-            await semaphore.WaitAsync();
-            var accessTokenAfterLock = await tokenProvider.GetAccessToken();
-            if (accessTokenBeforeLock != accessTokenAfterLock)
-                return accessTokenAfterLock!; // It was renewed by a concurrent refresh token request.
+            refreshTokenTsc = new();
+            _ = RefreshTokenImplementation();
+        }
+
+        return refreshTokenTsc.Task;
+
+        async Task RefreshTokenImplementation()
+        {
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
@@ -112,20 +98,29 @@ public partial class AuthenticationManager : AuthenticationStateProvider
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, cancellationToken);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, default);
                 await StoreTokens(refreshTokenResponse);
-                return refreshTokenResponse.AccessToken!;
+                refreshTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
-            catch (UnauthorizedException)
+            catch (Exception exp)
             {
-                // refreshToken is either invalid or expired.
-                await ClearTokens();
-                throw;
+                exceptionHandler.Handle(exp, new()
+                {
+                    { "AdditionalData", "Refreshing access token failed." },
+                    { "RefreshTokenRequestedBy", requestedBy }
+                });
+
+                if (exp is UnauthorizedException) // refresh token is also invalid.
+                {
+                    await ClearTokens();
+                }
+
+                refreshTokenTsc.SetResult(null);
             }
-        }
-        finally
-        {
-            semaphore.Release();
+            finally
+            {
+                refreshTokenTsc = null;
+            }
         }
     }
 

@@ -378,6 +378,92 @@ public partial class BitFileUploadDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Files",
+            Type = "IReadOnlyList<BitFileInfo>?",
+            DefaultValue = "null",
+            Description = "A list of all of the selected files to upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "UploadStatus",
+            Type = "BitFileUploadStatus",
+            DefaultValue = "",
+            Description = "The current status of the file uploader.",
+            LinkType = LinkType.Link,
+            Href = "#upload-status-enum"
+        },
+        new()
+        {
+            Name = "InputId",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "The id of the file input element.",
+        },
+        new()
+        {
+            Name = "IsRemoving",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Indicates that the file upload is in the middle of removing a file.",
+        },
+        new()
+        {
+            Name = "Upload",
+            Type = "(BitFileInfo? fileInfo = null, string? uploadUrl = null) => Task",
+            DefaultValue = "",
+            Description = "Starts uploading the file(s).",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "PauseUpload",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Pauses the upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "CancelUpload",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Cancels the upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "RemoveFile",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Removes a file by calling the RemoveUrl if the file upload is already started.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "Browse",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Opens a file selection dialog.",
+        },
+        new()
+        {
+            Name = "Reset",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Resets the file upload.",
+        }
+    ];
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;

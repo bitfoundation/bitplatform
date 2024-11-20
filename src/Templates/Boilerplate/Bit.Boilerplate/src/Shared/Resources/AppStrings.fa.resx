@@ -211,9 +211,6 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>انتخاب زبان</value>
   </data>
-    <data name="Settings" xml:space="preserve">
-    <value>تنظیمات</value>
-  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
   </data>
@@ -806,9 +803,6 @@
   </data>
     <data name="TfaPanelAnotherWayGetCode" xml:space="preserve">
     <value>Get code</value>
-  </data>
-    <data name="TwoFactorAuthTitle" xml:space="preserve">
-    <value>2FA</value>
   </data>
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>

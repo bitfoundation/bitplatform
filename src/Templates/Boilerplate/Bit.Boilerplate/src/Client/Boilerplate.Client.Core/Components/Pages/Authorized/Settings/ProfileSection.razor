@@ -18,14 +18,17 @@
         }
         else
         {
-            <BitFileUpload Accept="image/*" AutoUpload
+            <BitFileUpload @ref="fileUploadRef"
+                           AutoReset
+                           AutoUpload
+                           Accept="image/*"
                            MaxSize="1024 * 1024 * 10"
                            UploadUrl="@profileImageUploadUrl"
                            OnUploading="() => isUploading = true"
                            OnUploadFailed="WrapHandled(HandleOnUploadFailed)"
                            OnUploadComplete="WrapHandled(HandleOnUploadComplete)">
                 <LabelTemplate>
-                    <BitStack HorizontalAlign="BitAlignment.Center" Style="cursor:pointer">
+                    <BitStack HorizontalAlign="BitAlignment.Center">
                         @if (isUploading is false)
                         {
                             <BitPersona HidePersonaDetails
@@ -33,9 +36,9 @@
                                         PrimaryText="@User?.FullName"
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
-                            <BitText Color="BitColor.Primary">
-                                @Localizer[nameof(AppStrings.UploadNewProfileImage)]
-                            </BitText>
+                            <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                                <BitText>@Localizer[nameof(AppStrings.UploadNewProfileImage)]</BitText>
+                            </BitLink>
                         }
                         else
                         {

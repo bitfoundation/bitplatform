@@ -211,9 +211,6 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Select language</value>
   </data>
-    <data name="Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
   </data>

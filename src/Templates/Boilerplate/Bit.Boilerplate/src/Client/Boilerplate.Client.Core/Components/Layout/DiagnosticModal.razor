@@ -31,17 +31,32 @@
 
             <BitStack Horizontal FitHeight Wrap>
                 <BitSearchBox Immediate DebounceTime="500" OnChange="HandleOnSearchChange" />
-                <BitDropdown FitWidth MultiSelect
+                <BitDropdown FitWidth
+                             MultiSelect
                              Items="logLevelItems"
                              DefaultValues="defaultFilterLogLevels"
                              OnValuesChange="HandleOnLogLevelFilter"
                              TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
-                <BitButton IconOnly Color="BitColor.SecondaryBackground" Style="height:32px;"
+                <BitDropdown FitWidth
+                             MultiSelect
+                             ShowSearchBox
+                             Items="allCategoryItems"
+                             DefaultValues="defaultCategoryItems"
+                             OnValuesChange="HandleOnCategoryFilter"
+                             TItem="BitDropdownItem<string>" TValue="string">
+                    <TextTemplate>Categories</TextTemplate>
+                </BitDropdown>
+                <BitButton IconOnly
                            OnClick="HandleOnSortClick"
+                           Color="BitColor.SecondaryBackground"
                            IconName="@(isDescendingSort ? BitIconName.SortDown : BitIconName.SortUp)" />
                 <BitButton OnClick="ClearLogs"
                            Color="BitColor.Info"
                            Variant="BitVariant.Outline">Clear logs</BitButton>
+                <BitButton IconOnly
+                           OnClick="ReloadLogs"
+                           IconName="@BitIconName.Refresh"
+                           Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
@@ -50,7 +65,7 @@
                           Items="filteredLogs.Indexed().ToArray()">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight Gap="0" VerticalAlign="BitAlignment.Center">
+                    <BitStack @key="logIndex.item.CreatedOn" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                         <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
@@ -58,7 +73,14 @@
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Copy"
                                    OnClick="() => CopyException(logIndex.item)" />
-                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">@($"{logIndex.item.Category}: {logIndex.item.Message}")</BitText>
+                        <BitButton IconOnly
+                                   Title="Details"
+                                   Color="BitColor.Info"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.GiftboxOpen"
+                                   OnClick="() => OpenLog(logIndex.item)" />
+                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
+                        <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
                     </BitStack>
                 </RowTemplate>
             </BitBasicList>
@@ -70,5 +92,29 @@
                    Class="go-top-button"
                    Variant="BitVariant.Text"
                    IconName="@BitIconName.Up" />
+    </BitModal>
+
+    <BitModal @bind-IsOpen="isLogModalOpen">
+        <div style="padding:1rem;">
+            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                <BitText Typography="BitTypography.H6">Log details</BitText>
+                <BitButton IconOnly
+                           Title="Copy"
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.Copy"
+                           OnClick="() => CopyException(selectedLog)" />
+                <BitSpacer />
+                <BitButton IconOnly
+                           Color="BitColor.Info"
+                           Variant="BitVariant.Text"
+                           OnClick="() => isLogModalOpen = false"
+                           IconName="@BitIconName.ChromeClose" />
+            </BitStack>
+            <br />
+            <BitText Class="log-modal" Color="GetColor(selectedLog?.Level)">
+                <pre style="margin:0">@GetContent(selectedLog)</pre>
+            </BitText>
+        </div>
     </BitModal>
 </div>
