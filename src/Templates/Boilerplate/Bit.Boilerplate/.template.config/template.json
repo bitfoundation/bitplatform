@@ -357,10 +357,10 @@
             "modifiers": [
                 {
                     "copyOnly": [
-                        "global.json",
                         "**/HomePage.razor",
                         "**/*.svg",
-                        "**/*.png"
+                        "**/*.png",
+                        "**/*.sh"
                     ],
                     "exclude": [
                         ".vs/**",
