@@ -53,7 +53,7 @@ public partial class BitNavBarOption : ComponentBase, IDisposable
     /// <summary>
     /// Text to render for the navbar option.
     /// </summary>
-    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public string? Text { get; set; }
 
     /// <summary>
     /// Text for the tooltip of the navbar option.

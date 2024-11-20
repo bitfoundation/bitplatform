@@ -13,3 +13,28 @@
         <BitNavBar Items="basicNavBarItemsDisabled" />
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <BitNavBar Mode="BitNavMode.Manual"
+                   Items="basicNavBarItems"
+                   DefaultSelectedItem="basicNavBarItems[0]" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <BitNavBar Items="basicNavBarItems" IconOnly />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <BitNavBar Items="basicNavBarItems">
+            <ItemTemplate Context="item">
+                <span style="font-size:12px">@item.Text</span>
+                <i class="bit-icon bit-icon--@item.IconName" />
+            </ItemTemplate>
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>

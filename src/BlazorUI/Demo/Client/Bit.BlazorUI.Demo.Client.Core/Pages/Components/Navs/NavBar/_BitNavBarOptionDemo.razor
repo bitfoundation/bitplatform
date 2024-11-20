@@ -28,3 +28,42 @@
         </BitNavBar>
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="Mode" RazorCode="@example3RazorCode" Id="example3">
+    <ExamplePreview>
+        <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example4RazorCode" Id="example4">
+    <ExamplePreview>
+        <BitNavBar TItem="BitNavBarOption" IconOnly>
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" Id="example5">
+    <ExamplePreview>
+        <BitNavBar TItem="BitNavBarOption">
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+            <ItemTemplate Context="option">
+                <span style="font-size:12px">@option.Text</span>
+                <i class="bit-icon bit-icon--@option.IconName" />
+            </ItemTemplate>
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>

@@ -97,262 +97,6 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
 
 
-    internal string? GetClass(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Class;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Class;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Class.Selector is not null)
-        {
-            return NameSelectors.Class.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
-    }
-
-    internal string? GetIconName(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.IconName;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.IconName;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.IconName.Selector is not null)
-        {
-            return NameSelectors.IconName.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
-    }
-
-    internal bool GetIsEnabled(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.IsEnabled;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.IsEnabled;
-        }
-
-        if (NameSelectors is null) return true;
-
-        if (NameSelectors.IsEnabled.Selector is not null)
-        {
-            return NameSelectors.IsEnabled.Selector!(item) ?? true;
-        }
-
-        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
-    }
-
-    internal string? GetKey(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Key;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Key;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Key.Selector is not null)
-        {
-            return NameSelectors.Key.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
-    }
-
-    internal string? GetStyle(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Style;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Style;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Style.Selector is not null)
-        {
-            return NameSelectors.Style.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
-    }
-
-    internal string? GetTarget(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Target;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Target;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Target.Selector is not null)
-        {
-            return NameSelectors.Target.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
-    }
-
-    internal RenderFragment<TItem>? GetTemplate(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Template as RenderFragment<TItem>;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Template as RenderFragment<TItem>;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Template.Selector is not null)
-        {
-            return NameSelectors.Template.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
-    }
-
-    internal string? GetText(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Text;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Text;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Text.Selector is not null)
-        {
-            return NameSelectors.Text.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
-    }
-
-    internal string? GetTitle(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Title;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Title;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Title.Selector is not null)
-        {
-            return NameSelectors.Title.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
-    }
-
-    internal string? GetUrl(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.Url;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.Url;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.Url.Selector is not null)
-        {
-            return NameSelectors.Url.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<string?>(NameSelectors.Url.Name);
-    }
-
-    internal IEnumerable<string>? GetAdditionalUrls(TItem item)
-    {
-        if (item is BitNavBarItem navItem)
-        {
-            return navItem.AdditionalUrls;
-        }
-
-        if (item is BitNavBarOption navOption)
-        {
-            return navOption.AdditionalUrls;
-        }
-
-        if (NameSelectors is null) return null;
-
-        if (NameSelectors.AdditionalUrls.Selector is not null)
-        {
-            return NameSelectors.AdditionalUrls.Selector!(item);
-        }
-
-        return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
-    }
-
-
-    internal async Task SetSelectedItem(TItem item)
-    {
-        if (await AssignSelectedItem(item) is false) return;
-
-        if (item != SelectedItem || Reselectable)
-        {
-            await OnSelectItem.InvokeAsync(item);
-        }
-
-        StateHasChanged();
-    }
-
-
     internal void RegisterOption(BitNavBarOption option)
     {
         _items.Add((option as TItem)!);
@@ -363,12 +107,6 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     {
         _items.Remove((option as TItem)!);
         StateHasChanged();
-    }
-
-
-    internal string GetItemKey(TItem item)
-    {
-        return GetKey(item) ?? Guid.NewGuid().ToString();
     }
 
 
@@ -447,6 +185,8 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
     private void SetSelectedItemByCurrentUrl()
     {
+        if (Mode is not BitNavMode.Automatic) return;
+
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
         var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.InvariantCultureIgnoreCase) ||
                                                         (GetAdditionalUrls(item)?.Select(u => u.ToLower()).Contains(currentUrl.ToLower()) ?? false));
@@ -459,7 +199,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
     private void OnSetMode()
     {
-        if (Mode == BitNavMode.Automatic)
+        if (Mode is BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
             _navigationManager.LocationChanged += OnLocationChanged;
@@ -470,16 +210,298 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         }
     }
 
+    private async Task SetSelectedItem(TItem item)
+    {
+        if (await AssignSelectedItem(item) is false) return;
 
+        if (item != SelectedItem || Reselectable)
+        {
+            await OnSelectItem.InvokeAsync(item);
+        }
+
+        StateHasChanged();
+    }
+
+    private string GetItemKey(TItem item)
+    {
+        return GetKey(item) ?? Guid.NewGuid().ToString();
+    }
 
     private async Task HandleOnClick(TItem item)
     {
+        if (GetIsEnabled(item) is false) return;
 
+        if (Mode == BitNavMode.Manual)
+        {
+            await SetSelectedItem(item);
+        }
+
+        if (SelectedItem != item || Reselectable)
+        {
+            await OnItemClick.InvokeAsync(item);
+        }
     }
 
-    private string GetCssClass(TItem item, bool isEnabled)
+    private string GetItemCssStyle(TItem item)
     {
-        return $"bit-nbr-itm {GetClass(item)} {(isEnabled ? "" : "bit-nbr-dis")}";
+        var itm = Styles?.Item;
+        var style = GetStyle(item);
+        var selected = SelectedItem == item ? Styles?.SelectedItem : string.Empty;
+        return $"{itm} {style} {selected}".Trim();
+    }
+
+    private string GetItemCssClass(TItem item, bool isEnabled)
+    {
+        var itm = Classes?.Item;
+        var @class = GetClass(item);
+        var selected = SelectedItem == item ? $"bit-nbr-sel {Classes?.SelectedItem}" : string.Empty;
+        var disabled = isEnabled ? "" : " bit-nbr-dis";
+
+        return $"bit-nbr-itm {itm} {@class} {selected} {disabled}".Trim();
+    }
+
+
+
+    private string? GetClass(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Class;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Class;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Class.Selector is not null)
+        {
+            return NameSelectors.Class.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Class.Name);
+    }
+
+    private string? GetIconName(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.IconName;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.IconName;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.IconName.Selector is not null)
+        {
+            return NameSelectors.IconName.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.IconName.Name);
+    }
+
+    private bool GetIsEnabled(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.IsEnabled;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.IsEnabled;
+        }
+
+        if (NameSelectors is null) return true;
+
+        if (NameSelectors.IsEnabled.Selector is not null)
+        {
+            return NameSelectors.IsEnabled.Selector!(item) ?? true;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
+    }
+
+    private string? GetKey(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Key;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Key;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Key.Selector is not null)
+        {
+            return NameSelectors.Key.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Key.Name);
+    }
+
+    private string? GetStyle(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Style;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Style;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Style.Selector is not null)
+        {
+            return NameSelectors.Style.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    private string? GetTarget(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Target;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Target;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Target.Selector is not null)
+        {
+            return NameSelectors.Target.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
+    }
+
+    private RenderFragment<TItem>? GetTemplate(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
+    private string? GetText(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Text;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Text;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Text.Selector is not null)
+        {
+            return NameSelectors.Text.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
+    private string? GetTitle(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Title;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
+    }
+
+    private string? GetUrl(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.Url;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.Url;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Url.Selector is not null)
+        {
+            return NameSelectors.Url.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Url.Name);
+    }
+
+    private IEnumerable<string>? GetAdditionalUrls(TItem item)
+    {
+        if (item is BitNavBarItem navItem)
+        {
+            return navItem.AdditionalUrls;
+        }
+
+        if (item is BitNavBarOption navOption)
+        {
+            return navOption.AdditionalUrls;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AdditionalUrls.Selector is not null)
+        {
+            return NameSelectors.AdditionalUrls.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
     }
 
 

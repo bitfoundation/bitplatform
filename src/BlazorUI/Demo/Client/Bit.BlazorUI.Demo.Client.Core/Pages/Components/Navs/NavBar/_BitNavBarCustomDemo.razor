@@ -20,3 +20,35 @@
                                             IsEnabled = { Selector = item => item.Disabled is false } })" />
     </ExamplePreview>
 </ComponentExampleBox>
+
+<ComponentExampleBox Title="Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <BitNavBar Mode="BitNavMode.Manual"
+                   Items="basicNavBarCustoms"
+                   DefaultSelectedItem="basicNavBarCustoms[0]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <BitNavBar IconOnly
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <BitNavBar Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })">
+            <ItemTemplate Context="custom">
+                <span style="font-size:12px">@custom.Title</span>
+                <i class="bit-icon bit-icon--@custom.Icon" />
+            </ItemTemplate>
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>

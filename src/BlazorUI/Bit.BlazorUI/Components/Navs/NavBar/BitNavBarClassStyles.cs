@@ -8,24 +8,14 @@ public class BitNavBarClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the description of the BitNavBar.
+    /// Custom CSS classes/styles for the item container of the BitNavBar.
     /// </summary>
-    public string? Description { get; set; }
+    public string? Container { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the item of the BitNavBar.
     /// </summary>
     public string? Item { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the selected item of the BitNavBar.
-    /// </summary>
-    public string? SelectedItem { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the item container of the BitNavBar.
-    /// </summary>
-    public string? ItemContainer { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the item icon of the BitNavBar.
@@ -38,17 +28,7 @@ public class BitNavBarClassStyles
     public string? ItemText { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the selected item container of the BitNavBar.
+    /// Custom CSS classes/styles for the selected item of the BitNavBar.
     /// </summary>
-    public string? SelectedItemContainer { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the toggle button of the BitNavBar.
-    /// </summary>
-    public string? ToggleButton { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the separator of the BitNavBar.
-    /// </summary>
-    public string? Separator { get; set; }
+    public string? SelectedItem { get; set; }
 }
