@@ -278,16 +278,9 @@ public partial class BitNavBarDemo
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitNavBarItem>?",
+                   Type = "RenderFragment<BitNavBarOption>?",
                    DefaultValue = "null",
                    Description = "The custom template for the navbar option to render.",
-               },
-               new()
-               {
-                   Name = "TemplateRenderMode",
-                   Type = "BitNavBarItemTemplateRenderMode",
-                   DefaultValue = "BitNavBarItemTemplateRenderMode.Normal",
-                   Description = "The render mode of the navbar option's custom template.",
                },
                new()
                {
