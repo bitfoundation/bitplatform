@@ -413,42 +413,42 @@ public partial class BitNavBarDemo
                new()
                {
                    Name = "Root",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitNavBar."
                },
                new()
                {
                    Name = "Container",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the container of the items of the BitNavBar."
                },
                new()
                {
                    Name = "Item",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item of the BitNavBar."
                },
                new()
                {
                    Name = "ItemIcon",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item icon of the BitNavBar."
                },
                new()
                {
                    Name = "ItemText",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item text of the BitNavBar."
                },
                new()
                {
                    Name = "SelectedItem",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item of the BitNavBar."
                },
