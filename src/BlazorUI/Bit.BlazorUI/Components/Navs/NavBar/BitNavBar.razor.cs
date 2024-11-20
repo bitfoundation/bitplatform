@@ -18,7 +18,9 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     /// <summary>
     /// Items to render as children.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the navbar.
@@ -45,7 +47,9 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     /// <summary>
     /// A collection of items to display in the navbar.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = [];
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize how content inside the item is rendered.
@@ -77,7 +81,9 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     /// <summary>
     /// Alias of ChildContent.
     /// </summary>
-    [Parameter] public RenderFragment? Options { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Enables recalling the select events when the same item is selected.
@@ -149,7 +155,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
     protected override async Task OnInitializedAsync()
     {
-        if (ChildContent is null && Items.Any())
+        if (ChildContent is null && Options is null && Items.Any())
         {
             _items = [.. Items];
             _oldItems = Items;
@@ -161,17 +167,6 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         }
 
         await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (ChildContent is null && Items != _oldItems)
-        {
-            _items = Items?.ToList() ?? [];
-            _oldItems = Items;
-        }
-
-        await base.OnParametersSetAsync();
     }
 
 
@@ -194,6 +189,15 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         if (currentItem is not null)
         {
             _ = AssignSelectedItem(currentItem);
+        }
+    }
+
+    private void OnSetParameters()
+    {
+        if (ChildContent is null && Options is null && Items != _oldItems)
+        {
+            _items = Items?.ToList() ?? [];
+            _oldItems = Items;
         }
     }
 
@@ -255,7 +259,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         var itm = Classes?.Item;
         var @class = GetClass(item);
         var selected = SelectedItem == item ? $"bit-nbr-sel {Classes?.SelectedItem}" : string.Empty;
-        var disabled = isEnabled ? "" : " bit-nbr-dis";
+        var disabled = isEnabled ? string.Empty : "bit-nbr-dis";
 
         return $"bit-nbr-itm {itm} {@class} {selected} {disabled}".Trim();
     }
