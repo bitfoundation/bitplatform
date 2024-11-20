@@ -8,7 +8,7 @@ public class BitNavBarClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the item container of the BitNavBar.
+    /// Custom CSS classes/styles for the container of the items of the BitNavBar.
     /// </summary>
     public string? Container { get; set; }
 

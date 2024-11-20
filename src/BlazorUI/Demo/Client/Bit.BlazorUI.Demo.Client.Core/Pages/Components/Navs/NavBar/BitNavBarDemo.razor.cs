@@ -6,20 +6,6 @@ public partial class BitNavBarDemo
     [
         new()
         {
-            Name = "Accent",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The accent color of the nav.",
-        },
-        new()
-        {
-            Name = "ChevronDownIcon",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom icon name of the chevron-down element of the BitNav component.",
-        },
-        new()
-        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -32,7 +18,7 @@ public partial class BitNavBarDemo
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the BitNav component.",
             LinkType = LinkType.Link,
-            Href = "#nav-class-styles",
+            Href = "#class-styles",
         },
         new()
         {
@@ -50,31 +36,10 @@ public partial class BitNavBarDemo
         },
         new()
         {
-            Name = "FitWidth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the nav in a width to only fit its content."
-        },
-        new()
-        {
-            Name = "FullWidth",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Renders the nav in full width of its container element."
-        },
-        new()
-        {
             Name = "HeaderTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the group header is rendered."
-        },
-        new()
-        {
-            Name = "HeaderTemplateRenderMode",
-            Type = "BitNavItemTemplateRenderMode",
-            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-            Description = "The render mode of the custom HeaderTemplate."
         },
         new()
         {
@@ -85,33 +50,12 @@ public partial class BitNavBarDemo
         },
         new()
         {
-            Name = "IndentValue",
-            Type = "int",
-            DefaultValue = "16",
-            Description = "The indentation value in px for each level of depth of child item."
-        },
-        new()
-        {
-            Name = "IndentPadding",
-            Type = "int",
-            DefaultValue = "27",
-            Description = "The indentation padding in px for items without children (compensation space for chevron icon)."
-        },
-        new()
-        {
-            Name = "IndentReversedPadding",
-            Type = "int",
-            DefaultValue = "4",
-            Description = "The indentation padding in px for items in reversed mode."
-        },
-        new()
-        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
             Description = "A collection of item to display in the navigation bar.",
             LinkType = LinkType.Link,
-            Href="#nav-item",
+            Href="#navbar-item",
         },
         new()
         {
@@ -119,15 +63,6 @@ public partial class BitNavBarDemo
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the item is rendered."
-        },
-        new()
-        {
-            Name = "ItemTemplateRenderMode",
-            Type = "BitNavItemTemplateRenderMode",
-            DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-            Description = "The render mode of the custom ItemTemplate.",
-            LinkType = LinkType.Link,
-            Href = "#nav-itemtemplate-rendermode",
         },
         new()
         {
@@ -155,24 +90,16 @@ public partial class BitNavBarDemo
         },
         new()
         {
-            Name = "OnItemToggle",
-            Type = "EventCallback<TItem>",
-            Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
-        },
-        new()
-        {
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
             Description = "Callback invoked when an item is selected."
         },
         new()
         {
-            Name = "RenderType",
-            Type = "BitNavRenderType",
-            DefaultValue = "BitNavRenderType.Normal",
-            Description = "The way to render nav items.",
-            LinkType = LinkType.Link,
-            Href = "#nav-render-type-enum",
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent.",
         },
         new()
         {
@@ -183,24 +110,10 @@ public partial class BitNavBarDemo
         },
         new()
         {
-            Name = "ReversedChevron",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Reverses the location of the expander chevron."
-        },
-        new()
-        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Selected item to show in the BitNav."
-        },
-        new()
-        {
-            Name = "SingleExpand",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the single-expand mode in the BitNav."
+            Description = "Selected item to show in the BitNavBar."
         },
         new()
         {
@@ -209,498 +122,299 @@ public partial class BitNavBarDemo
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitNav component.",
             LinkType = LinkType.Link,
-            Href = "#nav-class-styles",
+            Href = "#class-styles",
         }
     ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
         {
-            Id = "nav-item",
-            Title = "BitNavItem",
+            Id = "navbar-item",
+            Title = "BitNavBarItem",
             Parameters =
             [
-               new()
-               {
-                   Name = "AriaCurrent",
-                   Type = "BitNavAriaCurrent",
-                   DefaultValue = "BitNavAriaCurrent.Page",
-                   Description = " Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'.",
-                   Href = "#nav-aria-current-enum",
-                   LinkType = LinkType.Link,
-               },
-               new()
-               {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label for nav item. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
-               },
                new()
                {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS class for the nav item.",
-               },
-               new()
-               {
-                   Name = "ChildItems",
-                   Type = "List<BitNavItem>",
-                   DefaultValue = "[]",
-                   Description = "A list of items to render as children of the current nav item.",
-               },
-               new()
-               {
-                   Name = "CollapseAriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label when nav item is collapsed and can be expanded.",
+                   Description = "Custom CSS class for the navbar item.",
                },
                new()
                {
                    Name = "Data",
                    Type = "object?",
                    DefaultValue = "null",
-                   Description = "The custom data for the nav item to provide additional state.",
-               },
-               new()
-               {
-                   Name = "Description",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "The description for the nav item.",
-               },
-               new()
-               {
-                   Name = "ExpandAriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label when nav item is collapsed and can be expanded.",
-               },
-               new()
-               {
-                   Name = "ForceAnchor",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Forces an anchor element render instead of button.",
+                   Description = "The custom data for the navbar item to provide additional state.",
                },
                new()
                {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Name of an icon to render next to the nav item.",
+                   Description = "Name of an icon to render next to the navbar item.",
                },
                new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    DefaultValue = "true",
-                   Description = "Whether or not the nav item is enabled.",
-               },
-               new()
-               {
-                   Name = "IsExpanded",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Whether or not the nav item is in an expanded state.",
-               },
-               new()
-               {
-                   Name = "IsSeparator",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Indicates that the nav item should render as a separator.",
+                   Description = "Whether or not the navbar item is enabled.",
                },
                new()
                {
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "A unique value to use as a key or id of the nav item.",
+                   Description = "A unique value to use as a key or id of the navbar item.",
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS style for the nav item.",
+                   Description = "Custom CSS style for the navbar item.",
                },
                new()
                {
                    Name = "Target",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Link target, specifies how to open the nav item's link.",
+                   Description = "Link target, specifies how to open the navbar item's link.",
                },
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitNavItem>?",
+                   Type = "RenderFragment<BitNavBarItem>?",
                    DefaultValue = "null",
-                   Description = "The custom template for the nav item to render.",
-               },
-               new()
-               {
-                   Name = "TemplateRenderMode",
-                   Type = "BitNavItemTemplateRenderMode",
-                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-                   Description = "The render mode of the nav item's custom template.",
+                   Description = "The custom template for the navbar item to render.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
-                   Description = "Text to render for the nav item.",
+                   Description = "Text to render for the navbar item.",
                },
                new()
                {
                    Name = "Title",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Text for the tooltip of the nav item.",
+                   Description = "Text for the tooltip of the navbar item.",
                },
                new()
                {
                    Name = "Url",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The nav item's link URL.",
+                   Description = "The navbar item's link URL.",
                },
                new()
                {
                    Name = "AdditionalUrls",
                    Type = "IEnumerable<string>?",
                    DefaultValue = "null",
-                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected nav item by the current URL.",
+                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar item by the current URL.",
                }
             ]
         },
         new()
         {
-            Id = "nav-option",
-            Title = "BitNavOption",
+            Id = "navbar-option",
+            Title = "BitNavBarOption",
             Parameters =
             [
-               new()
-               {
-                   Name = "AriaCurrent",
-                   Type = "BitNavAriaCurrent",
-                   DefaultValue = "BitNavAriaCurrent.Page",
-                   Description = " Aria-current token for active nav option. Must be a valid token value, and defaults to 'page'.",
-                   Href = "#nav-aria-current-enum",
-                   LinkType = LinkType.Link,
-               },
-               new()
-               {
-                   Name = "AriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label for nav option. Ignored if CollapseAriaLabel or ExpandAriaLabel is provided.",
-               },
                new()
                {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS class for the nav option.",
-               },
-               new()
-               {
-                   Name = "ChildContent",
-                   Type = "RenderFragment?",
-                   DefaultValue = "null",
-                   Description = "A list of options to render as children of the current nav option.",
-               },
-               new()
-               {
-                   Name = "CollapseAriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label when nav option is collapsed and can be expanded.",
+                   Description = "Custom CSS class for the navbar option.",
                },
                new()
                {
                    Name = "Data",
                    Type = "object?",
                    DefaultValue = "null",
-                   Description = "The custom data for the nav option to provide additional state.",
-               },
-               new()
-               {
-                   Name = "Description",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "The description for the nav option.",
-               },
-               new()
-               {
-                   Name = "ExpandAriaLabel",
-                   Type = "string?",
-                   DefaultValue = "null",
-                   Description = "Aria label when nav option is collapsed and can be expanded.",
-               },
-               new()
-               {
-                   Name = "ForceAnchor",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Forces an anchor element render instead of button.",
+                   Description = "The custom data for the navbar option to provide additional state.",
                },
                new()
                {
                    Name = "IconName",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Name of an icon to render next to the nav option.",
+                   Description = "Name of an icon to render next to the navbar option.",
                },
                new()
                {
                    Name = "IsEnabled",
                    Type = "bool",
                    DefaultValue = "true",
-                   Description = "Whether or not the nav option is enabled.",
-               },
-               new()
-               {
-                   Name = "IsExpanded",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Whether or not the nav option is in an expanded state.",
-               },
-               new()
-               {
-                   Name = "IsSeparator",
-                   Type = "bool",
-                   DefaultValue = "false",
-                   Description = "Indicates that the nav option should render as a separator.",
+                   Description = "Whether or not the navbar option is enabled.",
                },
                new()
                {
                    Name = "Key",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "A unique value to use as a key or id of the nav option.",
+                   Description = "A unique value to use as a key or id of the navbar option.",
                },
                new()
                {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS style for the nav option.",
+                   Description = "Custom CSS style for the navbar option.",
                },
                new()
                {
                    Name = "Target",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Link target, specifies how to open the nav option's link.",
+                   Description = "Link target, specifies how to open the navbar option's link.",
                },
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitNavItem>?",
+                   Type = "RenderFragment<BitNavBarItem>?",
                    DefaultValue = "null",
-                   Description = "The custom template for the nav option to render.",
+                   Description = "The custom template for the navbar option to render.",
                },
                new()
                {
                    Name = "TemplateRenderMode",
-                   Type = "BitNavItemTemplateRenderMode",
-                   DefaultValue = "BitNavItemTemplateRenderMode.Normal",
-                   Description = "The render mode of the nav option's custom template.",
+                   Type = "BitNavBarItemTemplateRenderMode",
+                   DefaultValue = "BitNavBarItemTemplateRenderMode.Normal",
+                   Description = "The render mode of the navbar option's custom template.",
                },
                new()
                {
                    Name = "Text",
                    Type = "string",
                    DefaultValue = "string.Empty",
-                   Description = "Text to render for the nav option.",
+                   Description = "Text to render for the navbar option.",
                },
                new()
                {
                    Name = "Title",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Text for the tooltip of the nav option.",
+                   Description = "Text for the tooltip of the navbar option.",
                },
                new()
                {
                    Name = "Url",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The nav option's link URL.",
+                   Description = "The navbar option's link URL.",
                },
                new()
                {
                    Name = "AdditionalUrls",
                    Type = "IEnumerable<string>?",
                    DefaultValue = "null",
-                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected nav option by the current URL.",
+                   Description = "Alternative URLs to be considered when auto mode tries to detect the selected navbar option by the current URL.",
                }
             ]
         },
         new()
         {
             Id = "name-selectors",
-            Title = "BitNavNameSelectors<TItem>",
+            Title = "BitNavBarNameSelectors<TItem>",
             Parameters =
             [
                new()
                {
-                   Name = "AriaCurrent",
-                   Type = "BitNameSelectorPair<TItem, BitNavAriaCurrent?>",
-                   DefaultValue = "new(nameof(BitNavItem.AriaCurrent))",
-                   Description = "The AriaCurrent field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "AriaLabel",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.AriaLabel))",
-                   Description = "The AriaLabel field name and selector of the custom input class."
-               },
-               new()
-               {
                    Name = "Class",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Class))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Class))",
                    Description = "The Class field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "ChildItems",
-                   Type = "BitNameSelectorPair<TItem, List<TItem>?>",
-                   DefaultValue = "new(nameof(BitNavItem.ChildItems))",
-                   Description = "The ChildItems field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "CollapseAriaLabel",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.CollapseAriaLabel))",
-                   Description = "The CollapseAriaLabel field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Data",
                    Type = "BitNameSelectorPair<TItem, object?>",
-                   DefaultValue = "new(nameof(BitNavItem.Data))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Data))",
                    Description = "The Data field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "Description",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Description))",
-                   Description = "The Description field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "ExpandAriaLabel",
-                   Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.ExpandAriaLabel))",
-                   Description = "The ExpandAriaLabel field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "ForceAnchor",
-                   Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavItem.ForceAnchor))",
-                   Description = "The ForceAnchor field name and selector of the custom input class."
                },
                new()
                {
                    Name = "IconName",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.IconName))",
+                   DefaultValue = "new(nameof(BitNavBarItem.IconName))",
                    Description = "The IconName field name and selector of the custom input class."
                },
                new()
                {
                    Name = "IsEnabled",
                    Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavItem.IsEnabled))",
+                   DefaultValue = "new(nameof(BitNavBarItem.IsEnabled))",
                    Description = "The IsEnabled field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "IsExpanded",
-                   Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavItem.IsExpanded))",
-                   Description = "The IsExpanded field name and selector of the custom input class."
-               },
-               new()
-               {
-                   Name = "IsSeparator",
-                   Type = "BitNameSelectorPair<TItem, bool?>",
-                   DefaultValue = "new(nameof(BitNavItem.IsSeparator))",
-                   Description = "The IsSeparator field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Key",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Key))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Key))",
                    Description = "The Key field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Style",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Style))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Style))",
                    Description = "The Style field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Target",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Target))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Target))",
                    Description = "The Target field name and selector of the custom input class."
                },
                new()
                {
-                   Name = "TemplateRenderMode",
-                   Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
-                   DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
-                   Description = "The TemplateRenderMode field name and selector of the custom input class."
+                   Name = "Template",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitNavBarItem.Template))",
+                   Description = "The Template field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Text",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Text))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Text))",
                    Description = "The Text field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Title",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Title))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Title))",
                    Description = "The Title field name and selector of the custom input class."
                },
                new()
                {
                    Name = "Url",
                    Type = "BitNameSelectorPair<TItem, string?>",
-                   DefaultValue = "new(nameof(BitNavItem.Url))",
+                   DefaultValue = "new(nameof(BitNavBarItem.Url))",
                    Description = "The Url field name and selector of the custom input class."
                },
                new()
                {
                    Name = "AdditionalUrls",
                    Type = "BitNameSelectorPair<TItem, IEnumerable<string>?>",
-                   DefaultValue = "new(nameof(BitNavItem.AdditionalUrls))",
+                   DefaultValue = "new(nameof(BitNavBarItem.AdditionalUrls))",
                    Description = "The AdditionalUrls field name and selector of the custom input class."
                },
             ]
         },
         new()
         {
-            Id = "nav-class-styles",
-            Title = "BitNavClassStyles",
+            Id = "class-styles",
+            Title = "BitNavBarClassStyles",
             Parameters =
             [
                new()
@@ -708,67 +422,47 @@ public partial class BitNavBarDemo
                    Name = "Root",
                    Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the root element of the BitNav."
+                   Description = "Custom CSS classes/styles for the root element of the BitNavBar."
+               },
+               new()
+               {
+                   Name = "Container",
+                   Type = "String?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the items of the BitNavBar."
                },
                new()
                {
                    Name = "Item",
                    Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the item of the BitNav."
-               },
-               new()
-               {
-                   Name = "SelectedItem",
-                   Type = "String?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the selected item of the BitNav."
-               },
-               new()
-               {
-                   Name = "ItemContainer",
-                   Type = "String?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the item container of the BitNav."
+                   Description = "Custom CSS classes/styles for the item of the BitNavBar."
                },
                new()
                {
                    Name = "ItemIcon",
                    Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the item icon of the BitNav."
+                   Description = "Custom CSS classes/styles for the item icon of the BitNavBar."
                },
                new()
                {
                    Name = "ItemText",
                    Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the item text of the BitNav."
+                   Description = "Custom CSS classes/styles for the item text of the BitNavBar."
                },
                new()
                {
-                   Name = "SelectedItemContainer",
+                   Name = "SelectedItem",
                    Type = "String?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the selected item container of the BitNav."
-               },
-               new()
-               {
-                   Name = "ToggleButton",
-                   Type = "String?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the toggle button of the BitNav."
-               },
-               new()
-               {
-                   Name = "Separator",
-                   Type = "String?",
-                   DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the separator of the BitNav."
+                   Description = "Custom CSS classes/styles for the selected item of the BitNavBar."
                },
             ]
         }
     ];
+
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         new()
@@ -787,83 +481,6 @@ public partial class BitNavBarDemo
                 {
                     Name = "Manual",
                     Description = "Selected key changes will be sent back to the parent component and the component won't change its value.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-render-type-enum",
-            Name = "BitNavRenderType",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Grouped",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "nav-aria-current-enum",
-            Name = "BitNavItemAriaCurrent",
-            Items =
-            [
-                new()
-                {
-                    Name = "Page",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Step",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "Location",
-                    Value = "2",
-                },
-                new()
-                {
-                    Name = "Date",
-                    Value = "3",
-                },
-                new()
-                {
-                    Name = "Time",
-                    Value = "4",
-                },
-                new()
-                {
-                    Name = "True",
-                    Value = "5",
-                },
-
-            ]
-        },
-        new()
-        {
-            Id = "nav-itemtemplate-rendermode",
-            Name = "BitNavItemTemplateRenderMode",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Description = "Renders the template inside the button/anchor root element of the item.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "Replace",
-                    Description = "Replaces the button/anchor root element of the item.",
                     Value = "1",
                 }
             ]

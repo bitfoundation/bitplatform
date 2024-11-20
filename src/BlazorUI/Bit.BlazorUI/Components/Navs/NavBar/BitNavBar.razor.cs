@@ -188,8 +188,8 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         if (Mode is not BitNavMode.Automatic) return;
 
         var currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.Ordinal);
-        var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.InvariantCultureIgnoreCase) ||
-                                                        (GetAdditionalUrls(item)?.Select(u => u.ToLower()).Contains(currentUrl.ToLower()) ?? false));
+        var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.OrdinalIgnoreCase) ||
+                                                        (GetAdditionalUrls(item)?.Any(u => string.Equals(u, currentUrl, StringComparison.OrdinalIgnoreCase)) ?? false));
 
         if (currentItem is not null)
         {
@@ -516,10 +516,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     {
         if (disposing is false || _disposed) return;
 
-        if (Mode == BitNavMode.Automatic)
-        {
-            _navigationManager.LocationChanged -= OnLocationChanged;
-        }
+        _navigationManager.LocationChanged -= OnLocationChanged;
 
         _disposed = true;
     }
