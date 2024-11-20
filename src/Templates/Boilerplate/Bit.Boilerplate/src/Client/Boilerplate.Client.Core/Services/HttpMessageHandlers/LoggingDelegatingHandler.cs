@@ -8,31 +8,23 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         logger.LogInformation("Sending HTTP request {Method} {Uri}", request.Method, request.RequestUri);
+        request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Warning);
+        request.Options.Set(new(RequestOptionNames.LogScopeData), new Dictionary<string, object?>());
 
         var stopwatch = Stopwatch.StartNew();
-        int? responseStatusCode = null;
         try
         {
-            var response = await base.SendAsync(request, cancellationToken);
-            responseStatusCode = (int?)response.StatusCode;
-            return response;
-        }
-        catch (RestException exp)
-        {
-            responseStatusCode = (int)exp.StatusCode;
-            throw;
-        }
-        catch (HttpRequestException exp)
-        {
-            responseStatusCode = (int?)exp.StatusCode;
-            throw;
+            return await base.SendAsync(request, cancellationToken);
         }
         finally
         {
-            logger.Log(responseStatusCode is null or >= 400 ? LogLevel.Warning : LogLevel.Information, "Received HTTP response for {Uri} after {Duration}ms - {StatusCode}",
+            var logLevel = (LogLevel)request.Options.GetValueOrDefault(RequestOptionNames.LogLevel)!;
+            var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
+
+            using var scope = logger.BeginScope(logScopeData);
+            logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
                 request.RequestUri,
-                stopwatch.ElapsedMilliseconds,
-                responseStatusCode);
+                stopwatch.ElapsedMilliseconds);
         }
     }
 }

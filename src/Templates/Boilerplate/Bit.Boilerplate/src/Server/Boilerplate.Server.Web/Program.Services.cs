@@ -90,7 +90,7 @@ public static partial class Program
 
             foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
             {
-                httpClient.DefaultRequestHeaders.Add(xHeader.Key, string.Join(',', xHeader.Value!));
+                httpClient.DefaultRequestHeaders.Add(xHeader.Key, string.Join(',', xHeader.Value.AsEnumerable()));
             }
 
             if (httpClient.DefaultRequestHeaders.Contains(forwardedHeadersOptions.ForwardedForHeaderName) is false &&
@@ -110,7 +110,7 @@ public static partial class Program
 
             if (currentRequest.Headers.TryGetValue(HeaderNames.Referer, out headerValues))
             {
-                httpClient.DefaultRequestHeaders.Add(HeaderNames.Referer, string.Join(',', headerValues!));
+                httpClient.DefaultRequestHeaders.Add(HeaderNames.Referer, string.Join(',', headerValues.AsEnumerable()));
             }
 
             return httpClient;

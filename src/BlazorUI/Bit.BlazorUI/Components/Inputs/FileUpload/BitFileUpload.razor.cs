@@ -192,12 +192,12 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 
 
     /// <summary>
-    /// All selected files.
+    /// A list of all of the selected files to upload.
     /// </summary>
     public IReadOnlyList<BitFileInfo>? Files { get; private set; }
 
     /// <summary>
-    /// The general status of the upload.
+    /// The current status of the file uploader.
     /// </summary>
     public BitFileUploadStatus UploadStatus { get; private set; }
 
@@ -207,7 +207,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     public string? InputId { get; private set; }
 
     /// <summary>
-    /// Indicates that the FileUpload is in the middle of removing a file.
+    /// Indicates that the file upload is in the middle of removing a file.
     /// </summary>
     public bool IsRemoving { get; private set; }
 
@@ -328,7 +328,7 @@ public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Resets the file-upload.
+    /// Resets the file upload.
     /// </summary>
     public async Task Reset()
     {

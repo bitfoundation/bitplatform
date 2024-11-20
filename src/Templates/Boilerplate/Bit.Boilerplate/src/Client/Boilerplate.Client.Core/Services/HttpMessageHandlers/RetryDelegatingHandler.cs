@@ -9,10 +9,12 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
         var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(3).ToArray();
 
         Exception? lastExp = null;
 
+        int retryCount = 0;
         foreach (var delay in delays)
         {
             try
@@ -23,7 +25,8 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             {
                 if (HasNoRetryPolicyAttribute(request))
                     throw;
-
+                retryCount++;
+                logScopeData["RetryCount"] = retryCount;
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }
