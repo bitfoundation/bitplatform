@@ -22,16 +22,16 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.Butil" Version="9.0.0" />
-        <PackageReference Include="Bit.BlazorUI" Version="9.0.0" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="9.0.0" />
+        <PackageReference Include="Bit.Butil" Version="9.0.1" />
+        <PackageReference Include="Bit.BlazorUI" Version="9.0.1" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="9.0.1" />
         <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Icons.wasm" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="9.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.0.0">
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="9.0.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.0.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
