@@ -157,7 +157,7 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
     - name: Set app center secret
-      run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
+      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
       shell: pwsh
 
     - name: Generate CSS/JS files
