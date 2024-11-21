@@ -82,7 +82,8 @@ public partial class Program
         {
             Text = "Boilerplate",
             WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960")
+            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
         };
 
         Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");

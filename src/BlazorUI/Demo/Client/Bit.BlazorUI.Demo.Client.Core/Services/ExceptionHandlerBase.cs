@@ -15,9 +15,10 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         if (isDebug)
         {
-            _ = Console.Out.WriteLineAsync(exceptionMessage);
             Debugger.Break();
         }
+
+        _ = Console.Out.WriteLineAsync(exception.ToString());
 
         _ = MessageBoxService.Show(exceptionMessage, "Error");
     }
