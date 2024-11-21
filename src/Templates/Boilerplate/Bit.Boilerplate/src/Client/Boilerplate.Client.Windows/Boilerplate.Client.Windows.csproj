@@ -80,8 +80,11 @@
     <Target Name="RemoveFilesAfterPublish" AfterTargets="Publish">
         <!-- Unneccecary files because of Microsoft.Web.WebView2.Wpf etc. -->
         <ItemGroup>
-            <FilesToDelete Include="$(PublishDir)D3DCompiler_47_cor3.dll" />
             <FilesToDelete Include="$(PublishDir)wpfgfx_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)WindowsBase.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationCore.dll" />
+            <FilesToDelete Include="$(PublishDir)D3DCompiler_47_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationFramework.dll" />
             <FilesToDelete Include="$(PublishDir)System.Windows.Forms.Design.dll" />
         </ItemGroup>
         <Delete Files="@(FilesToDelete)" />
