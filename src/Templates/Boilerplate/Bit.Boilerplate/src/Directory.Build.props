@@ -8,6 +8,7 @@
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CS1998;CS1591</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114</WarningsAsErrors>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 		
 		<!-- You have the flexibility to modify all of these properties using the -p parameters during the build process. -->
 		<!-- Examples: dotnet publish -c Release -p:MultilingualEnabled=false OR dotnet build -p:PwaEnabled=false -->
@@ -57,6 +58,7 @@
     <ItemGroup>
         <PackageReference Include="Bit.CodeAnalyzers" PrivateAssets="all" />
         <PackageReference Include="Bit.SourceGenerators" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     </ItemGroup>
     
     <ItemGroup>

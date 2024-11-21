@@ -19,7 +19,7 @@
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.10" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.10" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.10" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.10" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
         <PackageVersion Include="Velopack" Version="0.0.942" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.0" />

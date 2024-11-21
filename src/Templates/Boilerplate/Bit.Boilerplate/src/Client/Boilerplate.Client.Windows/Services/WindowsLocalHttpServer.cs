@@ -32,7 +32,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
+                    Application.OpenForms[0]!.Activate();
 
                     await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                 }

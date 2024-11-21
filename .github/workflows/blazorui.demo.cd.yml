@@ -120,7 +120,7 @@ jobs:
     - name: Publish
       run: |
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
-          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -p:PublishReadyToRun=true --self-contained
+          dotnet publish Bit.BlazorUI.Demo.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false --self-contained
           dotnet tool restore
           dotnet vpk pack -u Bit.BlazorUI.Demo.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e Bit.BlazorUI.Demo.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'Bit Blazor UI'
   

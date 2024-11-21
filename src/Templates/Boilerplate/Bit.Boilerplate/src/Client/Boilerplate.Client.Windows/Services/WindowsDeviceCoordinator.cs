@@ -6,7 +6,7 @@ public partial class WindowsDeviceCoordinator : IBitDeviceCoordinator
     //#if (framework == 'net9.0')
     public async Task ApplyTheme(bool isDark)
     {
-        App.Current.ThemeMode = isDark ? System.Windows.ThemeMode.Dark : System.Windows.ThemeMode.Light;
+        Application.SetColorMode(isDark ? SystemColorMode.Dark : SystemColorMode.Classic);
     }
     //#endif
 }
