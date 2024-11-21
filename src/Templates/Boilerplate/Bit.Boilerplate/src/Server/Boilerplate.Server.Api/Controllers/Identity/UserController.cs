@@ -7,8 +7,10 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Server.Api.SignalR;
+//#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
