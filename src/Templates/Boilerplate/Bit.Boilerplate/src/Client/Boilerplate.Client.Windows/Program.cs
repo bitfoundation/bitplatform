@@ -12,6 +12,14 @@ public partial class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        //#if (appCenter == true)
+        string? appCenterSecret = null;
+        if (appCenterSecret is not null)
+        {
+            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
+        }
+        //#endif
+
         Application.ThreadException += (_, e) => LogException(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
 
