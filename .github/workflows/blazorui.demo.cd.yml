@@ -14,79 +14,79 @@ permissions:
 
 jobs:
 
-  build_api_blazor:
-    name: build api + blazor web
-    runs-on: ubuntu-24.04
+  # build_api_blazor:
+  #   name: build api + blazor web
+  #   runs-on: ubuntu-24.04
 
-    steps:
+  #   steps:
     
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
     
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src/global.json
        
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 22
         
-    - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
+  #   - name: Install wasm
+  #     run:  cd src && dotnet workload install wasm-tools
 
-    - name: Enable pre rendering
-      run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs
+  #   - name: Enable pre rendering
+  #     run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs
 
-    - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+  #   - name: Generate CSS/JS files
+  #     run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
 
-    - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:PwaEnabled=true -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
+  #   - name: Publish
+  #     run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:PwaEnabled=true -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server
 
-    - name: Upload server artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-bundle
-        path: ${{env.DOTNET_ROOT}}/server
-        include-hidden-files: true # Required for wwwroot/.well-known folder
+  #   - name: Upload server artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: server-bundle
+  #       path: ${{env.DOTNET_ROOT}}/server
+  #       include-hidden-files: true # Required for wwwroot/.well-known folder
 
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-24.04
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  # deploy_api_blazor:
+  #   name: deploy api + blazor
+  #   needs: build_api_blazor
+  #   runs-on: ubuntu-24.04
+  #   environment:
+  #     name: 'production'
+  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-    steps:
+  #   steps:
 
-      - name: Retrieve server bundle
-        uses: actions/download-artifact@v4
-        with:
-          name: server-bundle
+  #     - name: Retrieve server bundle
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: server-bundle
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.COMPONENTS_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-          package: .
+  #     - name: Deploy to Azure Web App
+  #       id: deploy-to-webapp
+  #       uses: azure/webapps-deploy@v3
+  #       with:
+  #         app-name: ${{ env.APP_SERVICE_NAME }}
+  #         slot-name: 'production'
+  #         publish-profile: ${{ secrets.COMPONENTS_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+  #         package: .
 
-      - name: Purge cache
-        uses: jakejarvis/cloudflare-purge-action@v0.3.0
-        env:
-          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+  #     - name: Purge cache
+  #       uses: jakejarvis/cloudflare-purge-action@v0.3.0
+  #       env:
+  #         CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+  #         CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
@@ -130,110 +130,110 @@ jobs:
         name: win-exe-bundle
         path: src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\Releases
   
-  build_blazor_hybrid_android:
-    name: build blazor hybrid (android)
-    runs-on: ubuntu-24.04
+  # build_blazor_hybrid_android:
+  #   name: build blazor hybrid (android)
+  #   runs-on: ubuntu-24.04
   
-    steps:
+  #   steps:
      
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src/global.json
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 22
   
-    - name: Extract Android signing key from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/'
-          fileName: 'BitBlazorUIDemo.keystore'
-          encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
+  #   - name: Extract Android signing key from env
+  #     uses: timheuer/base64-to-file@v1.2
+  #     with:
+  #         fileDir: './src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/'
+  #         fileName: 'BitBlazorUIDemo.keystore'
+  #         encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
   
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
-    - name: Install maui
-      run: cd src && dotnet workload install maui-android
+  #   - name: Install maui
+  #     run: cd src && dotnet workload install maui-android
 
-    - name: Install Android Sdk platform tools
-      run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+  #   - name: Install Android Sdk platform tools
+  #     run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
-    - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+  #   - name: Generate CSS/JS files
+  #     run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
   
-    - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-android
+  #   - name: Publish aab
+  #     run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-android
   
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net9.0-android/*-Signed.*
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: android-bundle
+  #       path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net9.0-android/*-Signed.*
         
-  build_blazor_hybrid_ios:
-    name: build blazor hybrid (iOS-macOS)
-    runs-on: macOS-15
+  # build_blazor_hybrid_ios:
+  #   name: build blazor hybrid (iOS-macOS)
+  #   runs-on: macOS-15
   
-    steps:
+  #   steps:
      
-    - name: Checkout source code
-      uses: actions/checkout@v4
+  #   - name: Checkout source code
+  #     uses: actions/checkout@v4
      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        global-json-file: src/global.json
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v4
+  #     with:
+  #       global-json-file: src/global.json
 
-    - uses: maxim-lobanov/setup-xcode@v1.6.0
-      with:
-        xcode-version: '16.0'
+  #   - uses: maxim-lobanov/setup-xcode@v1.6.0
+  #     with:
+  #       xcode-version: '16.0'
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
+  #   - uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 22
   
-    - name: Update appsettings.json api server address
-      uses: devops-actions/variable-substitution@v1.2 
-      with:
-        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
-      env:
-        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
+  #   - name: Update appsettings.json api server address
+  #     uses: devops-actions/variable-substitution@v1.2 
+  #     with:
+  #       files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+  #     env:
+  #       ApiServerAddress: ${{ env.SERVER_ADDRESS }}
 
-    - name: Install maui
-      run: cd src && dotnet workload install maui
+  #   - name: Install maui
+  #     run: cd src && dotnet workload install maui
 
-    - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@v3
-      with:
-        p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
-        p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+  #   - name: Import Code-Signing Certificates
+  #     uses: apple-actions/import-codesign-certs@v3
+  #     with:
+  #       p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
+  #       p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
-    - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@v3
-      with:
-        bundle-id: 'com.bitplatform.BlazorUI.Demo'
-        issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
-        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-        api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
+  #   - name: Download Apple Provisioning Profiles
+  #     uses: Apple-Actions/download-provisioning-profiles@v3
+  #     with:
+  #       bundle-id: 'com.bitplatform.BlazorUI.Demo'
+  #       issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
+  #       api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+  #       api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
-    - name: Generate CSS/JS files
-      run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+  #   - name: Generate CSS/JS files
+  #     run: dotnet build src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
   
-    - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-ios
+  #   - name: Build ipa
+  #     run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:CompressionEnabled=false -f net9.0-ios
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ios-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: ios-bundle
+  #       path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net9.0-ios/ios-arm64/publish/*.ipa
