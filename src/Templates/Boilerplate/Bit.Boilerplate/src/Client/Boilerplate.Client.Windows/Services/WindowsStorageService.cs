@@ -9,17 +9,17 @@ public partial class WindowsStorageService : IStorageService
         if (tempStorage.TryGetValue(key, out string? value))
             return value;
 
-        return App.Current.Properties[key]?.ToString();
+        return Application.UserAppDataRegistry.GetValue(key) as string;
     }
 
     public async ValueTask<bool> IsPersistent(string key)
     {
-        return App.Current.Properties.Contains(key);
+        return string.IsNullOrEmpty(await GetItem(key)) is false;
     }
 
     public async ValueTask RemoveItem(string key)
     {
-        App.Current.Properties.Remove(key);
+        Application.UserAppDataRegistry.DeleteValue(key);
         tempStorage.Remove(key);
     }
 
@@ -27,7 +27,7 @@ public partial class WindowsStorageService : IStorageService
     {
         if (persistent)
         {
-            App.Current.Properties[key] = value;
+            Application.UserAppDataRegistry.SetValue(key, value ?? string.Empty);
         }
         else
         {

@@ -43,7 +43,12 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
         services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ClientCoreSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         services.AddOptions<ClientCoreSettings>()
             .Bind(configuration)
@@ -111,7 +116,9 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
         services.AddBlazorApplicationInsights(x =>
         {
-            x.ConnectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;
+            ClientCoreSettings settings = new();
+            configuration.Bind(settings);
+            x.ConnectionString = settings.ApplicationInsights?.ConnectionString;
         });
         //#endif
 

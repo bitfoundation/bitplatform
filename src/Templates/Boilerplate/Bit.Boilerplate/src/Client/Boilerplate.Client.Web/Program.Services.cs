@@ -42,7 +42,12 @@ public static partial class Program
         services.AddScoped<IPushNotificationService, WebPushNotificationService>();
         //#endif
 
-        services.AddSingleton(sp => configuration.Get<ClientWebSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ClientWebSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         services.AddOptions<ClientWebSettings>()
             .Bind(configuration)
