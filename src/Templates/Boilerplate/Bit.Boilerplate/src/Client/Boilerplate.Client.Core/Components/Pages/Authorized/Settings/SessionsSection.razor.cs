@@ -33,7 +33,7 @@ public partial class SessionsSection
         finally
         {
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-            currentSession = userSessions.SingleOrDefault(s => s.Id == currentSessionId);
+            currentSession = userSessions.Single(s => s.Id == currentSessionId);
         }
     }
 
