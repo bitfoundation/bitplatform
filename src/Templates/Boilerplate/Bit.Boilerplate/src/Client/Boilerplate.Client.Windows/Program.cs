@@ -35,15 +35,15 @@ public partial class Program
         configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
         var configuration = configurationBuilder.Build();
         services.AddClientWindowsProjectServices(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        Services = services.BuildServiceProvider();
 
         if (CultureInfoManager.MultilingualEnabled)
         {
-            serviceProvider.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
+            Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
                 Application.UserAppDataRegistry.GetValue("Culture") as string ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
-        serviceProvider.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
+        Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
         {
             Application.Restart();
         });
@@ -54,7 +54,7 @@ public partial class Program
         {
             try
             {
-                var windowsUpdateSettings = serviceProvider.GetRequiredService<ClientWindowsSettings>().WindowsUpdate;
+                var windowsUpdateSettings = Services.GetRequiredService<ClientWindowsSettings>().WindowsUpdate;
                 if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
                 {
                     return;
@@ -72,7 +72,7 @@ public partial class Program
             }
             catch (Exception exp)
             {
-                serviceProvider.GetRequiredService<IExceptionHandler>().Handle(exp);
+                Services.GetRequiredService<IExceptionHandler>().Handle(exp);
             }
         });
 
@@ -88,7 +88,7 @@ public partial class Program
         var blazorWebView = new BlazorWebView
         {
             Dock = DockStyle.Fill,
-            Services = serviceProvider,
+            Services = Services,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
             HostPage = @"wwwroot\index.html"
         };
@@ -132,7 +132,16 @@ public partial class Program
     private static void LogException(object? error)
     {
         var errorMessage = error?.ToString() ?? "Unknown error";
-        Clipboard.SetText(errorMessage);
-        System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        if (Services is not null && error is Exception exp)
+        {
+            Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+        }
+        else
+        {
+            Clipboard.SetText(errorMessage);
+            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
+
+    public static IServiceProvider? Services { get; private set; }
 }
