@@ -156,16 +156,6 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Delete App Splash Screen
-      run: rm TodoSample/src/Client/TodoSample.Client.Windows/Resources/SplashScreen.png
-
-    - name: Extract App Splash Screen from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: './TodoSample/src/Client/TodoSample.Client.Windows/Resources/'
-          fileName: 'SplashScreen.png'
-          encodedString: ${{ vars.TODO_WPF_SPLASH_SCREEN }}
   
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
