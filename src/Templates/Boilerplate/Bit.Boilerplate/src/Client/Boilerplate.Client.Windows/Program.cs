@@ -23,6 +23,8 @@ public partial class Program
         Application.ThreadException += (_, e) => LogException(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
 
+        ApplicationConfiguration.Initialize();
+
         AppPlatform.IsBlazorHybrid = true;
         ITelemetryContext.Current = new WindowsTelemetryContext();
 
@@ -79,8 +81,8 @@ public partial class Program
         var form = new Form()
         {
             Text = "Boilerplate",
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            WindowState = FormWindowState.Maximized
+            WindowState = FormWindowState.Maximized,
+            BackColor = ColorTranslator.FromHtml("#0D2960")
         };
 
         Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--unsafely-treat-insecure-origin-as-secure=https://0.0.0.1 --enable-notifications");
@@ -89,8 +91,8 @@ public partial class Program
         {
             Dock = DockStyle.Fill,
             Services = Services,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
-            HostPage = @"wwwroot\index.html"
+            HostPage = @"wwwroot\index.html",
+            BackColor = ColorTranslator.FromHtml("#0D2960")
         };
 
         blazorWebView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#0D2960");

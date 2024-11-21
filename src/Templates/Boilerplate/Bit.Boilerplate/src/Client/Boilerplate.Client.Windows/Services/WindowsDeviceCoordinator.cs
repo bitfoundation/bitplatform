@@ -1,12 +1,15 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Styles;
+
 namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsDeviceCoordinator : IBitDeviceCoordinator
 {
-    //#if (framework == 'net9.0')
     public async Task ApplyTheme(bool isDark)
     {
+        Application.OpenForms[0]!.FormCaptionBackColor = ColorTranslator.FromHtml(isDark ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor);
+        //#if (framework == 'net9.0')
         Application.SetColorMode(isDark ? SystemColorMode.Dark : SystemColorMode.Classic);
+        //#endif
     }
-    //#endif
 }
