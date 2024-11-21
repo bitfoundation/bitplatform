@@ -2,7 +2,7 @@
 
 public partial class UserSessionDto
 {
-    public Guid SessionUniqueId { get; set; }
+    public Guid Id { get; set; }
 
     public string? IP { get; set; }
 

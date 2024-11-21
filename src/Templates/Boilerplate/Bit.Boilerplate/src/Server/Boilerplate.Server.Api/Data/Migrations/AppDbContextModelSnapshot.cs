@@ -37,7 +37,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Categories")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
 
                 b.HasData(
                     new
@@ -107,7 +107,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Roles")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
@@ -182,10 +182,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<string>("SecurityStamp")
                     .HasColumnType("TEXT");
 
-                b.Property<string>("Sessions")
-                    .IsRequired()
-                    .HasColumnType("TEXT");
-
                 b.Property<bool>("TwoFactorEnabled")
                     .HasColumnType("INTEGER");
 
@@ -217,7 +213,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Users")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
 
                 b.HasData(
                     new
@@ -238,10 +234,40 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                         PhoneNumber = "+31684207362",
                         PhoneNumberConfirmed = true,
                         SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
-                        Sessions = "[]",
                         TwoFactorEnabled = false,
                         UserName = "test"
                     });
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Address")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Device")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("IP")
+                    .HasColumnType("TEXT");
+
+                b.Property<long?>("RenewedOn")
+                    .HasColumnType("INTEGER");
+
+                b.Property<long>("StartedOn")
+                    .HasColumnType("INTEGER");
+
+                b.Property<Guid>("UserId")
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("UserSessions");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
@@ -280,7 +306,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Products")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "CategoryId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "CategoryId" });
 
                 b.HasData(
                     new
@@ -540,22 +566,25 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .IsRequired()
                     .HasColumnType("TEXT");
 
-                b.Property<string>("Tags")
+                b.Property<long>("RenewedOn")
+                    .HasColumnType("INTEGER");
+
+                b.PrimitiveCollection<string>("Tags")
                     .IsRequired()
                     .HasColumnType("TEXT");
 
-                b.Property<Guid?>("UserId")
+                b.Property<Guid?>("UserSessionId")
                     .HasColumnType("TEXT");
 
                 b.HasKey("InstallationId");
 
-                b.HasIndex("UserId");
+                b.HasIndex("UserSessionId");
 
                 b.ToTable("DeviceInstallations");
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "DeviceInstallations")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Platform");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Platform" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
@@ -585,7 +614,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "TodoItems")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -606,7 +635,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "DataProtectionKeys")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -632,7 +661,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "RoleClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "RoleId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "RoleId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -658,7 +687,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -683,7 +712,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserLogins")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -702,7 +731,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserRoles")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -725,7 +754,18 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserTokens")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
+                    .WithMany("Sessions")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
@@ -741,11 +781,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
             {
-                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.UserSession", "UserSession")
                     .WithMany()
-                    .HasForeignKey("UserId");
+                    .HasForeignKey("UserSessionId");
 
-                b.Navigation("User");
+                b.Navigation("UserSession");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
@@ -813,6 +853,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
             {
                 b.Navigation("Products");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
+            {
+                b.Navigation("Sessions");
             });
 #pragma warning restore 612, 618
     }

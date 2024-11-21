@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿//+:cnd:noEmit
+using System.Text;
 using System.Text.Encodings.Web;
 using QRCoder;
 using Humanizer;
@@ -6,6 +7,8 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
+using Boilerplate.Server.Api.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -24,6 +27,10 @@ public partial class UserController : AppControllerBase, IUserController
 
     [AutoInject] private UrlEncoder urlEncoder = default!;
 
+    //#if (signalR == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
+
     [HttpGet]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
@@ -40,10 +47,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString())
-            ?? throw new ResourceNotFoundException();
-
-        return user.Sessions
+        return (await DbContext.UserSessions.Where(us => us.UserId == userId).ToArrayAsync(cancellationToken))
             .Select(us =>
             {
                 var dto = us.Map();
@@ -61,18 +65,12 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString())
-            ?? throw new ResourceNotFoundException();
-
         var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
 
-        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != currentSessionId).ToList();
+        await DbContext.DeviceInstallations.Where(d => d.UserSessionId == currentSessionId).ExecuteUpdateAsync(setters => setters.SetProperty(d => d.UserSessionId, (Guid?)null), cancellationToken);
 
-        var result = await userManager.UpdateAsync(user);
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+        if (await DbContext.UserSessions.Where(s => s.Id == currentSessionId).ExecuteDeleteAsync(cancellationToken) < 1)
+            throw new ResourceNotFoundException();
 
         SignOut();
     }
@@ -82,27 +80,19 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString())
-            ?? throw new ResourceNotFoundException();
-
         var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
 
         if (id == currentSessionId)
             throw new BadRequestException(); // "Call SignOut instead"
 
-        var currentSession = user.Sessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId)
-            ?? throw new ResourceNotFoundException();
+        await DbContext.DeviceInstallations.Where(d => d.UserSessionId == id).ExecuteUpdateAsync(setters => setters.SetProperty(d => d.UserSessionId, (Guid?)null), cancellationToken);
 
-        var revokeUserSessionsDelay = (DateTimeOffset.Now - currentSession.StartedOn) - AppSettings.Identity.RevokeUserSessionsDelay;
+        if (await DbContext.UserSessions.Where(s => s.Id == id).ExecuteDeleteAsync(cancellationToken) < 1)
+            throw new ResourceNotFoundException();
 
-        if (revokeUserSessionsDelay < TimeSpan.Zero)
-            throw new BadRequestException(Localizer[nameof(AppStrings.WaitForRevokeSessionDelay), revokeUserSessionsDelay.Humanize(culture: CultureInfo.CurrentUICulture)]);
-
-        user.Sessions = user.Sessions.Where(s => s.SessionUniqueId != id).ToList();
-
-        var result = await userManager.UpdateAsync(user);
-        if (result.Succeeded is false)
-            throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
+        //#if (signalR == true)
+        await appHubContext.Clients.User(userId.ToString()).SendAsync(SignalREvents.SESSION_REVOKED, id, cancellationToken);
+        //#endif
     }
 
     [HttpPut]

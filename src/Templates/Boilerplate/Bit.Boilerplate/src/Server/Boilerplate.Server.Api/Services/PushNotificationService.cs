@@ -9,16 +9,17 @@ namespace Boilerplate.Server.Api.Services;
 
 public partial class PushNotificationService
 {
-    [AutoInject] private IAdsPushSender adsPushSender = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private AppDbContext dbContext = default!;
+    [AutoInject] private IAdsPushSender adsPushSender = default!;
     [AutoInject] private ILogger<PushNotificationService> logger = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private ServerApiSettings serverApiSettings = default!;
 
     public async Task RegisterDevice([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
-        var userId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId() : (Guid?)null;
+        var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
         var deviceInstallation = await dbContext.DeviceInstallations.FindAsync([dto.InstallationId], cancellationToken);
 
@@ -33,8 +34,9 @@ public partial class PushNotificationService
 
         dto.Patch(deviceInstallation);
 
-        deviceInstallation.UserId = userId;
         deviceInstallation.Tags = [.. tags];
+        deviceInstallation.UserSessionId = userSessionId;
+        deviceInstallation.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
 
         if (deviceInstallation.Platform is "browser")
@@ -51,13 +53,21 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null,
+        bool userRelatedPush = false,
+        Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null,
+        CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+        // userRelatedPush: If the BearerTokenExpiration is 14 days, it’s not practical to send push notifications to a device where the user hasn't used the app for over 14 days.  
+        // This is because, even if the user opens the app, they will be automatically signed out as their session has expired.  
+        // Therefore, sending push notifications with sensitive information, like an OTP code, to such devices is not appropriate.
+
         var query = dbContext.DeviceInstallations
             .Where(dev => dev.ExpirationTime > now)
-            .WhereIf(customDeviceFilter is not null, customDeviceFilter!);
+            .WhereIf(customDeviceFilter is not null, customDeviceFilter!)
+            .WhereIf(userRelatedPush is true, dev => (now - dev.RenewedOn) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds);
 
         if (customDeviceFilter is null)
         {

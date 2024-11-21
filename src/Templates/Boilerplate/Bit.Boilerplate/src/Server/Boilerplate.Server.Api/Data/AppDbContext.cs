@@ -20,6 +20,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
+    public DbSet<UserSession> UserSessions { get; set; } = default!;
+
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")

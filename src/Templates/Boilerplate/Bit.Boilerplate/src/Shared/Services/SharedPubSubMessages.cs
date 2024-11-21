@@ -26,4 +26,6 @@ public static partial class SignalREvents
     /// Shows message at client side.
     /// </summary>
     public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
+
+    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
 }

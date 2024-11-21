@@ -17,10 +17,10 @@ public class DeviceInstallation
     public string? Auth { get; set; }
     public string? Endpoint { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid? UserSessionId { get; set; }
 
-    [ForeignKey(nameof(UserId))]
-    public User? User { get; set; }
+    [ForeignKey(nameof(UserSessionId))]
+    public UserSession? UserSession { get; set; }
 
     public string[] Tags { get; set; } = [];
 
@@ -28,4 +28,9 @@ public class DeviceInstallation
     /// Unix Time Seconds
     /// </summary>
     public long ExpirationTime { get; set; }
+
+    /// <summary>
+    /// Unix Time Seconds
+    /// </summary>
+    public long RenewedOn { get; set; }
 }
