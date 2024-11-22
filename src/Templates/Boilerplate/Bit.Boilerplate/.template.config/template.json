@@ -430,6 +430,12 @@
                     ]
                 },
                 {
+                    "condition": "(offlineDb != true || framework == \"net8.0\")",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Data/CompiledModel/**"
+                    ]
+                },
+                {
                     "condition": "(signalR != true)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/SignalR/**",
@@ -517,7 +523,7 @@
                         "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",
                         "src/Tests/Extensions/PlaywrightCacheExtensions.cs",
                         "src/Tests/Extensions/PlaywrightHydrationExtensions.cs",
-                        "src/Tests/Extensions/BrowserContextExtensions.cs",
+                        "src/Tests/Extensions/BrowserContextExtensions.cs"
                     ]
                 },
                 {
@@ -539,11 +545,11 @@
                     }
                 },
                 {
-                  "condition": "(framework == \"net9.0\")",
-                  "exclude": [
-                    "global8.json",
-                    "src/Directory.Packages8.props"
-                  ]
+                    "condition": "(framework == \"net9.0\")",
+                    "exclude": [
+                        "global8.json",
+                        "src/Directory.Packages8.props"
+                    ]
                 }
             ]
         }
