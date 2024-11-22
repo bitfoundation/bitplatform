@@ -1,7 +1,4 @@
-﻿using Boilerplate.Tests.Extensions;
-using Boilerplate.Tests.PageTests.PageModels;
-
-namespace Boilerplate.Tests.PageTests.BlazorServer.PreRendering;
+﻿namespace Boilerplate.Tests.PageTests.BlazorServer.PreRendering;
 
 [TestClass]
 public partial class IdentityPagesTests : BlazorServer.IdentityPagesTests
@@ -21,15 +18,12 @@ public partial class PreRenderingTests : PageTestBase
     public override bool PreRenderEnabled => true;
 
     [TestMethod]
-    [ConfigureBrowserContext(nameof(JavaScriptDisabled))]
+    [AutoAuthenticate]
     public async Task PreRenderedHtml()
     {
-        await Context.DisableHydrationCheck();
+        await Page.GotoAsync($"view-source:{WebAppServerAddress}");
 
-        var homePage = new MainHomePage(Page, WebAppServerAddress);
-        await homePage.Open();
-        await homePage.AssertOpen();
+        await Assertions.Expect(Page.GetByText(TestData.DefaultTestEmail).First).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByText(TestData.DefaultTestFullName).First).ToBeVisibleAsync();
     }
-
-    public async Task JavaScriptDisabled(BrowserNewContextOptions options) => options.JavaScriptEnabled = false;
 }
