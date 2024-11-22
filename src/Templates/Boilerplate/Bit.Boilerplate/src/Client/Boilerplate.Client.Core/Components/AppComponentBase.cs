@@ -220,7 +220,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     protected void Abort()
     {
         cts.Cancel(throwOnFirstException: false);
-        cts.Dispose();
         cts = new();
     }
 
