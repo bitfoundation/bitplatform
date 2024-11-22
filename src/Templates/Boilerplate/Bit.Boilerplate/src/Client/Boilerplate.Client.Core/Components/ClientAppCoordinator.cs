@@ -42,21 +42,11 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         if (AppPlatform.IsBlazorHybrid)
         {
-            if (CultureInfoManager.MultilingualEnabled)
-            {
-                cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
-                                                     await storageService.GetItem("Culture") ?? // 2- User settings
-                                                     CultureInfo.CurrentUICulture.Name); // 3- OS settings
-            }
-
-            await SetupBodyClasses();
+            await ConfigureUISetup();
         }
 
         if (InPrerenderSession is false)
         {
-            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-            AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
-
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -78,7 +68,9 @@ public partial class ClientAppCoordinator : AppComponentBase
             });
             //#endif
 
-            AuthenticationStateChanged(AuthenticationManager.GetAuthenticationStateAsync());
+            NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+            AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            await PropagateUserId(firstRun: true, AuthenticationManager.GetAuthenticationStateAsync());
         }
 
         await base.OnInitAsync();
@@ -91,15 +83,19 @@ public partial class ClientAppCoordinator : AppComponentBase
     }
 
     private SemaphoreSlim semaphore = new(1, 1);
-
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
-    private async void AuthenticationStateChanged(Task<AuthenticationState> task)
+    public async Task PropagateUserId(bool firstRun, Task<AuthenticationState> task)
     {
         try
         {
+            if (firstRun is false)
+            {
+                Abort();
+            }
+
             await semaphore.WaitAsync(CurrentCancellationToken);
             // About Semaphore: The following code may take significant time to execute.
             // During this period, the authentication state could change. For instance, the app might start with the user authenticated, but they could sign out while this method is running.
@@ -125,8 +121,16 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation("Authentication state changed.");
+                authLogger.LogInformation(firstRun ? "Propagating initial authentication state." : "Propagating authentication state change.");
             }
+
+            //#if (notification != true && signalR != true)
+            // Since neither SignalR nor push notifications were enabled during project creation, the PropagateUserId method might not seem relevant to your setup.
+            // However, this is still a useful location to manage user ID-sensitive configurations.
+            // For instance, SignalR connections must determine if a connection ID is part of a specific user's group of connection IDs.
+            // Similarly, with push notifications, you need to update subscriptions to ensure that notifications meant for a specific user are sent only to their devices.
+            // During authentication state changes, this method provides an ideal opportunity to propagate the user ID to these kind of services.
+            //#endif
 
             //#if (notification == true)
             await pushNotificationService.RegisterSubscription(CurrentCancellationToken);
@@ -144,6 +148,11 @@ public partial class ClientAppCoordinator : AppComponentBase
         {
             semaphore.Release();
         }
+    }
+
+    private void AuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        _ = PropagateUserId(firstRun: false, task);
     }
 
     //#if (signalR == true)
@@ -205,11 +214,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             PubSubService.Publish(message);
         });
 
-        hubConnection.On(SignalREvents.SESSION_REVOKED, async () =>
-        {
-            await AuthenticationManager.SignOut(CurrentCancellationToken);
-        });
-
         try
         {
             hubConnection.Closed += HubConnectionStateChange;
@@ -252,8 +256,15 @@ public partial class ClientAppCoordinator : AppComponentBase
 
     //#endif
 
-    private async Task SetupBodyClasses()
+    private async Task ConfigureUISetup()
     {
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            cultureInfoManager.SetCurrentCulture(new Uri(NavigationManager.Uri).GetCulture() ??  // 1- Culture query string OR Route data request culture
+                                                 await storageService.GetItem("Culture") ?? // 2- User settings
+                                                 CultureInfo.CurrentUICulture.Name); // 3- OS settings
+        }
+
         var cssClasses = new List<string> { };
 
         if (AppPlatform.IsWindows)

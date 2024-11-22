@@ -105,7 +105,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         //#if (signalR == true)
         // Checkout AppHubConnectionHandler's comments for more info.
-        await appHubContext.Clients.Client(userSession.Id.ToString()).SendAsync(SignalREvents.SESSION_REVOKED, cancellationToken);
+        await appHubContext.Clients.Client(userSession.Id.ToString()).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, cancellationToken);
         //#endif
     }
 

@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class AuthenticationManager : AuthenticationStateProvider
+public partial class AuthenticationManager : AuthenticationStateProvider, IAsyncDisposable
 {
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -15,6 +15,16 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+
+    private Action? unsubscribe;
+    [AutoInject]
+    private PubSubService pubSubService
+    {
+        set
+        {
+            unsubscribe = value.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+        }
+    }
 
     /// <summary>
     /// Sign in and return whether the user requires two-factor authentication.
@@ -157,5 +167,10 @@ public partial class AuthenticationManager : AuthenticationStateProvider
             await cookie.Remove("access_token");
         }
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        unsubscribe?.Invoke();
     }
 }
