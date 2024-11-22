@@ -131,7 +131,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation(firstRun ? "Propagating initial authentication state." : "Propagating authentication state change.");
+                authLogger.LogInformation($"Propagating {(firstRun ? "initial" : "changed")} authentication state.");
             }
 
             //#if (notification == true)
