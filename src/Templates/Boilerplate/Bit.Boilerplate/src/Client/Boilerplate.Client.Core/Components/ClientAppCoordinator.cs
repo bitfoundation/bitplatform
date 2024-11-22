@@ -107,15 +107,21 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
+            // Typically, we use the logger directly without utilizing logger.BeginScope.
+            // While many loggers provide specific methods to set userId and other context-related information,
+            // we use this method to propagate the user ID and other telemetry contexts via Microsoft.Extensions.Logging's Scope feature.
+            // PropagateUserId method is invoked both during app startup and when the authentication state changes.
+            // Additionally, this is a convenient place to manage user-specific contexts for services like:
+            // - App Insights: Set or clear the user ID for tracking purposes.
+            // - Push Notifications: Update subscriptions to ensure user-specific notifications are routed to the correct devices.
+            // - SignalR: Map connection IDs to a user's group of connections for message targeting.
+            // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
+
             //#if (appInsights == true)
             if (isAuthenticated)
-            {
                 _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
             else
-            {
                 _ = appInsights.ClearAuthenticatedUserContext();
-            }
             //#endif
 
             var data = TelemetryContext.ToDictionary();
@@ -123,14 +129,6 @@ public partial class ClientAppCoordinator : AppComponentBase
             {
                 authLogger.LogInformation(firstRun ? "Propagating initial authentication state." : "Propagating authentication state change.");
             }
-
-            //#if (notification != true && signalR != true)
-            // Since neither SignalR nor push notifications were enabled during project creation, the PropagateUserId method might not seem relevant to your setup.
-            // However, this is still a useful location to manage user ID-sensitive configurations.
-            // For instance, SignalR connections must determine if a connection ID is part of a specific user's group of connection IDs.
-            // Similarly, with push notifications, you need to update subscriptions to ensure that notifications meant for a specific user are sent only to their devices.
-            // During authentication state changes, this method provides an ideal opportunity to propagate the user ID to these kind of services.
-            //#endif
 
             //#if (notification == true)
             await pushNotificationService.RegisterSubscription(CurrentCancellationToken);
