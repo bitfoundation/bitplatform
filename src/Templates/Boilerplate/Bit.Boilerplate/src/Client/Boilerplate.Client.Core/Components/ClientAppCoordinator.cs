@@ -205,14 +205,9 @@ public partial class ClientAppCoordinator : AppComponentBase
             PubSubService.Publish(message);
         });
 
-        hubConnection.On<Guid>(SignalREvents.SESSION_REVOKED, async (userSessionId) =>
+        hubConnection.On(SignalREvents.SESSION_REVOKED, async () =>
         {
-            var user = (await AuthenticationStateTask).User;
-
-            if (user.IsAuthenticated() && user.GetSessionId() == userSessionId)
-            {
-                await AuthenticationManager.SignOut(CurrentCancellationToken);
-            }
+            await AuthenticationManager.SignOut(CurrentCancellationToken);
         });
 
         try

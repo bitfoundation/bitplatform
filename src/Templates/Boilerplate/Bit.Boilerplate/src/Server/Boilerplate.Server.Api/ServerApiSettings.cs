@@ -121,8 +121,6 @@ public partial class AppIdentityOptions : IdentityOptions
     /// To sign in with either Otp or magic link.
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
-
-    public TimeSpan RevokeUserSessionsDelay { get; set; }
 }
 
 public partial class EmailOptions

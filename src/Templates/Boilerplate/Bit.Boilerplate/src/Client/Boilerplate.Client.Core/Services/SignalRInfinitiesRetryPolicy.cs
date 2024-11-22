@@ -4,7 +4,7 @@ namespace Boilerplate.Client.Core.Services;
 
 public class SignalRInfinitiesRetryPolicy : IRetryPolicy
 {
-    private static TimeSpan[] delays = new double[] { 1, 3, 5, 10, 15, 20, 30, 45, 59 }
+    private static TimeSpan[] delays = new double[] { 1, 3, 5, 10, 15, 20, 30 }
         .Select(TimeSpan.FromSeconds)
         .ToArray();
 
@@ -17,6 +17,6 @@ public class SignalRInfinitiesRetryPolicy : IRetryPolicy
             return delays[index];
         }
 
-        return TimeSpan.FromMinutes(1);
+        return TimeSpan.FromSeconds(30);
     }
 }

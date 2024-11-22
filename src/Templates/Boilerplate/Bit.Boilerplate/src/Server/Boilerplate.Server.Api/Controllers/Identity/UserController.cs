@@ -104,7 +104,7 @@ public partial class UserController : AppControllerBase, IUserController
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
-        await appHubContext.Clients.User(userId.ToString()).SendAsync(SignalREvents.SESSION_REVOKED, id, cancellationToken);
+        await appHubContext.Clients.Client(id.ToString()).SendAsync(SignalREvents.SESSION_REVOKED, cancellationToken);
         //#endif
     }
 
