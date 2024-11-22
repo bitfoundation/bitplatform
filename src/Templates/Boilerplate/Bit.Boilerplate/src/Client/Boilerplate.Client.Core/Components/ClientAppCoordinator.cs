@@ -129,7 +129,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (notification == true)
-            await pushNotificationService.RegisterDevice(CurrentCancellationToken);
+            await pushNotificationService.RegisterSubscription(CurrentCancellationToken);
             //#endif
 
             //#if (signalR == true)

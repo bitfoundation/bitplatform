@@ -162,12 +162,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful <see cref="AppUserClaimsPrincipalFactory.SessionClaims"/>
     /// </summary>
-    private UserSession CreateUserSession(Guid userId, string? device)
+    private UserSession CreateUserSession(Guid userId, string? deviceInfo)
     {
         var userSession = new UserSession
         {
             Id = Guid.NewGuid(),
-            Device = device,
+            DeviceInfo = deviceInfo,
             UserId = userId,
             StartedOn = DateTimeOffset.UtcNow,
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
@@ -268,7 +268,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: pushMessage, userRelatedPush: true, customDeviceFilter: d => d.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: pushMessage, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);
@@ -328,7 +328,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (notification == true)
         if (firstStepAuthenticationMethod != "Push")
         {
-            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customDeviceFilter: d => d.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         }
         //#endif
 

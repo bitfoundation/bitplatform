@@ -222,7 +222,7 @@ public partial class InitialMigration : Migration
             {
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
                 IP = table.Column<string>(type: "TEXT", nullable: true),
-                Device = table.Column<string>(type: "TEXT", nullable: true),
+                DeviceInfo = table.Column<string>(type: "TEXT", nullable: true),
                 Address = table.Column<string>(type: "TEXT", nullable: true),
                 StartedOn = table.Column<long>(type: "INTEGER", nullable: false),
                 RenewedOn = table.Column<long>(type: "INTEGER", nullable: true),
@@ -260,10 +260,10 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "DeviceInstallations",
+            name: "PushNotificationSubscriptions",
             columns: table => new
             {
-                InstallationId = table.Column<string>(type: "TEXT", nullable: false),
+                DeviceId = table.Column<string>(type: "TEXT", nullable: false),
                 Platform = table.Column<string>(type: "TEXT", nullable: false),
                 PushChannel = table.Column<string>(type: "TEXT", nullable: false),
                 P256dh = table.Column<string>(type: "TEXT", nullable: true),
@@ -276,9 +276,9 @@ public partial class InitialMigration : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_DeviceInstallations", x => x.InstallationId);
+                table.PrimaryKey("PK_PushNotificationSubscriptions", x => x.DeviceId);
                 table.ForeignKey(
-                    name: "FK_DeviceInstallations_UserSessions_UserSessionId",
+                    name: "FK_PushNotificationSubscriptions_UserSessions_UserSessionId",
                     column: x => x.UserSessionId,
                     principalTable: "UserSessions",
                     principalColumn: "Id");
@@ -332,14 +332,16 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateIndex(
-            name: "IX_DeviceInstallations_UserSessionId",
-            table: "DeviceInstallations",
-            column: "UserSessionId");
-
-        migrationBuilder.CreateIndex(
             name: "IX_Products_CategoryId",
             table: "Products",
             column: "CategoryId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_PushNotificationSubscriptions_UserSessionId",
+            table: "PushNotificationSubscriptions",
+            column: "UserSessionId",
+            unique: true,
+            filter: "[UserSessionId] IS NOT NULL");
 
         migrationBuilder.CreateIndex(
             name: "IX_RoleClaims_RoleId",
@@ -410,10 +412,10 @@ public partial class InitialMigration : Migration
             name: "DataProtectionKeys");
 
         migrationBuilder.DropTable(
-            name: "DeviceInstallations");
+            name: "Products");
 
         migrationBuilder.DropTable(
-            name: "Products");
+            name: "PushNotificationSubscriptions");
 
         migrationBuilder.DropTable(
             name: "RoleClaims");
@@ -434,10 +436,10 @@ public partial class InitialMigration : Migration
             name: "UserTokens");
 
         migrationBuilder.DropTable(
-            name: "UserSessions");
+            name: "Categories");
 
         migrationBuilder.DropTable(
-            name: "Categories");
+            name: "UserSessions");
 
         migrationBuilder.DropTable(
             name: "Roles");

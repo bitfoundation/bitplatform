@@ -1,4 +1,10 @@
-﻿namespace Boilerplate.Server.Api.Models.Identity;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Identity;
+//#if (notification == true)
+using Boilerplate.Server.Api.Models.PushNotification;
+//#endif
+
+namespace Boilerplate.Server.Api.Models.Identity;
 
 public partial class UserSession
 {
@@ -6,7 +12,10 @@ public partial class UserSession
 
     public string? IP { get; set; }
 
-    public string? Device { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="UserSessionDto.DeviceInfo"/>
+    /// </summary>
+    public string? DeviceInfo { get; set; }
 
     public string? Address { get; set; }
 
@@ -18,4 +27,8 @@ public partial class UserSession
 
     [ForeignKey(nameof(UserId))]
     public User? User { get; set; }
+
+    //#if (notification == true)
+    public PushNotificationSubscription? PushNotificationSubscription { get; set; }
+    //#endif
 }

@@ -10,5 +10,5 @@ namespace Boilerplate.Server.Api.Mappers;
 [Mapper]
 public static partial class PushNotificationMapper
 {
-    public static partial void Patch(this DeviceInstallationDto source, DeviceInstallation destination);
+    public static partial void Patch(this PushNotificationSubscriptionDto source, PushNotificationSubscription destination);
 }

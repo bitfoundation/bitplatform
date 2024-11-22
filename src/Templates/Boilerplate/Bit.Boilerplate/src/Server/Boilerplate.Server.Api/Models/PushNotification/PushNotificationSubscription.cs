@@ -2,10 +2,10 @@
 
 namespace Boilerplate.Server.Api.Models.PushNotification;
 
-public class DeviceInstallation
+public class PushNotificationSubscription
 {
     [Required, Key]
-    public string? InstallationId { get; set; }
+    public string? DeviceId { get; set; }
 
     [Required, AllowedValues("apns", "fcmV1", "browser")]
     public string? Platform { get; set; }

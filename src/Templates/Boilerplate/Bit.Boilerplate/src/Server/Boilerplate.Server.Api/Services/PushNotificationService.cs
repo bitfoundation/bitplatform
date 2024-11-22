@@ -15,47 +15,47 @@ public partial class PushNotificationService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
 
-    public async Task RegisterDevice([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
+    public async Task RegisterSubscription([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        var deviceInstallation = await dbContext.DeviceInstallations.FindAsync([dto.InstallationId], cancellationToken);
+        var subscription = await dbContext.PushNotificationSubscriptions.FindAsync([dto.DeviceId], cancellationToken);
 
-        if (deviceInstallation is null)
+        if (subscription is null)
         {
-            dbContext.DeviceInstallations.Add(deviceInstallation = new()
+            dbContext.PushNotificationSubscriptions.Add(subscription = new()
             {
-                InstallationId = dto.InstallationId,
+                DeviceId = dto.DeviceId,
                 Platform = dto.Platform
             });
         }
 
-        dto.Patch(deviceInstallation);
+        dto.Patch(subscription);
 
-        deviceInstallation.Tags = [.. tags];
-        deviceInstallation.UserSessionId = userSessionId;
-        deviceInstallation.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
+        subscription.Tags = [.. tags];
+        subscription.UserSessionId = userSessionId;
+        subscription.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        subscription.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
 
-        if (deviceInstallation.Platform is "browser")
+        if (subscription.Platform is "browser")
         {
-            deviceInstallation.PushChannel = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth).ToAdsPushToken();
+            subscription.PushChannel = VapidSubscription.FromParameters(subscription.Endpoint, subscription.P256dh, subscription.Auth).ToAdsPushToken();
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    public async Task DeregisterSubscription(string deviceId, CancellationToken cancellationToken)
     {
-        dbContext.DeviceInstallations.Remove(new() { InstallationId = deviceInstallationId });
+        dbContext.PushNotificationSubscriptions.Remove(new() { DeviceId = deviceId });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task RequestPush(string? title = null, string? message = null, string? action = null,
         bool userRelatedPush = false,
-        Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null,
+        Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -64,17 +64,17 @@ public partial class PushNotificationService
         // This is because, even if the user opens the app, they will be automatically signed out as their session has expired.  
         // Therefore, sending push notifications with sensitive information, like an OTP code, to such devices is not appropriate.
 
-        var query = dbContext.DeviceInstallations
-            .Where(dev => dev.ExpirationTime > now)
-            .WhereIf(customDeviceFilter is not null, customDeviceFilter!)
-            .WhereIf(userRelatedPush is true, dev => (now - dev.RenewedOn) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds);
+        var query = dbContext.PushNotificationSubscriptions
+            .Where(sub => sub.ExpirationTime > now)
+            .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
+            .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds);
 
-        if (customDeviceFilter is null)
+        if (customSubscriptionFilter is null)
         {
             query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
         }
 
-        var devices = await query.ToListAsync(cancellationToken);
+        var subscriptions = await query.ToListAsync(cancellationToken);
 
         var payload = new AdsPushBasicSendPayload()
         {
@@ -90,14 +90,14 @@ public partial class PushNotificationService
 
         List<Task> tasks = [];
 
-        foreach (var deviceInstallation in devices)
+        foreach (var subscription in subscriptions)
         {
-            var target = deviceInstallation.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
-                : deviceInstallation.Platform is "fcmV1" ? AdsPushTarget.Android
-                : deviceInstallation.Platform is "apns" ? AdsPushTarget.Ios
+            var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
+                : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
+                : subscription.Platform is "apns" ? AdsPushTarget.Ios
                 : throw new NotImplementedException();
 
-            tasks.Add(adsPushSender.BasicSendAsync(target, deviceInstallation.PushChannel, payload, cancellationToken));
+            tasks.Add(adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, cancellationToken));
         }
 
         try

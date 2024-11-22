@@ -23,7 +23,7 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 //#if (notification == true)
-[JsonSerializable(typeof(DeviceInstallationDto))]
+[JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]

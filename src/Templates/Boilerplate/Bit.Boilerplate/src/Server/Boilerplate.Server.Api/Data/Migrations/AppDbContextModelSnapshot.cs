@@ -248,7 +248,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<string>("Address")
                     .HasColumnType("TEXT");
 
-                b.Property<string>("Device")
+                b.Property<string>("DeviceInfo")
                     .HasColumnType("TEXT");
 
                 b.Property<string>("IP")
@@ -541,9 +541,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     });
             });
 
-        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", b =>
             {
-                b.Property<string>("InstallationId")
+                b.Property<string>("DeviceId")
                     .HasColumnType("TEXT");
 
                 b.Property<string>("Auth")
@@ -576,14 +576,16 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<Guid?>("UserSessionId")
                     .HasColumnType("TEXT");
 
-                b.HasKey("InstallationId");
+                b.HasKey("DeviceId");
 
-                b.HasIndex("UserSessionId");
+                b.HasIndex("UserSessionId")
+                    .IsUnique()
+                    .HasFilter("[UserSessionId] IS NOT NULL");
 
-                b.ToTable("DeviceInstallations");
+                b.ToTable("PushNotificationSubscriptions");
 
                 b
-                    .HasAnnotation("Cosmos:ContainerName", "DeviceInstallations")
+                    .HasAnnotation("Cosmos:ContainerName", "PushNotificationSubscriptions")
                     .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Platform" });
             });
 
@@ -779,11 +781,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Category");
             });
 
-        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.UserSession", "UserSession")
-                    .WithMany()
-                    .HasForeignKey("UserSessionId");
+                    .WithOne("PushNotificationSubscription")
+                    .HasForeignKey("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", "UserSessionId");
 
                 b.Navigation("UserSession");
             });
@@ -858,6 +860,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
             {
                 b.Navigation("Sessions");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.Navigation("PushNotificationSubscription");
             });
 #pragma warning restore 612, 618
     }

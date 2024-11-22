@@ -60,11 +60,11 @@ public partial class SessionsSection
         }
     }
 
-    private static string GetImageUrl(string? device)
+    private static string GetImageUrl(string? deviceInfo)
     {
-        if (string.IsNullOrEmpty(device)) return "unknown.png";
+        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
 
-        var d = device.ToLowerInvariant();
+        var d = deviceInfo.ToLowerInvariant();
 
         if (d.Contains("win") /*Windows, WinUI, Win32*/) return "windows.png";
 

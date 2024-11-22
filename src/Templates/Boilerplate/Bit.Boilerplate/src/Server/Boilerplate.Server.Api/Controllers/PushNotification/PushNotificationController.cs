@@ -12,15 +12,15 @@ public partial class PushNotificationController : AppControllerBase, IPushNotifi
     [AutoInject] PushNotificationService pushNotificationService = default!;
 
     [HttpPost]
-    public async Task RegisterDevice([Required] DeviceInstallationDto deviceInstallation, CancellationToken cancellationToken)
+    public async Task RegisterSubscription([Required] PushNotificationSubscriptionDto subscription, CancellationToken cancellationToken)
     {
-        await pushNotificationService.RegisterDevice(deviceInstallation, cancellationToken);
+        await pushNotificationService.RegisterSubscription(subscription, cancellationToken);
     }
 
     [HttpPost("{deviceId}")]
-    public async Task DeregisterDevice([Required] string deviceId, CancellationToken cancellationToken)
+    public async Task DeregisterSubscription([Required] string deviceId, CancellationToken cancellationToken)
     {
-        await pushNotificationService.DeregisterDevice(deviceId, cancellationToken);
+        await pushNotificationService.DeregisterSubscription(deviceId, cancellationToken);
     }
 
 #if Development // This action is for testing purposes only.

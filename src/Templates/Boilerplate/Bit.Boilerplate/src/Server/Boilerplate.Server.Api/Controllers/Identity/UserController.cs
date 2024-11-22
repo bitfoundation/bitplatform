@@ -69,10 +69,17 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
 
-        await DbContext.DeviceInstallations.Where(d => d.UserSessionId == currentSessionId).ExecuteUpdateAsync(setters => setters.SetProperty(d => d.UserSessionId, (Guid?)null), cancellationToken);
+        var userSession = await DbContext.UserSessions
+            //#if (notification == true)
+            .Include(us => us.PushNotificationSubscription)
+            //#endif
+            .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
 
-        if (await DbContext.UserSessions.Where(s => s.Id == currentSessionId).ExecuteDeleteAsync(cancellationToken) < 1)
-            throw new ResourceNotFoundException();
+        DbContext.UserSessions.Remove(userSession);
+        await DbContext.SaveChangesAsync(cancellationToken);
+
+        DbContext.UserSessions.Remove(new() { Id = currentSessionId });
+        await DbContext.SaveChangesAsync(cancellationToken);
 
         SignOut();
     }
@@ -87,10 +94,14 @@ public partial class UserController : AppControllerBase, IUserController
         if (id == currentSessionId)
             throw new BadRequestException(); // "Call SignOut instead"
 
-        await DbContext.DeviceInstallations.Where(d => d.UserSessionId == id).ExecuteUpdateAsync(setters => setters.SetProperty(d => d.UserSessionId, (Guid?)null), cancellationToken);
+        var userSession = await DbContext.UserSessions
+            //#if (notification == true)
+            .Include(us => us.PushNotificationSubscription)
+            //#endif
+            .FirstOrDefaultAsync(us => us.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
 
-        if (await DbContext.UserSessions.Where(s => s.Id == id).ExecuteDeleteAsync(cancellationToken) < 1)
-            throw new ResourceNotFoundException();
+        DbContext.UserSessions.Remove(userSession);
+        await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
         await appHubContext.Clients.User(userId.ToString()).SendAsync(SignalREvents.SESSION_REVOKED, id, cancellationToken);

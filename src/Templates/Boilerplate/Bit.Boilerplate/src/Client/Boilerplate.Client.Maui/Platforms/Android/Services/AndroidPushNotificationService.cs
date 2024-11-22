@@ -23,7 +23,7 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
 
     public string GetDeviceId() => Secure.GetString(Platform.AppContext.ContentResolver, Secure.AndroidId)!;
 
-    public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
     {
         try
         {
@@ -43,13 +43,13 @@ public partial class AndroidPushNotificationService : PushNotificationServiceBas
             throw new InvalidOperationException("Unable to resolve token for FCMv1.", exp);
         }
 
-        var installation = new DeviceInstallationDto
+        var subscription = new PushNotificationSubscriptionDto
         {
-            InstallationId = GetDeviceId(),
+            DeviceId = GetDeviceId(),
             Platform = "fcmV1",
             PushChannel = Token
         };
 
-        return installation;
+        return subscription;
     }
 }
