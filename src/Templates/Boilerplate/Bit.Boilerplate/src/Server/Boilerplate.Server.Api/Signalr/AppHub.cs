@@ -20,6 +20,7 @@ public partial class AppHub : Hub
         }
         else
         {
+            // Checkout AppHubConnectionHandler's comments for more info.
             await Groups.AddToGroupAsync(Context.ConnectionId, "AuthenticatedClients");
         }
 
