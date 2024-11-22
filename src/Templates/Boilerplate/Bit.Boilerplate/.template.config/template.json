@@ -209,7 +209,7 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true",
-            "description": "WPF-based Windows project supporting Windows 7 SP1 and above."
+            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
@@ -357,10 +357,10 @@
             "modifiers": [
                 {
                     "copyOnly": [
-                        "global.json",
                         "**/HomePage.razor",
                         "**/*.svg",
-                        "**/*.png"
+                        "**/*.png",
+                        "**/*.sh"
                     ],
                     "exclude": [
                         ".vs/**",

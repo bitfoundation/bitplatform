@@ -1,24 +1,30 @@
 ﻿//+:cnd:noEmit
+using System.Diagnostics;
 using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
-public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> localizer,
-                                                //#if (signalR != true)
-                                                PubSubService pubSubService,
-                                                //#endif
+public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
+                                                IStringLocalizer<AppStrings> localizer,
                                                 JsonSerializerOptions jsonSerializerOptions,
                                                 AbsoluteServerAddressProvider absoluteServerAddress,
                                                 HttpMessageHandler handler) : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
+
         bool serverCommunicationSuccess = false;
         var isInternalRequest = request.RequestUri!.ToString().StartsWith(absoluteServerAddress, StringComparison.InvariantCultureIgnoreCase);
 
         try
         {
             var response = await base.SendAsync(request, cancellationToken);
+            if (response.Headers.TryGetValues("Request-Id", out var requestId))
+            {
+                logScopeData["RequestId"] = requestId.First();
+            }
+            logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;
 
@@ -53,6 +59,8 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
 
             response.EnsureSuccessStatusCode();
 
+            request.Options.Set(new(RequestOptionNames.LogLevel), LogLevel.Information);
+
             return response;
         }
         catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
@@ -61,7 +69,6 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
         {
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
-        //#if (signalR != true)
         finally
         {
             if (isInternalRequest)
@@ -69,6 +76,5 @@ public partial class ExceptionDelegatingHandler(IStringLocalizer<AppStrings> loc
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
-        //#endif
     }
 }

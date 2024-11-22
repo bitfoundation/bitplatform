@@ -1,0 +1,43 @@
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+
+::deep {
+    .example-box {
+        gap: 100px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+
+        .bit-nav {
+            width: 350px;
+        }
+
+        @include sm {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+
+            .bit-nav {
+                width: 250px;
+            }
+        }
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .nav-custom-header {
+        color: green;
+        font-size: 17px;
+        font-weight: 600;
+    }
+
+    .nav-custom-item {
+        gap: 4px;
+        display: flex;
+        color: #ff7800;
+        font-weight: 600;
+        align-items: center;
+        flex-flow: row nowrap;
+    }
+}

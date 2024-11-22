@@ -32,6 +32,12 @@
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Environment)' == 'Production'">
+        <CompressionEnabled>false</CompressionEnabled>
+        <!-- Enabling compression generates `.br` and `.gz` files for static assets.
+        While this is beneficial for Blazor WebAssembly, it only adds to the app bundle size in MAUI without offering any advantages. -->
+    </PropertyGroup>
+
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' == 'Production'">
         <EnableLLVM>true</EnableLLVM>
         <RuntimeIdentifiers Condition="'$(AndroidPackageFormat)' == 'apk'">android-arm64</RuntimeIdentifiers>

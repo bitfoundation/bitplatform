@@ -5,11 +5,6 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AuthenticationManager : AuthenticationStateProvider
 {
-    /// <summary>
-    /// To prevent multiple simultaneous refresh token requests.
-    /// </summary>
-    private readonly SemaphoreSlim semaphore = new(1, maxCount: 1);
-
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
@@ -79,44 +74,53 @@ public partial class AuthenticationManager : AuthenticationStateProvider
         }
     }
 
-    public async Task<string?> RefreshToken(string requestedBy, CancellationToken cancellationToken)
+    /// <summary>
+    /// To prevent multiple simultaneous refresh token requests.
+    /// </summary>
+    private TaskCompletionSource<string?>? refreshTokenTsc = null;
+
+    public Task<string?> RefreshToken(string requestedBy)
     {
-        try
+        if (refreshTokenTsc is null)
         {
-            var access_token_BeforeLockValue = await tokenProvider.GetAccessToken();
-            await semaphore.WaitAsync();
-            var access_token_AfterLockValue = await tokenProvider.GetAccessToken();
-            if (access_token_BeforeLockValue != access_token_AfterLockValue)
-                return access_token_AfterLockValue; // It was renewed by a concurrent refresh token request.
+            refreshTokenTsc = new();
+            _ = RefreshTokenImplementation();
+        }
+
+        return refreshTokenTsc.Task;
+
+        async Task RefreshTokenImplementation()
+        {
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
             try
             {
-                string? refresh_token = await storageService.GetItem("refresh_token");
-                if (string.IsNullOrEmpty(refresh_token))
+                string? refreshToken = await storageService.GetItem("refresh_token");
+                if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refresh_token }, cancellationToken);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, default);
                 await StoreTokens(refreshTokenResponse);
-                return refreshTokenResponse.AccessToken!;
+                refreshTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
             catch (Exception exp)
             {
-                if (exp is UnauthorizedException)
-                {
-                    // refresh_token is either invalid or expired.
-                    await ClearTokens();
-                }
                 exceptionHandler.Handle(exp, new()
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
                 });
-                return null;
+
+                if (exp is UnauthorizedException) // refresh token is also invalid.
+                {
+                    await ClearTokens();
+                }
+
+                refreshTokenTsc.SetResult(null);
             }
-        }
-        finally
-        {
-            semaphore.Release();
+            finally
+            {
+                refreshTokenTsc = null;
+            }
         }
     }
 
@@ -133,9 +137,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider
     {
         try
         {
-            var access_token = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
+            var accessToken = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
-            return new AuthenticationState(tokenProvider.ParseAccessToken(access_token, validateExpiry: false));
+            return new AuthenticationState(tokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
         }
         catch (Exception exp)
         {

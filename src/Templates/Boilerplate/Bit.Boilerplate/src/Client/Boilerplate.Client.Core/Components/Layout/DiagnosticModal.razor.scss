@@ -28,4 +28,13 @@ section {
         transform: translateX(-50%);
         bottom: calc(var(--app-inset-bottom) + 1rem);
     }
+
+    .log-modal {
+        overflow: auto;
+        max-width: 40rem;
+        max-height: 40rem;
+        white-space: nowrap;
+        height: min(20rem, var(--app-height) - 4rem);
+        width: min(40rem, calc(var(--app-width) - 2rem));
+    }
 }

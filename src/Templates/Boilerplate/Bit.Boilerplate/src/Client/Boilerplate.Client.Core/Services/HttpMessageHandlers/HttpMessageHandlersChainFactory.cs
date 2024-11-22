@@ -8,7 +8,7 @@
 /// The returned chain will include the following handlers, in order:
 ///
 /// 1. <see cref="LoggingDelegatingHandler"/>
-/// 2. <see cref="RequestHeadersDelegationHandler" />
+/// 2. <see cref="RequestHeadersDelegatingHandler" />
 /// 3. <see cref="AuthDelegatingHandler" />
 /// 4. <see cref="RetryDelegatingHandler" />
 /// 5. <see cref="ExceptionDelegatingHandler" />

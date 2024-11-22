@@ -1,4 +1,4 @@
-// bit version: 9.0.0-pre-01
+// bit version: 9.0.1
 
 self.assetsInclude = [];
 self.assetsExclude = [

@@ -1,0 +1,27 @@
+@namespace Bit.BlazorUI
+
+@if (Href.HasValue())
+{
+    <a @onclick="OnClick"
+       href="@Href"
+       tabindex="-1"
+       class="@Class"
+       style="@Style"
+       title="@Title"
+       target="@Target"
+       disabled="@Disabled">
+        @ChildContent
+    </a>
+}
+else
+{
+    <button @onclick="OnClick"
+            type="button"
+            tabindex="-1"
+            title="@Title"
+            class="@Class"
+            style="@Style"
+            disabled="@Disabled">
+        @ChildContent
+    </button>
+}

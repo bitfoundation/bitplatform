@@ -2,4 +2,10 @@
 
 namespace Bit.BlazorUI.Demo.Client.Windows.Services;
 
-public class WindowsDeviceCoordinator : IBitDeviceCoordinator { }
+public partial class WindowsDeviceCoordinator : IBitDeviceCoordinator
+{
+    public async Task ApplyTheme(bool isDark)
+    {
+        Application.SetColorMode(isDark ? SystemColorMode.Dark : SystemColorMode.Classic);
+    }
+}

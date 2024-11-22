@@ -13,7 +13,12 @@ public static partial class ISharedServiceCollectionExtensions
         services.AddScoped<CultureInfoManager>();
         services.AddScoped<IDateTimeProvider, DateTimeProvider>();
 
-        services.AddSingleton(sp => configuration.Get<SharedSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            SharedSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
         services.AddSingleton(sp =>
         {
             JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
