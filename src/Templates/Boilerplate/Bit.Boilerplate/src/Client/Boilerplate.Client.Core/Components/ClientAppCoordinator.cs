@@ -119,9 +119,13 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             //#if (appInsights == true)
             if (isAuthenticated)
+            {
                 _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
             else
+            {
                 _ = appInsights.ClearAuthenticatedUserContext();
+            }
             //#endif
 
             var data = TelemetryContext.ToDictionary();

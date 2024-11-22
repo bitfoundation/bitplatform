@@ -24,9 +24,9 @@ using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
 //#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.Signalr;
 using Boilerplate.Server.Api.SignalR;
-using Microsoft.AspNetCore.SignalR;
 //#endif
 
 namespace Boilerplate.Server.Api;
