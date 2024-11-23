@@ -1142,6 +1142,7 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
+    <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>پاسخ گوگل ریکپچا نامعتبر است.</value>
@@ -1150,5 +1151,9 @@
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
     <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست، و دوباره تلاش کنید.</value>
+  </data>
     <!--#endif -->
 </root>

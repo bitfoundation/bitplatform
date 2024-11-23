@@ -17,7 +17,7 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
         {
             PushNotificationService.Token = token;
 
-            await PushNotificationService.RegisterSubscription(default);
+            await PushNotificationService.Subscribe(default);
         }
         catch (Exception exp)
         {

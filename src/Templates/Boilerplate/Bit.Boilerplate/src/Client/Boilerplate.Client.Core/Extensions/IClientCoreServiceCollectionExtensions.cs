@@ -11,6 +11,10 @@ using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
+//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +44,12 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
+        services.AddSessioned(sp =>
+        {
+            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthenticationManager>(sp);
+            authenticationStateProvider.OnInit();
+            return authenticationStateProvider;
+        });
         services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp =>
@@ -125,6 +134,39 @@ public static partial class IClientCoreServiceCollectionExtensions
         //#endif
 
         services.AddTypedHttpClients();
+
+        //#if (signalR == true)
+        services.AddSingleton<SignalRInfinitiesRetryPolicy>();
+        services.AddSessioned(sp =>
+        {
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+            var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
+            var authenticationManager = sp.GetRequiredService<AuthenticationManager>();
+            var hubConnection = new HubConnectionBuilder()
+                .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
+                .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+                {
+                    options.SkipNegotiation = true;
+                    options.Transports = HttpTransportType.WebSockets;
+                    // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
+                    // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.AccessTokenProvider = async () =>
+                    {
+                        var accessToken = await authTokenProvider.GetAccessToken();
+
+                        if (string.IsNullOrEmpty(accessToken) is false &&
+                            authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                        {
+                            return await authenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                        }
+
+                        return accessToken;
+                    };
+                })
+                .Build();
+            return hubConnection;
+        });
+        //#endif
 
         return services;
     }

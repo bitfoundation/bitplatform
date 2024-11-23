@@ -12,7 +12,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     public virtual Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
     public abstract Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
 
-    public async Task RegisterSubscription(CancellationToken cancellationToken)
+    public async Task Subscribe(CancellationToken cancellationToken)
     {
         if (await IsPushNotificationSupported(cancellationToken) is false)
         {
@@ -28,11 +28,11 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
             return;
         }
 
-        await pushNotificationController.RegisterSubscription(subscription, cancellationToken);
+        await pushNotificationController.Subscribe(subscription, cancellationToken);
     }
 
-    public async Task DeregisterSubscription(string deviceId, CancellationToken cancellationToken)
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
     {
-        await pushNotificationController.DeregisterSubscription(deviceId, cancellationToken);
+        await pushNotificationController.Unsubscribe(deviceId, cancellationToken);
     }
 }
