@@ -39,6 +39,18 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
 
     /// <summary>
+    /// Renders the nav bat in a width to only fit its content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FitWidth { get; set; }
+
+    /// <summary>
+    /// Renders the nav bar in full width of its container element.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Only renders the icon of each navbar item.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -124,6 +136,9 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => FitWidth ? "bit-nbr-ftw" : string.Empty);
+        ClassBuilder.Register(() => FullWidth ? "bit-nbr-flw" : string.Empty);
 
         ClassBuilder.Register(() => IconOnly ? "bit-nbr-ion" : string.Empty);
 
