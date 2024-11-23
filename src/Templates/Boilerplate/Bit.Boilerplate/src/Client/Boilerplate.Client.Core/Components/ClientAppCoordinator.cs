@@ -231,30 +231,12 @@ public partial class ClientAppCoordinator : AppComponentBase
                                                  CultureInfo.CurrentUICulture.Name); // 3- OS settings
         }
 
-        var cssClasses = new List<string> { };
+        var platformCssClass = AppPlatform.IsWindows ? "bit-windows" :
+                               AppPlatform.IsMacOS ? "bit-macos" :
+                               AppPlatform.IsIOS ? "bit-ios" :
+                               AppPlatform.IsAndroid ? "bit-android" : "bit-unknown";
 
-        if (AppPlatform.IsWindows)
-        {
-            cssClasses.Add("bit-windows");
-        }
-        else if (AppPlatform.IsMacOS)
-        {
-            cssClasses.Add("bit-macos");
-        }
-        else if (AppPlatform.IsIOS)
-        {
-            cssClasses.Add("bit-ios");
-        }
-        else if (AppPlatform.IsAndroid)
-        {
-            cssClasses.Add("bit-android");
-        }
-
-        var cssVariables = new Dictionary<string, string>
-        {
-        };
-
-        await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
+        await jsRuntime.ApplyBodyElementClasses(cssClasses: [platformCssClass], cssVariables: []);
     }
 
     private List<IDisposable> signalROnDisposables = [];
