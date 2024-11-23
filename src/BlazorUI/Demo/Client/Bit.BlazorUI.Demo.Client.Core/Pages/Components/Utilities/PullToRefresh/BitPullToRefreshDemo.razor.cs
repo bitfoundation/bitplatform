@@ -118,7 +118,9 @@ public partial class BitPullToRefreshDemo
         var ii = i;
         <div>@(ii). Item @(ii)</div>
     }
-</div>";
+</div>
+
+<BitPullToRefresh Anchor="".ptr-anchor"" OnRefresh=""HandleOnRefresh"" />";
     private readonly string example1CsharpCode = @"
 private bool isRefreshed;
 private async Task HandleOnRefresh()
