@@ -2,7 +2,6 @@
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Http.Connections;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
@@ -19,11 +18,8 @@ namespace Boilerplate.Client.Core.Components;
 public partial class ClientAppCoordinator : AppComponentBase
 {
     //#if (signalR == true)
-    private HubConnection? hubConnection;
     [AutoInject] private Notification notification = default!;
-    //#endif
-    //#if (notification == true)
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    [AutoInject] private HubConnection hubConnection = default!;
     //#endif
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
@@ -37,6 +33,9 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
 
     protected override async Task OnInitAsync()
     {
@@ -70,6 +69,9 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            //#if (signalR == true)
+            SubscribeToSignalREventsMessages();
+            //#endif
             await PropagateUserId(firstRun: true, AuthenticationManager.GetAuthenticationStateAsync());
         }
 
@@ -82,7 +84,6 @@ public partial class ClientAppCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
     }
 
-    private SemaphoreSlim semaphore = new(1, 1);
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
@@ -91,16 +92,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         try
         {
-            if (firstRun is false)
-            {
-                Abort();
-            }
-
-            await semaphore.WaitAsync(CurrentCancellationToken);
-            // About Semaphore: The following code may take significant time to execute.
-            // During this period, the authentication state could change. For instance, the app might start with the user authenticated, but they could sign out while this method is running.
-            // To handle such scenarios, we must ensure the code below runs in a safe and sequential manner, preventing parallel execution.
-            // Without this safeguard, SignalR or push notifications might incorrectly associate the device with a user who has already signed out.
+            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
@@ -139,16 +131,12 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             //#if (signalR == true)
-            await ConnectSignalR();
+            await StartSignalR();
             //#endif
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
-        }
-        finally
-        {
-            semaphore.Release();
         }
     }
 
@@ -158,37 +146,9 @@ public partial class ClientAppCoordinator : AppComponentBase
     }
 
     //#if (signalR == true)
-    private async Task ConnectSignalR()
+    private void SubscribeToSignalREventsMessages()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
-
-        hubConnection = new HubConnectionBuilder()
-            .WithAutomaticReconnect(new SignalRInfinitiesRetryPolicy())
-            .WithUrl(new Uri(AbsoluteServerAddress, "app-hub"), options =>
-            {
-                options.SkipNegotiation = true;
-                options.Transports = HttpTransportType.WebSockets;
-                // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
-                // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-                options.AccessTokenProvider = async () =>
-                {
-                    var accessToken = await AuthTokenProvider.GetAccessToken();
-
-                    if (string.IsNullOrEmpty(accessToken) is false &&
-                        AuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
-                    {
-                        return await AuthenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
-                    }
-
-                    return accessToken;
-                };
-            })
-            .Build();
-
-        hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
+        signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
         {
             if (await notification.IsNotificationAvailable())
             {
@@ -208,20 +168,24 @@ public partial class ClientAppCoordinator : AppComponentBase
             });*/
 
             // You can also leverage IPubSubService to notify other components in the application.
-        });
+        }));
 
-        hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
+        signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
             logger.LogInformation("Message {Message} received from server.", message);
             PubSubService.Publish(message);
-        });
+        }));
 
+        hubConnection.Closed += HubConnectionStateChange;
+        hubConnection.Reconnected += HubConnectionConnected;
+        hubConnection.Reconnecting += HubConnectionStateChange;
+    }
+
+    private async Task StartSignalR()
+    {
         try
         {
-            hubConnection.Closed += HubConnectionStateChange;
-            hubConnection.Reconnected += HubConnectionConnected;
-            hubConnection.Reconnecting += HubConnectionStateChange;
-
+            await hubConnection.StopAsync(CurrentCancellationToken);
             await hubConnection.StartAsync(CurrentCancellationToken);
             await HubConnectionConnected(null);
         }
@@ -293,19 +257,17 @@ public partial class ClientAppCoordinator : AppComponentBase
         await jsRuntime.ApplyBodyElementClasses(cssClasses, cssVariables);
     }
 
+    private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         //#if (signalR == true)
-        if (hubConnection is not null)
-        {
-            hubConnection.Closed -= HubConnectionStateChange;
-            hubConnection.Reconnected -= HubConnectionConnected;
-            hubConnection.Reconnecting -= HubConnectionStateChange;
-            await hubConnection.DisposeAsync();
-        }
+        hubConnection.Closed -= HubConnectionStateChange;
+        hubConnection.Reconnected -= HubConnectionConnected;
+        hubConnection.Reconnecting -= HubConnectionStateChange;
+        signalROnDisposables.ForEach(d => d.Dispose());
         //#endif
 
         await base.DisposeAsync(disposing);

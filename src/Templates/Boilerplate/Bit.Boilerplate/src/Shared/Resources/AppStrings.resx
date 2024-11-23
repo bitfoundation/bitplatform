@@ -1151,4 +1151,9 @@
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
     <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>"Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser, and try again."</value>
+  </data>
+    <!--#endif -->
 </root>

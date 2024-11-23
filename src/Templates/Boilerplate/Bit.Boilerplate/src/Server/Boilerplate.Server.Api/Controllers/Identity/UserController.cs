@@ -67,7 +67,7 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
-        var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
+        var currentSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
             //#if (notification == true)
@@ -89,7 +89,7 @@ public partial class UserController : AppControllerBase, IUserController
     {
         var userId = User.GetUserId();
 
-        var currentSessionId = Guid.Parse(User.FindFirstValue("session-id")!);
+        var currentSessionId = User.GetSessionId();
 
         if (id == currentSessionId)
             throw new BadRequestException(); // "Call SignOut instead"

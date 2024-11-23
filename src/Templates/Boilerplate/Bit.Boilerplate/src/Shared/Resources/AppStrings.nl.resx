@@ -1142,6 +1142,7 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>Dit zijn jouw analytische gegevens</value>
   </data>
+    <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>Ongeldig Google reCAPTCHA-antwoord.</value>
@@ -1150,5 +1151,9 @@
     <value>U moet slagen voor de Google reCAPTCHA-uitdaging.</value>
   </data>
     <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>"Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser, en probeer het opnieuw."</value>
+  </data>
     <!--#endif -->
 </root>
