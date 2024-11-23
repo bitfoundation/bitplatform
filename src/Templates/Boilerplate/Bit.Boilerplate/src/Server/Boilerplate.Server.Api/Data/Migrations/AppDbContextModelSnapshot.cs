@@ -796,7 +796,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("TodoItems")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -863,6 +863,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
             {
                 b.Navigation("Sessions");
+
+                b.Navigation("TodoItems");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>

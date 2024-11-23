@@ -22,7 +22,6 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private EmailService emailService = default!;
     [AutoInject] private IUserStore<User> userStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
-    [AutoInject] private IAuthorizationService authorizationService = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
     //#if (notification == true)
@@ -256,6 +255,20 @@ public partial class UserController : AppControllerBase, IUserController
 
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException();
+
+        var currentSessionId = User.GetSessionId();
+
+        foreach (var userSession in await GetUserSessions(cancellationToken))
+        {
+            if (userSession.Id == currentSessionId)
+            {
+                await SignOut(cancellationToken);
+            }
+            else
+            {
+                await RevokeSession(userSession.Id, cancellationToken);
+            }
+        }
 
         var result = await userManager.DeleteAsync(user);
 

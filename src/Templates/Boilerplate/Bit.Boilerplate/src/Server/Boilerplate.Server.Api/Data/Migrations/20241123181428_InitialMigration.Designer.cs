@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241123162857_InitialMigration")]
+[Migration("20241123181428_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -798,7 +798,7 @@ partial class InitialMigration
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("TodoItems")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -865,6 +865,8 @@ partial class InitialMigration
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
             {
                 b.Navigation("Sessions");
+
+                b.Navigation("TodoItems");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>

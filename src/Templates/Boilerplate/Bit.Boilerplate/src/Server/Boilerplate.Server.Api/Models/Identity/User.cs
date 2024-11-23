@@ -1,4 +1,9 @@
-﻿namespace Boilerplate.Server.Api.Models.Identity;
+﻿//+:cnd:noEmit
+//#if (sample == "Todo")
+using Boilerplate.Server.Api.Models.Todo;
+//#endif
+
+namespace Boilerplate.Server.Api.Models.Identity;
 
 public partial class User : IdentityUser<Guid>
 {
@@ -35,4 +40,8 @@ public partial class User : IdentityUser<Guid>
     public DateTimeOffset? PrivilegedAccessTokenRequestedOn { get; set; }
 
     public List<UserSession> Sessions { get; set; } = [];
+
+    //#if (sample == "Todo")
+    public List<TodoItem> TodoItems { get; set; } = [];
+    //#endif
 }
