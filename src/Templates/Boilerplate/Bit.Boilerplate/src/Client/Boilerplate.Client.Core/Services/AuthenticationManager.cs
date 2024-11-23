@@ -163,28 +163,29 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     public async Task<bool> EnsurePrivilegedAccess(CancellationToken cancellationToken)
     {
         var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
-        if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
-        {
-            _ = userController.SendPrivilegedAccessToken(cancellationToken)
-                .ContinueWith(r =>
-                {
-                    if (r.Exception is not null)
-                    {
-                        exceptionHandler.Handle(r.Exception);
-                    }
-                });
-            var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer[AppStrings.EnterPrivilegedAccessToken].ToString());
-            if (string.IsNullOrEmpty(token) is false)
+        var hasPrivilegedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: true };
+        if (hasPrivilegedAccess)
+            return true;
+
+        _ = userController.SendPrivilegedAccessToken(cancellationToken)
+            .ContinueWith(r =>
             {
-                if (accessTokenTsc != null)
+                if (r.Exception is not null)
                 {
-                    await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
+                    exceptionHandler.Handle(r.Exception);
                 }
-                var accessToken = await RefreshToken(requestedBy: "RequestPrivilegedAccess", token);
-                return string.IsNullOrEmpty(accessToken) is false;
-            }
+            });
+
+        var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer[AppStrings.EnterPrivilegedAccessToken].ToString());
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        if (accessTokenTsc != null)
+        {
+            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
         }
-        return false;
+        var accessToken = await RefreshToken(requestedBy: "RequestPrivilegedAccess", token);
+        return string.IsNullOrEmpty(accessToken) is false;
     }
 
     private async Task ClearTokens()
