@@ -11,7 +11,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// The CSS selector of the anchor element that the pull to refresh adheres to.
     /// </summary>
-    [Parameter] public string Anchor { get; set; } = "body";
+    [Parameter] public string? Anchor { get; set; }
 
     /// <summary>
     /// The content of the pull to refresh element.
@@ -41,34 +41,35 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// The pulling height that triggers the refresh.
     /// </summary>
-    [Parameter] public int Threshold { get; set; } = 80;
+    [Parameter] public int? Threshold { get; set; }
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
     [JSInvokable("Refresh")]
-    public async Task Refresh()
+    public async Task _Refresh()
     {
         await OnRefresh.InvokeAsync();
     }
 
     [JSInvokable("TouchStart")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPullToRefreshPullStartArgs))]
-    public async Task TouchStart(decimal top, decimal left, decimal width)
+    public async Task _TouchStart(decimal top, decimal left, decimal width)
     {
         await OnPullStart.InvokeAsync(new BitPullToRefreshPullStartArgs(top, left, width));
     }
 
     [JSInvokable("TouchMove")]
-    public async Task TouchMove(decimal diff)
+    public async Task _TouchMove(decimal diff)
     {
         await OnPullMove.InvokeAsync(diff);
     }
 
     [JSInvokable("TouchEnd")]
-    public async Task TouchEnd(decimal diff)
+    public async Task _TouchEnd(decimal diff)
     {
         await OnPullEnd.InvokeAsync(diff);
     }
@@ -86,7 +87,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, Anchor, Threshold, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, Anchor ?? "body", Threshold ?? 80, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
