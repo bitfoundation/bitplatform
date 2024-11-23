@@ -1034,6 +1034,27 @@
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
   </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} آیتم</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>برو به اولین برگه</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>برو به برگه قبل</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>برو به برگه بعد</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>برو به آخرین برگه</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>برگه</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>از</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>تعداد محصولات</value>
   </data>
