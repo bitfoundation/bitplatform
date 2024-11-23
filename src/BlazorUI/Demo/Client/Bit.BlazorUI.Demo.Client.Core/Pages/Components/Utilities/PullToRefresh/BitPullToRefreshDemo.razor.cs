@@ -120,8 +120,7 @@ public partial class BitPullToRefreshDemo
 <div class=""anchor"">
     @for (int i = 1; i < 51; i++)
     {
-        var ii = i;
-        <div>@(ii). Item @(ii)</div>
+        <div>@(i). Item @(i)</div>
     }
 </div>
 
