@@ -160,22 +160,31 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         }
     }
 
-    public async Task EnsurePrivilegedAccess(CancellationToken cancellationToken)
+    public async Task<bool> EnsurePrivilegedAccess(CancellationToken cancellationToken)
     {
         var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
         if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
         {
-            try
+            _ = userController.SendPrivilegedAccessToken(cancellationToken)
+                .ContinueWith(r =>
+                {
+                    if (r.Exception is not null)
+                    {
+                        exceptionHandler.Handle(r.Exception);
+                    }
+                });
+            var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer[AppStrings.EnterPrivilegedAccessToken].ToString());
+            if (string.IsNullOrEmpty(token) is false)
             {
-                await userController.SendPrivilegedAccessToken(cancellationToken);
+                if (accessTokenTsc != null)
+                {
+                    await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
+                }
+                var accessToken = await RefreshToken(requestedBy: "RequestPrivilegedAccess", token);
+                return string.IsNullOrEmpty(accessToken) is false;
             }
-            catch (TooManyRequestsExceptions exp)
-            {
-                exceptionHandler.Handle(exp);
-            }
-            var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer["Please enter the privileged access token to continue."].ToString());
-            await RefreshToken("RequestPrivilegedAccess", token);
         }
+        return false;
     }
 
     private async Task ClearTokens()

@@ -399,7 +399,6 @@ public partial class UserController : AppControllerBase, IUserController
         // Checkout AppHubConnectionHandler's comments for more info.
         var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
             .Where(us => us.UserId == user.Id && us.Id != userSessionId)
-            .Where(us => DateTimeOffset.UtcNow - us.RenewedOn < AppSettings.Identity.RefreshTokenExpiration)
             .Select(us => us.Id)
             .ToArrayAsync(cancellationToken);
         sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
