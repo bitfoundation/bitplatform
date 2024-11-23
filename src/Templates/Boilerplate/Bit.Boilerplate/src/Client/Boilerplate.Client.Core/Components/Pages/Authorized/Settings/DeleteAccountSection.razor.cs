@@ -12,16 +12,21 @@ public partial class DeleteAccountSection
 
     private async Task DeleteAccount()
     {
-        // TODO: Move the following codes to the new service
+        // TODO: Move the following codes to the new service + localization
         var user = AuthTokenProvider.ParseAccessToken(await AuthTokenProvider.GetAccessToken(), validateExpiry: true);
         if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false } || true)
         {
-            await userController.SendPrivilegedAccessToken(CurrentCancellationToken);
-            // var result = await dialog service give me the code.
-            // Call RefreshToken through AuthManager with the code
+            try
+            {
+                await userController.SendPrivilegedAccessToken(CurrentCancellationToken);
+            }
+            catch (TooManyRequestsExceptions exp)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+            var token = await JSRuntime.InvokeAsync<string?>("prompt", "Please enter the privileged access token to continue.");
+            await AuthenticationManager.RefreshToken("RequestPrivilegedAccess", token);
         }
-
-        return;
 
         await userController.Delete(CurrentCancellationToken);
 

@@ -87,7 +87,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     /// </summary>
     private TaskCompletionSource<string?>? refreshTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy)
+    public Task<string?> RefreshToken(string requestedBy, string? privilegedAccessToken = null)
     {
         if (refreshTokenTsc is null)
         {
@@ -106,7 +106,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, default);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, PrivilegedAccessToken = privilegedAccessToken }, default);
                 await StoreTokens(refreshTokenResponse);
                 refreshTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
