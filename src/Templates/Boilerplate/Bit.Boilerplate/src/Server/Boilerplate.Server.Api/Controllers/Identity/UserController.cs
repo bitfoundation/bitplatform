@@ -346,12 +346,15 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SendPrivilegedAccessToken(CancellationToken cancellationToken)
     {
+        // add email template + localization
+
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.PrivilegedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
+        // Privileged access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
 
-        //if (resendDelay < TimeSpan.Zero)
-        //    throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPrivilegedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer["WaitForPrivilegedAccessTokenRequestResendDelay {0}", resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.PrivilegedAccessTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -367,11 +370,10 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-        var messageText = Localizer[nameof(AppStrings.OtpShortText /*change text*/), token];
+        var messageText = Localizer["Token {0}", token];
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
-            // add email template
             // sendMessagesTasks.Add(emailService.SendPrivilegedAccessToken(user, token, cancellationToken));
         }
 
@@ -386,11 +388,11 @@ public partial class UserController : AppControllerBase, IUserController
             .Where(us => us.UserId == user.Id && us.Id != userSessionId)
             .Select(us => us.Id)
             .ToArrayAsync(cancellationToken);
-        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText + "!", cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText + "?", userRelatedPush: true, customSubscriptionFilter: s => s.UserSessionId != userSessionId && s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText, userRelatedPush: true, customSubscriptionFilter: s => s.UserSessionId != userSessionId && s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);

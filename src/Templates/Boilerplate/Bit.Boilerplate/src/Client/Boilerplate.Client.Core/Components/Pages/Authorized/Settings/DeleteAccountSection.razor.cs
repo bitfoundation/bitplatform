@@ -14,7 +14,7 @@ public partial class DeleteAccountSection
     {
         // TODO: Move the following codes to the new service + localization
         var user = AuthTokenProvider.ParseAccessToken(await AuthTokenProvider.GetAccessToken(), validateExpiry: true);
-        if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false } || true)
+        if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
         {
             try
             {
@@ -24,9 +24,15 @@ public partial class DeleteAccountSection
             {
                 ExceptionHandler.Handle(exp);
             }
-            var token = await JSRuntime.InvokeAsync<string?>("prompt", "Please enter the privileged access token to continue.");
+            var token = await JSRuntime.InvokeAsync<string?>("prompt", Localizer["Please enter the privileged access token to continue."]);
             await AuthenticationManager.RefreshToken("RequestPrivilegedAccess", token);
+            user = AuthTokenProvider.ParseAccessToken(await AuthTokenProvider.GetAccessToken(), validateExpiry: true);
+            if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
+                throw new ForbiddenException(Localizer["You are not authorized to perform this action."]);
         }
+
+        SnackBarService.Success("DELETED!");
+        return;
 
         await userController.Delete(CurrentCancellationToken);
 
