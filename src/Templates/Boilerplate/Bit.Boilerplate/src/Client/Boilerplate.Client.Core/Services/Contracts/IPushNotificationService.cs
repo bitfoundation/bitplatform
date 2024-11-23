@@ -6,6 +6,6 @@ public interface IPushNotificationService
 {
     string Token { get; set; }
     Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken);
-    Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken);
-    Task RegisterDevice(CancellationToken cancellationToken);
+    Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
+    Task RegisterSubscription(CancellationToken cancellationToken);
 }

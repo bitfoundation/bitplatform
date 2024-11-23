@@ -98,7 +98,8 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        // Checkout AppHubConnectionHandler's comments for more info.
+        await appHubContext.Clients.GroupExcept("AuthenticatedClients", excludedConnectionIds: [User.GetSessionId().ToString()]).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif
 }

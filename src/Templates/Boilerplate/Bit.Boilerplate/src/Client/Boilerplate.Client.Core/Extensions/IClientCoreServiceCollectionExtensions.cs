@@ -102,10 +102,12 @@ public static partial class IClientCoreServiceCollectionExtensions
             optionsBuilder
                 .UseSqlite($"Data Source={dbPath}");
 
+            //#if (framework == 'net9.0')
             if (AppEnvironment.IsProd())
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
+            //#endif
 
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());

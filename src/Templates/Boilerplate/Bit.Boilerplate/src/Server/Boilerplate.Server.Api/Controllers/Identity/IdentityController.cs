@@ -95,7 +95,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var userSession = CreateUserSession(request.DeviceInfo);
+        var userSession = CreateUserSession(user.Id, request.DeviceInfo);
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
@@ -134,11 +134,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
         }
 
-        user.Sessions.Add(userSession);
+        DbContext.UserSessions.Add(userSession);
         user.TwoFactorTokenRequestedOn = null;
         var addUserSessionResult = await userManager.UpdateAsync(user);
         if (addUserSessionResult.Succeeded is false)
             throw new ResourceValidationException(addUserSessionResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Microsoft.AspNetCore.Identity.SignInResult> CheckTwoFactorCode(string code)
@@ -161,20 +162,21 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful <see cref="AppUserClaimsPrincipalFactory.SessionClaims"/>
     /// </summary>
-    private UserSession CreateUserSession(string? device)
+    private UserSession CreateUserSession(Guid userId, string? deviceInfo)
     {
         var userSession = new UserSession
         {
-            SessionUniqueId = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
+            DeviceInfo = deviceInfo,
+            UserId = userId,
+            StartedOn = DateTimeOffset.UtcNow,
+            IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
-            Device = device,
-            IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
-            StartedOn = DateTimeOffset.UtcNow
         };
 
-        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", userSession.SessionUniqueId.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", userSession.Id.ToString()));
 
         return userSession;
     }
@@ -198,7 +200,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue("session-id") ?? throw new InvalidOperationException("session id could not be found"));
 
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
-            userSession = user!.Sessions.Find(s => s.SessionUniqueId == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
+            userSession = await DbContext.UserSessions.FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
 
             if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
                 throw new UnauthorizedException();
@@ -213,17 +215,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         catch when (userSession is not null)
         {
-            user!.Sessions.Remove(userSession);
+            DbContext.UserSessions.Remove(userSession);
             throw;
         }
         finally
         {
-            if (user is not null)
-            {
-                var result = await userManager.UpdateAsync(user);
-                if (!result.Succeeded)
-                    throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-            }
+            await DbContext.SaveChangesAsync();
         }
     }
 
@@ -267,11 +264,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (signalR == true)
+        // Checkout AppHubConnectionHandler's comments for more info.
         sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: pushMessage, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: pushMessage, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);
@@ -324,6 +322,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (signalR == true)
         if (firstStepAuthenticationMethod != "SignalR")
         {
+            // Checkout AppHubConnectionHandler's comments for more info.
             sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         }
         //#endif
@@ -331,7 +330,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (notification == true)
         if (firstStepAuthenticationMethod != "Push")
         {
-            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, customDeviceFilter: d => d.UserId == user.Id, cancellationToken: cancellationToken));
+            sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
         }
         //#endif
 

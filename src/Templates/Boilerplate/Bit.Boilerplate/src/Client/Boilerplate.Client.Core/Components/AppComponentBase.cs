@@ -50,7 +50,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress { get; set; } = default!;
 
 
-    private readonly CancellationTokenSource cts = new();
+    private CancellationTokenSource cts = new();
     protected CancellationToken CurrentCancellationToken => cts.Token;
 
     protected bool InPrerenderSession => AppPlatform.IsBlazorHybrid is false && JSRuntime.IsInitialized() is false;
@@ -214,6 +214,16 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         };
     }
 
+    /// <summary>
+    /// Cancells running codes inside current component.
+    /// </summary>
+    protected void Abort()
+    {
+        cts.Cancel();
+        cts.Dispose();
+        cts = new();
+    }
+
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -226,8 +236,8 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         if (disposing)
         {
             await PrerenderStateService.DisposeAsync();
-            cts?.Cancel();
-            cts?.Dispose();
+            cts.Cancel();
+            cts.Dispose();
         }
     }
 

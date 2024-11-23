@@ -993,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Recently</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>You can't revoke other sessions right now. Try again in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>

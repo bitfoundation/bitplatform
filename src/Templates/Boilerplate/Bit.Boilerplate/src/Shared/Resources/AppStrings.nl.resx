@@ -993,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Onlangs</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>Je kunt Anderse sessies op dit moment niet intrekken. Probeer het opnieuw in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>

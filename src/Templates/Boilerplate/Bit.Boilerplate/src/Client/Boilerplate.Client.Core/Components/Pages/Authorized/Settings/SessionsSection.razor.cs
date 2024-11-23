@@ -32,20 +32,20 @@ public partial class SessionsSection
         }
         finally
         {
-            otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId).ToArray();
-            currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId);
+            otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
+            currentSession = userSessions.Single(s => s.Id == currentSessionId);
         }
     }
 
     private async Task RevokeSession(UserSessionDto session)
     {
-        if (isWaiting || session.SessionUniqueId == currentSessionId) return;
+        if (isWaiting || session.Id == currentSessionId) return;
 
         isWaiting = true;
 
         try
         {
-            await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
+            await userController.RevokeSession(session.Id, CurrentCancellationToken);
 
             SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
             await LoadSessions();
@@ -60,11 +60,11 @@ public partial class SessionsSection
         }
     }
 
-    private static string GetImageUrl(string? device)
+    private static string GetImageUrl(string? deviceInfo)
     {
-        if (string.IsNullOrEmpty(device)) return "unknown.png";
+        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
 
-        var d = device.ToLowerInvariant();
+        var d = deviceInfo.ToLowerInvariant();
 
         if (d.Contains("win") /*Windows, WinUI, Win32*/) return "windows.png";
 

@@ -1,10 +1,10 @@
 ﻿namespace Boilerplate.Shared.Dtos.PushNotification;
 
 [DtoResourceType(typeof(AppStrings))]
-public partial class DeviceInstallationDto
+public partial class PushNotificationSubscriptionDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    public string? InstallationId { get; set; }
+    public string? DeviceId { get; set; }
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     [AllowedValues("apns", "fcmV1", "browser")]

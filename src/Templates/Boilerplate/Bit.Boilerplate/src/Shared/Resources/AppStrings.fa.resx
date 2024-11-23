@@ -993,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>اخیرا</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>شما نمیتوانید جلسات کاری دگیر را غیر فعال کنید. مجدد تلاش کنید در {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>

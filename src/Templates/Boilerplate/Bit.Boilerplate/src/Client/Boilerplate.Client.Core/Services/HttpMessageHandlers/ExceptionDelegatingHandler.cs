@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using System.Diagnostics;
 using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -69,6 +68,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         {
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
+        //#if (signalR != true)
         finally
         {
             if (isInternalRequest)
@@ -76,5 +76,6 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
+        //#endif
     }
 }

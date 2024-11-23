@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241107182721_InitialMigration")]
+[Migration("20241122104915_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -39,7 +39,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Categories")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
 
                 b.HasData(
                     new
@@ -109,7 +109,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Roles")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
@@ -184,10 +184,6 @@ partial class InitialMigration
                 b.Property<string>("SecurityStamp")
                     .HasColumnType("TEXT");
 
-                b.Property<string>("Sessions")
-                    .IsRequired()
-                    .HasColumnType("TEXT");
-
                 b.Property<bool>("TwoFactorEnabled")
                     .HasColumnType("INTEGER");
 
@@ -219,7 +215,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Users")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
 
                 b.HasData(
                     new
@@ -240,10 +236,40 @@ partial class InitialMigration
                         PhoneNumber = "+31684207362",
                         PhoneNumberConfirmed = true,
                         SecurityStamp = "959ff4a9-4b07-4cc1-8141-c5fc033daf83",
-                        Sessions = "[]",
                         TwoFactorEnabled = false,
                         UserName = "test"
                     });
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Address")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("DeviceInfo")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("IP")
+                    .HasColumnType("TEXT");
+
+                b.Property<long?>("RenewedOn")
+                    .HasColumnType("INTEGER");
+
+                b.Property<long>("StartedOn")
+                    .HasColumnType("INTEGER");
+
+                b.Property<Guid>("UserId")
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("UserSessions");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
@@ -282,7 +308,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "Products")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "CategoryId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "CategoryId" });
 
                 b.HasData(
                     new
@@ -517,9 +543,9 @@ partial class InitialMigration
                     });
             });
 
-        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", b =>
             {
-                b.Property<string>("InstallationId")
+                b.Property<string>("DeviceId")
                     .HasColumnType("TEXT");
 
                 b.Property<string>("Auth")
@@ -542,22 +568,27 @@ partial class InitialMigration
                     .IsRequired()
                     .HasColumnType("TEXT");
 
-                b.Property<string>("Tags")
+                b.Property<long>("RenewedOn")
+                    .HasColumnType("INTEGER");
+
+                b.PrimitiveCollection<string>("Tags")
                     .IsRequired()
                     .HasColumnType("TEXT");
 
-                b.Property<Guid?>("UserId")
+                b.Property<Guid?>("UserSessionId")
                     .HasColumnType("TEXT");
 
-                b.HasKey("InstallationId");
+                b.HasKey("DeviceId");
 
-                b.HasIndex("UserId");
+                b.HasIndex("UserSessionId")
+                    .IsUnique()
+                    .HasFilter("[UserSessionId] IS NOT NULL");
 
-                b.ToTable("DeviceInstallations");
+                b.ToTable("PushNotificationSubscriptions");
 
                 b
-                    .HasAnnotation("Cosmos:ContainerName", "DeviceInstallations")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Platform");
+                    .HasAnnotation("Cosmos:ContainerName", "PushNotificationSubscriptions")
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Platform" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
@@ -587,7 +618,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "TodoItems")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -608,7 +639,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "DataProtectionKeys")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "Id");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -634,7 +665,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "RoleClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "RoleId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "RoleId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -660,7 +691,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -685,7 +716,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserLogins")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -704,7 +735,7 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserRoles")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -727,7 +758,18 @@ partial class InitialMigration
 
                 b
                     .HasAnnotation("Cosmos:ContainerName", "UserTokens")
-                    .HasAnnotation("Cosmos:PartitionKeyName", "UserId");
+                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
+                    .WithMany("Sessions")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Products.Product", b =>
@@ -741,13 +783,13 @@ partial class InitialMigration
                 b.Navigation("Category");
             });
 
-        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.DeviceInstallation", b =>
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", b =>
             {
-                b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
-                    .HasForeignKey("UserId");
+                b.HasOne("Boilerplate.Server.Api.Models.Identity.UserSession", "UserSession")
+                    .WithOne("PushNotificationSubscription")
+                    .HasForeignKey("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", "UserSessionId");
 
-                b.Navigation("User");
+                b.Navigation("UserSession");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
@@ -815,6 +857,16 @@ partial class InitialMigration
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Categories.Category", b =>
             {
                 b.Navigation("Products");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
+            {
+                b.Navigation("Sessions");
+            });
+
+        modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
+            {
+                b.Navigation("PushNotificationSubscription");
             });
 #pragma warning restore 612, 618
     }
