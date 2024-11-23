@@ -3,3 +3,47 @@
 .bit-ptr {
     
 }
+
+body {
+    overscroll-behavior-y: none;
+}
+
+.pull-to-refresh {
+    box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.12);
+    pointer-events: none;
+    font-size: 0.85em;
+    font-weight: bold;
+    top: 0;
+    height: 0;
+    transition: height 0.3s, min-height 0.3s;
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    align-content: stretch;
+    position: fixed;
+}
+
+.header {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px red solid;
+}
+
+.main {
+    overflow: auto;
+    height: 500px;
+    position: relative;
+    background: gray;
+    width: 200px;
+    margin-left: 100px;
+}
+
+.body p {
+    height: 1000px;
+    background-color: aqua;
+    width: 100px;
+}

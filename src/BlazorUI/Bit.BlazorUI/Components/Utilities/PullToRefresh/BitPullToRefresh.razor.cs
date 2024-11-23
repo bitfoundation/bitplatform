@@ -29,7 +29,7 @@ public partial class BitPullToRefresh : BitComponentBase
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(Anchor, Threshold, dotnetObj);
+            await _js.BitPullToRefreshSetup(RootElement, Anchor, Threshold, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
