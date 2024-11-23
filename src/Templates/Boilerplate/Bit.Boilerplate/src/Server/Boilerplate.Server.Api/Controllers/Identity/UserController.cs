@@ -80,7 +80,7 @@ public partial class UserController : AppControllerBase, IUserController
         SignOut();
     }
 
-    [HttpPost("{id}")]
+    [HttpPost("{id}"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
     public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

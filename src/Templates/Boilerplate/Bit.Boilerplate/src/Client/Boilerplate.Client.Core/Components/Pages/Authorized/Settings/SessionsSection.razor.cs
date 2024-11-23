@@ -45,10 +45,13 @@ public partial class SessionsSection
 
         try
         {
-            await userController.RevokeSession(session.Id, CurrentCancellationToken);
+            if (await AuthenticationManager.EnsurePrivilegedAccess(CurrentCancellationToken))
+            {
+                await userController.RevokeSession(session.Id, CurrentCancellationToken);
 
-            SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
-            await LoadSessions();
+                SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
+                await LoadSessions();
+            }
         }
         catch (KnownException e)
         {
