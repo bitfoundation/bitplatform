@@ -6,9 +6,16 @@ public partial class BitPullToRefreshDemo
     [
         new()
         {
-            Name = "Anchor",
-            Type = "string",
-            DefaultValue = "body",
+            Name = "AnchorElement",
+            Type = "ElementReference?",
+            DefaultValue = "null",
+            Description = "The element reference of the anchor element that the pull to refresh adheres to.",
+        },
+        new()
+        {
+            Name = "AnchorSelector",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "The CSS selector of the anchor element that the pull to refresh adheres to.",
         },
         new()
@@ -91,28 +98,26 @@ public partial class BitPullToRefreshDemo
     private bool isRefreshed;
     private async Task HandleOnRefresh()
     {
-        await Task.Delay(1000);
         isRefreshed = true;
-        _ = Task.Delay(3000).ContinueWith(_ => { isRefreshed = false; InvokeAsync(StateHasChanged); });
+        _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed = false; InvokeAsync(StateHasChanged); });
     }
 
 
 
     private readonly string example1RazorCode = @"
 <style>
-    .ptr-anchor {
+    .anchor {
         width: 200px;
         height: 300px;
         overflow: auto;
         background: gray;
         margin-left: 50px;
-        position: relative;
     }
 </style>
 
 <div>isRefreshed? [@(isRefreshed ? ""Yes"" : ""No"")]</div>
 
-<div class=""ptr-anchor"">
+<div class=""anchor"">
     @for (int i = 1; i < 51; i++)
     {
         var ii = i;
@@ -120,13 +125,11 @@ public partial class BitPullToRefreshDemo
     }
 </div>
 
-<BitPullToRefresh Anchor="".ptr-anchor"" OnRefresh=""HandleOnRefresh"" />";
+<BitPullToRefresh Anchor="".anchor"" OnRefresh=""HandleOnRefresh"" />";
     private readonly string example1CsharpCode = @"
 private bool isRefreshed;
 private async Task HandleOnRefresh()
 {
-    await Task.Delay(1000);
     isRefreshed = true;
-    _ = Task.Delay(3000).ContinueWith(_ => { isRefreshed = false; InvokeAsync(StateHasChanged); });
 }";
 }

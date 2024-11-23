@@ -9,9 +9,14 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
 
     /// <summary>
+    /// The element reference of the anchor element that the pull to refresh adheres to.
+    /// </summary>
+    [Parameter] public ElementReference? AnchorElement { get; set; }
+
+    /// <summary>
     /// The CSS selector of the anchor element that the pull to refresh adheres to.
     /// </summary>
-    [Parameter] public string? Anchor { get; set; }
+    [Parameter] public string? AnchorSelector { get; set; }
 
     /// <summary>
     /// The content of the pull to refresh element.
@@ -55,21 +60,21 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         await OnRefresh.InvokeAsync();
     }
 
-    [JSInvokable("TouchStart")]
+    [JSInvokable("OnStart")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPullToRefreshPullStartArgs))]
-    public async Task _TouchStart(decimal top, decimal left, decimal width)
+    public async Task _OnStart(decimal top, decimal left, decimal width)
     {
         await OnPullStart.InvokeAsync(new BitPullToRefreshPullStartArgs(top, left, width));
     }
 
-    [JSInvokable("TouchMove")]
-    public async Task _TouchMove(decimal diff)
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diff)
     {
         await OnPullMove.InvokeAsync(diff);
     }
 
-    [JSInvokable("TouchEnd")]
-    public async Task _TouchEnd(decimal diff)
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diff)
     {
         await OnPullEnd.InvokeAsync(diff);
     }
@@ -87,7 +92,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, Anchor ?? "body", Threshold ?? 80, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, AnchorElement, AnchorSelector, Threshold, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);

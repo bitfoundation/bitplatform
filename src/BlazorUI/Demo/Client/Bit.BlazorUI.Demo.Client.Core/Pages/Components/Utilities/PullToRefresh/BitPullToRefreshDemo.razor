@@ -13,16 +13,15 @@
             <div>
                 <div>isRefreshed? [@(isRefreshed ? "Yes" : "No")]</div>
                 <br />
-                <div class="ptr-anchor">
+                <div class="anchor">
                     @for (int i = 1; i < 51; i++)
                     {
-                        var ii = i;
-                        <div>@(ii). Item @(ii)</div>
+                        <div>@(i). Item @(i)</div>
                     }
                 </div>
             </div>
 
-            <BitPullToRefresh Anchor=".ptr-anchor" OnRefresh="HandleOnRefresh" />
+            <BitPullToRefresh AnchorSelector=".anchor" OnRefresh="HandleOnRefresh" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
