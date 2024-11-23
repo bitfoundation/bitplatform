@@ -5,8 +5,11 @@ namespace Boilerplate.Client.Core.Services;
 
 public partial class AuthenticationManager : AuthenticationStateProvider, IAsyncDisposable
 {
+    private Action? unsubscribe;
+
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
+    [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
@@ -16,14 +19,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
 
-    private Action? unsubscribe;
-    [AutoInject]
-    private PubSubService pubSubService
+    public void OnInit()
     {
-        set
-        {
-            unsubscribe = value.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
-        }
+        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ public partial class PushNotificationService
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
 
-    public async Task RegisterSubscription([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
+    public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
@@ -47,7 +47,7 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeregisterSubscription(string deviceId, CancellationToken cancellationToken)
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
     {
         dbContext.PushNotificationSubscriptions.Remove(new() { DeviceId = deviceId });
         await dbContext.SaveChangesAsync(cancellationToken);

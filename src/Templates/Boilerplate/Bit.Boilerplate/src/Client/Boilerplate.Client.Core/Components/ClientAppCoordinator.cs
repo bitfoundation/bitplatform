@@ -127,7 +127,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             }
 
             //#if (notification == true)
-            await pushNotificationService.RegisterSubscription(CurrentCancellationToken);
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
 
             //#if (signalR == true)
