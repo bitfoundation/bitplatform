@@ -38,8 +38,8 @@ public static partial class ISharedServiceCollectionExtensions
         // and programmatically in C# by injecting IAuthorizationService for enhanced security and access control.
         services.AddAuthorizationCore(options =>
         {
-            options.AddPolicy("AdminsOnly", authPolicyBuilder => authPolicyBuilder.RequireRole("Admin"));
-            options.AddPolicy("TwoFactorEnabled", x => x.RequireClaim("amr", "mfa")); // For those who have two-factor authentication enabled.
+            options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
+            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
         });
 
         services.AddLocalization();

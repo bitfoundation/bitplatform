@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241122104915_InitialMigration")]
+[Migration("20241123144710_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -173,6 +173,9 @@ partial class InitialMigration
                     .HasColumnType("INTEGER");
 
                 b.Property<long?>("PhoneNumberTokenRequestedOn")
+                    .HasColumnType("INTEGER");
+
+                b.Property<long?>("PrivilegedAccessTokenRequestedOn")
                     .HasColumnType("INTEGER");
 
                 b.Property<string>("ProfileImageName")

@@ -17,17 +17,17 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-
+    [AutoInject] private UrlEncoder urlEncoder = default!;
+    [AutoInject] private PhoneService phoneService = default!;
+    [AutoInject] private EmailService emailService = default!;
     [AutoInject] private IUserStore<User> userStore = default!;
-
+    [AutoInject] private UserManager<User> userManager = default!;
+    [AutoInject] private IAuthorizationService authorizationService = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
-    [AutoInject] private PhoneService phoneService = default!;
-
-    [AutoInject] private EmailService emailService = default!;
-
-    [AutoInject] private UrlEncoder urlEncoder = default!;
+    //#if (notification == true)
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
+    //#endif
 
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
@@ -76,9 +76,6 @@ public partial class UserController : AppControllerBase, IUserController
             .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
 
         DbContext.UserSessions.Remove(userSession);
-        await DbContext.SaveChangesAsync(cancellationToken);
-
-        DbContext.UserSessions.Remove(new() { Id = currentSessionId });
         await DbContext.SaveChangesAsync(cancellationToken);
 
         SignOut();
@@ -252,7 +249,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
-    [HttpDelete]
+    [HttpDelete, Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -344,6 +341,59 @@ public partial class UserController : AppControllerBase, IUserController
             //IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
             QrCode = qrCodeBase64
         };
+    }
+
+    [HttpPost]
+    public async Task SendPrivilegedAccessToken(CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var resendDelay = (DateTimeOffset.Now - user!.PrivilegedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
+
+        //if (resendDelay < TimeSpan.Zero)
+        //    throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPrivilegedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+
+        user.PrivilegedAccessTokenRequestedOn = DateTimeOffset.Now;
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var userSessionId = User.GetSessionId();
+
+        var token = await userManager.GenerateUserTokenAsync(
+            user,
+            TokenOptions.DefaultPhoneProvider,
+            FormattableString.Invariant($"PrivilegedAccess:{userSessionId},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"));
+
+        List<Task> sendMessagesTasks = [];
+
+        var messageText = Localizer[nameof(AppStrings.OtpShortText /*change text*/), token];
+
+        if (await userManager.IsEmailConfirmedAsync(user))
+        {
+            // add email template
+            // sendMessagesTasks.Add(emailService.SendPrivilegedAccessToken(user, token, cancellationToken));
+        }
+
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(phoneService.SendSms(messageText, user.PhoneNumber!, cancellationToken));
+        }
+
+        //#if (signalR == true)
+        // Checkout AppHubConnectionHandler's comments for more info.
+        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+            .Where(us => us.UserId == user.Id && us.Id != userSessionId)
+            .Select(us => us.Id)
+            .ToArrayAsync(cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText + "!", cancellationToken));
+        //#endif
+
+        //#if (notification == true)
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText + "?", userRelatedPush: true, customSubscriptionFilter: s => s.UserSessionId != userSessionId && s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        //#endif
+
+        await Task.WhenAll(sendMessagesTasks);
     }
 
     private static string FormatKey(string unformattedKey)

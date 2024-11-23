@@ -44,4 +44,7 @@ public interface IUserController : IAppController
     [HttpPost]
     [Route("~/api/[controller]/2fa")]
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;
+
+    [HttpPost]
+    Task SendPrivilegedAccessToken(CancellationToken cancellationToken);
 }

@@ -10,6 +10,7 @@ using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+using System.Threading;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -96,6 +97,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
         var userSession = CreateUserSession(user.Id, request.DeviceInfo);
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true")); // This only applies to the current, short-lived access token.
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
@@ -176,13 +179,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
         };
 
-        userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", userSession.Id.ToString()));
-
         return userSession;
     }
 
     [HttpPost]
-    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto request)
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshRequestDto request, CancellationToken cancellationToken)
     {
         UserSession? userSession = null;
         User? user = null;
@@ -197,7 +198,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 throw new UnauthorizedException();
 
             var userId = refreshTicket!.Principal.GetUserId().ToString() ?? throw new InvalidOperationException("User id could not be found");
-            var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue("session-id") ?? throw new InvalidOperationException("session id could not be found"));
+            var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue(AppClaimTypes.SESSION_ID) ?? throw new InvalidOperationException("session id could not be found"));
 
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
             userSession = await DbContext.UserSessions.FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
@@ -207,7 +208,23 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             userSession.RenewedOn = DateTimeOffset.UtcNow;
 
-            userClaimsPrincipalFactory.SessionClaims.Add(new("session-id", currentSessionId.ToString()));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
+
+            if (string.IsNullOrEmpty(request.PrivilegedAccessToken) is false)
+            {
+                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"PrivilegedAccess:{userSession.Id},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"), request.PrivilegedAccessToken);
+                if (tokenIsValid is false)
+                {
+                    await userManager.AccessFailedAsync(user);
+                    throw new BadRequestException(nameof(AppStrings.InvalidToken));
+                }
+                else
+                {
+                    user.PrivilegedAccessTokenRequestedOn = null; // invalidates token
+                    await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+                }
+            }
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 

@@ -29,5 +29,10 @@ public partial class User : IdentityUser<Guid>
 
     public DateTimeOffset? OtpRequestedOn { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS" />
+    /// </summary>
+    public DateTimeOffset? PrivilegedAccessTokenRequestedOn { get; set; }
+
     public List<UserSession> Sessions { get; set; } = [];
 }
