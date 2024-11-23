@@ -1,5 +1,14 @@
 ﻿@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+.ptr-anchor {
+    width: 200px;
+    height: 300px;
+    overflow: auto;
+    margin-left: 50px;
+    position: relative;
+    outline: 1px gray solid;
+}
+
 ::deep {
 }

@@ -1,49 +1,64 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ptr {
-    
-}
-
-body {
-    overscroll-behavior-y: none;
-}
-
-.pull-to-refresh {
-    box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.12);
-    pointer-events: none;
-    font-size: 0.85em;
-    font-weight: bold;
-    top: 0;
     height: 0;
-    transition: height 0.3s, min-height 0.3s;
-    text-align: center;
-    width: 100%;
+    position: fixed;
     overflow: hidden;
+    pointer-events: none;
+}
+
+.bit-ptr-spn {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: flex-end;
-    align-content: stretch;
-    position: fixed;
-}
-
-.header {
-    height: 100px;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    border: 1px red solid;
 }
 
-.main {
-    overflow: auto;
-    height: 500px;
+.bit-ptr-rng {
+    width: 40px;
+    height: 40px;
+    color: $clr-pri;
     position: relative;
-    background: gray;
-    width: 200px;
-    margin-left: 100px;
+    display: inline-block;
 }
 
-.body p {
-    height: 1000px;
-    background-color: aqua;
-    width: 100px;
+.bit-ptr-rng,
+.bit-ptr-rng div {
+    box-sizing: border-box;
+}
+
+.bit-ptr-rng div {
+    margin: 4px;
+    width: 32px;
+    height: 32px;
+    display: block;
+    position: absolute;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 4px solid currentColor;
+    border-color: currentColor transparent transparent transparent;
+    animation: bit-ptr-rng-anm 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.bit-ptr-rng div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.bit-ptr-rng div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.bit-ptr-rng div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes bit-ptr-rng-anm {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
