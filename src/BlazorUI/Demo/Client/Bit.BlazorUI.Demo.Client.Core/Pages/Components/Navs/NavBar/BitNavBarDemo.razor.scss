@@ -1,43 +1,25 @@
 ﻿@import '../../../../Styles/abstracts/_media-queries.scss';
 
 ::deep {
-    .example-box {
-        gap: 100px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-
-        .bit-nav {
-            width: 350px;
-        }
-
-        @include sm {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0;
-
-            .bit-nav {
-                width: 250px;
-            }
-        }
+    .custom-class {
+        margin: 1rem;
+        border-radius: 1rem;
+        box-shadow: aqua 0 0 1rem;
+        background: linear-gradient(90deg, magenta, transparent) blue;
     }
 
-    a {
-        text-decoration: none;
-    }
-
-    .nav-custom-header {
-        color: green;
-        font-size: 17px;
-        font-weight: 600;
-    }
-
-    .nav-custom-item {
-        gap: 4px;
-        display: flex;
+    .custom-item {
         color: #ff7800;
         font-weight: 600;
-        align-items: center;
-        flex-flow: row nowrap;
+    }
+
+    .custom-item-ico {
+        font-weight: bold;
+        color: darkmagenta;
+    }
+
+    .custom-item-txt {
+        font-weight: bold;
+        font-style: italic;
     }
 }
