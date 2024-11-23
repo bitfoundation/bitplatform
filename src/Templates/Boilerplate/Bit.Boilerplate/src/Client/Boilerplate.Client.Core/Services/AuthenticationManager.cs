@@ -18,10 +18,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
     [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private IAuthorizationService authorizationService = default!;
 
     public void OnInit()
     {
-        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(deleteUserSessionFromServer: false, default));
     }
 
     /// <summary>
@@ -65,11 +66,14 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
-    public async Task SignOut(CancellationToken cancellationToken)
+    public async Task SignOut(bool deleteUserSessionFromServer, CancellationToken cancellationToken)
     {
         try
         {
-            await userController.SignOut(cancellationToken);
+            if (deleteUserSessionFromServer)
+            {
+                await userController.SignOut(cancellationToken);
+            }
         }
         catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException)
         {
@@ -85,17 +89,17 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     /// <summary>
     /// To prevent multiple simultaneous refresh token requests.
     /// </summary>
-    private TaskCompletionSource<string?>? refreshTokenTsc = null;
+    private TaskCompletionSource<string?>? accessTokenTsc = null;
 
     public Task<string?> RefreshToken(string requestedBy, string? privilegedAccessToken = null)
     {
-        if (refreshTokenTsc is null)
+        if (accessTokenTsc is null)
         {
-            refreshTokenTsc = new();
+            accessTokenTsc = new();
             _ = RefreshTokenImplementation();
         }
 
-        return refreshTokenTsc.Task;
+        return accessTokenTsc.Task;
 
         async Task RefreshTokenImplementation()
         {
@@ -108,7 +112,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
 
                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, PrivilegedAccessToken = privilegedAccessToken }, default);
                 await StoreTokens(refreshTokenResponse);
-                refreshTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
+                accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
             catch (Exception exp)
             {
@@ -123,11 +127,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
                     await ClearTokens();
                 }
 
-                refreshTokenTsc.SetResult(null);
+                accessTokenTsc.SetResult(null);
             }
             finally
             {
-                refreshTokenTsc = null;
+                accessTokenTsc = null;
             }
         }
     }
@@ -153,6 +157,24 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         {
             exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
             return new AuthenticationState(tokenProvider.Anonymous());
+        }
+    }
+
+    public async Task EnsurePrivilegedAccess(CancellationToken cancellationToken)
+    {
+        var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
+        if (await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
+        {
+            try
+            {
+                await userController.SendPrivilegedAccessToken(cancellationToken);
+            }
+            catch (TooManyRequestsExceptions exp)
+            {
+                exceptionHandler.Handle(exp);
+            }
+            var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer["Please enter the privileged access token to continue."].ToString());
+            await RefreshToken("RequestPrivilegedAccess", token);
         }
     }
 

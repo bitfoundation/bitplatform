@@ -924,6 +924,9 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
+    <data name="EnterPrivilegedAccessToken" xml:space="preserve">
+    <value>لطفا توکن دریافت دسترسی ویژه را وارد کنید</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>

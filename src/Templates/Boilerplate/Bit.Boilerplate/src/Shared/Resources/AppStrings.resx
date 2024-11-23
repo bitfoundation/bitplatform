@@ -924,6 +924,9 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
+    <data name="EnterPrivilegedAccessToken" xml:space="preserve">
+    <value>Please enter the privileged access token to continue.</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>

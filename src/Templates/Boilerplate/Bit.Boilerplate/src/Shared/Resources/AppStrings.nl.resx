@@ -924,6 +924,9 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Het 2FA-token is gegenereerd en naar u verzonden.</value>
   </data>
+    <data name="EnterPrivilegedAccessToken" xml:space="preserve">
+    <value>Voer alstublieft de geprivilegieerde toegangstoken in om door te gaan.</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Je hebt de bevestigingsmail al aangevraagd. Probeer het opnieuw in {0}</value>
   </data>

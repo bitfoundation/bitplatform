@@ -15,7 +15,7 @@ public partial class SignOutConfirmDialog
 
     private async Task SignOut()
     {
-        await AuthenticationManager.SignOut(CurrentCancellationToken);
+        await AuthenticationManager.SignOut(deleteUserSessionFromServer: true, CurrentCancellationToken);
 
         await CloseModal();
     }
