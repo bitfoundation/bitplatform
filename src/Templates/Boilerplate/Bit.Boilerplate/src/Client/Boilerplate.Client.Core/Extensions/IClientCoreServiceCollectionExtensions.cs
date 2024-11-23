@@ -44,7 +44,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
-        services.AddSessioned(sp =>
+        services.AddSessioned<AuthenticationStateProvider>(sp =>
         {
             var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthenticationManager>(sp);
             authenticationStateProvider.OnInit();

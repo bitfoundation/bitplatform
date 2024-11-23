@@ -36,6 +36,10 @@
 
                         <BitSeparator />
 
+                        <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen=false">
+                            @Localizer[nameof(AppStrings.ProfileTitle)]
+                        </BitActionButton>
+
                         <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
                             <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
                                 @Localizer[nameof(AppStrings.Language)]
@@ -55,11 +59,10 @@
                             <BitToggle OnChange="ToggleTheme" Value="currentTheme == AppThemeType.Light" ValueChanged="v => {}" />
                         </BitStack>
 
-                        <BitActionButton IconName="@BitIconName.Contact" Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}")" FullWidth OnClick="() => isOpen=false">
-                            @Localizer[nameof(AppStrings.ProfileTitle)]
-                        </BitActionButton>
-
-                        <BitActionButton IconName="@BitIconName.SignOut" FullWidth OnClick="() => { isSignOutConfirmOpen=true; isOpen=false; }">
+                        <BitActionButton FullWidth
+                                         Color="BitColor.Error"
+                                         IconName="@BitIconName.SignOut"
+                                         OnClick="() => { isSignOutConfirmOpen=true; isOpen=false; }">
                             @Localizer[nameof(AppStrings.SignOut)]
                         </BitActionButton>
                     </BitStack>
