@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241123144710_InitialMigration")]
+[Migration("20241123162857_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
