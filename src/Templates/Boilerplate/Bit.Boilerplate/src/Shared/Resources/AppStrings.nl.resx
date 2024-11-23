@@ -1153,7 +1153,7 @@
     <!--#endif -->
     <!--#if (signalR == true) -->
     <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>"Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser, en probeer het opnieuw."</value>
+    <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser, en probeer het opnieuw.</value>
   </data>
     <!--#endif -->
 </root>
