@@ -17,13 +17,35 @@
 <ComponentExampleBox Title="Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
         <div>Defines the mode in which navigation is handled by the nav bar component.</div>
+        <br /><br />
         <BitNavBar Mode="BitNavMode.Manual"
                    Items="basicNavBarItems"
                    DefaultSelectedItem="basicNavBarItems[0]" />
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div>Only renders the icon of each navbar item.</div>
+        <br /><br />
+        <BitNavBar Items="basicNavBarItems" IconOnly />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Explore BitNavBar's customization capabilities.</div>
+        <br /><br />
+        <BitNavBar Items="basicNavBarItems">
+            <ItemTemplate Context="item">
+                <span style="font-size:12px">@item.Text</span>
+                <i class="bit-icon bit-icon--@item.IconName" />
+            </ItemTemplate>
+        </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
@@ -82,25 +104,6 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-    <ExamplePreview>
-        <div>Only renders the icon of each navbar item.</div>
-        <BitNavBar Items="basicNavBarItems" IconOnly />
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <ExamplePreview>
-        <div>Explore BitNavBar's customization capabilities.</div>
-        <BitNavBar Items="basicNavBarItems">
-            <ItemTemplate Context="item">
-                <span style="font-size:12px">@item.Text</span>
-                <i class="bit-icon bit-icon--@item.IconName" />
-            </ItemTemplate>
-        </BitNavBar>
-    </ExamplePreview>
-</ComponentExampleBox>
-
 <ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
@@ -129,7 +132,7 @@
 <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>Use BitNavBar in right-to-left (RTL).</div>
-        <br />
+        <br /><br />
         <div dir="rtl">
             <BitNavBar Dir="BitDir.Rtl" Items="rtlItems" />
         </div>

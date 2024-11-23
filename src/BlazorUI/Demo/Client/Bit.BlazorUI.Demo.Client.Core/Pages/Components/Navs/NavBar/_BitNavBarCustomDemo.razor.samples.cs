@@ -76,6 +76,50 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];";
 
     private readonly string example4RazorCode = @"
+<BitNavBar IconOnly
+           Items=""basicNavBarCustoms""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.Icon } })"" />";
+    private readonly string example4CsharpCode = @"
+public class MenuItem
+{
+    public string? Title { get; set; }
+    public string? Icon { get; set; }
+}
+
+private static readonly List<MenuItem> basicNavBarCustoms =
+[
+    new() { Title = ""Home"", Icon = BitIconName.Home  },
+    new() { Title = ""Products"", Icon = BitIconName.ProductVariant },
+    new() { Title = ""Academy"", Icon = BitIconName.LearningTools },
+    new() { Title = ""Profile"", Icon = BitIconName.Contact },
+];";
+
+    private readonly string example5RazorCode = @"
+<BitNavBar Items=""basicNavBarCustoms""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.Icon } })"">
+    <ItemTemplate Context=""custom"">
+        <span style=""font-size:12px"">@custom.Title</span>
+        <i class=""bit-icon bit-icon--@custom.Icon"" />
+    </ItemTemplate>
+</BitNavBar>";
+    private readonly string example5CsharpCode = @"
+public class MenuItem
+{
+    public string? Title { get; set; }
+    public string? Icon { get; set; }
+}
+
+private static readonly List<MenuItem> basicNavBarCustoms =
+[
+    new() { Title = ""Home"", Icon = BitIconName.Home  },
+    new() { Title = ""Products"", Icon = BitIconName.ProductVariant },
+    new() { Title = ""Academy"", Icon = BitIconName.LearningTools },
+    new() { Title = ""Profile"", Icon = BitIconName.Contact },
+];";
+
+    private readonly string example6RazorCode = @"
 <BitNavBar Color=""BitColor.Primary""
            Items=""basicNavBarCustoms""
            DefaultSelectedItem=""basicNavBarCustoms[0]""
@@ -180,50 +224,6 @@ private static readonly List<MenuItem> basicNavBarCustoms =
            Mode=""BitNavMode.Manual""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"" />";
-    private readonly string example4CsharpCode = @"
-public class MenuItem
-{
-    public string? Title { get; set; }
-    public string? Icon { get; set; }
-}
-
-private static readonly List<MenuItem> basicNavBarCustoms =
-[
-    new() { Title = ""Home"", Icon = BitIconName.Home  },
-    new() { Title = ""Products"", Icon = BitIconName.ProductVariant },
-    new() { Title = ""Academy"", Icon = BitIconName.LearningTools },
-    new() { Title = ""Profile"", Icon = BitIconName.Contact },
-];";
-
-    private readonly string example5RazorCode = @"
-<BitNavBar IconOnly
-           Items=""basicNavBarCustoms""
-           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                    IconName = { Selector = item => item.Icon } })"" />";
-    private readonly string example5CsharpCode = @"
-public class MenuItem
-{
-    public string? Title { get; set; }
-    public string? Icon { get; set; }
-}
-
-private static readonly List<MenuItem> basicNavBarCustoms =
-[
-    new() { Title = ""Home"", Icon = BitIconName.Home  },
-    new() { Title = ""Products"", Icon = BitIconName.ProductVariant },
-    new() { Title = ""Academy"", Icon = BitIconName.LearningTools },
-    new() { Title = ""Profile"", Icon = BitIconName.Contact },
-];";
-
-    private readonly string example6RazorCode = @"
-<BitNavBar Items=""basicNavBarCustoms""
-           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                    IconName = { Selector = item => item.Icon } })"">
-    <ItemTemplate Context=""custom"">
-        <span style=""font-size:12px"">@custom.Title</span>
-        <i class=""bit-icon bit-icon--@custom.Icon"" />
-    </ItemTemplate>
-</BitNavBar>";
     private readonly string example6CsharpCode = @"
 public class MenuItem
 {
