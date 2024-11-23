@@ -219,19 +219,17 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
 
     private void OnSetParameters()
     {
-        if (ChildContent is null && Options is null && Items != _oldItems)
-        {
-            _items = Items?.ToList() ?? [];
-            _oldItems = Items;
-        }
+        if (ChildContent is not null || Options is not null || Items == _oldItems) return;
+
+        _items = Items?.ToList() ?? [];
+        _oldItems = Items;
     }
 
     private void OnSetMode()
     {
-        if (Mode is BitNavMode.Automatic)
-        {
-            SetSelectedItemByCurrentUrl();
-        }
+        if (Mode is not BitNavMode.Automatic) return;
+
+        SetSelectedItemByCurrentUrl();
     }
 
     private async Task SetSelectedItem(TItem item)
