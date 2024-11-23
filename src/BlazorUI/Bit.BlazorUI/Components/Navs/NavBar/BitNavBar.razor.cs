@@ -106,12 +106,14 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     internal void RegisterOption(BitNavBarOption option)
     {
         _items.Add((option as TItem)!);
+        SetSelectedItemByCurrentUrl();
         StateHasChanged();
     }
 
     internal void UnregisterOption(BitNavBarOption option)
     {
         _items.Remove((option as TItem)!);
+        SetSelectedItemByCurrentUrl();
         StateHasChanged();
     }
 
@@ -161,9 +163,17 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
             _oldItems = Items;
         }
 
-        if (Mode != BitNavMode.Automatic && SelectedItemHasBeenSet is false && DefaultSelectedItem is not null)
+        if (Mode == BitNavMode.Automatic)
         {
-            await AssignSelectedItem(DefaultSelectedItem);
+            SetSelectedItemByCurrentUrl();
+            _navigationManager.LocationChanged += OnLocationChanged;
+        }
+        else
+        {
+            if (DefaultSelectedItem is not null && SelectedItemHasBeenSet is false)
+            {
+                await AssignSelectedItem(DefaultSelectedItem);
+            }
         }
 
         await base.OnInitializedAsync();
@@ -206,22 +216,16 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         if (Mode is BitNavMode.Automatic)
         {
             SetSelectedItemByCurrentUrl();
-            _navigationManager.LocationChanged += OnLocationChanged;
-        }
-        else
-        {
-            _navigationManager.LocationChanged -= OnLocationChanged;
         }
     }
 
     private async Task SetSelectedItem(TItem item)
     {
+        if (item == SelectedItem && Reselectable is false) return;
+
         if (await AssignSelectedItem(item) is false) return;
 
-        if (item != SelectedItem || Reselectable)
-        {
-            await OnSelectItem.InvokeAsync(item);
-        }
+        await OnSelectItem.InvokeAsync(item);
 
         StateHasChanged();
     }
