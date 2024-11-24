@@ -33,4 +33,12 @@ public partial class _BitNavBarItemDemo
         new() { Text = "آکادمی", IconName = BitIconName.LearningTools },
         new() { Text = "پروفایل", IconName = BitIconName.Contact },
     ];
+
+    private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
+         basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
+
+    private BitNavBarItem? selectedItem;
+    private BitNavBarItem? eventsClickedItem;
+    private BitNavBarItem? twoWaySelectedItem;
+    private BitNavBarItem? advanceWaySelectedItem = basicNavBarItems[1];
 }

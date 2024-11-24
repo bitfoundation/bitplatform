@@ -32,7 +32,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
     <ExamplePreview>
         <div>Explore BitNavBar's customization capabilities.</div>
         <br /><br />
@@ -42,6 +42,69 @@
                 <i class="bit-icon bit-icon--@item.IconName" />
             </ItemTemplate>
         </BitNavBar>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Managing NavBar click event (OnClick).</div>
+        <br /><br />
+        <BitNavBar Items="basicNavBarItems" OnItemClick="(BitNavBarItem item) => eventsClickedItem = item" />
+        <br />
+        Clicked item: @(eventsClickedItem?.Text)
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
+        <br /><br />
+        <div>DefaultSelectedItem:</div>
+        <br />
+        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" @bind-SelectedItem="selectedItem" DefaultSelectedItem="basicNavBarItems[1]" />
+        <br />
+        Selected item: @(selectedItem?.Text)
+        <br /><br />
+        <div>Two-way SelectedItem:</div>
+        <br />
+        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" @bind-SelectedItem="twoWaySelectedItem" />
+        <br />
+        <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+        <br /><br />
+        <div class="mobile-frame">
+            <div class="screen">
+                <BitLayout>
+                    <Header>
+                        <BitCard FullWidth>
+                            <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                                <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                                    bit BlazorUI
+                                </BitText>
+                            </BitStack>
+                        </BitCard>
+                    </Header>
+                    <Main>
+                        <BitStack HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                            <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                                <BitIcon IconName="@advanceWaySelectedItem?.IconName" Color="BitColor.PrimaryForeground" />
+                                @advanceWaySelectedItem?.Text
+                            </BitText>
+                        </BitStack>
+                    </Main>
+                    <Footer>
+                        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" Class="nav-menu" @bind-SelectedItem="advanceWaySelectedItem" />
+                    </Footer>
+                </BitLayout>
+
+            </div>
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
