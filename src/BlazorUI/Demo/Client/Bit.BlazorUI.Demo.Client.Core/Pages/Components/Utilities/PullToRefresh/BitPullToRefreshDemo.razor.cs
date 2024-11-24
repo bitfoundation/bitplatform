@@ -98,6 +98,7 @@ public partial class BitPullToRefreshDemo
     private bool isRefreshed;
     private async Task HandleOnRefresh()
     {
+        await Task.Delay(1000);
         isRefreshed = true;
         _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed = false; InvokeAsync(StateHasChanged); });
     }
@@ -129,6 +130,7 @@ public partial class BitPullToRefreshDemo
 private bool isRefreshed;
 private async Task HandleOnRefresh()
 {
+    await Task.Delay(1000);
     isRefreshed = true;
 }";
 }

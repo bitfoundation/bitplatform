@@ -3,6 +3,13 @@
         public static MIN_MOBILE_WIDTH = 320;
         public static MAX_MOBILE_WIDTH = 600;
 
+        public static isTouchDevice() {
+            const matchMedia = window.matchMedia("(pointer: coarse)").matches;
+            const maxTouchPoints = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+            return matchMedia || maxTouchPoints;
+        }
+
         public static setProperty(element: Record<string, any>, property: string, value: any): void {
             if (!element) return;
             element[property] = value;
