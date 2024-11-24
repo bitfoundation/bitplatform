@@ -374,12 +374,12 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
 
-        var userSessionId = User.GetSessionId();
+        var currentUserSessionId = User.GetSessionId();
 
         var token = await userManager.GenerateUserTokenAsync(
             user,
             TokenOptions.DefaultPhoneProvider,
-            FormattableString.Invariant($"PrivilegedAccess:{userSessionId},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"));
+            FormattableString.Invariant($"PrivilegedAccess:{currentUserSessionId},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"));
 
         List<Task> sendMessagesTasks = [];
 
@@ -398,14 +398,14 @@ public partial class UserController : AppControllerBase, IUserController
         //#if (signalR == true)
         // Checkout AppHubConnectionHandler's comments for more info.
         var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-            .Where(us => us.UserId == user.Id && us.Id != userSessionId)
+            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId)
             .Select(us => us.Id)
             .ToArrayAsync(cancellationToken);
         sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText, userRelatedPush: true, customSubscriptionFilter: s => s.UserSessionId != userSessionId && s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);
