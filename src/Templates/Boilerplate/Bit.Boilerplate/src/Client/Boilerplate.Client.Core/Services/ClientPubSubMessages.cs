@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Services;
 public static partial class ClientPubSubMessages
 {
     public const string SHOW_SNACK = nameof(SHOW_SNACK);
+    public const string SHOW_MODAL = nameof(SHOW_MODAL);
     public const string SHOW_MESSAGE = nameof(SHOW_MESSAGE);
 
     public const string THEME_CHANGED = nameof(THEME_CHANGED);

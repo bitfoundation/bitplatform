@@ -37,6 +37,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/Modal.razor.css",
+        "inputFile": "Components/Layout/Modal.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/NavBar.razor.css",
         "inputFile": "Components/Layout/NavBar.razor.scss",
         "minify": { "enabled": false },

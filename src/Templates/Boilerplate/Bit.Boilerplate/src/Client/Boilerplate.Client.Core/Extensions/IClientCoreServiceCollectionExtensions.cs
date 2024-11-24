@@ -39,6 +39,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
         // To address this, we use the AddSessioned extension method.
         // AddSessioned applies AddSingleton in BlazorHybrid and AddScoped in Blazor WebAssembly and Blazor Server, ensuring correct service lifetimes for each environment.
+        services.AddSessioned<ModalService>();
         services.AddSessioned<PubSubService>();
         services.AddSessioned<SnackBarService>();
         services.AddSessioned<MessageBoxService>();
