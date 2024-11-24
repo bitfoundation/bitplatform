@@ -45,6 +45,11 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
     [AutoInject] protected ITelemetryContext TelemetryContext = default!;
 
     /// <summary>
+    /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
+    /// </summary>
+    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
+
+    /// <summary>
     /// <inheritdoc cref="AbsoluteServerAddressProvider" />
     /// </summary>
     [AutoInject] protected AbsoluteServerAddressProvider AbsoluteServerAddress { get; set; } = default!;

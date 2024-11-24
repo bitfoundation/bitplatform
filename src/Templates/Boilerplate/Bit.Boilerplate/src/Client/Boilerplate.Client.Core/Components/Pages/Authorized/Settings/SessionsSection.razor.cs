@@ -1,18 +1,18 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
-using Microsoft.AspNetCore.Authorization;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class SessionsSection
 {
     private bool isWaiting;
+    private bool hasRevokedAnySession = false;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
-    [AutoInject] private IAuthorizationService authorizationService = default!;
 
 
     protected override async Task OnInitAsync()
@@ -28,15 +28,9 @@ public partial class SessionsSection
         List<UserSessionDto> userSessions = [];
         currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
 
-        try
-        {
-            userSessions = await userController.GetUserSessions(CurrentCancellationToken);
-        }
-        finally
-        {
-            otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-            currentSession = userSessions.Single(s => s.Id == currentSessionId);
-        }
+        userSessions = await userController.GetUserSessions(CurrentCancellationToken);
+        otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
+        currentSession = userSessions.Single(s => s.Id == currentSessionId);
     }
 
     private async Task RevokeSession(UserSessionDto session)
@@ -50,10 +44,7 @@ public partial class SessionsSection
             if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
             {
                 await userController.RevokeSession(session.Id, CurrentCancellationToken);
-                if (await authorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.LICENSED_ACCESS) is { Succeeded: false })
-                {
-                    await AuthManager.RefreshToken("RevokeSession"); // Refreshing the token to check if the user session can now be licensed.
-                }
+                hasRevokedAnySession = true;
                 SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
                 await LoadSessions();
             }
@@ -95,5 +86,14 @@ public partial class SessionsSection
         return DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
                     : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
                     : renewedOn.ToLocalTime().ToString("g");
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.LICENSED_ACCESS) is { Succeeded: false })
+        {
+            // Refreshing the token to check if the user session can now be licensed.
+            await AuthManager.RefreshToken("CheckLicense");
+        }
     }
 }

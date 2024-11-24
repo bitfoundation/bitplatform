@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -35,18 +36,25 @@ public static partial class ISharedServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // Define authorization policies here to seamlessly integrate them across various components,
-        // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
-        // and programmatically in C# by injecting IAuthorizationService for enhanced security and access control.
+        services.ConfigureAuthorizationCore();
+
+        services.AddLocalization();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Define authorization policies here to seamlessly integrate them across various components,
+    /// including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
+    /// and programmatically in C# by injecting <see cref="IAuthorizationService"/> for enhanced security and access control.
+    /// </summary>
+    public static void ConfigureAuthorizationCore(this IServiceCollection services)
+    {
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
             options.AddPolicy(AuthPolicies.LICENSED_ACCESS, x => x.RequireClaim(AppClaimTypes.LICENSED_SESSION, "true"));
             options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
         });
-
-        services.AddLocalization();
-
-        return services;
     }
 }

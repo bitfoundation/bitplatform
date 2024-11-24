@@ -236,25 +236,28 @@
     <value>توکن برای شما ارسال شد</value>
   </data>
     <data name="SessionsTitle" xml:space="preserve">
-    <value>جلسه ها</value>
+    <value>جلسات - سشن‌ها</value>
   </data>
     <data name="SessionsSubtitle" xml:space="preserve">
-    <value>جلسه های فعال شما در دستگاههای مختلف</value>
+    <value>جلسه (سشن) های فعال شما در دستگاههای مختلف</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
-    <value>سشن‌های شما</value>
+    <value>جلسه (سشن) های شما</value>
   </data>
     <data name="CurrentSession" xml:space="preserve">
-    <value>سشن جاری</value>
+    <value>جلسه - سشن جاری</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
-    <value>سایر سشن‌ها</value>
+    <value>سایر جلسات (سشن‌ها)</value>
   </data>
     <data name="RemoveSession" xml:space="preserve">
-    <value>حذف سشن</value>
+    <value>حذف جلسه - سشن</value>
+  </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>حذف سایر جلسات (سشن)</value>
   </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>حذف سشن با موفقیت انجام شد</value>
+    <value>حذف جلسه - سشن با موفقیت انجام شد</value>
   </data>
     <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
@@ -759,8 +762,8 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>ورود به سیستم به عنوان کاربر متفاوت</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
-    <value>شما در حال ورود به سیستم به عنوان</value>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>شما به سیستم وارد شده اید با</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
     <value>رمز عبور را فراموش کرده اید؟</value>

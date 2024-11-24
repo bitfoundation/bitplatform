@@ -194,7 +194,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     private async Task<bool> IsUserSessionLicensed(UserSession userSession, CancellationToken cancellationToken)
     {
         return userSession.Licensed is true ||
-            await DbContext.UserSessions.CountAsync(us => us.Licensed == true, cancellationToken) < 5;
+            await DbContext.UserSessions.CountAsync(us => us.Licensed == true, cancellationToken) < 3;
     }
 
     [HttpPost]
