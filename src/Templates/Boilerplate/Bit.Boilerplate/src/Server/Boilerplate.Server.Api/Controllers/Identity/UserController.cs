@@ -361,15 +361,13 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpPost]
     public async Task SendPrivilegedAccessToken(CancellationToken cancellationToken)
     {
-        // add email template + localization
-
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
         var resendDelay = (DateTimeOffset.Now - user!.PrivilegedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
         // Privileged access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer["WaitForPrivilegedAccessTokenRequestResendDelay {0}", resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPrivilegedAccessTokenRequestResendDelay) , resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.PrivilegedAccessTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -385,11 +383,11 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-        var messageText = Localizer["Token {0}", token].ToString();
+        var messageText = Localizer[nameof(AppStrings.PrivilegedAccessToken), token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
-            // sendMessagesTasks.Add(emailService.SendPrivilegedAccessToken(user, token, cancellationToken));
+            sendMessagesTasks.Add(emailService.SendPrivilegedAccessToken(user, token, cancellationToken));
         }
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))

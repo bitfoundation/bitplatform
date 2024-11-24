@@ -927,6 +927,9 @@
     <data name="EnterPrivilegedAccessToken" xml:space="preserve">
     <value>Please enter the privileged access token to continue.</value>
   </data>
+    <data name="PrivilegedAccessToken" xml:space="preserve">
+    <value>Token {0}</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
@@ -938,6 +941,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
+  </data>
+    <data name="WaitForPrivilegedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested a privileged access token. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>
