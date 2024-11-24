@@ -8,7 +8,7 @@ using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
     //#if (signalR == true)

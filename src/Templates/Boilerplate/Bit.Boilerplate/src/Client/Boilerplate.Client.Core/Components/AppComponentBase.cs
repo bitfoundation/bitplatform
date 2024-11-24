@@ -38,11 +38,16 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
-    [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
+    [AutoInject] protected AuthManager AuthManager = default!;
 
     [AutoInject] protected SnackBarService SnackBarService = default!;
 
     [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+
+    /// <summary>
+    /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
+    /// </summary>
+    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
 
     /// <summary>
     /// <inheritdoc cref="AbsoluteServerAddressProvider" />

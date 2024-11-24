@@ -121,6 +121,11 @@ public partial class AppIdentityOptions : IdentityOptions
     /// To sign in with either Otp or magic link.
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
+
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// </summary>
+    public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
 public partial class EmailOptions

@@ -17,17 +17,16 @@ namespace Boilerplate.Server.Api.Controllers.Identity;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class UserController : AppControllerBase, IUserController
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-
+    [AutoInject] private UrlEncoder urlEncoder = default!;
+    [AutoInject] private PhoneService phoneService = default!;
+    [AutoInject] private EmailService emailService = default!;
     [AutoInject] private IUserStore<User> userStore = default!;
-
+    [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
 
-    [AutoInject] private PhoneService phoneService = default!;
-
-    [AutoInject] private EmailService emailService = default!;
-
-    [AutoInject] private UrlEncoder urlEncoder = default!;
+    //#if (notification == true)
+    [AutoInject] private PushNotificationService pushNotificationService = default!;
+    //#endif
 
     //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
@@ -71,6 +70,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var userSession = await DbContext.UserSessions
             //#if (notification == true)
+            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
             .Include(us => us.PushNotificationSubscription)
             //#endif
             .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
@@ -78,13 +78,10 @@ public partial class UserController : AppControllerBase, IUserController
         DbContext.UserSessions.Remove(userSession);
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        DbContext.UserSessions.Remove(new() { Id = currentSessionId });
-        await DbContext.SaveChangesAsync(cancellationToken);
-
         SignOut();
     }
 
-    [HttpPost("{id}")]
+    [HttpPost("{id}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -96,6 +93,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var userSession = await DbContext.UserSessions
             //#if (notification == true)
+            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
             .Include(us => us.PushNotificationSubscription)
             //#endif
             .FirstOrDefaultAsync(us => us.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
@@ -250,15 +248,36 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        user.PhoneNumberTokenRequestedOn = null; // invalidates phone token
+        var updateResult = await userManager.UpdateAsync(user);
+
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
-    [HttpDelete]
+    [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var user = await userManager.FindByIdAsync(userId.ToString())
                     ?? throw new ResourceNotFoundException();
+
+        var currentSessionId = User.GetSessionId();
+
+        foreach (var userSession in await GetUserSessions(cancellationToken))
+        {
+            if (userSession.Id == currentSessionId)
+            {
+                await SignOut(cancellationToken);
+            }
+            else
+            {
+                await RevokeSession(userSession.Id, cancellationToken);
+            }
+        }
 
         var result = await userManager.DeleteAsync(user);
 
@@ -344,6 +363,59 @@ public partial class UserController : AppControllerBase, IUserController
             //IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
             QrCode = qrCodeBase64
         };
+    }
+
+    [HttpPost]
+    public async Task SendElevatedAccessToken(CancellationToken cancellationToken)
+    {
+        var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
+
+        var resendDelay = (DateTimeOffset.Now - user!.ElevatedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
+        // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
+
+        if (resendDelay < TimeSpan.Zero)
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay) , resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+
+        user.ElevatedAccessTokenRequestedOn = DateTimeOffset.Now;
+        var result = await userManager.UpdateAsync(user);
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        var currentUserSessionId = User.GetSessionId();
+
+        var token = await userManager.GenerateUserTokenAsync(
+            user,
+            TokenOptions.DefaultPhoneProvider,
+            FormattableString.Invariant($"ElevatedAccess:{currentUserSessionId},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"));
+
+        List<Task> sendMessagesTasks = [];
+
+        var messageText = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
+
+        if (await userManager.IsEmailConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(emailService.SendElevatedAccessToken(user, token, cancellationToken));
+        }
+
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(phoneService.SendSms(messageText, user.PhoneNumber!, cancellationToken));
+        }
+
+        //#if (signalR == true)
+        // Checkout AppHubConnectionHandler's comments for more info.
+        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId)
+            .Select(us => us.Id)
+            .ToArrayAsync(cancellationToken);
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
+        //#endif
+
+        //#if (notification == true)
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
+        //#endif
+
+        await Task.WhenAll(sendMessagesTasks);
     }
 
     private static string FormatKey(string unformattedKey)

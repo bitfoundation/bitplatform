@@ -48,11 +48,11 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>
         {
-            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthenticationManager>(sp);
+            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthManager>(sp);
             authenticationStateProvider.OnInit();
             return authenticationStateProvider;
         });
-        services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp =>
         {
@@ -141,9 +141,10 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSingleton<SignalRInfinitiesRetryPolicy>();
         services.AddSessioned(sp =>
         {
-            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+            var authManager = sp.GetRequiredService<AuthManager>();
             var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
-            var authenticationManager = sp.GetRequiredService<AuthenticationManager>();
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+
             var hubConnection = new HubConnectionBuilder()
                 .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
@@ -159,7 +160,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                         if (string.IsNullOrEmpty(accessToken) is false &&
                             authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                         {
-                            return await authenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                            return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
                         }
 
                         return accessToken;

@@ -253,6 +253,9 @@
     <data name="RemoveSession" xml:space="preserve">
     <value>Remove session</value>
   </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Try removing other sessions</value>
+  </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
@@ -759,8 +762,8 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
-    <value>You're sign in as</value>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>You're signed in as</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
@@ -924,6 +927,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Please enter the elevated access token to continue.</value>
+  </data>
+    <data name="ElevatedAccessToken" xml:space="preserve">
+    <value>Token {0}</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
@@ -935,6 +944,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested a elevated access token. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>

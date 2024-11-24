@@ -1,5 +1,7 @@
 ﻿@inherits AppComponentBase
 
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+
 <section>
     <BitStack>
         @if (currentSession is not null)
@@ -37,7 +39,7 @@
                             <BitSpacer />
                             <BitButton Variant="BitVariant.Text"
                                        OnClick="() => RevokeSession(session)"
-                                       IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" />
+                                       IconName="@(isWaiting ? BitIconName.Process : BitIconName.Delete)" />
                         </BitStack>
                     </BitCard>
                 </RowTemplate>

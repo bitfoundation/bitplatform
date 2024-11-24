@@ -418,6 +418,7 @@
                         "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Todo/**",
                         "src/Shared/Controllers/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Todo/**"
                     ]

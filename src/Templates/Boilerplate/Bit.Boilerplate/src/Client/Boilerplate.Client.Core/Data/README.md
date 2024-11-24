@@ -16,11 +16,11 @@ URL.createObjectURL(blob);
 
 Set `Server.Web` as the Startup Project in solution explorer and set `Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
-Add-Migration InitialMigration -OutputDir Data\Migrations -Context OfflineDbContext
+Add-Migration InitialMigration -OutputDir Data\Migrations -Context OfflineDbContext -Verbobse
 ```
 Or open a terminal in your Server.Web project directory and run followings:
 ```bash
-dotnet ef migrations add InitialMigration --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj
+dotnet ef migrations add InitialMigration --context OfflineDbContext --output-dir Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.

@@ -1,4 +1,5 @@
 ﻿using Boilerplate.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -27,23 +28,33 @@ public static partial class ISharedServiceCollectionExtensions
 
             return options;
         });
+        // Creates async service scope from the `root` service scope.
+        services.AddSingleton(sp => new RootServiceScopeProvider(() => sp.CreateAsyncScope()));
 
         services.AddOptions<SharedSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // Define authorization policies here to seamlessly integrate them across various components,
-        // including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
-        // and programmatically in C# by injecting IAuthorizationService for enhanced security and access control.
-        services.AddAuthorizationCore(options =>
-        {
-            options.AddPolicy("AdminsOnly", authPolicyBuilder => authPolicyBuilder.RequireRole("Admin"));
-            options.AddPolicy("TwoFactorEnabled", x => x.RequireClaim("amr", "mfa")); // For those who have two-factor authentication enabled.
-        });
+        services.ConfigureAuthorizationCore();
 
         services.AddLocalization();
 
         return services;
+    }
+
+    /// <summary>
+    /// Define authorization policies here to seamlessly integrate them across various components,
+    /// including web api actions and razor pages using Authorize attribute, AuthorizeView in razor pages,
+    /// and programmatically in C# by injecting <see cref="IAuthorizationService"/> for enhanced security and access control.
+    /// </summary>
+    public static void ConfigureAuthorizationCore(this IServiceCollection services)
+    {
+        services.AddAuthorizationCore(options =>
+        {
+            options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
+            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+            options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
+        });
     }
 }

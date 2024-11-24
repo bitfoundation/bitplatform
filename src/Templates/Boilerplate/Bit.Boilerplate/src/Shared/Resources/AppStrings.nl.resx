@@ -253,6 +253,9 @@
     <data name="RemoveSession" xml:space="preserve">
     <value>Sessie verwijderen</value>
   </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Probeer andere sessies te verwijderen</value>
+  </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Sessie succesvol verwijderd</value>
   </data>
@@ -759,7 +762,7 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Inloggen als Anderse gebruiker</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
+    <data name="YouAreSignedInAs" xml:space="preserve">
     <value>U meldt zich aan als</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
@@ -924,6 +927,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Het 2FA-token is gegenereerd en naar u verzonden.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Voer het verhoogde toegangstoken in om door te gaan.</value>
+  </data>
+    <data name="ElevatedAccessToken" xml:space="preserve">
+    <value>Token {0}</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Je hebt de bevestigingsmail al aangevraagd. Probeer het opnieuw in {0}</value>
   </data>
@@ -935,6 +944,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>Je hebt al een OTP aangevraagd. Probeer het opnieuw in {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een elevated access token aangevraagd. Probeer het opnieuw in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP (Computergebruik)</value>

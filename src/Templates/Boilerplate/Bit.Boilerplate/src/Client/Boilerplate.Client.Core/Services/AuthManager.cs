@@ -3,25 +3,31 @@ using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class AuthenticationManager : AuthenticationStateProvider, IAsyncDisposable
+public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
 
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private PromptService promptService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
-    [AutoInject] private IPrerenderStateService prerenderStateService;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private IAuthorizationService authorizationService = default!;
+    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
     public void OnInit()
     {
+        // Example for method call after object instantiation with dependency injection.
+
+        //#if (signalR == true)
         unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+        //#endif
     }
 
     /// <summary>
@@ -71,7 +77,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         {
             await userController.SignOut(cancellationToken);
         }
-        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException)
+        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException or ResourceNotFoundException)
         {
             // The user might sign out while the app is offline, making token refresh attempts fail.
             // These exceptions are intentionally ignored in this case.
@@ -85,17 +91,17 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     /// <summary>
     /// To prevent multiple simultaneous refresh token requests.
     /// </summary>
-    private TaskCompletionSource<string?>? refreshTokenTsc = null;
+    private TaskCompletionSource<string?>? accessTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy)
+    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null)
     {
-        if (refreshTokenTsc is null)
+        if (accessTokenTsc is null)
         {
-            refreshTokenTsc = new();
+            accessTokenTsc = new();
             _ = RefreshTokenImplementation();
         }
 
-        return refreshTokenTsc.Task;
+        return accessTokenTsc.Task;
 
         async Task RefreshTokenImplementation()
         {
@@ -106,9 +112,9 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken }, default);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, ElevatedAccessToken = elevatedAccessToken }, default);
                 await StoreTokens(refreshTokenResponse);
-                refreshTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
+                accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
             catch (Exception exp)
             {
@@ -123,11 +129,11 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
                     await ClearTokens();
                 }
 
-                refreshTokenTsc.SetResult(null);
+                accessTokenTsc.SetResult(null);
             }
             finally
             {
-                refreshTokenTsc = null;
+                accessTokenTsc = null;
             }
         }
     }
@@ -154,6 +160,34 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
             exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
             return new AuthenticationState(tokenProvider.Anonymous());
         }
+    }
+
+    public async Task<bool> TryEnterElevatedAccessMode(CancellationToken cancellationToken)
+    {
+        var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
+        var hasElevatedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.ELEVATED_ACCESS) is { Succeeded: true };
+        if (hasElevatedAccess)
+            return true;
+
+        try
+        {
+            await userController.SendElevatedAccessToken(cancellationToken);
+        }
+        catch (TooManyRequestsExceptions exp)
+        {
+            exceptionHandler.Handle(exp); // Let's show prompt anyway.
+        }
+
+        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken], title: "Boilerplate");
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        if (accessTokenTsc != null)
+        {
+            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
+        }
+        var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
+        return string.IsNullOrEmpty(accessToken) is false;
     }
 
     private async Task ClearTokens()

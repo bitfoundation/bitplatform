@@ -32,7 +32,7 @@ public partial class SignInPage : IDisposable
 
 
     private bool isWaiting;
-    private bool isOtpRequested;
+    private bool isOtpSent;
     private bool requiresTwoFactor;
     private SignInPanelTab currentSignInPanelTab;
     private readonly SignInRequestDto model = new();
@@ -76,7 +76,7 @@ public partial class SignInPage : IDisposable
 
             if (source == OtpPayload)
             {
-                isOtpRequested = false;
+                isOtpSent = false;
                 model.Otp = null;
             }
 
@@ -112,7 +112,7 @@ public partial class SignInPage : IDisposable
     private async Task DoSignIn()
     {
         if (isWaiting) return;
-        if (isOtpRequested && string.IsNullOrWhiteSpace(model.Otp)) return;
+        if (isOtpSent && string.IsNullOrWhiteSpace(model.Otp)) return;
 
         isWaiting = true;
 
@@ -122,7 +122,7 @@ public partial class SignInPage : IDisposable
 
             CleanModel();
 
-            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
+            requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
             if (requiresTwoFactor is false)
             {
@@ -165,14 +165,14 @@ public partial class SignInPage : IDisposable
 
             var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
 
+            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
+
             if (resend is false)
             {
-                isOtpRequested = true;
+                isOtpSent = true;
 
                 PubSubService.Publish(ClientPubSubMessages.UPDATE_IDENTITY_HEADER_BACK_LINK, OtpPayload);
             }
-
-            await identityController.SendOtp(request, ReturnUrlQueryString, CurrentCancellationToken);
         }
         catch (KnownException e)
         {

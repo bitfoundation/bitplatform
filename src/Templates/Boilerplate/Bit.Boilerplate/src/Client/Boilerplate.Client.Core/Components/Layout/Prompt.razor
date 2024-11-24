@@ -1,11 +1,11 @@
 ﻿@inherits AppComponentBase
 
 <div class="body">
-    <BitStack Horizontal=false>
+    <BitStack Horizontal=false FillContent>
         <BitText Color="BitColor.Tertiary">
             @Body
         </BitText>
-        <BitTextField @bind-Value="value" />
+        <BitTextField @bind-Value="value" AutoFocus />
     </BitStack>
 </div>
 
