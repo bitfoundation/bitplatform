@@ -141,9 +141,10 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSingleton<SignalRInfinitiesRetryPolicy>();
         services.AddSessioned(sp =>
         {
-            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
-            var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
             var authManager = sp.GetRequiredService<AuthManager>();
+            var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+
             var hubConnection = new HubConnectionBuilder()
                 .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
