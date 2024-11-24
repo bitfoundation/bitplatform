@@ -37,7 +37,7 @@ public partial class User : IdentityUser<Guid>
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS" />
     /// </summary>
-    public DateTimeOffset? PrivilegedAccessTokenRequestedOn { get; set; }
+    public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
 
     public List<UserSession> Sessions { get; set; } = [];
 

@@ -10,7 +10,7 @@ public partial class DeleteAccountSection
 
     private async Task DeleteAccount()
     {
-        if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
         {
             await userController.Delete(CurrentCancellationToken);
 

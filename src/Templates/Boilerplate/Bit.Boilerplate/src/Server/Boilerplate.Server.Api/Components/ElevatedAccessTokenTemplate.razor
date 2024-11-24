@@ -1,7 +1,7 @@
 ﻿@using Boilerplate.Server.Api.Models.Emailing
 
 @code {
-    [Parameter] public PrivilegedAccessTokenTemplateModel Model { get; set; } = default!;
+    [Parameter] public ElevatedAccessTokenTemplateModel Model { get; set; } = default!;
     [Parameter] public HttpContext HttpContext { get; set; } = default!;
     [Inject] public IStringLocalizer<EmailStrings> EmailLocalizer { get; set; } = default!;
 }
@@ -11,7 +11,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
-    <title>@EmailLocalizer[nameof(EmailStrings.PrivilegedAccessTokenEmailSubject), Model.Token]</title>
+    <title>@EmailLocalizer[nameof(EmailStrings.ElevatedAccessTokenEmailSubject), Model.Token]</title>
 </head>
 <body dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)" style="width:100%; height:100%; margin:0; padding:0; background-color:#FCFCFC; font-family:Arial,sans-serif;">
     <main style="padding: 6% 4%;">
@@ -19,12 +19,12 @@
                style="border:1px solid #EDEBE9; border-radius:2px; padding:50px; text-align:center;">
             <tr>
                 <td style="color:#0D2960; font-weight:600; font-size:24px; line-height:150%; padding-bottom:50px;">
-                    @EmailLocalizer[nameof(EmailStrings.PrivilegedAccessTokenHello), Model.DisplayName!]
+                    @EmailLocalizer[nameof(EmailStrings.ElevatedAccessTokenHello), Model.DisplayName!]
                 </td>
             </tr>
             <tr>
                 <td style="font-weight:400; font-size:18px; line-height:155%; padding-bottom:20px;">
-                    @EmailLocalizer[nameof(EmailStrings.PrivilegedAccessTokenMessage)]
+                    @EmailLocalizer[nameof(EmailStrings.ElevatedAccessTokenMessage)]
                 </td>
             </tr>
             <tr>

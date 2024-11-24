@@ -46,5 +46,5 @@ public interface IUserController : IAppController
     Task<TwoFactorAuthResponseDto> TwoFactorAuth(TwoFactorAuthRequestDto request, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
-    Task SendPrivilegedAccessToken(CancellationToken cancellationToken);
+    Task SendElevatedAccessToken(CancellationToken cancellationToken);
 }

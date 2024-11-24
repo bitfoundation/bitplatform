@@ -359,17 +359,17 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPost]
-    public async Task SendPrivilegedAccessToken(CancellationToken cancellationToken)
+    public async Task SendElevatedAccessToken(CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(User.GetUserId().ToString());
 
-        var resendDelay = (DateTimeOffset.Now - user!.PrivilegedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
-        // Privileged access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
+        var resendDelay = (DateTimeOffset.Now - user!.ElevatedAccessTokenRequestedOn) - AppSettings.Identity.BearerTokenExpiration;
+        // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForPrivilegedAccessTokenRequestResendDelay) , resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay) , resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
-        user.PrivilegedAccessTokenRequestedOn = DateTimeOffset.Now;
+        user.ElevatedAccessTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -379,15 +379,15 @@ public partial class UserController : AppControllerBase, IUserController
         var token = await userManager.GenerateUserTokenAsync(
             user,
             TokenOptions.DefaultPhoneProvider,
-            FormattableString.Invariant($"PrivilegedAccess:{currentUserSessionId},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"));
+            FormattableString.Invariant($"ElevatedAccess:{currentUserSessionId},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"));
 
         List<Task> sendMessagesTasks = [];
 
-        var messageText = Localizer[nameof(AppStrings.PrivilegedAccessToken), token].ToString();
+        var messageText = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(emailService.SendPrivilegedAccessToken(user, token, cancellationToken));
+            sendMessagesTasks.Add(emailService.SendElevatedAccessToken(user, token, cancellationToken));
         }
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))

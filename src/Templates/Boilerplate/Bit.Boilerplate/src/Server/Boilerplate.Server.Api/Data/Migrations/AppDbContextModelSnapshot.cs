@@ -173,7 +173,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<long?>("PhoneNumberTokenRequestedOn")
                     .HasColumnType("INTEGER");
 
-                b.Property<long?>("PrivilegedAccessTokenRequestedOn")
+                b.Property<long?>("ElevatedAccessTokenRequestedOn")
                     .HasColumnType("INTEGER");
 
                 b.Property<string>("ProfileImageName")

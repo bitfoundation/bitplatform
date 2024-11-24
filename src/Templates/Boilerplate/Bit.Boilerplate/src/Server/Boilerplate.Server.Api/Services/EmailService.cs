@@ -99,19 +99,19 @@ public partial class EmailService
         await SendEmail(body, toEmailAddress!, user.DisplayName!, subject, cancellationToken);
     }
 
-    public async Task SendPrivilegedAccessToken(User user, string token, CancellationToken cancellationToken)
+    public async Task SendElevatedAccessToken(User user, string token, CancellationToken cancellationToken)
     {
-        var subject = emailLocalizer[EmailStrings.PrivilegedAccessTokenEmailSubject, token];
+        var subject = emailLocalizer[EmailStrings.ElevatedAccessTokenEmailSubject, token];
 
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendEmail(logger, subject, user.Email!, "PrivilegedAccess");
+            LogSendEmail(logger, subject, user.Email!, "ElevatedAccess");
         }
 
-        var body = await BuildBody<PrivilegedAccessTokenTemplate>(new Dictionary<string, object?>()
+        var body = await BuildBody<ElevatedAccessTokenTemplate>(new Dictionary<string, object?>()
         {
-            [nameof(PrivilegedAccessTokenTemplate.Model)] = new PrivilegedAccessTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
-            [nameof(PrivilegedAccessTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(ElevatedAccessTokenTemplate.Model)] = new ElevatedAccessTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+            [nameof(ElevatedAccessTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);

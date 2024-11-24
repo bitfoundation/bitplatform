@@ -93,7 +93,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// </summary>
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy, string? privilegedAccessToken = null)
+    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null)
     {
         if (accessTokenTsc is null)
         {
@@ -112,7 +112,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, PrivilegedAccessToken = privilegedAccessToken }, default);
+                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, ElevatedAccessToken = elevatedAccessToken }, default);
                 await StoreTokens(refreshTokenResponse);
                 accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
@@ -162,23 +162,23 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
     }
 
-    public async Task<bool> TryEnterPrivilegedAccessMode(CancellationToken cancellationToken)
+    public async Task<bool> TryEnterElevatedAccessMode(CancellationToken cancellationToken)
     {
         var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
-        var hasPrivilegedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: true };
-        if (hasPrivilegedAccess)
+        var hasElevatedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: true };
+        if (hasElevatedAccess)
             return true;
 
         try
         {
-            await userController.SendPrivilegedAccessToken(cancellationToken);
+            await userController.SendElevatedAccessToken(cancellationToken);
         }
         catch (TooManyRequestsExceptions exp)
         {
             exceptionHandler.Handle(exp); // Let's show prompt anyway.
         }
 
-        var token = await promptService.Show(localizer[AppStrings.EnterPrivilegedAccessToken]);
+        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken]);
         if (string.IsNullOrEmpty(token))
             return false;
 
@@ -186,7 +186,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
         }
-        var accessToken = await RefreshToken(requestedBy: "RequestPrivilegedAccess", token);
+        var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
         return string.IsNullOrEmpty(accessToken) is false;
     }
 

@@ -232,9 +232,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
             }
 
-            if (string.IsNullOrEmpty(request.PrivilegedAccessToken) is false)
+            if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {
-                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"PrivilegedAccess:{userSession.Id},{user.PrivilegedAccessTokenRequestedOn?.ToUniversalTime()}"), request.PrivilegedAccessToken);
+                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken);
                 if (tokenIsValid is false)
                 {
                     await userManager.AccessFailedAsync(user);
@@ -242,7 +242,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 }
                 else
                 {
-                    user.PrivilegedAccessTokenRequestedOn = null; // invalidates token
+                    user.ElevatedAccessTokenRequestedOn = null; // invalidates token
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
                     userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
                 }

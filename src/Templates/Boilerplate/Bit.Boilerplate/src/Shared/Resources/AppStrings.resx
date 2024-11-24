@@ -927,10 +927,10 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
-    <data name="EnterPrivilegedAccessToken" xml:space="preserve">
-    <value>Please enter the privileged access token to continue.</value>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Please enter the elevated access token to continue.</value>
   </data>
-    <data name="PrivilegedAccessToken" xml:space="preserve">
+    <data name="ElevatedAccessToken" xml:space="preserve">
     <value>Token {0}</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
@@ -945,8 +945,8 @@
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
   </data>
-    <data name="WaitForPrivilegedAccessTokenRequestResendDelay" xml:space="preserve">
-    <value>You have already requested a privileged access token. Try again in {0}</value>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested a elevated access token. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>

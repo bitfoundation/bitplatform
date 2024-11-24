@@ -184,14 +184,14 @@
     <data name="TfaTokenMessage" xml:space="preserve">
     <value>Here is your new 2FA token to login:</value>
   </data>
-    <data name="PrivilegedAccessTokenEmailSubject" xml:space="preserve">
-    <value>Boilerplate {0} - Privileged access token</value>
+    <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - Elevated access token</value>
   </data>
-    <data name="PrivilegedAccessTokenHello" xml:space="preserve">
+    <data name="ElevatedAccessTokenHello" xml:space="preserve">
     <value>Hello dear {0}</value>
   </data>
-    <data name="PrivilegedAccessTokenMessage" xml:space="preserve">
-    <value>Here is your new privileged access token:</value>
+    <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>Here is your new elevated access token:</value>
   </data>
     <data name="CopyTokenNote" xml:space="preserve">
     <value>Copy this code and use it in the app.</value>

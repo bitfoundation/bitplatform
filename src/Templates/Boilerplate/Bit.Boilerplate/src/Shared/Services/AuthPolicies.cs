@@ -38,5 +38,5 @@ public class AppClaimTypes
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    public const string PRIVILEGED_SESSION = "privileged-session";
+    public const string PRIVILEGED_SESSION = "elevated-session";
 }

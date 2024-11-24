@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Models.Emailing;
 
-public partial class PrivilegedAccessTokenTemplateModel
+public partial class ElevatedAccessTokenTemplateModel
 {
     public required string DisplayName { get; set; }
 

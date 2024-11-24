@@ -927,10 +927,10 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
-    <data name="EnterPrivilegedAccessToken" xml:space="preserve">
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
     <value>لطفا توکن دریافت دسترسی ویژه را وارد کنید</value>
   </data>
-    <data name="PrivilegedAccessToken" xml:space="preserve">
+    <data name="ElevatedAccessToken" xml:space="preserve">
     <value>توکن {0}</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
@@ -945,7 +945,7 @@
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>شما قبلا رمز عبور یک‌بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="WaitForPrivilegedAccessTokenRequestResendDelay" xml:space="preserve">
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا توکن دسترسی ویژه را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">

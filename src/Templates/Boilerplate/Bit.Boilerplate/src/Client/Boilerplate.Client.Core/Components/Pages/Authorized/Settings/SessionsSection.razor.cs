@@ -41,7 +41,7 @@ public partial class SessionsSection
 
         try
         {
-            if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
+            if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
             {
                 await userController.RevokeSession(session.Id, CurrentCancellationToken);
                 hasRevokedAnySession = true;
