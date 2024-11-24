@@ -20,11 +20,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 {
     [AutoInject] private IUserStore<User> userStore = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
-    [AutoInject] private IUserPhoneNumberStore<User> userPhoneNumberStore = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private ILogger<IdentityController> logger = default!;
     [AutoInject] private IUserConfirmation<User> userConfirmation = default!;
+    [AutoInject] private IUserPhoneNumberStore<User> userPhoneNumberStore = default!;
     [AutoInject] private IOptionsMonitor<BearerTokenOptions> bearerTokenOptions = default!;
     [AutoInject] private AppUserClaimsPrincipalFactory userClaimsPrincipalFactory = default!;
     //#if (signalR == true)
@@ -201,7 +201,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue(AppClaimTypes.SESSION_ID) ?? throw new InvalidOperationException("session id could not be found"));
 
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
-            userSession = await DbContext.UserSessions.FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
+            userSession = await DbContext.UserSessions
+                //#if (notification == true)
+                // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
+                .Include(us => us.PushNotificationSubscription)
+                //#endif
+                .FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
 
             if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
                 throw new UnauthorizedException();
@@ -216,7 +221,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 if (tokenIsValid is false)
                 {
                     await userManager.AccessFailedAsync(user);
-                    throw new BadRequestException(nameof(AppStrings.InvalidToken));
+                    throw new UnauthorizedException(nameof(AppStrings.InvalidToken));
                 }
                 else
                 {

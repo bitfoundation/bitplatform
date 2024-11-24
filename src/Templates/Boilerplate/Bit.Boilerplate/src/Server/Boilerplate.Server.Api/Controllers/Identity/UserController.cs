@@ -70,6 +70,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var userSession = await DbContext.UserSessions
             //#if (notification == true)
+            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
             .Include(us => us.PushNotificationSubscription)
             //#endif
             .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
@@ -92,6 +93,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var userSession = await DbContext.UserSessions
             //#if (notification == true)
+            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
             .Include(us => us.PushNotificationSubscription)
             //#endif
             .FirstOrDefaultAsync(us => us.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
