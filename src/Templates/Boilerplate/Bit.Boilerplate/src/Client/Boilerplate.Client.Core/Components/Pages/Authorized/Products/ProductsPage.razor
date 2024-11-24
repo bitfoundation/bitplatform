@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.ProductsPage)]
 @attribute [Route("{culture?}" + Urls.ProductsPage)]
-@attribute [Authorize]
+@attribute [Authorize(Policy = AuthPolicies.LICENSED_ACCESS)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.ProductsPageTitle)]</PageTitle>

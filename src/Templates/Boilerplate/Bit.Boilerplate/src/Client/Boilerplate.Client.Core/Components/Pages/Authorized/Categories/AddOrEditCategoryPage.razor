@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.AddOrEditCategoryPage + "/{Id:guid?}")]
 @attribute [Route("{culture?}" + Urls.AddOrEditCategoryPage + "/{Id:guid?}")]
-@attribute [Authorize]
+@attribute [Authorize(Policy = AuthPolicies.LICENSED_ACCESS)]
 @inherits AppPageBase
 
 <PageTitle>

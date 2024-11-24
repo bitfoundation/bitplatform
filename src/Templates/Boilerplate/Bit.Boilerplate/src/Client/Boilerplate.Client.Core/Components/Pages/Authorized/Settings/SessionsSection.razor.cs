@@ -1,5 +1,6 @@
 ﻿using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Shared.Dtos.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -11,6 +12,7 @@ public partial class SessionsSection
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private IAuthorizationService authorizationService = default!;
 
 
     protected override async Task OnInitAsync()
@@ -48,7 +50,10 @@ public partial class SessionsSection
             if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
             {
                 await userController.RevokeSession(session.Id, CurrentCancellationToken);
-
+                if (await authorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.LICENSED_ACCESS) is { Succeeded: false })
+                {
+                    await AuthManager.RefreshToken("RevokeSession"); // Refreshing the token to check if the user session can now be licensed.
+                }
                 SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
                 await LoadSessions();
             }

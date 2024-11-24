@@ -96,9 +96,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
-        var userSession = CreateUserSession(user.Id, request.DeviceInfo);
+        var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true")); // This only applies to the current, short-lived access token.
+        if (userSession.Licensed)
+        {
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
+        }
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
 
@@ -165,7 +169,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// Creates a user session and adds its ID to the access and refresh tokens, but only if the sign-in is successful <see cref="AppUserClaimsPrincipalFactory.SessionClaims"/>
     /// </summary>
-    private UserSession CreateUserSession(Guid userId, string? deviceInfo)
+    private async Task<UserSession> CreateUserSession(Guid userId, string? deviceInfo, CancellationToken cancellationToken)
     {
         var userSession = new UserSession
         {
@@ -179,7 +183,18 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
         };
 
+        userSession.Licensed = await IsUserSessionLicensed(userSession, cancellationToken);
+
         return userSession;
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.LICENSED_ACCESS"/>
+    /// </summary>
+    private async Task<bool> IsUserSessionLicensed(UserSession userSession, CancellationToken cancellationToken)
+    {
+        return userSession.Licensed is true ||
+            await DbContext.UserSessions.CountAsync(us => us.Licensed == true, cancellationToken) < 5;
     }
 
     [HttpPost]
@@ -210,6 +225,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession.RenewedOn = DateTimeOffset.UtcNow;
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
+
+            userSession.Licensed = await IsUserSessionLicensed(userSession, cancellationToken);
+            if (userSession.Licensed is true)
+            {
+                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
+            }
 
             if (string.IsNullOrEmpty(request.PrivilegedAccessToken) is false)
             {

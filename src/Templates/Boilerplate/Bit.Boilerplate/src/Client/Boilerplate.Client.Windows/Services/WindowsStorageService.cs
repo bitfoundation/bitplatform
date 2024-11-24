@@ -19,7 +19,7 @@ public partial class WindowsStorageService : IStorageService
 
     public async ValueTask RemoveItem(string key)
     {
-        Application.UserAppDataRegistry.DeleteValue(key);
+        Application.UserAppDataRegistry.DeleteValue(key, throwOnMissingValue: false);
         tempStorage.Remove(key);
     }
 

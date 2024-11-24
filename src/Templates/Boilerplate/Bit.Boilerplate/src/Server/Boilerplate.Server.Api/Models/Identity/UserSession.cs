@@ -19,6 +19,11 @@ public partial class UserSession
 
     public string? Address { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.LICENSED_ACCESS"/>
+    /// </summary>
+    public bool Licensed { get; set; }
+
     public DateTimeOffset StartedOn { get; set; }
 
     public DateTimeOffset? RenewedOn { get; set; }
