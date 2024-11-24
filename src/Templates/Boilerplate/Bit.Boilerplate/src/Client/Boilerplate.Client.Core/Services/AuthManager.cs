@@ -178,7 +178,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             exceptionHandler.Handle(exp); // Let's show prompt anyway.
         }
 
-        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken]);
+        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken], title: "Boilerplate");
         if (string.IsNullOrEmpty(token))
             return false;
 

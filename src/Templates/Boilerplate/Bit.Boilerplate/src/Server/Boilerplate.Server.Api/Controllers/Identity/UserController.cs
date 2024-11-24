@@ -248,6 +248,13 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
+
+        await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
+        user.PhoneNumberTokenRequestedOn = null; // invalidates phone token
+        var updateResult = await userManager.UpdateAsync(user);
+
+        if (updateResult.Succeeded is false)
+            throw new ResourceValidationException(updateResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
     [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]

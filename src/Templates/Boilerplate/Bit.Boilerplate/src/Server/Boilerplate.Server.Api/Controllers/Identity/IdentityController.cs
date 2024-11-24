@@ -197,7 +197,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         return maxConcurrentPrivilegedSessions == -1 || // -1 means no limit
             userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
-            await DbContext.UserSessions.CountAsync(us => us.Privileged == true, cancellationToken) < maxConcurrentPrivilegedSessions;
+            await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxConcurrentPrivilegedSessions;
     }
 
     [HttpPost]
