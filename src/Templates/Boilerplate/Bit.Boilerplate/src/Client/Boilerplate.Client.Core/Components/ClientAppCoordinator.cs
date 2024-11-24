@@ -26,7 +26,6 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
