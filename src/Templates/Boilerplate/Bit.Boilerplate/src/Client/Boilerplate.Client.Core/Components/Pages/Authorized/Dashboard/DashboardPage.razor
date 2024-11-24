@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.DashboardPage)]
 @attribute [Route("{culture?}" + Urls.DashboardPage)]
-@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS, Roles = "Admin")]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.DashboardPageTitle)]</PageTitle>
