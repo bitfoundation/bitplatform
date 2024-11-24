@@ -202,10 +202,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
             userSession = await DbContext.UserSessions
-                //#if (notification == true)
-                // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
-                .Include(us => us.PushNotificationSubscription)
-                //#endif
                 .FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
 
             if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
@@ -237,6 +233,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         catch when (userSession is not null)
         {
+            //#if (notification == true)
+            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
+            await DbContext.Entry(userSession).Reference(us => us.PushNotificationSubscription).LoadAsync(cancellationToken);
+            //#endif
             DbContext.UserSessions.Remove(userSession);
             throw;
         }
