@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Boilerplate.Client.Core.Services;
+﻿namespace Boilerplate.Client.Core.Services;
 
 public partial class ModalService
 {

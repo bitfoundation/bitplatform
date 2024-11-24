@@ -9,8 +9,8 @@ public partial class MessageBoxService
         TaskCompletionSource<bool> tcs = new();
         Dictionary<string, object> parameters = new()
         {
-            { "Body", message },
-            { "OnOk", () => { tcs.SetResult(true); modalService.Close(); } }
+            { nameof(MessageBox.Body), message },
+            { nameof(MessageBox.OnOk), () => { tcs.SetResult(true); modalService.Close(); } }
         };
         modalService.Show<MessageBox>(parameters, title).ContinueWith(async task =>
         {

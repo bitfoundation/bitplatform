@@ -55,6 +55,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/Layout/Prompt.razor.css",
+        "inputFile": "Components/Layout/Prompt.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/Layout/RootContainer.razor.css",
         "inputFile": "Components/Layout/RootContainer.razor.scss",
         "minify": { "enabled": false },
