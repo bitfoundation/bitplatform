@@ -26,12 +26,12 @@ public partial class ClientAppCoordinator : AppComponentBase
     //#endif
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
-    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private AuthManager authManager = default!;
+    [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
