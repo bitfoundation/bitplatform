@@ -7,7 +7,7 @@ public partial class RefreshRequestDto
     public string? RefreshToken { get; set; }
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS" />
+    /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS" />
     /// </summary>
     public string? ElevatedAccessToken { get; set; }
 }

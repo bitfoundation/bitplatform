@@ -98,7 +98,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
-        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true")); // This only applies to the current, short-lived access token.
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true")); // This only applies to the current, short-lived access token.
         if (userSession.Licensed)
         {
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
@@ -244,7 +244,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 {
                     user.ElevatedAccessTokenRequestedOn = null; // invalidates token
                     await ((IUserLockoutStore<User>)userStore).ResetAccessFailedCountAsync(user, cancellationToken);
-                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
+                    userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true"));
                 }
             }
 

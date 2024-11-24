@@ -23,7 +23,7 @@ public class AuthPolicies
     /// This limited-time policy is activated upon successful verification via a secure 6-digit code or
     /// during the initial minutes of a sign-in session.
     /// </summary>
-    public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
+    public const string ELEVATED_ACCESS = nameof(ELEVATED_ACCESS);
 }
 
 public class AppClaimTypes
@@ -36,7 +36,7 @@ public class AppClaimTypes
     public const string LICENSED_SESSION = "licensed-session";
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>
     /// </summary>
-    public const string PRIVILEGED_SESSION = "elevated-session";
+    public const string ELEVATED_SESSION = "elevated-session";
 }

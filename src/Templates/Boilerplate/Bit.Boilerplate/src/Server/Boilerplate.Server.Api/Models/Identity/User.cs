@@ -35,7 +35,7 @@ public partial class User : IdentityUser<Guid>
     public DateTimeOffset? OtpRequestedOn { get; set; }
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS" />
+    /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS" />
     /// </summary>
     public DateTimeOffset? ElevatedAccessTokenRequestedOn { get; set; }
 

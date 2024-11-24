@@ -81,7 +81,7 @@ public partial class UserController : AppControllerBase, IUserController
         SignOut();
     }
 
-    [HttpPost("{id}"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+    [HttpPost("{id}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task RevokeSession(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -250,7 +250,7 @@ public partial class UserController : AppControllerBase, IUserController
             throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
     }
 
-    [HttpDelete, Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+    [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
