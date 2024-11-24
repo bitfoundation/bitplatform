@@ -27,6 +27,8 @@ public static partial class ISharedServiceCollectionExtensions
 
             return options;
         });
+        // Creates async service scope from the `root` service scope.
+        services.AddSingleton(sp => new RootServiceScopeProvider(() => sp.CreateAsyncScope()));
 
         services.AddOptions<SharedSettings>()
             .Bind(configuration)

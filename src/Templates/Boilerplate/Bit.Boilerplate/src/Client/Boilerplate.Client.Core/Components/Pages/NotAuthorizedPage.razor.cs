@@ -53,7 +53,7 @@ public partial class NotAuthorizedPage
 
     private async Task SignOut()
     {
-        await AuthManager.SignOut(deleteUserSessionFromServer: true, CurrentCancellationToken);
+        await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
     }

@@ -164,14 +164,14 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (hasPrivilegedAccess)
             return true;
 
-        _ = userController.SendPrivilegedAccessToken(cancellationToken)
-            .ContinueWith(r =>
-            {
-                if (r.Exception is not null)
-                {
-                    exceptionHandler.Handle(r.Exception);
-                }
-            });
+        try
+        {
+            await userController.SendPrivilegedAccessToken(cancellationToken);
+        }
+        catch(TooManyRequestsExceptions exp)
+        {
+            exceptionHandler.Handle(exp); // Let's show prompt anyway.
+        }
 
         var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer[AppStrings.EnterPrivilegedAccessToken].ToString());
         if (string.IsNullOrEmpty(token))
