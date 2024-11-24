@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class Modal : AppComponentBase
+public partial class Modal
 {
     private bool isOpen;
     private string? title;
@@ -46,7 +46,7 @@ public partial class Modal : AppComponentBase
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        await base.DisposeAsync(true);
+        await base.DisposeAsync(disposing);
 
         if (disposed || disposing is false) return;
 
