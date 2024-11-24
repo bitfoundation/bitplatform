@@ -10,19 +10,24 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private PromptService promptService = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
-    [AutoInject] private IPrerenderStateService prerenderStateService;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
-    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
+    [AutoInject] private IPrerenderStateService prerenderStateService = default!;
 
     public void OnInit()
     {
+        // Example for method call after object instantiation with dependency injection.
+
+        //#if (signalR == true)
         unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
+        //#endif
     }
 
     /// <summary>
@@ -168,12 +173,12 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             await userController.SendPrivilegedAccessToken(cancellationToken);
         }
-        catch(TooManyRequestsExceptions exp)
+        catch (TooManyRequestsExceptions exp)
         {
             exceptionHandler.Handle(exp); // Let's show prompt anyway.
         }
 
-        var token = await jsRuntime.InvokeAsync<string?>("prompt", localizer[AppStrings.EnterPrivilegedAccessToken].ToString());
+        var token = await promptService.Show(localizer[AppStrings.EnterPrivilegedAccessToken]);
         if (string.IsNullOrEmpty(token))
             return false;
 
