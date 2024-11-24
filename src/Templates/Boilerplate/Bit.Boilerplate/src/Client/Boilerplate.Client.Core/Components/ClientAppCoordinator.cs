@@ -27,11 +27,11 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private Navigator navigator = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private AuthenticationManager authManager = default!;
+    [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
@@ -68,11 +68,11 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-            AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthenticationManager.GetAuthenticationStateAsync());
+            await PropagateUserId(firstRun: true, AuthManager.GetAuthenticationStateAsync());
         }
 
         await base.OnInitAsync();
@@ -215,7 +215,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException));
+                await AuthManager.RefreshToken(requestedBy: nameof(HubException));
             }
         }
     }
@@ -243,7 +243,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
-        AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         //#if (signalR == true)
         hubConnection.Closed -= HubConnectionStateChange;

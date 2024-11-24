@@ -38,7 +38,7 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
 
     [AutoInject] protected IExceptionHandler ExceptionHandler = default!;
 
-    [AutoInject] protected AuthenticationManager AuthenticationManager = default!;
+    [AutoInject] protected AuthManager AuthManager = default!;
 
     [AutoInject] protected SnackBarService SnackBarService = default!;
 

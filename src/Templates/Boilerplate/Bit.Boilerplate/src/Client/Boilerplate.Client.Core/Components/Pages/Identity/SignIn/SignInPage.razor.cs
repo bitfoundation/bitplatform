@@ -122,7 +122,7 @@ public partial class SignInPage : IDisposable
 
             CleanModel();
 
-            requiresTwoFactor = await AuthenticationManager.SignIn(model, CurrentCancellationToken);
+            requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
             if (requiresTwoFactor is false)
             {

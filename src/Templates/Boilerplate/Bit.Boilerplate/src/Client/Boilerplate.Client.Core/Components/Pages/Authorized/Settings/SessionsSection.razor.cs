@@ -45,7 +45,7 @@ public partial class SessionsSection
 
         try
         {
-            if (await AuthenticationManager.EnsurePrivilegedAccess(CurrentCancellationToken))
+            if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
             {
                 await userController.RevokeSession(session.Id, CurrentCancellationToken);
 

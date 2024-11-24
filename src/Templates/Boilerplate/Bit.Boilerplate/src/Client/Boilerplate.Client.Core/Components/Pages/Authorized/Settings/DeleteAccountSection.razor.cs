@@ -10,11 +10,11 @@ public partial class DeleteAccountSection
 
     private async Task DeleteAccount()
     {
-        if (await AuthenticationManager.EnsurePrivilegedAccess(CurrentCancellationToken))
+        if (await AuthManager.TryEnterPrivilegedAccessMode(CurrentCancellationToken))
         {
             await userController.Delete(CurrentCancellationToken);
 
-            await AuthenticationManager.SignOut(deleteUserSessionFromServer: false, CurrentCancellationToken);
+            await AuthManager.SignOut(CurrentCancellationToken);
         }
     }
 }

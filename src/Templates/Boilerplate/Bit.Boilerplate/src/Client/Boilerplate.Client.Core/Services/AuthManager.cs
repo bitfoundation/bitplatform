@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class AuthenticationManager : AuthenticationStateProvider, IAsyncDisposable
+public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 {
     private Action? unsubscribe;
 
@@ -17,12 +17,12 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthorizationService authorizationService = default!;
 
     public void OnInit()
     {
-        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(deleteUserSessionFromServer: false, default));
+        unsubscribe = pubSubService.Subscribe(SharedPubSubMessages.SESSION_REVOKED, _ => SignOut(default));
     }
 
     /// <summary>
@@ -66,16 +66,13 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
 
-    public async Task SignOut(bool deleteUserSessionFromServer, CancellationToken cancellationToken)
+    public async Task SignOut(CancellationToken cancellationToken)
     {
         try
         {
-            if (deleteUserSessionFromServer)
-            {
-                await userController.SignOut(cancellationToken);
-            }
+            await userController.SignOut(cancellationToken);
         }
-        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException)
+        catch (Exception exp) when (exp is ServerConnectionException or UnauthorizedException or ResourceNotFoundException)
         {
             // The user might sign out while the app is offline, making token refresh attempts fail.
             // These exceptions are intentionally ignored in this case.
@@ -160,7 +157,7 @@ public partial class AuthenticationManager : AuthenticationStateProvider, IAsync
         }
     }
 
-    public async Task<bool> EnsurePrivilegedAccess(CancellationToken cancellationToken)
+    public async Task<bool> TryEnterPrivilegedAccessMode(CancellationToken cancellationToken)
     {
         var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
         var hasPrivilegedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: true };

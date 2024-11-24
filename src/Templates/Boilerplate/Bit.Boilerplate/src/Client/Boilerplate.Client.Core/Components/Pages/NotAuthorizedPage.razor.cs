@@ -28,7 +28,7 @@ public partial class NotAuthorizedPage
             StateHasChanged();
             try
             {
-                var accessToken = await AuthenticationManager.RefreshToken(requestedBy: nameof(NotAuthorizedPage));
+                var accessToken = await AuthManager.RefreshToken(requestedBy: nameof(NotAuthorizedPage));
                 if (string.IsNullOrEmpty(accessToken) is false && ReturnUrl is not null)
                 {
                     var @char = ReturnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.
@@ -53,7 +53,7 @@ public partial class NotAuthorizedPage
 
     private async Task SignOut()
     {
-        await AuthenticationManager.SignOut(deleteUserSessionFromServer: true, CurrentCancellationToken);
+        await AuthManager.SignOut(deleteUserSessionFromServer: true, CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
     }
