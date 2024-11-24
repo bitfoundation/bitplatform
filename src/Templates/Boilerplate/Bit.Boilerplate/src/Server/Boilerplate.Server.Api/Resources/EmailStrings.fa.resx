@@ -194,7 +194,7 @@
     <value>کد دسترسی ویژه شما:</value>
   </data>
     <data name="CopyTokenNote" xml:space="preserve">
-    <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
+    <value>این کد را کپی و در برنامه استفاده کنید.</value>
   </data>
     <data name="DefaultFromName" xml:space="preserve">
     <value>برنامه Boilerplate</value>

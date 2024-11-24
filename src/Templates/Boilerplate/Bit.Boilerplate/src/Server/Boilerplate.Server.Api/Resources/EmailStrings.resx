@@ -194,7 +194,7 @@
     <value>Here is your new privileged access token:</value>
   </data>
     <data name="CopyTokenNote" xml:space="preserve">
-    <value>Copy this code and use it in the login page.</value>
+    <value>Copy this code and use it in the app.</value>
   </data>
     <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate app</value>
