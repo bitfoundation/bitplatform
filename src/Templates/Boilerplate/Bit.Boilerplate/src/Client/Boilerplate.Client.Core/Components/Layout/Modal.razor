@@ -1,0 +1,27 @@
+﻿@inherits AppComponentBase
+
+<div>
+    <BitModal @bind-IsOpen="isOpen" Blocking Class="root">
+        <section>
+            <BitStack Class="stack">
+                <BitStack Horizontal AutoHeight>
+                    <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">
+                        @title
+                    </BitText>
+
+                    <BitSpacer />
+
+                    <BitButton OnClick="CloseModal"
+                               Color="BitColor.Tertiary"
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.ChromeClose" />
+                </BitStack>
+
+                @if (componentType is not null)
+                {
+                    <DynamicComponent Type="componentType" Parameters="componentParameters" />
+                }
+            </BitStack>
+        </section>
+    </BitModal>
+</div>
