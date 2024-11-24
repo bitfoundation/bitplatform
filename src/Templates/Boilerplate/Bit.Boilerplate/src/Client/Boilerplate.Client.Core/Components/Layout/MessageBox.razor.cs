@@ -2,63 +2,12 @@
 
 public partial class MessageBox
 {
-    private bool isOpen;
-    private string? body;
-    private string? title;
-    private Action? unsubscribe;
-    private bool disposed = false;
+    [Parameter] public string? Body { get; set; }
+    [Parameter] public Action? OnOk { get; set; }
 
-    private TaskCompletionSource<bool>? tcs;
 
-    protected override Task OnInitAsync()
+    private void OnOkClick()
     {
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_MESSAGE, async args =>
-        {
-            var data = (MessageBoxData)args!;
-
-            tcs = data.TaskCompletionSource;
-
-            await ShowMessageBox(data.Message, data.Title);
-        });
-
-        return base.OnInitAsync();
-    }
-
-    private async Task ShowMessageBox(string message, string title = "")
-    {
-        await InvokeAsync(() =>
-        {
-            isOpen = true;
-            this.title = title;
-            body = message;
-
-            StateHasChanged();
-        });
-    }
-
-    private async Task OnCloseClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(false);
-    }
-
-    private async Task OnOkClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(true);
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(true);
-
-        if (disposed || disposing is false) return;
-
-        tcs?.TrySetResult(false);
-        tcs = null;
-
-        unsubscribe?.Invoke();
-
-        disposed = true;
+        OnOk?.Invoke();
     }
 }

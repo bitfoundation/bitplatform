@@ -1,9 +1,12 @@
 ﻿@inherits AppComponentBase
 
 <div class="body">
-    <BitText Color="BitColor.Tertiary">
-        @Body
-    </BitText>
+    <BitStack Horizontal=false>
+        <BitText Color="BitColor.Tertiary">
+            @Body
+        </BitText>
+        <BitTextField @bind-Value="value" />
+    </BitStack>
 </div>
 
 <BitStack Alignment="BitAlignment.Center" AutoHeight>
