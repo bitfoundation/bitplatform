@@ -14,7 +14,7 @@
          role=@((IsAlert ?? (Blocking && Modeless is false))? "alertdialog": "dialog")>
         @if (Modeless is false)
         {
-            <div @onclick="CloseModal"
+            <div @onclick="HandleOnOverlayClick"
                  aria-hidden="true"
                  style="@Styles?.Overlay"
                  class="bit-mdl-ovl @Classes?.Overlay" />

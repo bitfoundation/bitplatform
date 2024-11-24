@@ -105,6 +105,12 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "OnOverlayClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "A callback function for when somewhere on the overlay element of the Modal is clicked.",
+        },
+        new()
+        {
             Name = "Position",
             Type = "BitModalPosition?",
             DefaultValue = "null",

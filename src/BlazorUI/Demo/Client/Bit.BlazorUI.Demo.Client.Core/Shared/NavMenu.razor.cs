@@ -154,6 +154,14 @@ public partial class NavMenu : IDisposable
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() 
+                { 
+                    Text = "Services",
+                    ChildItems = 
+                    [
+                        new() { Text = "ModalService", Url = "/components/modalservice" },
+                    ]
+                },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

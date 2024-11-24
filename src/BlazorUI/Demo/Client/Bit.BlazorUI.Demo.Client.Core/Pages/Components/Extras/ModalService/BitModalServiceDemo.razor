@@ -1,0 +1,20 @@
+@page "/components/modalservice"
+
+@inherits AppComponentBase
+
+<PageOutlet Url="components/modalservice"
+            Title="ModalService"
+            Description="modalservice component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="ModalService"
+               ComponentDescription="BitModalService is a service to globally handle modals with any content."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <BitModalContainer />
+
+            <BitButton OnClick="ShowModal">Show</BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

@@ -84,9 +84,14 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
-    /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.
+    /// A callback function for when the Modal is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when somewhere on the overlay element of the Modal is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
     /// Position of the Modal on the screen.
@@ -194,9 +199,12 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
 
 
-    private async Task CloseModal(MouseEventArgs e)
+    private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+        
+        await OnOverlayClick.InvokeAsync(e);
+
         if (Blocking is not false) return;
 
         if (await AssignIsOpen(false) is false) return;
