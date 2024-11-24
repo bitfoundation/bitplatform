@@ -6,14 +6,6 @@ namespace Boilerplate.Client.Core.Data;
 
 public partial class OfflineDbContext(DbContextOptions<OfflineDbContext> options) : DbContext(options)
 {
-    static OfflineDbContext()
-    {
-        if (AppPlatform.IsBrowser)
-        {
-            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
-        }
-    }
-
     public virtual DbSet<UserDto> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

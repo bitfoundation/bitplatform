@@ -1,4 +1,6 @@
 ﻿//+:cnd:noEmit
+using Boilerplate.Client.Core.Components;
+
 namespace Boilerplate.Client.Core.Services.Contracts;
 
 public interface ITelemetryContext
@@ -37,6 +39,8 @@ public interface ITelemetryContext
     public string? AppVersion { get; set; }
     public string? WebView { get; set; }
 
+    public string? PageUrl { get; set; }
+
     public string? UserAgent { get; set; }
 
     public string? TimeZone { get; set; }
@@ -44,7 +48,10 @@ public interface ITelemetryContext
 
     public string? Environment { get; set; }
 
-    public bool IsOnline { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsOnline"/>
+    /// </summary>
+    public bool? IsOnline { get; set; }
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
@@ -55,8 +62,10 @@ public interface ITelemetryContext
             { nameof(AppSessionId), AppSessionId },
             { nameof(OS), OS },
             { nameof(AppVersion), AppVersion },
+            { nameof(PageUrl), PageUrl },
             { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
+            { "ClientDateTime", DateTimeOffset.UtcNow.ToString("u") },
             { nameof(Culture), Culture },
             { nameof(Environment), Environment },
             { nameof(IsOnline), IsOnline }

@@ -15,6 +15,13 @@
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Setup your development environment</BitText>
+            <BitDropdown @bind-Value="dotnetVersion"
+                         FitWidth
+                         Label=".NET version"
+                         TItem="BitDropdownOption<string>" TValue="string">
+                <BitDropdownOption Text=".NET 8" Value="@("net8.0")" />
+                <BitDropdownOption Text=".NET 9" Value="@("net9.0")" />
+            </BitDropdown>
             <br />
             <BitPivot>
                 <BitPivotItem HeaderText="Easy setup">
@@ -83,36 +90,47 @@
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Step-by-step setup">
                     <br />
+                    <BitText Typography="BitTypography.H6" Gutter>
+                        Step-by-step instructions for:
+                    </BitText>
                     <BitStack Horizontal HorizontalAlign="BitAlignment.Start">
-                        <BitText Typography="BitTypography.H6" Gutter>
-                            Step-by-step instructions for
-                        </BitText>
-                        <BitPivot HeadersOnly="true" OnItemClick="@(item => devOS = item?.Key)">
+                        <BitPivot HeaderOnly OnItemClick="@(item => devOS = item?.Key)">
                             <BitPivotItem HeaderText="Windows" Key="Windows"></BitPivotItem>
                             <BitPivotItem HeaderText="macOS" Key="macOS"></BitPivotItem>
                             <BitPivotItem HeaderText="Linux" Key="Linux"></BitPivotItem>
                         </BitPivot>
                     </BitStack>
-                    <br /><br />
-                    <BitToggle IsInlineLabel Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                     <br />
+                    <BitToggle Inline Label="Show cross-platform development steps" @bind-Value="showCrossPlatform" />
                     <ol>
                         <li style="margin-bottom:8px">
-                            Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">.NET 8 SDK</a>
+                            Install latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/@(dotnetVersion is "net9.0" ? "9.0" : "8.0")" target="_blank">.NET SDK</a>
                             @if (devOS is "Linux")
                             {
-                                <BitAccordion Title=".NET 8 Sdk on Linux instructions">
-                                    <div>To install .NET 8 SDK on Linux(Ubuntu) run the following commands:</div>
-                                    <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/ca6cd525-677e-4d3a-b66c-11348a6f920a/ec395f498f89d0ca4d67d903892af82d/dotnet-sdk-8.0.403-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+                                <br />
+                                <BitAccordion Title=".NET Sdk on Linux instructions">
+                                    <div>To install .NET SDK on Linux(Ubuntu) run the following commands:</div>
+                                    @if (dotnetVersion is "net9.0")
+                                    {
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/308f16a9-2ecf-4a42-b8bb-c1233de985fd/be6e87045ab21935bd8bb98ce69026c4/dotnet-sdk-9.0.100-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
 mkdir -p $HOME/.dotnet
 tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
 echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
 rm $HOME/dotnet.tar.gz</CodeBox>
+                                    }
+                                    else
+                                    {
+                                        <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/4e3b04aa-c015-4e06-a42e-05f9f3c54ed2/74d1bb68e330eea13ecfc47f7cf9aeb7/dotnet-sdk-8.0.404-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
+mkdir -p $HOME/.dotnet
+tar zxf $HOME/dotnet.tar.gz -C "$HOME/.dotnet"
+echo 'PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
+export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH
+rm $HOME/dotnet.tar.gz</CodeBox>
+                                    }
                                 </BitAccordion>
                             }
                         </li>
-                        <br />
                         <li>Install <a href="@( devOS is "Windows" ? "https://nodejs.org/en/download/prebuilt-installer" : "https://nodejs.org/en/download/package-manager")" title="Node.js" rel="nofollow">Node.js</a></li>
                         <br />
                         <li>
@@ -149,8 +167,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/8.12.0" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::8.12.0</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.1.0-pre-01" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::9.1.0-pre-01</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {
@@ -199,7 +217,7 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             <div class="section-card-txt">
                                 <ul>
                                     <li>
-                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.11 or higher
+                                        <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Microsoft Visual Studio</a> 2022 - Version 17.12 or higher
                                         <ul dir="auto">
                                             <li>
                                                 Workloads:

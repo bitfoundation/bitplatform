@@ -20,6 +20,7 @@ public partial class AppHub : Hub
         }
         else
         {
+            // Checkout AppHubConnectionHandler's comments for more info.
             await Groups.AddToGroupAsync(Context.ConnectionId, "AuthenticatedClients");
         }
 
@@ -31,5 +32,14 @@ public partial class AppHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AuthenticatedClients");
 
         await base.OnDisconnectedAsync(exception);
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="SignalREvents.PONG"/>
+    /// </summary>
+    [Authorize]
+    public async Task Ping()
+    {
+        await Clients.Client(Context.User!.GetSessionId().ToString()).SendAsync(SignalREvents.PONG);
     }
 }

@@ -8,15 +8,6 @@
         </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') AND ('$(framework)' == 'net9.0' OR '$(framework)' == '')">
-        <!--/-:msbuild-conditional:noEmit -->
-        <!-- Add Microsoft.EntityFrameworkCore.Tasks package to make automated db context optimize work -->
-        <EFOptimizeContext Condition="'$(Configuration)'=='Release'">true</EFOptimizeContext>
-        <DbContextName>OfflineDbContext</DbContextName>
-        <EFStartupProject>..\..\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj</EFStartupProject>
-        <!--/+:msbuild-conditional:noEmit -->
-    </PropertyGroup>
-
     <ItemGroup>
         <SupportedPlatform Include="browser" />
 
@@ -46,6 +37,7 @@
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
         <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.Extensions.Logging" />
         <Using Include="Microsoft.AspNetCore.Components" />
         <Using Include="Microsoft.AspNetCore.Authorization" />
         <Using Include="Microsoft.AspNetCore.Components.Authorization" />

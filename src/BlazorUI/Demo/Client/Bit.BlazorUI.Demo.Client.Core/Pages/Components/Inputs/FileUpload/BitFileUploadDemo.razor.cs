@@ -27,6 +27,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "AutoReset",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Automatically resets the file-upload before starting to browse for files."
+        },
+        new()
+        {
             Name = "AutoUpload",
             Type = "bool",
             DefaultValue = "false",
@@ -37,7 +44,7 @@ public partial class BitFileUploadDemo
             Name = "ChunkedUpload",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables or disables the chunked upload feature."
+            Description = "Enables the chunked upload."
         },
         new()
         {
@@ -48,10 +55,10 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "MultiSelect",
+            Name = "Multiple",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables multi-file select & upload."
+            Description = "Enables multi-file selection."
         },
         new()
         {
@@ -371,6 +378,92 @@ public partial class BitFileUploadDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Files",
+            Type = "IReadOnlyList<BitFileInfo>?",
+            DefaultValue = "null",
+            Description = "A list of all of the selected files to upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "UploadStatus",
+            Type = "BitFileUploadStatus",
+            DefaultValue = "",
+            Description = "The current status of the file uploader.",
+            LinkType = LinkType.Link,
+            Href = "#upload-status-enum"
+        },
+        new()
+        {
+            Name = "InputId",
+            Type = "string?",
+            DefaultValue = "",
+            Description = "The id of the file input element.",
+        },
+        new()
+        {
+            Name = "IsRemoving",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Indicates that the file upload is in the middle of removing a file.",
+        },
+        new()
+        {
+            Name = "Upload",
+            Type = "(BitFileInfo? fileInfo = null, string? uploadUrl = null) => Task",
+            DefaultValue = "",
+            Description = "Starts uploading the file(s).",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "PauseUpload",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Pauses the upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "CancelUpload",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Cancels the upload.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "RemoveFile",
+            Type = "(BitFileInfo? fileInfo = null) => void",
+            DefaultValue = "",
+            Description = "Removes a file by calling the RemoveUrl if the file upload is already started.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
+            Name = "Browse",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Opens a file selection dialog.",
+        },
+        new()
+        {
+            Name = "Reset",
+            Type = "Task",
+            DefaultValue = "",
+            Description = "Resets the file upload.",
+        }
+    ];
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -461,74 +554,64 @@ public partial class BitFileUploadDemo
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example2RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               AutoUpload
-               MultiSelect
-               UploadUrl=""@UploadUrl"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple />";
     private readonly string example2CsharpCode = @"
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example3RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               AutoUpload
-               MultiSelect
-               UploadUrl=""@UploadUrl""
-               MaxSize=""1024 * 1024 * 1"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" AutoUpload />";
     private readonly string example3CsharpCode = @"
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example4RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               MultiSelect
-               UploadUrl=""@UploadUrl""
-               AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" AutoReset />";
     private readonly string example4CsharpCode = @"
 private string UploadUrl = $""/Upload"";";
 
     private readonly string example5RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               MultiSelect
-               ShowRemoveButton
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MaxSize=""1024 * 1024 * 1"" />";
     private readonly string example5CsharpCode = @"
-private string UploadUrl = $""/Upload"";
-private string RemoveUrl = $""/Remove"";";
+private string UploadUrl = $""/Upload"";";
 
     private readonly string example6RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               AutoUpload
-               MultiSelect
-               UploadUrl=""@UploadUrl""
-               OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
-               OnUploading=""@(info => info.HttpHeaders = new Dictionary<string, string> { {""key1"", ""value1""} })"" />
-
-<div>@onAllUploadsCompleteText</div>";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
+               AllowedExtensions=""@(new List<string> { "".gif"","".jpg"","".mp4"" })"" />";
     private readonly string example6CsharpCode = @"
-private string UploadUrl = $""/Upload"";
-private string onAllUploadsCompleteText = ""No File"";";
+private string UploadUrl = $""/Upload"";";
 
     private readonly string example7RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               MultiSelect
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl""
-               UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
-               UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
-               RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })""
-               RemoveRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header2"", ""value2"" } })"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
+               ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
     private readonly string example7CsharpCode = @"
 private string UploadUrl = $""/Upload"";
 private string RemoveUrl = $""/Remove"";";
 
     private readonly string example8RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files""
-               ChunkedUpload
-               UploadUrl=""@ChunkedUploadUrl"" />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
+               OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All File Uploaded"")""
+               OnUploading=""@(info => info.HttpHeaders = new Dictionary<string, string> { {""key1"", ""value1""} })"" />
+
+<div>@onAllUploadsCompleteText</div>";
     private readonly string example8CsharpCode = @"
-private string ChunkedUploadUrl = $""/ChunkedUpload"";";
+private string UploadUrl = $""/Upload"";
+private string onAllUploadsCompleteText = ""No File"";";
 
     private readonly string example9RazorCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl""
+               UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
+               UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
+               RemoveRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs2"", ""qsValue2"" } })""
+               RemoveRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header2"", ""value2"" } })"" />";
+    private readonly string example9CsharpCode = @"
+private string UploadUrl = $""/Upload"";
+private string RemoveUrl = $""/Remove"";";
+
+    private readonly string example10RazorCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload />";
+    private readonly string example10CsharpCode = @"
+private string ChunkedUploadUrl = $""/ChunkedUpload"";";
+
+    private readonly string example11RazorCode = @"
 <style>
     .browse-file {
         border: 1px solid #D2D2D7;
@@ -672,14 +755,7 @@ private string ChunkedUploadUrl = $""/ChunkedUpload"";";
 </style>
 
 
-<BitFileUpload @ref=""bitFileUpload""
-               Label=""""
-               UploadUrl=""@UploadUrl""
-               RemoveUrl=""@RemoveUrl""
-               MaxSize=""1024 * 1024 * 2""
-               SuccessfulUploadMessage=""File upload succeeded""
-               NotAllowedExtensionErrorMessage=""File type not supported""
-               AllowedExtensions=""@(new List<string> { "".jpeg"", "".jpg"", "".png"", "".bpm"" })"">
+<BitFileUpload @ref=""bitFileUpload"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl"">
     <LabelTemplate>
         @if (FileUploadIsEmpty())
         {
@@ -752,7 +828,7 @@ private string ChunkedUploadUrl = $""/ChunkedUpload"";";
 </BitFileUpload>
 
 <BitButton OnClick=""HandleUploadOnClick"">Upload</BitButton>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
 private string UploadUrl => ""/Upload"";
@@ -823,14 +899,14 @@ private bool IsFileTypeNotAllowed(BitFileInfo file)
     return bitFileUpload.AllowedExtensions.Count > 0 && bitFileUpload.AllowedExtensions.All(ext => ext != ""*"") && bitFileUpload.AllowedExtensions.All(ext => ext != extension);
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitFileUpload @ref=""bitFileUploadWithBrowseFile""
                Label=""""
                UploadUrl=""@UploadUrl""
                RemoveUrl=""@RemoveUrl"" />
 
 <BitButton OnClick=""HandleBrowseFileOnClick"">Browse file</BitButton>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
 private BitFileUpload bitFileUploadWithBrowseFile;

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 namespace Boilerplate.Client.Web.Services;
 
 /// <summary>
-/// For more information <see cref="IPrerenderStateService"/> docs.
+/// <inheritdoc cref="IPrerenderStateService"/>
 /// </summary>
 public partial class WebPrerenderStateService : IPrerenderStateService, IAsyncDisposable
 {

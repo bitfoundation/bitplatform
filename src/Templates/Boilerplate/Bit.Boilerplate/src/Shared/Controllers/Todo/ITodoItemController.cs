@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Shared.Controllers.Todo;
 
-[Route("api/[controller]/[action]/")]
+[Route("api/[controller]/[action]/"), AuthorizedApi]
 public interface ITodoItemController : IAppController
 {
     [HttpGet("{id}")]

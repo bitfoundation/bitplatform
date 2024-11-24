@@ -275,6 +275,9 @@
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Profiel bewerken</value>
   </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>EF Core/Sqlite-aangedreven offline bewerkingsformulieren direct in uw web-/mobiele/desktop-apps!</value>
+  </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
     <value>Volledige naam</value>
@@ -990,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Onlangs</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>Je kunt Anderse sessies op dit moment niet intrekken. Probeer het opnieuw in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
@@ -1033,6 +1033,27 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Beheerderspaneel</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Ga naar de eerste pagina</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Ga naar de vorige pagina</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Ga naar de volgende pagina</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Ga naar de laatste pagina</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Pagina</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>tot</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Aantal producten</value>
@@ -1142,6 +1163,7 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>Dit zijn jouw analytische gegevens</value>
   </data>
+    <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>Ongeldig Google reCAPTCHA-antwoord.</value>
@@ -1150,5 +1172,9 @@
     <value>U moet slagen voor de Google reCAPTCHA-uitdaging.</value>
   </data>
     <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser, en probeer het opnieuw.</value>
+  </data>
     <!--#endif -->
 </root>

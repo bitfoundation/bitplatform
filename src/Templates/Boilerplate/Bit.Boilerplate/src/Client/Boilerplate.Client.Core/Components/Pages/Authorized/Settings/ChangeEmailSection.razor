@@ -4,7 +4,7 @@
     <BitStack HorizontalAlign="BitAlignment.Center">
         @if (showConfirmation is false)
         {
-            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" novalidate>
+            <EditForm Model="sendModel" OnValidSubmit="WrapHandled(SendToken)" novalidate class="max-width">
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>

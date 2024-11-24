@@ -1,5 +1,9 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+﻿//+:cnd:noEmit
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -9,6 +13,9 @@ public partial class ProfileSection
     [Parameter] public UserDto? User { get; set; }
 
 
+    //#if (signalR == true)
+    [AutoInject] HubConnection hub = default!;
+    //#endif
     [AutoInject] private IUserController userController = default!;
 
 
@@ -17,18 +24,18 @@ public partial class ProfileSection
     private string? profileImageUrl;
     private string? profileImageUploadUrl;
     private string? removeProfileImageHttpUrl;
+    private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
 
     protected override async Task OnInitAsync()
     {
-        var access_token = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
+        var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
 
-        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={access_token}";
+        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={accessToken}";
 
-        var serverAddress = Configuration.GetServerAddress();
-        profileImageUrl = $"{serverAddress}/api/Attachment/GetProfileImage?access_token={access_token}";
-        profileImageUploadUrl = $"{serverAddress}/api/Attachment/UploadProfileImage?access_token={access_token}";
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
+        profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
     }
@@ -49,6 +56,13 @@ public partial class ProfileSection
 
         try
         {
+            //#if (signalR == true)
+            if (await hub.IsUserSessionUnique(CurrentCancellationToken))
+            {
+                throw new ForbiddenException(Localizer[nameof(AppStrings.ConcurrentUserSessionOnTheSameDevice)]);
+            }
+            //#endif
+
             editUserDto.Patch(User);
 
             (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(User);

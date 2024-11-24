@@ -68,12 +68,15 @@ public partial class TestsInitializer
     private static async Task InitializeAuthenticationState(AppTestServer testServer, TestContext testContext)
     {
         var playwrightPage = new PageTest() { TestContext = testContext };
-        await playwrightPage.Setup();
+        await playwrightPage.ContextSetup();
         await playwrightPage.BrowserSetup();
+
         var currentMethodFullName = $"{typeof(TestsInitializer).FullName}.{(nameof(InitializeAuthenticationState))}";
         var options = new BrowserNewContextOptions().EnableVideoRecording(testContext, currentMethodFullName);
         var context = await playwrightPage.NewContextAsync(options);
+
         await context.EnableBlazorWasmCaching();
+        await context.SetBlazorWebAssemblyServerAddress(testServer.WebAppServerAddress.ToString());
 
         var page = await context.NewPageAsync();
         var signinPage = new SignInPage(page, testServer.WebAppServerAddress);
@@ -94,6 +97,7 @@ public partial class TestsInitializer
 
         AuthenticationState = state.Replace(testServer.WebAppServerAddress.OriginalString.TrimEnd('/'), "[ServerAddress]");
 
+        await context.FinalizeVideoRecording(testContext, currentMethodFullName);
         await context.Browser!.CloseAsync();
         await context.Browser!.DisposeAsync();
     }

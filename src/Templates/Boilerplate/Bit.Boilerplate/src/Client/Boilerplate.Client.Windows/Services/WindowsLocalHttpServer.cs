@@ -1,18 +1,19 @@
-﻿using System.Net;
+﻿using EmbedIO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using EmbedIO;
 using EmbedIO.Actions;
 using Boilerplate.Client.Core.Components;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Windows.Services;
 
+/// <summary>
+/// <inheritdoc cref="ILocalHttpServer"/>
+/// </summary>
 public partial class WindowsLocalHttpServer : ILocalHttpServer
 {
-    [AutoInject] private IConfiguration configuration;
     [AutoInject] private IExceptionHandler exceptionHandler;
-    [AutoInject] private ILogger<ILocalHttpServer> logger = default!;
+    [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
     private WebServer? localHttpServer;
 
@@ -27,11 +28,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var url = $"{configuration.GetServerAddress()}/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}";
+                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
 
                     ctx.Redirect(url);
 
-                    await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
+                    Application.OpenForms[0]!.Activate();
 
                     await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                 }

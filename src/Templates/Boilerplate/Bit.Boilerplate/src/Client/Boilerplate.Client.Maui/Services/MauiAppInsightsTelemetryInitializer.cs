@@ -20,7 +20,7 @@ public partial class MauiAppInsightsTelemetryInitializer : ITelemetryInitializer
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserAgent)] = ITelemetryContext.Current.UserAgent;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.TimeZone)] = ITelemetryContext.Current.TimeZone;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.Culture)] = ITelemetryContext.Current.Culture;
-            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline.ToString().ToLowerInvariant();
+            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline?.ToString().ToLowerInvariant();
         }
 
         telemetry.Context.Session.IsFirst = VersionTracking.IsFirstLaunchEver;

@@ -27,13 +27,18 @@ public static partial class Program
         services.AddSingleton(sp => configuration);
         services.AddSingleton<IStorageService, WindowsStorageService>();
         services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
-        services.AddSingleton(sp => configuration.Get<ClientWindowsSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ClientWindowsSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
         services.AddSingleton(ITelemetryContext.Current!);
         //#if (notification == true)
         services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
         //#endif
 
-        services.AddWpfBlazorWebView();
+        services.AddWindowsFormsBlazorWebView();
         services.AddBlazorWebViewDeveloperTools();
 
         services.AddLogging(loggingBuilder =>
@@ -42,10 +47,7 @@ public static partial class Program
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
             loggingBuilder.AddEventSourceLogger();
 
-            if (AppPlatform.IsWindows)
-            {
-                loggingBuilder.AddEventLog();
-            }
+            loggingBuilder.AddEventLog();
             //#if (appCenter == true)
             if (Microsoft.AppCenter.AppCenter.Configured)
             {
@@ -56,7 +58,9 @@ public static partial class Program
             loggingBuilder.AddApplicationInsights(config =>
             {
                 config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
-                var connectionString = configuration.Get<ClientWindowsSettings>()!.ApplicationInsights?.ConnectionString;
+                ClientWindowsSettings settings = new();
+                configuration.Bind(settings);
+                var connectionString = settings.ApplicationInsights?.ConnectionString;
                 if (string.IsNullOrEmpty(connectionString) is false)
                 {
                     config.ConnectionString = connectionString;

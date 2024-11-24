@@ -22,13 +22,15 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwarededHeadersOptions = configuration.Get<ServerWebSettings>()!.ForwardedHeaders;
+        ServerWebSettings settings = new();
+        configuration.Bind(settings);
+        var forwardedHeadersOptions = settings.ForwardedHeaders;
 
-        if (forwarededHeadersOptions is not null
-            && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
+        if (forwardedHeadersOptions is not null
+            && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))
         {
             // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-            app.UseForwardedHeaders(forwarededHeadersOptions);
+            app.UseForwardedHeaders(forwardedHeadersOptions);
         }
 
         if (CultureInfoManager.MultilingualEnabled)
@@ -140,9 +142,7 @@ public static partial class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        var webAppRenderMode = configuration.Get<ServerWebSettings>()!;
-
-        if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
+        if (settings.WebAppRender.PrerenderEnabled is false)
         {
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }
@@ -215,7 +215,7 @@ public static partial class Program
 
                     var qs = HttpUtility.ParseQueryString(httpContext.Request.QueryString.Value ?? string.Empty);
                     qs.Remove("try_refreshing_token");
-                    var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
+                    var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString($"?{qs}"));
                     httpContext.Response.Redirect($"{Urls.NotAuthorizedPage}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
                 }
                 else if (httpContext.Response.StatusCode is 404 &&

@@ -5,7 +5,6 @@
         <TargetFramework>net9.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <RootNamespace>Boilerplate.Client.Windows</RootNamespace>
@@ -15,6 +14,18 @@
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
+        <NoWarn Condition="('$(framework)' == 'net9.0' OR '$(framework)' == '')">$(NoWarn);WFO5001</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Environment)' == 'Production'">
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>partial</TrimMode>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+        <CompressionEnabled>false</CompressionEnabled>
+        <!-- Enabling compression generates `.br` and `.gz` files for static assets.
+        While this is beneficial for Blazor WebAssembly, it only adds to the app bundle size in MAUI without offering any advantages. -->
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,15 +41,15 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
         <PackageReference Include="Microsoft.Extensions.Logging.EventSource" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
         <PackageReference Include="Microsoft.Web.WebView2" />
         <PackageReference Include="Velopack" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" />
+        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" />
         <PackageReference Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" />
-        <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <!--/-:msbuild-conditional:noEmit -->
         <Content Include="..\Boilerplate.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -53,9 +64,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Resource Include="Resources\**\*.*" />
-      <Content Remove="appsettings*.json" />
-      <EmbeddedResource Include="appsettings*.json" />
+        <Resource Include="Resources\**\*.*" />
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -64,6 +75,19 @@
 
     <Target Name="BuildCssFiles">
         <Exec Command="../Boilerplate.Client.Core/node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <Target Name="RemoveFilesAfterPublish" AfterTargets="Publish">
+        <!-- Unneccecary files because of Microsoft.Web.WebView2.Wpf etc. -->
+        <ItemGroup>
+            <FilesToDelete Include="$(PublishDir)wpfgfx_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)WindowsBase.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationCore.dll" />
+            <FilesToDelete Include="$(PublishDir)D3DCompiler_47_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationFramework.dll" />
+            <FilesToDelete Include="$(PublishDir)System.Windows.Forms.Design.dll" />
+        </ItemGroup>
+        <Delete Files="@(FilesToDelete)" />
     </Target>
 
 </Project>

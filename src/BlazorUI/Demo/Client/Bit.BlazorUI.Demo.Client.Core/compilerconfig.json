@@ -240,6 +240,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.css",
+        "inputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Navs/Pagination/BitPaginationDemo.razor.css",
         "inputFile": "Pages/Components/Navs/Pagination/BitPaginationDemo.razor.scss",
         "minify": { "enabled": false },

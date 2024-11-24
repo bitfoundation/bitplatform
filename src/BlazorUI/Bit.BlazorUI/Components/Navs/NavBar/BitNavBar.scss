@@ -1,0 +1,138 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-nbr {
+    font-weight: $tg-font-weight;
+    font-family: $tg-font-family;
+
+    &.bit-dis {
+        cursor: none;
+        pointer-events: none;
+
+        .bit-nbr-itm {
+            color: $clr-fg-dis;
+        }
+    }
+}
+
+.bit-nbr-ftw {
+    width: fit-content;
+}
+
+.bit-nbr-flw {
+    width: 100%;
+}
+
+.bit-nbr-cnt {
+    display: flex;
+    justify-content: space-around;
+}
+
+.bit-nbr-itm {
+    display: flex;
+    cursor: pointer;
+    gap: spacing(0.5);
+    color: $clr-fg-pri;
+    padding: spacing(1);
+    align-items: center;
+    text-decoration: none;
+    flex-direction: column;
+    background: transparent;
+
+    @media (hover:hover) {
+        &:hover {
+            color: var(--bit-nbr-clr);
+        }
+    }
+}
+
+.bit-nbr-ico {
+    font-size: 1rem;
+}
+
+.bit-nbr-txt {
+    font-size: 0.85rem;
+}
+
+.bit-nbr-ion {
+    .bit-nbr-txt {
+        display: none;
+    }
+}
+
+.bit-nbr-sel {
+    color: var(--bit-nbr-clr);
+}
+
+.bit-nbr-dis {
+    color: $clr-fg-dis;
+    pointer-events: none;
+}
+
+
+.bit-nbr-pri {
+    --bit-nbr-clr: #{$clr-pri};
+}
+
+.bit-nbr-sec {
+    --bit-nbr-clr: #{$clr-sec};
+}
+
+.bit-nbr-ter {
+    --bit-nbr-clr: #{$clr-ter};
+}
+
+.bit-nbr-inf {
+    --bit-nbr-clr: #{$clr-inf};
+}
+
+.bit-nbr-suc {
+    --bit-nbr-clr: #{$clr-suc};
+}
+
+.bit-nbr-wrn {
+    --bit-nbr-clr: #{$clr-wrn};
+}
+
+.bit-nbr-swr {
+    --bit-nbr-clr: #{$clr-swr};
+}
+
+.bit-nbr-err {
+    --bit-nbr-clr: #{$clr-err};
+}
+
+.bit-nbr-pbg {
+    --bit-nbr-clr: #{$clr-bg-pri};
+}
+
+.bit-nbr-sbg {
+    --bit-nbr-clr: #{$clr-bg-sec};
+}
+
+.bit-nbr-tbg {
+    --bit-nbr-clr: #{$clr-bg-ter};
+}
+
+.bit-nbr-pfg {
+    --bit-nbr-clr: #{$clr-fg-pri};
+}
+
+.bit-nbr-sfg {
+    --bit-nbr-clr: #{$clr-fg-sec};
+}
+
+.bit-nbr-tfg {
+    --bit-nbr-clr: #{$clr-fg-ter};
+}
+
+.bit-nbr-pbr {
+    --bit-nbr-clr: #{$clr-brd-pri};
+}
+
+.bit-nbr-sbr {
+    --bit-nbr-clr: #{$clr-brd-sec};
+}
+
+.bit-nbr-tbr {
+    --bit-nbr-clr: #{$clr-brd-ter};
+}

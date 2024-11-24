@@ -2,11 +2,14 @@
 
 public partial class UserSessionDto
 {
-    public Guid SessionUniqueId { get; set; }
+    public Guid Id { get; set; }
 
     public string? IP { get; set; }
 
-    public string? Device { get; set; }
+    /// <summary>
+    /// Populated during sign-in using the <see cref="SignInRequestDto.DeviceInfo"/> property.
+    /// </summary>
+    public string? DeviceInfo { get; set; }
 
     public string? Address { get; set; }
 

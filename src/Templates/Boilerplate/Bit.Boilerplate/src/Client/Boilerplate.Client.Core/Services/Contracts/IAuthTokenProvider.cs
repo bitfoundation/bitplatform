@@ -8,12 +8,12 @@ public interface IAuthTokenProvider
 
     public ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
 
-    public ClaimsPrincipal ParseAccessToken(string? access_token, bool validateExpiry)
+    public ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
     {
-        if (string.IsNullOrEmpty(access_token) is true)
+        if (string.IsNullOrEmpty(accessToken) is true)
             return Anonymous();
 
-        var claims = ReadClaims(access_token, validateExpiry);
+        var claims = ReadClaims(accessToken, validateExpiry);
 
         if (claims is null)
             return Anonymous();
@@ -25,9 +25,9 @@ public interface IAuthTokenProvider
         return claimPrinciple;
     }
 
-    private IEnumerable<Claim>? ReadClaims(string access_token, bool validateExpiry)
+    private IEnumerable<Claim>? ReadClaims(string accessToken, bool validateExpiry)
     {
-        var parsedClaims = DeserializeAccessToken(access_token);
+        var parsedClaims = DeserializeAccessToken(accessToken);
 
         if (validateExpiry && long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
         {
@@ -55,10 +55,10 @@ public interface IAuthTokenProvider
         return claims;
     }
 
-    private Dictionary<string, JsonElement> DeserializeAccessToken(string access_token)
+    private Dictionary<string, JsonElement> DeserializeAccessToken(string accessToken)
     {
         // Split the token to get the payload
-        string base64UrlPayload = access_token.Split('.')[1];
+        string base64UrlPayload = accessToken.Split('.')[1];
 
         // Convert the payload from Base64Url format to Base64
         string base64Payload = ConvertBase64UrlToBase64(base64UrlPayload);

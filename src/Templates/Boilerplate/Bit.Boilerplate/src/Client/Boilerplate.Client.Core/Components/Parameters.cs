@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Components;
+﻿using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+
+namespace Boilerplate.Client.Core.Components;
 
 public class Parameters
 {
@@ -9,15 +11,17 @@ public class Parameters
     public const string CurrentRouteData = nameof(CurrentRouteData);
 
     /// <summary>
-    /// If the current page is part of the cross-layout pages that are rendered in multiple layouts.
+    /// The cross-layout pages are the pages that are getting rendered in multiple layouts (authenticated and unauthenticated).
+    /// The Terms and Home pages are examples of cross-layout pages that.
     /// </summary>
     public const string IsCrossLayoutPage = nameof(IsCrossLayoutPage);
 
     /// <summary>
-    /// Determines the connection status, with default behavior based on SignalR connection status.
-    /// If SignalR is not added to the project during initial project creation, this value will always be null by default.
-    /// Alternatively, you can implement custom logic to control this value.
-    /// true => Online, false => Offline, null => Unknown
+    /// Indicates the connection status, with default behavior tied to the SignalR connection status.
+    /// <see cref="ExceptionDelegatingHandler"/> allows this value to be updated based on server responses:
+    /// - When the first response is received from the server, this value becomes true (Online).
+    /// - When a server connection exception occurs, it becomes false (Offline).
+    /// By default, this value is null (Unknown).
     /// </summary>
     public const string IsOnline = nameof(IsOnline);
 }

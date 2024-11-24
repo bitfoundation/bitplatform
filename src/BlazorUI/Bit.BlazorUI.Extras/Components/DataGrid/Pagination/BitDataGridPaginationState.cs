@@ -6,25 +6,25 @@
 public class BitDataGridPaginationState
 {
     /// <summary>
+    /// Gets the current zero-based page index. To set it, call <see cref="SetCurrentPageIndexAsync(int)" />.
+    /// </summary>
+    public int CurrentPageIndex { get; private set; }
+
+    /// <summary>
     /// Gets or sets the number of items on each page.
     /// </summary>
     public int ItemsPerPage { get; set; } = 10;
 
     /// <summary>
-    /// Gets the current zero-based page index. To set it, call <see cref="SetCurrentPageIndexAsync(int)" />.
+    /// Gets the zero-based index of the last page, if known. The value will be null until <see cref="TotalItemCount"/> is known.
     /// </summary>
-    public int CurrentPageIndex { get; private set; }
+    public int? LastPageIndex => (TotalItemCount - 1) / ItemsPerPage;
 
     /// <summary>
     /// Gets the total number of items across all pages, if known. The value will be null until an
     /// associated <see cref="BitDataGrid{TGridItem}"/> assigns a value after loading data.
     /// </summary>
     public int? TotalItemCount { get; private set; }
-
-    /// <summary>
-    /// Gets the zero-based index of the last page, if known. The value will be null until <see cref="TotalItemCount"/> is known.
-    /// </summary>
-    public int? LastPageIndex => (TotalItemCount - 1) / ItemsPerPage;
 
     /// <summary>
     /// An event that is raised when the total item count has changed.

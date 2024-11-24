@@ -17,6 +17,8 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual string? WebView { get; set; }
 
+    public virtual string? PageUrl { get; set; }
+
     public virtual string? UserAgent { get; set; }
 
     public string? TimeZone { get; set; }
@@ -25,5 +27,5 @@ public class AppTelemetryContext : ITelemetryContext
 
     public string? Environment { get; set; } = AppEnvironment.Current;
 
-    public bool IsOnline { get; set; }
+    public bool? IsOnline { get; set; }
 }

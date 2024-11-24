@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Boilerplate.Tests.Extensions;
 using Boilerplate.Tests.PageTests.PageModels.Layout;
 using Boilerplate.Tests.Services;
 
@@ -60,6 +61,8 @@ public abstract partial class TokenMagicLinkEmail<TPage>(IBrowserContext context
             //So we must wait for the redirection to complete
             await Page.WaitForURLAsync(url => url != href);
         }
+
+        await Page.WaitForHydrationToComplete();
 
         return (TFinalPage)Activator.CreateInstance(typeof(TFinalPage), Page, WebAppServerAddress)!;
     }

@@ -155,6 +155,9 @@
     color: var(--bit-btn-clr-txt);
 }
 
+.bit-btn-flw {
+    width: 100%;
+}
 
 .bit-btn-pri {
     --bit-btn-clr: #{$clr-pri};

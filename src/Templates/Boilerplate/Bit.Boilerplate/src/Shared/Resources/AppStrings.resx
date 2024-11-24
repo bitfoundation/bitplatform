@@ -211,9 +211,6 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>Select language</value>
   </data>
-    <data name="Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>Profile</value>
   </data>
@@ -278,9 +275,12 @@
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Edit profile</value>
   </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>EF Core / Sqlite powered offline edit form right into your web/mobile/desktop apps!</value>
+  </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
-    <value>FullName</value>
+    <value>Full name</value>
   </data>
     <data name="TermsPageTitle" xml:space="preserve">
     <value>Terms</value>
@@ -993,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Recently</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>You can't revoke other sessions right now. Try again in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
@@ -1036,6 +1033,27 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Go to the first page</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Go to the previous page</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Go to the next page</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Go to the last page</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>of</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Products count</value>
@@ -1152,6 +1170,11 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser, and try again.</value>
   </data>
     <!--#endif -->
 </root>

@@ -39,7 +39,7 @@ public partial class CultureInfoManager
 
     public void SetCurrentCulture(string cultureName)
     {
-        var cultureInfo = SupportedCultures.FirstOrDefault(sc => sc.Culture.Name == cultureName).Culture ?? DefaultCulture;
+        var cultureInfo = SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
 
         CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
         CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;

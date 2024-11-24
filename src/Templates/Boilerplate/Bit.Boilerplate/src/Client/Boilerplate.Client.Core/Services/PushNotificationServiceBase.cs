@@ -1,6 +1,5 @@
 ﻿using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Shared.Controllers.PushNotification;
-using Microsoft.Extensions.Logging;
 
 namespace Boilerplate.Client.Core.Services;
 
@@ -11,9 +10,9 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
 
     public virtual string Token { get; set; }
     public virtual Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => Task.FromResult(false);
-    public abstract Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken);
+    public abstract Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken);
 
-    public async Task RegisterDevice(CancellationToken cancellationToken)
+    public async Task Subscribe(CancellationToken cancellationToken)
     {
         if (await IsPushNotificationSupported(cancellationToken) is false)
         {
@@ -21,19 +20,19 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
             return;
         }
 
-        var deviceInstallation = await GetDeviceInstallation(cancellationToken);
+        var subscription = await GetSubscription(cancellationToken);
 
-        if (deviceInstallation is null)
+        if (subscription is null)
         {
-            Logger.LogWarning("Could not retrieve device installation"); // Browser's incognito mode etc.
+            Logger.LogWarning("Could not retrieve push notification subscription"); // Browser's incognito mode etc.
             return;
         }
 
-        await pushNotificationController.RegisterDevice(deviceInstallation, cancellationToken);
+        await pushNotificationController.Subscribe(subscription, cancellationToken);
     }
 
-    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
     {
-        await pushNotificationController.DeregisterDevice(deviceInstallationId, cancellationToken);
+        await pushNotificationController.Unsubscribe(deviceId, cancellationToken);
     }
 }

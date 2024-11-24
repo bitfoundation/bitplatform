@@ -4,9 +4,9 @@ using Boilerplate.Server.Api.SignalR;
 using Microsoft.AspNetCore.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Products;
-using Boilerplate.Shared.Controllers.Product;
+using Boilerplate.Shared.Controllers.Products;
 
-namespace Boilerplate.Server.Api.Controllers;
+namespace Boilerplate.Server.Api.Controllers.Products;
 
 [ApiController, Route("api/[controller]/[action]")]
 public partial class ProductController : AppControllerBase, IProductController
@@ -93,7 +93,8 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        // Checkout AppHubConnectionHandler's comments for more info.
+        await appHubContext.Clients.GroupExcept("AuthenticatedClients", excludedConnectionIds: [User.GetSessionId().ToString()]).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif
 }

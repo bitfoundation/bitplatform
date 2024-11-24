@@ -211,9 +211,6 @@
     <data name="SelectLanguage" xml:space="preserve">
     <value>انتخاب زبان</value>
   </data>
-    <data name="Settings" xml:space="preserve">
-    <value>تنظیمات</value>
-  </data>
     <data name="ProfileTitle" xml:space="preserve">
     <value>پروفایل</value>
   </data>
@@ -277,6 +274,9 @@
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
+  </data>
+    <data name="OfflineEditProfileMessage" xml:space="preserve">
+    <value>فرم ویرایش آفلاین مبتنی‌بر EF Core / Sqlite قابل‌ استفاده در برنامه های وب / موبایل / دسکتاپ شما!</value>
   </data>
     <!--#endif-->
     <data name="FullName" xml:space="preserve">
@@ -807,9 +807,6 @@
     <data name="TwoFactorAuthTitle" xml:space="preserve">
     <value>2FA</value>
   </data>
-    <data name="TwoFactorAuthTitle" xml:space="preserve">
-    <value>2FA</value>
-  </data>
     <data name="TfaResetSharedKeyError" xml:space="preserve">
     <value>تنظیم مجدد کلید مشترک 2fa باید 2fa را غیرفعال کند تا زمانی که یک توکن 2fa بر اساس کلید مشترک جدید تأیید شود.</value>
   </data>
@@ -996,9 +993,6 @@
     <data name="Recently" xml:space="preserve">
     <value>اخیرا</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>شما نمیتوانید جلسات کاری دگیر را غیر فعال کنید. مجدد تلاش کنید در {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>بروز رسانی</value>
   </data>
@@ -1039,6 +1033,27 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>پنل ادمین</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} آیتم</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>برو به اولین برگه</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>برو به برگه قبل</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>برو به برگه بعد</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>برو به آخرین برگه</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>برگه</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>از</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>تعداد محصولات</value>
@@ -1148,6 +1163,7 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
+    <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>پاسخ گوگل ریکپچا نامعتبر است.</value>
@@ -1156,5 +1172,9 @@
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
     <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست، و دوباره تلاش کنید.</value>
+  </data>
     <!--#endif -->
 </root>

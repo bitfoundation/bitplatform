@@ -9,10 +9,12 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var logScopeData = (Dictionary<string, object?>)request.Options.GetValueOrDefault(RequestOptionNames.LogScopeData)!;
         var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(3).ToArray();
 
         Exception? lastExp = null;
 
+        int retryCount = 0;
         foreach (var delay in delays)
         {
             try
@@ -21,9 +23,10 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             }
             catch (Exception exp) when (exp is not KnownException || exp is ServerConnectionException) // If the exception is either unknown or a server connection issue, let's retry once more.
             {
-                if (HasNoRetryPolicy(request))
+                if (HasNoRetryPolicyAttribute(request))
                     throw;
-
+                retryCount++;
+                logScopeData["RetryCount"] = retryCount;
                 lastExp = exp;
                 await Task.Delay(delay, cancellationToken);
             }
@@ -35,14 +38,16 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
     /// <summary>
     /// <see cref="NoRetryPolicyAttribute"/>
     /// </summary>
-    private static bool HasNoRetryPolicy(HttpRequestMessage request)
+    private static bool HasNoRetryPolicyAttribute(HttpRequestMessage request)
     {
         if (request.Options.TryGetValue(new(RequestOptionNames.IControllerType), out Type? controllerType) is false)
             return false;
 
         var parameterTypes = ((Dictionary<string, Type>)request.Options.GetValueOrDefault(RequestOptionNames.ActionParametersInfo)!).Select(p => p.Value).ToArray();
         var method = controllerType!.GetMethod((string)request.Options.GetValueOrDefault(RequestOptionNames.ActionName)!, parameterTypes)!;
-        return method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
+
+        return controllerType.GetCustomAttribute<NoRetryPolicyAttribute>(inherit: true) is not null ||
+               method.GetCustomAttribute<NoRetryPolicyAttribute>() is not null;
     }
 
     private static IEnumerable<TimeSpan> GetDelaySequence(TimeSpan scaleFirstTry)

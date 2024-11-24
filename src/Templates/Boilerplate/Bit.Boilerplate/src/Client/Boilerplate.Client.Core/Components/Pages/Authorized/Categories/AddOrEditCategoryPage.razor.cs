@@ -3,7 +3,6 @@ using Boilerplate.Shared.Dtos.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Categories;
 
-[Authorize]
 public partial class AddOrEditCategoryPage
 {
     protected override string? Title => Localizer[nameof(AppStrings.Category)];

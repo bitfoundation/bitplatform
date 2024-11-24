@@ -9,6 +9,7 @@ using Boilerplate.Shared.Dtos.Products;
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
 //#endif
+using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Shared.Dtos;
 
@@ -19,8 +20,10 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(RestErrorInfo))]
+[JsonSerializable(typeof(GitHubStats))]
+[JsonSerializable(typeof(NugetStatsDto))]
 //#if (notification == true)
-[JsonSerializable(typeof(DeviceInstallationDto))]
+[JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]

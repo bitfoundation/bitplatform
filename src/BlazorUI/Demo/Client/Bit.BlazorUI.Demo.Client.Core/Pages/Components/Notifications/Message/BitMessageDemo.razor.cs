@@ -39,9 +39,9 @@ public partial class BitMessageDemo
         new()
         {
             Name = "CollapseIcon",
-            Type = "string",
-            DefaultValue = "DoubleChevronUp",
-            Description = "Custom Fabric icon name for the collapse icon in Truncate mode. If unset, default will be the Fabric DoubleChevronUp icon.",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom Fabric icon name for the collapse icon in Truncate mode.",
         },
         new()
         {
@@ -62,8 +62,8 @@ public partial class BitMessageDemo
         new()
         {
             Name = "DismissIcon",
-            Type = "string",
-            DefaultValue = "Cancel",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Custom Fabric icon name to replace the dismiss icon. If unset, default will be the Fabric Cancel icon.",
         },
         new()
@@ -76,9 +76,9 @@ public partial class BitMessageDemo
         new()
         {
             Name = "ExpandIcon",
-            Type = "string",
-            DefaultValue = "DoubleChevronDown",
-            Description = "Custom Fabric icon name for the expand icon in Truncate mode. If unset, default will be the Fabric DoubleChevronDown icon.",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom Fabric icon name for the expand icon in Truncate mode.",
         },
         new()
         {

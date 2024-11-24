@@ -1,4 +1,4 @@
-name: Admin Sample CD
+﻿name: Admin Sample CD
 
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
@@ -156,19 +156,19 @@ jobs:
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
   
-    - name: Generate CSS/JS files
-      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-
     - name: Set app center secret
       run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
       shell: pwsh
 
+    - name: Generate CSS/JS files
+      run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+
     - name: Publish
       run: |
           cd AdminPanel\src\Client\AdminPanel.Client.Windows\
-          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+          dotnet publish AdminPanel.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --self-contained
           dotnet tool restore
-          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x86 --framework net9.0-x86-desktop,webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
+          dotnet vpk pack -u AdminPanel.Client.Windows -v "${{ vars.APPLICATION_DISPLAY_VERSION }}" -p .\publish-result -e AdminPanel.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'AdminPanel'
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -239,8 +239,8 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
   
-    - name: Build aab
-      run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
+    - name: Publish aab
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Maui/AdminPanel.Client.Maui.csproj -c Release -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="AdminPanel.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:ApplicationDisplayVersion="${{ vars.APPLICATION_DISPLAY_VERSION }}" -p:ApplicationVersion="${{ vars.APPLICATION_VERSION }}" -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:ApplicationTitle="AdminPanel" -p:ApplicationId="com.bitplatform.AdminPanel.Template" -f net9.0-android
   
     - name: Upload artifact
       uses: actions/upload-artifact@v4

@@ -1,8 +1,8 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
 /// <summary>
-/// Currently only Windows clients have local http server to have better support for social login.
-/// In other platforms, we don't have local http server and we use a noop implementation.
+/// <inheritdoc cref="ILocalHttpServer"/>
+/// The <see cref="NoopLocalHttpServer"/> is specifically registered for Android, iOS, and Web, where a local HTTP server is unnecessary.
 /// </summary>
 public partial class NoopLocalHttpServer : ILocalHttpServer
 {

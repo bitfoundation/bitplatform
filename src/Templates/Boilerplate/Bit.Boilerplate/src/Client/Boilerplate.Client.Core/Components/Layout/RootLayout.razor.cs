@@ -62,8 +62,7 @@ public partial class RootLayout : IDisposable
 
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.IS_ONLINE_CHANGED, async payload =>
             {
-                isOnline = (bool)payload!;
-                telemetryContext.IsOnline = isOnline is true;
+                telemetryContext.IsOnline = isOnline = (bool?)payload;
                 await InvokeAsync(StateHasChanged);
             }));
 
@@ -141,10 +140,11 @@ public partial class RootLayout : IDisposable
         });
     }
 
+    /// <summary>
+    /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>
+    /// </summary>
     private void SetIsCrossLayout()
     {
-        // The cross-layout pages are the pages that are getting rendered in multiple layouts (authenticated and unauthenticated).
-
         if (currentRouteData is null)
         {
             isCrossLayoutPage = true;

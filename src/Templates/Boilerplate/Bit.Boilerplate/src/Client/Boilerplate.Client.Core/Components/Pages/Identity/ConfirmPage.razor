@@ -7,148 +7,150 @@
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitText Typography="BitTypography.H4" Gutter>@Localizer[nameof(AppStrings.ConfirmTitle)]</BitText>
+        <BitStack HorizontalAlign="BitAlignment.Center" Class="max-width">
+            <BitText Typography="BitTypography.H4" Gutter>@Localizer[nameof(AppStrings.ConfirmTitle)]</BitText>
 
-        <BitPivot Alignment="BitAlignment.Center" Class="confirm-pivot">
-            @if (showEmailConfirmation)
-            {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]"
-                              IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
-                    <BitStack FillContent>
-                        @if (isEmailConfirmed is false)
-                        {
-                            <BitText Typography="BitTypography.Subtitle1" Gutter>
-                                @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
-                                @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
-                            </BitText>
+            <BitPivot Alignment="BitAlignment.Center" Class="confirm-pivot">
+                @if (showEmailConfirmation)
+                {
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]"
+                                  IconName="@(isEmailConfirmed ? BitIconName.CheckMark : null)">
+                        <BitStack FillContent>
+                            @if (isEmailConfirmed is false)
+                            {
+                                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                                    @Localizer[nameof(AppStrings.ConfirmEmailSubtitle)]
+                                    @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
+                                </BitText>
 
-                            <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" novalidate>
-                                <AppDataAnnotationsValidator />
+                                <EditForm Model="emailModel" OnValidSubmit="WrapHandled(ConfirmEmail)" novalidate>
+                                    <AppDataAnnotationsValidator />
 
-                                <BitStack FillContent>
-                                    <BitTextField @bind-Value="emailModel.Email"
-                                                  AutoFocus TabIndex="1"
-                                                  Type="BitInputType.Email"
-                                                  Label="@Localizer[nameof(AppStrings.Email)]"
-                                                  IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
-                                                  Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
-                                    <ValidationMessage For="@(() => emailModel.Email)" />
+                                    <BitStack FillContent>
+                                        <BitTextField @bind-Value="emailModel.Email"
+                                                      AutoFocus TabIndex="1"
+                                                      Type="BitInputType.Email"
+                                                      Label="@Localizer[nameof(AppStrings.Email)]"
+                                                      IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
+                                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                                        <ValidationMessage For="@(() => emailModel.Email)" />
 
-                                    <BitTextField @bind-Value="emailModel.Token"
-                                                  TabIndex="2"
-                                                  Type="BitInputType.Number"
-                                                  AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                                                  Label="@Localizer[nameof(AppStrings.EmailToken)]"
-                                                  Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
-                                    <ValidationMessage For="@(() => emailModel.Token)" />
+                                        <BitTextField @bind-Value="emailModel.Token"
+                                                      TabIndex="2"
+                                                      Type="BitInputType.Number"
+                                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                                      Label="@Localizer[nameof(AppStrings.EmailToken)]"
+                                                      Placeholder="@Localizer[nameof(AppStrings.EmailTokenPlaceholder)]" />
+                                        <ValidationMessage For="@(() => emailModel.Token)" />
 
-                                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
-                                        @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
-                                    </BitButton>
-                                </BitStack>
-                            </EditForm>
-                            <br />
-                            <BitText Typography="BitTypography.Body1" Gutter>
-                                @Localizer[nameof(AppStrings.NotReceivedEmailMessage)]
-                            </BitText>
+                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                            @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
+                                        </BitButton>
+                                    </BitStack>
+                                </EditForm>
+                                <br />
+                                <BitText Typography="BitTypography.Body1" Gutter>
+                                    @Localizer[nameof(AppStrings.NotReceivedEmailMessage)]
+                                </BitText>
 
-                            <BitText Typography="BitTypography.Body1" Gutter>
-                                @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
-                            </BitText>
+                                <BitText Typography="BitTypography.Body1" Gutter>
+                                    @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
+                                </BitText>
 
-                            <BitButton IsLoading="isWaiting"
-                                       ButtonType="BitButtonType.Button"
-                                       Variant="BitVariant.Outline"
-                                       OnClick="WrapHandled(ResendEmailToken)">
-                                @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]
-                            </BitButton>
-                        }
-                        else
-                        {
-                            <BitText Typography="BitTypography.H6" Gutter>
-                                @Localizer[nameof(AppStrings.EmailConfirmationSuccessTitle), emailModel.Email!]
-                            </BitText>
+                                <BitButton IsLoading="isWaiting"
+                                           ButtonType="BitButtonType.Button"
+                                           Variant="BitVariant.Outline"
+                                           OnClick="WrapHandled(ResendEmailToken)">
+                                    @Localizer[nameof(AppStrings.ResendEmailTokenButtonText)]
+                                </BitButton>
+                            }
+                            else
+                            {
+                                <BitText Typography="BitTypography.H6" Gutter>
+                                    @Localizer[nameof(AppStrings.EmailConfirmationSuccessTitle), emailModel.Email!]
+                                </BitText>
 
-                            <BitText Typography="BitTypography.Subtitle1" Gutter>
-                                @Localizer[nameof(AppStrings.EmailConfirmationSuccessMessage)]
-                            </BitText>
+                                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                                    @Localizer[nameof(AppStrings.EmailConfirmationSuccessMessage)]
+                                </BitText>
 
-                            <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-                        }
-                    </BitStack>
-                </BitPivotItem>
-            }
+                                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                            }
+                        </BitStack>
+                    </BitPivotItem>
+                }
 
-            @if (showPhoneConfirmation)
-            {
-                <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]"
-                              IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
-                    <BitStack FillContent>
-                        @if (isPhoneConfirmed is false)
-                        {
-                            <BitText Typography="BitTypography.Subtitle1" Gutter>
-                                @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
-                                @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
-                            </BitText>
+                @if (showPhoneConfirmation)
+                {
+                    <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmPhoneHeaderText)]"
+                                  IconName="@(isPhoneConfirmed ? BitIconName.CheckMark : null)">
+                        <BitStack FillContent>
+                            @if (isPhoneConfirmed is false)
+                            {
+                                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                                    @Localizer[nameof(AppStrings.ConfirmPhoneSubtitle)]
+                                    @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
+                                </BitText>
 
-                            <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" novalidate>
-                                <AppDataAnnotationsValidator />
+                                <EditForm Model="phoneModel" OnValidSubmit="WrapHandled(ConfirmPhone)" novalidate>
+                                    <AppDataAnnotationsValidator />
 
-                                <BitStack FillContent>
-                                    <BitTextField @bind-Value="phoneModel.PhoneNumber"
-                                                  AutoFocus TabIndex="1"
-                                                  Type="BitInputType.Tel"
-                                                  Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                                  IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
-                                                  Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
-                                    <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
+                                    <BitStack FillContent>
+                                        <BitTextField @bind-Value="phoneModel.PhoneNumber"
+                                                      AutoFocus TabIndex="1"
+                                                      Type="BitInputType.Tel"
+                                                      Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                                      IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
+                                                      Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                                        <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
-                                    <BitTextField @bind-Value="phoneModel.Token"
-                                                  TabIndex="2"
-                                                  Type="BitInputType.Number"
-                                                  AutoComplete="@BitAutoCompleteValue.OneTimeCode"
-                                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]"
-                                                  Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
-                                    <ValidationMessage For="@(() => phoneModel.Token)" />
+                                        <BitTextField @bind-Value="phoneModel.Token"
+                                                      TabIndex="2"
+                                                      Type="BitInputType.Number"
+                                                      AutoComplete="@BitAutoCompleteValue.OneTimeCode"
+                                                      Label="@Localizer[nameof(AppStrings.PhoneToken)]"
+                                                      Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
+                                        <ValidationMessage For="@(() => phoneModel.Token)" />
 
-                                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
-                                        @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
-                                    </BitButton>
-                                </BitStack>
-                            </EditForm>
-                            <br />
-                            <BitText Typography="BitTypography.Body1" Gutter>
-                                @Localizer[nameof(AppStrings.NotReceivedPhoneMessage)]
-                            </BitText>
+                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                            @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
+                                        </BitButton>
+                                    </BitStack>
+                                </EditForm>
+                                <br />
+                                <BitText Typography="BitTypography.Body1" Gutter>
+                                    @Localizer[nameof(AppStrings.NotReceivedPhoneMessage)]
+                                </BitText>
 
-                            <BitButton IsLoading="isWaiting"
-                                       ButtonType="BitButtonType.Button"
-                                       Variant="BitVariant.Outline"
-                                       OnClick="WrapHandled(ResendPhoneToken)">
-                                @Localizer[nameof(AppStrings.ResendPhoneTokenButtonText)]
-                            </BitButton>
-                        }
-                        else
-                        {
-                            <BitText Typography="BitTypography.H5" Gutter>
-                                @Localizer[nameof(AppStrings.PhoneConfirmationSuccessTitle), phoneModel.PhoneNumber!]
-                            </BitText>
+                                <BitButton IsLoading="isWaiting"
+                                           ButtonType="BitButtonType.Button"
+                                           Variant="BitVariant.Outline"
+                                           OnClick="WrapHandled(ResendPhoneToken)">
+                                    @Localizer[nameof(AppStrings.ResendPhoneTokenButtonText)]
+                                </BitButton>
+                            }
+                            else
+                            {
+                                <BitText Typography="BitTypography.H5" Gutter>
+                                    @Localizer[nameof(AppStrings.PhoneConfirmationSuccessTitle), phoneModel.PhoneNumber!]
+                                </BitText>
 
-                            <BitText Typography="BitTypography.Subtitle1" Gutter>
-                                @Localizer[nameof(AppStrings.PhoneConfirmationSuccessMessage)]
-                            </BitText>
+                                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                                    @Localizer[nameof(AppStrings.PhoneConfirmationSuccessMessage)]
+                                </BitText>
 
-                            <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-                        }
-                    </BitStack>
-                </BitPivotItem>
-            }
-        </BitPivot>
-        <br />
-        <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
-            <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
-            <BitText>@Localizer[nameof(AppStrings.Or)]</BitText>
-            <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                            }
+                        </BitStack>
+                    </BitPivotItem>
+                }
+            </BitPivot>
+            <br />
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
+                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitText>@Localizer[nameof(AppStrings.Or)]</BitText>
+                <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+            </BitStack>
         </BitStack>
     </BitStack>
 </section>

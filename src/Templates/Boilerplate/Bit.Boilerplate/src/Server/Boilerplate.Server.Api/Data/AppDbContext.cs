@@ -20,6 +20,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
+    public DbSet<UserSession> UserSessions { get; set; } = default!;
+
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")
@@ -27,7 +29,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Product> Products { get; set; } = default!;
     //#endif
     //#if (notification == true)
-    public DbSet<DeviceInstallation> DeviceInstallations { get; set; } = default!;
+    public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -189,8 +191,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif    
 
         //#if (notification == true)
-        builder.Entity<DeviceInstallation>()
-            .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
+        builder.Entity<PushNotificationSubscription>()
+            .ToContainer("PushNotificationSubscriptions").HasPartitionKey(e => e.Platform);
         //#endif
     }
     //#endif
@@ -207,7 +209,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties()
-                .Where(p => p.Name is "ConcurrencyStamp"))
+                .Where(p => p.Name is "ConcurrencyStamp" && p.PropertyInfo?.PropertyType == typeof(byte[])))
             {
                 var builder = new PropertyBuilder(property);
                 builder.IsConcurrencyToken()
@@ -218,12 +220,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 {
                     //#endif
                     //#if (database == "PostgreSQL")
-                    if (property.ClrType == typeof(byte[]))
-                    {
-                        builder.HasConversion(new ValueConverter<byte[], uint>(
-                            v => BitConverter.ToUInt32(v, 0),
-                            v => BitConverter.GetBytes(v)));
-                    }
+                    builder.HasConversion(new ValueConverter<byte[], uint>(
+                        v => BitConverter.ToUInt32(v, 0),
+                        v => BitConverter.GetBytes(v)));
                     //#endif
                     //#if (IsInsideProjectTemplate == true)
                 }

@@ -4,18 +4,27 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
 
-<AuthorizeView>
-    <section>
-        <BitStack HorizontalAlign="BitAlignment.Center">
-            <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
-            
-            <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
-                @Localizer[nameof(AppStrings.ForbiddenException)]
-            </BitText>
+@if (isRefreshingToken)
+{
+    <LoadingComponent />
+}
+else
+{
+    <AuthorizeView>
+        <Authorized>
+            <section>
+                <BitStack HorizontalAlign="BitAlignment.Center">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
-            <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
+                    <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
+                        @Localizer[nameof(AppStrings.ForbiddenException)]
+                    </BitText>
 
-            <BitButton OnClick="WrapHandled(SignIn)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
-        </BitStack>
-    </section>
-</AuthorizeView>
+                    <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
+
+                    <BitButton OnClick="WrapHandled(SignOut)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
+                </BitStack>
+            </section>
+        </Authorized>
+    </AuthorizeView>
+}

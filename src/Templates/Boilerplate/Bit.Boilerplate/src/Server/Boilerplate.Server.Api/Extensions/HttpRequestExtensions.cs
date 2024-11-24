@@ -20,9 +20,9 @@ public static partial class HttpRequestExtensions
 
     internal static Uri GetWebClientUrl(this HttpRequest req)
     {
-        var configuration = req.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+        var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
 
-        var webClientUrl = configuration.Get<ServerApiSettings>()!.WebClientUrl;
+        var webClientUrl = settings.WebClientUrl;
 
         if (string.IsNullOrEmpty(webClientUrl) is false)
             return new Uri(webClientUrl);

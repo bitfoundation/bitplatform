@@ -10,8 +10,11 @@ using BlazorApplicationInsights.Interfaces;
 using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
+//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +33,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddScoped<LazyAssemblyLoader>();
         services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
         services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
+        services.AddScoped<AbsoluteServerAddressProvider>(sp => new() { GetAddress = () => sp.GetRequiredService<HttpClient>().BaseAddress! /* Read AbsoluteServerAddressProvider's comments for more info. */ });
 
         // The following services must be unique to each app session.
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
@@ -40,10 +44,20 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
+        services.AddSessioned<AuthenticationStateProvider>(sp =>
+        {
+            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthenticationManager>(sp);
+            authenticationStateProvider.OnInit();
+            return authenticationStateProvider;
+        });
         services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-        services.AddSingleton(sp => configuration.Get<ClientCoreSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ClientCoreSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         services.AddOptions<ClientCoreSettings>()
             .Bind(configuration)
@@ -58,16 +72,17 @@ public static partial class IClientCoreServiceCollectionExtensions
         // handlers, such as ASP.NET Core's `HttpMessageHandler` from the Test Host, which is useful for integration tests.
         services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>
         {
-            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<RequestHeadersDelegationHandler>(serviceProvider,
+            var constructedHttpMessageHandler = ActivatorUtilities.CreateInstance<LoggingDelegatingHandler>(serviceProvider,
+                        [ActivatorUtilities.CreateInstance<RequestHeadersDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<AuthDelegatingHandler>(serviceProvider,
                         [ActivatorUtilities.CreateInstance<RetryDelegatingHandler>(serviceProvider,
-                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])]);
+                        [ActivatorUtilities.CreateInstance<ExceptionDelegatingHandler>(serviceProvider, [transportHandler])])])])]);
             return constructedHttpMessageHandler;
         });
         services.AddScoped<AuthDelegatingHandler>();
         services.AddScoped<RetryDelegatingHandler>();
         services.AddScoped<ExceptionDelegatingHandler>();
-        services.AddScoped<RequestHeadersDelegationHandler>();
+        services.AddScoped<RequestHeadersDelegatingHandler>();
         services.AddScoped(serviceProvider =>
         {
             var transportHandler = serviceProvider.GetRequiredService<HttpClientHandler>();
@@ -76,7 +91,11 @@ public static partial class IClientCoreServiceCollectionExtensions
         });
 
         //#if (offlineDb == true)
-        services.AddBesqlDbContextFactory<OfflineDbContext>(options =>
+        if (AppPlatform.IsBrowser)
+        {
+            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+        }
+        services.AddBesqlDbContextFactory<OfflineDbContext>((optionsBuilder) =>
         {
             var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
             var dirPath = isRunningInsideDocker ? "/container_volume"
@@ -89,11 +108,17 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             var dbPath = Path.Combine(dirPath, "Offline.db");
 
-            options
-                // .UseModel(OfflineDbContextModel.Instance)
+            optionsBuilder
                 .UseSqlite($"Data Source={dbPath}");
 
-            options.EnableSensitiveDataLogging(AppEnvironment.IsDev())
+            //#if (framework == 'net9.0')
+            if (AppEnvironment.IsProd())
+            {
+                optionsBuilder.UseModel(OfflineDbContextModel.Instance);
+            }
+            //#endif
+
+            optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());
         });
         //#endif
@@ -102,11 +127,46 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
         services.AddBlazorApplicationInsights(x =>
         {
-            x.ConnectionString = configuration.Get<ClientCoreSettings>()!.ApplicationInsights?.ConnectionString;
+            ClientCoreSettings settings = new();
+            configuration.Bind(settings);
+            x.ConnectionString = settings.ApplicationInsights?.ConnectionString;
         });
         //#endif
 
         services.AddTypedHttpClients();
+
+        //#if (signalR == true)
+        services.AddSingleton<SignalRInfinitiesRetryPolicy>();
+        services.AddSessioned(sp =>
+        {
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+            var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
+            var authenticationManager = sp.GetRequiredService<AuthenticationManager>();
+            var hubConnection = new HubConnectionBuilder()
+                .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
+                .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+                {
+                    options.SkipNegotiation = true;
+                    options.Transports = HttpTransportType.WebSockets;
+                    // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
+                    // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.AccessTokenProvider = async () =>
+                    {
+                        var accessToken = await authTokenProvider.GetAccessToken();
+
+                        if (string.IsNullOrEmpty(accessToken) is false &&
+                            authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                        {
+                            return await authenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                        }
+
+                        return accessToken;
+                    };
+                })
+                .Build();
+            return hubConnection;
+        });
+        //#endif
 
         return services;
     }

@@ -1,34 +1,31 @@
 ﻿using System.Net;
-using System.Reflection;
-using System.Diagnostics;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace Boilerplate.Server.Api.Services;
 
-public partial class ServerExceptionHandler : IExceptionHandler
+public partial class ServerExceptionHandler : SharedExceptionHandler, IExceptionHandler
 {
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
-    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
     {
         // Using the Request-Id header, one can find the log for server-related exceptions
-        httpContext.Response.Headers.Append(HeaderNames.RequestId, Activity.Current?.Id ?? httpContext.TraceIdentifier);
+        httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
         var exception = UnWrapException(e);
         var knownException = exception as KnownException;
 
         // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
         var key = knownException?.Key ?? nameof(UnknownException);
-        var message = knownException?.Message ?? (webHostEnvironment.IsDevelopment() ? exception.Message : localizer[nameof(UnknownException)]);
+        var message = GetExceptionMessageToShow(exception);
 
         var statusCode = (int)(exception is RestException restExp ? restExp.StatusCode : HttpStatusCode.InternalServerError);
 
         if (exception is KnownException && message == key)
         {
-            message = localizer[message];
+            message = Localizer[message];
         }
 
         var restExceptionPayload = new RestErrorInfo
@@ -48,19 +45,5 @@ public partial class ServerExceptionHandler : IExceptionHandler
         await httpContext.Response.WriteAsJsonAsync(restExceptionPayload, jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken: cancellationToken);
 
         return true;
-    }
-
-    private Exception UnWrapException(Exception exception)
-    {
-        if (exception is AggregateException aggregateException)
-        {
-            return aggregateException.Flatten().InnerException ?? aggregateException;
-        }
-        else if (exception is TargetInvocationException)
-        {
-            return exception.InnerException ?? exception;
-        }
-
-        return exception;
     }
 }

@@ -4,6 +4,9 @@ using BlazorApplicationInsights.Interfaces;
 
 namespace Boilerplate.Client.Core.Services;
 
+/// <summary>
+/// A Blazor Hybrid / Blazor Server compatible version of <see cref="ApplicationInsights"/>
+/// </summary>
 public partial class AppInsightsJsSdkService : IApplicationInsights
 {
     private TaskCompletionSource? telemetryInitializerIsAddedTcs;

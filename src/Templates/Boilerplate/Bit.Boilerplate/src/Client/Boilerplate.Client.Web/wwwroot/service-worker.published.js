@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 8.12.0
+// bit version: 9.1.0-pre-01
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -62,9 +62,15 @@ self.serverHandledUrls = [
 ];
 
 self.defaultUrl = "/";
-self.caseInsensitiveUrl = true;
-self.noPrerenderQuery = 'no-prerender=true';
-self.isPassive = self.disablePassiveFirstBoot = true;
+self.isPassive = true;
 self.errorTolerance = 'lax';
+self.caseInsensitiveUrl = true;
+
+
+// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following two lines.
+// more info: https://bitplatform.dev/bswup/service-worker
+// self.noPrerenderQuery = 'no-prerender=true';
+// self.disablePassiveFirstBoot = true;
+
 
 self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

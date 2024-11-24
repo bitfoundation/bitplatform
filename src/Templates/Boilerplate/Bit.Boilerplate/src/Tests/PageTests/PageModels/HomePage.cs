@@ -18,7 +18,7 @@ public partial class MainHomePage(IPage page, Uri serverAddress)
     {
         await Assertions.Expect(Page).ToHaveTitleAsync(localizer[nameof(AppStrings.HomePageTitle)]);
 
-        await Assertions.Expect(Page.GetByText(localizer[nameof(AppStrings.HomePanelTitle)] + " " + localizer[nameof(AppStrings.HomePanelSubtitle)])).ToBeVisibleAsync();
+        await Assertions.Expect(Page.GetByRole(AriaRole.Heading, new() { Level = 4, Name = localizer[nameof(AppStrings.HomePanelTitle)] + " " + localizer[nameof(AppStrings.HomePanelSubtitle)] })).ToBeVisibleAsync();
 
         await Assertions.Expect(Page.GetByText(localizer[nameof(AppStrings.HomeMessage)])).ToBeVisibleAsync();
 
@@ -42,10 +42,10 @@ public partial class IdentityHomePage(IPage page, Uri serverAddress)
     public override string PagePath => Urls.HomePage;
     public override string PageTitle => AppStrings.HomePageTitle;
 
-    public async Task<MainHomePage> SignOut()
+    public new async Task<MainHomePage> SignOut()
     {
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
-        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.Locator(".bit-crd.panel").GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut }).ClickAsync();
+        await Page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut, Exact = true }).ClickAsync();
 
         return new MainHomePage(Page, WebAppServerAddress);
     }

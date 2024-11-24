@@ -23,6 +23,11 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.Signalr;
+using Boilerplate.Server.Api.SignalR;
+//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -34,7 +39,9 @@ public static partial class Program
         var env = builder.Environment;
         var services = builder.Services;
         var configuration = builder.Configuration;
-        var appSettings = configuration.Get<ServerApiSettings>()!;
+
+        ServerApiSettings appSettings = new();
+        configuration.Bind(appSettings);
 
         services.AddScoped<EmailService>();
         services.AddScoped<PhoneService>();
@@ -118,7 +125,10 @@ public static partial class Program
                     policy.SetPreflightMaxAge(TimeSpan.FromDays(1)); // https://stackoverflow.com/a/74184331
                 }
 
-                var webClientUrl = configuration.Get<ServerApiSettings>()!.WebClientUrl;
+                ServerApiSettings settings = new();
+                configuration.Bind(settings);
+
+                var webClientUrl = settings.WebClientUrl;
 
                 policy.SetIsOriginAllowed(origin =>
                             AllowedOriginsRegex().IsMatch(origin) ||
@@ -131,11 +141,11 @@ public static partial class Program
 
         services.AddAntiforgery();
 
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 
         services
             .AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default]))
+            .AddJsonOptions(options => options.JsonSerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]))
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
@@ -150,6 +160,7 @@ public static partial class Program
             });
 
         //#if (signalR == true)
+        services.AddSingleton<HubConnectionHandler<AppHub>, AppHubConnectionHandler>();
         services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
@@ -214,7 +225,12 @@ public static partial class Program
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddSingleton(sp => configuration.Get<ServerApiSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ServerApiSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         services.AddEndpointsApiExplorer();
 
@@ -260,6 +276,11 @@ public static partial class Program
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
+
+        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
     }
 
     private static void AddIdentity(WebApplicationBuilder builder)
@@ -267,7 +288,8 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
         var env = builder.Environment;
-        var appSettings = configuration.Get<ServerApiSettings>()!;
+        ServerApiSettings appSettings = new();
+        configuration.Bind(appSettings);
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
@@ -328,7 +350,7 @@ public static partial class Program
             {
                 OnMessageReceived = async context =>
                 {
-                    // The server accepts the access_token from either the authorization header, the cookie, or the request URL query string
+                    // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
                     context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
                 }
             };
