@@ -385,7 +385,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-        var messageText = Localizer["Token {0}", token];
+        var messageText = Localizer["Token {0}", token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
