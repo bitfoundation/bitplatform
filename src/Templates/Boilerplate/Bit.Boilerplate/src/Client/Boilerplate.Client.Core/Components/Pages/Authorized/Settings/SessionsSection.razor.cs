@@ -90,7 +90,7 @@ public partial class SessionsSection
 
     private async Task OnBeforeInternalNavigation(LocationChangingContext context)
     {
-        if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.LICENSED_ACCESS) is { Succeeded: false })
+        if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
         {
             // Refreshing the token to check if the user session can now be licensed.
             await AuthManager.RefreshToken("CheckLicense");

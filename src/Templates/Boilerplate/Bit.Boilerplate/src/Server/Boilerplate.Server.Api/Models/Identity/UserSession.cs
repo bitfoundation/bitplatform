@@ -20,7 +20,7 @@ public partial class UserSession
     public string? Address { get; set; }
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.LICENSED_ACCESS"/>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
     public bool Licensed { get; set; }
 

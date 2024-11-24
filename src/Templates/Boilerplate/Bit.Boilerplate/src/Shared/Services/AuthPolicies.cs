@@ -16,7 +16,7 @@ public class AuthPolicies
     /// 
     /// Important: Do not apply this policy to the settings page, as users need access to manage and revoke their sessions there.
     /// </summary>
-    public const string LICENSED_ACCESS = nameof(LICENSED_ACCESS);
+    public const string PRIVILEGED_ACCESS = nameof(PRIVILEGED_ACCESS);
 
     /// <summary>
     /// Enables the user to execute potentially harmful operations, like account removal. 
@@ -31,9 +31,9 @@ public class AppClaimTypes
     public const string SESSION_ID = "session-id";
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.LICENSED_ACCESS"/>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    public const string LICENSED_SESSION = "licensed-session";
+    public const string PRIVILEGED_SESSION = "licensed-session";
 
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS"/>

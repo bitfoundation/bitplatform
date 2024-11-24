@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.TodoPage)]
 @attribute [Route("{culture?}" + Urls.TodoPage)]
-@attribute [Authorize(Policy = AuthPolicies.LICENSED_ACCESS)]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.TodoPageTitle)]</PageTitle>

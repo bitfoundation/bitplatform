@@ -53,7 +53,7 @@ public static partial class ISharedServiceCollectionExtensions
         services.AddAuthorizationCore(options =>
         {
             options.AddPolicy(AuthPolicies.TFA_ENABLED, x => x.RequireClaim("amr", "mfa"));
-            options.AddPolicy(AuthPolicies.LICENSED_ACCESS, x => x.RequireClaim(AppClaimTypes.LICENSED_SESSION, "true"));
+            options.AddPolicy(AuthPolicies.PRIVILEGED_ACCESS, x => x.RequireClaim(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             options.AddPolicy(AuthPolicies.ELEVATED_ACCESS, x => x.RequireClaim(AppClaimTypes.ELEVATED_SESSION, "true"));
         });
     }

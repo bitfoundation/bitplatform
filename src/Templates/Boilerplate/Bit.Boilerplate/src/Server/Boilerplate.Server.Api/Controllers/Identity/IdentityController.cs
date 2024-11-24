@@ -101,7 +101,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true")); // This only applies to the current, short-lived access token.
         if (userSession.Licensed)
         {
-            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
         }
 
         bool isOtpSignIn = string.IsNullOrEmpty(request.Otp) is false;
@@ -189,7 +189,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     /// <summary>
-    /// <inheritdoc cref="AuthPolicies.LICENSED_ACCESS"/>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
     private async Task<bool> IsUserSessionLicensed(UserSession userSession, CancellationToken cancellationToken)
     {
@@ -229,7 +229,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession.Licensed = await IsUserSessionLicensed(userSession, cancellationToken);
             if (userSession.Licensed is true)
             {
-                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.LICENSED_SESSION, "true"));
+                userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             }
 
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)

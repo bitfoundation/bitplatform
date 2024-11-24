@@ -51,7 +51,7 @@ public partial class NotAuthorizedPage
             await SignOut();
         }
 
-        lacksValidLicense = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.LICENSED_ACCESS) is { Succeeded: false };
+        lacksValidLicense = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false };
         StateHasChanged();
 
         await base.OnAfterFirstRenderAsync();
