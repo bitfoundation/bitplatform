@@ -101,19 +101,17 @@ public partial class EmailService
 
     public async Task SendPrivilegedAccessToken(User user, string token, CancellationToken cancellationToken)
     {
-        var subject = emailLocalizer[EmailStrings.ConfirmationEmailSubject, token];
+        var subject = emailLocalizer[EmailStrings.PrivilegedAccessTokenEmailSubject, token];
 
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendEmail(logger, subject, user.Email!, "PrivilegedAccessToken");
+            LogSendEmail(logger, subject, user.Email!, "PrivilegedAccess");
         }
 
-        return;
-
-        var body = await BuildBody<EmailTokenTemplate>(new Dictionary<string, object?>()
+        var body = await BuildBody<PrivilegedAccessTokenTemplate>(new Dictionary<string, object?>()
         {
-            [nameof(EmailTokenTemplate.Model)] = new EmailTokenTemplateModel { Email = user.Email, Token = token },
-            [nameof(EmailTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
+            [nameof(PrivilegedAccessTokenTemplate.Model)] = new PrivilegedAccessTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+            [nameof(PrivilegedAccessTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
         });
 
         await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);

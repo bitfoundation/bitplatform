@@ -184,6 +184,15 @@
     <data name="TfaTokenMessage" xml:space="preserve">
     <value>توکن 2FA جدید شما برای ورود:</value>
   </data>
+    <data name="PrivilegedAccessTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - کد دسترسی ویژه</value>
+  </data>
+    <data name="PrivilegedAccessTokenHello" xml:space="preserve">
+    <value>سلام {0} عزیز</value>
+  </data>
+    <data name="PrivilegedAccessTokenMessage" xml:space="preserve">
+    <value>کد دسترسی ویژه شما:</value>
+  </data>
     <data name="CopyTokenNote" xml:space="preserve">
     <value>این کد را کپی و در صفحه ورود استفاده کنید.</value>
   </data>
