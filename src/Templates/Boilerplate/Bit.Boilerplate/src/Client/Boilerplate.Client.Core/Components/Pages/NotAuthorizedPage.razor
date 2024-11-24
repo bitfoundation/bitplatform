@@ -22,7 +22,7 @@ else
 
                     <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@user.GetDisplayName()</b></BitText>
 
-                    @if (lacksValidLicense)
+                    @if (lacksValidPrivilege)
                     {
                         <BitButton Style="width:300px"
                                    Color="BitColor.SevereWarning"

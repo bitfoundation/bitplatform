@@ -99,7 +99,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true")); // This only applies to the current, short-lived access token.
-        if (userSession.Licensed)
+        if (userSession.Privileged)
         {
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
         }
@@ -183,7 +183,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
         };
 
-        userSession.Licensed = await IsUserSessionLicensed(userSession, cancellationToken);
+        userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
 
         return userSession;
     }
@@ -191,10 +191,10 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    private async Task<bool> IsUserSessionLicensed(UserSession userSession, CancellationToken cancellationToken)
+    private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
     {
-        return userSession.Licensed is true ||
-            await DbContext.UserSessions.CountAsync(us => us.Licensed == true, cancellationToken) < 3;
+        return userSession.Privileged is true ||
+            await DbContext.UserSessions.CountAsync(us => us.Privileged == true, cancellationToken) < 3;
     }
 
     [HttpPost]
@@ -226,8 +226,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
 
-            userSession.Licensed = await IsUserSessionLicensed(userSession, cancellationToken);
-            if (userSession.Licensed is true)
+            userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
+            if (userSession.Privileged is true)
             {
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             }

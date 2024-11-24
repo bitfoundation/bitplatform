@@ -3,7 +3,7 @@
 public partial class NotAuthorizedPage
 {
     private bool isRefreshingToken;
-    private bool lacksValidLicense;
+    private bool lacksValidPrivilege;
     private ClaimsPrincipal user = default!;
 
     [SupplyParameterFromQuery(Name = "return-url"), Parameter] public string? ReturnUrl { get; set; }
@@ -51,7 +51,7 @@ public partial class NotAuthorizedPage
             await SignOut();
         }
 
-        lacksValidLicense = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false };
+        lacksValidPrivilege = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false };
         StateHasChanged();
 
         await base.OnAfterFirstRenderAsync();

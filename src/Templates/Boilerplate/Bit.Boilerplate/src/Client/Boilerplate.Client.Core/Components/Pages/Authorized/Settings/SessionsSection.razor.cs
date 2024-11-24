@@ -92,8 +92,8 @@ public partial class SessionsSection
     {
         if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
         {
-            // Refreshing the token to check if the user session can now be licensed.
-            await AuthManager.RefreshToken("CheckLicense");
+            // Refreshing the token to check if the user session can now be privileged.
+            await AuthManager.RefreshToken("CheckPrivilege");
         }
     }
 }

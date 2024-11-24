@@ -22,7 +22,7 @@ public partial class UserSession
     /// <summary>
     /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
     /// </summary>
-    public bool Licensed { get; set; }
+    public bool Privileged { get; set; }
 
     public DateTimeOffset StartedOn { get; set; }
 
