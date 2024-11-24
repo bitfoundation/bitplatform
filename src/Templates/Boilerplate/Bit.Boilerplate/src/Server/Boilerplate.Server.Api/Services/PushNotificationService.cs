@@ -100,7 +100,7 @@ public partial class PushNotificationService
             {
                 MaxDegreeOfParallelism = 10,
                 CancellationToken = default
-            }, async (subscription, cancellationToken) =>
+            }, async (subscription, _) =>
             {
                 try
                 {
@@ -109,7 +109,7 @@ public partial class PushNotificationService
                                         : subscription.Platform is "apns" ? AdsPushTarget.Ios
                                         : throw new NotImplementedException();
 
-                    await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, cancellationToken);
+                    await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
                 }
                 catch (Exception exp)
                 {
