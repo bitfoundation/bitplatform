@@ -57,7 +57,7 @@ public partial class IdentityController
 
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Email,{user.OtpRequestedOn?.ToUniversalTime()}"));
 
-        await SignIn(new() { Email = request.Email, Otp = token }, cancellationToken);
+        await SignIn(new() { Email = request.Email, Otp = token, DeviceInfo = request.DeviceInfo }, cancellationToken);
     }
 
 

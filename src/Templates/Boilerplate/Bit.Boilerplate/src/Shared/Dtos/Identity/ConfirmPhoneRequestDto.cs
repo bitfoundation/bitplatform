@@ -10,6 +10,9 @@ public partial class ConfirmPhoneRequestDto
 
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
     public string? Token { get; set; }
+
+    /// <example>Samsung Android 14</example>
+    public string? DeviceInfo { get; set; }
 }
 
 public partial class ChangePhoneNumberRequestDto : ConfirmPhoneRequestDto

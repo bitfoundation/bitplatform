@@ -13,6 +13,7 @@ public partial class ConfirmPage
     private readonly ConfirmEmailRequestDto emailModel = new();
     private readonly ConfirmPhoneRequestDto phoneModel = new();
 
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
 
 
@@ -75,7 +76,12 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            var signInResponse =  await identityController.ConfirmEmail(new() { Email = emailModel.Email, Token = emailModel.Token }, CurrentCancellationToken);
+            var signInResponse = await identityController.ConfirmEmail(new()
+            {
+                Email = emailModel.Email,
+                Token = emailModel.Token,
+                DeviceInfo = telemetryContext.OS
+            }, CurrentCancellationToken);
 
             await AuthManager.StoreTokens(signInResponse, true);
 
@@ -101,7 +107,12 @@ public partial class ConfirmPage
 
         await WrapRequest(async () =>
         {
-            var signInResponse =  await identityController.ConfirmPhone(new() { PhoneNumber = phoneModel.PhoneNumber, Token = phoneModel.Token }, CurrentCancellationToken);
+            var signInResponse = await identityController.ConfirmPhone(new()
+            {
+                Token = phoneModel.Token,
+                DeviceInfo = telemetryContext.OS,
+                PhoneNumber = phoneModel.PhoneNumber
+            }, CurrentCancellationToken);
 
             await AuthManager.StoreTokens(signInResponse, true);
 
