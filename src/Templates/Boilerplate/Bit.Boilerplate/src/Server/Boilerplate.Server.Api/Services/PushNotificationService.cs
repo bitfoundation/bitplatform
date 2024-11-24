@@ -84,7 +84,7 @@ public partial class PushNotificationService
 
             var payload = new AdsPushBasicSendPayload()
             {
-                Title = AdsPushText.CreateUsingString(title ?? "Boilerplate"),
+                Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
                 Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
                 Parameters = new Dictionary<string, object>()
                 {

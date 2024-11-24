@@ -150,11 +150,12 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
         {
+            logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
             {
                 // Show local notification
                 // Note that this code has nothing to do with push notification.
-                await notification.Show("Boilerplate", new() { Body = message });
+                await notification.Show("Boilerplate SignalR", new() { Body = message });
             }
             else
             {
@@ -172,7 +173,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
         {
-            logger.LogInformation("Message {Message} received from server.", message);
+            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
             PubSubService.Publish(message);
         }));
 
