@@ -2,49 +2,16 @@
 @inherits AppComponentBase;
 
 <section>
-    <a href="@Urls.HomePage">
-        <BitIcon IconName="@BitIconName.Home" Color="@(IsActive(Urls.HomePage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.HomePage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Home)]
-        </BitText>
-    </a>
-
-    @*#if (sample == "Todo")*@
-    <a href="@Urls.TodoPage">
-        <BitIcon IconName="@BitIconName.ToDoLogoOutline" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TodoPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Todo)]
-        </BitText>
-    </a>
-    @*#endif*@
-
-    @*#if (sample == "Admin")*@
-    <a href="@Urls.DashboardPage">
-        <BitIcon IconName="@BitIconName.BarChartVerticalFill" Color="@(IsActive(Urls.DashboardPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.DashboardPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Dashboard)]
-        </BitText>
-    </a>
-
-    <a href="@Urls.ProductsPage">
-        <BitIcon IconName="@BitIconName.Product" Color="@(IsActive(Urls.ProductsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.ProductsPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Products)]
-        </BitText>
-    </a>
-
-    <a href="@Urls.CategoriesPage">
-        <BitIcon IconName="@BitIconName.BuildQueue" Color="@(IsActive(Urls.CategoriesPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.CategoriesPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Categories)]
-        </BitText>
-    </a>
-    @*#endif*@
-
-    <a href="@Urls.TermsPage">
-        <BitIcon IconName="@BitIconName.EntityExtraction" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)" />
-        <BitText Typography="BitTypography.Caption2" Color="@(IsActive(Urls.TermsPage) ? BitColor.Primary : BitColor.SecondaryForeground)">
-            @Localizer[nameof(AppStrings.Terms)]
-        </BitText>
-    </a>
+    <BitNavBar TItem="BitNavBarOption" Style="width:100%">
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="@Urls.HomePage" />
+        @*#if (sample == "Todo")*@
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Todo)]" IconName="@BitIconName.ToDoLogoOutline" Url="@Urls.TodoPage" />
+        @*#endif*@
+        @*#if (sample == "Admin")*@
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@Urls.DashboardPage" />
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@Urls.ProductsPage" />
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@Urls.CategoriesPage" />
+        @*#endif*@
+        <BitNavBarOption Text="@Localizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="@Urls.TermsPage" />
+    </BitNavBar>
 </section>
