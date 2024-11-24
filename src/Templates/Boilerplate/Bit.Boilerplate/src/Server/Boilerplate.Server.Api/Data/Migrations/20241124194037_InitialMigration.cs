@@ -225,6 +225,7 @@ public partial class InitialMigration : Migration
                 IP = table.Column<string>(type: "TEXT", nullable: true),
                 DeviceInfo = table.Column<string>(type: "TEXT", nullable: true),
                 Address = table.Column<string>(type: "TEXT", nullable: true),
+                Privileged = table.Column<bool>(type: "INTEGER", nullable: false),
                 StartedOn = table.Column<long>(type: "INTEGER", nullable: false),
                 RenewedOn = table.Column<long>(type: "INTEGER", nullable: true),
                 UserId = table.Column<Guid>(type: "TEXT", nullable: false)
@@ -299,8 +300,8 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.InsertData(
             table: "Users",
-            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ElevatedAccessTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
-            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
+            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
+            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, null, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
 
         migrationBuilder.InsertData(
             table: "Products",

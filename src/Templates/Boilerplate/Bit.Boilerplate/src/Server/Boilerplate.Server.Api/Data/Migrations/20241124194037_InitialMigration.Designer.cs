@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241123181428_InitialMigration")]
+[Migration("20241124194037_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -130,6 +130,9 @@ partial class InitialMigration
                     .HasColumnType("TEXT")
                     .HasAnnotation("Cosmos:PropertyName", "_etag");
 
+                b.Property<long?>("ElevatedAccessTokenRequestedOn")
+                    .HasColumnType("INTEGER");
+
                 b.Property<string>("Email")
                     .HasMaxLength(256)
                     .HasColumnType("TEXT");
@@ -173,9 +176,6 @@ partial class InitialMigration
                     .HasColumnType("INTEGER");
 
                 b.Property<long?>("PhoneNumberTokenRequestedOn")
-                    .HasColumnType("INTEGER");
-
-                b.Property<long?>("ElevatedAccessTokenRequestedOn")
                     .HasColumnType("INTEGER");
 
                 b.Property<string>("ProfileImageName")
@@ -258,6 +258,9 @@ partial class InitialMigration
 
                 b.Property<string>("IP")
                     .HasColumnType("TEXT");
+
+                b.Property<bool>("Privileged")
+                    .HasColumnType("INTEGER");
 
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");

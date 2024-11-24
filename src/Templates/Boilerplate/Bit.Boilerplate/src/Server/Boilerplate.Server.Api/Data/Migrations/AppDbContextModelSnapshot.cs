@@ -128,6 +128,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasAnnotation("Cosmos:PropertyName", "_etag");
 
+                b.Property<long?>("ElevatedAccessTokenRequestedOn")
+                    .HasColumnType("INTEGER");
+
                 b.Property<string>("Email")
                     .HasMaxLength(256)
                     .HasColumnType("TEXT");
@@ -171,9 +174,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER");
 
                 b.Property<long?>("PhoneNumberTokenRequestedOn")
-                    .HasColumnType("INTEGER");
-
-                b.Property<long?>("ElevatedAccessTokenRequestedOn")
                     .HasColumnType("INTEGER");
 
                 b.Property<string>("ProfileImageName")
@@ -256,6 +256,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("IP")
                     .HasColumnType("TEXT");
+
+                b.Property<bool>("Privileged")
+                    .HasColumnType("INTEGER");
 
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");

@@ -928,7 +928,7 @@
     <value>Het 2FA-token is gegenereerd en naar u verzonden.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Voer alstublieft de geprivilegieerde toegangstoken in om door te gaan.</value>
+    <value>Voer het verhoogde toegangstoken in om door te gaan.</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>Token {0}</value>

@@ -194,7 +194,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     private async Task<bool> IsUserSessionPrivileged(UserSession userSession, CancellationToken cancellationToken)
     {
         return userSession.Privileged is true ||
-            await DbContext.UserSessions.CountAsync(us => us.Privileged == true, cancellationToken) < 3;
+            await DbContext.UserSessions.CountAsync(us => us.Privileged == true, cancellationToken) < Settings.Identity.MaxConcurrentPrivilegedSessions;
     }
 
     [HttpPost]
