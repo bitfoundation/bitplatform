@@ -20,22 +20,7 @@ section {
         bottom: var(--app-inset-bottom);
     }
 
-    .content {
-        @include lt-md {
-            min-width: 95%;
-            max-width: 95%;
-        }
-    }
-
     .stack {
         max-height: calc(var(--app-height) - 3rem);
-    }
-
-    .body {
-        width: 100%;
-        flex-grow: 1;
-        display: flex;
-        overflow: auto;
-        white-space: pre;
     }
 }

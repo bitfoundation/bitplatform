@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Client.Core.Services;
 
-public partial class ModalData(Type type, IDictionary<string, object>? parameters, string? title, TaskCompletionSource<bool> taskCompletionSource)
+public partial class ModalData(Type type, IDictionary<string, object>? parameters, string? title, TaskCompletionSource taskCompletionSource)
 {
     public Type ComponentType { get; set; } = type;
 
@@ -8,5 +8,5 @@ public partial class ModalData(Type type, IDictionary<string, object>? parameter
 
     public string? Title { get; set; } = title;
 
-    public TaskCompletionSource<bool> TaskCompletionSource { get; set; } = taskCompletionSource;
+    public TaskCompletionSource TaskCompletionSource { get; set; } = taskCompletionSource;
 }

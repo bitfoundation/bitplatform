@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Client.Core.Services;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Boilerplate.Client.Core.Services;
 
 public partial class ModalService
 {
@@ -9,11 +11,16 @@ public partial class ModalService
     [AutoInject] private readonly PubSubService pubSubService = default!;
 
 
-    public Task<bool> Show(Type type, IDictionary<string, object>? parameters = null, string title = "")
+    public void Close()
     {
-        TaskCompletionSource<bool> tcs = new();
+        pubSubService.Publish(ClientPubSubMessages.CLOSE_MODAL);
+    }
 
-        queue.Enqueue(new(type, parameters, title, tcs));
+    public Task Show<T>(IDictionary<string, object>? parameters = null, string title = "")
+    {
+        TaskCompletionSource tcs = new();
+
+        queue.Enqueue(new(typeof(T), parameters, title, tcs));
 
         if (isRunning is false)
         {

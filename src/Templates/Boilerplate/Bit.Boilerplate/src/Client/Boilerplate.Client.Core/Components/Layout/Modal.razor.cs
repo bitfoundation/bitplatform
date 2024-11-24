@@ -5,43 +5,45 @@ public partial class Modal
     private bool isOpen;
     private string? title;
     private Type? componentType;
-    private Action? unsubscribe;
     private bool disposed = false;
+    private Action? unsubscribeShow;
+    private Action? unsubscribeClose;
     private IDictionary<string, object>? componentParameters;
 
-    private TaskCompletionSource<bool>? tcs;
+    private TaskCompletionSource? tcs;
 
     protected override Task OnInitAsync()
     {
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_MODAL, async args =>
+        unsubscribeShow = PubSubService.Subscribe(ClientPubSubMessages.SHOW_MODAL, async args =>
         {
             var data = (ModalData)args!;
 
             tcs = data.TaskCompletionSource;
 
-            await Show(data.ComponentType, data.Parameters, data.Title);
+            await InvokeAsync(() =>
+            {
+                isOpen = true;
+                title = data.Title;
+                componentType = data.ComponentType;
+                componentParameters = data.Parameters;
+
+                StateHasChanged();
+            });
+        });
+
+        unsubscribeClose = PubSubService.Subscribe(ClientPubSubMessages.CLOSE_MODAL, async _ =>
+        {
+            await CloseModal();
+            await InvokeAsync(StateHasChanged);
         });
 
         return base.OnInitAsync();
     }
 
-    private async Task Show(Type type, IDictionary<string, object>? parameters, string? title)
-    {
-        await InvokeAsync(() =>
-        {
-            isOpen = true;
-            this.title = title;
-            componentType = type;
-            componentParameters = parameters;
-
-            StateHasChanged();
-        });
-    }
-
-    private async Task OnCloseClick()
+    private async Task CloseModal()
     {
         isOpen = false;
-        tcs?.SetResult(false);
+        tcs?.SetResult();
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
@@ -50,10 +52,11 @@ public partial class Modal
 
         if (disposed || disposing is false) return;
 
-        tcs?.TrySetResult(false);
+        tcs?.TrySetResult();
         tcs = null;
 
-        unsubscribe?.Invoke();
+        unsubscribeShow?.Invoke();
+        unsubscribeClose?.Invoke();
 
         disposed = true;
     }

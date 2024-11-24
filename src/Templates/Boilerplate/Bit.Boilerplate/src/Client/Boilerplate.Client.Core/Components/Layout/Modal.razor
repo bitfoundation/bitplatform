@@ -1,7 +1,7 @@
 ﻿@inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen" Blocking Class="root" Classes="@(new() { Content = "content" })">
+    <BitModal @bind-IsOpen="isOpen" Blocking Class="root">
         <section>
             <BitStack Class="stack">
                 <BitStack Horizontal AutoHeight>
@@ -11,7 +11,7 @@
 
                     <BitSpacer />
 
-                    <BitButton OnClick="OnCloseClick"
+                    <BitButton OnClick="CloseModal"
                                Color="BitColor.Tertiary"
                                Variant="BitVariant.Text"
                                IconName="@BitIconName.ChromeClose" />
