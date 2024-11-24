@@ -1034,6 +1034,27 @@
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
   </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Go to the first page</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Go to the previous page</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Go to the next page</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Go to the last page</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>of</value>
+  </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Products count</value>
   </data>
