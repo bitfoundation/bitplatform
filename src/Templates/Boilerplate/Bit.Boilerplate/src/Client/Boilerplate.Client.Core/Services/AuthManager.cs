@@ -118,7 +118,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp, nonInterrupting: false, new()
+                exceptionHandler.Handle(exp, parameters: new()
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
