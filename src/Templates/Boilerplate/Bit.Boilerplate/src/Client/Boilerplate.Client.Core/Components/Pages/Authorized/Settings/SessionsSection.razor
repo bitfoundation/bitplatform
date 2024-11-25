@@ -48,8 +48,8 @@
                                         Size="BitPersonaSize.Size72"
                                         Presence="@GetPresence(session.RenewedOn)"
                                         Styles="@(new() { Image = "width:50%;height:50%" })"
-                                        ImageInitials="@(session.Privileged && session.IsValid ? "✓" : "✘")"
-                                        CoinColor="@(session.Privileged && session.IsValid ? null : BitColor.TertiaryBackground)"
+                                        ImageInitials="@(session.Privileged ? "✓" : "✘")"
+                                        CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
                                         ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                             <BitSpacer />
                             <BitButton Color="BitColor.Error"
