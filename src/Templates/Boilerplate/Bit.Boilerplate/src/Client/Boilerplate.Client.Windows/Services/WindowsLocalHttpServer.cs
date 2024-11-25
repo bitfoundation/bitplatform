@@ -44,7 +44,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },

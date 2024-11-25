@@ -5,7 +5,20 @@
         <BitText Color="BitColor.Tertiary">
             @Body
         </BitText>
-        <BitTextField @bind-Value="value" AutoFocus />
+        @if (OtpInput)
+        {
+            <BitOtpInput @bind-Value="value"
+                         AutoFocus
+                         Length="6"
+                         Size="BitSize.Large"
+                         Type="BitInputType.Number"
+                         Style="justify-content:center"
+                         OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
+        }
+        else
+        {
+            <BitTextField @bind-Value="value" AutoFocus />
+        }
     </BitStack>
 </div>
 
