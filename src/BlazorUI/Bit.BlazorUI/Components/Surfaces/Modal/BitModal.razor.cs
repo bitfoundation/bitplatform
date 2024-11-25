@@ -13,7 +13,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
 
 
-    [CascadingParameter] private BitModalParameters ModalParameters { get; set; } = new();
+    [CascadingParameter] private BitModalParameters ModalParameters { get; set { field.SetModal(this); } } = new();
 
 
 
@@ -178,7 +178,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         if (IsOpen)
         {
-            if (Draggable)
+            if (ModalParameters.Draggable)
             {
                 _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
@@ -194,9 +194,9 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         _offsetTop = 0;
 
-        if (ModalParameters.AutoToggleScroll) return;
+        if (ModalParameters.AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector ?? "body", IsOpen);
+        _offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", IsOpen);
 
         if (ModalParameters.AbsolutePosition is false) return;
 

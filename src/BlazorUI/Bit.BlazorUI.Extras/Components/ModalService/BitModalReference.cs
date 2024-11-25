@@ -6,7 +6,9 @@ public class BitModalReference
 
     public object? Content { get; private set; }
 
-    public RenderFragment? Modal { get; set; }
+    public RenderFragment? Modal { get; private set; }
+
+    public BitModalParameters? Parameters { get; private set; }
 
 
 
@@ -27,6 +29,11 @@ public class BitModalReference
     public void SetModal(RenderFragment modal)
     {
         Modal = modal;
+    }
+
+    public void SetParameters(BitModalParameters? parameters)
+    {
+        Parameters = parameters;
     }
 
     public void Close()

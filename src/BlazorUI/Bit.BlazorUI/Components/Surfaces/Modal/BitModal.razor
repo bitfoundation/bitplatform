@@ -20,8 +20,8 @@
                  class="bit-mdl-ovl @Classes?.Overlay @ModalParameters.Classes?.Overlay" />
         }
         <div id="@_containerId"
-             style="@Styles?.Content @ModalParameters.Styles?.Content"
-             class="bit-mdl-ctn @Classes?.Content @ModalParameters.Classes?.Content">
+             style="@($"{Styles?.Content} {ModalParameters.Styles?.Content}".Trim())"
+             class="@($"bit-mdl-ctn {Classes?.Content} {ModalParameters.Classes?.Content}".Trim())">
             @ChildContent
         </div>
     </div>

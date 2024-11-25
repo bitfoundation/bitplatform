@@ -2,11 +2,15 @@
 
 public partial class BitModalContainer
 {
-    private readonly List<BitModalReference> _modals = [];
+    [Parameter] public BitModalParameters ModalParameters { get; set; } = new();
 
 
 
     [Inject] private BitModalService _modalService { get; set; } = default!;
+
+
+
+    private readonly List<BitModalReference> _modals = [];
 
 
 

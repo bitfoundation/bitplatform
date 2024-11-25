@@ -61,7 +61,7 @@ public class BitModalTests : BunitTestContext
         });
 
         var element = com.Find(".bit-mdl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
+        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString().ToLower());
 
         var elementOverlay = com.FindAll(".bit-mdl-ovl");
         Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
@@ -151,7 +151,7 @@ public class BitModalTests : BunitTestContext
 
         var elementContent = com.Find(".bit-mdl-ctn");
 
-        elementContent.MarkupMatches("<div id:ignore class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div id:ignore style:ignore class=\"bit-mdl-ctn\"><div>Test Content</div></div>");
     }
 
     [TestMethod]

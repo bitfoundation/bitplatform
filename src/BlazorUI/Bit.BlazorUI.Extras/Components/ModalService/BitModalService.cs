@@ -10,10 +10,13 @@ public class BitModalService
 
 
 
-    public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(IReadOnlyDictionary<string, object>? parameters = null)
+    public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        IReadOnlyDictionary<string, object>? parameters = null,
+        BitModalParameters? modalParameters = null)
     {
         var componentType = typeof(T);
         var modalReference = new BitModalReference(this);
+        modalReference.SetParameters(modalParameters);
 
         var content = new RenderFragment(builder =>
         {
