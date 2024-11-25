@@ -110,6 +110,9 @@ Selected item: @(selectedItem?.Text)
 private BitNavBarItem? selectedItem;
 private BitNavBarItem? twoWaySelectedItem;
 
+private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
+         basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
+
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home  },
@@ -123,6 +126,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 <BitNavBar Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" OnItemClick=""(BitNavBarItem item) => countClick++"" Reselectable=""reselectable"" />
 Count clicked item: @(countClick)";
     private readonly string example9CsharpCode = @"
+private int countClick;
 private bool reselectable = true;
 
 private static readonly List<BitNavBarItem> basicNavBarItems =

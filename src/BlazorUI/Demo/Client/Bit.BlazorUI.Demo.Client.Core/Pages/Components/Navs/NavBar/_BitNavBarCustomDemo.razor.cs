@@ -33,4 +33,14 @@ public partial class _BitNavBarCustomDemo
         new() { Title = "آکادمی", Icon = BitIconName.LearningTools },
         new() { Title = "پروفایل", Icon = BitIconName.Contact },
     ];
+
+    private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
+         basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsEnabled = true, Value = i });
+
+    private int countClick;
+    private bool reselectable = true;
+    private MenuItem? selectedItem;
+    private MenuItem? eventsClickedItem;
+    private MenuItem? twoWaySelectedItem;
+    private MenuItem? advanceWaySelectedItem = basicNavBarCustoms[1];
 }

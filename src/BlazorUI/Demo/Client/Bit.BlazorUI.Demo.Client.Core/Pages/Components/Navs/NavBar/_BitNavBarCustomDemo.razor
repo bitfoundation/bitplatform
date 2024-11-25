@@ -44,7 +44,18 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="FitWidth" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Enables fit-content width for the nav bar that sets the width of the component based on its content size.</div>
+        <br /><br />
+        <BitNavBar FitWidth
+                   Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div>Explore BitNavBar's customization capabilities.</div>
         <br /><br />
@@ -52,14 +63,110 @@
                    NameSelectors="@(new() { Text = { Selector = item => item.Title },
                                             IconName = { Selector = item => item.Icon } })">
             <ItemTemplate Context="custom">
-                <span style="font-size:12px">@custom.Title</span>
-                <i class="bit-icon bit-icon--@custom.Icon" />
+                <BitIcon IconName="@custom.Icon" Color="BitColor.Success" />
+                <BitText Typography="BitTypography.H6" Color="BitColor.Warning">@custom.Title</BitText>
             </ItemTemplate>
         </BitNavBar>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>Managing NavBar click event (OnClick).</div>
+        <br /><br />
+        <BitNavBar Items="basicNavBarCustoms"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })"
+                   OnItemClick="(MenuItem item) => eventsClickedItem = item" />
+        <br />
+        Clicked item: @(eventsClickedItem?.Title)
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
+        <br /><br />
+        <div>DefaultSelectedItem:</div>
+        <br />
+        <BitNavBar @bind-SelectedItem="selectedItem"
+                   Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="basicNavBarCustoms[1]"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+        <br />
+        Selected item: @(selectedItem?.Title)
+        <br /><br />
+        <div>Two-way SelectedItem:</div>
+        <br />
+        <BitNavBar Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   @bind-SelectedItem="twoWaySelectedItem"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+        <br />
+        <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Reselectable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div>Enables the ability to trigger select event even when the same item is selected again.</div>
+        <br /><br />
+        <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
+        <br />
+        <BitNavBar Items="basicNavBarCustoms"
+                   Mode="BitNavMode.Manual"
+                   OnItemClick="(MenuItem item) => countClick++"
+                   Reselectable="reselectable"
+                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+        <br />
+        Count clicked item: @(countClick)
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+        <br /><br />
+        <div class="mobile-frame">
+            <div class="screen">
+                <BitLayout>
+                    <Header>
+                        <BitCard FullWidth>
+                            <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                                <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                                    bit BlazorUI
+                                </BitText>
+                            </BitStack>
+                        </BitCard>
+                    </Header>
+                    <Main>
+                        <BitStack HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                            <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                                <BitIcon IconName="@advanceWaySelectedItem?.Icon" Color="BitColor.PrimaryForeground" />
+                                @advanceWaySelectedItem?.Title
+                            </BitText>
+                        </BitStack>
+                    </Main>
+                    <Footer>
+                        <BitNavBar Items="basicNavBarCustoms"
+                                   Mode="BitNavMode.Manual"
+                                   Class="nav-menu"
+                                   @bind-SelectedItem="advanceWaySelectedItem"
+                                   NameSelectors="@(new() { Text = { Selector = item => item.Title },
+                                            IconName = { Selector = item => item.Icon } })" />
+                    </Footer>
+                </BitLayout>
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
@@ -203,7 +310,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -244,7 +351,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example8">
     <ExamplePreview>
         <div>Use BitNavBar in right-to-left (RTL).</div>
         <br /><br />
