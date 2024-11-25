@@ -19,6 +19,11 @@ public partial class UserSession
 
     public string? Address { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// </summary>
+    public bool Privileged { get; set; }
+
     public DateTimeOffset StartedOn { get; set; }
 
     public DateTimeOffset? RenewedOn { get; set; }

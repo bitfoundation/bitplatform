@@ -1,4 +1,4 @@
-name: bit platform full CI
+﻿name: bit platform full CI
 
 on:
   workflow_dispatch:
@@ -62,7 +62,7 @@ jobs:
         dotnet new bit-bp --name SimpleTest --database Sqlite --framework net8.0
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration
+        dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet build
@@ -83,7 +83,7 @@ jobs:
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests --framework net9.0
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration
+        dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet build
@@ -105,7 +105,7 @@ jobs:
         dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration
+        dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
@@ -125,7 +125,7 @@ jobs:
         dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests --framework net8.0
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
         dotnet tool restore
-        dotnet ef migrations add InitialMigration
+        dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
         dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1

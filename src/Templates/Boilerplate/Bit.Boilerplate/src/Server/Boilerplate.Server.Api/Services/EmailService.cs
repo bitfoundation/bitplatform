@@ -99,6 +99,24 @@ public partial class EmailService
         await SendEmail(body, toEmailAddress!, user.DisplayName!, subject, cancellationToken);
     }
 
+    public async Task SendElevatedAccessToken(User user, string token, CancellationToken cancellationToken)
+    {
+        var subject = emailLocalizer[EmailStrings.ElevatedAccessTokenEmailSubject, token];
+
+        if (hostEnvironment.IsDevelopment())
+        {
+            LogSendEmail(logger, subject, user.Email!, "ElevatedAccess");
+        }
+
+        var body = await BuildBody<ElevatedAccessTokenTemplate>(new Dictionary<string, object?>()
+        {
+            [nameof(ElevatedAccessTokenTemplate.Model)] = new ElevatedAccessTokenTemplateModel { DisplayName = user.DisplayName!, Token = token },
+            [nameof(ElevatedAccessTokenTemplate.HttpContext)] = httpContextAccessor.HttpContext
+        });
+
+        await SendEmail(body, user.Email!, user.DisplayName!, subject, cancellationToken);
+    }
+
     private async Task<string> BuildBody<TTemplate>(Dictionary<string, object?> parameters)
         where TTemplate : IComponent
     {

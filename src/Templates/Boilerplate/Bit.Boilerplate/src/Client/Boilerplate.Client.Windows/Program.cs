@@ -117,12 +117,8 @@ public partial class Program
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;
             }
-            bool hasBlazorStarted = false;
             blazorWebView.WebView.NavigationCompleted += async delegate
             {
-                if (hasBlazorStarted)
-                    return;
-                hasBlazorStarted = true;
                 await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };

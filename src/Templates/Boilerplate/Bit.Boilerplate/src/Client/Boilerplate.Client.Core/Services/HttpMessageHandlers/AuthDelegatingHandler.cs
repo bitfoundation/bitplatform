@@ -58,7 +58,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
             var refreshToken = await storageService.GetItem("refresh_token");
             if (string.IsNullOrEmpty(refreshToken)) throw;
 
-            var authManager = serviceProvider.GetRequiredService<AuthenticationManager>();
+            var authManager = serviceProvider.GetRequiredService<AuthManager>();
 
             logScopeData["RefreshTokenRequested"] = true;
             var accessToken = await authManager.RefreshToken(requestedBy: nameof(AuthDelegatingHandler));

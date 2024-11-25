@@ -20,9 +20,22 @@ else
                         @Localizer[nameof(AppStrings.ForbiddenException)]
                     </BitText>
 
-                    <BitText>@Localizer[nameof(AppStrings.YouAreSignInAs)] <b>@user.GetDisplayName()</b></BitText>
+                    <BitText>@Localizer[nameof(AppStrings.YouAreSignedInAs)] <b>@user.GetDisplayName()</b></BitText>
 
-                    <BitButton OnClick="WrapHandled(SignOut)">@Localizer[nameof(AppStrings.SignInAsDifferentUser)]</BitButton>
+                    @if (lacksValidPrivilege)
+                    {
+                        <BitButton Style="width:300px"
+                                   Color="BitColor.SevereWarning"
+                                   Href="@($"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}")">
+                            @Localizer[nameof(AppStrings.TryRemovingOtherSessions)]
+                        </BitButton>
+                    }
+
+                    <BitButton Style="width:300px"
+                               OnClick="WrapHandled(SignOut)">
+                        @Localizer[nameof(AppStrings.SignInAsDifferentUser)]
+                    </BitButton>
+
                 </BitStack>
             </section>
         </Authorized>

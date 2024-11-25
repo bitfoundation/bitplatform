@@ -128,6 +128,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasAnnotation("Cosmos:PropertyName", "_etag");
 
+                b.Property<long?>("ElevatedAccessTokenRequestedOn")
+                    .HasColumnType("INTEGER");
+
                 b.Property<string>("Email")
                     .HasMaxLength(256)
                     .HasColumnType("TEXT");
@@ -253,6 +256,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("IP")
                     .HasColumnType("TEXT");
+
+                b.Property<bool>("Privileged")
+                    .HasColumnType("INTEGER");
 
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");
@@ -793,7 +799,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("TodoItems")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -860,6 +866,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
             {
                 b.Navigation("Sessions");
+
+                b.Navigation("TodoItems");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
