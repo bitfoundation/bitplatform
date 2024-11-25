@@ -13,6 +13,10 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
 
 
+    [CascadingParameter] private BitModalParameters ModalParameters { get; set; } = new();
+
+
+
     /// <summary>
     /// Enables the auto scrollbar toggle behavior of the Modal.
     /// </summary>
@@ -79,7 +83,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
     [Parameter] public bool Modeless { get; set; }
 
@@ -102,7 +106,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
@@ -126,13 +130,14 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+        ClassBuilder.Register(() => ModalParameters.Classes?.Root);
 
-        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.AbsolutePosition ? "bit-mdl-abs" : string.Empty);
 
-        ClassBuilder.Register(() => FullSize || FullHeight ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => FullSize || FullWidth ? "bit-mdl-fwi" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullHeight ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullWidth ? "bit-mdl-fwi" : string.Empty);
 
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => ModalParameters.Position switch
         {
             BitModalPosition.Center => "bit-mdl-ctr",
             BitModalPosition.TopLeft => "bit-mdl-tl",
@@ -149,16 +154,18 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => ModalParameters.Styles?.Root);
 
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _containerId = $"BitModal-{UniqueId}-container";
 
-        return base.OnInitializedAsync();
+        ModalParameters.SetModal(this);
+
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -187,11 +194,11 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         _offsetTop = 0;
 
-        if (AutoToggleScroll is false) return;
+        if (ModalParameters.AutoToggleScroll) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector ?? "body", IsOpen);
 
-        if (AbsolutePosition is false) return;
+        if (ModalParameters.AbsolutePosition is false) return;
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -201,18 +208,26 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-        
-        await OnOverlayClick.InvokeAsync(e);
+        if (ModalParameters.IsEnabled is false) return;
 
-        if (Blocking is not false) return;
+        await ModalParameters.OnOverlayClick.InvokeAsync(e);
+
+        if (ModalParameters.Blocking) return;
 
         if (await AssignIsOpen(false) is false) return;
 
-        await OnDismiss.InvokeAsync(e);
+        await ModalParameters.OnDismiss.InvokeAsync(e);
     }
 
-    private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+    private string GetDragElementSelector()
+    {
+        return ModalParameters.DragElementSelector ?? $"#{_containerId}";
+    }
+
+    private string GetRole()
+    {
+        return (ModalParameters.IsAlert ?? (ModalParameters.Blocking && ModalParameters.Modeless is false)) ? "alertdialog" : "dialog";
+    }
 
 
 

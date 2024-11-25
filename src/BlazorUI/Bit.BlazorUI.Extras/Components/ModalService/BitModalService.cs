@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Options;
 
 namespace Bit.BlazorUI;
 
