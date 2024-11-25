@@ -139,7 +139,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
     private readonly string example10RazorCode = @"
 <style>
-    ..mobile-frame {
+    .mobile-frame {
         width: 375px;
         height: 712px;
         border: 16px solid #333;

@@ -228,7 +228,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 
     private readonly string example10RazorCode = @"
 <style>
-    ..mobile-frame {
+    .mobile-frame {
         width: 375px;
         height: 712px;
         border: 16px solid #333;
