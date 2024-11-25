@@ -37,6 +37,8 @@ public partial class _BitNavBarItemDemo
     private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
          basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
 
+    private int countClick;
+    private bool reselectable = true;
     private BitNavBarItem? selectedItem;
     private BitNavBarItem? eventsClickedItem;
     private BitNavBarItem? twoWaySelectedItem;

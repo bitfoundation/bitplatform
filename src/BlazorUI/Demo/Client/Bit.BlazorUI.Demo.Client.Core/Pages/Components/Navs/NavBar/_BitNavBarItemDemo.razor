@@ -24,7 +24,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<ComponentExampleBox Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <ExamplePreview>
         <div>Only renders the icon of each navbar item.</div>
         <br /><br />
@@ -32,20 +32,28 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Templates" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="FitWidth" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Enables fit-content width for the nav bar that sets the width of the component based on its content size.</div>
+        <br /><br />
+        <BitNavBar Items="basicNavBarItems" FitWidth />
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
     <ExamplePreview>
         <div>Explore BitNavBar's customization capabilities.</div>
         <br /><br />
         <BitNavBar Items="basicNavBarItems">
             <ItemTemplate Context="item">
-                <span style="font-size:12px">@item.Text</span>
-                <i class="bit-icon bit-icon--@item.IconName" />
+                <BitIcon IconName="@item.IconName" Color="BitColor.Success" />
+                <BitText Typography="BitTypography.H6" Color="BitColor.Warning">@item.Text</BitText>
             </ItemTemplate>
         </BitNavBar>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
         <div>Managing NavBar click event (OnClick).</div>
         <br /><br />
@@ -55,7 +63,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Binding" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
         <br /><br />
@@ -73,7 +81,19 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Advanced" RazorCode="@example6RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="Reselectable" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div>Enables the ability to trigger select event even when the same item is selected again.</div>
+        <br /><br />
+        <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
+        <br />
+        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" OnItemClick="(BitNavBarItem item) => countClick++" Reselectable="reselectable" />
+        <br />
+        Count clicked item: @(countClick)
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Advanced" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
         <br /><br />
@@ -102,13 +122,12 @@
                         <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" Class="nav-menu" @bind-SelectedItem="advanceWaySelectedItem" />
                     </Footer>
                 </BitLayout>
-
             </div>
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
@@ -167,7 +186,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -192,7 +211,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <ExamplePreview>
         <div>Use BitNavBar in right-to-left (RTL).</div>
         <br /><br />
