@@ -6,10 +6,11 @@ namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class SessionsSection
 {
-    private bool isWaiting;
-    private bool hasRevokedAnySession = false;
+    private bool isLoading;
     private Guid? currentSessionId;
+    private bool hasRevokedAnySession;
     private UserSessionDto? currentSession;
+    private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
@@ -25,19 +26,32 @@ public partial class SessionsSection
 
     private async Task LoadSessions()
     {
-        List<UserSessionDto> userSessions = [];
-        currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+        isLoading = true;
 
-        userSessions = await userController.GetUserSessions(CurrentCancellationToken);
-        otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-        currentSession = userSessions.Single(s => s.Id == currentSessionId);
+        try
+        {
+            List<UserSessionDto> userSessions = [];
+            currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+
+            userSessions = await userController.GetUserSessions(CurrentCancellationToken);
+            otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
+            currentSession = userSessions.Single(s => s.Id == currentSessionId);
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task RevokeSession(UserSessionDto session)
     {
-        if (isWaiting || session.Id == currentSessionId) return;
+        if (revokingSessionIds.Contains(session.Id) || session.Id == currentSessionId) return;
 
-        isWaiting = true;
+        revokingSessionIds.Add(session.Id);
 
         try
         {
@@ -55,7 +69,7 @@ public partial class SessionsSection
         }
         finally
         {
-            isWaiting = false;
+            revokingSessionIds.Remove(session.Id);
         }
     }
 

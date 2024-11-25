@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
@@ -43,7 +43,7 @@
                 @Localizer[nameof(AppStrings.ConfirmEmailMessage)]
             </BitText>
 
-            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" novalidate>
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangeEmail)" novalidate class="max-width">
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>

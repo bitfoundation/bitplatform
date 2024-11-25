@@ -118,7 +118,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
             }
             catch (Exception exp)
             {
-                exceptionHandler.Handle(exp, new()
+                exceptionHandler.Handle(exp, parameters: new()
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
@@ -175,10 +175,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
         catch (TooManyRequestsExceptions exp)
         {
-            exceptionHandler.Handle(exp); // Let's show prompt anyway.
+            exceptionHandler.Handle(exp, nonInterrupting: true); // Let's show prompt anyway.
         }
 
-        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken], title: "Boilerplate");
+        var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken], title: "Boilerplate", otpInput: true);
         if (string.IsNullOrEmpty(token))
             return false;
 

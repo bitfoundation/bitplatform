@@ -10,11 +10,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.1.0-pre-02">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.1.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.1.0-pre-02">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.1.0-pre-03">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
