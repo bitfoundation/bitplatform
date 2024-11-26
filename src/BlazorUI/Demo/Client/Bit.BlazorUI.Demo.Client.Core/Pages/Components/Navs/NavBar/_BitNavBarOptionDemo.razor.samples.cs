@@ -64,7 +64,7 @@ public partial class _BitNavBarOptionDemo
 </BitNavBar>";
 
     private readonly string example7RazorCode = @"
-<BitNavBar TItem=""BitNavBarOption"" OnItemClick=""(BitNavBarOption item) => eventsClickedOption = item"">
+<BitNavBar TItem=""BitNavBarOption"" OnItemClick=""(BitNavBarOption option) => eventsClickedOption = option"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
@@ -100,7 +100,7 @@ private BitNavBarOption optionProfile = default!;
 
     private readonly string example9RazorCode = @"
 <BitToggle @bind-Value=""reselectable"" OnText=""Enabled recalling"" OffText=""Disabled recalling"" />
-<BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" OnItemClick=""(BitNavBarOption item) => countClick++"" Reselectable=""reselectable"">
+<BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" OnItemClick=""(BitNavBarOption option) => countClick++"" Reselectable=""reselectable"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
