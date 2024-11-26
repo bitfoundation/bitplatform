@@ -72,10 +72,22 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
     private readonly string example6RazorCode = @"
 <BitNavBar Items=""basicNavBarItems"">
     <ItemTemplate Context=""item"">
+        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.Warning"">@item.Text</BitText>
         <BitIcon IconName=""@item.IconName"" Color=""BitColor.Success"" />
-        <BitText Typography=""BitTypography.H6"" Color=""BitColor.Warning"">@item.Text</BitText>
     </ItemTemplate>
-</BitNavBar>";
+</BitNavBar>
+
+<BitNavBar Items=""templateNavBarItems"" />
+
+@code {
+    private static readonly List<BitNavBarItem> templateNavBarItems =
+    [
+        new() { Text = ""Home"", IconName = BitIconName.Home  },
+        new() { Text = ""Products"", Template = (item) => @<div style=""display:flex;flex-direction:column""><b>@item.Text</b><span>🎁</span></div> },
+        new() { Text = ""Academy"", IconName = BitIconName.LearningTools },
+        new() { Text = ""Profile"", IconName = BitIconName.Contact },
+    ];
+}";
     private readonly string example6CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
@@ -88,7 +100,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
     private readonly string example7RazorCode = @"
 <BitNavBar Items=""basicNavBarItems"" OnItemClick=""(BitNavBarItem item) => eventsClickedItem = item"" />
 
-Clicked item: @(eventsClickedItem?.Text)";
+Clicked item: @eventsClickedItem?.Text";
     private readonly string example7CsharpCode = @"
 private BitNavBarItem? eventsClickedItem;
 
@@ -102,13 +114,13 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
     private readonly string example8RazorCode = @"
 <BitNavBar Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""selectedItem"" DefaultSelectedItem=""basicNavBarItems[1]"" />
-Selected item: @(selectedItem?.Text)
+Selected item: @selectedItem.Text
 
 <BitNavBar Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""twoWaySelectedItem"" />
 <BitChoiceGroup Horizontal Items=""@choiceGroupItems"" @bind-Value=""@twoWaySelectedItem"" />";
     private readonly string example8CsharpCode = @"
-private BitNavBarItem? selectedItem;
-private BitNavBarItem? twoWaySelectedItem;
+private BitNavBarItem selectedItem = basicNavBarItems[0];
+private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
 
 private static IEnumerable<BitChoiceGroupItem<BitNavBarItem>> choiceGroupItems =
          basicNavBarItems.Select(i => new BitChoiceGroupItem<BitNavBarItem>() { Id = i.Text, Text = i.Text, IsEnabled = i.IsEnabled, Value = i });
@@ -123,8 +135,13 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
     private readonly string example9RazorCode = @"
 <BitToggle @bind-Value=""reselectable"" OnText=""Enabled recalling"" OffText=""Disabled recalling"" />
-<BitNavBar Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" OnItemClick=""(BitNavBarItem item) => countClick++"" Reselectable=""reselectable"" />
-Count clicked item: @(countClick)";
+
+<BitNavBar Items=""basicNavBarItems""
+           Mode=""BitNavMode.Manual""
+           Reselectable=""reselectable""
+           OnItemClick=""(BitNavBarItem item) => countClick++"" />
+
+Item click count: @countClick";
     private readonly string example9CsharpCode = @"
 private int countClick;
 private bool reselectable = true;
@@ -190,18 +207,24 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
             <Main>
                 <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
                     <BitText Typography=""BitTypography.H4"" Color=""BitColor.PrimaryForeground"">
-                        <BitIcon IconName=""@advanceWaySelectedItem?.IconName"" Color=""BitColor.PrimaryForeground"" />
-                        @advanceWaySelectedItem?.Text
+                        <BitIcon IconName=""@advancedSelectedItem.IconName"" Color=""BitColor.PrimaryForeground"" Size=""BitSize.Large"" />
+                        <span>@advancedSelectedItem.Text</span>
                     </BitText>
                 </BitStack>
             </Main>
             <Footer>
-                <BitNavBar Items=""basicNavBarItems"" Mode=""BitNavMode.Manual"" Class=""nav-menu"" @bind-SelectedItem=""advanceWaySelectedItem"" />
+                <div class=""nav-menu"">
+                    <BitNavBar Items=""basicNavBarItems""
+                               Mode=""BitNavMode.Manual""
+                               @bind-SelectedItem=""advancedSelectedItem"" />
+                </div>
             </Footer>
         </BitLayout>
     </div>
 </div>";
     private readonly string example10CsharpCode = @"
+private BitNavBarItem advancedSelectedItem = basicNavBarItems[1];
+
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home  },
@@ -269,8 +292,8 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 
 <BitNavBar Items=""styleClassItems"" />
 
-<BitNavBar Items=""basicNavBarItems"" Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })"" />
-<BitNavBar Items=""basicNavBarItems"" Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })"" />";
+<BitNavBar Items=""basicNavBarItems"" Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })"" />
+<BitNavBar Items=""basicNavBarItems"" Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })"" />";
     private readonly string example12CsharpCode = @"
 private static readonly List<BitNavBarItem> basicNavBarItems =
 [

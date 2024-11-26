@@ -39,8 +39,8 @@ public partial class _BitNavBarItemDemo
 
     private int countClick;
     private bool reselectable = true;
-    private BitNavBarItem? selectedItem;
+    private BitNavBarItem selectedItem = basicNavBarItems[0];
+    private BitNavBarItem twoWaySelectedItem = basicNavBarItems[0];
     private BitNavBarItem? eventsClickedItem;
-    private BitNavBarItem? twoWaySelectedItem;
-    private BitNavBarItem? advanceWaySelectedItem = basicNavBarItems[1];
+    private BitNavBarItem advancedSelectedItem = basicNavBarItems[1];
 }

@@ -58,9 +58,20 @@ public partial class _BitNavBarOptionDemo
         <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
     </Options>
     <ItemTemplate Context=""option"">
+        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.Warning"">@option.Text</BitText>
         <BitIcon IconName=""@option.IconName"" Color=""BitColor.Success"" />
-        <BitText Typography=""BitTypography.H6"" Color=""BitColor.Warning"">@option.Text</BitText>
     </ItemTemplate>
+</BitNavBar>
+
+<BitNavBar TItem=""BitNavBarOption"">
+    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
+    <BitNavBarOption Text=""Products"">
+        <Template Context=""option"">
+            <div style=""display:flex;flex-direction:column""><b>@option.Text</b><span>🎁</span></div>
+        </Template>
+    </BitNavBarOption>
+    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
     private readonly string example7RazorCode = @"
@@ -70,7 +81,8 @@ public partial class _BitNavBarOptionDemo
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>
-Clicked item: @(eventsClickedOption?.Text)";
+
+Clicked item: @eventsClickedOption?.Text";
     private readonly string example7CsharpCode = @"
 private BitNavBarOption? eventsClickedOption;
 ";
@@ -95,8 +107,7 @@ private BitNavBarOption? twoWaySelectedOption;
 private BitNavBarOption optionHome = default!;
 private BitNavBarOption optionProducts = default!;
 private BitNavBarOption optionAcademy = default!;
-private BitNavBarOption optionProfile = default!;
-";
+private BitNavBarOption optionProfile = default!;";
 
     private readonly string example9RazorCode = @"
 <BitToggle @bind-Value=""reselectable"" OnText=""Enabled recalling"" OffText=""Disabled recalling"" />
@@ -106,7 +117,7 @@ private BitNavBarOption optionProfile = default!;
     <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>
-Count clicked item: @(countClick)";
+Item click count: @countClick";
     private readonly string example9CsharpCode = @"
 private int countClick;
 private bool reselectable = true;
@@ -165,24 +176,26 @@ private bool reselectable = true;
             <Main>
                 <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
                     <BitText Typography=""BitTypography.H4"" Color=""BitColor.PrimaryForeground"">
-                        <BitIcon IconName=""@advanceSelectedOption?.IconName"" Color=""BitColor.PrimaryForeground"" />
-                        @advanceSelectedOption?.Text
+                        <BitIcon IconName=""@advancedSelectedOption?.IconName"" Color=""BitColor.PrimaryForeground"" Size=""BitSize.Large"" />
+                        <span>@advancedSelectedOption?.Text</span>
                     </BitText>
                 </BitStack>
             </Main>
             <Footer>
-                <BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" Class=""nav-menu"" @bind-SelectedItem=""advanceSelectedOption"">
-                    <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
-                    <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
-                    <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
-                    <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
-                </BitNavBar>
+                <div class=""nav-menu"">
+                    <BitNavBar TItem=""BitNavBarOption"" Mode=""BitNavMode.Manual"" @bind-SelectedItem=""advancedSelectedOption"">
+                        <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" />
+                        <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
+                        <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+                        <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+                    </BitNavBar>
+                </div>
             </Footer>
         </BitLayout>
     </div>
 </div>";
     private readonly string example10CsharpCode = @"
-private BitNavBarOption? advanceSelectedOption;
+private BitNavBarOption? advancedSelectedOption;
 ";
 
     private readonly string example11RazorCode = @"

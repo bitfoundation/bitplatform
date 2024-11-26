@@ -120,15 +120,31 @@ private static readonly List<MenuItem> basicNavBarCustoms =
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"">
     <ItemTemplate Context=""custom"">
+        <BitText Typography=""BitTypography.Caption1"" Color=""BitColor.Warning"">@custom.Title</BitText>
         <BitIcon IconName=""@custom.Icon"" Color=""BitColor.Success"" />
-        <BitText Typography=""BitTypography.H6"" Color=""BitColor.Warning"">@custom.Title</BitText>
     </ItemTemplate>
-</BitNavBar>";
+</BitNavBar>
+
+<BitNavBar Items=""templateNavBarCustoms""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.Icon },
+                                    Template = { Selector = item => item.Fragment } })"" />
+
+@code {
+    private static readonly List<MenuItem> templateNavBarCustoms =
+    [
+        new() { Title = ""Home"", Icon = BitIconName.Home  },
+        new() { Title = ""Products"", Fragment = (item) => @<div style=""display:flex;flex-direction:column""><b>@item.Title</b><span>🎁</span></div> },
+        new() { Title = ""Academy"", Icon = BitIconName.LearningTools },
+        new() { Title = ""Profile"", Icon = BitIconName.Contact },
+    ];
+}";
     private readonly string example6CsharpCode = @"
 public class MenuItem
 {
     public string? Title { get; set; }
     public string? Icon { get; set; }
+    public RenderFragment<MenuItem>? Fragment { get; set; }
 }
 
 private static readonly List<MenuItem> basicNavBarCustoms =
@@ -141,11 +157,11 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 
     private readonly string example7RazorCode = @"
 <BitNavBar Items=""basicNavBarCustoms""
+           OnItemClick=""(MenuItem item) => eventsClickedItem = item""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                    IconName = { Selector = item => item.Icon } })""
-           OnItemClick=""(MenuItem item) => eventsClickedItem = item"" />
+                                    IconName = { Selector = item => item.Icon } })"" />
 
-Clicked item: @(eventsClickedItem?.Title)";
+Clicked item: @eventsClickedItem?.Title";
     private readonly string example7CsharpCode = @"
 private MenuItem? eventsClickedItem;
 
@@ -170,7 +186,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
             DefaultSelectedItem=""basicNavBarCustoms[1]""
             NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"" />
-Selected item: @(selectedItem?.Title)
+Selected item: @selectedItem.Title
 
 <BitNavBar Items=""basicNavBarCustoms""
            Mode=""BitNavMode.Manual""
@@ -179,8 +195,8 @@ Selected item: @(selectedItem?.Title)
                                     IconName = { Selector = item => item.Icon } })"" />
 <BitChoiceGroup Horizontal Items=""@choiceGroupItems"" @bind-Value=""@twoWaySelectedItem"" />";
 private readonly string example8CsharpCode = @"
-private MenuItem? selectedItem;
-private MenuItem? twoWaySelectedItem;
+private MenuItem selectedItem = basicNavBarCustoms[0];
+private MenuItem twoWaySelectedItem = basicNavBarCustoms[0];
 
 private static IEnumerable<BitChoiceGroupItem<MenuItem>> choiceGroupItems =
          basicNavBarCustoms.Select(i => new BitChoiceGroupItem<MenuItem>() { Id = i.Title, Text = i.Title, IsEnabled = true, Value = i });
@@ -201,13 +217,15 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 
     private readonly string example9RazorCode = @"
 <BitToggle @bind-Value=""reselectable"" OnText=""Enabled recalling"" OffText=""Disabled recalling"" />
+
 <BitNavBar Items=""basicNavBarCustoms""
            Mode=""BitNavMode.Manual""
-           OnItemClick=""(MenuItem item) => countClick++""
            Reselectable=""reselectable""
+           OnItemClick=""(MenuItem item) => countClick++""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"" />
-Count clicked item: @(countClick)";
+
+Item click count: @countClick";
     private readonly string example9CsharpCode = @"
 private int countClick;
 private bool reselectable = true;
@@ -279,23 +297,26 @@ private static readonly List<MenuItem> basicNavBarCustoms =
             <Main>
                 <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
                     <BitText Typography=""BitTypography.H4"" Color=""BitColor.PrimaryForeground"">
-                        <BitIcon IconName=""@advanceWaySelectedItem?.Icon"" Color=""BitColor.PrimaryForeground"" />
-                        @advanceWaySelectedItem?.Title
+                        <BitIcon IconName=""@advancedSelectedItem?.Icon"" Color=""BitColor.PrimaryForeground"" Size=""BitSize.Large"" />
+                        <span>@advancedSelectedItem?.Title</span>
                     </BitText>
                 </BitStack>
             </Main>
             <Footer>
-                <BitNavBar Items=""basicNavBarCustoms""
-                            Mode=""BitNavMode.Manual""
-                            Class=""nav-menu""
-                            @bind-SelectedItem=""advanceWaySelectedItem""
-                            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                    IconName = { Selector = item => item.Icon } })"" />
+                <div class=""nav-menu"">
+                    <BitNavBar Mode=""BitNavMode.Manual""
+                               Items=""basicNavBarCustoms""
+                               @bind-SelectedItem=""advancedSelectedItem""
+                               NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                                        IconName = { Selector = item => item.Icon } })"" />
+                </div>
             </Footer>
         </BitLayout>
     </div>
 </div>";
     private readonly string example10CsharpCode = @"
+private MenuItem advancedSelectedItem = basicNavBarCustoms[1];
+
 public class MenuItem
 {
     public string? Title { get; set; }
@@ -471,11 +492,11 @@ private static readonly List<MenuItem> basicNavBarCustoms =
                                     Style = { Selector = item => item.Style }})"" />
 
 <BitNavBar Items=""basicNavBarCustoms""
-           Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })""
+           Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"" />
 <BitNavBar Items=""basicNavBarCustoms""
-           Styles=""@(new() { ItemIcon = ""color: aqua;"", ItemText = ""color: tomato;"" })""
+           Classes=""@(new() { ItemIcon = ""custom-item-ico"", ItemText = ""custom-item-txt"" })""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.Icon } })"" />";
     private readonly string example12CsharpCode = @"
@@ -508,7 +529,7 @@ private static readonly List<MenuItem> basicNavBarCustomsClassStyle =
 <BitNavBar Dir=""BitDir.Rtl""
            Items=""rtlCustomsItems""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
-                                     IconName = { Selector = item => item.Icon } })"" />";
+                                    IconName = { Selector = item => item.Icon } })"" />";
     private readonly string example13CsharpCode = @"
 private static readonly List<MenuItem> rtlCustomsItems =
 [

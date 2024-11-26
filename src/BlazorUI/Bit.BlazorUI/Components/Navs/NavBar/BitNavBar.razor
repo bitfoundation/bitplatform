@@ -21,8 +21,9 @@
             var url = GetUrl(item);
             var template = GetTemplate(item);
             var isEnabled = GetIsEnabled(item);
+            var href = (isEnabled && (SelectedItem != itm || Reselectable)) ? url : null;
 
-            <_BitNavBarChild Href="@url"
+            <_BitNavBarChild Href="@href"
                              Title="@GetTitle(item)"
                              Target="@GetTarget(item)"
                              Style="@GetItemCssStyle(item)"

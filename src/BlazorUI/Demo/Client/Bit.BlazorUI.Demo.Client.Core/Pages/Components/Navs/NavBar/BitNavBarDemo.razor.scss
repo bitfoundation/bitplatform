@@ -1,6 +1,12 @@
 ﻿@import '../../../../Styles/abstracts/_media-queries.scss';
 
 ::deep {
+    .container {
+        padding: 0.25rem;
+        padding-top: 5rem;
+        border: 1px solid gray;
+    }
+
     .custom-class {
         margin: 1rem;
         border-radius: 1rem;
@@ -26,24 +32,24 @@
     .mobile-frame {
         width: 375px;
         height: 712px;
-        border: 16px solid #333;
-        border-radius: 36px;
-        background-color: var(--bit-clr-fg-sec);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        position: relative;
         overflow: hidden;
+        position: relative;
+        border-radius: 36px;
+        border: 16px solid #333;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: var(--bit-clr-fg-sec);
     }
 
     .mobile-frame:before {
-        content: '';
-        display: block;
-        width: 60px;
-        height: 5px;
-        background: #333;
-        border-radius: 10px;
-        position: absolute;
         top: 10px;
         left: 50%;
+        content: '';
+        width: 60px;
+        height: 5px;
+        display: block;
+        background: #333;
+        position: absolute;
+        border-radius: 10px;
         transform: translateX(-50%);
     }
 
