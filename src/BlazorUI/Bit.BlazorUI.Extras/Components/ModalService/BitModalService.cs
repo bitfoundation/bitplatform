@@ -12,7 +12,7 @@ public class BitModalService
     /// <summary>
     /// The event for when a modal gets removed through calling the Close method.
     /// </summary>
-    public event Action<BitModalReference>? OnCloseModal;
+    public event Func<BitModalReference, Task>? OnCloseModal;
 
 
 
@@ -20,9 +20,13 @@ public class BitModalService
     /// Closes an already opened modal using its reference.
     /// </summary>
     /// <param name="modal"></param>
-    public void Close(BitModalReference modal)
+    public async Task Close(BitModalReference modal)
     {
-        OnCloseModal?.Invoke(modal);
+        var modalClose = OnCloseModal;
+        if (modalClose is not null)
+        {
+            await modalClose(modal);
+        }
     }
 
     /// <summary>
@@ -51,6 +55,12 @@ public class BitModalService
         BitModalParameters? modalParameters)
     {
         var componentType = typeof(T);
+
+        if (typeof(IComponent).IsAssignableFrom(componentType) is false)
+        {
+            throw new ArgumentException($"Type {componentType.Name} must be a Blazor component");
+        }
+
         var modalReference = new BitModalReference(this);
         modalReference.SetParameters(modalParameters);
 

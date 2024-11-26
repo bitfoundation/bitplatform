@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitModalContainer
+public partial class BitModalContainer : IDisposable
 {
     [Parameter] public BitModalParameters ModalParameters { get; set; } = new();
 
@@ -30,9 +30,17 @@ public partial class BitModalContainer
         return InvokeAsync(StateHasChanged);
     }
 
-    private void OnCloseModal(BitModalReference modal)
+    private Task OnCloseModal(BitModalReference modal)
     {
         _modals.Remove(modal);
-        StateHasChanged();
+        return InvokeAsync(StateHasChanged);
+    }
+
+
+
+    public void Dispose()
+    {
+        _modalService.OnAddModal -= OnModalAdd;
+        _modalService.OnCloseModal -= OnCloseModal;
     }
 }
