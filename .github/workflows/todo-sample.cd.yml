@@ -15,108 +15,108 @@ permissions:
 
 jobs:
 
-  # build_api_blazor:
-  #   name: build api + blazor web
-  #   runs-on: ubuntu-24.04
+  build_api_blazor:
+    name: build api + blazor web
+    runs-on: ubuntu-24.04
 
-  #   steps:
+    steps:
     
-  #   - name: Checkout source code
-  #     uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
     
-  #   - name: Remove .NET 9 based global.json
-  #     run: |
-  #       rm src/global.json
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
     
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v4
-  #     with:
-  #       global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: 22
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
 
-  #   - name: Create project from Boilerplate
-  #     run: |
-  #       cd src/Templates/Boilerplate && dotnet build -c Release
-  #       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-  #       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-  #       cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
+    - name: Create project from Boilerplate
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
 
-  #   - name: Update core appsettings.json
-  #     uses: devops-actions/variable-substitution@v1.2 
-  #     with:
-  #       files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
-  #     env:
-  #       ServerAddress: ${{ env.SERVER_ADDRESS }}
-  #       GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-  #       WebAppRender.BlazorMode: BlazorWebAssembly
-  #       WebAppRender.PrerenderEnabled: true
-  #       ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-  #       AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+    - name: Update core appsettings.json
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
+      env:
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        WebAppRender.BlazorMode: BlazorWebAssembly
+        WebAppRender.PrerenderEnabled: true
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
 
-  #   - name: Install wasm
-  #     run:  cd src && dotnet workload install wasm-tools
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools
 
-  #   - name: Configure bswup
-  #     run: |
-  #         sed -i 's/\/\/ self.noPrerenderQuery/self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
-  #         sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+    - name: Configure bswup
+      run: |
+          sed -i 's/\/\/ self.noPrerenderQuery/self.noPrerenderQuery/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
+          sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' TodoSample/src/Client/TodoSample.Client.Web/wwwroot/service-worker.published.js
 
-  #   - name: Generate CSS/JS files
-  #     run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
+    - name: Generate CSS/JS files
+      run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
-  #   - name: Publish
-  #     run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+    - name: Publish
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
-  #   - name: Upload server artifact
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: server-bundle
-  #       path: ${{env.DOTNET_ROOT}}/server
-  #       include-hidden-files: true # Required for wwwroot/.well-known folder
+    - name: Upload server artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-bundle
+        path: ${{env.DOTNET_ROOT}}/server
+        include-hidden-files: true # Required for wwwroot/.well-known folder
 
-  # deploy_api_blazor:
-  #   name: deploy api + blazor
-  #   needs: build_api_blazor
-  #   runs-on: ubuntu-24.04
-  #   environment:
-  #     name: 'production'
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  deploy_api_blazor:
+    name: deploy api + blazor
+    needs: build_api_blazor
+    runs-on: ubuntu-24.04
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #   steps:
+    steps:
 
-  #     - name: Retrieve server bundle
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: server-bundle
+      - name: Retrieve server bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: server-bundle
 
-  #     - name: Delete DataProtectionCertificate.pfx
-  #       run: |
-  #           rm DataProtectionCertificate.pfx
+      - name: Delete DataProtectionCertificate.pfx
+        run: |
+            rm DataProtectionCertificate.pfx
 
-  #     - name: Extract identity certificate from env
-  #       uses: timheuer/base64-to-file@v1.2
-  #       with:
-  #           fileDir: './'
-  #           fileName: 'DataProtectionCertificate.pfx'
-  #           encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
+      - name: Extract identity certificate from env
+        uses: timheuer/base64-to-file@v1.2
+        with:
+            fileDir: './'
+            fileName: 'DataProtectionCertificate.pfx'
+            encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v3
-  #       with:
-  #         app-name: 'bit-todo'
-  #         slot-name: 'production'
-  #         publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
-  #         package: .
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'bit-todo'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.TODO_AZURE_APP_SERVICE_PUBLISH_PROFILE }}
+          package: .
 
-  #     - name: Purge cache
-  #       uses: jakejarvis/cloudflare-purge-action@v0.3.0
-  #       env:
-  #         CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
-  #         CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      - name: Purge cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.BITPLATFORM_DEV_CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 
   # build_blazor_hybrid_windows:
   #   name: build blazor hybrid (windows)
