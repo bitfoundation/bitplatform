@@ -97,8 +97,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         var user = await userManager.FindUserAsync(request) ?? throw new UnauthorizedException(Localizer[nameof(AppStrings.InvalidUserCredentials)]);
 
         var userSession = await CreateUserSession(user.Id, request.DeviceInfo, cancellationToken);
-        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.ELEVATED_SESSION, "true")); // This only applies to the current, short-lived access token.
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.StartedOn.ToUnixTimeSeconds().ToString()));
         if (userSession.Privileged)
         {
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
@@ -180,7 +181,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             IP = HttpContext.Connection.RemoteIpAddress?.ToString(),
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
-            Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}",
+            Address = $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}"
         };
 
         userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
@@ -215,22 +216,26 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 || (refreshTicket!.Properties.ExpiresUtc ?? DateTimeOffset.MinValue) < DateTimeOffset.UtcNow)
                 throw new UnauthorizedException();
 
-            var userId = refreshTicket!.Principal.GetUserId().ToString() ?? throw new InvalidOperationException("User id could not be found");
-            var currentSessionId = Guid.Parse(refreshTicket.Principal.FindFirstValue(AppClaimTypes.SESSION_ID) ?? throw new InvalidOperationException("session id could not be found"));
+            if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
+                throw new UnauthorizedException();
+
+            var userId = refreshTicket!.Principal.GetUserId().ToString();
+            var currentSessionId = refreshTicket.Principal.GetSessionId();
 
             user = await userManager.FindByIdAsync(userId) ?? throw new UnauthorizedException(); // User might have been deleted.
             userSession = await DbContext.UserSessions
-                .FirstOrDefaultAsync(us => us.Id == currentSessionId) ?? throw new UnauthorizedException(); // User session might have been deleted.
+                .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException(); // User session might have been deleted.
 
-            if (await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User _)
-                throw new UnauthorizedException();
+            if ((userSession.RenewedOn ?? userSession.StartedOn).ToUnixTimeSeconds() != long.Parse(refreshTicket.Principal.Claims.Single(c => c.Type == AppClaimTypes.SESSION_STAMP).Value))
+                throw new UnauthorizedException(); // refresh token is being re-used.
 
             userSession.RenewedOn = DateTimeOffset.UtcNow;
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.RenewedOn.Value.ToUnixTimeSeconds().ToString()));
 
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);
-            if (userSession.Privileged is true)
+            if (userSession.Privileged)
             {
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, "true"));
             }
@@ -257,16 +262,12 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
         catch when (userSession is not null)
         {
-            //#if (notification == true)
-            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
-            await DbContext.Entry(userSession).Reference(us => us.PushNotificationSubscription).LoadAsync(cancellationToken);
-            //#endif
             DbContext.UserSessions.Remove(userSession);
             throw;
         }
         finally
         {
-            await DbContext.SaveChangesAsync();
+            await DbContext.SaveChangesAsync(cancellationToken);
         }
     }
 

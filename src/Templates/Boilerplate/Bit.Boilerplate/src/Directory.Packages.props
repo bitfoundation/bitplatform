@@ -53,7 +53,6 @@
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
         <PackageVersion Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') OR ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
-        <PackageVersion Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="9.0.0" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.1" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
