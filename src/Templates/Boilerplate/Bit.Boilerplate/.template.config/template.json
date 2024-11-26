@@ -76,10 +76,6 @@
                     "description": "PostgreSQL"
                 },
                 {
-                    "choice": "Cosmos",
-                    "description": "Azure Cosmos DB"
-                },
-                {
                     "choice": "MySql",
                     "description": "MySql - MariaDB"
                 },
@@ -441,7 +437,6 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/SignalR/**",
                         "src/Shared/Services/SharedPubSubMessages.cs",
-                        "src/Client/Boilerplate.Client.Core/Extensions/HubConnectionExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Services/SignalRInfinitiesRetryPolicy.cs"
                     ]
                 },

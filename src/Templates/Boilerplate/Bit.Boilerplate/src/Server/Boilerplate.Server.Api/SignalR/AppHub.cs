@@ -33,13 +33,4 @@ public partial class AppHub : Hub
 
         await base.OnDisconnectedAsync(exception);
     }
-
-    /// <summary>
-    /// <inheritdoc cref="SignalREvents.PONG"/>
-    /// </summary>
-    [Authorize]
-    public async Task Ping()
-    {
-        await Clients.Client(Context.User!.GetSessionId().ToString()).SendAsync(SignalREvents.PONG);
-    }
 }

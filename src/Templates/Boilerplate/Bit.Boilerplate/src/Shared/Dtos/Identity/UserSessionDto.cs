@@ -19,9 +19,4 @@ public partial class UserSessionDto
     public bool Privileged { get; set; }
 
     public DateTimeOffset RenewedOn { get; set; }
-
-    /// <summary>
-    /// If sessions has not be renewed withing the last 14 days (Based on RefreshTokenExpiration in app settings json), the session is considered invalid.
-    /// </summary>
-    public bool IsValid { get; set; }
 }
