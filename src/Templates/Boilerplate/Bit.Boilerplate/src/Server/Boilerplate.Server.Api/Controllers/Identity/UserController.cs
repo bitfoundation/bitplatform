@@ -43,7 +43,7 @@ public partial class UserController : AppControllerBase, IUserController
         return user.Map();
     }
 
-    [HttpGet]
+    [HttpGet, EnableQuery]
     public IQueryable<UserSessionDto> GetUserSessions()
     {
         var userId = User.GetUserId();

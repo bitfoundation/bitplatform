@@ -22,8 +22,8 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         return result;
     }
 
-    [HttpGet]
-    public async Task<IQueryable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats()
+    [HttpGet, EnableQuery]
+    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
     {
         return DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
