@@ -4,15 +4,51 @@ namespace Bit.BlazorUI;
 
 public class BitModalService
 {
+    /// <summary>
+    /// The event for when a new modal gets added through calling the Show method.
+    /// </summary>
     public event Func<BitModalReference, Task>? OnAddModal;
 
+    /// <summary>
+    /// The event for when a modal gets removed through calling the Close method.
+    /// </summary>
     public event Action<BitModalReference>? OnCloseModal;
 
 
 
-    public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        IReadOnlyDictionary<string, object>? parameters = null,
+    /// <summary>
+    /// Closes an already opened modal using its reference.
+    /// </summary>
+    /// <param name="modal"></param>
+    public void Close(BitModalReference modal)
+    {
+        OnCloseModal?.Invoke(modal);
+    }
+
+    /// <summary>
+    /// Shows a new BitModal with a custom component with parameters as its content.
+    /// </summary>
+    public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        Dictionary<string, object>? parameters = null)
+    {
+        return Show<T>(parameters, null);
+    }
+
+    /// <summary>
+    /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
+    /// </summary>
+    public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         BitModalParameters? modalParameters = null)
+    {
+        return Show<T>(null, modalParameters);
+    }
+
+    /// <summary>
+    /// Shows a new BitModal with a custom component as its content with custom parameters for the custom component and the modal.
+    /// </summary>
+    public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        Dictionary<string, object>? parameters,
+        BitModalParameters? modalParameters)
     {
         var componentType = typeof(T);
         var modalReference = new BitModalReference(this);
@@ -53,10 +89,5 @@ public class BitModalService
         }
 
         return modalReference;
-    }
-
-    public void Close(BitModalReference modal)
-    {
-        OnCloseModal?.Invoke(modal);
     }
 }
