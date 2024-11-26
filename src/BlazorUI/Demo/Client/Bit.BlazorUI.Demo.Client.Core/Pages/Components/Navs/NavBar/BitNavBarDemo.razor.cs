@@ -16,7 +16,7 @@ public partial class BitNavBarDemo
             Name = "Classes",
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitNav component.",
+            Description = "Custom CSS classes for different parts of the navbar.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         },
@@ -25,7 +25,7 @@ public partial class BitNavBarDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the nav.",
+            Description = "The general color of the navbar.",
         },
         new()
         {
@@ -36,24 +36,31 @@ public partial class BitNavBarDemo
         },
         new()
         {
-            Name = "HeaderTemplate",
-            Type = "RenderFragment<TItem>?",
-            DefaultValue = "null",
-            Description = "Used to customize how content inside the group header is rendered."
+            Name = "FitWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the nav bat in a width to only fit its content."
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the nav bar in full width of its container element."
         },
         new()
         {
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Only renders the icon of each nav item."
+            Description = "Only renders the icon of each navbar item."
         },
         new()
         {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "A collection of item to display in the navigation bar.",
+            Description = "A collection of items to display in the navbar.",
             LinkType = LinkType.Link,
             Href="#navbar-item",
         },
@@ -113,14 +120,14 @@ public partial class BitNavBarDemo
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",
-            Description = "Selected item to show in the BitNavBar."
+            Description = "Selected item to show in the navbar."
         },
         new()
         {
             Name = "Styles",
             Type = "BitNavClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitNav component.",
+            Description = "Custom CSS styles for different parts of the navbar.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
         }
