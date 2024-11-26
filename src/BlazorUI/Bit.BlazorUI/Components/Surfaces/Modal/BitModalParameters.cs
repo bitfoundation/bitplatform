@@ -50,7 +50,7 @@ public class BitModalParameters
         {
             return EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
             {
-                if(_modal is not null) await _modal.OnOverlayClick.InvokeAsync();
+                if (_modal is not null) await _modal.OnOverlayClick.InvokeAsync();
                 await field.InvokeAsync();
             });
         }
