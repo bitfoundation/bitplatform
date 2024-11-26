@@ -227,7 +227,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new UnauthorizedException(); // User session might have been deleted.
 
             if ((userSession.RenewedOn ?? userSession.StartedOn).ToUnixTimeSeconds() != long.Parse(refreshTicket.Principal.Claims.Single(c => c.Type == AppClaimTypes.SESSION_STAMP).Value))
-                throw new UnauthorizedException(); // refresh token is being re-used.
+                throw new UnauthorizedException(nameof(AppStrings.ConcurrentUserSessionOnTheSameDevice)); // refresh token is being re-used.
 
             userSession.RenewedOn = DateTimeOffset.UtcNow;
 
