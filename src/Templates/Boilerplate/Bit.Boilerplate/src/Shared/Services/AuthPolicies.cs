@@ -41,7 +41,7 @@ public class AppClaimTypes
     public const string ELEVATED_SESSION = "elevated-session";
 
     /// <summary>
-    /// Refresh tokens are tied to specific user sessions, with a concurrency stamp stored in the user sessions table. 
+    /// Refresh tokens are tied to specific user sessions, 
     /// This ensures that refresh tokens are single-use, preventing users from reusing a copied token to bypass the potential limit 
     /// on the maximum number of concurrent privileged sessions of the user.
     /// </summary>
