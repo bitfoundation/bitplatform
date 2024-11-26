@@ -59,7 +59,6 @@ public partial class UserController : AppControllerBase, IUserController
 
                 return dto;
             })
-            .Where(dto => DateTimeOffset.UtcNow - dto.RenewedOn < AppSettings.Identity.RefreshTokenExpiration) // Let's not returning expired sessions
             .OrderByDescending(us => us.RenewedOn)
         .ToList();
     }
