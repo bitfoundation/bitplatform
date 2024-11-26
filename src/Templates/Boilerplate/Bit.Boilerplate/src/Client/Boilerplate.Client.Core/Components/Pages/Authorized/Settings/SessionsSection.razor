@@ -20,13 +20,13 @@
         {
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
-                <BitPersona Size="BitPersonaSize.Size72"
-                            TertiaryText="@currentSession.DeviceInfo"
-                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
                             SecondaryText="@GetLastSeenOn(currentSession.RenewedOn)"
-                            ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
-                            PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
-                            CoinColor="@(currentSession.Privileged ? null : BitColor.TertiaryBackground)"
+                            TertiaryText="@currentSession.DeviceInfo"
+                            Size="BitPersonaSize.Size72"
+                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                            ImageInitials="@(currentSession.Privileged && currentSession.IsValid ? "✓" : "✘")"
+                            CoinColor="@(currentSession.Privileged && currentSession.IsValid ? null : BitColor.TertiaryBackground)"
                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
                             Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             </BitCard>
@@ -42,14 +42,14 @@
                     <BitCard FullWidth Style="margin-bottom:1rem">
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitPersona Class="session-persona"
-                                        Size="BitPersonaSize.Size72"
-                                        TertiaryText="@session.DeviceInfo"
-                                        Presence="@GetPresence(session.RenewedOn)"
-                                        SecondaryText="@GetLastSeenOn(session.RenewedOn)"
-                                        ImageInitials="@(session.Privileged ? "✓" : "✘")"
                                         PrimaryText="@($"{session.Address} ({session.IP})")"
+                                        SecondaryText="@GetLastSeenOn(session.RenewedOn)"
+                                        TertiaryText="@session.DeviceInfo"
+                                        Size="BitPersonaSize.Size72"
+                                        Presence="@GetPresence(session.RenewedOn)"
                                         Styles="@(new() { Image = "width:50%;height:50%" })"
-                                        CoinColor="@(session.Privileged ? null : BitColor.TertiaryBorder)"
+                                        ImageInitials="@(session.Privileged ? "✓" : "✘")"
+                                        CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
                                         ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                             <BitSpacer />
                             <BitButton Color="BitColor.Error"
