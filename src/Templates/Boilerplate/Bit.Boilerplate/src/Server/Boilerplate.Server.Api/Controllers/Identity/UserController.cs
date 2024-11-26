@@ -44,23 +44,14 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpGet]
-    public async Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken)
+    public IQueryable<UserSessionDto> GetUserSessions()
     {
         var userId = User.GetUserId();
 
-        return (await DbContext.UserSessions
+        return DbContext.UserSessions
             .Where(us => us.UserId == userId)
-            .ToArrayAsync(cancellationToken))
-            .Select(us =>
-            {
-                var dto = us.Map();
-
-                dto.RenewedOn = us.RenewedOn ?? us.StartedOn;
-
-                return dto;
-            })
-            .OrderByDescending(us => us.RenewedOn)
-        .ToList();
+            .Project()
+            .OrderByDescending(us => us.RenewedOn);
     }
 
     [HttpPost]
@@ -259,7 +250,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var currentSessionId = User.GetSessionId();
 
-        foreach (var userSession in await GetUserSessions(cancellationToken))
+        foreach (var userSession in await GetUserSessions().ToArrayAsync(cancellationToken))
         {
             if (userSession.Id == currentSessionId)
             {

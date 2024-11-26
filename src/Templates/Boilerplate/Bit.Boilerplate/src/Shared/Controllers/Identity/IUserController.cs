@@ -9,7 +9,7 @@ public interface IUserController : IAppController
     Task<UserDto> GetCurrentUser(CancellationToken cancellationToken);
 
     [HttpGet]
-    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken);
+    Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken) => default!;
 
     [HttpPost, NoRetryPolicy]
     Task SignOut(CancellationToken cancellationToken);
