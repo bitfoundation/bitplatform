@@ -109,6 +109,12 @@
         <div>DefaultSelectedItem:</div>
         <br />
         Coming soon...
+        <BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual" IsEnabled="false">
+            <BitNavBarOption Text="Home" IconName="@BitIconName.Home" />
+            <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+            <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+            <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+        </BitNavBar>
         <br />
         Selected item: @(selectedOption?.Text)
         <br /><br />
