@@ -11,6 +11,10 @@ using Boilerplate.Client.Core;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Boilerplate.Client.Core.Services.HttpMessageHandlers;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
+//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -35,13 +39,20 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
         // To address this, we use the AddSessioned extension method.
         // AddSessioned applies AddSingleton in BlazorHybrid and AddScoped in Blazor WebAssembly and Blazor Server, ensuring correct service lifetimes for each environment.
+        services.AddSessioned<ModalService>();
         services.AddSessioned<PubSubService>();
+        services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
         services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
-        services.AddSessioned<AuthenticationStateProvider, AuthenticationManager>();
-        services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddSessioned<AuthenticationStateProvider>(sp =>
+        {
+            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthManager>(sp);
+            authenticationStateProvider.OnInit();
+            return authenticationStateProvider;
+        });
+        services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp =>
         {
@@ -102,10 +113,12 @@ public static partial class IClientCoreServiceCollectionExtensions
             optionsBuilder
                 .UseSqlite($"Data Source={dbPath}");
 
+            //#if (framework == 'net9.0')
             if (AppEnvironment.IsProd())
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
+            //#endif
 
             optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDev())
                     .EnableDetailedErrors(AppEnvironment.IsDev());
@@ -123,6 +136,40 @@ public static partial class IClientCoreServiceCollectionExtensions
         //#endif
 
         services.AddTypedHttpClients();
+
+        //#if (signalR == true)
+        services.AddSingleton<SignalRInfinitiesRetryPolicy>();
+        services.AddSessioned(sp =>
+        {
+            var authManager = sp.GetRequiredService<AuthManager>();
+            var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+
+            var hubConnection = new HubConnectionBuilder()
+                .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
+                .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
+                {
+                    options.SkipNegotiation = true;
+                    options.Transports = HttpTransportType.WebSockets;
+                    // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
+                    // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.AccessTokenProvider = async () =>
+                    {
+                        var accessToken = await authTokenProvider.GetAccessToken();
+
+                        if (string.IsNullOrEmpty(accessToken) is false &&
+                            authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                        {
+                            return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                        }
+
+                        return accessToken;
+                    };
+                })
+                .Build();
+            return hubConnection;
+        });
+        //#endif
 
         return services;
     }

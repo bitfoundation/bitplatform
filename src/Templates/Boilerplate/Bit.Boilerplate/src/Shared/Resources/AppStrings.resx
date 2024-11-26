@@ -253,6 +253,9 @@
     <data name="RemoveSession" xml:space="preserve">
     <value>Remove session</value>
   </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Try removing other sessions</value>
+  </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
@@ -759,8 +762,8 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
-    <value>You're sign in as</value>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>You're signed in as</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
@@ -924,6 +927,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Please enter the elevated access token to continue.</value>
+  </data>
+    <data name="ElevatedAccessToken" xml:space="preserve">
+    <value>Token {0}</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
@@ -935,6 +944,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested a elevated access token. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>
@@ -993,9 +1005,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Recently</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>You can't revoke other sessions right now. Try again in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
@@ -1036,6 +1045,27 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Go to the first page</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Go to the previous page</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Go to the next page</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Go to the last page</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>of</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Products count</value>
@@ -1152,6 +1182,11 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (signalR == true) -->
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser, and try again.</value>
   </data>
     <!--#endif -->
 </root>

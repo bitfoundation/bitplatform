@@ -122,7 +122,10 @@ public partial class AppIdentityOptions : IdentityOptions
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
 
-    public TimeSpan RevokeUserSessionsDelay { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// </summary>
+    public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
 public partial class EmailOptions

@@ -1,5 +1,9 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+﻿//+:cnd:noEmit
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR.Client;
+//#endif
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -9,6 +13,9 @@ public partial class ProfileSection
     [Parameter] public UserDto? User { get; set; }
 
 
+    //#if (signalR == true)
+    [AutoInject] HubConnection hub = default!;
+    //#endif
     [AutoInject] private IUserController userController = default!;
 
 
@@ -49,6 +56,13 @@ public partial class ProfileSection
 
         try
         {
+            //#if (signalR == true)
+            if (await hub.IsUserSessionUnique(CurrentCancellationToken))
+            {
+                throw new ForbiddenException(Localizer[nameof(AppStrings.ConcurrentUserSessionOnTheSameDevice)]);
+            }
+            //#endif
+
             editUserDto.Patch(User);
 
             (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(User);

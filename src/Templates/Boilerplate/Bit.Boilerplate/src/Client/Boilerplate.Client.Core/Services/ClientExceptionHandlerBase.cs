@@ -8,10 +8,12 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 {
     [AutoInject] protected Bit.Butil.Console Console = default!;
     [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+    [AutoInject] protected readonly SnackBarService SnackBarService = default!;
     [AutoInject] protected ILogger<ClientExceptionHandlerBase> Logger = default!;
     [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
 
     public void Handle(Exception exception,
+        bool nonInterrupting = false,
         Dictionary<string, object?>? parameters = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
@@ -23,10 +25,12 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         parameters[nameof(memberName)] = memberName;
         parameters[nameof(lineNumber)] = lineNumber;
 
-        Handle(exception, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
+        Handle(exception, nonInterrupting, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
 
-    protected virtual void Handle(Exception exception, Dictionary<string, object> parameters)
+    protected virtual void Handle(Exception exception,
+        bool nonInterrupting,
+        Dictionary<string, object> parameters)
     {
         var isDevEnv = AppEnvironment.IsDev();
 
@@ -46,7 +50,14 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
         string exceptionMessageToShow = GetExceptionMessageToShow(exception);
 
-        MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
+        if (nonInterrupting)
+        {
+            SnackBarService.Error("Boilerplate", exceptionMessageToShow);
+        }
+        else
+        {
+            MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
+        }
 
         if (isDevEnv)
         {

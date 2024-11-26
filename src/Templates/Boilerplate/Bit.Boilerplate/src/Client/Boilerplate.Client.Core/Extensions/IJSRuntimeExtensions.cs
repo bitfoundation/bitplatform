@@ -36,9 +36,9 @@ public static partial class IJSRuntimeExtensions
     //#endif
 
     //#if (notification == true)
-    public static async ValueTask<DeviceInstallationDto> GetDeviceInstallation(this IJSRuntime jsRuntime, string vapidPublicKey)
+    public static async ValueTask<PushNotificationSubscriptionDto> GetPushNotificationSubscription(this IJSRuntime jsRuntime, string vapidPublicKey)
     {
-        return await jsRuntime.InvokeAsync<DeviceInstallationDto>("App.getDeviceInstallation", vapidPublicKey);
+        return await jsRuntime.InvokeAsync<PushNotificationSubscriptionDto>("App.getPushNotificationSubscription", vapidPublicKey);
     }
     //#endif
 

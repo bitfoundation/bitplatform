@@ -9,9 +9,9 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
     [AutoInject] private readonly IJSRuntime jSRuntime = default!;
     [AutoInject] private readonly ClientWebSettings clientWebSettings = default!;
 
-    public async override Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
+    public async override Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
     {
-        return await jSRuntime.GetDeviceInstallation(clientWebSettings.AdsPushVapid!.PublicKey);
+        return await jSRuntime.GetPushNotificationSubscription(clientWebSettings.AdsPushVapid!.PublicKey);
     }
 
     public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken) => clientWebSettings.WebAppRender.PwaEnabled

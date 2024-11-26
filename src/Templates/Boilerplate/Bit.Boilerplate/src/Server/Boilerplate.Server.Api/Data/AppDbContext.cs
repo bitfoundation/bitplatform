@@ -20,6 +20,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
+    public DbSet<UserSession> UserSessions { get; set; } = default!;
+
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")
@@ -27,7 +29,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Product> Products { get; set; } = default!;
     //#endif
     //#if (notification == true)
-    public DbSet<DeviceInstallation> DeviceInstallations { get; set; } = default!;
+    public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -189,8 +191,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         //#endif    
 
         //#if (notification == true)
-        builder.Entity<DeviceInstallation>()
-            .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
+        builder.Entity<PushNotificationSubscription>()
+            .ToContainer("PushNotificationSubscriptions").HasPartitionKey(e => e.Platform);
         //#endif
     }
     //#endif

@@ -9,13 +9,13 @@ namespace Boilerplate.Client.Maui.Services;
 /// </summary>
 public partial class MauiExceptionHandler : ClientExceptionHandlerBase
 {
-    protected override void Handle(Exception exception, Dictionary<string, object> parameters)
+    protected override void Handle(Exception exception, bool nonInterrupting, Dictionary<string, object> parameters)
     {
         exception = UnWrapException(exception);
 
         if (IgnoreException(exception))
             return;
 
-        base.Handle(exception, parameters);
+        base.Handle(exception, nonInterrupting, parameters);
     }
 }

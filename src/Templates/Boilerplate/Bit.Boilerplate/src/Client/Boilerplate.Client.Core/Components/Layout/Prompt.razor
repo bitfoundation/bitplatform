@@ -1,0 +1,29 @@
+﻿@inherits AppComponentBase
+
+<div class="body">
+    <BitStack Horizontal=false FillContent>
+        <BitText Color="BitColor.Tertiary">
+            @Body
+        </BitText>
+        @if (OtpInput)
+        {
+            <BitOtpInput @bind-Value="value"
+                         AutoFocus
+                         Length="6"
+                         Size="BitSize.Large"
+                         Type="BitInputType.Number"
+                         Style="justify-content:center"
+                         OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
+        }
+        else
+        {
+            <BitTextField @bind-Value="value" AutoFocus />
+        }
+    </BitStack>
+</div>
+
+<BitStack Alignment="BitAlignment.Center" AutoHeight>
+    <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+        @Localizer[AppStrings.Ok]
+    </BitButton>
+</BitStack>
