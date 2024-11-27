@@ -124,6 +124,12 @@ public partial class DiagnosticModal : IDisposable
         ResetLogs();
     }
 
+    private async Task TestError()
+    {
+        await Task.Delay(250);
+        throw new InvalidOperationException("This is a test error!");
+    }
+
     private void ResetLogs()
     {
         allLogs = [.. DiagnosticLogger.Store];
