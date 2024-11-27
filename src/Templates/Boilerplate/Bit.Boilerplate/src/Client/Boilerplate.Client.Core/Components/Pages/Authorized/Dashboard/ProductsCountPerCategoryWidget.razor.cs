@@ -15,12 +15,16 @@ public partial class ProductsCountPerCategoryWidget
         {
             Options = new BitChartBarOptions
             {
+                Scales = new() { YAxes = [new BitChartLinearCartesianAxis() { Ticks = new() { Min = 0 } }] },
                 Responsive = true,
                 Legend = new BitChartLegend()
                 {
                     Display = false,
+
                 },
-            }
+
+            },
+
         };
 
         await GetData();
