@@ -10,18 +10,32 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
-            <div>
-                <div>isRefreshed? [@(isRefreshed ? "Yes" : "No")]</div>
-                <br />
-                <div class="anchor">
-                    @for (int i = 1; i < 51; i++)
-                    {
-                        <div>@(i). Item @(i)</div>
-                    }
+            <div style="display:flex; gap:1rem;">
+                <div>
+                    <div>isRefreshed? [@(isRefreshed1 ? "Yes" : "No")]</div>
+                    <br />
+                    <div class="anchor anchor1">
+                        @for (int i = 1; i <= 50; i++)
+                        {
+                            <div>@(i.ToString().PadLeft(2, '0')). Item</div>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <div>isRefreshed? [@(isRefreshed2 ? "Yes" : "No")]</div>
+                    <br />
+                    <div class="anchor anchor2">
+                        @for (int i = 51; i <= 100; i++)
+                        {
+                            <div>@(i.ToString().PadLeft(2, '0')). Item</div>
+                        }
+                    </div>
                 </div>
             </div>
 
-            <BitPullToRefresh AnchorSelector=".anchor" OnRefresh="HandleOnRefresh" />
+            <BitPullToRefresh AnchorSelector=".anchor1" OnRefresh="HandleOnRefresh1" />
+            <BitPullToRefresh AnchorSelector=".anchor2" OnRefresh="HandleOnRefresh2" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

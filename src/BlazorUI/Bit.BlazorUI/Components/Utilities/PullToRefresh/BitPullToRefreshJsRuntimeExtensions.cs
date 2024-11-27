@@ -9,10 +9,13 @@ internal static class BitPullToRefreshJsRuntimeExtensions
                                                                     ElementReference element,
                                                                     ElementReference? anchorElement,
                                                                     string? anchorSelector,
-                                                                    int? threshold,
+                                                                    int trigger,
+                                                                    decimal factor,
+                                                                    int margin,
+                                                                    int threshold,
                                                                     DotNetObjectReference<BitPullToRefresh>? dotnetObjectReference)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, element, anchorElement, anchorSelector, threshold, dotnetObjectReference);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PullToRefresh.setup", id, element, anchorElement, anchorSelector, trigger, factor, margin , threshold, dotnetObjectReference);
     }
 
     internal static ValueTask BitPullToRefreshDispose(this IJSRuntime jsRuntime, string id)

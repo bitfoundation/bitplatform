@@ -27,6 +27,20 @@ public partial class BitPullToRefreshDemo
         },
         new()
         {
+            Name = "Factor",
+            Type = "decimal",
+            DefaultValue = "2",
+            Description = "The factor to balance the pull height out.",
+        },
+        new()
+        {
+            Name = "Margin",
+            Type = "int",
+            DefaultValue = "30",
+            Description = "The value in pixel to add to the top of pull element as a margin for the pull height.",
+        },
+        new()
+        {
             Name = "OnRefresh",
             Type = "EventCallback",
             DefaultValue = "",
@@ -59,8 +73,15 @@ public partial class BitPullToRefreshDemo
         {
             Name = "Threshold",
             Type = "int",
+            DefaultValue = "10",
+            Description = "The threshold in pixel for pulling height that starts the pull to refresh process.",
+        },
+        new()
+        {
+            Name = "Trigger",
+            Type = "int",
             DefaultValue = "80",
-            Description = "The pulling height that triggers the refresh.",
+            Description = "The pulling height in pixel that triggers the refresh.",
         },
     ];
 
@@ -95,12 +116,21 @@ public partial class BitPullToRefreshDemo
     ];
 
 
-    private bool isRefreshed;
-    private async Task HandleOnRefresh()
+    private bool isRefreshed1;
+    private bool isRefreshed2;
+
+    private async Task HandleOnRefresh1()
     {
-        await Task.Delay(1000);
-        isRefreshed = true;
-        _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed = false; InvokeAsync(StateHasChanged); });
+        await Task.Delay(2000);
+        isRefreshed1 = true;
+        _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed1 = false; InvokeAsync(StateHasChanged); });
+    }
+
+    private async Task HandleOnRefresh2()
+    {
+        await Task.Delay(2000);
+        isRefreshed2 = true;
+        _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed2 = false; InvokeAsync(StateHasChanged); });
     }
 
 
@@ -108,29 +138,57 @@ public partial class BitPullToRefreshDemo
     private readonly string example1RazorCode = @"
 <style>
     .anchor {
-        width: 200px;
+        width: 150px;
+        padding: 4px;
+        cursor: grab;
         height: 300px;
         overflow: auto;
-        background: gray;
-        margin-left: 50px;
+        user-select: none;
+        border: 1px gray solid;
     }
 </style>
 
-<div>isRefreshed? [@(isRefreshed ? ""Yes"" : ""No"")]</div>
+<div style=""display:flex; gap:1rem;"">
+    <div>
+        <div>isRefreshed? [@(isRefreshed1 ? ""Yes"" : ""No"")]</div>
+        <br />
+        <div class=""anchor anchor1"">
+            @for (int i = 1; i <= 50; i++)
+            {
+                <div>@(i.ToString().PadLeft(2, '0')). Item</div>
+            }
+        </div>
+    </div>
 
-<div class=""anchor"">
-    @for (int i = 1; i < 51; i++)
-    {
-        <div>@(i). Item @(i)</div>
-    }
+    <div>
+        <div>isRefreshed? [@(isRefreshed2 ? ""Yes"" : ""No"")]</div>
+        <br />
+        <div class=""anchor anchor2"">
+            @for (int i = 51; i <= 100; i++)
+            {
+                <div>@(i.ToString().PadLeft(2, '0')). Item</div>
+            }
+        </div>
+    </div>
 </div>
 
-<BitPullToRefresh Anchor="".anchor"" OnRefresh=""HandleOnRefresh"" />";
+<BitPullToRefresh AnchorSelector="".anchor1"" OnRefresh=""HandleOnRefresh1"" />
+<BitPullToRefresh AnchorSelector="".anchor2"" OnRefresh=""HandleOnRefresh2"" />";
     private readonly string example1CsharpCode = @"
-private bool isRefreshed;
-private async Task HandleOnRefresh()
+private bool isRefreshed1;
+private bool isRefreshed2;
+
+private async Task HandleOnRefresh1()
 {
-    await Task.Delay(1000);
-    isRefreshed = true;
+    await Task.Delay(2000);
+    isRefreshed1 = true;
+    _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed1 = false; InvokeAsync(StateHasChanged); });
+}
+
+private async Task HandleOnRefresh2()
+{
+    await Task.Delay(2000);
+    isRefreshed2 = true;
+    _ = Task.Delay(1000).ContinueWith(_ => { isRefreshed2 = false; InvokeAsync(StateHasChanged); });
 }";
 }

@@ -2,63 +2,28 @@
 
 .bit-ptr {
     height: 0;
+    display: flex;
     position: fixed;
     overflow: hidden;
     pointer-events: none;
-}
-
-.bit-ptr-spn {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: flex-end;
+    z-index: $zindex-base;
     justify-content: center;
 }
 
-.bit-ptr-rng {
-    width: 40px;
-    height: 40px;
-    color: $clr-pri;
-    position: relative;
-    display: inline-block;
-}
-
-.bit-ptr-rng,
-.bit-ptr-rng div {
-    box-sizing: border-box;
-}
-
-.bit-ptr-rng div {
-    margin: 4px;
-    width: 32px;
-    height: 32px;
-    display: block;
-    position: absolute;
+.bit-ptr-wrp {
+    display: flex;
     border-radius: 50%;
-    box-sizing: border-box;
-    border: 4px solid currentColor;
-    border-color: currentColor transparent transparent transparent;
-    animation: bit-ptr-rng-anm 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    align-items: center;
+    justify-content: center;
+    background-color: $clr-bg-pri;
+    box-shadow: $box-shadow-callout2;
 }
 
-.bit-ptr-rng div:nth-child(1) {
-    animation-delay: -0.45s;
+.bit-ptr-spn {
+    fill: $clr-fg-pri;
+    stroke: $clr-fg-pri;
 }
 
-.bit-ptr-rng div:nth-child(2) {
-    animation-delay: -0.3s;
-}
-
-.bit-ptr-rng div:nth-child(3) {
-    animation-delay: -0.15s;
-}
-
-@keyframes bit-ptr-rng-anm {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+.bit-ptr-spin {
+    animation: bit-spin 1s linear infinite;
 }

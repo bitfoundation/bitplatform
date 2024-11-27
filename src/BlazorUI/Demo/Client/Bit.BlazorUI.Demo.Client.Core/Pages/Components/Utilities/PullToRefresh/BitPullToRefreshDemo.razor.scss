@@ -1,12 +1,11 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-@import '../../../../Styles/abstracts/_bit-css-variables.scss';
-
-.anchor {
-    width: 200px;
+﻿.anchor {
+    width: 150px;
+    padding: 4px;
+    cursor: grab;
     height: 300px;
     overflow: auto;
-    margin-left: 50px;
-    outline: 1px gray solid;
+    user-select: none;
+    border: 1px gray solid;
 }
 
 ::deep {

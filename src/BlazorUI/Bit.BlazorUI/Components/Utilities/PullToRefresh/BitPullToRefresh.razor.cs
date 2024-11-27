@@ -4,7 +4,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 {
+    private decimal _diff;
     private bool _disposed;
+    private bool _refreshing;
 
 
 
@@ -22,6 +24,16 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// The content of the pull to refresh element.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The factor to balance the pull height out.
+    /// </summary>
+    [Parameter] public decimal Factor { get; set; } = 2;
+
+    /// <summary>
+    /// The value in pixel to add to the top of pull element as a margin for the pull height.
+    /// </summary>
+    [Parameter] public int Margin { get; set; } = 30;
 
     /// <summary>
     /// The callback for when the threshold of the pull-down happens.
@@ -44,9 +56,14 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<decimal> OnPullEnd { get; set; }
 
     /// <summary>
-    /// The pulling height that triggers the refresh.
+    /// The threshold in pixel for pulling height that starts the pull to refresh process.
     /// </summary>
-    [Parameter] public int? Threshold { get; set; }
+    [Parameter] public int Threshold { get; set; } = 10;
+
+    /// <summary>
+    /// The pulling height in pixel that triggers the refresh.
+    /// </summary>
+    [Parameter] public int Trigger { get; set; } = 80;
 
 
 
@@ -57,7 +74,12 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [JSInvokable("Refresh")]
     public async Task _Refresh()
     {
+        _refreshing = true;
+        await InvokeAsync(StateHasChanged);
         await OnRefresh.InvokeAsync();
+        _diff = 0;
+        _refreshing = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     [JSInvokable("OnStart")]
@@ -70,6 +92,8 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diff)
     {
+        _diff = diff;
+        await InvokeAsync(StateHasChanged);
         await OnPullMove.InvokeAsync(diff);
     }
 
@@ -92,7 +116,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, AnchorElement, AnchorSelector, Threshold, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, AnchorElement, AnchorSelector, Trigger, Factor, Margin, Threshold, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
