@@ -19,8 +19,8 @@ public partial class ProductsCountPerCategoryWidget
                 Responsive = true,
                 Legend = new BitChartLegend()
                 {
-                    Display = false
-                }
+                    Display = false,
+                },
             }
         };
 
