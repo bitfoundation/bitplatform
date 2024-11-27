@@ -1,26 +1,34 @@
 ﻿<ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <ExamplePreview>
-        <BitNavBar Items="basicNavBarItems" />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
     <ExamplePreview>
         <div>Disabled:</div><br />
-        <BitNavBar Items="basicNavBarItems" IsEnabled="false" />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" IsEnabled="false" />
+        </div>
         <br /><br /><br /><br />
         <div>Disabled item:</div><br />
-        <BitNavBar Items="basicNavBarItemsDisabled" />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItemsDisabled" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Manual Mode" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
     <ExamplePreview>
-        <div>Defines the mode in which navigation is handled by the nav bar component.</div>
+        <div>Defines the mode in which the selected item is handled manually, instead of automatically using the current url.</div>
         <br /><br />
-        <BitNavBar Mode="BitNavMode.Manual"
-                   Items="basicNavBarItems"
-                   DefaultSelectedItem="basicNavBarItems[0]" />
+        <div class="container">
+            <BitNavBar Mode="BitNavMode.Manual"
+                       Items="basicNavBarItems"
+                       DefaultSelectedItem="basicNavBarItems[0]" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -28,7 +36,9 @@
     <ExamplePreview>
         <div>Only renders the icon of each navbar item.</div>
         <br /><br />
-        <BitNavBar Items="basicNavBarItems" IconOnly />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" IconOnly />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -36,7 +46,9 @@
     <ExamplePreview>
         <div>Enables fit-content width for the nav bar that sets the width of the component based on its content size.</div>
         <br /><br />
-        <BitNavBar Items="basicNavBarItems" FitWidth />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" FitWidth />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -44,22 +56,32 @@
     <ExamplePreview>
         <div>Explore BitNavBar's customization capabilities.</div>
         <br /><br />
-        <BitNavBar Items="basicNavBarItems">
-            <ItemTemplate Context="item">
-                <BitIcon IconName="@item.IconName" Color="BitColor.Success" />
-                <BitText Typography="BitTypography.H6" Color="BitColor.Warning">@item.Text</BitText>
-            </ItemTemplate>
-        </BitNavBar>
+        <div>ItemTemplate:</div><br />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems">
+                <ItemTemplate Context="item">
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning">@item.Text</BitText>
+                    <BitIcon IconName="@item.IconName" Color="BitColor.Success" />
+                </ItemTemplate>
+            </BitNavBar>
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's template:</div><br />
+        <div class="container">
+            <BitNavBar Items="templateNavBarItems" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
 <ComponentExampleBox Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
     <ExamplePreview>
-        <div>Managing NavBar click event (OnClick).</div>
+        <div>Managing NavBar item click event (OnItemClick).</div>
         <br /><br />
-        <BitNavBar Items="basicNavBarItems" OnItemClick="(BitNavBarItem item) => eventsClickedItem = item" />
-        <br />
-        Clicked item: @(eventsClickedItem?.Text)
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" OnItemClick="(BitNavBarItem item) => eventsClickedItem = item" />
+        </div>
+        <br /><br />
+        Clicked item: @eventsClickedItem?.Text
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -67,15 +89,22 @@
     <ExamplePreview>
         <div>This example demonstrates different ways to handle item selection and changes within the component.</div>
         <br /><br />
-        <div>DefaultSelectedItem:</div>
+        <div>DefaultSelectedItem:</div><br />
+        <div class="container">
+            <BitNavBar @bind-SelectedItem="selectedItem"
+                       Items="basicNavBarItems"
+                       Mode="BitNavMode.Manual"
+                       DefaultSelectedItem="basicNavBarItems[1]" />
+        </div>
         <br />
-        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" @bind-SelectedItem="selectedItem" DefaultSelectedItem="basicNavBarItems[1]" />
-        <br />
-        Selected item: @(selectedItem?.Text)
-        <br /><br />
-        <div>Two-way SelectedItem:</div>
-        <br />
-        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" @bind-SelectedItem="twoWaySelectedItem" />
+        Selected item: @selectedItem.Text
+        <br /><br /><br /><br />
+        <div>Two-way SelectedItem:</div><br />
+        <div class="container">
+            <BitNavBar @bind-SelectedItem="twoWaySelectedItem"
+                       Items="basicNavBarItems"
+                       Mode="BitNavMode.Manual" />
+        </div>
         <br />
         <BitChoiceGroup Horizontal Items="@choiceGroupItems" @bind-Value="@twoWaySelectedItem" />
     </ExamplePreview>
@@ -87,9 +116,14 @@
         <br /><br />
         <BitToggle @bind-Value="reselectable" OnText="Enabled recalling" OffText="Disabled recalling" />
         <br />
-        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" OnItemClick="(BitNavBarItem item) => countClick++" Reselectable="reselectable" />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems"
+                       Mode="BitNavMode.Manual"
+                       Reselectable="reselectable"
+                       OnItemClick="(BitNavBarItem item) => countClick++" />
+        </div>
         <br />
-        Count clicked item: @(countClick)
+        Item click count: @countClick
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -113,13 +147,17 @@
                     <Main>
                         <BitStack HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
                             <BitText Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
-                                <BitIcon IconName="@advanceWaySelectedItem?.IconName" Color="BitColor.PrimaryForeground" />
-                                @advanceWaySelectedItem?.Text
+                                <BitIcon IconName="@advancedSelectedItem.IconName" Color="BitColor.PrimaryForeground" Size="BitSize.Large" />
+                                <span>@advancedSelectedItem.Text</span>
                             </BitText>
                         </BitStack>
                     </Main>
                     <Footer>
-                        <BitNavBar Items="basicNavBarItems" Mode="BitNavMode.Manual" Class="nav-menu" @bind-SelectedItem="advanceWaySelectedItem" />
+                        <div class="nav-menu">
+                            <BitNavBar Items="basicNavBarItems"
+                                       Mode="BitNavMode.Manual"
+                                       @bind-SelectedItem="advancedSelectedItem" />
+                        </div>
                     </Footer>
                 </BitLayout>
             </div>
@@ -131,58 +169,92 @@
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
-        <div>Primary</div>
-        <BitNavBar Color="BitColor.Primary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Secondary</div>
-        <BitNavBar Color="BitColor.Secondary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Tertiary</div>
-        <BitNavBar Color="BitColor.Tertiary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Info</div>
-        <BitNavBar Color="BitColor.Info" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Success</div>
-        <BitNavBar Color="BitColor.Success" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Warning</div>
-        <BitNavBar Color="BitColor.Warning" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>SevereWarning</div>
-        <BitNavBar Color="BitColor.SevereWarning" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>Error</div>
-        <BitNavBar Color="BitColor.Error" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-            <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
-            <BitNavBar Color="BitColor.PrimaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-            <br /><br />
-            <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
-            <BitNavBar Color="BitColor.SecondaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-            <br /><br />
-            <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
-            <BitNavBar Color="BitColor.TertiaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        <div>Primary:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Primary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
         </div>
-        <br /><br />
-        <div>PrimaryForeground</div>
-        <BitNavBar Color="BitColor.PrimaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>SecondaryForeground</div>
-        <BitNavBar Color="BitColor.SecondaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>TertiaryForeground</div>
-        <BitNavBar Color="BitColor.TertiaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>PrimaryBorder</div>
-        <BitNavBar Color="BitColor.PrimaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>SecondaryBorder</div>
-        <BitNavBar Color="BitColor.SecondaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
-        <br /><br />
-        <div>TertiaryBorder</div>
-        <BitNavBar Color="BitColor.TertiaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        <br /><br /><br /><br />
+        <div>Secondary:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Secondary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Tertiary:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Tertiary" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Info:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Info" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Success:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Success" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Warning:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Warning" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>SevereWarning:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.SevereWarning" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Error:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.Error" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div style="background:var(--bit-clr-fg-sec);padding:1rem">
+            <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground:</div><br />
+            <div class="container">
+                <BitNavBar Color="BitColor.PrimaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+            </div>
+            <br /><br /><br /><br />
+            <div style="color:var(--bit-clr-bg-sec)">SecondaryBackground:</div><br />
+            <div class="container">
+                <BitNavBar Color="BitColor.SecondaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+            </div>
+            <br /><br /><br /><br />
+            <div style="color:var(--bit-clr-bg-ter)">TertiaryBackground:</div><br />
+            <div class="container">
+                <BitNavBar Color="BitColor.TertiaryBackground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+            </div>
+        </div>
+        <br /><br /><br /><br />
+        <div>PrimaryForeground:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.PrimaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>SecondaryForeground:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.SecondaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>TertiaryForeground:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.TertiaryForeground" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>PrimaryBorder:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.PrimaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>SecondaryBorder:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.SecondaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
+        <br /><br /><br /><br />
+        <div>TertiaryBorder:</div><br />
+        <div class="container">
+            <BitNavBar Color="BitColor.TertiaryBorder" Items="basicNavBarItems" DefaultSelectedItem="basicNavBarItems[0]" Mode="BitNavMode.Manual" />
+        </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
@@ -190,23 +262,31 @@
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
-        <div>
-            <div>Component's style & class:</div>
-            <BitNavBar Items="basicNavBarItems" Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" />
-            <br />
-            <BitNavBar Items="basicNavBarItems" Class="custom-class" />
+        <div>Component's Style:</div><br />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems"
+                       Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" />
         </div>
         <br /><br />
-        <div>
-            <div>Item's style & class:</div>
+        <div>Component's Class:</div><br />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems"
+                       Class="custom-class" />
+        </div>
+        <br /><br /><br /><br />
+        <div>Item's style & class:</div><br />
+        <div class="container">
             <BitNavBar Items="styleClassItems" />
         </div>
-        <br /><br />
-        <div>
-            <div>Styles & Classes:</div>
-            <BitNavBar Items="basicNavBarItems" Classes="@(new() { ItemIcon = "custom-item-ico", ItemText = "custom-item-txt" })" />
-            <br />
+        <br /><br /><br /><br />
+        <div>Styles:</div><br />
+        <div class="container">
             <BitNavBar Items="basicNavBarItems" Styles="@(new() { ItemIcon = "color: aqua;", ItemText = "color: tomato;" })" />
+        </div>
+        <br /><br />
+        <div>Classes:</div><br />
+        <div class="container">
+            <BitNavBar Items="basicNavBarItems" Classes="@(new() { ItemIcon = "custom-item-ico", ItemText = "custom-item-txt" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -215,8 +295,18 @@
     <ExamplePreview>
         <div>Use BitNavBar in right-to-left (RTL).</div>
         <br /><br />
-        <div dir="rtl">
+        <div dir="rtl" class="container">
             <BitNavBar Dir="BitDir.Rtl" Items="rtlItems" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
+
+@code {
+    private static readonly List<BitNavBarItem> templateNavBarItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home  },
+        new() { Text = "Products", Template = (item) => @<div style="display:flex;flex-direction:column"><b>@item.Text</b><span>🎁</span></div> },
+        new() { Text = "Academy", IconName = BitIconName.LearningTools },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+}
