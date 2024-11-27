@@ -1,4 +1,4 @@
-<CascadingValue Value="CurrentDir">
+﻿<CascadingValue Value="CurrentDir">
     <CascadingValue Value="CurrentTheme" Name="@Parameters.CurrentTheme">
         <CascadingValue Value="CurrentUrl" Name="@Parameters.CurrentUrl">
             <CascadingValue Value="CurrentRouteData" Name="@Parameters.CurrentRouteData">
@@ -10,9 +10,7 @@
                                 <div class="inset-center" dir="@CurrentDir?.ToString().ToLower()">
                                     <div class="inset-left"></div>
                                     <div class="inset-main" id="bit-inset-main">
-                                        <AppErrorBoundary>
-                                            @ChildContent
-                                        </AppErrorBoundary>
+                                        @ChildContent
                                     </div>
                                     <div class="inset-right"></div>
                                 </div>

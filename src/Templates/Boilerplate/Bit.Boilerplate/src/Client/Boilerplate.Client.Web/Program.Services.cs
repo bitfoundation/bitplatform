@@ -1,7 +1,6 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Logging.Configuration;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Boilerplate.Client.Web.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Boilerplate.Client.Web;
 
@@ -13,8 +12,7 @@ public static partial class Program
         var configuration = builder.Configuration;
         // The following services are blazor web assembly only.
 
-        builder.Logging.ConfigureLoggers();
-        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+        builder.Logging.ConfigureLoggers(configuration);
 
         services.AddClientWebProjectServices(configuration);
 

@@ -7,7 +7,7 @@ public partial class Templates05CreateProjectPage
     private string name = "MyFirstProject";
 
     private Parameter<bool> windows = new() { Value = true, Default = true };
-    private Parameter<bool> appCenter = new() { Value = false, Default = false };
+    private Parameter<bool> sentry = new() { Value = false, Default = false };
     private Parameter<bool> offlineDb = new() { Value = false, Default = false };
     private Parameter<bool> notification = new() { Value = false, Default = false };
     private Parameter<bool> appInsight = new() { Value = false, Default = false };
@@ -125,9 +125,9 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetWindowsCommand());
         }
 
-        if (appCenter.IsModified)
+        if (sentry.IsModified)
         {
-            finalCommand.Append(GetAppCenterCommand());
+            finalCommand.Append(GetSentryCommand());
         }
 
         if (database.IsModified)
@@ -198,9 +198,9 @@ public partial class Templates05CreateProjectPage
         return $"--windows {windows.Value.ToString().ToLowerInvariant()} ";
     }
 
-    private string GetAppCenterCommand()
+    private string GetSentryCommand()
     {
-        return $"--appCenter {appCenter.Value.ToString().ToLowerInvariant()} ";
+        return $"--sentry {sentry.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetDatabaseCommand()

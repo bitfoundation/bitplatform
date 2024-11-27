@@ -57,6 +57,10 @@
                            OnClick="ReloadLogs"
                            IconName="@BitIconName.Refresh"
                            Color="BitColor.SecondaryBackground" />
+                <BitButton IconOnly
+                           OnClick="TestError"
+                           IconName="@BitIconName.Error"
+                           Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"

@@ -136,14 +136,14 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
-                <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
+                <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
+                <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
-                @GetAppCenterCommand()
+                @GetSentryCommand()
             </CodeBox>
-            Adding --appCenter true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            Adding --sentry true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
             seamlessly across all supported platforms.
         </BitGridItem>
 
