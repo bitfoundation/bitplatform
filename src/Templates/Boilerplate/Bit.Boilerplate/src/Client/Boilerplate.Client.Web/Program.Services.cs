@@ -13,7 +13,6 @@ public static partial class Program
         // The following services are blazor web assembly only.
 
         builder.Logging.ConfigureLoggers(configuration);
-        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
         services.AddClientWebProjectServices(configuration);
 

@@ -44,7 +44,6 @@ public static partial class MauiProgram
         services.AddBlazorWebViewDeveloperTools();
 
         builder.Logging.ConfigureLoggers(configuration);
-        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
 
         builder.Logging.AddEventSourceLogger();
 

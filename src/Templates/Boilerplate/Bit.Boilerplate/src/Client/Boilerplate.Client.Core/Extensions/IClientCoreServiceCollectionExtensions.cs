@@ -130,7 +130,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddBlazorApplicationInsights(options =>
         {
             configuration.GetRequiredSection("ApplicationInsights").Bind(options);
-        },loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
+        }, loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
         //#endif
 
         services.AddTypedHttpClients();
