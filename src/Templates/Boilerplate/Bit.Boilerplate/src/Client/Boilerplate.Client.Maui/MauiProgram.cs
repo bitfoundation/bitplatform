@@ -20,16 +20,6 @@ public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        //+:cnd:noEmit
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
-        {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-        //-:cnd:noEmit
-
         AppPlatform.IsBlazorHybrid = true;
 #if iOS
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
@@ -38,11 +28,18 @@ public static partial class MauiProgram
 
         var builder = MauiApp.CreateBuilder();
 
+        //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
+            //#if (sentry == true)
+            .UseSentry(options =>
+            {
+                var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
+                configuration.GetRequiredSection("Logging:Sentry").Bind(options);
+            })
+            //#endif
             .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
-        //+:cnd:noEmit
         //#if (notification == true)
         if (AppPlatform.IsWindows is false)
         {

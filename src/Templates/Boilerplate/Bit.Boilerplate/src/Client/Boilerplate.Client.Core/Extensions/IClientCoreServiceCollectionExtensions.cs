@@ -127,12 +127,10 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         //#if (appInsights == true)
         services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
-        services.AddBlazorApplicationInsights(x =>
+        services.AddBlazorApplicationInsights(options =>
         {
-            ClientCoreSettings settings = new();
-            configuration.Bind(settings);
-            x.ConnectionString = settings.ApplicationInsights?.ConnectionString;
-        });
+            configuration.GetRequiredSection("ApplicationInsights").Bind(options);
+        },loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
         //#endif
 
         services.AddTypedHttpClients();

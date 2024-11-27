@@ -42,19 +42,20 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
       env:
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
-        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
-        WebAppRender.BlazorMode: BlazorWebAssembly
         WebAppRender.PrerenderEnabled: true
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        WebAppRender.BlazorMode: BlazorWebAssembly
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -145,7 +146,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --framework net8.0
+        cd ..\..\..\ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --windows --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --framework net8.0
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -153,13 +154,10 @@ jobs:
         files: 'TodoSample\src\Shared\appsettings.json, TodoSample\src\Client\TodoSample.Client.Core\appsettings.json, TodoSample\src\Client\TodoSample.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         WindowsUpdate.FilesUrl: https://windows-todo.bitplatform.dev
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-  
-    - name: Set app center secret
-      run: (Get-Content TodoSample\src\Client\TodoSample.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "39f576f2-7c16-4990-af3f-7b70509d41e2";' | Out-File -Encoding utf8 TodoSample\src\Client\TodoSample.Client.Windows\Program.cs
-      shell: pwsh
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -204,7 +202,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -226,12 +224,9 @@ jobs:
         files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: |
-          sed -i 's/appCenterSecret = null;/appCenterSecret = "de0219a6-fdcd-44f7-8c28-c108331ed27c";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -304,7 +299,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --appCenter --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name TodoSample --database PostgreSQL --sample Todo --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net8.0
       
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -312,12 +307,9 @@ jobs:
         files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: |
-          brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "f72e6774-1c83-404c-bca8-6e5198fb8e0e";/g' TodoSample/src/Client/TodoSample.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui

@@ -213,8 +213,8 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
-        "appCenter": {
-            "displayName": "Add Visual Studio AppCenter to project?",
+        "sentry": {
+            "displayName": "Add Sentry logging to project?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
