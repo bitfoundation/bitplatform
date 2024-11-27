@@ -274,6 +274,9 @@
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
   </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست.</value>
+  </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
@@ -1182,11 +1185,6 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
-  </data>
-    <!--#endif -->
-    <!--#if (signalR == true) -->
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست، و دوباره تلاش کنید.</value>
   </data>
     <!--#endif -->
 </root>

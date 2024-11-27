@@ -69,7 +69,6 @@ public partial class Templates05CreateProjectPage
             new() { Text = "SqlServer", Value = "SqlServer" },
             new() { Text = "PostgreSQL", Value = "PostgreSQL" },
             new() { Text = "MySQL", Value = "MySQL" },
-            new() { Text = "Cosmos", Value = "Cosmos" },
             new() { Text = "Other", Value = "Other" },
         ]
     };

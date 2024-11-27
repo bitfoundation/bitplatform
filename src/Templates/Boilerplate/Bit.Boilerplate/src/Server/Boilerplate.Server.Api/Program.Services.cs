@@ -194,11 +194,6 @@ public static partial class Program
             {
 
             });
-            //#elif (database == "Cosmos")
-            options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
-            {
-
-            });
             //#elif (database == "MySql")
             //#if (IsInsideProjectTemplate == true)
             /*

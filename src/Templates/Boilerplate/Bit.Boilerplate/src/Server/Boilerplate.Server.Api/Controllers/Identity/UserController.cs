@@ -43,24 +43,15 @@ public partial class UserController : AppControllerBase, IUserController
         return user.Map();
     }
 
-    [HttpGet]
-    public async Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken)
+    [HttpGet, EnableQuery]
+    public IQueryable<UserSessionDto> GetUserSessions()
     {
         var userId = User.GetUserId();
 
-        return (await DbContext.UserSessions.Where(us => us.UserId == userId).ToArrayAsync(cancellationToken))
-            .Select(us =>
-            {
-                var dto = us.Map();
-
-                dto.RenewedOn = us.RenewedOn ?? us.StartedOn;
-
-                dto.IsValid = DateTimeOffset.UtcNow - dto.RenewedOn < AppSettings.Identity.RefreshTokenExpiration;
-
-                return dto;
-            })
-            .OrderByDescending(us => us.RenewedOn)
-        .ToList();
+        return DbContext.UserSessions
+            .Where(us => us.UserId == userId)
+            .Project()
+            .OrderByDescending(us => us.RenewedOn);
     }
 
     [HttpPost]
@@ -69,10 +60,6 @@ public partial class UserController : AppControllerBase, IUserController
         var currentSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
-            //#if (notification == true)
-            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
-            .Include(us => us.PushNotificationSubscription)
-            //#endif
             .FirstOrDefaultAsync(us => us.Id == currentSessionId, cancellationToken) ?? throw new ResourceNotFoundException();
 
         DbContext.UserSessions.Remove(userSession);
@@ -92,10 +79,6 @@ public partial class UserController : AppControllerBase, IUserController
             throw new BadRequestException(); // "Call SignOut instead"
 
         var userSession = await DbContext.UserSessions
-            //#if (notification == true)
-            // In order to have the code that works with databases without cascade delete support, we're loading subscriptions, so ef core will set their UserSessionId to null
-            .Include(us => us.PushNotificationSubscription)
-            //#endif
             .FirstOrDefaultAsync(us => us.Id == id, cancellationToken) ?? throw new ResourceNotFoundException();
 
         DbContext.UserSessions.Remove(userSession);
@@ -267,7 +250,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var currentSessionId = User.GetSessionId();
 
-        foreach (var userSession in await GetUserSessions(cancellationToken))
+        foreach (var userSession in await GetUserSessions().ToArrayAsync(cancellationToken))
         {
             if (userSession.Id == currentSessionId)
             {
