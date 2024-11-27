@@ -14,6 +14,7 @@ public partial class Program
     {
         Application.ThreadException += (_, e) => LogException(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception); e.SetObserved(); };
 
         ApplicationConfiguration.Initialize();
 

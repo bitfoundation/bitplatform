@@ -16,7 +16,7 @@ public partial class PromptService
         modalService.Show<Prompt>(parameters, title).ContinueWith(async task =>
         {
             await task;
-            tcs.SetResult(null);
+            tcs.TrySetResult(null);
         });
         return tcs.Task;
     }
