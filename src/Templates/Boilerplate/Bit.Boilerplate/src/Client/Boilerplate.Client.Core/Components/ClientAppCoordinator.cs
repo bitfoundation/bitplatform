@@ -80,7 +80,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = e.Location;
-        navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation($"Propagating {(firstRun ? "initial" : "changed")} authentication state.");
+                authLogger.LogInformation("Propagating {AuthStateType} authentication state.", firstRun ? "Initial" : "Updated");
             }
 
             //#if (notification == true)

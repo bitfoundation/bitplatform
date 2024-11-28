@@ -6,10 +6,11 @@ namespace Boilerplate.Server.Api.Services;
 public partial class PhoneService
 {
     [AutoInject] private readonly ServerApiSettings appSettings = default!;
-    [AutoInject] private readonly ILogger<PhoneService> logger = default!;
-    [AutoInject] private readonly IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private readonly IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private readonly PhoneNumberUtil phoneNumberUtil = default!;
+    [AutoInject] private readonly IHostEnvironment hostEnvironment = default!;
+    [AutoInject] private readonly ILogger<PhoneService> phoneLogger = default!;
+    [AutoInject] private readonly IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private readonly RootServiceScopeProvider rootServiceScopeProvider = default!;
 
     public virtual string? NormalizePhoneNumber(string? phoneNumber)
     {
@@ -30,22 +31,30 @@ public partial class PhoneService
     {
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendSms(logger, messageText, phoneNumber);
+            LogSendSms(phoneLogger, messageText, phoneNumber);
         }
 
         if (appSettings.Sms?.Configured is false) return;
 
-        var messageOptions = new CreateMessageOptions(new(phoneNumber))
+        var from = appSettings.Sms!.FromPhoneNumber;
+
+        _ = Task.Run(async () =>
         {
-            From = new(appSettings.Sms!.FromPhoneNumber),
-            Body = messageText
-        };
+            await using var scope = rootServiceScopeProvider.Invoke();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<PhoneService>>();
 
-        var smsMessage = MessageResource.Create(messageOptions);
+            var messageOptions = new CreateMessageOptions(new(phoneNumber))
+            {
+                From = new(from),
+                Body = messageText
+            };
 
-        if (smsMessage.ErrorCode is null) return;
+            var smsMessage = MessageResource.Create(messageOptions);
 
-        LogSendSmsFailed(logger, phoneNumber, smsMessage.ErrorCode, smsMessage.ErrorMessage);
+            if (smsMessage.ErrorCode is null) return;
+
+            LogSendSmsFailed(logger, phoneNumber, smsMessage.ErrorCode, smsMessage.ErrorMessage);
+        }, default);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
