@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.Products;
+
 //#if (sample == "Todo")
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
@@ -21,6 +23,8 @@ public static partial class Mapper
 {
     //#if (sample == "Todo")
     public static partial void Patch(this TodoItemDto source, TodoItemDto destination);
+    //#elif (sample == "Admin")
+    public static partial void Patch(this ProductDto source, ProductDto destination);
     //#endif
     public static partial void Patch(this UserDto source, UserDto destination);
     public static partial void Patch(this EditUserDto source, UserDto destination);
