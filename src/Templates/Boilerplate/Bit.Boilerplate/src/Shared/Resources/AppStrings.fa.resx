@@ -931,7 +931,7 @@
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>لطفا توکن دریافت دسترسی ویژه را وارد کنید</value>
+    <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>توکن {0}</value>

@@ -931,7 +931,7 @@
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Please enter the elevated access token to continue.</value>
+    <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>Token {0}</value>

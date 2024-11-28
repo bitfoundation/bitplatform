@@ -72,6 +72,8 @@ public partial class Program
         var form = new Form()
         {
             Text = "Boilerplate",
+            Width = 1024,
+            Height = 768,
             WindowState = FormWindowState.Maximized,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)

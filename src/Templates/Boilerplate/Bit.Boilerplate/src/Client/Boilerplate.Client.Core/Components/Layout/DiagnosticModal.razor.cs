@@ -124,10 +124,17 @@ public partial class DiagnosticModal : IDisposable
         ResetLogs();
     }
 
-    private async Task TestError()
+    private static bool showKnownException = true;
+    private async Task ThrowTestException()
     {
         await Task.Delay(250);
-        throw new InvalidOperationException("This is a test error!");
+
+        showKnownException = !showKnownException;
+
+        if (showKnownException)
+            throw new InvalidOperationException("Something critical happened.");
+        else
+            throw new DomainLogicException("Something bad happened.");
     }
 
     private void ResetLogs()
