@@ -24,7 +24,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         parameters[nameof(filePath)] = filePath;
         parameters[nameof(memberName)] = memberName;
         parameters[nameof(lineNumber)] = lineNumber;
-        parameters["exception-id"] = Guid.NewGuid(); // This will remain consistent across different registered loggers, such as Sentry, Application Insights, etc.
+        parameters["exceptionId"] = Guid.NewGuid(); // This will remain consistent across different registered loggers, such as Sentry, Application Insights, etc.
 
         Handle(exception, nonInterrupting, parameters.ToDictionary(i => i.Key, i => i.Value ?? string.Empty));
     }
