@@ -71,7 +71,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthManager.GetAuthenticationStateAsync());
+            await PropagateUserId(firstRun: true, AuthenticationStateTask);
         }
 
         await base.OnInitAsync();
@@ -122,7 +122,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation("Propagating {AuthStateType} authentication state.", firstRun ? "Initial" : "Updated");
+                authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
             //#if (notification == true)
@@ -207,7 +207,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            logger.LogInformation("SignalR state changed {State}", hubConnection!.State);
+            logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
         }
         else
         {

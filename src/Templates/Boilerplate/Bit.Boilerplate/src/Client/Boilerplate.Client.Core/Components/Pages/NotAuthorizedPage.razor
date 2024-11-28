@@ -4,7 +4,7 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
 
-@if (isRefreshingToken)
+@if (isUpdatingAuthState)
 {
     <LoadingComponent />
 }
@@ -39,19 +39,5 @@ else
                 </BitStack>
             </section>
         </Authorized>
-        <NotAuthorized>
-            <!-- Todo: The following code is for testing purposes only. -->
-            <section>
-                <BitStack HorizontalAlign="BitAlignment.Center">
-                    <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
-                        @Localizer[nameof(AppStrings.YouNeedToSignIn)]
-                    </BitText>
-                    <BitButton Style="width:300px"
-                               OnClick="WrapHandled(SignOut)">
-                        @Localizer[nameof(AppStrings.SignOut)]
-                    </BitButton>
-                </BitStack>
-            </section>
-        </NotAuthorized>
     </AuthorizeView>
 }

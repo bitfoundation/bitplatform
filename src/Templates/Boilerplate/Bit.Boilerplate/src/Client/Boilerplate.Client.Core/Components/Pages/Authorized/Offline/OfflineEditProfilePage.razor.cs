@@ -41,7 +41,7 @@ public partial class OfflineEditProfilePage
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
 
         // Only for the first time, we need to migrate the database
-        await dbContext.Database.MigrateAsync(CurrentCancellationToken);
+        await Task.Run(async () => await dbContext.Database.MigrateAsync(CurrentCancellationToken), CurrentCancellationToken);
 
         return await dbContext.Users.FirstAsync(CurrentCancellationToken);
     }
