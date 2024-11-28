@@ -1,7 +1,7 @@
 ﻿@inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal">
+    <BitModal @bind-IsOpen="isOpen" FullSize Class="modal" Styles="@(new() { Content = "overflow:auto" })">
         <BitStack FillContent Class="container">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
