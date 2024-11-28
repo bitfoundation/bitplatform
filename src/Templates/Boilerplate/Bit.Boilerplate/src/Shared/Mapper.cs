@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
-using Boilerplate.Shared.Dtos.Products;
 
 //#if (sample == "Todo")
 using Boilerplate.Shared.Dtos.Todo;
+//#elif (sample == "Admin")
+using Boilerplate.Shared.Dtos.Products;
 //#endif
 using Riok.Mapperly.Abstractions;
 
