@@ -61,6 +61,10 @@
                            OnClick="ThrowTestException"
                            IconName="@BitIconName.Error"
                            Color="BitColor.SecondaryBackground" />
+                <BitButton IconOnly
+                           OnClick="CallDiagnosticsApi"
+                           Color="BitColor.SecondaryBackground"
+                           IconName="@BitIconName.DiagnosticDataViewerApp" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
