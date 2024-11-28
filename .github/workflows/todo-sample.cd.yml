@@ -292,7 +292,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.2'
+        xcode-version: '16.2-beta'
 
     - name: Create project from Boilerplate
       run: |
