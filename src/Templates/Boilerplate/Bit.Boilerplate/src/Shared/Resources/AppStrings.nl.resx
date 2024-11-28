@@ -849,6 +849,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Nadat je de QR-code hebt gescand of de bovenstaande sleutel hebt ingevoerd, geeft je tweefactorauthenticatie-app je een unieke code. Voer de code in het bevestigingsvak hieronder in.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is ingeschakeld.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is uitgeschakeld.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verificatie code:</value>
   </data>

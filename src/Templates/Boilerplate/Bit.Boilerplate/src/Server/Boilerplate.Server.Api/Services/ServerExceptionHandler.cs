@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -15,6 +16,14 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IException
         httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
         var exception = UnWrapException(e);
+
+        if (exception is AuthenticationFailureException)
+        {
+            httpContext.Response.Redirect($"{Urls.SignInPage}?error={Uri.EscapeDataString(exception.Message)}");
+
+            return true;
+        }
+
         var knownException = exception as KnownException;
 
         // The details of all of the exceptions are returned only in dev mode. in any other modes like production, only the details of the known exceptions are returned.
