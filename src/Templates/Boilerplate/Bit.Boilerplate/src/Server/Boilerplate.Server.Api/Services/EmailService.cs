@@ -134,7 +134,7 @@ public partial class EmailService
         var defaultFromName = emailLocalizer[nameof(EmailStrings.DefaultFromName)];
         var defaultFromEmail = appSettings.Email!.DefaultFromEmail;
 
-        _ = Task.Run(async () =>
+        _ = Task.Run(async () => // Let's not wait for the email to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
             await using var scope = rootServiceScopeProvider.Invoke();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<EmailService>>();

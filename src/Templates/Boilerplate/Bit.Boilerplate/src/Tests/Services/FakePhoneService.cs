@@ -1,15 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Services;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using PhoneNumbers;
 
 namespace Boilerplate.Tests.Services;
 
-public partial class FakePhoneService(ServerApiSettings appSettings, IHostEnvironment hostEnvironment, IHttpContextAccessor httpContextAccessor, ILogger<PhoneService> logger, PhoneNumberUtil phoneNumberUtil)
-    : PhoneService(appSettings, hostEnvironment, httpContextAccessor, logger, phoneNumberUtil)
+public partial class FakePhoneService : PhoneService
 {
     private static readonly ConcurrentDictionary<string, string> LastSmsPerPhone = new();
 

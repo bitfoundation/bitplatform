@@ -38,28 +38,34 @@ public partial class PhoneService
 
         var from = appSettings.Sms!.FromPhoneNumber;
 
-        _ = Task.Run(async () =>
+        _ = Task.Run(async () => // Let's not wait for the sms to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
             await using var scope = rootServiceScopeProvider.Invoke();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<PhoneService>>();
-
-            var messageOptions = new CreateMessageOptions(new(phoneNumber))
+            MessageResource? smsMessage = null;
+            try
             {
-                From = new(from),
-                Body = messageText
-            };
+                var messageOptions = new CreateMessageOptions(new(phoneNumber))
+                {
+                    From = new(from),
+                    Body = messageText
+                };
 
-            var smsMessage = MessageResource.Create(messageOptions);
+                smsMessage = MessageResource.Create(messageOptions);
 
-            if (smsMessage.ErrorCode is null) return;
-
-            LogSendSmsFailed(logger, phoneNumber, smsMessage.ErrorCode, smsMessage.ErrorMessage);
+                if (smsMessage.ErrorCode is not null)
+                    throw new InvalidOperationException(smsMessage.ErrorMessage);
+            }
+            catch (Exception exp)
+            {
+                LogSendSmsFailed(logger, exp, phoneNumber, smsMessage?.ErrorCode);
+            }
         }, default);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS: {message} to {phoneNumber}.")]
     private static partial void LogSendSms(ILogger logger, string message, string phoneNumber);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send Sms to {phoneNumber}. Code: {errorCode}, Error message: {errorMessage}")]
-    private static partial void LogSendSmsFailed(ILogger logger, string phoneNumber, int? errorCode, string errorMessage);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to send Sms to {phoneNumber}. Code: {errorCode}")]
+    private static partial void LogSendSmsFailed(ILogger logger, Exception exp, string phoneNumber, int? errorCode);
 }
