@@ -20,8 +20,10 @@
 }
 
 .bit-ptr-spn {
-    fill: $clr-fg-pri;
-    stroke: $clr-fg-pri;
+    display: flex;
+    color: $clr-fg-pri;
+    align-items: center;
+    justify-content: center;
 }
 
 .bit-ptr-spin {

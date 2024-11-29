@@ -39,7 +39,7 @@
                 element.style.top = `${bcr.top}px`;
                 element.style.left = `${bcr.left}px`;
                 element.style.width = `${bcr.width}px`;
-
+                
                 await dotnetObj.invokeMethodAsync('OnStart', bcr.top, bcr.left, bcr.width);
             };
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
