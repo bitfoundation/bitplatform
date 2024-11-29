@@ -29,11 +29,6 @@ public partial class NotAuthorizedPage
 
             user = (await AuthenticationStateTask).User;
 
-            if (user.IsAuthenticated() is false)
-            {
-                await SignOut();
-            }
-
             lacksValidPrivilege = await AuthorizationService.AuthorizeAsync(user, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false };
         }
         finally
@@ -47,6 +42,20 @@ public partial class NotAuthorizedPage
 
     private async Task SignOut()
     {
+        await AuthManager.SignOut(CurrentCancellationToken);
+        var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
+    }
+}
+
+public partial class RedirectToSignInPage : AppComponentBase
+{
+    [Parameter] public string? ReturnUrl { get; set; }
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
         await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl ?? NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.NavigateTo(Urls.SignInPage + (string.IsNullOrEmpty(returnUrl) ? string.Empty : $"?return-url={returnUrl}"));
