@@ -16,7 +16,7 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, isBlocking);
             parameters.Add(p => p.IsOpen, isPanelOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
@@ -39,7 +39,7 @@ public class BitPanelTests : BunitTestContext
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsModeless, isModeless);
+            parameters.Add(p => p.Modeless, isModeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -208,8 +208,8 @@ public class BitPanelTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitPanelPosition.Right),
-        DataRow(BitPanelPosition.Left),
+        DataRow(BitPanelPosition.End),
+        DataRow(BitPanelPosition.Start),
         DataRow(BitPanelPosition.Top),
         DataRow(BitPanelPosition.Bottom),
         DataRow(null)
@@ -229,12 +229,11 @@ public class BitPanelTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitPanelPosition.Right => "bit-pnl-right",
-            BitPanelPosition.Left => "bit-pnl-left",
+            BitPanelPosition.End => "bit-pnl-end",
+            BitPanelPosition.Start => "bit-pnl-start",
             BitPanelPosition.Top => "bit-pnl-top",
             BitPanelPosition.Bottom => "bit-pnl-bottom",
-
-            _ => "bit-pnl-right",
+            _ => "bit-pnl-end",
         };
 
         Assert.IsTrue(PanelElement.ClassList.Contains(positionClass));

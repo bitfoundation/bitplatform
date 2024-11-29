@@ -9,53 +9,10 @@
     font-size: spacing(2);
     z-index: $zindex-modal;
     font-family: $tg-font-family;
+    --bit-pnl-transform-factor: 1;
 
-    @keyframes bit-pnl-trans-x {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-x-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(-5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(-5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
+    &.bit-rtl {
+        --bit-pnl-transform-factor: -1;
     }
 }
 
@@ -73,6 +30,7 @@
 
 .bit-pnl-cnt {
     top: 0;
+    opacity: 0;
     height: 100%;
     flex-grow: 1;
     display: flex;
@@ -84,12 +42,10 @@
     box-sizing: border-box;
     flex-direction: column;
     z-index: $zindex-callout;
-    animation-fill-mode: both;
-    animation-duration: 0.367s;
-    box-shadow: $box-shadow-callout;
-    animation-name: opacity, bit-pnl-trans-x;
     background-color: $clr-bg-pri;
+    box-shadow: $box-shadow-callout;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
+    transition: transform 200ms linear, opacity 100ms ease-in;
 }
 
 .bit-pnl-hcn {
@@ -98,12 +54,12 @@
     display: flex;
     position: sticky;
     font-weight: 600;
+    color: $clr-fg-pri;
     align-items: center;
     font-size: spacing(2.5);
     overflow-wrap: anywhere;
-    color: $clr-fg-pri;
-    padding: spacing(2.25) spacing(3) 0;
     background-color: $clr-bg-pri;
+    padding: spacing(2.25) spacing(3) 0;
 }
 
 .bit-pnl-ttl {
@@ -174,16 +130,17 @@
     background-color: $clr-bg-pri;
 }
 
-.bit-pnl-right {
-    right: 0;
+
+.bit-pnl-start {
     width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x;
+    inset-inline-start: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
-.bit-pnl-left {
-    left: 0;
+.bit-pnl-end {
     width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x-reverse;
+    inset-inline-end: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
 .bit-pnl-top {
@@ -192,7 +149,7 @@
     right: 0;
     width: 100%;
     height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y-reverse;
+    transform: translateY(-100%);
 }
 
 .bit-pnl-bottom {
@@ -202,5 +159,5 @@
     top: unset;
     width: 100%;
     height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y;
+    transform: translateY(100%);
 }

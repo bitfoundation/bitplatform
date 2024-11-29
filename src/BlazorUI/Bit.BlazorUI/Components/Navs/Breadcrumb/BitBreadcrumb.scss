@@ -4,6 +4,10 @@
     white-space: nowrap;
     --bit-brc-div-transform: scaleX(1);
 
+    &.bit-rtl {
+        --bit-brc-div-transform: scaleX(-1);
+    }
+
     &.bit-dis {
         cursor: default;
         font-weight: 400;
@@ -47,10 +51,6 @@
 
 .bit-brc-trd {
     transform: var(--bit-brc-div-transform);
-}
-
-.bit-rtl {
-    --bit-brc-div-transform: scaleX(-1);
 }
 
 .bit-brc-obt {

@@ -18,6 +18,11 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
+    /// Whether the Panel can be dismissed by clicking outside the Panel (on the overlay).
+    /// </summary>
+    [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
     /// The content of the Panel, it can be any custom tag or text.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -43,20 +48,15 @@ public partial class BitPanel : BitComponentBase
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// Whether the Panel can be light dismissed by clicking outside the Panel (on the overlay).
-    /// </summary>
-    [Parameter] public bool IsBlocking { get; set; }
-
-    /// <summary>
-    /// Whether the Panel should be modeless (e.g. not dismiss when focusing/clicking outside of the Panel). if true: IsBlocking is ignored, there will be no overlay.
-    /// </summary>
-    [Parameter] public bool IsModeless { get; set; }
-
-    /// <summary>
     /// Whether the Panel is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
     public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Whether the Panel should be rendered without an overlay.
+    /// </summary>
+    [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
     /// A callback function for when the Panel is dismissed light dismiss, before the animation completes.
@@ -66,22 +66,22 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Position of the modal on the screen.
     /// </summary>
-    [Parameter] public BitPanelPosition Position { get; set; } = BitPanelPosition.Right;
+    [Parameter] public BitPanelPosition? Position { get; set; }
 
     /// <summary>
     /// Provides Height or Width for the Panel.
     /// </summary>
-    [Parameter] public double Size { get; set; }
+    [Parameter] public double? Size { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Panel disables its scroll if applicable.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Shows or hides the close button of the Panel.
     /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitPanel component.
@@ -149,7 +149,7 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector ?? "body", IsOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -168,7 +168,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task OnOverlayClicked(MouseEventArgs e)
     {
-        if (IsBlocking is not false) return;
+        if (Blocking is true) return;
 
         await ClosePanel(e);
     }
@@ -180,19 +180,33 @@ public partial class BitPanel : BitComponentBase
 
     private string GetPositionClass() => Position switch
     {
-        BitPanelPosition.Right => "bit-pnl-right",
-        BitPanelPosition.Left => "bit-pnl-left",
+        BitPanelPosition.Start => "bit-pnl-start",
+        BitPanelPosition.End => "bit-pnl-end",
         BitPanelPosition.Top => "bit-pnl-top",
         BitPanelPosition.Bottom => "bit-pnl-bottom",
-        _ => "bit-pnl-right"
+        _ => "bit-pnl-end"
     };
 
-    private string GetPanelSizeStyle()
+    private string GetPanelStyle()
     {
-        if (Size == 0) return string.Empty;
+        List<string> styles = [];
 
-        var style = Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width";
+        if (IsOpen)
+        {
+            styles.Add("transform:translate3d(0,0,0);opacity:1");
+        }
 
-        return FormattableString.Invariant($"{style}:{Size}px");
+        if (Size is not null)
+        {
+            var prop = Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width";
+            styles.Add(FormattableString.Invariant($"{prop}:{Size}px"));
+        }
+
+        if ((Styles?.Container ?? string.Empty).HasValue())
+        {
+            styles.Add(Styles!.Container!);
+        }
+
+        return string.Join(';', styles);
     }
 }

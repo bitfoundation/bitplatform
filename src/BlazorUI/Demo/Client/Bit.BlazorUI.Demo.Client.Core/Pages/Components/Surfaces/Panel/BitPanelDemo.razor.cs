@@ -226,37 +226,33 @@ public partial class BitPanelDemo
 
     private BitPanelClassStyles panelClassStyles = new() { Header = "header-margin" };
 
-    private bool IsBasicPanelOpen = false;
+    private bool isBasicPanelOpen;
 
-    private bool IsPanelWithHeaderTextOpen = false;
-    private bool IsPanelWithCustomHeaderOpen = false;
+    private bool isPanelWithHeaderTextOpen;
+    private bool isPanelWithCustomHeaderOpen;
 
-    private bool IsPanelWithFooterOpen = false;
+    private bool isPanelWithFooterOpen;
 
-    private bool IsBlockingPanelOpen = false;
-    private bool IsModelessPanelOpen = false;
-    private bool IsAutoToggleScrollPanelOpen = false;
+    private bool isBlockingPanelOpen;
+    private bool isModelessPanelOpen;
+    private bool isAutoToggleScrollPanelOpen;
 
-    private bool IsOpenInPosition = false;
+    private bool isOpenInPositionStart;
+    private bool isOpenPositionEnd;
+    private bool isOpenInPositionTop;
+    private bool isOpenInPositionBottom;
 
-    private bool IsStyledPanelOpen = false;
-    private bool IsClassedPanelOpen = false;
-    private bool IsPanelStylesOpen = false;
-    private bool IsPanelClassesOpen = false;
+    private bool isStyledPanelOpen;
+    private bool isClassedPanelOpen;
+    private bool isPanelStylesOpen;
+    private bool isPanelClassesOpen;
 
-    private bool IsRtlPanelOpen = false;
+    private bool isRtlPanelOpenStart;
+    private bool isRtlPanelOpenEnd;
 
     private BitPanel bitPanelRef = default!;
 
     private double CustomPanelSize = 320;
-
-    private BitPanelPosition position;
-
-    private void OpenPanelInPosition(BitPanelPosition positionValue)
-    {
-        IsOpenInPosition = true;
-        position = positionValue;
-    }
 
 
 
