@@ -75,6 +75,29 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Float",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Apply floating behavior.",
+        },
+        new()
+        {
+            Name = "FloatAbsolute",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Apply position absolute when the button is in floating mode.",
+        },
+        new()
+        {
+            Name = "FloatPosition",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "The position of the button in floating mode.",
+            LinkType = LinkType.Link,
+            Href = "#button-position"
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -599,7 +622,61 @@ public partial class BitButtonDemo
                     Description = "A tag (keyword) for the current document."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "button-position",
+            Name = "BitPosition",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "TopLeft",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "TopCenter",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "TopRight",
+                    Value = "2"
+                },
+                new()
+                {
+                    Name = "CenterLeft",
+                    Value = "3"
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "4"
+                },
+                new()
+                {
+                    Name = "CenterRight",
+                    Value = "5"
+                },
+                new()
+                {
+                    Name = "BottomLeft",
+                    Value = "6"
+                },
+                new()
+                {
+                    Name = "BottomCenter",
+                    Value = "7"
+                },
+                new()
+                {
+                    Name = "BottomRight",
+                    Value = "8"
+                }
+            ]
+        },
     ];
 
     private bool fillIsLoading;
@@ -610,6 +687,18 @@ public partial class BitButtonDemo
     private bool classesIsLoading;
 
     private bool templateIsLoading;
+
+    private BitPosition floatPosition;
+    private bool floatingTypeIsViewPort = true;
+
+    private List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues(typeof(BitPosition))
+         .Cast<BitPosition>()
+         .Select(enumValue => new BitDropdownItem<BitPosition>
+         {
+             Value = enumValue,
+             Text = enumValue.ToString()
+         })
+         .ToList();
 
     private async Task LoadingFillClick()
     {
