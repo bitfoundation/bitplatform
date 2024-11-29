@@ -51,7 +51,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.PageUrl = NavigationManager.Uri;
             if (AppPlatform.IsBlazorHybrid is false)
             {
-                TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+                TelemetryContext.Platform = await jsRuntime.GetBrowserPlatform();
             }
 
             //#if (appInsights == true)

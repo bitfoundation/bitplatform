@@ -1,4 +1,4 @@
-@attribute [Route(Urls.AboutPage)]
+﻿@attribute [Route(Urls.AboutPage)]
 @attribute [Route("{culture?}" + Urls.AboutPage)]
 @inherits AppPageBase
 
@@ -14,7 +14,7 @@
         <BitStack AutoWidth>
             <BitText>App Name: <b>@appName</b></BitText>
             <BitText>App Version: <b>@appVersion</b></BitText>
-            <BitText>OS: <b>@os</b></BitText>
+            <BitText>OS: <b>@platform</b></BitText>
             <BitText>Web View: <b>@webView</b></BitText>
             <BitText>OEM: <b>@oem</b></BitText>
             <BitText>Environment: <b>@AppEnvironment.Current</b></BitText>

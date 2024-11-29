@@ -2,7 +2,7 @@
 
 public class MauiTelemetryContext : AppTelemetryContext
 {
-    public override string? OS { get; set; } = $"{DeviceInfo.Current.Manufacturer} {(AppPlatform.IsIosOnMacOS ? DevicePlatform.macOS : DeviceInfo.Current.Platform)} {DeviceInfo.Current.Version}";
+    public override string? Platform { get; set; } = $"{DeviceInfo.Current.Manufacturer} {(AppPlatform.IsIosOnMacOS ? DevicePlatform.macOS : DeviceInfo.Current.Platform)} {DeviceInfo.Current.Version}";
 
     public override string? AppVersion { get; set; } = VersionTracking.CurrentVersion;
 

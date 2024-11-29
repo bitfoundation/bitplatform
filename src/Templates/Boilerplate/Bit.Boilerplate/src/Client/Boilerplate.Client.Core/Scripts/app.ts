@@ -17,7 +17,22 @@ class App {
     }
 
     public static getPlatform(): string {
-        return (navigator as any).userAgentData?.platform || navigator?.platform;
+        let data = [(navigator as any).userAgentData?.platform ?? navigator?.platform];
+
+        if (navigator.userAgent.includes('Firefox'))
+            data.push('Firefox browser');
+        else if (navigator.userAgent.includes('Edg'))
+            data.push('Edge browser');
+        else if (navigator.userAgent.includes('OPR'))
+            data.push('Opera browser');
+        else if (navigator.userAgent.includes('Chrome'))
+            data.push('Chrome browser');
+        else if (navigator.userAgent.includes('Safari'))
+            data.push('Safari browser');
+        else
+            data.push('Unknown browser');
+
+        return data.filter(d => d != null).join(' ');
     }
 
     public static getTimeZone(): string {
