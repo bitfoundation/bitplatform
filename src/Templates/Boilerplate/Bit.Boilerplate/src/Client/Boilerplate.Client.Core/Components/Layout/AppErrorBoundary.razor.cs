@@ -34,8 +34,10 @@ public partial class AppErrorBoundary
         navigationManager.NavigateTo(Urls.HomePage, forceLoad: true);
     }
 
-    private void ShowDiagnostic()
+    private async Task ShowDiagnostic()
     {
+        Recover();
+        await Task.Yield();
         pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 }

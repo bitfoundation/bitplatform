@@ -13,7 +13,7 @@ public partial class AboutPage
     private string appName = default!;
     private string appVersion = default!;
     private string processId = default!;
-    private string os = default!;
+    private string platform = default!;
     private string webView = default!;
     private string oem = default!;
 
@@ -24,7 +24,7 @@ public partial class AboutPage
         // https://stackoverflow.com/a/2941199/2720104
         appName = AppInfo.Name;
         appVersion = telemetryContext.AppVersion!;
-        os = telemetryContext.OS!;
+        platform = telemetryContext.Platform!;
         webView = telemetryContext.WebView!;
         processId = Environment.ProcessId.ToString();
         oem = DeviceInfo.Current.Manufacturer;

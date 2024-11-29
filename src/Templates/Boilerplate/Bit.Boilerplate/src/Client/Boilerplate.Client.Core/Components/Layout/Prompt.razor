@@ -2,7 +2,7 @@
 
 <div class="body">
     <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitText Color="BitColor.Tertiary">
+        <BitText Color="BitColor.Tertiary" Style="white-space:break-spaces;max-width:500px;">
             @Body
         </BitText>
         @if (OtpInput)
@@ -24,6 +24,6 @@
 
 <BitStack Alignment="BitAlignment.Center" AutoHeight>
     <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
-        @Localizer[AppStrings.Ok]
+        @Localizer[nameof(AppStrings.Ok)]
     </BitButton>
 </BitStack>
