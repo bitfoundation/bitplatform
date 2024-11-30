@@ -776,4 +776,7 @@ public partial class BitButtonDemo
     {
         formIsValidSubmit = false;
     }
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example9");
 }
