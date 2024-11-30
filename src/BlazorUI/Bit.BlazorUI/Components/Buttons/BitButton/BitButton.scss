@@ -159,6 +159,16 @@
     width: 100%;
 }
 
+.bit-btn-flt {
+    position: fixed;
+    z-index: $zindex-base;
+}
+
+.bit-btn-fab {
+    position: absolute;
+    z-index: $zindex-base;
+}
+
 .bit-btn-pri {
     --bit-btn-clr: #{$clr-pri};
     --bit-btn-clr-txt: #{$clr-pri-text};
@@ -346,4 +356,49 @@
 .bit-btn-ntx {
     padding: var(--bit-btn-pad-ntx);
     --bit-btn-icn-margintop: 0;
+}
+
+.bit-btn-trg {
+    top: spacing(1);
+    right: spacing(1);
+}
+
+.bit-btn-tcr {
+    top: spacing(1);
+    left: calc(50% - var(--bit-btn-spn-size));
+}
+
+.bit-btn-tlf {
+    top: spacing(1);
+    left: spacing(1);
+}
+
+.bit-btn-clf {
+    left: spacing(1);
+    top: calc(50% - var(--bit-btn-spn-size));
+}
+
+.bit-btn-blf {
+    left: spacing(1);
+    bottom: spacing(1);
+}
+
+.bit-btn-bcr {
+    bottom: spacing(1);
+    left: calc(50% - var(--bit-btn-spn-size));
+}
+
+.bit-btn-brg {
+    right: spacing(1);
+    bottom: spacing(1);
+}
+
+.bit-btn-crg {
+    right: spacing(1);
+    top: calc(50% - var(--bit-btn-spn-size));
+}
+
+.bit-btn-ctr {
+    top: calc(50% - var(--bit-btn-spn-size));
+    left: calc(50% - var(--bit-btn-spn-size));
 }

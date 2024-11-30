@@ -66,6 +66,24 @@ public partial class BitButton : BitComponentBase
     public bool FixedColor { get; set; }
 
     /// <summary>
+    /// Apply floating behavior.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Float { get; set; }
+
+    /// <summary>
+    /// Apply position absolute when the button is in floating mode.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FloatAbsolute { get; set; }
+
+    /// <summary>
+    /// The position of the button in floating mode.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPosition? FloatPosition { get; set; }
+
+    /// <summary>
     /// Expand the button width to 100% of the available width.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -229,6 +247,23 @@ public partial class BitButton : BitComponentBase
         ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
+
+        ClassBuilder.Register(() => Float && FloatAbsolute ? "bit-btn-fab" :  
+                                    Float ? "bit-btn-flt" : string.Empty);
+
+        ClassBuilder.Register(() => Float ? FloatPosition switch
+        {
+            BitPosition.TopRight => "bit-btn-trg",
+            BitPosition.TopCenter => "bit-btn-tcr",
+            BitPosition.TopLeft => "bit-btn-tlf",
+            BitPosition.CenterLeft => "bit-btn-clf",
+            BitPosition.BottomLeft => "bit-btn-blf",
+            BitPosition.BottomCenter => "bit-btn-bcr",
+            BitPosition.BottomRight => "bit-btn-brg",
+            BitPosition.CenterRight => "bit-btn-crg",
+            BitPosition.Center => "bit-btn-ctr",
+            _ => "bit-btn-brg"
+        } : string.Empty);
     }
 
     protected override void RegisterCssStyles()
