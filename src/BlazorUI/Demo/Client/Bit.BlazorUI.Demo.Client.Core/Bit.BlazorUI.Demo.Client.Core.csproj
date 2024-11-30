@@ -87,7 +87,7 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/app.js --minify --outfile=wwwroot/scripts/app.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles->Replace('.scss', '.css'))">
+    <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
         <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
@@ -100,6 +100,10 @@
         <Content Remove="tsconfig.json" />
         <None Include="package*json" />
         <None Include="tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Pages\Components\Utilities\PullToRefresh\" />
     </ItemGroup>
 
 </Project>

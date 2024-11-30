@@ -161,28 +161,31 @@ private async Task AutoLoadingClick()
 </BitButton>";
 
     private readonly string example9RazorCode = @"
-<BitDropdown Items=""floatPositionList"" Label=""FloatPosition"" @bind-Value=""floatPosition"" Style=""width: 8rem;"" />
-<BitToggle Label=""Float mode"" OnText=""Absolute"" OffText=""Fixed"" @bind-Value=""floatingTypeIsViewPort"" />
+<BitDropdown Label=""FloatPosition"" Items=""floatPositionList"" @bind-Value=""floatPosition"" FitWidth />
+<BitTextField Label=""FloatOffset"" @bind-Value=""floatOffset"" Immediate />
 
-<div style=""position:relative;height:100px;"">
-    <BitButton Float FloatAbsolute=""floatingTypeIsViewPort"" FloatPosition=""floatPosition"" IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"" IconOnly />
-    <div style=""height:100px;overflow:auto;"">
+<BitButton Float FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Add"" Size=""BitSize.Large"" IconOnly />
+
+<div style=""position: relative; border: 1px gray solid"">
+    <BitButton FloatAbsolute FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Edit"" IconOnly />
+    <div style=""height: 300px; overflow: auto"">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
     </div>
 </div>";
     private readonly string example9CsharpCode = @"
-private BitPosition floatPosition;
-private bool floatingTypeIsViewPort = true;
+private string? floatOffset;
+private BitPosition floatPosition = BitPosition.BottomRight;
 
-private List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues(typeof(BitPosition))
-        .Cast<BitPosition>()
-        .Select(enumValue => new BitDropdownItem<BitPosition>
-        {
-            Value = enumValue,
-            Text = enumValue.ToString()
-        })
-        .ToList();";
+private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
+                                                                            .Cast<BitPosition>()
+                                                                            .Select(enumValue => new BitDropdownItem<BitPosition>
+                                                                            {
+                                                                                Value = enumValue,
+                                                                                Text = enumValue.ToString()
+                                                                            })
+                                                                            .ToList();";
 
     private readonly string example10RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">

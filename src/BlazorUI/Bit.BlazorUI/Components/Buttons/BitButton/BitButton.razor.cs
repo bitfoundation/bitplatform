@@ -66,19 +66,25 @@ public partial class BitButton : BitComponentBase
     public bool FixedColor { get; set; }
 
     /// <summary>
-    /// Apply floating behavior.
+    /// Enables floating behavior for the button, allowing it to be positioned relative to the viewport.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Float { get; set; }
 
     /// <summary>
-    /// Apply position absolute when the button is in floating mode.
+    /// Enables floating behavior for the button, allowing it to be positioned relative to its container.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FloatAbsolute { get; set; }
 
     /// <summary>
-    /// The position of the button in floating mode.
+    /// Specifies the offset of the floating button.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? FloatOffset { get; set; }
+
+    /// <summary>
+    /// Specifies the position of the floating button.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitPosition? FloatPosition { get; set; }
@@ -244,14 +250,14 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
 
-        ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
+        ClassBuilder.Register(() => FixedColor ? "bit-btn-fxc" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
 
-        ClassBuilder.Register(() => Float && FloatAbsolute ? "bit-btn-fab" :  
-                                    Float ? "bit-btn-flt" : string.Empty);
+        ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
+                                  : Float ? "bit-btn-ffx" : string.Empty);
 
-        ClassBuilder.Register(() => Float ? FloatPosition switch
+        ClassBuilder.Register(() => (Float || FloatAbsolute) ? FloatPosition switch
         {
             BitPosition.TopRight => "bit-btn-trg",
             BitPosition.TopCenter => "bit-btn-tcr",
@@ -269,6 +275,8 @@ public partial class BitButton : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-btn-float-offset:{FloatOffset}" : string.Empty);
     }
 
     protected override void OnParametersSet()
