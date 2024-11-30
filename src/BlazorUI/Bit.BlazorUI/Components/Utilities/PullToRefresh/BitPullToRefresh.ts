@@ -4,15 +4,17 @@
 
         public static setup(
             id: string,
-            element: HTMLElement,
-            anchorElement: HTMLElement | undefined,
-            anchorSelector: string | undefined,
+            anchor: HTMLElement | undefined,
+            loadingEl: HTMLElement,
+            scrollerElement: HTMLElement | undefined,
+            scrollerSelector: string | undefined,
             trigger: number | undefined,
             factor: number | undefined,
             margin: number | undefined,
             threshold: number | undefined,
             dotnetObj: DotNetObject) {
-            const anchorEl = anchorElement ?? document.querySelector(anchorSelector ?? 'body') as HTMLElement;
+            const anchorEl = anchor ?? document.body as HTMLElement;
+            const scrollerEl = scrollerElement ?? ((scrollerSelector && document.querySelector(scrollerSelector)) ?? (!!anchor ? anchor.children[0] : anchorEl)) as HTMLElement;
             const isTouchDevice = Utils.isTouchDevice();
             trigger ??= 80;
             factor ??= 2;
@@ -27,25 +29,23 @@
             }
 
             const onScroll = () => {
-                anchorEl.style.touchAction = anchorEl.scrollTop === 0 ? 'pan-x pan-down pinch-zoom' : "";
+                anchorEl.style.touchAction = scrollerEl.scrollTop === 0 ? 'pan-x pan-down pinch-zoom' : "";
             };
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (anchorEl.scrollTop !== 0) {
+                if (scrollerEl.scrollTop !== 0) {
                     startY = -1;
                     return;
                 }
                 startY = getY(e);
                 const bcr = anchorEl.getBoundingClientRect();
-                element.style.top = `${bcr.top}px`;
-                element.style.left = `${bcr.left}px`;
-                element.style.width = `${bcr.width}px`;
-                
+                loadingEl.style.width = `${bcr.width}px`;
+
                 await dotnetObj.invokeMethodAsync('OnStart', bcr.top, bcr.left, bcr.width);
             };
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startY === -1) return;
 
-                if (anchorEl.scrollTop !== 0) {
+                if (scrollerEl.scrollTop !== 0) {
                     //startY = getY(e);
                     startY = -1;
                     return;
@@ -66,14 +66,14 @@
 
                 diff = diff / factor;
                 diff = diff > trigger ? trigger : diff;
-                element.style.minHeight = `${diff * factor + margin}px`;
+                loadingEl.style.minHeight = `${diff * factor + margin}px`;
 
                 await dotnetObj.invokeMethodAsync('OnMove', diff);
             };
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 //if (startY === -1) return;
 
-                let diff = parseInt(element.style.minHeight);
+                let diff = parseInt(loadingEl.style.minHeight);
                 diff = isNaN(diff) ? 0 : diff;
                 diff = (diff - margin) / factor;
 
@@ -83,11 +83,11 @@
                 if (diff >= trigger) {
                     await dotnetObj.invokeMethodAsync('Refresh');
                 }
-                element.style.minHeight = '0';
+                loadingEl.style.minHeight = '0';
             };
             const onLeave = (e: PointerEvent) => {
                 if (startY === -1) return;
-                element.style.minHeight = '0';
+                loadingEl.style.minHeight = '0';
                 startY = -1;
             }
 
@@ -102,10 +102,10 @@
                 anchorEl.addEventListener('pointerleave', onLeave, false);
                 //anchorEl.addEventListener('pointerout', onOut, false);
             }
-            anchorEl.addEventListener('scroll', onScroll);
+            scrollerEl.addEventListener('scroll', onScroll);
             onScroll();
 
-            const refresher = new BitPullRefresher(id, element, anchorEl, trigger, dotnetObj);
+            const refresher = new BitPullRefresher(id, loadingEl, anchorEl, trigger, dotnetObj);
             refresher.setDisposer(() => {
                 if (isTouchDevice) {
                     anchorEl.removeEventListener('touchstart', onStart);
@@ -118,7 +118,7 @@
                     anchorEl.removeEventListener('pointerleave', onLeave, false);
                     //anchorEl.removeEventListener('pointerout', onOut, false);
                 }
-                anchorEl.removeEventListener('scroll', onScroll);
+                scrollerEl.removeEventListener('scroll', onScroll);
             });
             PullToRefresh._refreshers.push(refresher);
         }

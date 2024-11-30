@@ -1,16 +1,23 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-ptr {
+    width: fit-content;
+    position: relative;
+}
+
+.bit-ptr-lod {
+    top: 0;
+    left: 0;
     height: 0;
+    z-index: 1;
     display: flex;
-    position: fixed;
     overflow: hidden;
-    pointer-events: none;
-    z-index: $zindex-base;
+    position: absolute;
+    align-items: center;
     justify-content: center;
 }
 
-.bit-ptr-wrp {
+.bit-ptr-swr {
     display: flex;
     border-radius: 50%;
     align-items: center;
