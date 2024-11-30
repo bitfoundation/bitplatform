@@ -12,9 +12,9 @@
                ComponentParameters="componentParameters">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
-            <BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true })" />
-
             <BitButton OnClick="ShowModal">Show</BitButton>
+
+            <BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true, Blocking = true })" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

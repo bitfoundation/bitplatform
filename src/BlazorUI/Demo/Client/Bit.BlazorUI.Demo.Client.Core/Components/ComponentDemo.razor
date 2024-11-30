@@ -8,6 +8,7 @@
                 @ComponentDescription
             </BitText>
         </section>
+
         @if (Notes.HasValue())
         {
             <section id="notes-section" class="page-section">
@@ -15,10 +16,12 @@
                 @Notes
             </section>
         }
+
         <section id="usage-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
             @ChildContent
         </section>
+
         <section id="api-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">API</BitText>
 
@@ -52,7 +55,10 @@
 
             <ComponentEnumsTable Enums="ComponentSubEnums" />
 
-            <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+            @if (_extraComponents.Contains(ComponentName) is false)
+            {
+                <ComponentEnumsTable Enums="_componentBaseSubEnums" />
+            }
         </section>
     </div>
     <SideRail />

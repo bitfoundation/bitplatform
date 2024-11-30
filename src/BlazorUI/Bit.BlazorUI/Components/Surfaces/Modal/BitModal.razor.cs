@@ -7,14 +7,13 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     private bool _internalIsOpen;
     private string _containerId = default!;
 
-
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
-    [CascadingParameter] private BitModalParameters ModalParameters { get; set { field.SetModal(this); } } = new();
-
+    [CascadingParameter]
+    private BitModalParameters ModalParameters { get => modalParameters; set { modalParameters = value; modalParameters.SetModal(this); } }
+    private BitModalParameters modalParameters = new();
 
 
     /// <summary>
@@ -194,9 +193,9 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         _offsetTop = 0;
 
-        if (ModalParameters.AutoToggleScroll is false) return;
-
-        _offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", IsOpen);
+        //if (ModalParameters.AutoToggleScroll is false) return;
+        //_offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", IsOpen);
+        await ToggleScroll(IsOpen);
 
         if (ModalParameters.AbsolutePosition is false) return;
 
@@ -210,9 +209,9 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     {
         if (ModalParameters.IsEnabled is false) return;
 
-        await ModalParameters.OnOverlayClick.InvokeAsync(e);
-
         if (ModalParameters.Blocking) return;
+
+        await ModalParameters.OnOverlayClick.InvokeAsync(e);
 
         if (await AssignIsOpen(false) is false) return;
 
@@ -229,6 +228,13 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         return (ModalParameters.IsAlert ?? (ModalParameters.Blocking && ModalParameters.Modeless is false)) ? "alertdialog" : "dialog";
     }
 
+    private async Task ToggleScroll(bool isOpen)
+    {
+        if (ModalParameters.AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+    }
+
 
 
     public async ValueTask DisposeAsync()
@@ -243,6 +249,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         try
         {
+            await ToggleScroll(false);
             await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

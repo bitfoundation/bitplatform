@@ -2,6 +2,10 @@
 
 public class BitModalReference
 {
+    private readonly BitModalService _modalService;
+
+
+
     public string Id { get; init; }
 
     public object? Content { get; private set; }
@@ -12,14 +16,13 @@ public class BitModalReference
 
 
 
-    private readonly BitModalService _modalService;
-
-
     public BitModalReference(BitModalService modalService)
     {
         Id = BitShortId.NewId();
         _modalService = modalService;
     }
+
+
 
     public void SetContent(object content)
     {
