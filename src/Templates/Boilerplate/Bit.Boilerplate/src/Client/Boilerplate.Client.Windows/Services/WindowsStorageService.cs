@@ -4,7 +4,7 @@ namespace Boilerplate.Client.Windows.Services;
 
 public partial class WindowsStorageService : IStorageService
 {
-    private Dictionary<string, string?> persistentStorage = [];
+    private Dictionary<string, string?>? persistentStorage;
     private readonly Dictionary<string, string?> tempStorage = [];
 
     public async ValueTask<bool> IsPersistent(string key)
@@ -17,7 +17,7 @@ public partial class WindowsStorageService : IStorageService
         if (tempStorage.TryGetValue(key, out string? value))
             return value;
 
-        persistentStorage = await Restore();
+        persistentStorage ??= await Restore();
 
         return persistentStorage.GetValueOrDefault(key, null);
     }
@@ -25,6 +25,8 @@ public partial class WindowsStorageService : IStorageService
     public async ValueTask RemoveItem(string key)
     {
         tempStorage.Remove(key);
+
+        persistentStorage ??= await Restore();
 
         if (persistentStorage.Remove(key))
         {
@@ -36,6 +38,7 @@ public partial class WindowsStorageService : IStorageService
     {
         if (persistent)
         {
+            persistentStorage ??= await Restore();
             persistentStorage[key] = value;
             await Save(persistentStorage);
         }
@@ -45,7 +48,7 @@ public partial class WindowsStorageService : IStorageService
         }
     }
 
-    const string WindowsStorageFilename = "windows.storage.json";
+    const string WindowsStorageFilename = "Boilerplate.Client.Windows.storage.json";
     private static readonly SemaphoreSlim ioLock = new(1, 1);
     // Restore application-scope property from isolated storage
     private static async Task<Dictionary<string, string?>> Restore()
@@ -55,7 +58,7 @@ public partial class WindowsStorageService : IStorageService
             await ioLock.WaitAsync();
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Open, storage);
-            return (await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream))!;
+            return (await JsonSerializer.DeserializeAsync(stream, AppJsonContext.Default.DictionaryStringString))!;
         }
         catch (IsolatedStorageException exp) when (exp.InnerException is FileNotFoundException)
         {
@@ -76,7 +79,7 @@ public partial class WindowsStorageService : IStorageService
             using IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForDomain();
             using IsolatedStorageFileStream stream = new IsolatedStorageFileStream(WindowsStorageFilename, FileMode.Create, storage);
             using StreamWriter writer = new StreamWriter(stream);
-            await writer.WriteAsync(JsonSerializer.Serialize(data));
+            await writer.WriteAsync(JsonSerializer.Serialize(data, AppJsonContext.Default.DictionaryStringString));
         }
         finally
         {
