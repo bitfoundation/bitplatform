@@ -5,15 +5,15 @@ namespace Bit.BlazorUI;
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddBitBlazorUIServices(this IServiceCollection services, bool singleton = false)
+    public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services, bool singleton = false)
     {
         if (singleton)
         {
-            services.TryAddSingleton<BitThemeManager>();
+            services.TryAddSingleton<BitModalService>();
         }
         else
         {
-            services.TryAddScoped<BitThemeManager>();
+            services.TryAddScoped<BitModalService>();
         }
 
         return services;
