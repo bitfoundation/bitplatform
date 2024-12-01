@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public enum BitBadgePosition
+public enum BitPosition
 {
     TopLeft,
     TopCenter,

@@ -36,18 +36,19 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --api Standalone --notification --captcha reCaptcha --signalR --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --api Standalone --notification --captcha reCaptcha --signalR --framework net9.0
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
         files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Web/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Web/appsettings.Production.json'
       env:
-        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
-        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WebAppRender.BlazorMode: BlazorWebAssembly
-        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
+        ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
+        GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         AdsPushVapid.PublicKey: ${{ secrets.ADMINPANEL_PUBLIC_VAPIDKEY }}
+        ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - uses: actions/setup-node@v4
       with:
@@ -144,7 +145,7 @@ jobs:
         cd src\Templates\Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --offlineDb --framework net9.0
+        cd ..\..\..\ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --windows --appInsights --sentry --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --captcha reCaptcha --signalR --offlineDb --framework net9.0
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -152,13 +153,10 @@ jobs:
         files: 'AdminPanel\src\Shared\appsettings.json, AdminPanel\src\Client\AdminPanel.Client.Core\appsettings.json, AdminPanel\src\Client\AdminPanel.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         WindowsUpdate.FilesUrl: https://windows-adminpanel.bitplatform.dev
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-  
-    - name: Set app center secret
-      run: (Get-Content AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs) -Replace 'appCenterSecret = null;', 'appCenterSecret = "a9ed2257-fb82-496a-ba10-78c2d9ef33a6";' | Out-File -Encoding utf8 AdminPanel\src\Client\AdminPanel.Client.Windows\Program.cs
-      shell: pwsh
 
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel\src\Client\AdminPanel.Client.Core\AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
@@ -195,7 +193,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
 
     - uses: actions/setup-node@v4
       with:
@@ -221,12 +219,9 @@ jobs:
         files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: |
-          sed -i 's/appCenterSecret = null;/appCenterSecret = "ea9b98ea-93a0-48c7-982a-0a72f4ad6d04";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui-android
@@ -264,7 +259,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.0'
+        xcode-version: '16.1'
 
     - uses: actions/setup-node@v4
       with:
@@ -275,7 +270,7 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --appCenter --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --serverUrl ${{ env.WEB_SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -283,12 +278,9 @@ jobs:
         files: 'AdminPanel/src/Shared/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Core/appsettings.json, AdminPanel/src/Client/AdminPanel.Client.Maui/appsettings.json'
       env:
         ServerAddress: ${{ env.API_SERVER_ADDRESS }}
+        Logging.Sentry.Dsn: ${{ secrets.ADMINPANEL_SENTRY_DSN }}
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-
-    - name: Set app center secret
-      run: |
-          brew install gnu-sed && gsed -i 's/appCenterSecret = null;/appCenterSecret = "0bc0d910-dc84-4887-a3a0-eee6b1b55797";/g' AdminPanel/src/Client/AdminPanel.Client.Maui/MauiProgram.cs
 
     - name: Install maui
       run: cd src && dotnet workload install maui

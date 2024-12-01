@@ -27,7 +27,7 @@ public static partial class IConfigurationBuilderExtensions
     ///         Client/Client.Windows/appsettings.json
     ///         Client/Client.Windows/appsettings.{environment}.json (If present)
     /// </summary>
-    public static void AddClientConfigurations(this IConfigurationBuilder builder, string clientEntryAssemblyName)
+    public static IConfigurationBuilder AddClientConfigurations(this IConfigurationBuilder builder, string clientEntryAssemblyName)
     {
         IConfigurationBuilder configBuilder = AppPlatform.IsBrowser ? new WebAssemblyHostConfiguration() : new ConfigurationBuilder();
 
@@ -85,5 +85,7 @@ public static partial class IConfigurationBuilderExtensions
                 builder.Sources.Add(source);
             }
         }
+
+        return builder;
     }
 }

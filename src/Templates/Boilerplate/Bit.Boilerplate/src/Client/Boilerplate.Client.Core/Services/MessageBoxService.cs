@@ -15,7 +15,7 @@ public partial class MessageBoxService
         modalService.Show<MessageBox>(parameters, title).ContinueWith(async task =>
         {
             await task;
-            tcs.SetResult(false);
+            tcs.TrySetResult(false);
         });
         return tcs.Task;
     }

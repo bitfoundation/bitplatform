@@ -51,7 +51,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             TelemetryContext.PageUrl = NavigationManager.Uri;
             if (AppPlatform.IsBlazorHybrid is false)
             {
-                TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+                TelemetryContext.Platform = await jsRuntime.GetBrowserPlatform();
             }
 
             //#if (appInsights == true)
@@ -71,7 +71,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthManager.GetAuthenticationStateAsync());
+            await PropagateUserId(firstRun: true, AuthenticationStateTask);
         }
 
         await base.OnInitAsync();
@@ -80,7 +80,7 @@ public partial class ClientAppCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = e.Location;
-        navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation($"Propagating {(firstRun ? "initial" : "changed")} authentication state.");
+                authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
             //#if (notification == true)
@@ -207,7 +207,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            logger.LogInformation("SignalR state changed {State}", hubConnection!.State);
+            logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
         }
         else
         {

@@ -274,6 +274,9 @@
     <data name="Ok" xml:space="preserve">
     <value>Ok</value>
   </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser.</value>
+  </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>Offline Profiel bewerken</value>
@@ -846,6 +849,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Nadat je de QR-code hebt gescand of de bovenstaande sleutel hebt ingevoerd, geeft je tweefactorauthenticatie-app je een unieke code. Voer de code in het bevestigingsvak hieronder in.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is ingeschakeld.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is uitgeschakeld.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verificatie code:</value>
   </data>
@@ -928,7 +937,7 @@
     <value>Het 2FA-token is gegenereerd en naar u verzonden.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Voer het verhoogde toegangstoken in om door te gaan.</value>
+    <value>Voer de verhoogde toegangstoken in die we u zojuist hebben gestuurd of de code van uw authenticator-app om door te gaan.</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>Token {0}</value>
@@ -1182,11 +1191,6 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>U moet slagen voor de Google reCAPTCHA-uitdaging.</value>
-  </data>
-    <!--#endif -->
-    <!--#if (signalR == true) -->
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser, en probeer het opnieuw.</value>
   </data>
     <!--#endif -->
 </root>

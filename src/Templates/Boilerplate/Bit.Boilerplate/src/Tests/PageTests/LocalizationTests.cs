@@ -17,6 +17,7 @@ public partial class LocalizationTests : PageTestBase
         var homePage = new MainHomePage(Page, WebAppServerAddress);
         await homePage.Open();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
+        await homePage.AssertCultureCombobox(cultureName, cultureDisplayName);
     }
     public async Task SetCultureInBrowserContext(BrowserNewContextOptions options, string cultureName, string _) => options.Locale = cultureName;
 
@@ -29,6 +30,7 @@ public partial class LocalizationTests : PageTestBase
         await homePage.Open();
         await homePage.ChangeCulture(cultureDisplayName);
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
+        await homePage.AssertCultureCombobox(cultureName, cultureDisplayName);
     }
 
     [TestMethod]
@@ -40,6 +42,7 @@ public partial class LocalizationTests : PageTestBase
         await Page.GotoAsync($"{WebAppServerAddress}?culture={cultureName}");
         await Page.WaitForHydrationToComplete();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
+        await homePage.AssertCultureCombobox(cultureName, cultureDisplayName);
     }
 
     [TestMethod]
@@ -51,6 +54,7 @@ public partial class LocalizationTests : PageTestBase
         await Page.GotoAsync(new Uri(WebAppServerAddress, cultureName).ToString());
         await Page.WaitForHydrationToComplete();
         await homePage.AssertLocalized(localizer, cultureName, cultureDisplayName);
+        await homePage.AssertCultureCombobox(cultureName, cultureDisplayName);
     }
 }
 

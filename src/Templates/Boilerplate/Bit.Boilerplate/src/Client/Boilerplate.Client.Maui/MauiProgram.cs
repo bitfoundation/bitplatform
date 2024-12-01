@@ -20,15 +20,14 @@ public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        //+:cnd:noEmit
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (_, e) =>
         {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-        //-:cnd:noEmit
+            if (LogException(e.Exception))
+            {
+                e.SetObserved();
+            }
+        };
 
         AppPlatform.IsBlazorHybrid = true;
 #if iOS
@@ -38,11 +37,18 @@ public static partial class MauiProgram
 
         var builder = MauiApp.CreateBuilder();
 
+        //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
+            //#if (sentry == true)
+            .UseSentry(options =>
+            {
+                var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
+                configuration.GetRequiredSection("Logging:Sentry").Bind(options);
+            })
+            //#endif
             .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
-        //+:cnd:noEmit
         //#if (notification == true)
         if (AppPlatform.IsWindows is false)
         {
@@ -189,4 +195,15 @@ public static partial class MauiProgram
         }
     }
 #endif
+
+    private static bool LogException(object? error)
+    {
+        var errorMessage = error?.ToString() ?? "Unknown error";
+        if (IPlatformApplication.Current?.Services is IServiceProvider services && error is Exception exp)
+        {
+            services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            return true;
+        }
+        return false;
+    }
 }

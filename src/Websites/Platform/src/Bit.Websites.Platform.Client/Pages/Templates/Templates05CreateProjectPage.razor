@@ -136,14 +136,14 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>App Center</BitText>
-                <BitToggle @bind-Value="appCenter.Value" OnText="true" OffText="false" />
+                <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
+                <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
-                @GetAppCenterCommand()
+                @GetSentryCommand()
             </CodeBox>
-            Adding --appCenter true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
+            Adding --sentry true parameter to the dotnet new command allows you to capture errors, crashes, and analytics data
             seamlessly across all supported platforms.
         </BitGridItem>
 
@@ -247,7 +247,7 @@
                         The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
                         <br />
                         <br />
-                        Supported options include SqlServer, PostgreSQL, MySQL, Cosmos, and Other.
+                        Supported options include SqlServer, PostgreSQL, MySQL and Other.
                         <br />
                         <br />
                         For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
@@ -272,14 +272,6 @@
                 case "MySQL":
                     <div>
                         Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
-                    </div>
-                    break;
-                case "Cosmos":
-                    <div>
-                        Download and install Cosmos Storage emulator <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Ccsharp&pivots=api-nosql" target="_blank">here</a>.
-                        Alternatively, use the following command:
-                        <br />
-                        <CodeBox>winget install -e --id Microsoft.Azure.CosmosEmulator</CodeBox>
                     </div>
                     break;
                 case "Other":

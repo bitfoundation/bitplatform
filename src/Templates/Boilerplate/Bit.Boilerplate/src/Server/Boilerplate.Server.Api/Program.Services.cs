@@ -113,7 +113,7 @@ public static partial class Program
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
         //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(configuration);
+        services.AddApplicationInsightsTelemetry(options => configuration.GetRequiredSection("ApplicationInsights").Bind(options));
         //#endif
 
         services.AddCors(builder =>
@@ -191,11 +191,6 @@ public static partial class Program
             });
             //#elif (database == "PostgreSQL")
             options.UseNpgsql(configuration.GetConnectionString("PostgreSQLConnectionString"), dbOptions =>
-            {
-
-            });
-            //#elif (database == "Cosmos")
-            options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
             {
 
             });
@@ -320,8 +315,7 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            options.BearerTokenExpiration = identityOptions.BearerTokenExpiration;
-            options.RefreshTokenExpiration = identityOptions.RefreshTokenExpiration;
+            configuration.GetRequiredSection("Identity").Bind(options);
 
             var validationParameters = new TokenValidationParameters
             {
@@ -360,9 +354,8 @@ public static partial class Program
         {
             authenticationBuilder.AddGoogle(options =>
             {
-                options.ClientId = configuration["Authentication:Google:ClientId"]!;
-                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:Google").Bind(options);
             });
         }
 
@@ -370,9 +363,8 @@ public static partial class Program
         {
             authenticationBuilder.AddGitHub(options =>
             {
-                options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
-                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:GitHub").Bind(options);
             });
         }
 
@@ -380,10 +372,9 @@ public static partial class Program
         {
             authenticationBuilder.AddTwitter(options =>
             {
-                options.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"]!;
-                options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
                 options.RetrieveUserDetails = true;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:Twitter").Bind(options);
             });
         }
 

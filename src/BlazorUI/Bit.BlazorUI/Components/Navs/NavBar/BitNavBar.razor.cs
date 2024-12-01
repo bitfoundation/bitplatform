@@ -252,14 +252,14 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
     {
         if (GetIsEnabled(item) is false) return;
 
-        if (Mode == BitNavMode.Manual)
-        {
-            await SetSelectedItem(item);
-        }
-
         if (SelectedItem != item || Reselectable)
         {
             await OnItemClick.InvokeAsync(item);
+        }
+
+        if (Mode == BitNavMode.Manual)
+        {
+            await SetSelectedItem(item);
         }
     }
 

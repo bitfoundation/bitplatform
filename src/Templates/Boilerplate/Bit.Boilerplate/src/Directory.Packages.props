@@ -1,14 +1,14 @@
 ﻿<Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.BlazorUI" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.Bswup" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.0-pre-03" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="9.1.0-pre-03" />
+        <PackageVersion Include="Bit.Butil" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.BlazorUI" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.Bswup" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.0-pre-04" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="9.1.0-pre-04" />
         <PackageVersion Include="libphonenumber-csharp" Version="8.13.50" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
@@ -28,6 +28,9 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.0" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="4.13.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="4.13.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="4.13.0" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.3.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" Version="1.4.5.1" />
@@ -42,18 +45,14 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.0" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.1.0-pre-03" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.1.0-pre-04" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
         <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Analytics" Version="5.0.6" />
-        <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="Microsoft.AppCenter.Crashes" Version="5.0.6" />
-        <PackageVersion Condition=" '$(appCenter)' == 'true' OR '$(appCenter)' == '' " Include="West.Extensions.Logging.AppCenter" Version="2.2.2" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
         <PackageVersion Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') OR ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
-        <PackageVersion Condition=" '$(database)' == 'Cosmos' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Cosmos" Version="9.0.0" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.1" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />

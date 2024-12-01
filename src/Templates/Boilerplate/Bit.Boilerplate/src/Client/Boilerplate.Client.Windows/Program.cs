@@ -12,16 +12,9 @@ public partial class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
-        {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-
         Application.ThreadException += (_, e) => LogException(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception); e.SetObserved(); };
 
         ApplicationConfiguration.Initialize();
 
@@ -32,10 +25,8 @@ public partial class Program
         Application.SetColorMode(SystemColorMode.System);
         //#endif
 
+        var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();
-        ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
-        var configuration = configurationBuilder.Build();
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
@@ -81,6 +72,9 @@ public partial class Program
         var form = new Form()
         {
             Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
             WindowState = FormWindowState.Maximized,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)

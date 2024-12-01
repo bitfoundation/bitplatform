@@ -45,7 +45,7 @@ public partial class InitialMigration : Migration
                 Id = table.Column<Guid>(type: "TEXT", nullable: false),
                 Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                 NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                ConcurrencyStamp = table.Column<string>(type: "TEXT", rowVersion: true, nullable: true)
+                ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
             },
             constraints: table =>
             {
@@ -74,7 +74,7 @@ public partial class InitialMigration : Migration
                 EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                 PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
                 SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
-                ConcurrencyStamp = table.Column<string>(type: "TEXT", rowVersion: true, nullable: true),
+                ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
                 PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
                 PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                 TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -283,7 +283,8 @@ public partial class InitialMigration : Migration
                     name: "FK_PushNotificationSubscriptions_UserSessions_UserSessionId",
                     column: x => x.UserSessionId,
                     principalTable: "UserSessions",
-                    principalColumn: "Id");
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.SetNull);
             });
 
         migrationBuilder.InsertData(
@@ -300,8 +301,8 @@ public partial class InitialMigration : Migration
 
         migrationBuilder.InsertData(
             table: "Users",
-            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
-            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, null, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
+            columns: new[] { "Id", "AccessFailedCount", "BirthDate", "ConcurrencyStamp", "ElevatedAccessTokenRequestedOn", "Email", "EmailConfirmed", "EmailTokenRequestedOn", "FullName", "Gender", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "OtpRequestedOn", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneNumberTokenRequestedOn", "ProfileImageName", "ResetPasswordTokenRequestedOn", "SecurityStamp", "TwoFactorEnabled", "TwoFactorTokenRequestedOn", "UserName" },
+            values: new object[] { new Guid("8ff71671-a1d6-4f97-abb9-d87d7b47d6e7"), 0, 1306790461440000000L, "315e1a26-5b3a-4544-8e91-2760cd28e231", null, "test@bitplatform.dev", true, 1306790461440000000L, "Boilerplate test account", 0, true, null, "TEST@BITPLATFORM.DEV", "TEST", null, "AQAAAAIAAYagAAAAEP0v3wxkdWtMkHA3Pp5/JfS+42/Qto9G05p2mta6dncSK37hPxEHa3PGE4aqN30Aag==", "+31684207362", true, null, null, null, "959ff4a9-4b07-4cc1-8141-c5fc033daf83", false, null, "test" });
 
         migrationBuilder.InsertData(
             table: "Products",

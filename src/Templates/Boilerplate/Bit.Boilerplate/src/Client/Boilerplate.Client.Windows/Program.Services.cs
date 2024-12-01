@@ -27,10 +27,10 @@ public static partial class Program
         services.AddSingleton(sp => configuration);
         services.AddSingleton<IStorageService, WindowsStorageService>();
         services.AddSingleton<ILocalHttpServer, WindowsLocalHttpServer>();
+        ClientWindowsSettings settings = new();
+        configuration.Bind(settings);
         services.AddSingleton(sp =>
         {
-            ClientWindowsSettings settings = new();
-            configuration.Bind(settings);
             return settings;
         });
         services.AddSingleton(ITelemetryContext.Current!);
@@ -43,32 +43,19 @@ public static partial class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.ConfigureLoggers();
-            loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
+            loggingBuilder.ConfigureLoggers(configuration);
             loggingBuilder.AddEventSourceLogger();
 
-            loggingBuilder.AddEventLog();
-            //#if (appCenter == true)
-            if (Microsoft.AppCenter.AppCenter.Configured)
-            {
-                loggingBuilder.AddAppCenter(options => options.IncludeScopes = true);
-            }
-            //#endif
+            loggingBuilder.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
             //#if (appInsights == true)
-            loggingBuilder.AddApplicationInsights(config =>
+            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
             {
-                config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
-                ClientWindowsSettings settings = new();
-                configuration.Bind(settings);
-                var connectionString = settings.ApplicationInsights?.ConnectionString;
-                if (string.IsNullOrEmpty(connectionString) is false)
+                loggingBuilder.AddApplicationInsights(config =>
                 {
-                    config.ConnectionString = connectionString;
-                }
-            }, options =>
-            {
-                options.IncludeScopes = true;
-            });
+                    config.TelemetryInitializers.Add(new WindowsAppInsightsTelemetryInitializer());
+                    configuration.GetRequiredSection("ApplicationInsights").Bind(config);
+                }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
+            }
             //#endif
         });
 

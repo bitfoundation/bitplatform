@@ -12,7 +12,7 @@ public partial class MauiAppInsightsTelemetryInitializer : ITelemetryInitializer
         {
             telemetry.Context.Session.Id = ITelemetryContext.Current.AppSessionId.ToString();
             telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
-            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
+            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.Platform;
             telemetry.Context.User.AuthenticatedUserId = ITelemetryContext.Current.UserId?.ToString();
 
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();

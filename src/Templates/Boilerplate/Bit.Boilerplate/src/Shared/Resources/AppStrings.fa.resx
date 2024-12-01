@@ -274,6 +274,9 @@
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
   </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست.</value>
+  </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
     <value>ویرایش پروفایل آفلاین</value>
@@ -846,6 +849,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>احراز هویت دو مرحله‌ای فعال شد.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>احراز هویت دو مرحله‌ای غیرفعال شد.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>کد تایید:</value>
   </data>
@@ -928,7 +937,7 @@
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>لطفا توکن دریافت دسترسی ویژه را وارد کنید</value>
+    <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>توکن {0}</value>
@@ -1182,11 +1191,6 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
-  </data>
-    <!--#endif -->
-    <!--#if (signalR == true) -->
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست، و دوباره تلاش کنید.</value>
   </data>
     <!--#endif -->
 </root>
