@@ -316,8 +316,6 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            configuration.GetRequiredSection("Identity").Bind(options);
-
             var validationParameters = new TokenValidationParameters
             {
                 ClockSkew = TimeSpan.Zero,
@@ -349,6 +347,8 @@ public static partial class Program
                     context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
                 }
             };
+
+            configuration.GetRequiredSection("Identity").Bind(options);
         });
 
         if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
