@@ -390,6 +390,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.scss",
         "minify": { "enabled": false },
