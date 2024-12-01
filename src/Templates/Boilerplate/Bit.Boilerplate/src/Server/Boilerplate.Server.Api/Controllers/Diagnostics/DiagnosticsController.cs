@@ -62,7 +62,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         //#if (signalR == true)
         if (isAuthenticated && userSession!.SignalRConnectionId is not null)
         {
-            await appHubContext.Clients.Client(userSession!.SignalRConnectionId!).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
+            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
         }
         //#endif
 
