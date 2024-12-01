@@ -17,9 +17,12 @@ public partial class BitModalContainer : IDisposable
 
 
 
-    internal void InjectPersistentModals(BitModalReference[] modalRefs)
+    internal void InjectPersistentModals(ConcurrentQueue<BitModalReference> queue)
     {
-        _modalRefs.AddRange(modalRefs);
+        while (queue.TryDequeue(out var modalRef))
+        {
+            _modalRefs.Add(modalRef);
+        }
     }
 
 

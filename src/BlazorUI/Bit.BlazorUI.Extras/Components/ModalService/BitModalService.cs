@@ -28,8 +28,7 @@ public class BitModalService
     public void InitContainer(BitModalContainer container)
     {
         _container = container;
-        _container.InjectPersistentModals([.. _persistentModalsQueue]);
-        _persistentModalsQueue.Clear();
+        _container.InjectPersistentModals(_persistentModalsQueue);
     }
 
     /// <summary>
