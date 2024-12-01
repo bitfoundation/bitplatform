@@ -100,7 +100,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// Position of the Modal on the screen.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitModalPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
@@ -138,15 +138,15 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         ClassBuilder.Register(() => ModalParameters.Position switch
         {
-            BitModalPosition.Center => "bit-mdl-ctr",
-            BitModalPosition.TopLeft => "bit-mdl-tl",
-            BitModalPosition.TopCenter => "bit-mdl-tc",
-            BitModalPosition.TopRight => "bit-mdl-tr",
-            BitModalPosition.CenterLeft => "bit-mdl-cl",
-            BitModalPosition.CenterRight => "bit-mdl-cr",
-            BitModalPosition.BottomLeft => "bit-mdl-bl",
-            BitModalPosition.BottomCenter => "bit-mdl-bc",
-            BitModalPosition.BottomRight => "bit-mdl-br",
+            BitPosition.Center => "bit-mdl-ctr",
+            BitPosition.TopLeft => "bit-mdl-tl",
+            BitPosition.TopCenter => "bit-mdl-tc",
+            BitPosition.TopRight => "bit-mdl-tr",
+            BitPosition.CenterLeft => "bit-mdl-cl",
+            BitPosition.CenterRight => "bit-mdl-cr",
+            BitPosition.BottomLeft => "bit-mdl-bl",
+            BitPosition.BottomCenter => "bit-mdl-bc",
+            BitPosition.BottomRight => "bit-mdl-br",
             _ => "bit-mdl-ctr"
         });
     }

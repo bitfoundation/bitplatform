@@ -8,6 +8,8 @@ public class BitModalReference
 
     public string Id { get; init; }
 
+    public bool Persistent { get; private set; }
+
     public object? Content { get; private set; }
 
     public RenderFragment? Modal { get; private set; }
@@ -16,10 +18,12 @@ public class BitModalReference
 
 
 
-    public BitModalReference(BitModalService modalService)
+
+    public BitModalReference(BitModalService modalService, bool persistent)
     {
         Id = BitShortId.NewId();
         _modalService = modalService;
+        Persistent = persistent;
     }
 
 

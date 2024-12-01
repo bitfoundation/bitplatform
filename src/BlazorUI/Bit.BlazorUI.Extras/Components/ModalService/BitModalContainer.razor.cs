@@ -1,7 +1,14 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Collections.Concurrent;
+using System.Threading.Tasks;
+
+namespace Bit.BlazorUI;
 
 public partial class BitModalContainer : IDisposable
 {
+    private readonly List<BitModalReference> _modalRefs = [];
+
+
+
     [Parameter] public BitModalParameters ModalParameters { get; set; } = new();
 
 
@@ -10,7 +17,10 @@ public partial class BitModalContainer : IDisposable
 
 
 
-    private readonly List<BitModalReference> _modals = [];
+    internal void InjectPersistentModals(BitModalReference[] modalRefs)
+    {
+        _modalRefs.AddRange(modalRefs);
+    }
 
 
 
@@ -18,21 +28,25 @@ public partial class BitModalContainer : IDisposable
     {
         base.OnInitialized();
 
+        _modalService.InitContainer(this);
+
         _modalService.OnAddModal += OnModalAdd;
         _modalService.OnCloseModal += OnCloseModal;
     }
 
 
 
-    private Task OnModalAdd(BitModalReference modal)
+    private Task OnModalAdd(BitModalReference modalRef)
     {
-        _modals.Add(modal);
+        if (_modalRefs.Contains(modalRef)) return Task.CompletedTask;
+
+        _modalRefs.Add(modalRef);
         return InvokeAsync(StateHasChanged);
     }
 
-    private Task OnCloseModal(BitModalReference modal)
+    private Task OnCloseModal(BitModalReference modalRef)
     {
-        _modals.Remove(modal);
+        _modalRefs.Remove(modalRef);
         return InvokeAsync(StateHasChanged);
     }
 

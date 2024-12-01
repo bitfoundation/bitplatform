@@ -1,9 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 public class BitModalService
 {
+    private BitModalContainer? _container;
+    private readonly ConcurrentQueue<BitModalReference> _persistentModalsQueue = new();
+
+
+
     /// <summary>
     /// The event for when a new modal gets added through calling the Show method.
     /// </summary>
@@ -17,15 +23,23 @@ public class BitModalService
 
 
     /// <summary>
+    /// Initializes the current modal container that is responsible for rendering the modals.
+    /// </summary>
+    public void InitContainer(BitModalContainer container)
+    {
+        _container = container;
+        _container.InjectPersistentModals([.. _persistentModalsQueue]);
+    }
+
+    /// <summary>
     /// Closes an already opened modal using its reference.
     /// </summary>
-    /// <param name="modal"></param>
-    public async Task Close(BitModalReference modal)
+    public async Task Close(BitModalReference modalRef)
     {
         var modalClose = OnCloseModal;
         if (modalClose is not null)
         {
-            await modalClose(modal);
+            await modalClose(modalRef);
         }
     }
 
@@ -33,18 +47,18 @@ public class BitModalService
     /// Shows a new BitModal with a custom component with parameters as its content.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        Dictionary<string, object>? parameters = null)
+        Dictionary<string, object>? parameters = null, bool persistent = false)
     {
-        return Show<T>(parameters, null);
+        return Show<T>(parameters, null, persistent);
     }
 
     /// <summary>
     /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        BitModalParameters? modalParameters = null)
+        BitModalParameters? modalParameters = null, bool persistent = false)
     {
-        return Show<T>(null, modalParameters);
+        return Show<T>(null, modalParameters, persistent);
     }
 
     /// <summary>
@@ -52,7 +66,8 @@ public class BitModalService
     /// </summary>
     public async Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         Dictionary<string, object>? parameters,
-        BitModalParameters? modalParameters)
+        BitModalParameters? modalParameters,
+        bool persistent = false)
     {
         var componentType = typeof(T);
 
@@ -61,7 +76,7 @@ public class BitModalService
             throw new ArgumentException($"Type {componentType.Name} must be a Blazor component");
         }
 
-        var modalReference = new BitModalReference(this);
+        var modalReference = new BitModalReference(this, persistent);
         modalReference.SetParameters(modalParameters);
 
         var content = new RenderFragment(builder =>
@@ -96,6 +111,11 @@ public class BitModalService
         if (modalAdd is not null)
         {
             await modalAdd(modalReference);
+        }
+
+        if (persistent && _container is null)
+        {
+            _persistentModalsQueue.Enqueue(modalReference);
         }
 
         return modalReference;

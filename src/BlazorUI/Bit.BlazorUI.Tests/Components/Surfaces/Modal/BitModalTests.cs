@@ -193,18 +193,18 @@ public class BitModalTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitModalPosition.Center),
-        DataRow(BitModalPosition.TopLeft),
-        DataRow(BitModalPosition.TopCenter),
-        DataRow(BitModalPosition.TopRight),
-        DataRow(BitModalPosition.CenterLeft),
-        DataRow(BitModalPosition.CenterRight),
-        DataRow(BitModalPosition.BottomLeft),
-        DataRow(BitModalPosition.BottomCenter),
-        DataRow(BitModalPosition.BottomRight),
+        DataRow(BitPosition.Center),
+        DataRow(BitPosition.TopLeft),
+        DataRow(BitPosition.TopCenter),
+        DataRow(BitPosition.TopRight),
+        DataRow(BitPosition.CenterLeft),
+        DataRow(BitPosition.CenterRight),
+        DataRow(BitPosition.BottomLeft),
+        DataRow(BitPosition.BottomCenter),
+        DataRow(BitPosition.BottomRight),
         DataRow(null)
     ]
-    public void BitModalPositionTest(BitModalPosition? position)
+    public void BitPositionTest(BitPosition? position)
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
@@ -214,15 +214,15 @@ public class BitModalTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitModalPosition.Center => "bit-mdl-ctr",
-            BitModalPosition.TopLeft => "bit-mdl-tl",
-            BitModalPosition.TopCenter => "bit-mdl-tc",
-            BitModalPosition.TopRight => "bit-mdl-tr",
-            BitModalPosition.CenterLeft => "bit-mdl-cl",
-            BitModalPosition.CenterRight => "bit-mdl-cr",
-            BitModalPosition.BottomLeft => "bit-mdl-bl",
-            BitModalPosition.BottomCenter => "bit-mdl-bc",
-            BitModalPosition.BottomRight => "bit-mdl-br",
+            BitPosition.Center => "bit-mdl-ctr",
+            BitPosition.TopLeft => "bit-mdl-tl",
+            BitPosition.TopCenter => "bit-mdl-tc",
+            BitPosition.TopRight => "bit-mdl-tr",
+            BitPosition.CenterLeft => "bit-mdl-cl",
+            BitPosition.CenterRight => "bit-mdl-cr",
+            BitPosition.BottomLeft => "bit-mdl-bl",
+            BitPosition.BottomCenter => "bit-mdl-bc",
+            BitPosition.BottomRight => "bit-mdl-br",
             _ => "bit-mdl-ctr",
         };
 
