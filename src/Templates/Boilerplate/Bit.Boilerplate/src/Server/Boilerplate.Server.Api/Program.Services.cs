@@ -23,11 +23,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Signalr;
-using Boilerplate.Server.Api.SignalR;
-//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -160,11 +155,17 @@ public static partial class Program
             });
 
         //#if (signalR == true)
-        services.AddSingleton<HubConnectionHandler<AppHub>, AppHubConnectionHandler>();
-        services.AddSignalR(options =>
+        var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
         });
+        if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
+        {
+            signalRBuilder.AddAzureSignalR(options =>
+            {
+                configuration.GetRequiredSection("Azure:SignalR").Bind(options);
+            });
+        }
         //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);

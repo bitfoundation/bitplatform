@@ -228,7 +228,8 @@ public partial class InitialMigration : Migration
                 Privileged = table.Column<bool>(type: "INTEGER", nullable: false),
                 StartedOn = table.Column<long>(type: "INTEGER", nullable: false),
                 RenewedOn = table.Column<long>(type: "INTEGER", nullable: true),
-                UserId = table.Column<Guid>(type: "TEXT", nullable: false)
+                UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                SignalRConnectionId = table.Column<string>(type: "TEXT", nullable: true)
             },
             constraints: table =>
             {

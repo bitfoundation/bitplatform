@@ -147,10 +147,11 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
-                    options.SkipNegotiation = true;
+                    options.SkipNegotiation = false; // Required for Azure SignalR.
                     options.Transports = HttpTransportType.WebSockets;
                     // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                     // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
                     options.AccessTokenProvider = async () =>
                     {
                         var accessToken = await authTokenProvider.GetAccessToken();
