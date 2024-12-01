@@ -78,21 +78,28 @@ public partial class BitButtonDemo
             Name = "Float",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Apply floating behavior.",
+            Description = "Enables floating behavior for the button, allowing it to be positioned relative to the viewport.",
         },
         new()
         {
             Name = "FloatAbsolute",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Apply position absolute when the button is in floating mode.",
+            Description = "Enables floating behavior for the button, allowing it to be positioned relative to its container.",
+        },
+        new()
+        {
+            Name = "FloatOffset",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the offset of the floating button.",
         },
         new()
         {
             Name = "FloatPosition",
             Type = "bool",
             DefaultValue = "false",
-            Description = "The position of the button in floating mode.",
+            Description = "Specifies the position of the floating button.",
             LinkType = LinkType.Link,
             Href = "#button-position"
         },
@@ -688,17 +695,16 @@ public partial class BitButtonDemo
 
     private bool templateIsLoading;
 
-    private BitPosition floatPosition;
-    private bool floatingTypeIsViewPort = true;
-
-    private List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues(typeof(BitPosition))
-         .Cast<BitPosition>()
-         .Select(enumValue => new BitDropdownItem<BitPosition>
-         {
-             Value = enumValue,
-             Text = enumValue.ToString()
-         })
-         .ToList();
+    private string? floatOffset;
+    private BitPosition floatPosition = BitPosition.BottomRight;
+    private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
+                                                                                .Cast<BitPosition>()
+                                                                                .Select(enumValue => new BitDropdownItem<BitPosition>
+                                                                                {
+                                                                                    Value = enumValue,
+                                                                                    Text = enumValue.ToString()
+                                                                                })
+                                                                                .ToList();
 
     private async Task LoadingFillClick()
     {
@@ -770,4 +776,7 @@ public partial class BitButtonDemo
     {
         formIsValidSubmit = false;
     }
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example9");
 }

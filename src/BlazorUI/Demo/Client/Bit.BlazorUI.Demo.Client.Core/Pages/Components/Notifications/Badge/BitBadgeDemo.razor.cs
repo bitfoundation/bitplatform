@@ -85,7 +85,7 @@ public partial class BitBadgeDemo
             DefaultValue = "null",
             Description = "The position of the badge.",
             LinkType = LinkType.Link,
-            Href = "#badge-position-enum"
+            Href = "#position-enum"
         },
         new()
         {
@@ -204,7 +204,7 @@ public partial class BitBadgeDemo
         },
         new()
         {
-            Id = "badge-position-enum",
+            Id = "position-enum",
             Name = "BitPosition",
             Description = "",
             Items =
