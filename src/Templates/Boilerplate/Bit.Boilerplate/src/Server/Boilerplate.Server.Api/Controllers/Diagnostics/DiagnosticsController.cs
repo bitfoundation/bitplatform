@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Server.Api.Services;
+using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Diagnostics;
 
 namespace Boilerplate.Server.Api.Controllers.Diagnostics;
@@ -34,7 +35,15 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         result.AppendLine($"Trace => {Request.HttpContext.TraceIdentifier}");
 
         var isAuthenticated = User.IsAuthenticated();
-        Guid? userSessionId = isAuthenticated ? User.GetSessionId() : null;
+        Guid? userSessionId = null;
+        UserSession? userSession = null;
+
+        if (isAuthenticated)
+        {
+            userSessionId = User.GetSessionId();
+            userSession = await DbContext
+                .UserSessions.SingleAsync(us => us.Id == userSessionId, cancellationToken);
+        }
 
         result.AppendLine($"IsAuthenticated: {isAuthenticated.ToString().ToLowerInvariant()}");
 
@@ -51,9 +60,9 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         //#endif
 
         //#if (signalR == true)
-        if (isAuthenticated)
+        if (isAuthenticated && userSession!.SignalRConnectionId is not null)
         {
-            await appHubContext.Clients.Client(userSessionId.ToString()!).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
+            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.SHOW_MESSAGE, DateTimeOffset.Now.ToString("HH:mm:ss"), cancellationToken);
         }
         //#endif
 

@@ -35,6 +35,7 @@
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Condition=" ('$(database)' == 'MySql' OR '$(database)' == '') AND '$(framework)' == 'net8.0' " Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
+        <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
