@@ -8,19 +8,16 @@
             loadingEl: HTMLElement,
             scrollerElement: HTMLElement | undefined,
             scrollerSelector: string | undefined,
-            trigger: number | undefined,
-            factor: number | undefined,
-            margin: number | undefined,
-            threshold: number | undefined,
+            trigger: number,
+            factor: number,
+            margin: number,
+            threshold: number,
             dotnetObj: DotNetObject) {
             const anchorEl = anchor ?? document.body as HTMLElement;
             const scrollerEl = scrollerElement ?? ((scrollerSelector && document.querySelector(scrollerSelector)) ?? (!!anchor ? anchor.children[0] : anchorEl)) as HTMLElement;
             const isTouchDevice = Utils.isTouchDevice();
-            trigger ??= 80;
-            factor ??= 2;
-            margin ??= 30;
-            threshold ??= 10;
             let startY = -1;
+            let refreshing = false;
 
             const getY = (e: TouchEvent | PointerEvent) => {
                 return (e instanceof TouchEvent)
@@ -32,7 +29,7 @@
                 anchorEl.style.touchAction = scrollerEl.scrollTop === 0 ? 'pan-x pan-down pinch-zoom' : "";
             };
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (scrollerEl.scrollTop !== 0) {
+                if (scrollerEl.scrollTop !== 0 || refreshing) {
                     startY = -1;
                     return;
                 }
@@ -43,7 +40,7 @@
                 await dotnetObj.invokeMethodAsync('OnStart', bcr.top, bcr.left, bcr.width);
             };
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startY === -1) return;
+                if (startY === -1 || refreshing) return;
 
                 if (scrollerEl.scrollTop !== 0) {
                     //startY = getY(e);
@@ -71,7 +68,7 @@
                 await dotnetObj.invokeMethodAsync('OnMove', diff);
             };
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                //if (startY === -1) return;
+                if (startY === -1 || refreshing) return;
 
                 let diff = parseInt(loadingEl.style.minHeight);
                 diff = isNaN(diff) ? 0 : diff;
@@ -81,7 +78,9 @@
 
                 startY = -1;
                 if (diff >= trigger) {
+                    refreshing = true;
                     await dotnetObj.invokeMethodAsync('Refresh');
+                    refreshing = false;
                 }
                 loadingEl.style.minHeight = '0';
             };
@@ -105,7 +104,7 @@
             scrollerEl.addEventListener('scroll', onScroll);
             onScroll();
 
-            const refresher = new BitPullRefresher(id, loadingEl, anchorEl, trigger, dotnetObj);
+            const refresher = new BitPullRefresher(id, anchor, loadingEl, scrollerElement, scrollerSelector, trigger, factor, margin, threshold, dotnetObj);
             refresher.setDisposer(() => {
                 if (isTouchDevice) {
                     anchorEl.removeEventListener('touchstart', onStart);
@@ -135,16 +134,35 @@
 
     class BitPullRefresher {
         id: string;
-        element: HTMLElement;
-        anchor: HTMLElement;
+        anchor: HTMLElement | undefined;
+        loadingEl: HTMLElement;
+        scrollerElement: HTMLElement | undefined;
+        scrollerSelector: string | undefined;
+        trigger: number;
+        factor: number;
+        margin: number;
         threshold: number;
         dotnetObj: DotNetObject;
         disposer: () => void = () => { };
 
-        constructor(id: string, element: HTMLElement, anchor: HTMLElement, threshold: number, dotnetObj: DotNetObject) {
+        constructor(id: string,
+            anchor: HTMLElement | undefined,
+            loadingEl: HTMLElement,
+            scrollerElement: HTMLElement | undefined,
+            scrollerSelector: string | undefined,
+            trigger: number,
+            factor: number,
+            margin: number,
+            threshold: number,
+            dotnetObj: DotNetObject) {
             this.id = id;
-            this.element = element;
             this.anchor = anchor;
+            this.loadingEl = loadingEl;
+            this.scrollerElement = scrollerElement;
+            this.scrollerSelector = scrollerSelector;
+            this.trigger = trigger;
+            this.factor = factor;
+            this.margin = margin;
             this.threshold = threshold;
             this.dotnetObj = dotnetObj;
         }

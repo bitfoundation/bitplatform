@@ -24,7 +24,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// The factor to balance the pull height out.
     /// </summary>
-    [Parameter] public decimal Factor { get; set; } = 2;
+    [Parameter] public decimal Factor { get; set; } = 1.5m;
 
     /// <summary>
     /// The custom loading template to replace the default loading svg.

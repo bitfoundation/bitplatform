@@ -15,7 +15,7 @@
     }
 
     <div @ref="_loadingRef" class="bit-ptr-lod">
-        <div class="bit-ptr-swr" style=@($"margin-top:{_diff-_diff}px;width:{wrpSize}px;height:{wrpSize}px")>
+        <div class="bit-ptr-swr" style=@($"{(_refreshing ? "transition:margin-top 100ms linear;background-color:var(--bit-clr-bg-ter);" : "")}margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px")>
             <div class="bit-ptr-spn @(_refreshing ? "bit-ptr-spin" : "")"
                  style=@($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px")>
                 @if (Loading is not null)
