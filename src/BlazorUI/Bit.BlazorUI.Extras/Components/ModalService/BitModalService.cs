@@ -29,6 +29,7 @@ public class BitModalService
     {
         _container = container;
         _container.InjectPersistentModals([.. _persistentModalsQueue]);
+        _persistentModalsQueue.Clear();
     }
 
     /// <summary>
@@ -44,19 +45,46 @@ public class BitModalService
     }
 
     /// <summary>
+    /// Shows a new persistent BitModal that will persist through the lifecycle of the application until it gets shown.
+    /// </summary>
+    public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        bool persistent = false)
+    {
+        return Show<T>(null, null, persistent);
+    }
+
+    /// <summary>
     /// Shows a new BitModal with a custom component with parameters as its content.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        Dictionary<string, object>? parameters = null, bool persistent = false)
+        Dictionary<string, object>? parameters, bool persistent = false)
     {
         return Show<T>(parameters, null, persistent);
+    }
+
+    /// <summary>
+    /// Shows a new BitModal with a custom component with parameters as its content.
+    /// </summary>
+    public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        Dictionary<string, object> parameters)
+    {
+        return Show<T>(parameters, null, false);
     }
 
     /// <summary>
     /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
     /// </summary>
     public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        BitModalParameters? modalParameters = null, bool persistent = false)
+        BitModalParameters modalParameters)
+    {
+        return Show<T>(null, modalParameters, false);
+    }
+
+    /// <summary>
+    /// Shows a new BitModal with a custom component as its content with custom parameters for the modal.
+    /// </summary>
+    public Task<BitModalReference> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        BitModalParameters? modalParameters, bool persistent = false)
     {
         return Show<T>(null, modalParameters, persistent);
     }
