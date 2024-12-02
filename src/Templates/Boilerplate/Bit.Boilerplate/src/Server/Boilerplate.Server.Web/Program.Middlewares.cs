@@ -77,12 +77,14 @@ public static partial class Program
                 if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                     env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
+                    context.Request.Headers.AcceptEncoding = new("br");
                     context.Response.OnStarting(async () =>
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
-                            MaxAge = TimeSpan.FromDays(7),
-                            Public = true
+                            Public = true,
+                            NoTransform = true,
+                            MaxAge = TimeSpan.FromDays(7)
                         };
                     });
                 }
