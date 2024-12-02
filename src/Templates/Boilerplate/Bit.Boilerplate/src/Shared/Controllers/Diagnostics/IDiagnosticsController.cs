@@ -4,5 +4,5 @@
 public interface IDiagnosticsController : IAppController
 {
     [HttpPost]
-    Task<string> GetDiagnostics(CancellationToken cancellationToken);
+    Task<string> PerformDiagnostics(CancellationToken cancellationToken);
 }

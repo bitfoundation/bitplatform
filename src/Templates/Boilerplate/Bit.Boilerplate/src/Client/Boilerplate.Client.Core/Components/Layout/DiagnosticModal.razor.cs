@@ -141,7 +141,7 @@ public partial class DiagnosticModal : IDisposable
 
     private async Task CallDiagnosticsApi()
     {
-        var result = await diagnosticsController.GetDiagnostics(CurrentCancellationToken);
+        var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
         messageBoxService.Show(result, "Diagnostics Result");
     }
 
