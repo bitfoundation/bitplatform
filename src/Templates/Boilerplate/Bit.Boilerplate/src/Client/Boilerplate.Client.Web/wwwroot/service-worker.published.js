@@ -24,7 +24,8 @@ self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
-    /bit\.blazorui\.fluent-light\.css$/
+    /bit\.blazorui\.fluent-light\.css$/,
+    /pdfjs-4\.7\.76-worker\.js$/
 ];
 self.externalAssets = [
     {
