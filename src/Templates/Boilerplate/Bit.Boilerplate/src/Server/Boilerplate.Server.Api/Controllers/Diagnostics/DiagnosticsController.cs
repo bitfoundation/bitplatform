@@ -21,7 +21,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
-    public async Task<string> DoDiagnostics(CancellationToken cancellationToken)
+    public async Task<string> GetDiagnostics(CancellationToken cancellationToken)
     {
         StringBuilder result = new();
 

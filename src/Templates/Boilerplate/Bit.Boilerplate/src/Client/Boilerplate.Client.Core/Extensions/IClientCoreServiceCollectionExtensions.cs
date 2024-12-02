@@ -39,7 +39,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
         // To address this, we use the AddSessioned extension method.
         // AddSessioned applies AddSingleton in BlazorHybrid and AddScoped in Blazor WebAssembly and Blazor Server, ensuring correct service lifetimes for each environment.
-        services.AddSessioned<ModalService>();
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
@@ -67,7 +66,8 @@ public static partial class IClientCoreServiceCollectionExtensions
             .ValidateOnStart();
 
         services.AddBitButilServices();
-        services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIServices(singleton: AppPlatform.IsBlazorHybrid);
+        services.AddBitBlazorUIExtrasServices(singleton: AppPlatform.IsBlazorHybrid);
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 

@@ -1,23 +1,28 @@
-﻿namespace Boilerplate.Client.Core.Services;
+﻿using Microsoft.AspNetCore.Components.Web;
+
+namespace Boilerplate.Client.Core.Services;
 
 public partial class PromptService
 {
-    [AutoInject] private ModalService modalService = default!;
+    [AutoInject] private BitModalService modalService = default!;
 
-    public Task<string?> Show(string message, string title = "", bool otpInput = false)
+    public async Task<string?> Show(string message, string title = "", bool otpInput = false)
     {
         TaskCompletionSource<string?> tcs = new();
-        Dictionary<string, object> parameters = new()
+        BitModalReference? modalReference = null;
+        Dictionary<string, object> promptParameters = new()
         {
+            { nameof(Prompt.Title), title },
             { nameof(Prompt.Body), message },
             { nameof(Prompt.OtpInput), otpInput },
-            { nameof(Prompt.OnOk), (string value) => { tcs.SetResult(value); modalService.Close(); } }
+            { nameof(Prompt.OnCancel), () => { tcs.SetResult(null); modalReference?.Close(); } },
+            { nameof(Prompt.OnOk), (string value) => { tcs.SetResult(value); modalReference?.Close(); } }
         };
-        modalService.Show<Prompt>(parameters, title).ContinueWith(async task =>
+        var modalParameters = new BitModalParameters()
         {
-            await task;
-            tcs.TrySetResult(null);
-        });
-        return tcs.Task;
+            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => tcs.SetResult(null))
+        };
+        modalReference = await modalService.Show<Prompt>(promptParameters, modalParameters);
+        return await tcs.Task;
     }
 }

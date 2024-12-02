@@ -134,15 +134,15 @@ public partial class DiagnosticModal : IDisposable
 
         showKnownException = !showKnownException;
 
-        if (showKnownException)
-            throw new InvalidOperationException("Something critical happened.");
-        else
-            throw new DomainLogicException("Something bad happened.");
+        throw showKnownException
+            ? new InvalidOperationException("Something critical happened.")
+            : new DomainLogicException("Something bad happened.");
     }
 
     private async Task CallDiagnosticsApi()
     {
-        await messageBoxService.Show(await diagnosticsController.DoDiagnostics(CurrentCancellationToken), "Diagnostics Result");
+        var result = await diagnosticsController.GetDiagnostics(CurrentCancellationToken);
+        messageBoxService.Show(result, "Diagnostics Result");
     }
 
     private void ResetLogs()

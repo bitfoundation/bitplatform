@@ -71,6 +71,15 @@ p {
     width: min(25rem, 100%);
 }
 
+.modal {
+    width: var(--app-width);
+    height: var(--app-height);
+    top: var(--app-inset-top);
+    left: var(--app-inset-left);
+    right: var(--app-inset-right);
+    bottom: var(--app-inset-bottom);
+}
+
 div[dir=rtl] {
     .bitdatagrid-paginator {
         .go-next, .go-last {
