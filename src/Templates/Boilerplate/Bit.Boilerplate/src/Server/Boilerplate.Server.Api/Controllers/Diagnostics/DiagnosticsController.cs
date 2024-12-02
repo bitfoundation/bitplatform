@@ -22,7 +22,7 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     //#endif
 
     [HttpPost]
-    public async Task<string> DoDiagnostics(CancellationToken cancellationToken)
+    public async Task<string> PerformDiagnostics(CancellationToken cancellationToken)
     {
         StringBuilder result = new();
 

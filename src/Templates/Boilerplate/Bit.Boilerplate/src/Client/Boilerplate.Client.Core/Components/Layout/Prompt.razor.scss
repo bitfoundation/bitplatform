@@ -1,7 +1,25 @@
-﻿.body {
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+
+section {
+    padding: 1rem;
+    min-width: 20rem;
+    max-height: var(--app-height);
+
+    @include lt-md {
+        min-width: unset;
+    }
+}
+
+.body {
     width: 100%;
     flex-grow: 1;
     display: flex;
     overflow: auto;
     white-space: pre;
+}
+
+::deep {
+    .stack {
+        max-height: calc(var(--app-height) - 3rem);
+    }
 }
