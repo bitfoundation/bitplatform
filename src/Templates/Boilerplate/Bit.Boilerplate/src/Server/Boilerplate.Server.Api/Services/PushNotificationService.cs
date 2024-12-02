@@ -21,7 +21,9 @@ public partial class PushNotificationService
 
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        var subscription = await dbContext.PushNotificationSubscriptions.FindAsync([dto.DeviceId], cancellationToken);
+        var subscription = await dbContext.PushNotificationSubscriptions
+            .Where(s => s.UserSessionId == userSessionId || s.DeviceId == dto.DeviceId)
+            .SingleOrDefaultAsync(cancellationToken);
 
         if (subscription is null)
         {
