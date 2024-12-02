@@ -38,9 +38,12 @@ public partial class TodoPage
         await base.OnInitAsync();
     }
 
-    private async Task LoadTodoItems()
+    private async Task LoadTodoItems(bool showLoading = true)
     {
-        isLoading = true;
+        if (showLoading)
+        {
+            isLoading = true;
+        }
 
         try
         {
@@ -50,7 +53,10 @@ public partial class TodoPage
         }
         finally
         {
-            isLoading = false;
+            if (showLoading)
+            {
+                isLoading = false;
+            }
         }
     }
 
