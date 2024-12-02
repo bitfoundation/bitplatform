@@ -786,10 +786,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         {
             if (ItemsProvider is not null && (InitialSelectedItems?.Any() ?? false))
             {
-                foreach (var item in InitialSelectedItems)
-                {
-                    _selectedItems.Add(item);
-                }
+                _selectedItems.AddRange(InitialSelectedItems);
 
                 if (ValuesHasBeenSet is false)
                 {
