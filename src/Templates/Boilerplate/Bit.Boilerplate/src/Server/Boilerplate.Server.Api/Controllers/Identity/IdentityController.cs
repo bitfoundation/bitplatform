@@ -368,7 +368,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         //#if (signalR == true)
-        if (firstStepAuthenticationMethod != "SignalR")
+        if (firstStepAuthenticationMethod != "Push")
         {
             sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         }
