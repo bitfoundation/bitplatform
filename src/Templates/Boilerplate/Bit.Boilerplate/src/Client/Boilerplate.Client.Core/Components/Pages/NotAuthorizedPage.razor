@@ -4,7 +4,7 @@
 
 <PageTitle>@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]</PageTitle>
 
-@if (isRefreshingToken)
+@if (isUpdatingAuthState)
 {
     <LoadingComponent />
 }
@@ -39,5 +39,8 @@ else
                 </BitStack>
             </section>
         </Authorized>
+        <NotAuthorized>
+            <RedirectToSignInPage ReturnUrl="@ReturnUrl" />
+        </NotAuthorized>
     </AuthorizeView>
 }

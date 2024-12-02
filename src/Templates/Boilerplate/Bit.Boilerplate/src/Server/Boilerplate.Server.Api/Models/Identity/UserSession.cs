@@ -36,4 +36,8 @@ public partial class UserSession
     //#if (notification == true)
     public PushNotificationSubscription? PushNotificationSubscription { get; set; }
     //#endif
+
+    //#if (signalR == true)
+    public string? SignalRConnectionId { get; set; }
+    //#endif
 }

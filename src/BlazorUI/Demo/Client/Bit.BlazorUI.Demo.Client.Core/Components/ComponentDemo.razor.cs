@@ -281,5 +281,5 @@ public partial class ComponentDemo
 
 
 
-    private readonly List<string> _extraComponents = ["DataGrid", "Chart"];
+    private readonly List<string> _extraComponents = ["DataGrid", "Chart", "PdfReader", "ModalService"];
 }

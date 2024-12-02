@@ -161,6 +161,33 @@ private async Task AutoLoadingClick()
 </BitButton>";
 
     private readonly string example9RazorCode = @"
+<BitDropdown Label=""FloatPosition"" Items=""floatPositionList"" @bind-Value=""floatPosition"" FitWidth />
+<BitTextField Label=""FloatOffset"" @bind-Value=""floatOffset"" Immediate />
+
+<BitButton Float FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Add"" Size=""BitSize.Large"" IconOnly />
+
+<div style=""position: relative; border: 1px gray solid"">
+    <BitButton FloatAbsolute FloatPosition=""floatPosition"" FloatOffset=""@floatOffset"" IconName=""@BitIconName.Edit"" IconOnly />
+    <div style=""height: 300px; overflow: auto"">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+    </div>
+</div>";
+    private readonly string example9CsharpCode = @"
+private string? floatOffset;
+private BitPosition floatPosition = BitPosition.BottomRight;
+
+private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
+                                                                            .Cast<BitPosition>()
+                                                                            .Select(enumValue => new BitDropdownItem<BitPosition>
+                                                                            {
+                                                                                Value = enumValue,
+                                                                                Text = enumValue.ToString()
+                                                                            })
+                                                                            .ToList();";
+
+    private readonly string example10RazorCode = @"
 <EditForm Model=""buttonValidationModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
     <BitTextField Label=""Required"" Required @bind-Value=""buttonValidationModel.RequiredText"" />
@@ -172,7 +199,7 @@ private async Task AutoLoadingClick()
         <BitButton ButtonType=""BitButtonType.Button"">Button</BitButton>
     </div>
 </EditForm>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -191,7 +218,7 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-content {
         gap: 0.5rem;
@@ -238,7 +265,7 @@ private async Task HandleValidSubmit()
         </div>
     </LoadingTemplate>
 </BitButton>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool templateIsLoading;
 
 private async Task LoadingTemplateClick()
@@ -248,12 +275,12 @@ private async Task LoadingTemplateClick()
     templateIsLoading = false;
 }";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitButton OnClick=""() => clickCounter++"">Click me (@clickCounter)</BitButton>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private int clickCounter;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Fill</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>
@@ -280,10 +307,10 @@ private int clickCounter;";
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Text"">Text</BitButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton FullWidth IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Full Width Button</BitButton>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
@@ -355,7 +382,7 @@ private int clickCounter;";
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -429,7 +456,7 @@ private int clickCounter;";
                               Spinner = ""custom-spinner"" })"">
     Click me
 </BitButton>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
 
@@ -447,7 +474,7 @@ private async Task LoadingClassesClick()
     classesIsLoading = false;
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
     دکمه با آیکن
 </BitButton>

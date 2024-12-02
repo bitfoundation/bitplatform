@@ -1,5 +1,4 @@
-﻿
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfReader;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfReader;
 
 public partial class BitPdfReaderDemo
 {

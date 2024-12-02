@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241126123435_InitialMigration")]
+[Migration("20241201163409_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -248,6 +248,9 @@ partial class InitialMigration
 
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");
+
+                b.Property<string>("SignalRConnectionId")
+                    .HasColumnType("TEXT");
 
                 b.Property<long>("StartedOn")
                     .HasColumnType("INTEGER");

@@ -34,7 +34,7 @@ public interface ITelemetryContext
 
     public Guid AppSessionId { get; set; }
 
-    public string? OS { get; set; }
+    public string? Platform { get; set; }
 
     public string? AppVersion { get; set; }
     public string? WebView { get; set; }
@@ -60,7 +60,7 @@ public interface ITelemetryContext
             { nameof(UserId), UserId },
             { nameof(UserSessionId), UserSessionId },
             { nameof(AppSessionId), AppSessionId },
-            { nameof(OS), OS },
+            { nameof(Platform), Platform },
             { nameof(AppVersion), AppVersion },
             { nameof(PageUrl), PageUrl },
             { nameof(UserAgent), UserAgent },

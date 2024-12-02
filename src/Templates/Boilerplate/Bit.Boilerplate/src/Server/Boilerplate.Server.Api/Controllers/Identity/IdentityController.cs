@@ -232,7 +232,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             if (string.IsNullOrEmpty(request.ElevatedAccessToken) is false)
             {
-                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken);
+                var tokenIsValid = await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn?.ToUniversalTime()}"), request.ElevatedAccessToken)
+                    || await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken);
                 if (tokenIsValid is false)
                 {
                     await userManager.AccessFailedAsync(user);
@@ -312,7 +313,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#endif
 
         //#if (signalR == true)
-        // Checkout AppHubConnectionHandler's comments for more info.
         sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, pushMessage, cancellationToken));
         //#endif
 
@@ -370,7 +370,6 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         //#if (signalR == true)
         if (firstStepAuthenticationMethod != "SignalR")
         {
-            // Checkout AppHubConnectionHandler's comments for more info.
             sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         }
         //#endif

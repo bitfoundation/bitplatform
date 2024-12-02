@@ -1,0 +1,18 @@
+<BitStack Style="padding:1rem">
+    <BitText>This is the title!</BitText>
+    <BitSeparator />
+    <BitText>This is the body.</BitText>
+    <BitSeparator />
+    <BitStack Horizontal>
+        <BitButton>Ok</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="Close">Cancel</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
+    private void Close()
+    {
+        modalReference.Close();
+    }
+}

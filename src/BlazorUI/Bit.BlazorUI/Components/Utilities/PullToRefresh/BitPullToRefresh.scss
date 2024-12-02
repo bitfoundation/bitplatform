@@ -1,0 +1,38 @@
+﻿@import "../../../Styles/functions.scss";
+
+.bit-ptr {
+    width: fit-content;
+    position: relative;
+}
+
+.bit-ptr-lod {
+    top: 0;
+    left: 0;
+    height: 0;
+    z-index: 1;
+    display: flex;
+    overflow: hidden;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-ptr-swr {
+    display: flex;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: $clr-bg-pri;
+    box-shadow: $box-shadow-callout2;
+}
+
+.bit-ptr-spn {
+    display: flex;
+    color: $clr-fg-pri;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-ptr-spin {
+    animation: bit-spin 1s linear infinite;
+}
