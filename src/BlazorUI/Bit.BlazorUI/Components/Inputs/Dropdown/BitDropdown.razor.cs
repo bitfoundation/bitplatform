@@ -127,6 +127,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
+    /// The initial items that will be used to set selected items when using an ItemProvider.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
+
+    /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
@@ -779,14 +784,35 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         if (MultiSelect)
         {
-            if (ValuesHasBeenSet is false && DefaultValues is not null)
+            if (ItemsProvider is not null && (InitialSelectedItems?.Any() ?? false))
+            {
+                foreach (var item in InitialSelectedItems)
+                {
+                    _selectedItems.Add(item);
+                }
+
+                if (ValuesHasBeenSet is false)
+                {
+                    await AssignValues(_selectedItems.Select(s => GetValue(s)));
+                }
+            }
+            else if (ValuesHasBeenSet is false && DefaultValues is not null)
             {
                 await AssignValues(DefaultValues);
             }
         }
         else
         {
-            if (ValueHasBeenSet is false && DefaultValue is not null)
+            if (ItemsProvider is not null && (InitialSelectedItems?.Any() ?? false))
+            {
+                _selectedItems.Add(InitialSelectedItems.First());
+
+                if (ValueHasBeenSet is false)
+                {
+                    Value = GetValue(_selectedItems.First());
+                }
+            }
+            else if (ValueHasBeenSet is false && DefaultValue is not null)
             {
                 Value = DefaultValue;
             }
@@ -1142,6 +1168,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         if (request.CancellationToken.IsCancellationRequested) return default;
 
         _lastShowItems = [.. providerResult.Items];
+
+        UpdateSelectedItemsFromValues();
+        await InvokeAsync(StateHasChanged);
 
         return new ItemsProviderResult<TItem>(providerResult.Items, providerResult.TotalItemCount);
     }
