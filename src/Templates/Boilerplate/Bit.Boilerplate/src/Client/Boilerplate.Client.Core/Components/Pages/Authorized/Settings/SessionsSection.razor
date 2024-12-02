@@ -36,7 +36,6 @@
         {
             <br />
             <BitPullToRefresh OnRefresh="async () => await LoadSessions(false)" ScrollerSelector=".sessions-list" Style="width:100%">
-
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
                 <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
                     <RowTemplate Context="session">
