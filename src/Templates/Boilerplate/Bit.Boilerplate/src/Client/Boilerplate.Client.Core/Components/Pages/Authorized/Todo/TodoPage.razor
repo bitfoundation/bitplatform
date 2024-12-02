@@ -67,7 +67,7 @@
             }
             else
             {
-                <BitPullToRefresh OnRefresh="async() => await LoadTodoItems(false)" Style="width:100%">
+                <BitPullToRefresh OnRefresh="async() => await LoadTodoItems(false)" ScrollerSelector=".todo-list" Style="width:100%">
                     <BitBasicList Items="viewTodoItems" EnableVirtualization Class="todo-list">
                         <EmptyContent>
                             <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
