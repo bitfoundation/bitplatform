@@ -372,13 +372,29 @@
         <ExamplePreview>
             <div>Setting the FullWidth makes the button occupy 100% of its container's width.</div>
             <br />
-            <div>
-                <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
-            </div>
+            <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <ComponentExampleBox Title="FixedColor" RazorCode="@example15RazorCode" Id="example15">
+        <ExamplePreview>
+            <div>FixedColor flag parameter makes the foreground color to be fixed regardless of its hovering state.</div>
+            <br />
+            <BitButton FixedColor IconOnly
+                       Size="BitSize.Large"
+                       Variant="BitVariant.Outline"
+                       IconName="@BitIconName.Emoji2"
+                       Color="BitColor.TertiaryBackground" />
+
+            <BitButton FixedColor IconOnly
+                       Size="BitSize.Large"
+                       Variant="BitVariant.Text"
+                       IconName="@BitIconName.Emoji2"
+                       Color="BitColor.TertiaryBackground" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <ExamplePreview>
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br />
@@ -492,7 +508,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
@@ -535,7 +551,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <ComponentExampleBox Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <ExamplePreview>
             <div>Use BitButton in right-to-left (RTL).</div>
             <br />

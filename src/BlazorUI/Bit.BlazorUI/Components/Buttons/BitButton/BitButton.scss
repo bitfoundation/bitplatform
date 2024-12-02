@@ -89,15 +89,6 @@
     font-size: var(--bit-btn-lbl-fontsize);
 }
 
-.bit-btn-ntx {
-    padding: var(--bit-btn-pad-ntx);
-    --bit-btn-icn-margintop: 0;
-}
-
-.bit-btn-fxc {
-    color: var(--bit-btn-clr-txt);
-}
-
 .bit-btn-flw {
     width: 100%;
     z-index: $zindex-base;
@@ -409,4 +400,16 @@
     left: 50%;
     transform: translateX(-50%);
     bottom: var(--bit-btn-float-offset);
+}
+
+
+// important: these need to be here at the end!
+
+.bit-btn-fxc {
+    color: var(--bit-btn-clr-txt);
+}
+
+.bit-btn-ntx {
+    padding: var(--bit-btn-pad-ntx);
+    --bit-btn-icn-margintop: 0;
 }
