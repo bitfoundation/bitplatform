@@ -311,6 +311,19 @@ private int clickCounter;";
 <BitButton FullWidth IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Fill"">Full Width Button</BitButton>";
 
     private readonly string example15RazorCode = @"
+<BitButton FixedColor IconOnly
+           Size=""BitSize.Large""
+           Variant=""BitVariant.Outline""
+           IconName=""@BitIconName.Emoji2""
+           Color=""BitColor.TertiaryBackground"" />
+
+<BitButton FixedColor IconOnly
+           Size=""BitSize.Large""
+           Variant=""BitVariant.Text""
+           IconName=""@BitIconName.Emoji2""
+           Color=""BitColor.TertiaryBackground"" />";
+
+    private readonly string example16RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
@@ -382,7 +395,7 @@ private int clickCounter;";
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -456,7 +469,7 @@ private int clickCounter;";
                               Spinner = ""custom-spinner"" })"">
     Click me
 </BitButton>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool stylesIsLoading;
 private bool classesIsLoading;
 
@@ -474,7 +487,7 @@ private async Task LoadingClassesClick()
     classesIsLoading = false;
 }";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
     دکمه با آیکن
 </BitButton>
