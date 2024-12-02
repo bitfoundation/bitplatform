@@ -114,7 +114,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .UseSqlite($"Data Source={dbPath}");
 
             //#if (framework == 'net9.0')
-            if (AppEnvironment.IsProd())
+            if (AppEnvironment.IsDev() is false)
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
