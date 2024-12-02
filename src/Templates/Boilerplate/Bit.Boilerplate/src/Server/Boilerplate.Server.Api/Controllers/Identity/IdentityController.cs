@@ -367,19 +367,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        //#if (signalR == true)
-        if (firstStepAuthenticationMethod != "SignalR")
-        {
-            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
-        }
-        //#endif
-
-        //#if (notification == true)
         if (firstStepAuthenticationMethod != "Push")
         {
+            //#if (signalR == true)
+            sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
+            //#endif
+            //#if (notification == true)
             sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+            //#endif
         }
-        //#endif
 
         await Task.WhenAll(sendMessagesTasks);
     }

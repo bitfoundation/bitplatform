@@ -66,12 +66,9 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
             || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
         {
-            //#if (signalR != true)
             serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
-            //#endif
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
-        //#if (signalR != true)
         finally
         {
             if (isInternalRequest)
@@ -79,6 +76,5 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
-        //#endif
     }
 }
