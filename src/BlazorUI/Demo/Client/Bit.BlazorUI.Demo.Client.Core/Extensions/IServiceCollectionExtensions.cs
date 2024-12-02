@@ -23,7 +23,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<LazyAssemblyLoader>();
         services.TryAddScoped<NavManuService>();
 
-        services.AddBitBlazorUIServices(singleton: AppRenderMode.IsBlazorHybrid);
+        services.AddBitBlazorUIServices();
         services.AddBitBlazorUIExtrasServices(singleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 
