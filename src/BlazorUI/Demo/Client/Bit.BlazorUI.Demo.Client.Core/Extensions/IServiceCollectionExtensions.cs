@@ -24,7 +24,7 @@ public static class IServiceCollectionExtensions
         services.TryAddScoped<NavManuService>();
 
         services.AddBitBlazorUIServices();
-        services.AddBitBlazorUIExtrasServices(singleton: AppRenderMode.IsBlazorHybrid);
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 
         return services;
