@@ -255,9 +255,9 @@ public partial class BitPanel : BitComponentBase
             styles.Add(FormattableString.Invariant($"{prop}:{Size}px"));
         }
 
-        if ((Styles?.Container ?? string.Empty).HasValue())
+        if (Styles?.Container is string containerStyle && containerStyle.HasValue())
         {
-            styles.Add(Styles!.Container!);
+            styles.Add(containerStyle);
         }
 
         return string.Join(';', styles);
