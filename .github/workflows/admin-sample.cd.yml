@@ -25,18 +25,22 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
     
+    - name: Remove .NET 9 based global.json
+      run: |
+        rm src/global.json
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global.json
+        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
 
     - name: Create project from Boilerplate
       run: |
-       cd src/Templates/Boilerplate && dotnet build -c Release
-       dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
-       dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
-       
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg
+        cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net8.0
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
@@ -52,13 +56,13 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: 22
-        
+
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
-      
+
     - name: Generate CSS/JS files
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
-      
+
     - name: Publish
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
