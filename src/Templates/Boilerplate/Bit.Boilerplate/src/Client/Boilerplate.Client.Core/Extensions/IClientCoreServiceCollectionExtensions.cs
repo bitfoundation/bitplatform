@@ -66,8 +66,8 @@ public static partial class IClientCoreServiceCollectionExtensions
             .ValidateOnStart();
 
         services.AddBitButilServices();
-        services.AddBitBlazorUIServices(singleton: AppPlatform.IsBlazorHybrid);
-        services.AddBitBlazorUIExtrasServices(singleton: AppPlatform.IsBlazorHybrid);
+        services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 

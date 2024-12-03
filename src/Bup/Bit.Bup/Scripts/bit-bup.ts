@@ -1,5 +1,5 @@
 ﻿var BitBup = BitBup || {};
-BitBup.version = window['bit-bup version'] = '9.1.0-pre-05';
+BitBup.version = window['bit-bup version'] = '9.1.0-pre-08';
 
 declare const Blazor: any;
 
