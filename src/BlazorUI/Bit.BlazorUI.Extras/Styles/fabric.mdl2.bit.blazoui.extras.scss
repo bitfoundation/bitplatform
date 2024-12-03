@@ -5,3 +5,12 @@
     font-family: 'Fabric MDL2 bit BlazorUI Extras';
     src: url('../fonts/FabMDL2.4.66.bit.BlazorUI.Extras.woff2') format("woff2");
 }
+
+.bit-icon {
+    font-style: normal;
+    font-weight: normal;
+    display: inline-block;
+    font-family: 'Fabric MDL2 bit BlazorUI' !important;
+}
+
+.bit-icon--ColumnRightTwoThirds:before { content: "\F1D7"; }
