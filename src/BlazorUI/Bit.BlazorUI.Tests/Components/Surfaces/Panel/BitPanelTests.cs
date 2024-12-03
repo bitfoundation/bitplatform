@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using AngleSharp.Css.Dom;
 using Bunit;
-using AngleSharp.Css.Dom;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Panel;
 
@@ -43,19 +43,19 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelModelessTest(bool isModeless)
+    public void BitPanelModelessTest(bool modeless)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Modeless, isModeless);
+            parameters.Add(p => p.Modeless, modeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
         var element = com.Find(".bit-pnl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
+        Assert.AreEqual(element.Attributes["aria-modal"].Value, (modeless is false).ToString());
 
         var elementOverlay = com.FindAll(".bit-pnl-ovl");
-        Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
+        Assert.AreEqual(modeless ? 0 : 1, elementOverlay.Count);
     }
 
     [DataTestMethod,

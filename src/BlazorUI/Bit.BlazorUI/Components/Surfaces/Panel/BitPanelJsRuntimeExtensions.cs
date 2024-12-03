@@ -9,6 +9,6 @@ internal static class BitPanelJsRuntimeExtensions
                                             bool isRtl,
                                             DotNetObjectReference<BitPanel>? dotnetObjectReference)
     {
-        return js.InvokeVoid("BitBlazorUI.Panel.setup", id, trigger, position, isRtl,dotnetObjectReference);
+        return js.InvokeVoid("BitBlazorUI.Panel.setup", id, trigger, position, isRtl, dotnetObjectReference);
     }
 }

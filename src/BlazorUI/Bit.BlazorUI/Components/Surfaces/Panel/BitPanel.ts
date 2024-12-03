@@ -84,14 +84,14 @@
 
                 element.style.transitionDuration = '';
 
-                if ((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End) && diffX < 0) {
+                if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
                     if ((Math.abs(diffX) / bcr.width) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
                     }
                 }
 
-                if ((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start) && diffX > 0) {
+                if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
                     if ((diffX / bcr.width) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
