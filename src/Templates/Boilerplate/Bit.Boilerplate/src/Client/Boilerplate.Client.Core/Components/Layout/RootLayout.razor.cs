@@ -7,6 +7,7 @@ public partial class RootLayout : IDisposable
 {
     private BitDir? currentDir;
     private string? currentUrl;
+    private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>

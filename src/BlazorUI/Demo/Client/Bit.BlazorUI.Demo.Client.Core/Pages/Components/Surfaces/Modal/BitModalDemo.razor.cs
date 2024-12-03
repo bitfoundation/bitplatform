@@ -105,12 +105,18 @@ public partial class BitModalDemo
         },
         new()
         {
+            Name = "OnOverlayClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "A callback function for when somewhere on the overlay element of the Modal is clicked.",
+        },
+        new()
+        {
             Name = "Position",
-            Type = "BitModalPosition?",
+            Type = "BitPosition?",
             DefaultValue = "null",
             Description = "Position of the Modal on the screen.",
             LinkType = LinkType.Link,
-            Href = "#modal-position-enum",
+            Href = "#position-enum",
         },
         new()
         {
@@ -181,8 +187,8 @@ public partial class BitModalDemo
     [
         new()
         {
-            Id = "modal-position-enum",
-            Name = "BitModalPosition",
+            Id = "position-enum",
+            Name = "BitPosition",
             Description = "",
             Items =
             [
@@ -213,8 +219,8 @@ public partial class BitModalDemo
     private bool isOpenScrollerSelector;
 
     private bool isOpenPosition;
-    private BitModalPosition position;
-    private void OpenModalInPosition(BitModalPosition positionValue)
+    private BitPosition position;
+    private void OpenModalInPosition(BitPosition positionValue)
     {
         isOpenPosition = true;
         position = positionValue;
@@ -562,10 +568,10 @@ private bool isOpenScrollerSelector;";
 </style>
 
 
-<BitButton OnClick=""() => OpenModalInPosition(BitModalPosition.TopLeft)"">Top Left</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitModalPosition.TopRight)"">Top Right</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitModalPosition.BottomLeft)"">Bottom Left</BitButton>
-<BitButton OnClick=""() => OpenModalInPosition(BitModalPosition.BottomRight)"">Bottom Right</BitButton>
+<BitButton OnClick=""() => OpenModalInPosition(BitPosition.TopLeft)"">Top Left</BitButton>
+<BitButton OnClick=""() => OpenModalInPosition(BitPosition.TopRight)"">Top Right</BitButton>
+<BitButton OnClick=""() => OpenModalInPosition(BitPosition.BottomLeft)"">Bottom Left</BitButton>
+<BitButton OnClick=""() => OpenModalInPosition(BitPosition.BottomRight)"">Bottom Right</BitButton>
 
 <BitModal @bind-IsOpen=""isOpenPosition"" Position=""position"">
     <div class=""modal-header"">
@@ -578,9 +584,9 @@ private bool isOpenScrollerSelector;";
 </BitModal>";
     private readonly string example5CsharpCode = @"
 private bool isOpenPosition;
-private BitModalPosition position;
+private BitPosition position;
 
-private void OpenModalInPosition(BitModalPosition positionValue)
+private void OpenModalInPosition(BitPosition positionValue)
 {
     isOpenPosition = true;
     position = positionValue;

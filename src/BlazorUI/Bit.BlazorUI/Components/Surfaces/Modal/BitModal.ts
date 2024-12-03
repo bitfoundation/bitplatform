@@ -24,6 +24,9 @@
                 x = e.clientX;
                 y = e.clientY;
 
+                const { width } = element.getBoundingClientRect();
+                element.style.width = `${width}px`;
+
                 document.addEventListener('pointermove', handlePointerMove);
                 listeners['pointermove'] = handlePointerMove;
 

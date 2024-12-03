@@ -849,6 +849,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Two-factor authentication has been enabled.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Two-factor authentication has been disabled.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
@@ -931,7 +937,7 @@
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
     <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>Please enter the elevated access token to continue.</value>
+    <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
     <value>Token {0}</value>

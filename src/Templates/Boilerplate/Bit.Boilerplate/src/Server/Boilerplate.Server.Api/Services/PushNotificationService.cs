@@ -21,16 +21,15 @@ public partial class PushNotificationService
 
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        var subscription = await dbContext.PushNotificationSubscriptions.FindAsync([dto.DeviceId], cancellationToken);
+        await dbContext.PushNotificationSubscriptions
+            .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
+            .ExecuteDeleteAsync(cancellationToken);
 
-        if (subscription is null)
+        var subscription = dbContext.PushNotificationSubscriptions.Add(new()
         {
-            dbContext.PushNotificationSubscriptions.Add(subscription = new()
-            {
-                DeviceId = dto.DeviceId,
-                Platform = dto.Platform
-            });
-        }
+            DeviceId = dto.DeviceId,
+            Platform = dto.Platform
+        }).Entity;
 
         dto.Patch(subscription);
 
@@ -76,7 +75,7 @@ public partial class PushNotificationService
 
         var subscriptions = await query.ToListAsync(cancellationToken);
 
-        _ = Task.Run(async () => // Let's not wait for the push notification to be sent
+        _ = Task.Run(async () => // Let's not wait for the push notification to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
             await using var scope = rootServiceScopeProvider.Invoke();
             var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();

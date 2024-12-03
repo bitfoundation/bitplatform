@@ -94,7 +94,7 @@ public enum BlazorWebAppMode
 public class AdsPushVapidOptions
 {
     /// <summary>
-    /// Web push's vapid. More info at https://vapidkeys.com/
+    /// Web push's vapid. More info at https://tools.reactpwa.com/vapid
     /// </summary>
     [Required]
     public string PublicKey { get; set; } = default!;

@@ -2,12 +2,19 @@
 
 public partial class MessageBox
 {
-    [Parameter] public string? Body { get; set; }
-    [Parameter] public Action? OnOk { get; set; }
+    [CascadingParameter] private BitModalReference? modalReference { get; set; }
 
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Body { get; set; }
+
+
+    private void CloseModal()
+    {
+        modalReference?.Close();
+    }
 
     private void OnOkClick()
     {
-        OnOk?.Invoke();
+        modalReference?.Close();
     }
 }

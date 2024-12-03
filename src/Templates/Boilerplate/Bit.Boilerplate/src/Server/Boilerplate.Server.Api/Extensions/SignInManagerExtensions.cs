@@ -17,7 +17,7 @@ public static partial class SignInManagerExtensions
     /// 5. When the browser is redirected to a magic link created after a social sign-in, to automatically authenticate the user.
     /// 6. When the user opts to sign in using a 6-digit code delivered via native push notification, web push or SignalR message (if configured).
     /// 
-    /// It's important to clarify the authentication method (e.g., Social, SMS, Email, or Push Notification) 
+    /// It's important to clarify the authentication method (e.g., Social, SMS, Email, or Push) 
     /// to avoid sending a second step to the same communication channel: For successful two-step authentication, the user must use a different method for the second step.
     /// </summary>
 

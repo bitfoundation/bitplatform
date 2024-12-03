@@ -128,11 +128,11 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
         try
         {
             await applicationInsights.AddTelemetryInitializer(telemetryItem);
-            telemetryInitializerIsAddedTcs!.SetResult();
+            telemetryInitializerIsAddedTcs!.TrySetResult();
         }
         catch (Exception exp)
         {
-            telemetryInitializerIsAddedTcs!.SetException(exp);
+            telemetryInitializerIsAddedTcs!.TrySetException(exp);
         }
     }
 
@@ -158,7 +158,7 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
                 if (await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
                     await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights"))
                 {
-                    appInsightsJsFilesAreLoaded.SetResult();
+                    appInsightsJsFilesAreLoaded.TrySetResult();
                     break;
                 }
                 await Task.Delay(250, cts.Token);
@@ -166,7 +166,7 @@ public partial class AppInsightsJsSdkService : IApplicationInsights
         }
         catch (Exception exp)
         {
-            appInsightsJsFilesAreLoaded.SetException(exp);
+            appInsightsJsFilesAreLoaded.TrySetException(exp);
         }
     }
 }

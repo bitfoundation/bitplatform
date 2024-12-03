@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent Gap="2rem">
@@ -6,7 +6,8 @@
 
         <BitText Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.TfaPanelSubtitle)]</BitText>
 
-        <BitTextField @bind-Value="Model.TwoFactorCode"
+        <BitTextField AutoFocus
+                      @bind-Value="Model.TwoFactorCode"
                       Label="@Localizer[nameof(AppStrings.Code)]"
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                       Placeholder="@Localizer[nameof(AppStrings.TwoFactorCode)]" />

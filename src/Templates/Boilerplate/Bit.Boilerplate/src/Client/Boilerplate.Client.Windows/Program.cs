@@ -12,9 +12,9 @@ public partial class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        Application.ThreadException += (_, e) => LogException(e.Exception);
-        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
-        TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception); e.SetObserved(); };
+        Application.ThreadException += (_, e) => LogException(e.Exception, reportedBy: nameof(Application.ThreadException));
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException));
+        TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception, reportedBy: nameof(TaskScheduler.UnobservedTaskException)); e.SetObserved(); };
 
         ApplicationConfiguration.Initialize();
 
@@ -72,6 +72,9 @@ public partial class Program
         var form = new Form()
         {
             Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
             WindowState = FormWindowState.Maximized,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
@@ -119,12 +122,15 @@ public partial class Program
         Application.Run(form);
     }
 
-    private static void LogException(object? error)
+    private static void LogException(object? error, string reportedBy)
     {
         var errorMessage = error?.ToString() ?? "Unknown error";
         if (Services is not null && error is Exception exp)
         {
-            Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            Services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new() 
+            { 
+                { nameof(reportedBy), reportedBy }
+            });
         }
         else
         {
