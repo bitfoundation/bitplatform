@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using AngleSharp.Css.Dom;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Panel;
 
@@ -12,30 +13,37 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelIsBlockingTest(bool isBlocking)
+    public void BitPanelBlockingTest(bool blocking)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.Blocking, isBlocking);
+            parameters.Add(p => p.Blocking, blocking);
             parameters.Add(p => p.IsOpen, isPanelOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(1, bitPanel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
 
         var overlayElement = com.Find(".bit-pnl-ovl");
         overlayElement.Click();
 
-        bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(isBlocking ? 1 : 0, bitPanel.Count);
+        container = com.Find(".bit-pnl-cnt");
+        if (blocking)
+        {
+            Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
+        }
+        else
+        {
+            Assert.AreEqual("", container.GetStyle().CssText);
+        }
     }
 
     [DataTestMethod,
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelIsModelessTest(bool isModeless)
+    public void BitPanelModelessTest(bool isModeless)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
@@ -61,8 +69,8 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
-        var bitModel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(isOpen ? 1 : 0, bitModel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.AreEqual(isOpen, container.GetStyle().CssText.Contains("opacity: 1"));
     }
 
     [DataTestMethod,
@@ -178,14 +186,14 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(1, bitPanel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
 
         var overlayElement = com.Find(".bit-pnl-ovl");
         overlayElement.Click();
 
-        bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(0, bitPanel.Count);
+        container = com.Find(".bit-pnl-cnt");
+        Assert.AreEqual("", container.GetStyle().CssText);
     }
 
     [TestMethod]
