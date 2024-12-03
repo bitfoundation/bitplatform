@@ -9,22 +9,29 @@ public partial class BitPanelDemo
             Name = "AutoToggleScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Panel.",
+            Description = "Enables the auto scrollbar toggle behavior of the panel.",
+        },
+        new()
+        {
+            Name = "Blocking",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the panel can be dismissed by clicking outside of it on the overlay.",
         },
         new()
         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of Panel, It can be Any custom tag or a text.",
+            Description = "The content of the panel.",
         },
         new()
         {
             Name = "Classes",
             Type = "BitPanelClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS classes for different parts of the BitPanel component.",
-            Href = "#panel-class-styles",
+            Description = "Custom CSS classes for different parts of the panel.",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
         },
         new()
@@ -32,42 +39,35 @@ public partial class BitPanelDemo
             Name = "FooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize how the footer inside the Panel is rendered.",
+            Description = "The template used to render the footer section of the panel.",
         },
         new()
         {
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Used to customize how the header inside the Panel is rendered.",
+            Description = "The template used to render the header section of the panel.",
         },
         new()
         {
             Name = "HeaderText",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Header text of Panel.",
-        },
-        new()
-        {
-            Name = "IsBlocking",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the dialog can be light dismissed by clicking outside the dialog (on the overlay).",
-        },
-        new()
-        {
-            Name = "IsModeless",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the dialog should be modeless (e.g. not dismiss when focusing/clicking outside of the dialog). if true: IsBlocking is ignored, there will be no overlay.",
+            Description = "The text of the header section of the panel.",
         },
         new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the dialog is displayed.",
+            Description = "Determines the openness of the panel.",
+        },
+        new()
+        {
+            Name = "Modeless",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the overlay element of the panel.",
         },
         new()
         {
@@ -77,41 +77,59 @@ public partial class BitPanelDemo
         },
         new()
         {
+            Name = "OnSwipeStart",
+            Type = "EventCallback<decimal>",
+            Description = "The event callback for when the swipe action starts on the container of the panel.",
+        },
+        new()
+        {
+            Name = "OnSwipeMove",
+            Type = "EventCallback<decimal>",
+            Description = "The event callback for when the swipe action moves on the container of the panel.",
+        },
+        new()
+        {
+            Name = "OnSwipeEnd",
+            Type = "EventCallback<decimal>",
+            Description = "The event callback for when the swipe action ends on the container of the panel.",
+        },
+        new()
+        {
             Name = "Position",
-            Type = "BitPanelPosition",
+            Type = "BitPanelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the panel to show on the screen.",
+            Href = "#position-enum",
             LinkType = LinkType.Link,
-            Href = "#component-position-enum",
-            DefaultValue = "BitPanelPosition.Right",
-            Description = "Position of the modal on the screen.",
         },
         new()
         {
             Name = "Size",
-            Type = "double",
-            DefaultValue = "0",
-            Description = "Provides Height or Width for the Panel.",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "The value of the height or width (based on the position) of the Panel.",
         },
         new()
         {
             Name = "ScrollerSelector",
             Type = "string",
-            DefaultValue = "body",
-            Description = "Set the element selector for which the Panel disables its scroll if applicable.",
+            DefaultValue = "null",
+            Description = "Specifies the element selector for which the Panel disables its scroll if applicable.",
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
-            DefaultValue = "true",
-            Description = "Shows or hides the close button of the Panel.",
+            DefaultValue = "false",
+            Description = "Shows the close button of the Panel.",
         },
         new()
         {
             Name = "Styles",
             Type = "BitPanelClassStyles?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitPanel component.",
-            Href = "#panel-class-styles",
+            Description = "Custom CSS styles for different parts of the panel component.",
+            Href = "#class-styles",
             LinkType = LinkType.Link,
         },
         new()
@@ -119,14 +137,21 @@ public partial class BitPanelDemo
             Name = "SubtitleAriaId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "ARIA id for the subtitle of the Panel, if any.",
+            Description = "Specifies the id for the aria-describedby attribute of the panel.",
+        },
+        new()
+        {
+            Name = "SwipeTrigger",
+            Type = "decimal?",
+            DefaultValue = "null",
+            Description = "The swiping point (difference percentage) based on the width of the panel container to trigger the close action (default is 0.25m).",
         },
         new()
         {
             Name = "TitleAriaId",
             Type = "string?",
             DefaultValue = "null",
-            Description = "ARIA id for the title of the Panel, if any.",
+            Description = "Specifies the id for the aria-labelledby attribute of the panel.",
         },
     ];
 
@@ -134,7 +159,7 @@ public partial class BitPanelDemo
     [
         new()
         {
-            Id = "panel-class-styles",
+            Id = "class-styles",
             Title = "BitPanelClassStyles",
             Parameters =
             [
@@ -209,13 +234,13 @@ public partial class BitPanelDemo
     [
         new()
         {
-            Id = "component-position-enum",
+            Id = "position-enum",
             Name = "BitPanelPosition",
             Description = "",
             Items =
             [
-                new() { Name = "Right", Value = "0" },
-                new() { Name = "Left", Value = "1" },
+                new() { Name = "Start", Value = "0" },
+                new() { Name = "End", Value = "1" },
                 new() { Name = "Top", Value = "2" },
                 new() { Name = "Bottom", Value = "3" }
             ]

@@ -41,7 +41,7 @@
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
-    transition: transform 200ms linear, opacity 100ms ease-in;
+    transition: transform 200ms ease-out, opacity 100ms ease-in;
 }
 
 .bit-pnl-hcn {
