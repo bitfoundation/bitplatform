@@ -80,7 +80,7 @@ public partial class ConfirmPage
             {
                 Email = emailModel.Email,
                 Token = emailModel.Token,
-                DeviceInfo = telemetryContext.OS
+                DeviceInfo = telemetryContext.Platform
             }, CurrentCancellationToken);
 
             await AuthManager.StoreTokens(signInResponse, true);
@@ -110,7 +110,7 @@ public partial class ConfirmPage
             var signInResponse = await identityController.ConfirmPhone(new()
             {
                 Token = phoneModel.Token,
-                DeviceInfo = telemetryContext.OS,
+                DeviceInfo = telemetryContext.Platform,
                 PhoneNumber = phoneModel.PhoneNumber
             }, CurrentCancellationToken);
 

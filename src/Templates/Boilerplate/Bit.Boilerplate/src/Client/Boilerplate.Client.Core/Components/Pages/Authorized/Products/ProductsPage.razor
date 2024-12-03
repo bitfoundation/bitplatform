@@ -55,12 +55,12 @@
                         </ColumnOptions>
                     </BitDataGridPropertyColumn>
 
-                    <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Price)]"
+                    <BitDataGridPropertyColumn Title="@($"{Localizer[nameof(AppStrings.Price)]} ({CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol})")"
                                                Align="BitDataGridAlign.Left"
                                                Property="p => p!.Price"
                                                Class="price-col"
                                                Sortable="true"
-                                               Format="C2" />
+                                               Format="N0" />
 
                     <BitDataGridTemplateColumn Title="@Localizer[(nameof(AppStrings.Action))]"
                                                Align="BitDataGridAlign.Center"

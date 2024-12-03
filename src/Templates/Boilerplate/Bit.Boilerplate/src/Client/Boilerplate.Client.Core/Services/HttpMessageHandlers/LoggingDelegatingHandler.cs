@@ -24,7 +24,7 @@ internal class LoggingDelegatingHandler(ILogger<HttpClient> logger, HttpMessageH
             using var scope = logger.BeginScope(logScopeData);
             logger.Log(logLevel, "Received HTTP response for {Uri} after {Duration}ms",
                 request.RequestUri,
-                stopwatch.ElapsedMilliseconds);
+                stopwatch.ElapsedMilliseconds.ToString("N0"));
         }
     }
 }

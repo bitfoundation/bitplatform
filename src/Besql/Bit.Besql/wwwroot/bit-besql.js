@@ -1,5 +1,5 @@
 var BitBesql = BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '9.1.0-pre-03';
+BitBesql.version = window['bit-besql version'] = '9.1.0-pre-08';
 
 async function synchronizeDbWithCache(file) {
 

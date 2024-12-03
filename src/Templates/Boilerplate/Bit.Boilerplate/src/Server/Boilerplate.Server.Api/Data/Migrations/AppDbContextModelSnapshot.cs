@@ -247,6 +247,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");
 
+                b.Property<string>("SignalRConnectionId")
+                    .HasColumnType("TEXT");
+
                 b.Property<long>("StartedOn")
                     .HasColumnType("INTEGER");
 

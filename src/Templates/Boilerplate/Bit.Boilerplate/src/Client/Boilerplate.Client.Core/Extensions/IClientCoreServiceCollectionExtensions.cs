@@ -39,7 +39,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Defining them as singletons would result in them being shared across all users in Blazor Server and during pre-rendering.
         // To address this, we use the AddSessioned extension method.
         // AddSessioned applies AddSingleton in BlazorHybrid and AddScoped in Blazor WebAssembly and Blazor Server, ensuring correct service lifetimes for each environment.
-        services.AddSessioned<ModalService>();
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
@@ -68,6 +67,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
@@ -114,7 +114,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .UseSqlite($"Data Source={dbPath}");
 
             //#if (framework == 'net9.0')
-            if (AppEnvironment.IsProd())
+            if (AppEnvironment.IsDev() is false)
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
@@ -147,10 +147,11 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
-                    options.SkipNegotiation = true;
+                    options.SkipNegotiation = false; // Required for Azure SignalR.
                     options.Transports = HttpTransportType.WebSockets;
                     // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                     // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
                     options.AccessTokenProvider = async () =>
                     {
                         var accessToken = await authTokenProvider.GetAccessToken();

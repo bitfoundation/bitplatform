@@ -43,8 +43,8 @@
                     <ValidationMessage For="@(() => product.CategoryId)" />
 
                     <BitNumberField @bind-Value="product.Price"
-                                    Suffix="$"
-                                    NumberFormat="C2"
+                                    Suffix="@CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol"
+                                    NumberFormat="N"
                                     Label="@Localizer[(nameof(AppStrings.Price))]" />
                     <ValidationMessage For="() => product.Price" />
 

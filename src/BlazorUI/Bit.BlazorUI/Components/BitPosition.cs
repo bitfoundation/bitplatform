@@ -1,13 +1,14 @@
-namespace Bit.BlazorUI;
-public enum BitModalPosition
+﻿namespace Bit.BlazorUI;
+
+public enum BitPosition
 {
-    Center,
     TopLeft,
     TopCenter,
     TopRight,
     CenterLeft,
+    Center,
     CenterRight,
     BottomLeft,
     BottomCenter,
-    BottomRight
+    BottomRight,
 }

@@ -108,8 +108,7 @@
                             @if (devOS is "Linux")
                             {
                                 <br />
-                                <BitAccordion Title=".NET Sdk on Linux instructions">
-                                    <div>To install .NET SDK on Linux(Ubuntu) run the following commands:</div>
+                                <BitAccordion Title="Ubuntu instructions">
                                     @if (dotnetVersion is "net9.0")
                                     {
                                         <CodeBox>wget https://download.visualstudio.microsoft.com/download/pr/308f16a9-2ecf-4a42-b8bb-c1233de985fd/be6e87045ab21935bd8bb98ce69026c4/dotnet-sdk-9.0.100-linux-x64.tar.gz -O $HOME/dotnet.tar.gz
@@ -131,6 +130,14 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                                 </BitAccordion>
                             }
                         </li>
+                        @if (devOS is "Linux")
+                        {
+                            <li style="margin-bottom:8px">
+                                Install python
+                                <div>Ensure the `python --version` command works. While Ubuntu comes with Python 3 pre-installed, you need to create a symbolic link to use the `python` command. Use the following command:</div>
+                                <CodeBox>sudo apt update sudo apt install python-is-python3</CodeBox>
+                            </li>
+                        }
                         <li>Install <a href="@( devOS is "Windows" ? "https://nodejs.org/en/download/prebuilt-installer" : "https://nodejs.org/en/download/package-manager")" title="Node.js" rel="nofollow">Node.js</a></li>
                         <br />
                         <li>
@@ -167,8 +174,8 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </li>
                         <li>
-                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.1.0-pre-03" target="_blank">Bit Boilerplate</a> project template</div>
-                            <CodeBox>dotnet new install Bit.Boilerplate::9.1.0-pre-03</CodeBox>
+                            <div style="margin-bottom:8px">Install <a href="https://www.nuget.org/packages/Bit.Boilerplate/9.1.0-pre-08" target="_blank">Bit Boilerplate</a> project template</div>
+                            <CodeBox>dotnet new install Bit.Boilerplate::9.1.0-pre-08</CodeBox>
                         </li>
                         @if (showCrossPlatform && devOS is "Windows")
                         {

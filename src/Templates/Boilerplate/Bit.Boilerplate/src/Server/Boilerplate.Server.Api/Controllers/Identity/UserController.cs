@@ -85,8 +85,11 @@ public partial class UserController : AppControllerBase, IUserController
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
-        // Checkout AppHubConnectionHandler's comments for more info.
-        await appHubContext.Clients.Client(userSession.Id.ToString()).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, cancellationToken);
+        // Checkout AppHub's comments for more info.
+        if (userSession.SignalRConnectionId is not null)
+        {
+            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, cancellationToken);
+        }
         //#endif
     }
 
@@ -357,7 +360,7 @@ public partial class UserController : AppControllerBase, IUserController
         // Elevated access token claim gets added to access token upon refresh token request call, so their lifetime would be the same
 
         if (resendDelay < TimeSpan.Zero)
-            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay) , resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
+            throw new TooManyRequestsExceptions(Localizer[nameof(AppStrings.WaitForElevatedAccessTokenRequestResendDelay), resendDelay.Value.Humanize(culture: CultureInfo.CurrentUICulture)]);
 
         user.ElevatedAccessTokenRequestedOn = DateTimeOffset.Now;
         var result = await userManager.UpdateAsync(user);
@@ -386,12 +389,12 @@ public partial class UserController : AppControllerBase, IUserController
         }
 
         //#if (signalR == true)
-        // Checkout AppHubConnectionHandler's comments for more info.
+        // Checkout AppHub's comments for more info.
         var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
-            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId)
-            .Select(us => us.Id)
+            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+            .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId.Select(us => us.ToString()).ToArray()).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
         //#endif
 
         //#if (notification == true)

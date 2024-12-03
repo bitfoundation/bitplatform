@@ -7,10 +7,13 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     private bool _internalIsOpen;
     private string _containerId = default!;
 
-
-
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
+
+
+    [CascadingParameter]
+    private BitModalParameters ModalParameters { get => modalParameters; set { modalParameters = value; modalParameters.SetModal(this); } }
+    private BitModalParameters modalParameters = new();
 
 
     /// <summary>
@@ -79,25 +82,30 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: IsBlocking is ignored, there will be no overlay.
+    /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
     [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
-    /// A callback function for when the Modal is dismissed light dismiss, before the animation completes.
+    /// A callback function for when the Modal is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
+
+    /// <summary>
+    /// A callback function for when somewhere on the overlay element of the Modal is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnOverlayClick { get; set; }
 
     /// <summary>
     /// Position of the Modal on the screen.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitModalPosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// Set the element selector for which the Modal disables its scroll if applicable.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitModal component.
@@ -121,39 +129,42 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+        ClassBuilder.Register(() => ModalParameters.Classes?.Root);
 
-        ClassBuilder.Register(() => AbsolutePosition ? "bit-mdl-abs" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.AbsolutePosition ? "bit-mdl-abs" : string.Empty);
 
-        ClassBuilder.Register(() => FullSize || FullHeight ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => FullSize || FullWidth ? "bit-mdl-fwi" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullHeight ? "bit-mdl-fhe" : string.Empty);
+        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullWidth ? "bit-mdl-fwi" : string.Empty);
 
-        ClassBuilder.Register(() => Position switch
+        ClassBuilder.Register(() => ModalParameters.Position switch
         {
-            BitModalPosition.Center => "bit-mdl-ctr",
-            BitModalPosition.TopLeft => "bit-mdl-tl",
-            BitModalPosition.TopCenter => "bit-mdl-tc",
-            BitModalPosition.TopRight => "bit-mdl-tr",
-            BitModalPosition.CenterLeft => "bit-mdl-cl",
-            BitModalPosition.CenterRight => "bit-mdl-cr",
-            BitModalPosition.BottomLeft => "bit-mdl-bl",
-            BitModalPosition.BottomCenter => "bit-mdl-bc",
-            BitModalPosition.BottomRight => "bit-mdl-br",
+            BitPosition.Center => "bit-mdl-ctr",
+            BitPosition.TopLeft => "bit-mdl-tl",
+            BitPosition.TopCenter => "bit-mdl-tc",
+            BitPosition.TopRight => "bit-mdl-tr",
+            BitPosition.CenterLeft => "bit-mdl-cl",
+            BitPosition.CenterRight => "bit-mdl-cr",
+            BitPosition.BottomLeft => "bit-mdl-bl",
+            BitPosition.BottomCenter => "bit-mdl-bc",
+            BitPosition.BottomRight => "bit-mdl-br",
             _ => "bit-mdl-ctr"
         });
     }
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => ModalParameters.Styles?.Root);
 
         StyleBuilder.Register(() => _offsetTop > 0 ? FormattableString.Invariant($"top:{_offsetTop}px") : string.Empty);
     }
 
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _containerId = $"BitModal-{UniqueId}-container";
 
-        return base.OnInitializedAsync();
+        ModalParameters.SetModal(this);
+
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -166,7 +177,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         if (IsOpen)
         {
-            if (Draggable)
+            if (ModalParameters.Draggable)
             {
                 _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
             }
@@ -182,11 +193,11 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         _offsetTop = 0;
 
-        if (AutoToggleScroll is false) return;
+        //if (ModalParameters.AutoToggleScroll is false) return;
+        //_offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", IsOpen);
+        await ToggleScroll(IsOpen);
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
-
-        if (AbsolutePosition is false) return;
+        if (ModalParameters.AbsolutePosition is false) return;
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -194,17 +205,35 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
 
 
-    private async Task CloseModal(MouseEventArgs e)
+    private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
-        if (Blocking is not false) return;
+        if (ModalParameters.IsEnabled is false) return;
+
+        if (ModalParameters.Blocking) return;
+
+        await ModalParameters.OnOverlayClick.InvokeAsync(e);
 
         if (await AssignIsOpen(false) is false) return;
 
-        await OnDismiss.InvokeAsync(e);
+        await ModalParameters.OnDismiss.InvokeAsync(e);
     }
 
-    private string GetDragElementSelector() => DragElementSelector ?? $"#{_containerId}";
+    private string GetDragElementSelector()
+    {
+        return ModalParameters.DragElementSelector ?? $"#{_containerId}";
+    }
+
+    private string GetRole()
+    {
+        return (ModalParameters.IsAlert ?? (ModalParameters.Blocking && ModalParameters.Modeless is false)) ? "alertdialog" : "dialog";
+    }
+
+    private async Task ToggleScroll(bool isOpen)
+    {
+        if (ModalParameters.AutoToggleScroll is false) return;
+
+        _offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+    }
 
 
 
@@ -220,6 +249,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
         try
         {
+            await ToggleScroll(false);
             await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

@@ -53,7 +53,6 @@ public partial class IdentityController
         }
 
         //#if (signalR == true)
-        // Checkout AppHubConnectionHandler's comments for more info.
         sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         //#endif
 

@@ -38,8 +38,9 @@ public class Middlewares
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
-                            MaxAge = TimeSpan.FromDays(7),
-                            Public = true
+                            Public = true,
+                            NoTransform = true,
+                            MaxAge = TimeSpan.FromDays(7)
                         };
                     });
                 }

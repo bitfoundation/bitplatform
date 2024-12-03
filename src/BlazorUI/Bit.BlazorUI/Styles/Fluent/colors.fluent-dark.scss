@@ -126,7 +126,16 @@
     //req
     --bit-clr-req: #A4262C;
     // shadows-callout
-    --bit-shd-cal: 0px 0px 3px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
+    --bit-shd-cal: 0px 0px 5px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
+    --bit-shd-cal2: 0px 0px 7px 0px rgba(255, 255, 255, 0.35), 0px 0px 3px 0px rgba(255, 255, 255, 0.2);
+    // shadow sizes
+    --bit-shd-sm: 0 1px 2px 0 rgb(255 255 255 / 0.05);
+    --bit-shd-nm: 0 1px 3px 0 rgb(255 255 255 / 0.1), 0 1px 2px -1px rgb(255 255 255 / 0.1);
+    --bit-shd-md: 0 4px 6px -1px rgb(255 255 255 / 0.1), 0 2px 4px -2px rgb(255 255 255 / 0.1);
+    --bit-shd-lg: 0 10px 15px -3px rgb(255 255 255 / 0.1), 0 4px 6px -4px rgb(255 255 255 / 0.1);
+    --bit-shd-xl: 0 20px 25px -5px rgb(255 255 255 / 0.1), 0 8px 10px -6px rgb(255 255 255 / 0.1);
+    --bit-shd-2xl: 0 25px 50px -12px rgb(255 255 255 / 0.25);
+    --bit-shd-inner: inset 0 2px 4px 0 rgb(255 255 255 / 0.05);
     // shadows
     --bit-shd-1: 0px 2px 1px -1px rgba(255, 255, 255, 0.2), 0px 1px 1px 0px rgba(255, 255, 255, 0.14), 0px 1px 3px 0px rgba(255, 255, 255, 0.12);
     --bit-shd-2: 0px 3px 1px -2px rgba(255, 255, 255, 0.2), 0px 2px 2px 0px rgba(255, 255, 255, 0.14), 0px 1px 5px 0px rgba(255, 255, 255, 0.12);

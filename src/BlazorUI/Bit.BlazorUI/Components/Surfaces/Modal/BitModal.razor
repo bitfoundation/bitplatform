@@ -3,25 +3,25 @@
 
 @if (IsOpen)
 {
-    <div @ref="RootElement" @attributes="HtmlAttributes"
+    <div @ref="RootElement" @attributes="HtmlAttributes.Concat(ModalParameters.HtmlAttributes)"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
-         dir="@Dir?.ToString().ToLower()"
-         aria-labelledby="@TitleAriaId"
-         aria-describedby="@SubtitleAriaId"
-         aria-modal="@((Modeless is false).ToString())"
-         role=@((IsAlert ?? (Blocking && Modeless is false))? "alertdialog": "dialog")>
-        @if (Modeless is false)
+         dir="@ModalParameters.Dir?.ToString().ToLower()"
+         aria-labelledby="@ModalParameters.TitleAriaId"
+         aria-describedby="@ModalParameters.SubtitleAriaId"
+         aria-modal="@((ModalParameters.Modeless is false).ToString().ToLower())"
+         role="@GetRole()">
+        @if (ModalParameters.Modeless is false)
         {
-            <div @onclick="CloseModal"
+            <div @onclick="HandleOnOverlayClick"
                  aria-hidden="true"
-                 style="@Styles?.Overlay"
-                 class="bit-mdl-ovl @Classes?.Overlay" />
+                 style="@Styles?.Overlay @ModalParameters.Styles?.Overlay"
+                 class="bit-mdl-ovl @Classes?.Overlay @ModalParameters.Classes?.Overlay" />
         }
         <div id="@_containerId"
-             style="@Styles?.Content"
-             class="bit-mdl-ctn @Classes?.Content">
+             style="@($"{Styles?.Content} {ModalParameters.Styles?.Content}".Trim())"
+             class="@($"bit-mdl-ctn {Classes?.Content} {ModalParameters.Classes?.Content}".Trim())">
             @ChildContent
         </div>
     </div>

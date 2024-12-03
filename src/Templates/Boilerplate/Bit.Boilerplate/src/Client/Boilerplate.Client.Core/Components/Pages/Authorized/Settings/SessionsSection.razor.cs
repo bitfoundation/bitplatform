@@ -24,16 +24,18 @@ public partial class SessionsSection
     }
 
 
-    private async Task LoadSessions()
+    private async Task LoadSessions(bool showLoading = true)
     {
-        isLoading = true;
+        if (showLoading)
+        {
+            isLoading = true;
+        }
 
         try
         {
-            List<UserSessionDto> userSessions = [];
             currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
 
-            userSessions = await userController.GetUserSessions(CurrentCancellationToken);
+            var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
         }
@@ -43,7 +45,10 @@ public partial class SessionsSection
         }
         finally
         {
-            isLoading = false;
+            if (showLoading)
+            {
+                isLoading = false;
+            }
         }
     }
 

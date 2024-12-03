@@ -2,21 +2,16 @@
 
 public partial class MessageBoxService
 {
-    [AutoInject] private ModalService modalService = default!;
+    [AutoInject] private BitModalService modalService = default!;
 
-    public Task<bool> Show(string message, string title = "")
+    public void Show(string message, string title = "")
     {
-        TaskCompletionSource<bool> tcs = new();
         Dictionary<string, object> parameters = new()
         {
-            { nameof(MessageBox.Body), message },
-            { nameof(MessageBox.OnOk), () => { tcs.SetResult(true); modalService.Close(); } }
+            { nameof(MessageBox.Title), title },
+            { nameof(MessageBox.Body), message }
         };
-        modalService.Show<MessageBox>(parameters, title).ContinueWith(async task =>
-        {
-            await task;
-            tcs.TrySetResult(false);
-        });
-        return tcs.Task;
+
+        _ = modalService.Show<MessageBox>(parameters);
     }
 }

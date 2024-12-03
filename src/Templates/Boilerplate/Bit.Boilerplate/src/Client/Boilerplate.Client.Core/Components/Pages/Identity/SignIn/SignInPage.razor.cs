@@ -50,7 +50,6 @@ public partial class SignInPage : IDisposable
         model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
-        model.DeviceInfo = telemetryContext.OS;
 
         if (string.IsNullOrEmpty(OtpQueryString) is false)
         {
@@ -121,6 +120,8 @@ public partial class SignInPage : IDisposable
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
             CleanModel();
+
+            model.DeviceInfo = telemetryContext.Platform;
 
             requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
