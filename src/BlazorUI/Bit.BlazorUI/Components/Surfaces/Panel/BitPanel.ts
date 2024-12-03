@@ -2,25 +2,22 @@
     export class Panel {
         private static _panels: BitPanel[] = [];
 
-        public static setup(id: string,
-            trigger: number | undefined,
-            threshold: number | undefined,
+        public static setup(
+            id: string,
+            trigger: number,
             position: BitPanelPosition,
+            isRtl: boolean,
             dotnetObj: DotNetObject) {
             const element = document.getElementById(id);
             if (!element) return;
             const bcr = element.getBoundingClientRect();
 
-            trigger ??= 0.75;
-            threshold ??= 10;
-
-            let startX = -1;
-            let startY = -1;
             let diffX = 0;
             let diffY = 0;
+            let startX = -1;
+            let startY = -1;
             let originalTransform: string;
-
-            const isTouchDevice = true; // Utils.isTouchDevice();
+            const isTouchDevice = Utils.isTouchDevice();
 
             const getX = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenX : e.screenX;
             const getY = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenY : e.screenY;
@@ -29,7 +26,7 @@
                 startX = getX(e);
                 startY = getY(e);
 
-                element.style.transitionDuration = '0ms';
+                element.style.transitionDuration = '0s';
                 originalTransform = element.style.transform;
 
                 await dotnetObj.invokeMethodAsync('OnStart', startX, startY);
@@ -41,13 +38,12 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                //(diffY > threshold || diffX > threshold) && 
                 if (e.cancelable) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
 
-                if (position === BitPanelPosition.Start) {
+                if ((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -55,7 +51,7 @@
                     }
                 }
 
-                if (position === BitPanelPosition.End) {
+                if ((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -88,14 +84,14 @@
 
                 element.style.transitionDuration = '';
 
-                if (position === BitPanelPosition.Start && diffX < 0) {
+                if ((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End) && diffX < 0) {
                     if ((Math.abs(diffX) / bcr.width) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
                     }
                 }
 
-                if (position === BitPanelPosition.End && diffX > 0) {
+                if ((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start) && diffX > 0) {
                     if ((diffX / bcr.width) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
@@ -103,14 +99,14 @@
                 }
 
                 if (position === BitPanelPosition.Top && diffY < 0) {
-                    if ((Math.abs(diffY) / bcr.width) > trigger) {
+                    if ((Math.abs(diffY) / bcr.height) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
                     }
                 }
 
                 if (position === BitPanelPosition.Bottom && diffY > 0) {
-                    if ((diffY / bcr.width) > trigger) {
+                    if ((diffY / bcr.height) > trigger) {
                         diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnClose');
                     }

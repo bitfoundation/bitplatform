@@ -5,8 +5,6 @@ public partial class BitPanel : BitComponentBase
     private int _offsetTop;
     private bool _internalIsOpen;
     private string _containerId = default!;
-    private decimal _diffX = 0;
-    private decimal _diffY = 0;
 
 
 
@@ -100,6 +98,11 @@ public partial class BitPanel : BitComponentBase
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter] public decimal? TouchTrigger { get; set; }
+
 
 
     public async Task Open()
@@ -127,25 +130,12 @@ public partial class BitPanel : BitComponentBase
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diffX, decimal diffY)
     {
-        _diffX = diffX;
-        _diffY = diffY;
-
-        await InvokeAsync(StateHasChanged);
         //await OnPullMove.InvokeAsync(diff);
     }
 
     [JSInvokable("OnEnd")]
     public async Task _OnEnd(decimal diffX, decimal diffY)
     {
-        if (diffX < 100)
-        {
-            _diffX = 0;
-            await InvokeAsync(StateHasChanged);
-        }
-        else
-        {
-            await Close();
-        }
         //await OnPullEnd.InvokeAsync(diff);
     }
 
@@ -153,6 +143,7 @@ public partial class BitPanel : BitComponentBase
     public async Task _OnClose()
     {
         await ClosePanel(new());
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -185,7 +176,7 @@ public partial class BitPanel : BitComponentBase
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPanelSetup(_containerId, 0.25m, 10, Position ?? BitPanelPosition.End, dotnetObj);
+            await _js.BitPanelSetup(_containerId, TouchTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj);
         }
 
         if (_internalIsOpen == IsOpen) return;

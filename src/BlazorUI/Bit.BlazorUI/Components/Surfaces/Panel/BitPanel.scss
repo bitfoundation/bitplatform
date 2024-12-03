@@ -29,16 +29,12 @@
 }
 
 .bit-pnl-cnt {
-    top: 0;
     opacity: 0;
-    height: 100%;
     flex-grow: 1;
     display: flex;
     outline: none;
     overflow: auto;
     position: fixed;
-    max-width: 100%;
-    max-height: 100%;
     box-sizing: border-box;
     flex-direction: column;
     z-index: $zindex-callout;
@@ -132,32 +128,42 @@
 
 
 .bit-pnl-start {
-    width: spacing(40);
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
     inset-inline-start: 0;
     transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
 .bit-pnl-end {
-    width: spacing(40);
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
     inset-inline-end: 0;
     transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
 .bit-pnl-top {
     top: 0;
-    left: 0;
-    right: 0;
     width: 100%;
-    height: spacing(40);
+    inset-inline: 0;
+    max-width: 100%;
+    max-height: 85%;
+    height: fit-content;
     transform: translateY(-100%);
 }
 
 .bit-pnl-bottom {
-    left: 0;
-    right: 0;
     bottom: 0;
     top: unset;
     width: 100%;
-    height: spacing(40);
+    inset-inline: 0;
+    max-width: 100%;
+    max-height: 85%;
+    height: fit-content;
     transform: translateY(100%);
 }
