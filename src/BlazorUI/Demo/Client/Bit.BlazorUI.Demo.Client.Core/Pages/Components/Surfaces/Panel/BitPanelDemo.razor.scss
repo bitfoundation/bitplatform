@@ -19,7 +19,8 @@
 }
 
 ::deep {
-    .header-margin, .custom-header {
+    .header-margin,
+    .custom-header {
         margin-top: var(--bit-status-bar-height);
 
         @supports (-webkit-touch-callout: none) {
@@ -33,12 +34,14 @@
         }
     }
 
-    .custom-class .item {
-        width: 3rem;
-        height: 3rem;
-        margin: 0.5rem;
-        border-radius: 0.5rem;
-        background-color: brown;
+    .custom-class {
+        .item {
+            width: 3rem;
+            height: 3rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: brown;
+        }
     }
 
     .custom-container {
