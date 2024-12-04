@@ -38,11 +38,6 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnTrigger { get; set; }
 
     /// <summary>
-    /// The step in which the events will be raised by the swipe trap (default is 1).
-    /// </summary>
-    [Parameter] public int? Step { get; set; }
-
-    /// <summary>
     /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
     /// </summary>
     [Parameter] public decimal? Threshold { get; set; }
@@ -90,15 +85,13 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Step ?? 1, Throttle ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
         }
 
-        StateHasChanged();
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 

@@ -7,7 +7,6 @@
             element: HTMLElement,
             trigger: number,
             threshold: number,
-            step: number,
             throttle: number,
             dotnetObj: DotNetObject) {
             const bcr = element.getBoundingClientRect();
