@@ -70,7 +70,7 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        if (env.IsDevelopment() is false)
+        if (env.IsDevelopment() is false || true)
         {
             app.Use(async (context, next) =>
             {
@@ -82,7 +82,7 @@ public static partial class Program
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
                             Public = true,
-                            NoTransform = true,
+                            NoTransform = context.Response.ContentType is "br", // Prevents intermediate caches or proxies from applying weaker compression levels.
                             MaxAge = TimeSpan.FromDays(7)
                         };
                     });
