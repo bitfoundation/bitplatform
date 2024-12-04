@@ -11,7 +11,8 @@
                    ComponentSubClasses="componentSubClasses">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitSwipeTrap OnStart="HandleOnStart"
+                <BitSwipeTrap Throttle="10"
+                              OnStart="HandleOnStart"
                               OnMove="HandleOnMove"
                               OnEnd="HandleOnEnd"
                               OnTrigger="HandleOnTrigger">

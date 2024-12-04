@@ -3,10 +3,12 @@
         private static _swipeTraps: BitSwipeTrap[] = [];
 
         public static setup(
-            id: string, 
+            id: string,
             element: HTMLElement,
             trigger: number,
             threshold: number,
+            step: number,
+            throttle: number,
             dotnetObj: DotNetObject) {
             const bcr = element.getBoundingClientRect();
 
@@ -15,9 +17,10 @@
             let startX = -1;
             let startY = -1;
             const isTouchDevice = Utils.isTouchDevice();
+            const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy), throttle);
 
-            const getX = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenX : e.screenX;
-            const getY = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenY : e.screenY;
+            const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
+            const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 startX = getX(e);
@@ -37,7 +40,7 @@
                     e.stopPropagation();
                 }
 
-                await dotnetObj.invokeMethodAsync('OnMove', startX, startY, diffX, diffY);
+                throttledMove(startX, startY, diffX, diffY);
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
@@ -48,15 +51,16 @@
 
                 try {
                     if ((Math.abs(diffX) / bcr.width) > trigger || (Math.abs(diffY) / bcr.height) > trigger) {
-                        diffX = diffY = 0;
                         return await dotnetObj.invokeMethodAsync('OnTrigger');
                     }
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, diffX, diffY);
+                    diffX = diffY = 0;
                 }
             };
 
             const onLeave = (e: PointerEvent) => {
+                dotnetObj.invokeMethodAsync('OnEnd', startX, startY, diffX, diffY);
                 startX = startY = -1;
                 diffX = diffY = 0;
             }
@@ -69,7 +73,7 @@
                 element.addEventListener('pointerdown', onStart);
                 element.addEventListener('pointermove', onMove);
                 element.addEventListener('pointerup', onEnd);
-                element.addEventListener('pointerleave', onLeave, false);
+                element.addEventListener('pointerleave', onEnd, false);
             }
 
             const swipeTrap = new BitSwipeTrap(id, element, trigger, dotnetObj);
@@ -83,7 +87,7 @@
                     element.removeEventListener('pointerdown', onStart);
                     element.removeEventListener('pointermove', onMove);
                     element.removeEventListener('pointerup', onEnd);
-                    element.removeEventListener('pointerleave', onLeave, false);
+                    element.removeEventListener('pointerleave', onEnd, false);
                 }
             });
             SwipeTrap._swipeTraps.push(swipeTrap);

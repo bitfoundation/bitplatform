@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 {
@@ -36,9 +38,19 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnTrigger { get; set; }
 
     /// <summary>
+    /// The step in which the events will be raised by the swipe trap (default is 1).
+    /// </summary>
+    [Parameter] public int? Step { get; set; }
+
+    /// <summary>
     /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
     /// </summary>
     [Parameter] public decimal? Threshold { get; set; }
+
+    /// <summary>
+    /// The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 0).
+    /// </summary>
+    [Parameter] public int? Throttle { get; set; }
 
     /// <summary>
     /// The swiping point (difference percentage) based on the width of the element to trigger and call the OnTrigger event (default is 0.25m).
@@ -48,6 +60,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 
 
     [JSInvokable("OnStart")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapEventArgs))]
     public async Task _OnStart(decimal startX, decimal startY)
     {
         await OnStart.InvokeAsync(new(startX, startY, 0, 0));
@@ -82,7 +95,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Step ?? 1, Throttle ?? 0, dotnetObj);
         }
 
         StateHasChanged();
