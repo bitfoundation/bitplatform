@@ -32,7 +32,7 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                if ((diffX > threshold || diffY > threshold) && e.cancelable) {
+                if ((Math.abs(diffX) > threshold || Math.abs(diffY) > threshold) && e.cancelable) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -74,7 +74,7 @@
 
             const swipeTrap = new BitSwipeTrap(id, element, trigger, dotnetObj);
 
-            swipeTrap.setDisposer(() => {
+            swipeTrap.setRemoveHandlersFn(() => {
                 if (isTouchDevice) {
                     element.removeEventListener('touchstart', onStart);
                     element.removeEventListener('touchmove', onMove);
@@ -103,7 +103,7 @@
         element: HTMLElement;
         trigger: number;
         dotnetObj: DotNetObject;
-        disposer: () => void = () => { };
+        removeHandlers: () => void = () => { };
 
         constructor(id: string, element: HTMLElement, trigger: number, dotnetObj: DotNetObject) {
             this.id = id;
@@ -111,12 +111,12 @@
             this.trigger = trigger;
             this.dotnetObj = dotnetObj;
         }
-        public setDisposer(disposer: () => void) {
-            this.disposer = disposer;
+        public setRemoveHandlersFn(removeHandlersFn: () => void) {
+            this.removeHandlers = removeHandlersFn;
         }
 
         public dispose() {
-            this.disposer();
+            this.removeHandlers();
             this.dotnetObj.dispose();
         }
     }

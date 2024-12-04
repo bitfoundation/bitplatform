@@ -54,7 +54,7 @@ public partial class BitSwipeTrapDemo
                 },
                 new()
                 {
-                    Name = "DiffX",
+                    Name = "DiffY",
                     Type = "decimal",
                     DefaultValue = "0",
                     Description = "The vertical difference of swipe action in pixels."
@@ -94,6 +94,43 @@ public partial class BitSwipeTrapDemo
 
 
     private readonly string example1RazorCode = @"
-";
+<BitSwipeTrap OnStart=""HandleOnStart""
+              OnMove=""HandleOnMove""
+              OnEnd=""HandleOnEnd""
+              OnTrigger=""HandleOnTrigger"">
+    <div class=""trap-container"">
+        <div>StartX: @swipeTrapEventArgs?.StartX</div>
+        <div>StartY: @swipeTrapEventArgs?.StartY</div>
+        <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
+        <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
+        <div>IsTriggered: @isTriggered</div>
+    </div>
+</BitSwipeTrap>";
+    private readonly string example1CsharpCode = @"
+private bool isTriggered;
+BitSwipeTrapEventArgs? swipeTrapEventArgs;
+
+private void HandleOnStart(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgs = args;
+}
+private void HandleOnMove(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgs = args;
+}
+private void HandleOnEnd(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgs = args;
+}
+private void HandleOnTrigger()
+{
+    isTriggered = true;
+    _ = Task.Delay(2000).ContinueWith(async t =>
+    {
+        await t;
+        isTriggered = false;
+        await InvokeAsync(StateHasChanged);
+    });
+}";
 }
 
