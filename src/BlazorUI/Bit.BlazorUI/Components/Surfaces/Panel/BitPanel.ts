@@ -83,42 +83,43 @@
                 startY = -1;
 
                 element.style.transitionDuration = '';
-
-                if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
-                    if ((Math.abs(diffX) / bcr.width) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                try {
+                    if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
+                        if ((Math.abs(diffX) / bcr.width) > trigger) {
+                            diffX = diffY = 0;
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
-                    if ((diffX / bcr.width) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
+                        if ((diffX / bcr.width) > trigger) {
+                            diffX = diffY = 0;
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (position === BitPanelPosition.Top && diffY < 0) {
-                    if ((Math.abs(diffY) / bcr.height) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (position === BitPanelPosition.Top && diffY < 0) {
+                        if ((Math.abs(diffY) / bcr.height) > trigger) {
+                            diffX = diffY = 0;
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (position === BitPanelPosition.Bottom && diffY > 0) {
-                    if ((diffY / bcr.height) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (position === BitPanelPosition.Bottom && diffY > 0) {
+                        if ((diffY / bcr.height) > trigger) {
+                            diffX = diffY = 0;
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
+                } finally {
+                    element.style.transform = originalTransform;
+                    await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                 }
-
-                element.style.transform = originalTransform;
-
-                await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
             };
 
             const onLeave = (e: PointerEvent) => {
-                if (startY === -1) return;
+                if (startX === -1 && startY === -1) return;
+                startX = -1;
                 startY = -1;
             }
 
@@ -147,6 +148,14 @@
                 }
             });
             Panel._panels.push(panel);
+        }
+
+        public static dispose(id: string) {
+            const panel = Panel._panels.find(r => r.id === id);
+            if (!panel) return;
+
+            Panel._panels = Panel._panels.filter(r => r.id !== id);
+            panel.dispose();
         }
     }
 

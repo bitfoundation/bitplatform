@@ -1,0 +1,29 @@
+﻿@page "/components/swipetrap"
+
+<PageOutlet Url="components/swipetrap"
+            Title="SwipeTrap"
+            Description="swipetrap component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="SwipeTrap"
+                   ComponentDescription="A SwipeTrap is a component that traps swipe actions and triggers corresponding events."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <ExamplePreview>
+                <BitSwipeTrap OnStart="HandleOnStart"
+                              OnMove="HandleOnMove"
+                              OnEnd="HandleOnEnd"
+                              OnTrigger="HandleOnTrigger">
+                    <div class="trap-container">
+                        <div>StartX: @swipeTrapEventArgs?.StartX</div>
+                        <div>StartY: @swipeTrapEventArgs?.StartY</div>
+                        <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
+                        <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
+                        <div>IsTriggered: @isTriggered</div>
+                    </div>
+                </BitSwipeTrap>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>
