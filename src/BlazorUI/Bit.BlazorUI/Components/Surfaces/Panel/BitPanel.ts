@@ -79,8 +79,7 @@
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                startX = -1;
-                startY = -1;
+                startX = startY = -1;
 
                 element.style.transitionDuration = '';
                 try {
@@ -111,16 +110,16 @@
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
-                } finally {
+
                     element.style.transform = originalTransform;
+                } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                 }
             };
 
             const onLeave = (e: PointerEvent) => {
-                if (startX === -1 && startY === -1) return;
-                startX = -1;
-                startY = -1;
+                startX = startY = -1;
+                diffX = diffY = 0;
             }
 
             if (isTouchDevice) {
