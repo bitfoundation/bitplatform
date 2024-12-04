@@ -82,7 +82,7 @@ public static partial class Program
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
                             Public = true,
-                            NoTransform = context.Response.ContentType is "br", // Prevents intermediate caches or proxies from applying weaker compression levels.
+                            NoTransform = true,
                             MaxAge = TimeSpan.FromDays(7)
                         };
                     });
