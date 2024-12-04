@@ -1,16 +1,15 @@
 @namespace Bit.BlazorUI
 
-@if (isMenuOpen)
-{
-    <div class="menu-overlay" @onclick=CloseMenu></div>
-}
-
 @{
-    var isToggled = !isMenuOpen && isMenuToggled;
+    var isToggled = !isPanelOpen && isMenuToggled;
 }
 
-<section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isToggled ? "6rem" : "14rem")}")">
-    <BitCard Class="panel">
+<div class="bit-npn @($"{(isPanelOpen ? "" : "closed")} {(isToggled ? "6rem" : "14rem")}")">
+    @if (isPanelOpen)
+    {
+        <div class="bit-npn-ovl" @onclick=CloseMenu></div>
+    }
+    <div Class="panel">
         <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)" Grows>
             <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
                 <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
@@ -21,7 +20,7 @@
                            Size="BitSize.Large"
                            OnClick="ToggleNavPanel"
                            Variant="BitVariant.Text"
-                           IconName="ColumnRightTwoThirds" 
+                           IconName="ColumnRightTwoThirds"
                            Color="BitColor.TertiaryBackground" />
             </BitStack>
 
@@ -33,7 +32,7 @@
 
             @if (isToggled)
             {
-                <BitButton IconOnly 
+                <BitButton IconOnly
                            FixedColor
                            IconName="Search"
                            Class="toggle-btn"
@@ -65,5 +64,5 @@
 
             @* <Footer></Footer> *@
         </BitStack>
-    </BitCard>
-</section>
+    </div>
+</div>

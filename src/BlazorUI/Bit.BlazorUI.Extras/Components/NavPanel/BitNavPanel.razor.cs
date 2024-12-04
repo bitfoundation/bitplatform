@@ -3,7 +3,7 @@
 public partial class BitNavPanel : IDisposable
 {
     private bool disposed;
-    private bool isMenuOpen;
+    private bool isPanelOpen;
     private bool isMenuToggled;
     private bool isSignOutConfirmOpen;
     private List<BitNavItem> allNavItems = [];
@@ -46,7 +46,7 @@ public partial class BitNavPanel : IDisposable
 
     private async Task CloseMenu()
     {
-        isMenuOpen = false;
+        isPanelOpen = false;
     }
 
     private async Task ToggleNavPanel()
