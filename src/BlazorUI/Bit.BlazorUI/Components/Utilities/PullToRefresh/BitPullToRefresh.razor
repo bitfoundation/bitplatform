@@ -14,10 +14,10 @@
         var svgSize = (24 * _diff) / Trigger;
     }
 
-    <div @ref="_loadingRef" class="bit-ptr-lod">
-        <div class="bit-ptr-swr" style=@($"{(_refreshing ? "transition:margin-top 100ms linear;background-color:var(--bit-clr-bg-ter);" : "")}margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px")>
-            <div class="bit-ptr-spn @(_refreshing ? "bit-ptr-spin" : "")"
-                 style=@($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px")>
+    <div @ref="_loadingRef" style="@Styles?.Loading" class="bit-ptr-lod @Classes?.Loading">
+        <div class="bit-ptr-swr @Classes?.SpinnerWrapper" style=@($"{(_refreshing ? "transition:margin-top 100ms linear;background-color:var(--bit-clr-bg-ter);" : "")}margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px;{Styles?.SpinnerWrapper}")>
+            <div class="bit-ptr-spn @(_refreshing ? "bit-ptr-spin" : "") @Classes?.Spinner"
+                 style=@($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px;{Styles?.Spinner}")>
                 @if (Loading is not null)
                 {
                     @Loading

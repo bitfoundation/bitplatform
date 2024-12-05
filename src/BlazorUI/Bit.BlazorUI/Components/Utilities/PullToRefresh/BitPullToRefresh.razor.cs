@@ -22,6 +22,11 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitPullToRefresh.
+    /// </summary>
+    [Parameter] public BitPullToRefreshClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The factor to balance the pull height out.
     /// </summary>
     [Parameter] public decimal Factor { get; set; } = 1.5m;
@@ -65,6 +70,11 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh.
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitPullToRefresh.
+    /// </summary>
+    [Parameter] public BitPullToRefreshClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The threshold in pixel for pulling height that starts the pull to refresh process.
@@ -120,6 +130,12 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
