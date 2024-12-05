@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
         {
             optionsBuilder
                 .UseModel(OfflineDbContextModel.Instance) // use generated compiled model in order to make db context optimized
-                .UseSqlite("Data Source=Offline-ClientDb.db");
+                .UseSqlite($"Data Source=Offline-Client.db");
         });
 
         return services;

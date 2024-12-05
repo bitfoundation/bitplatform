@@ -19,7 +19,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 
     // migrate database
     await dbContext.Database.MigrateAsync();
-    await app.Services.GetRequiredService<IBesqlStorage>().Persist("Offline-ClientDb.db");
+    await app.Services.GetRequiredService<IBesqlStorage>().Persist("Offline-Client.db"); // TODO: Needs to be handled through DbContext interceptor
 }
 
 await app.RunAsync();

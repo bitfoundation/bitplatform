@@ -38,7 +38,7 @@ else
                 TemperatureC = 17
             });
         await dbContext.SaveChangesAsync();
-        await BesqlStorage.Persist("Offline-ClientDb.db");
+        await BesqlStorage.Persist("Offline-Client.db"); // TODO: Needs to be handled through DbContext interceptor
         forecastsCount++;
     }
 
