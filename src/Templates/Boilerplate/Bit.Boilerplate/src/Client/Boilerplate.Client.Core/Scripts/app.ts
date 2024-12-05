@@ -5,6 +5,12 @@ class App {
     public static registerJsBridge(dotnetObj: DotNetObject) {
         // For additional details, see the JsBridge.cs file.
         App.jsBridgeObj = dotnetObj;
+        window.addEventListener('message', e => {
+            // Enable publishing messages from JavaScript's `window.postMessage` to the C# `PubSubService`.
+            if (e.data.key === 'PUBLISH_MESSAGE') {
+                App.jsBridgeObj?.invokeMethodAsync('PublishMessage', e.data.message, e.data.payload);
+            }
+        });
     }
 
     public static showDiagnostic() {
@@ -70,7 +76,17 @@ interface DotNetObject {
     dispose(): void;
 }
 
-window.addEventListener('load', setCssWindowSizes);
+window.addEventListener('load', () => {
+    setCssWindowSizes();
+    if (window.opener != null) {
+        // The IExternalNavigationService is responsible for opening pages in a new window,
+        // such as during social sign-in flows. Once the external navigation is complete,
+        // and the user is redirected back to the newly opened window,
+        // the following code ensures that the original window is notified of where it should navigate next.
+        window.opener.postMessage({ key: 'PUBLISH_MESSAGE', message: 'NAVIGATE_TO', payload: window.location.href });
+        window.close();
+    }
+});
 window.addEventListener('resize', setCssWindowSizes);
 
 function setCssWindowSizes() {

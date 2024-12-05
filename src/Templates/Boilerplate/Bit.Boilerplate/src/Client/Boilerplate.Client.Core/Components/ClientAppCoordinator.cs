@@ -36,6 +36,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
 
+    private Action? unsubscribe;
+
     protected override async Task OnInitAsync()
     {
         if (AppPlatform.IsBlazorHybrid)
@@ -45,6 +47,10 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
+            unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+            {
+                NavigationManager.NavigateTo(uri!.ToString()!);
+            });
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -246,6 +252,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubscribe?.Invoke();
+
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
