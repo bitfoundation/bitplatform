@@ -83,6 +83,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
     }
 
+    private Guid? lastPropagatedUserId = Guid.Empty;
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
@@ -91,11 +92,14 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         try
         {
-            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
-
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
-            TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
+            var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
+            if (lastPropagatedUserId == userId)
+                return;
+            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+            lastPropagatedUserId = userId;
+            TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
             // Typically, we use the logger directly without utilizing logger.BeginScope.
