@@ -59,7 +59,7 @@ public partial class BitSwipeTrapDemo
             Name = "Throttle",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 0)."
+            Description = "The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 10)."
         },
         new()
         {
@@ -183,41 +183,243 @@ public partial class BitSwipeTrapDemo
 
 
 
-    private bool isTriggered;
-    BitSwipeTrapEventArgs? swipeTrapEventArgs;
-    BitSwipeTrapTriggerArgs? swipeTrapTriggerArgs;
-
-    private void HandleOnStart(BitSwipeTrapEventArgs args)
+    private bool isTriggeredBasic;
+    BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+    BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
+    private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
     {
-        swipeTrapEventArgs = args;
+        swipeTrapEventArgsBasic = args;
     }
-    private void HandleOnMove(BitSwipeTrapEventArgs args)
+    private void HandleOnMoveBasic(BitSwipeTrapEventArgs args)
     {
-        swipeTrapEventArgs = args;
+        swipeTrapEventArgsBasic = args;
     }
-    private void HandleOnEnd(BitSwipeTrapEventArgs args)
+    private void HandleOnEndBasic(BitSwipeTrapEventArgs args)
     {
-        swipeTrapEventArgs = args;
+        swipeTrapEventArgsBasic = args;
     }
-
-    private void HandleOnTrigger(BitSwipeTrapTriggerArgs args)
+    private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
     {
-        isTriggered = true;
-        swipeTrapTriggerArgs = args;
-        _ = Task.Delay(2000).ContinueWith(_ =>
+        isTriggeredBasic = true;
+        swipeTrapTriggerArgsBasic = args;
+        _ = Task.Delay(3000).ContinueWith(_ =>
         {
-            isTriggered = false;
-            swipeTrapEventArgs = null;
-            swipeTrapTriggerArgs = null;
-            InvokeAsync(StateHasChanged);
+            isTriggeredBasic = false;
+            swipeTrapEventArgsBasic = null;
+            swipeTrapTriggerArgsBasic = null;
+            StateHasChanged();
         });
+    }
+
+
+    private decimal diffXPanel;
+    private bool isPanelOpen;
+    private void OpenPanel()
+    {
+        isPanelOpen = true;
+    }
+    private void ClosePanel()
+    {
+        isPanelOpen = false;
+    }
+    private void HandleOnMovePanel(BitSwipeTrapEventArgs args)
+    {
+        diffXPanel = args.DiffX;
+    }
+    private void HandleOnEndPanel(BitSwipeTrapEventArgs args)
+    {
+        diffXPanel = 0;
+    }
+    private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
+    {
+        if (args.Direction == BitSwipeDirection.Left)
+        {
+            diffXPanel = 0;
+            ClosePanel();
+        }
+    }
+    private string GetPanelStyle()
+    {
+        return diffXPanel < 0 ? $"transform: translateX({diffXPanel}px)" : "";
+    }
+
+
+    private decimal diffXList;
+    private void HandleOnMoveList(BitSwipeTrapEventArgs args)
+    {
+        diffXList = args.DiffX;
+    }
+    private void HandleOnEndList(BitSwipeTrapEventArgs args)
+    {
+        diffXList = 0;
+    }
+    private void HandleOnTriggerList(BitSwipeTrapTriggerArgs args)
+    {
+        if (args.Direction == BitSwipeDirection.Left)
+        {
+            diffXList = 0;
+            ClosePanel();
+        }
     }
 
 
 
     private readonly string example1RazorCode = @"
 <style>
-    .trap-container {
+    .basic-container {
+        width: 100%;
+        cursor: grab;
+        height: 500px;
+        display: flex;
+        user-select: none;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid lightgray;
+    }
+</style>
+
+<BitSwipeTrap Throttle=""10""
+              OnStart=""HandleOnStartBasic""
+              OnMove=""HandleOnMoveBasic""
+              OnEnd=""HandleOnEndBasic""
+              OnTrigger=""HandleOnTriggerBasic"">
+    <div class=""basic-container"">
+        <div>StartX: @swipeTrapEventArgs?.StartX</div>
+        <div>StartY: @swipeTrapEventArgs?.StartY</div>
+        <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
+        <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
+        <div>---</div>
+        <div>Triggered? @isTriggered</div>
+        <div>Trigger direction: <b>@swipeTrapTriggerArgs?.Direction</b></div>
+        <div>Trigger diffX: @swipeTrapTriggerArgs?.DiffX</div>
+        <div>Trigger diffY: @swipeTrapTriggerArgs?.DiffY</div>
+    </div>
+</BitSwipeTrap>";
+    private readonly string example1CsharpCode = @"
+private bool isTriggeredBasic;
+BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
+private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgsBasic = args;
+}
+private void HandleOnMoveBasic(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgsBasic = args;
+}
+private void HandleOnEndBasic(BitSwipeTrapEventArgs args)
+{
+    swipeTrapEventArgsBasic = args;
+}
+private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
+{
+    isTriggeredBasic = true;
+    swipeTrapTriggerArgsBasic = args;
+    _ = Task.Delay(2000).ContinueWith(_ =>
+    {
+        isTriggeredBasic = false;
+        swipeTrapEventArgsBasic = null;
+        swipeTrapTriggerArgsBasic = null;
+        InvokeAsync(StateHasChanged);
+    });
+}";
+
+    private readonly string example2RazorCode = @"
+<style>
+    .panel-container {
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+        user-select: none;
+        position: relative;
+        border: 1px solid lightgray;
+    }
+
+    .panel-container button {
+        padding: 0.5rem;
+    }
+
+    .panel-container .panel {
+        left: 0;
+        color: black;
+        width: 200px;
+        cursor: grab;
+        inset-block: 0;
+        position: absolute;
+        background-color: lightgray;
+        transform: translateX(-100%);
+    }
+
+    .panel-container .panel.open {
+        transform: translateX(0);
+    }
+
+    .panel-container .panel-trap {
+        gap: 1rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background-color: gray;
+    }
+</style>
+
+<div class=""panel-container"">
+    <button @onclick=""OpenPanel"">
+        Open
+    </button>
+    <div class=""panel@(isPanelOpen ? "" open"": """")"" style=""@GetPanelStyle()"">
+        <button @onclick=""ClosePanel"" style=""position:absolute;top:0;right:0"">
+            Close
+        </button>
+        <BitSwipeTrap Style=""width:100%;height:100%""
+                      OnMove=""HandleOnMovePanel""
+                      OnEnd=""HandleOnEndPanel""
+                      OnTrigger=""HandleOnTriggerPanel"">
+            <div class=""panel-trap"">
+                <h3>Title</h3>
+                <div>Item1</div>
+                <div>Item2</div>
+                <div>Item3</div>
+            </div>
+        </BitSwipeTrap>
+    </div>
+</div>";
+    private readonly string example2CsharpCode = @"
+private decimal diffXPanel;
+private bool isPanelOpen;
+private void OpenPanel()
+{
+    isPanelOpen = true;
+}
+private void ClosePanel()
+{
+    isPanelOpen = false;
+}
+private void HandleOnMovePanel(BitSwipeTrapEventArgs args)
+{
+    diffXPanel = args.DiffX;
+}
+private void HandleOnEndPanel(BitSwipeTrapEventArgs args)
+{
+    diffXPanel = 0;
+}
+private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
+{
+    if (args.Direction == BitSwipeDirection.Left)
+    {
+        diffXPanel = 0;
+        ClosePanel();
+    }
+}
+private string GetPanelStyle()
+{
+    return diffXPanel < 0 ? $""transform: translateX({diffXPanel}px)"" : """";
+}";
+
+    private readonly string example3RazorCode = @"
+<style>
+    .basic-container {
         width: 100%;
         cursor: grab;
         height: 500px;
@@ -232,11 +434,11 @@ public partial class BitSwipeTrapDemo
 
 <BitSwipeTrap Style=""width:100%""
               Throttle=""10""
-              OnStart=""HandleOnStart""
-              OnMove=""HandleOnMove""
-              OnEnd=""HandleOnEnd""
-              OnTrigger=""HandleOnTrigger"">
-    <div class=""trap-container"">
+              OnStart=""HandleOnStartBasic""
+              OnMove=""HandleOnMoveBasic""
+              OnEnd=""HandleOnEndBasic""
+              OnTrigger=""HandleOnTriggerBasic"">
+    <div class=""basic-container"">
         <div>StartX: @swipeTrapEventArgs?.StartX</div>
         <div>StartY: @swipeTrapEventArgs?.StartY</div>
         <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
@@ -248,35 +450,32 @@ public partial class BitSwipeTrapDemo
         <div>Trigger diffY: @swipeTrapTriggerArgs?.DiffY</div>
     </div>
 </BitSwipeTrap>";
-    private readonly string example1CsharpCode = @"
-private bool isTriggered;
-BitSwipeTrapEventArgs? swipeTrapEventArgs;
-BitSwipeTrapTriggerArgs? swipeTrapTriggerArgs;
-
-private void HandleOnStart(BitSwipeTrapEventArgs args)
+    private readonly string example3CsharpCode = @"
+private bool isTriggeredBasic;
+BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
+private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
 {
-    swipeTrapEventArgs = args;
+    swipeTrapEventArgsBasic = args;
 }
-private void HandleOnMove(BitSwipeTrapEventArgs args)
+private void HandleOnMoveBasic(BitSwipeTrapEventArgs args)
 {
-    swipeTrapEventArgs = args;
+    swipeTrapEventArgsBasic = args;
 }
-private void HandleOnEnd(BitSwipeTrapEventArgs args)
+private void HandleOnEndBasic(BitSwipeTrapEventArgs args)
 {
-    swipeTrapEventArgs = args;
+    swipeTrapEventArgsBasic = args;
 }
-
-private void HandleOnTrigger(BitSwipeTrapTriggerArgs args)
+private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
 {
-    isTriggered = true;
-    swipeTrapTriggerArgs = args;
-    _ = Task.Delay(2000).ContinueWith(async t =>
+    isTriggeredBasic = true;
+    swipeTrapTriggerArgsBasic = args;
+    _ = Task.Delay(2000).ContinueWith(_ =>
     {
-        await t;
-        isTriggered = false;
-        swipeTrapEventArgs = null;
-        swipeTrapTriggerArgs = null;
-        await InvokeAsync(StateHasChanged);
+        isTriggeredBasic = false;
+        swipeTrapEventArgsBasic = null;
+        swipeTrapTriggerArgsBasic = null;
+        InvokeAsync(StateHasChanged);
     });
 }";
 }

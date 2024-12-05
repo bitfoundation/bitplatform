@@ -43,7 +43,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public decimal? Threshold { get; set; }
 
     /// <summary>
-    /// The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 0).
+    /// The throttle time in milliseconds to apply a delay between periodic calls to raise the events (default is 10).
     /// </summary>
     [Parameter] public int? Throttle { get; set; }
 
@@ -92,7 +92,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 10, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
