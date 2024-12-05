@@ -70,7 +70,7 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        if (env.IsDevelopment() is false || true)
+        if (env.IsDevelopment() is false)
         {
             app.Use(async (context, next) =>
             {
