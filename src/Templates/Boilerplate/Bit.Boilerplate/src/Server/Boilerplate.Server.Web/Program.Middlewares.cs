@@ -49,7 +49,7 @@ public static partial class Program
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
 
-        if (env.IsDevelopment() && false)
+        if (env.IsDevelopment())
         {
             app.UseWebAssemblyDebugging();
         }
