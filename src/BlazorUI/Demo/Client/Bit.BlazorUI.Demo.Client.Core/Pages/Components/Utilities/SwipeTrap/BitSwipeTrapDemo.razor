@@ -8,10 +8,12 @@
     <ComponentDemo ComponentName="SwipeTrap"
                    ComponentDescription="A SwipeTrap is a component that traps swipe actions and triggers corresponding events."
                    ComponentParameters="componentParameters"
-                   ComponentSubClasses="componentSubClasses">
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitSwipeTrap Throttle="10"
+                <BitSwipeTrap Style="width:100%"
+                              Throttle="10"
                               OnStart="HandleOnStart"
                               OnMove="HandleOnMove"
                               OnEnd="HandleOnEnd"
@@ -21,7 +23,11 @@
                         <div>StartY: @swipeTrapEventArgs?.StartY</div>
                         <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
                         <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
-                        <div>IsTriggered: @isTriggered</div>
+                        <div>---</div>
+                        <div>Triggered? @isTriggered</div>
+                        <div>Trigger direction: <b>@swipeTrapTriggerArgs?.Direction</b></div>
+                        <div>Trigger diffX: @swipeTrapTriggerArgs?.DiffX</div>
+                        <div>Trigger diffY: @swipeTrapTriggerArgs?.DiffY</div>
                     </div>
                 </BitSwipeTrap>
             </ExamplePreview>

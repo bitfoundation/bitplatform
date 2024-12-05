@@ -43,6 +43,7 @@
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (startX == -1 || startY == -1) return;
                 const sX = startX;
                 const sY = startY;
 
@@ -50,7 +51,7 @@
 
                 try {
                     if ((Math.abs(diffX) / bcr.width) > trigger || (Math.abs(diffY) / bcr.height) > trigger) {
-                        return await dotnetObj.invokeMethodAsync('OnTrigger');
+                        return await dotnetObj.invokeMethodAsync('OnTrigger', diffX, diffY);
                     }
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, diffX, diffY);
@@ -59,6 +60,7 @@
             };
 
             const onLeave = (e: PointerEvent) => {
+                if (startX == -1 || startY == -1) return;
                 dotnetObj.invokeMethodAsync('OnEnd', startX, startY, diffX, diffY);
                 startX = startY = -1;
                 diffX = diffY = 0;

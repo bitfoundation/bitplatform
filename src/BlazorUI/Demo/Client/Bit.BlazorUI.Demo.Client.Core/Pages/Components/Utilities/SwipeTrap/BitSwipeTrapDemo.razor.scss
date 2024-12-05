@@ -1,7 +1,9 @@
 ﻿.trap-container {
-    width: 277px;
+    width: 100%;
+    cursor: grab;
     height: 500px;
     display: flex;
+    user-select: none;
     align-items: center;
     flex-direction: column;
     justify-content: center;

@@ -35,7 +35,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// The event callback for when the swipe action triggers based on the Trigger constraint.
     /// </summary>
-    [Parameter] public EventCallback OnTrigger { get; set; }
+    [Parameter] public EventCallback<BitSwipeTrapTriggerArgs> OnTrigger { get; set; }
 
     /// <summary>
     /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
@@ -48,7 +48,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public int? Throttle { get; set; }
 
     /// <summary>
-    /// The swiping point (difference percentage) based on the width of the element to trigger and call the OnTrigger event (default is 0.25m).
+    /// The swiping point based on the width of the element (difference fraction) to trigger and call the OnTrigger event (default is 0.25m).
     /// </summary>
     [Parameter] public decimal? Trigger { get; set; }
 
@@ -74,9 +74,13 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     }
 
     [JSInvokable("OnTrigger")]
-    public async Task _OnTrigger()
+    public async Task _OnTrigger(decimal diffX, decimal diffY)
     {
-        await OnTrigger.InvokeAsync();
+        var direction = Math.Abs(diffX) > Math.Abs(diffY)
+            ? diffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
+            : diffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+
+        await OnTrigger.InvokeAsync(new(direction, diffX, diffY));
     }
 
 
