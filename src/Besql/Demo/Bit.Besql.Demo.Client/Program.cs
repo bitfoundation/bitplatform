@@ -1,3 +1,4 @@
+﻿using Bit.Besql;
 using Bit.Besql.Demo.Client.Data;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 
     // migrate database
     await dbContext.Database.MigrateAsync();
+    await app.Services.GetRequiredService<IBesqlStorage>().Persist("Offline-ClientDb.db");
 }
 
 await app.RunAsync();

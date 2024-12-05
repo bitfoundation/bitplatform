@@ -1,66 +1,48 @@
-var BitBesql = BitBesql || {};
+﻿var BitBesql = BitBesql || {};
 BitBesql.version = window['bit-besql version'] = '9.1.0-pre-08';
 
-async function synchronizeDbWithCache(file) {
+BitBesql.init = async function init(fileName) {
+    const sqliteFilePath = `/${fileName}`;
+    const cacheStorageFilePath = `/data/cache/${fileName}`;
 
-    window.sqlitedb = window.sqlitedb || {
-        init: false,
-        cache: await caches.open('Bit-Besql')
-    };
+    BitBesql.dbCache = await caches.open('Bit-Besql');
 
-    const db = window.sqlitedb;
-    
-    const backupPath = `/${file}`;
-    const cachePath = `/data/cache/${file.substring(0, file.indexOf('_bak'))}`;
+    const dbCache = BitBesql.dbCache;
 
-    if (!db.init) {
-
-        db.init = true;
-
-        const resp = await db.cache.match(cachePath);
-
-        if (resp && resp.ok) {
-
-            const res = await resp.arrayBuffer();
-
-            if (res) {
-                console.log(`Restoring ${res.byteLength} bytes.`);
-                window.Blazor.runtime.Module.FS.writeFile(backupPath, new Uint8Array(res));
-                return 0;
-            }
+    const resp = await dbCache.match(cacheStorageFilePath);
+    if (resp && resp.ok) {
+        const res = await resp.arrayBuffer();
+        if (res) {
+            window.Blazor.runtime.Module.FS.writeFile(sqliteFilePath, new Uint8Array(res));
         }
-        return -1;
     }
+}
 
-    if (window.Blazor.runtime.Module.FS.analyzePath(backupPath).exists) {
+BitBesql.persist = async function persist(fileName) {
 
-        const waitFlush = new Promise((done, _) => {
-            setTimeout(done, 10);
-        });
+    const dbCache = BitBesql.dbCache;
 
-        await waitFlush;
+    const sqliteFilePath = `/${fileName}`;
+    const cacheStorageFilePath = `/data/cache/${fileName}`;
 
-        const data = window.Blazor.runtime.Module.FS.readFile(backupPath);
+    if (!window.Blazor.runtime.Module.FS.analyzePath(sqliteFilePath).exists)
+        throw new Error(`Database ${fileName} not found.`);
 
-        const blob = new Blob([data], {
-            type: 'application/octet-stream',
-            ok: true,
-            status: 200
-        });
+    const data = window.Blazor.runtime.Module.FS.readFile(sqliteFilePath);
 
-        const headers = new Headers({
-            'content-length': blob.size
-        });
+    const blob = new Blob([data], {
+        type: 'application/octet-stream',
+        ok: true,
+        status: 200
+    });
 
-        const response = new Response(blob, {
-            headers
-        });
+    const headers = new Headers({
+        'content-length': blob.size
+    });
 
-        await db.cache.put(cachePath, response);
+    const response = new Response(blob, {
+        headers
+    });
 
-        window.Blazor.runtime.Module.FS.unlink(backupPath);
-
-        return 1;
-    }
-    return -1;  
+    await dbCache.put(cacheStorageFilePath, response);
 }

@@ -4,8 +4,13 @@ namespace Bit.Besql;
 
 public sealed class BrowserCacheBesqlStorage(IJSRuntime jsRuntime) : IBesqlStorage
 {
-    public async Task<int> SyncDb(string filename)
+    public async Task Init(string filename)
     {
-        return await jsRuntime.InvokeAsync<int>("synchronizeDbWithCache", filename);
+        await jsRuntime.InvokeVoidAsync("BitBesql.init", filename);
+    }
+
+    public async Task Persist(string filename)
+    {
+        await jsRuntime.InvokeVoidAsync("BitBesql.persist", filename);
     }
 }
