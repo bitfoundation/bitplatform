@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System.Data.Common;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -7,14 +8,25 @@ namespace Bit.Besql;
 public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TDbContext>
     where TDbContext : DbContext
 {
+    private readonly string _fileName;
     private readonly IBesqlStorage _storage;
-    private TaskCompletionSource _initTcs = new();
+    private readonly string _connectionString;
+    private readonly TaskCompletionSource _initTcs = new();
 
     public BesqlPooledDbContextFactory(
         IBesqlStorage storage,
         DbContextOptions<TDbContext> options)
         : base(options)
     {
+        _connectionString = options.Extensions
+                .OfType<RelationalOptionsExtension>()
+                .First(r => string.IsNullOrEmpty(r.ConnectionString) is false).ConnectionString!;
+
+        _fileName = new DbConnectionStringBuilder()
+        {
+            ConnectionString = _connectionString
+        }["Data Source"].ToString()!;
+
         _storage = storage;
         _ = InitAsync();
     }
@@ -32,9 +44,8 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TD
     {
         try
         {
-            var fileName = "Offline-Client.db"; // TODO: Needs to be read from connection string
-            await _storage.Init(fileName);
-            await using var connection = new SqliteConnection($"Data Source={fileName}");
+            await _storage.Init(_fileName);
+            await using var connection = new SqliteConnection(_connectionString);
             await connection.OpenAsync();
             await using var command = connection.CreateCommand();
             command.CommandText = "PRAGMA synchronous = FULL;";
