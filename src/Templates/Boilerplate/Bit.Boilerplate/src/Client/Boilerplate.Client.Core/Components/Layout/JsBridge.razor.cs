@@ -27,10 +27,6 @@ public partial class JsBridge : IDisposable
         PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
-
-    /// <summary>
-    /// you can add any other method like this to utilize the bridge between js and .net code.
-    /// </summary>
     [JSInvokable(nameof(PublishMessage))]
     public async Task PublishMessage(string message, string? payload)
     {
