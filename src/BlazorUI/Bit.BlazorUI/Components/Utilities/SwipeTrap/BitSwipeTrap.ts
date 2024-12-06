@@ -73,6 +73,7 @@
                 element.addEventListener('touchstart', onStart);
                 element.addEventListener('touchmove', onMove);
                 element.addEventListener('touchend', onEnd);
+                element.addEventListener('touchcancel', onEnd);
             } else {
                 element.addEventListener('pointerdown', onStart);
                 element.addEventListener('pointermove', onMove);
@@ -87,6 +88,7 @@
                     element.removeEventListener('touchstart', onStart);
                     element.removeEventListener('touchmove', onMove);
                     element.removeEventListener('touchend', onEnd);
+                    element.removeEventListener('touchcancel', onEnd);
                 } else {
                     element.removeEventListener('pointerdown', onStart);
                     element.removeEventListener('pointermove', onMove);

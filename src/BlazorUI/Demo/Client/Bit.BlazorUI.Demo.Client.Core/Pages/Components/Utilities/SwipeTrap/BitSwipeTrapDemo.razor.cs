@@ -498,6 +498,7 @@ private string GetPanelStyle()
             <div class=""delete"">Delete</div>
             <BitSwipeTrap Style=""width:100%;height:100%""
                           Trigger=""60m""
+                          Threshold=""10""
                           OnMove=""args => HandleOnMoveList(args, i)""
                           OnEnd=""args => HandleOnEndList(args, i)""
                           OnTrigger=""args => HandleOnTriggerList(args, i)"">
