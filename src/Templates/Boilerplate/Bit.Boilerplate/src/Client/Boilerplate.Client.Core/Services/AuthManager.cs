@@ -206,24 +206,3 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         unsubscribe?.Invoke();
     }
 }
-
-        var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
-        return string.IsNullOrEmpty(accessToken) is false;
-    }
-
-    private async Task ClearTokens()
-    {
-        await storageService.RemoveItem("access_token");
-        await storageService.RemoveItem("refresh_token");
-        if (AppPlatform.IsBlazorHybrid is false)
-        {
-            await cookie.Remove("access_token");
-        }
-        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        unsubscribe?.Invoke();
-    }
-}
