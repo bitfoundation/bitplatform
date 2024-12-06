@@ -72,7 +72,7 @@
                 <BitButton OnClick="() => isPanelWithFooterOpen = true">Open Panel</BitButton>
                 <BitPanel Classes="@(new() { Header = "header-margin", Footer = "footer-margin" })" @bind-IsOpen="isPanelWithFooterOpen">
                     <ChildContent>
-                        <p>
+                        <div style="width:300px">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
                             sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -81,7 +81,7 @@
                             Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
                             Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
                             efficitur.
-                        </p>
+                        </div>
                     </ChildContent>
                     <FooterTemplate>
                         <BitButton OnClick="() => isPanelWithFooterOpen = false">Save</BitButton>

@@ -19,8 +19,8 @@
             let originalTransform: string;
             const isTouchDevice = Utils.isTouchDevice();
 
-            const getX = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenX : e.screenX;
-            const getY = (e: TouchEvent | PointerEvent) => (e instanceof TouchEvent) ? e.touches[0].screenY : e.screenY;
+            const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
+            const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 startX = getX(e);
@@ -79,47 +79,48 @@
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                startX = -1;
-                startY = -1;
+                startX = startY = -1;
 
                 element.style.transitionDuration = '';
-
-                if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
-                    if ((Math.abs(diffX) / bcr.width) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                try {
+                    if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
+                        if ((Math.abs(diffX) / bcr.width) > trigger) {
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
-                    if ((diffX / bcr.width) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
+                        if ((diffX / bcr.width) > trigger) {
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (position === BitPanelPosition.Top && diffY < 0) {
-                    if ((Math.abs(diffY) / bcr.height) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (position === BitPanelPosition.Top && diffY < 0) {
+                        if ((Math.abs(diffY) / bcr.height) > trigger) {
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
-                }
 
-                if (position === BitPanelPosition.Bottom && diffY > 0) {
-                    if ((diffY / bcr.height) > trigger) {
-                        diffX = diffY = 0;
-                        return await dotnetObj.invokeMethodAsync('OnClose');
+                    if (position === BitPanelPosition.Bottom && diffY > 0) {
+                        if ((diffY / bcr.height) > trigger) {
+                            return await dotnetObj.invokeMethodAsync('OnClose');
+                        }
                     }
+
+                    element.style.transform = originalTransform;
+                } finally {
+                    await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
+                    diffX = diffY = 0;
                 }
-
-                element.style.transform = originalTransform;
-
-                await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
             };
 
             const onLeave = (e: PointerEvent) => {
-                if (startY === -1) return;
-                startY = -1;
+                dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
+
+                startX = startY = -1;
+                diffX = diffY = 0;
+                element.style.transitionDuration = '';
+                element.style.transform = originalTransform;
             }
 
             if (isTouchDevice) {
@@ -130,7 +131,7 @@
                 element.addEventListener('pointerdown', onStart);
                 element.addEventListener('pointermove', onMove);
                 element.addEventListener('pointerup', onEnd);
-                element.addEventListener('pointerleave', onLeave, false);
+                element.addEventListener('pointerleave', onEnd, false);
             }
 
             const panel = new BitPanel(id, element, trigger, dotnetObj);
@@ -143,10 +144,18 @@
                     element.removeEventListener('pointerdown', onStart);
                     element.removeEventListener('pointermove', onMove);
                     element.removeEventListener('pointerup', onEnd);
-                    element.removeEventListener('pointerleave', onLeave, false);
+                    element.removeEventListener('pointerleave', onEnd, false);
                 }
             });
             Panel._panels.push(panel);
+        }
+
+        public static dispose(id: string) {
+            const panel = Panel._panels.find(r => r.id === id);
+            if (!panel) return;
+
+            Panel._panels = Panel._panels.filter(r => r.id !== id);
+            panel.dispose();
         }
     }
 
