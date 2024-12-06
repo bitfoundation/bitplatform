@@ -91,17 +91,17 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// <summary>
     /// To prevent multiple simultaneous refresh token requests.
     /// </summary>
-    private TaskCompletionSource<string?>? accessTokenTcs = null;
+    private TaskCompletionSource<string?>? accessTokenTsc = null;
 
     public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null)
     {
-        if (accessTokenTcs is null)
+        if (accessTokenTsc is null)
         {
-            accessTokenTcs = new();
+            accessTokenTsc = new();
             _ = RefreshTokenImplementation();
         }
 
-        return accessTokenTcs.Task;
+        return accessTokenTsc.Task;
 
         async Task RefreshTokenImplementation()
         {
@@ -114,7 +114,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
                 var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, ElevatedAccessToken = elevatedAccessToken }, default);
                 await StoreTokens(refreshTokenResponse);
-                accessTokenTcs.SetResult(refreshTokenResponse.AccessToken!);
+                accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
             catch (Exception exp)
             {
@@ -129,11 +129,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     await ClearTokens();
                 }
 
-                accessTokenTcs.SetResult(null);
+                accessTokenTsc.SetResult(null);
             }
             finally
             {
-                accessTokenTcs = null;
+                accessTokenTsc = null;
             }
         }
     }
@@ -182,10 +182,31 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (string.IsNullOrEmpty(token))
             return false;
 
-        if (accessTokenTcs != null)
+        if (accessTokenTsc != null)
         {
-            await accessTokenTcs.Task; // Wait for any ongoing token refresh to complete.
+            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
         }
+        var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
+        return string.IsNullOrEmpty(accessToken) is false;
+    }
+
+    private async Task ClearTokens()
+    {
+        await storageService.RemoveItem("access_token");
+        await storageService.RemoveItem("refresh_token");
+        if (AppPlatform.IsBlazorHybrid is false)
+        {
+            await cookie.Remove("access_token");
+        }
+        NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        unsubscribe?.Invoke();
+    }
+}
+
         var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
         return string.IsNullOrEmpty(accessToken) is false;
     }
