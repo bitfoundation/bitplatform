@@ -23,56 +23,39 @@ public partial class HomePage
 
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
         // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
-        
+
         // These external API calls are provided as sample references for anonymous API usage in pre-rendering anonymous pages,
         // and comprehensive exception handling is not intended for these examples.  
-        
+
         // However, the logic in other HTTP message handlers, such as **LoggingDelegatingHandler** and **RetryDelegatingHandler**,
         // effectively addresses most scenarios.
 
-        LoadGitHub();
-        LoadNuget();
+        await Task.WhenAll(LoadGitHub(), LoadNuget());
     }
 
-    private void LoadGitHub()
+    private async Task LoadGitHub()
     {
-        _ = statisticsController.GetGitHubStats(CurrentCancellationToken)
-                                .ContinueWith(async task =>
-                                {
-                                    try
-                                    {
-                                        gitHubStats = await task;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ExceptionHandler.Handle(ex);
-                                    }
-                                    finally
-                                    {
-                                        isLoadingGitHub = false;
-                                        await InvokeAsync(StateHasChanged);
-                                    }
-                                });
+        try
+        {
+            gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
+        }
+        finally
+        {
+            isLoadingGitHub = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void LoadNuget()
+    private async Task LoadNuget()
     {
-        _ = statisticsController.GetNugetStats(packageId: "Bit.BlazorUI", CurrentCancellationToken)
-                                .ContinueWith(async task =>
-                                {
-                                    try
-                                    {
-                                        nugetStats = await task;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ExceptionHandler.Handle(ex);
-                                    }
-                                    finally
-                                    {
-                                        isLoadingNuget = false;
-                                        await InvokeAsync(StateHasChanged);
-                                    }
-                                });
+        try
+        {
+            nugetStats = await statisticsController.GetNugetStats(packageId: "Bit.BlazorUI", CurrentCancellationToken);
+        }
+        finally
+        {
+            isLoadingNuget = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }
