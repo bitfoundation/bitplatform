@@ -10,7 +10,7 @@
     @(Anchor ?? ChildContent)
 
     <div @ref="_loadingRef" style="@Styles?.Loading" class="bit-ptr-lod @Classes?.Loading">
-        <div class="@GetSpinnerWrapperCssClasses()" style="@GetSpinnerWrapperCssStyles()")>
+        <div class="@GetSpinnerWrapperCssClasses()" style="@GetSpinnerWrapperCssStyles()">
             <div class="@GetSpinnerCssClasses()" style="@GetSpinnerCssStyles()">
                 @if (Loading is not null)
                 {
