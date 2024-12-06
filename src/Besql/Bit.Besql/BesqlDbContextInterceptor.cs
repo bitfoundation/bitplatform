@@ -60,7 +60,7 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
 
     private async Task Sync(string dataSource)
     {
-        var fileName = dataSource.Trim("/").ToString();
+        var fileName = dataSource.Trim('/').ToString();
         await Task.Yield();
         await storage.Persist(fileName).ConfigureAwait(false);
     }

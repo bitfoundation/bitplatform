@@ -25,7 +25,7 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TD
         _fileName = new DbConnectionStringBuilder()
         {
             ConnectionString = _connectionString
-        }["Data Source"].ToString().Trim("/").ToString()!;
+        }["Data Source"].ToString()!.Trim('/').ToString()!;
 
         _storage = storage;
         _ = InitAsync();
