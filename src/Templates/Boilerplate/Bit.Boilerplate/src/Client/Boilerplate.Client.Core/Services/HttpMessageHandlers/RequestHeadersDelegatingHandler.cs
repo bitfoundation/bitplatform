@@ -12,7 +12,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         request.SetBrowserResponseStreamingEnabled(true);
         if (request.Headers.UserAgent.Any() is false)
         {
-            var a = request.Headers.UserAgent.TryParseAdd(telemetryContext.UserAgent ?? telemetryContext.Platform);
+            request.Headers.UserAgent.TryParseAdd(telemetryContext.UserAgent ?? telemetryContext.Platform);
         }
 
         if (CultureInfoManager.MultilingualEnabled && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
