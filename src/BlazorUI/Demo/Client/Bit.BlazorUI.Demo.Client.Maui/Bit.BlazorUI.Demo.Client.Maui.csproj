@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>bit&#x2004;BlazorUI</ApplicationTitle>
+        <ApplicationTitle>bit BlazorUI</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.bitplatform.BlazorUI.Demo</ApplicationId>
@@ -103,8 +103,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.10" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.12" />
     </ItemGroup>
 
     <!-- Build Properties must be defined within these property groups to ensure successful publishing

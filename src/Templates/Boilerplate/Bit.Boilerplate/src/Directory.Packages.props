@@ -9,7 +9,7 @@
         <PackageVersion Include="Bit.Bswup" Version="9.1.0-pre-08" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.0-pre-08" />
         <PackageVersion Include="Bit.SourceGenerators" Version="9.1.0-pre-08" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.50" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.51" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
@@ -17,9 +17,9 @@
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.0" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.10" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.10" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.10" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.12" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Velopack" Version="0.0.942" />
@@ -74,12 +74,12 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.1.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="9.0.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="9.0.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
-        <PackageVersion Include="Twilio" Version="7.7.0" />
+        <PackageVersion Include="Twilio" Version="7.8.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
