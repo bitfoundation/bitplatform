@@ -48,7 +48,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public int? Throttle { get; set; }
 
     /// <summary>
-    /// The swiping point based on the width of the element (difference fraction) to trigger and call the OnTrigger event (default is 0.25m).
+    /// The swiping point (fraction of element's width or an absolute value) to trigger and call the OnTrigger event (default is 0.25m).
     /// </summary>
     [Parameter] public decimal? Trigger { get; set; }
 
@@ -74,6 +74,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     }
 
     [JSInvokable("OnTrigger")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapTriggerArgs))]
     public async Task _OnTrigger(decimal diffX, decimal diffY)
     {
         var direction = Math.Abs(diffX) > Math.Abs(diffY)

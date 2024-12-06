@@ -66,7 +66,7 @@ public partial class BitSwipeTrapDemo
             Name = "Trigger",
             Type = "decimal?",
             DefaultValue = "null",
-            Description = "The swiping point based on the width of the element (difference fraction) to trigger and call the OnTrigger event (default is 0.25m)."
+            Description = "The swiping point (fraction of element's width or an absolute value) to trigger and call the OnTrigger event (default is 0.25m)."
         },
     ];
 
@@ -244,22 +244,55 @@ public partial class BitSwipeTrapDemo
     }
 
 
-    private decimal diffXList;
-    private void HandleOnMoveList(BitSwipeTrapEventArgs args)
+    private int deletingIndex = -1;
+    private bool isListDialogOpen;
+    private TaskCompletionSource listTcs;
+    private List<int> itemsList = Enumerable.Range(0, 10).ToList();
+    private decimal[] diffXList = Enumerable.Repeat(0m, 10).ToArray();
+    private void HandleOnMoveList(BitSwipeTrapEventArgs args, int index)
     {
-        diffXList = args.DiffX;
+        diffXList[index] = args.DiffX;
     }
-    private void HandleOnEndList(BitSwipeTrapEventArgs args)
+    private void HandleOnEndList(BitSwipeTrapEventArgs args, int index)
     {
-        diffXList = 0;
-    }
-    private void HandleOnTriggerList(BitSwipeTrapTriggerArgs args)
-    {
-        if (args.Direction == BitSwipeDirection.Left)
+        if (diffXList[index] < 60)
         {
-            diffXList = 0;
-            ClosePanel();
+            diffXList[index] = 0;
         }
+    }
+    private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
+    {
+        if (args.Direction == BitSwipeDirection.Right)
+        {
+            deletingIndex = index;
+            listTcs = new();
+            isListDialogOpen = true;
+            await listTcs.Task;
+            isListDialogOpen = false;
+            diffXList[index] = 0;
+            deletingIndex = -1;
+        }
+    }
+    private string GetRowStyle(int index)
+    {
+        var x = Math.Min(diffXList[index], 60);
+        return x > 0 ? $"transform: translateX({x}px)" : "";
+    }
+    private void HandleOnOkList()
+    {
+        if (deletingIndex != -1)
+        {
+            itemsList.Remove(deletingIndex);
+        }
+        listTcs.SetResult();
+    }
+    private void HandleOnCancelList()
+    {
+        listTcs.SetResult();
+    }
+    private void ResetList()
+    {
+        itemsList = Enumerable.Range(0, 10).ToList();
     }
 
 
@@ -419,64 +452,118 @@ private string GetPanelStyle()
 
     private readonly string example3RazorCode = @"
 <style>
-    .basic-container {
+    .list-container {
+        gap: 4px;
         width: 100%;
-        cursor: grab;
-        height: 500px;
+        color: black;
+        height: 300px;
         display: flex;
+        overflow-y: auto;
         user-select: none;
-        align-items: center;
+        overflow-x: hidden;
+        position: relative;
         flex-direction: column;
-        justify-content: center;
         border: 1px solid lightgray;
+    }
+
+    .list-container .row {
+        min-height: 40px;
+        position: relative;
+    }
+
+    .list-container .delete {
+        width: 60px;
+        color: white;
+        height: 100%;
+        padding: 4px;
+        position: absolute;
+        background-color: red;
+    }
+
+    .list-container .row-trap {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        padding: 4px;
+        position: absolute;
+        background-color: gray;
     }
 </style>
 
-<BitSwipeTrap Style=""width:100%""
-              Throttle=""10""
-              OnStart=""HandleOnStartBasic""
-              OnMove=""HandleOnMoveBasic""
-              OnEnd=""HandleOnEndBasic""
-              OnTrigger=""HandleOnTriggerBasic"">
-    <div class=""basic-container"">
-        <div>StartX: @swipeTrapEventArgs?.StartX</div>
-        <div>StartY: @swipeTrapEventArgs?.StartY</div>
-        <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
-        <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
-        <div>---</div>
-        <div>Triggered? @isTriggered</div>
-        <div>Trigger direction: <b>@swipeTrapTriggerArgs?.Direction</b></div>
-        <div>Trigger diffX: @swipeTrapTriggerArgs?.DiffX</div>
-        <div>Trigger diffY: @swipeTrapTriggerArgs?.DiffY</div>
-    </div>
-</BitSwipeTrap>";
-    private readonly string example3CsharpCode = @"
-private bool isTriggeredBasic;
-BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
-BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
-private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
-{
-    swipeTrapEventArgsBasic = args;
-}
-private void HandleOnMoveBasic(BitSwipeTrapEventArgs args)
-{
-    swipeTrapEventArgsBasic = args;
-}
-private void HandleOnEndBasic(BitSwipeTrapEventArgs args)
-{
-    swipeTrapEventArgsBasic = args;
-}
-private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
-{
-    isTriggeredBasic = true;
-    swipeTrapTriggerArgsBasic = args;
-    _ = Task.Delay(2000).ContinueWith(_ =>
+<div class=""list-container"">
+    @foreach (int idx in itemsList)
     {
-        isTriggeredBasic = false;
-        swipeTrapEventArgsBasic = null;
-        swipeTrapTriggerArgsBasic = null;
-        InvokeAsync(StateHasChanged);
-    });
+        var i = idx;
+        <div @key=""@i"" class=""row"">
+            <div class=""delete"">Delete</div>
+            <BitSwipeTrap Style=""width:100%;height:100%""
+                          Trigger=""60m""
+                          OnMove=""args => HandleOnMoveList(args, i)""
+                          OnEnd=""args => HandleOnEndList(args, i)""
+                          OnTrigger=""args => HandleOnTriggerList(args, i)"">
+                <div class=""row-trap"" style=""@GetRowStyle(i)"">
+                    <div>Item@(i + 1)</div>
+                </div>
+            </BitSwipeTrap>
+        </div>
+    }
+</div>
+<BitButton OnClick=""ResetList"">Reset</BitButton>
+<BitDialog @bind-IsOpen=""isListDialogOpen""
+           Title=""Delete item?""
+           Message=""Are you sure you want to delete this item?""
+           OnOk=""HandleOnOkList""
+           OnCancel=""HandleOnCancelList"" />";
+    private readonly string example3CsharpCode = @"
+private int deletingIndex = -1;
+private bool isListDialogOpen;
+private TaskCompletionSource listTcs;
+private List<int> itemsList = Enumerable.Range(0, 10).ToList();
+private decimal[] diffXList = Enumerable.Repeat(0m, 10).ToArray();
+private void HandleOnMoveList(BitSwipeTrapEventArgs args, int index)
+{
+    diffXList[index] = args.DiffX;
+}
+private void HandleOnEndList(BitSwipeTrapEventArgs args, int index)
+{
+    if (diffXList[index] < 60)
+    {
+        diffXList[index] = 0;
+    }
+}
+private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
+{
+    if (args.Direction == BitSwipeDirection.Right)
+    {
+        deletingIndex = index;
+        listTcs = new();
+        isListDialogOpen = true;
+        await listTcs.Task;
+        isListDialogOpen = false;
+        diffXList[index] = 0;
+        deletingIndex = -1;
+    }
+}
+private string GetRowStyle(int index)
+{
+    var x = Math.Min(diffXList[index], 60);
+    return x > 0 ? $""transform: translateX({x}px)"" : """";
+}
+private void HandleOnOkList()
+{
+    if (deletingIndex != -1)
+    {
+        itemsList.Remove(deletingIndex);
+    }
+    listTcs.SetResult();
+}
+private void HandleOnCancelList()
+{
+    listTcs.SetResult();
+}
+private void ResetList()
+{
+    itemsList = Enumerable.Range(0, 10).ToList();
 }";
 }
 
