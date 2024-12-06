@@ -17,19 +17,5 @@ public class BesqlHistoryRepository(HistoryRepositoryDependencies dependencies) 
     {
         return Task.FromResult<IMigrationsDatabaseLock>(new NoopMigrationsDatabaseLock(this));
     }
-
-    public class NoopMigrationsDatabaseLock(IHistoryRepository historyRepository) : IMigrationsDatabaseLock
-    {
-        IHistoryRepository IMigrationsDatabaseLock.HistoryRepository => historyRepository;
-
-        public void Dispose()
-        {
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            return ValueTask.CompletedTask;
-        }
-    }
 }
 #endif

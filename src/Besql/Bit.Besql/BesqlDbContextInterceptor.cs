@@ -50,12 +50,7 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
     private bool IsTargetedCommand(string sql)
     {
         var keywords = new[] { "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP" };
-        foreach (var keyword in keywords)
-        {
-            if (sql.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        return false;
+        return keywords.Any(k => sql.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task Sync(string dataSource)
