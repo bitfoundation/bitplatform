@@ -13,23 +13,67 @@
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
                 <BitSwipeTrap Style="width:100%"
-                              Throttle="10"
-                              OnStart="HandleOnStart"
-                              OnMove="HandleOnMove"
-                              OnEnd="HandleOnEnd"
-                              OnTrigger="HandleOnTrigger">
-                    <div class="trap-container">
-                        <div>StartX: @swipeTrapEventArgs?.StartX</div>
-                        <div>StartY: @swipeTrapEventArgs?.StartY</div>
-                        <div>DiffX: @swipeTrapEventArgs?.DiffX</div>
-                        <div>DiffY: @swipeTrapEventArgs?.DiffY</div>
+                              OnStart="HandleOnStartBasic"
+                              OnMove="HandleOnMoveBasic"
+                              OnEnd="HandleOnEndBasic"
+                              OnTrigger="HandleOnTriggerBasic">
+                    <div class="basic-container">
+                        <div>StartX: @swipeTrapEventArgsBasic?.StartX</div>
+                        <div>StartY: @swipeTrapEventArgsBasic?.StartY</div>
+                        <div>DiffX: @swipeTrapEventArgsBasic?.DiffX</div>
+                        <div>DiffY: @swipeTrapEventArgsBasic?.DiffY</div>
                         <div>---</div>
-                        <div>Triggered? @isTriggered</div>
-                        <div>Trigger direction: <b>@swipeTrapTriggerArgs?.Direction</b></div>
-                        <div>Trigger diffX: @swipeTrapTriggerArgs?.DiffX</div>
-                        <div>Trigger diffY: @swipeTrapTriggerArgs?.DiffY</div>
+                        <div>Triggered? @isTriggeredBasic</div>
+                        <div>Trigger direction: <b>@swipeTrapTriggerArgsBasic?.Direction</b></div>
+                        <div>Trigger diffX: @swipeTrapTriggerArgsBasic?.DiffX</div>
+                        <div>Trigger diffY: @swipeTrapTriggerArgsBasic?.DiffY</div>
                     </div>
                 </BitSwipeTrap>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Panel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <ExamplePreview>
+                <div class="panel-container">
+                    <button @onclick="OpenPanel">
+                        Open
+                    </button>
+                    <div class="panel@(isPanelOpen ? " open": "")" style="@GetPanelStyle()">
+                        <button @onclick="ClosePanel" style="position:absolute;top:0;right:0">
+                            Close
+                        </button>
+                        <BitSwipeTrap Style="width:100%;height:100%"
+                                      OnMove="HandleOnMovePanel"
+                                      OnEnd="HandleOnEndPanel"
+                                      OnTrigger="HandleOnTriggerPanel">
+                            <div class="panel-trap">
+                                <h3>Title</h3>
+                                <div>Item1</div>
+                                <div>Item2</div>
+                                <div>Item3</div>
+                            </div>
+                        </BitSwipeTrap>
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
+
+        <ComponentExampleBox Title="List" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <ExamplePreview>
+                <div class="list-container">
+                    @for (int idx = 0; idx < 10; idx++)
+                    {
+                        var i = idx;
+                        <BitSwipeTrap Style="width:100%"
+                                      OnMove="HandleOnMoveList"
+                                      OnEnd="HandleOnEndList"
+                                      OnTrigger="HandleOnTriggerList">
+                            <div class="list-trap">
+                                <div>Item@(i+1)</div>
+                            </div>
+                        </BitSwipeTrap>
+                    }
+                </div>
             </ExamplePreview>
         </ComponentExampleBox>
     </ComponentDemo>
