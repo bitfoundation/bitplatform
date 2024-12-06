@@ -181,12 +181,12 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
         if (Styles?.SpinnerWrapper?.HasValue() ?? false)
         {
-            styles.Append(Styles.SpinnerWrapper.Trim(";")).Append(';');
+            styles.Append(Styles.SpinnerWrapper.Trim(';')).Append(';');
         }
 
         if (_refreshing && (Styles?.SpinnerWrapperRefreshing?.HasValue() ?? false))
         {
-            styles.Append(Styles.SpinnerWrapperRefreshing.Trim(";")).Append(';');
+            styles.Append(Styles.SpinnerWrapperRefreshing.Trim(';')).Append(';');
         }
 
         return styles.ToString();
@@ -223,12 +223,12 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
         if (Styles?.Spinner?.HasValue() ?? false)
         {
-            styles.Append(Styles.Spinner.Trim(";")).Append(';');
+            styles.Append(Styles.Spinner.Trim(';')).Append(';');
         }
 
         if (_refreshing && (Styles?.SpinnerRefreshing?.HasValue() ?? false))
         {
-            styles.Append(Styles.SpinnerRefreshing.Trim(";")).Append(';');
+            styles.Append(Styles.SpinnerRefreshing.Trim(';')).Append(';');
         }
 
         return styles.ToString();
