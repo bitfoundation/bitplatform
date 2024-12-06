@@ -1,4 +1,4 @@
-﻿var BitBesql = BitBesql || {};
+﻿var BitBesql = window.BitBesql || {};
 BitBesql.version = window['bit-besql version'] = '9.1.0-pre-08';
 
 BitBesql.init = async function init(fileName) {
@@ -32,7 +32,6 @@ BitBesql.persist = async function persist(fileName) {
 
     const blob = new Blob([data], {
         type: 'application/octet-stream',
-        ok: true,
         status: 200
     });
 

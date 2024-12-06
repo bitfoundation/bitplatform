@@ -25,7 +25,7 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TD
         _fileName = new DbConnectionStringBuilder()
         {
             ConnectionString = _connectionString
-        }["Data Source"].ToString()!;
+        }["Data Source"].ToString().Trim("/").ToString()!;
 
         _storage = storage;
         _ = InitAsync();
@@ -33,9 +33,9 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TD
 
     public override async Task<TDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
     {
-        await _initTcs.Task;
+        await _initTcs.Task.ConfigureAwait(false);
 
-        var ctx = await base.CreateDbContextAsync(cancellationToken);
+        var ctx = await base.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         return ctx;
     }
@@ -44,12 +44,12 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactory<TD
     {
         try
         {
-            await _storage.Init(_fileName);
+            await _storage.Init(_fileName).ConfigureAwait(false);
             await using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);
             await using var command = connection.CreateCommand();
             command.CommandText = "PRAGMA synchronous = FULL;";
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
             _initTcs.SetResult();
         }
         catch (Exception exp)

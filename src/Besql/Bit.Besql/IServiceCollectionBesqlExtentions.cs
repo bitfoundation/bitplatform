@@ -1,5 +1,8 @@
 ﻿using Bit.Besql;
 using Microsoft.EntityFrameworkCore;
+#if NET9_0_OR_GREATER
+using Microsoft.EntityFrameworkCore.Migrations;
+#endif
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -19,6 +22,9 @@ public static class IServiceCollectionBesqlExtentions
             services.AddDbContextFactory<TContext, BesqlPooledDbContextFactory<TContext>>((serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetRequiredService<BesqlDbContextInterceptor>());
+#if NET9_0_OR_GREATER
+                options.ReplaceService<IHistoryRepository, BesqlHistoryRepository>();
+#endif
                 optionsAction.Invoke(serviceProvider, options);
             });
         }
