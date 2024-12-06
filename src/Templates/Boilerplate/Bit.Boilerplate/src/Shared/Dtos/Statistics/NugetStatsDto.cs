@@ -7,9 +7,6 @@ public record NugetStatsDto(
 public record Datum(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("version")] string Version,
-    [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("title")] string Title,
-    [property: JsonPropertyName("projectUrl")] string ProjectUrl,
     [property: JsonPropertyName("totalDownloads")] int TotalDownloads
 );
 
