@@ -332,7 +332,7 @@ private bool isPanelWithCustomHeaderOpen;";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""() => isPanelWithFooterOpen = true"">Open Panel</BitButton>
-<BitPanel Classes=""@(new() { Header = ""header-margin"", Footer = ""footer-margin"" })"" @bind-IsOpen=""isPanelWithFooterOpen"">
+<BitPanel @bind-IsOpen=""isPanelWithFooterOpen"">
     <ChildContent>
         <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
