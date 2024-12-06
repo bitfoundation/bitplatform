@@ -552,10 +552,70 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              MultiSelect
              ItemsProvider=""LoadItems""
              Placeholder=""Select items""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+
+<BitDropdown Label=""Single select""
+             Virtualize
+             ItemsProvider=""LoadItems""
+             Placeholder=""Select an item""
+             InitialSelectedItems=""initialSelectedItem""
+             TItem=""BitDropdownItem<string>"" TValue=""string"" />
+
+<BitDropdown Label=""Multi select""
+             Virtualize
+             MultiSelect
+             ItemsProvider=""LoadItems""
+             Placeholder=""Select items""
+             InitialSelectedItems=""initialSelectedItems""
              TItem=""BitDropdownItem<string>"" TValue=""string"" />";
     private readonly string example12CsharpCode = @"
 private ICollection<BitDropdownItem<string>>? virtualizeItems1;
 private ICollection<BitDropdownItem<string>>? virtualizeItems2;
+
+private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
+    new()
+    {
+        Text = ""Product 100"",
+        Value = ""100"",
+        Data = new ProductDto {
+            Id = 100,
+            Price = 60,
+            Name = ""Product 100""
+        },
+        AriaLabel = ""Product 100"",
+        IsEnabled = true,
+        ItemType = BitDropdownItemType.Normal
+    }
+];
+
+private IEnumerable<BitDropdownItem<string>> initialSelectedItems = [
+    new()
+    {
+        Text = ""Product 100"",
+        Value = ""100"",
+        Data = new ProductDto {
+            Id = 100,
+            Price = 60,
+            Name = ""Product 100""
+        },
+        AriaLabel = ""Product 100"",
+        IsEnabled = true,
+        ItemType = BitDropdownItemType.Normal
+    },
+    new()
+    {
+        Text = ""Product 99"",
+        Value = ""99"",
+        Data = new ProductDto {
+            Id = 99,
+            Price = 75,
+            Name = ""Product 99""
+        },
+        AriaLabel = ""Product 99"",
+        IsEnabled = true,
+        ItemType = BitDropdownItemType.Normal
+    }
+];
 
 protected override void OnInitialized()
 {
