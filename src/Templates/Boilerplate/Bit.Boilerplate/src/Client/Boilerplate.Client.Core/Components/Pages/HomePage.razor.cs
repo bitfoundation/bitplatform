@@ -43,10 +43,14 @@ public partial class HomePage
                                     {
                                         gitHubStats = await task;
                                     }
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionHandler.Handle(ex);
+                                    }
                                     finally
                                     {
                                         isLoadingGitHub = false;
-                                        StateHasChanged();
+                                        await InvokeAsync(StateHasChanged);
                                     }
                                 });
     }
@@ -60,10 +64,14 @@ public partial class HomePage
                                     {
                                         nugetStats = await task;
                                     }
+                                    catch (Exception ex)
+                                    {
+                                        ExceptionHandler.Handle(ex);
+                                    }
                                     finally
                                     {
                                         isLoadingNuget = false;
-                                        StateHasChanged();
+                                        await InvokeAsync(StateHasChanged);
                                     }
                                 });
     }
