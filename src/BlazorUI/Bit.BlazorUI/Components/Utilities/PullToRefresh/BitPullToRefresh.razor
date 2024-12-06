@@ -9,16 +9,9 @@
 
     @(Anchor ?? ChildContent)
 
-    @{
-        var wrpSize = (35 * _diff) / Trigger;
-        var svgSize = (24 * _diff) / Trigger;
-    }
-
     <div @ref="_loadingRef" style="@Styles?.Loading" class="bit-ptr-lod @Classes?.Loading">
-        <div class="bit-ptr-swr @Classes?.SpinnerWrapper @(_refreshing ? @Classes?.SpinnerWrapperRefreshing : "")"
-             style=@($"{(_refreshing ? "transition:margin-top 100ms linear;background-color:var(--bit-clr-bg-ter);" : "")}margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px;{Styles?.SpinnerWrapper};{(_refreshing ? Styles?.SpinnerWrapperRefreshing : "")}")>
-            <div class="bit-ptr-spn @(_refreshing ? $"bit-ptr-spin {Classes?.SpinnerRefreshing}" : "") @Classes?.Spinner"
-                 style=@($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px;{Styles?.Spinner};{(_refreshing ? Styles?.SpinnerRefreshing : "")}")>
+        <div class="@GetSpinnerWrapperCssClasses()" style="@GetSpinnerWrapperCssStyles()")>
+            <div class="@GetSpinnerCssClasses()" style="@GetSpinnerCssStyles()">
                 @if (Loading is not null)
                 {
                     @Loading

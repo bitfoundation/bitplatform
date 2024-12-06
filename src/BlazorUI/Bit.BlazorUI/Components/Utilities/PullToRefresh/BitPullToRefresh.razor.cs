@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -147,6 +148,90 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private string? GetSpinnerWrapperCssClasses()
+    {
+        var classes = new StringBuilder("bit-ptr-swr");
+
+        if (Classes?.SpinnerWrapper?.HasValue() ?? false)
+        {
+            classes.Append(' ').Append(Classes.SpinnerWrapper.Trim());
+        }
+
+        if (_refreshing && (Classes?.SpinnerWrapperRefreshing?.HasValue() ?? false))
+        {
+            classes.Append(' ').Append(Classes.SpinnerWrapperRefreshing.Trim());
+        }
+
+        return classes.ToString();
+    }
+
+    private string? GetSpinnerWrapperCssStyles()
+    {
+        var wrpSize = (35 * _diff) / Trigger;
+        var styles = new StringBuilder();
+
+        if (_refreshing)
+        {
+            styles.Append("transition:margin-top 100ms linear;background-color:var(--bit-clr-bg-ter);");
+        }
+
+        styles.Append($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px;");
+
+        if (Styles?.SpinnerWrapper?.HasValue() ?? false)
+        {
+            styles.Append(Styles.SpinnerWrapper.Trim(";")).Append(';');
+        }
+
+        if (_refreshing && (Styles?.SpinnerWrapperRefreshing?.HasValue() ?? false))
+        {
+            styles.Append(Styles.SpinnerWrapperRefreshing.Trim(";")).Append(';');
+        }
+
+        return styles.ToString();
+    }
+
+    private string? GetSpinnerCssClasses()
+    {
+        var classes = new StringBuilder("bit-ptr-spn");
+
+        if (Classes?.Spinner?.HasValue() ?? false)
+        {
+            classes.Append(' ').Append(Classes.Spinner.Trim());
+        }
+
+        if (_refreshing)
+        {
+            classes.Append(" bit-ptr-spin");
+
+            if (Classes?.SpinnerRefreshing?.HasValue() ?? false)
+            {
+                classes.Append(' ').Append(Classes.SpinnerRefreshing.Trim());
+            }
+        }
+
+        return classes.ToString();
+    }
+
+    private string? GetSpinnerCssStyles()
+    {
+        var svgSize = (24 * _diff) / Trigger;
+        var styles = new StringBuilder();
+
+        styles.Append($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px;");
+
+        if (Styles?.Spinner?.HasValue() ?? false)
+        {
+            styles.Append(Styles.Spinner.Trim(";")).Append(';');
+        }
+
+        if (_refreshing && (Styles?.SpinnerRefreshing?.HasValue() ?? false))
+        {
+            styles.Append(Styles.SpinnerRefreshing.Trim(";")).Append(';');
+        }
+
+        return styles.ToString();
     }
 
     public async ValueTask DisposeAsync()
