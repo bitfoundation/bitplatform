@@ -9,7 +9,7 @@
         <PackageVersion Include="Bit.Bswup" Version="9.1.0-pre-08" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.0-pre-08" />
         <PackageVersion Include="Bit.SourceGenerators" Version="9.1.0-pre-08" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.50" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.51" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
@@ -74,12 +74,12 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.1.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.11" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.3.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
-        <PackageVersion Include="Twilio" Version="7.7.0" />
+        <PackageVersion Include="Twilio" Version="7.8.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
