@@ -50,7 +50,10 @@
                 startX = startY = -1;
 
                 try {
-                    if ((Math.abs(diffX) / bcr.width) > trigger || (Math.abs(diffY) / bcr.height) > trigger) {
+                    const div = ((Math.abs(trigger) < 1) ? bcr.width : 1);
+                    const compX = Math.abs(diffX) / div;
+                    const compY = Math.abs(diffY) / div;
+                    if (compX > Math.abs(trigger) || compY > Math.abs(trigger)) {
                         return await dotnetObj.invokeMethodAsync('OnTrigger', diffX, diffY);
                     }
                 } finally {

@@ -12,6 +12,7 @@
                    ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
+                <div>Try swipe or drag on the container:</div><br />
                 <BitSwipeTrap Style="width:100%"
                               OnStart="HandleOnStartBasic"
                               OnMove="HandleOnMoveBasic"
@@ -34,6 +35,7 @@
 
         <ComponentExampleBox Title="Panel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <ExamplePreview>
+                <div>Open the panel and try to close it by swiping it to the left:</div><br />
                 <div class="panel-container">
                     <button @onclick="OpenPanel">
                         Open
@@ -60,20 +62,32 @@
 
         <ComponentExampleBox Title="List" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
+                <div>Swipe each row to the right to trigger the delete action:</div><br />
                 <div class="list-container">
-                    @for (int idx = 0; idx < 10; idx++)
+                    @foreach (int idx in itemsList)
                     {
                         var i = idx;
-                        <BitSwipeTrap Style="width:100%"
-                                      OnMove="HandleOnMoveList"
-                                      OnEnd="HandleOnEndList"
-                                      OnTrigger="HandleOnTriggerList">
-                            <div class="list-trap">
-                                <div>Item@(i+1)</div>
-                            </div>
-                        </BitSwipeTrap>
+                        <div @key="@i" class="row">
+                            <div class="delete">Delete</div>
+                            <BitSwipeTrap Style="width:100%;height:100%"
+                                          Trigger="60m"
+                                          OnMove="args => HandleOnMoveList(args, i)"
+                                          OnEnd="args => HandleOnEndList(args, i)"
+                                          OnTrigger="args => HandleOnTriggerList(args, i)">
+                                <div class="row-trap" style="@GetRowStyle(i)">
+                                    <div>Item@(i + 1)</div>
+                                </div>
+                            </BitSwipeTrap>
+                        </div>
                     }
                 </div>
+                <br />
+                <BitButton OnClick="ResetList">Reset</BitButton>
+                <BitDialog @bind-IsOpen="isListDialogOpen"
+                           Title="Delete item?"
+                           Message="Are you sure you want to delete this item?"
+                           OnOk="HandleOnOkList"
+                           OnCancel="HandleOnCancelList" />
             </ExamplePreview>
         </ComponentExampleBox>
     </ComponentDemo>
