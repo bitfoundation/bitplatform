@@ -18,7 +18,17 @@ public class BitPullToRefreshClassStyles
     public string? SpinnerWrapper { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the spinner wrapper element in refreshing mode.
+    /// </summary>
+    public string? SpinnerWrapperRefreshing { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the spinner element.
     /// </summary>
     public string? Spinner { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner element in refreshing mode.
+    /// </summary>
+    public string? SpinnerRefreshing { get; set; }
 }
