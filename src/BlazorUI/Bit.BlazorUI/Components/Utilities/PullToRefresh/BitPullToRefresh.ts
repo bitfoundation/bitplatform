@@ -66,7 +66,7 @@
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startY === -1 || refreshing) return;
                 startY = -1;
-                
+
                 await dotnetObj.invokeMethodAsync('OnEnd', diff);
 
                 if (diff >= trigger) {

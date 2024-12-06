@@ -11,7 +11,7 @@ namespace Bit.Besql.Demo.Client.Data.CompiledModel
     public partial class OfflineDbContextModel
     {
         private OfflineDbContextModel()
-            : base(skipDetectChanges: false, modelId: new Guid("83924357-cac0-4352-b1b4-39edcbc1a1e3"), entityTypeCount: 1)
+            : base(skipDetectChanges: false, modelId: new Guid("ac96847b-e3a9-46a3-82cf-7605a37f26af"), entityTypeCount: 1)
         {
         }
 

@@ -22,5 +22,9 @@ public static partial class ClientPubSubMessages
     public const string UPDATE_IDENTITY_HEADER_BACK_LINK = nameof(UPDATE_IDENTITY_HEADER_BACK_LINK);
     public const string IDENTITY_HEADER_BACK_LINK_CLICKED = nameof(IDENTITY_HEADER_BACK_LINK_CLICKED);
 
+    /// <summary>
+    /// Supposed to be called using JavaScript to navigate between pages without reloading the app.
+    /// </summary>
+    public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
 }
