@@ -1,77 +1,83 @@
 ﻿@inherits AppComponentBase;
 
-@if (isMenuOpen)
-{
-    <div class="menu-overlay" @onclick=CloseMenu></div>
-}
-
 @{
-    var isToggled = !isMenuOpen && isMenuToggled;
+    var isToggled = !isPanelOpen && isPanelToggled;
 }
 
-<section class="@(isMenuOpen ? "" : "closed")" Style="@($"--nav-menu-width:{(isToggled ? "6rem" : "14rem")}")">
-    <BitCard Class="panel">
-        <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)" Grows>
-            <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
-                <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
-                          Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
-                <BitSpacer Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
-                <BitButton IconOnly FixedColor
-                           Class="toggle-btn"
-                           Size="BitSize.Large"
-                           OnClick="ToggleNavPanel"
-                           Variant="BitVariant.Text"
-                           Color="BitColor.TertiaryBackground"
-                           IconName="@BitIconName.ColumnRightTwoThirds" />
-            </BitStack>
+@if (isPanelOpen)
+{
+    <div class="panel-overlay" @onclick=ClosePanel></div>
+}
 
-            <BitSearchBox @ref="searchBoxRef"
-                          Underlined Immediate DebounceTime="500"
-                          OnChange="WrapHandled<string?>(SearchNavItems)"
-                          Style="@(isToggled ? "display:none" : "")"
-                          Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
+<section class="@($"{(isPanelOpen ? "" : "closed")} {(isToggled ? "toggled" : "")} {(currentDir == BitDir.Rtl ? "rtl" : "")}".Trim())"
+         style="@GetPanelStyle()">
+    <BitSwipeTrap Style="width:100%; height:100%"
+                  OnMove="HandleOnSwipeMove"
+                  OnEnd="HandleOnSwipeEnd"
+                  OnTrigger="HandleOnSwipeTrigger">
+        <BitCard Class="panel">
+            <BitStack HorizontalAlign="@(isToggled ? BitAlignment.Center : BitAlignment.Start)" Grows>
+                <BitStack Horizontal AutoHeight Alignment="BitAlignment.Center">
+                    <BitImage Src="_content/Boilerplate.Client.Core/images/bit-logo.svg"
+                              Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
+                    <BitSpacer Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
+                    <BitButton IconOnly FixedColor
+                               Class="toggle-btn"
+                               Size="BitSize.Large"
+                               OnClick="ToggleNavPanel"
+                               Variant="BitVariant.Text"
+                               Color="BitColor.TertiaryBackground"
+                               IconName="@BitIconName.ColumnRightTwoThirds" />
+                </BitStack>
 
-            @if (isToggled)
-            {
-                <BitButton IconOnly FixedColor
-                           Class="toggle-btn"
-                           Size="BitSize.Large"
-                           OnClick="ToggleForSearch"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Search"
-                           Color="BitColor.TertiaryBackground" />
-            }
+                <BitSearchBox @ref="searchBoxRef"
+                              Underlined Immediate DebounceTime="500"
+                              OnChange="WrapHandled<string?>(SearchNavItems)"
+                              Style="@(isToggled ? "display:none" : "")"
+                              Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
 
-            @if (filteredNavItems.Count == 0)
-            {
-                if (isToggled is false)
+                @if (isToggled)
                 {
-                    <BitText>@Localizer[nameof(AppStrings.NothingFound)]</BitText>
+                    <BitButton IconOnly FixedColor
+                               Class="toggle-btn"
+                               Size="BitSize.Large"
+                               OnClick="ToggleForSearch"
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.Search"
+                               Color="BitColor.TertiaryBackground" />
                 }
-            }
-            else
-            {
-                <BitNav FullWidth
-                        IconOnly="isToggled"
-                        Items="filteredNavItems"
-                        Accent="BitColor.SecondaryBackground"
-                        DefaultSelectedItem="filteredNavItems[0]"
-                        OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
-                        Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })" />
-            }
 
-            <BitSpacer />
+                @if (filteredNavItems.Count == 0)
+                {
+                    if (isToggled is false)
+                    {
+                        <BitText>@Localizer[nameof(AppStrings.NothingFound)]</BitText>
+                    }
+                }
+                else
+                {
+                    <BitNav FullWidth
+                            IconOnly="isToggled"
+                            Items="filteredNavItems"
+                            Accent="BitColor.SecondaryBackground"
+                            DefaultSelectedItem="filteredNavItems[0]"
+                            OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
+                            Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })" />
+                }
 
-            <BitActionButton IconOnly="isToggled"
-                             Color="BitColor.Error"
-                             FullWidth="!isToggled"
-                             OnClick="ShowSignOutConfirm"
-                             IconName="@BitIconName.SignOut"
-                             Title="@Localizer[nameof(AppStrings.SignOut)]">
-                @(isToggled ? "" : Localizer[nameof(AppStrings.SignOut)])
-            </BitActionButton>
-        </BitStack>
-    </BitCard>
+                <BitSpacer />
+
+                <BitActionButton IconOnly="isToggled"
+                                 Color="BitColor.Error"
+                                 FullWidth="!isToggled"
+                                 OnClick="ShowSignOutConfirm"
+                                 IconName="@BitIconName.SignOut"
+                                 Title="@Localizer[nameof(AppStrings.SignOut)]">
+                    @(isToggled ? "" : Localizer[nameof(AppStrings.SignOut)])
+                </BitActionButton>
+            </BitStack>
+        </BitCard>
+    </BitSwipeTrap>
 </section>
 
 <SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" />
