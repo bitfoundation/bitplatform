@@ -18,9 +18,10 @@
 
     <ul role="list">
         <CascadingValue Value="this" IsFixed="true">
-            @foreach (var item in _items)
+            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
             {
-                <_BitNavChild @key="GetItemKey(item)" Item="item" Depth="0" />
+                var key = GetItemKey(item, idx.ToString());
+                <_BitNavChild @key="@key" Key="@key" Item="item" Depth="0" />
             }
         </CascadingValue>
     </ul>

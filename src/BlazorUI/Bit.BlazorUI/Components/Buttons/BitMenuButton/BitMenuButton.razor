@@ -90,13 +90,13 @@
          style="@Styles?.Callout"
          class="bit-mnb-cal @Classes?.Callout">
         <ul role="presentation" style="@Styles?.CalloutContainer" class="bit-mnb-cul @Classes?.CalloutContainer">
-            @foreach (TItem item in _items)
+            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
             {
                 if (Sticky && item == SelectedItem) continue;
 
                 var template = GetTemplate(item);
                 var isEnabled = GetIsEnabled(item);
-                <li role="presentation" @key="GetKey(item)" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
+                <li role="presentation" @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                     <button @onclick="() => HandleOnItemClick(item)" @onclick:stopPropagation
                             role="menuitem"
                             type="@_buttonType.GetValue()"

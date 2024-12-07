@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
+public partial class _BitNavChild<TItem> where TItem : class
 {
     [CascadingParameter] protected BitNav<TItem> Nav { get; set; } = default!;
 
@@ -11,6 +11,8 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
 
     [Parameter] public TItem Item { get; set; } = default!;
+
+    [Parameter] public string? Key { get; set; }
 
     [Parameter] public int Depth { get; set; }
 
