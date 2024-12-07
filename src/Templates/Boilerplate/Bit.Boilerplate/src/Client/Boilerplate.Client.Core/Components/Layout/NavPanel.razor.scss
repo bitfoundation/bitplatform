@@ -4,27 +4,39 @@
 section {
     top: 0;
     padding: 1rem;
+    min-width: 14rem;
+    max-width: 14rem;
     position: sticky;
     overflow: hidden auto;
     height: var(--app-height);
-    min-width: var(--nav-menu-width);
-    max-width: var(--nav-menu-width);
 
-    &::-webkit-scrollbar {
-        width: 0;
+    &.toggled {
+        min-width: 6rem;
+        max-width: 6rem;
     }
 
     @include lt-md {
         z-index: 3;
         padding: 0;
+        opacity: 1;
         position: fixed;
         height: unset !important;
         top: var(--app-inset-top);
         bottom: var(--app-inset-bottom);
+        transition: transform 150ms ease-out, opacity 100ms ease-in;
 
         &.closed {
-            display: none;
+            opacity: 0;
+            transform: translateX(-100%);
+
+            &.rtl {
+                transform: translateX(100%);
+            }
         }
+    }
+
+    &::-webkit-scrollbar {
+        width: 0;
     }
 }
 
@@ -38,13 +50,14 @@ section {
     }
 }
 
-.menu-overlay {
+.panel-overlay {
     inset: 0;
     z-index: 2;
     width: 100%;
     height: 100%;
     position: fixed;
     min-height: 100vh;
+    background-color: rgb(0, 0, 0, 0.42);
 
     @include gt-sm {
         display: none;
