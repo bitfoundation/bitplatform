@@ -152,7 +152,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
     private string? GetSpinnerWrapperCssClasses()
     {
-        List<string> classes = [ "bit-ptr-spw" ];
+        List<string> classes = ["bit-ptr-spw"];
 
         if (_refreshing)
         {
