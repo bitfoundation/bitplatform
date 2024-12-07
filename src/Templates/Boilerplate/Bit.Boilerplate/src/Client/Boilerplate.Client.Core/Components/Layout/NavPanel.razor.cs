@@ -52,7 +52,7 @@ public partial class NavPanel
         isPanelOpen = false;
     }
 
-    private void ToggleNavPanel()
+    private void TogglePanel()
     {
         isPanelToggled = !isPanelToggled;
         if (isPanelToggled)
@@ -93,17 +93,24 @@ public partial class NavPanel
     private decimal diffXPanel;
     private void HandleOnSwipeMove(BitSwipeTrapEventArgs args)
     {
+        if (isPanelOpen is false) return;
+        
         diffXPanel = args.DiffX;
         StateHasChanged();
     }
     private void HandleOnSwipeEnd(BitSwipeTrapEventArgs args)
     {
+        if (isPanelOpen is false) return;
+
         diffXPanel = 0;
         StateHasChanged();
     }
     private void HandleOnSwipeTrigger(BitSwipeTrapTriggerArgs args)
     {
-        if ((currentDir != BitDir.Rtl && args.Direction == BitSwipeDirection.Left) || (currentDir == BitDir.Rtl && args.Direction == BitSwipeDirection.Right))
+        if (isPanelOpen is false) return;
+
+        if ((currentDir != BitDir.Rtl && args.Direction == BitSwipeDirection.Left) ||
+            (currentDir == BitDir.Rtl && args.Direction == BitSwipeDirection.Right))
         {
             diffXPanel = 0;
             ClosePanel();
@@ -112,10 +119,13 @@ public partial class NavPanel
     }
     private string GetPanelStyle()
     {
+        if (isPanelOpen is false) return string.Empty;
+
         return ((currentDir != BitDir.Rtl && diffXPanel < 0) || (currentDir == BitDir.Rtl && diffXPanel > 0))
                 ? $"transform: translateX({diffXPanel}px)"
-                : "";
+                : string.Empty;
     }
+
 
     private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
 
