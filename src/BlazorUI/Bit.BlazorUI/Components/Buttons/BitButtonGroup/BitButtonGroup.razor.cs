@@ -131,7 +131,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-md"
         });
 
-        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
+        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
     }
 
     protected override void OnParametersSet()
