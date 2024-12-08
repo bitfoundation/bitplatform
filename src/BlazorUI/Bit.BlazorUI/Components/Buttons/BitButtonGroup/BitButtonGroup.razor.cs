@@ -19,9 +19,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The content of the BitButtonGroup, that are BitButtonGroupOption components.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetChildContentAndItems))]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
@@ -32,9 +30,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetChildContentAndItems))]
-    public IEnumerable<TItem> Items { get; set; } = [];
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// The content inside the item can be customized.
@@ -138,6 +134,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
     }
 
+    protected override void OnParametersSet()
+    {
+        if (ChildContent is null && Items.Any() && Items != _oldItems)
+        {
+            _oldItems = Items;
+            _items = Items.ToList();
+        }
+
+        base.OnParametersSet();
+    }
+
 
 
     private async Task HandleOnItemClick(TItem item)
@@ -167,15 +174,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
             }
         }
-    }
-
-    private void OnSetChildContentAndItems()
-    {
-        if (ChildContent is not null) return;
-        if (Items.Any() is false || Items == _oldItems) return;
-
-        _oldItems = Items;
-        _items = Items.ToList();
     }
 
     private string? GetClass(TItem? item)
