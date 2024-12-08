@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The original loading css came from https://loading.io/css/
+/// </summary>
 public abstract class BitLoadingBase : BitComponentBase
 {
     /// <summary>

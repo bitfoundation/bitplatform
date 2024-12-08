@@ -18,10 +18,10 @@
          class="bit-brc-ovl @Classes?.Overlay"></div>
 
     <ul style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
-        @foreach ((TItem item, int index) in _displayItems.Select((item, index) => (item, index)))
+        @foreach (var (item, idx) in _displayItems.Select((item, index) => (item, index)))
         {
-            <li style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper" @key="GetKey(item)">
-                @if (index == _internalOverflowIndex && _overflowItems.Any())
+            <li @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
+                @if (idx == _internalOverflowIndex && _overflowItems.Any())
                 {
                     <button id="@_overflowAnchorId"
                             type="button"
@@ -120,7 +120,7 @@
                 }
             </li>
 
-            @if (index != _displayItems.Count - 1)
+            @if (idx != _displayItems.Count - 1)
             {
                 <li style="@Styles?.Divider" class="@Classes?.Divider">
                     @if (DividerIconTemplate is not null)
@@ -143,10 +143,10 @@
          style="@Styles?.Callout"
          class="bit-brc-cal @Classes?.Callout">
         <ul style="@Styles?.CalloutContainer" id="@_scrollContainerId" class="bit-brc-scn @Classes?.CalloutContainer">
-            @foreach (var item in _overflowItems)
+            @foreach (var (item, idx) in _overflowItems.Select((item, idx) => (item, idx)))
             {
                 var overflowTemplate = GetOverflowTemplate(item);
-                <li style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper" @key="GetKey(item)">
+                <li @key="@GetItemKey(item, $"overflow-{idx}")" style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper">
                     @if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"

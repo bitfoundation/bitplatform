@@ -42,7 +42,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [Parameter] public int Margin { get; set; } = 30;
 
     /// <summary>
-    /// The callback for when the threshold of the pull-down happens.
+    /// The callback for when the trigger condition of the pull-down happens.
     /// </summary>
     [Parameter] public EventCallback OnRefresh { get; set; }
 

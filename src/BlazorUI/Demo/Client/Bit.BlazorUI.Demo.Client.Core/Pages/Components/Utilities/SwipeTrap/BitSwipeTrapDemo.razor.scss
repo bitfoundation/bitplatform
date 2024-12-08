@@ -1,0 +1,87 @@
+﻿.basic-container {
+    width: 100%;
+    cursor: grab;
+    height: 500px;
+    display: flex;
+    user-select: none;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid lightgray;
+}
+
+.panel-container {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    user-select: none;
+    position: relative;
+    border: 1px solid lightgray;
+
+    button {
+        padding: 0.5rem;
+    }
+
+    .panel {
+        left: 0;
+        color: black;
+        width: 200px;
+        cursor: grab;
+        inset-block: 0;
+        position: absolute;
+        background-color: lightgray;
+        transform: translateX(-100%);
+
+        &.open {
+            transform: translateX(0);
+        }
+
+        .panel-trap {
+            gap: 1rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: gray;
+        }
+    }
+}
+
+.list-container {
+    gap: 4px;
+    width: 100%;
+    color: black;
+    height: 300px;
+    display: flex;
+    overflow-y: auto;
+    user-select: none;
+    overflow-x: hidden;
+    position: relative;
+    flex-direction: column;
+    border: 1px solid lightgray;
+
+    .row {
+        min-height: 40px;
+        position: relative;
+    }
+
+    .delete {
+        width: 60px;
+        color: white;
+        height: 100%;
+        padding: 4px;
+        position: absolute;
+        background-color: red;
+    }
+
+    .row-trap {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        padding: 4px;
+        position: absolute;
+        background-color: gray;
+    }
+}
+
+::deep {
+}

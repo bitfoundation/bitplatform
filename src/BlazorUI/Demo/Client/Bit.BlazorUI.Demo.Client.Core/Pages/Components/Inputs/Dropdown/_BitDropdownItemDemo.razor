@@ -425,6 +425,22 @@
                          ItemsProvider="LoadItems"
                          Placeholder="Select items"
                          TItem="BitDropdownItem<string>" TValue="string" />
+            <br /><br /><br /><br />
+            <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
+            <BitDropdown Label="Single select"
+                         Virtualize
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select an item"
+                         InitialSelectedItems="initialSelectedItem"
+                         TItem="BitDropdownItem<string>" TValue="string" />
+            <br />
+            <BitDropdown Label="Multi select"
+                         Virtualize
+                         MultiSelect
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select items"
+                         InitialSelectedItems="initialSelectedItems"
+                         TItem="BitDropdownItem<string>" TValue="string" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
