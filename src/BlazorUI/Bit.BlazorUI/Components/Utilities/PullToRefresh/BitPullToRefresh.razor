@@ -9,9 +9,13 @@
 
     @(Anchor ?? ChildContent)
 
-    <div @ref="_loadingRef" style="@Styles?.Loading" class="bit-ptr-lod @Classes?.Loading">
-        <div class="@GetSpinnerWrapperCssClasses()" style="@GetSpinnerWrapperCssStyles()">
-            <div class="@GetSpinnerCssClasses()" style="@GetSpinnerCssStyles()">
+    <div @ref="_loadingRef"
+         style="@Styles?.Loading"
+         class="bit-ptr-lod @Classes?.Loading">
+        <div style="@GetSpinnerWrapperCssStyles()"
+             class="@GetSpinnerWrapperCssClasses()">
+            <div style="@GetSpinnerCssStyles()"
+                 class="@GetSpinnerCssClasses()">
                 @if (Loading is not null)
                 {
                     @Loading

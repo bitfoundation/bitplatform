@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -157,16 +156,16 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         if (_refreshing)
         {
             classes.Add("bit-ptr-swr");
+
+            if (Classes?.SpinnerWrapperRefreshing?.HasValue() ?? false)
+            {
+                classes.Add(Classes.SpinnerWrapperRefreshing.Trim());
+            }
         }
 
         if (Classes?.SpinnerWrapper?.HasValue() ?? false)
         {
             classes.Add(Classes.SpinnerWrapper.Trim());
-        }
-
-        if (_refreshing && (Classes?.SpinnerWrapperRefreshing?.HasValue() ?? false))
-        {
-            classes.Add(Classes.SpinnerWrapperRefreshing.Trim());
         }
 
         return string.Join(' ', classes);
@@ -175,9 +174,9 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     private string? GetSpinnerWrapperCssStyles()
     {
         List<string> styles = [];
-        decimal wrpSize = (35 * _diff) / Trigger;
+        decimal size = 35 * _diff / Trigger;
 
-        styles.Add($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{wrpSize}px;height:{wrpSize}px;");
+        styles.Add($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{size}px;height:{size}px;");
 
         if (Styles?.SpinnerWrapper?.HasValue() ?? false)
         {
@@ -217,9 +216,9 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     private string? GetSpinnerCssStyles()
     {
         List<string> styles = [];
-        decimal svgSize = (24 * _diff) / Trigger;
+        decimal size = 24 * _diff / Trigger;
 
-        styles.Add($"transform:rotate({(_diff - Trigger) * 2}deg);width:{svgSize}px;height:{svgSize}px;");
+        styles.Add($"transform:rotate({(_diff - Trigger) * 2}deg);width:{size}px;height:{size}px;");
 
         if (Styles?.Spinner?.HasValue() ?? false)
         {
