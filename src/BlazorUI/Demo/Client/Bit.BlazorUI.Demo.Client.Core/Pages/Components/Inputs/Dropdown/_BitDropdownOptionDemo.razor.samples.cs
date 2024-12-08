@@ -993,6 +993,7 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
 </BitDropdown>
 
 <BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Responsive
              Dir=""BitDir.Rtl""
              Placeholder=""لطفا انتخاب کنید""
              TItem=""BitDropdownOption<string>"" TValue=""string"">

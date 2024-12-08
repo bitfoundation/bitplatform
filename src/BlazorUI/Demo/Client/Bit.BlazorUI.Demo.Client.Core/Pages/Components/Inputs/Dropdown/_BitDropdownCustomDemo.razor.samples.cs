@@ -1340,6 +1340,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              Placeholder=""انتخاب چند گزینه ای"" />
 
 <BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Responsive
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
