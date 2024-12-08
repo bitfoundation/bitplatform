@@ -42,7 +42,7 @@
 
     <div id="@_calloutId"
          style="@Styles?.Callout"
-         class="bit-drm-cal @Classes?.Callout">
+         class="@GetCalloutCssClasses()">
         @(Body ?? ChildContent)
     </div>
 </div>

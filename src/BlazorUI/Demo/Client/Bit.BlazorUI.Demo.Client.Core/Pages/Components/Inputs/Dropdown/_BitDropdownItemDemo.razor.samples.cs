@@ -902,7 +902,14 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              Dir=""BitDir.Rtl""
              Items=""GetRtlItems()""
              DefaultValue=""@string.Empty""
-             Placeholder=""انتخاب چند گزینه ای"" />";
+             Placeholder=""انتخاب چند گزینه ای"" />
+
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Responsive
+             Dir=""BitDir.Rtl""
+             Items=""GetRtlItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""لطفا انتخاب کنید"" />";
     private readonly string example17CsharpCode = @"
 private List<BitDropdownItem<string>> GetRtlItems() => new()
 {

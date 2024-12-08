@@ -160,8 +160,7 @@ public partial class BitDropMenu : BitComponentBase
                                 0,
                                 "",
                                 "",
-                                false,
-                                RootElementClass);
+                                false);
     }
 
     private async Task DismissCallout()
@@ -169,5 +168,22 @@ public partial class BitDropMenu : BitComponentBase
         if (await AssignIsOpen(false) is false) return;
 
         await OnDismiss.InvokeAsync();
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-drm-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-drm-res");
+        }
+
+        return string.Join(' ', classes).Trim();
     }
 }

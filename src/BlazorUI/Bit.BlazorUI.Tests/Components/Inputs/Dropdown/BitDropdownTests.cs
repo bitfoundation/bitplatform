@@ -57,7 +57,7 @@ public class BitDropdownTests : BunitTestContext
 
         //if (isResponsiveModeEnabled)
         //{
-        //    Assert.IsTrue(callout.ClassList.Contains("bit-drp-rsp"));
+        //    Assert.IsTrue(callout.ClassList.Contains("bit-drp-res"));
 
         //    var lblContainer = component.Find(".bit-drp-rlc");
         //    Assert.IsNotNull(lblContainer);

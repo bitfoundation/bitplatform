@@ -1337,7 +1337,14 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""انتخاب چند گزینه ای"" />";
+             Placeholder=""انتخاب چند گزینه ای"" />
+
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Responsive
+             Dir=""BitDir.Rtl""
+             Items=""GetRtlCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""لطفا انتخاب کنید"" />";
     private readonly string example17CsharpCode = @"
 public class Product
 {

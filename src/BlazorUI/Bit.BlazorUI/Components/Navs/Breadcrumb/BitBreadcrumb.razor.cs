@@ -616,8 +616,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
                                 0,
                                 "",
                                 "",
-                                false,
-                                RootElementClass);
+                                false);
     }
 
     private string GetItemKey(TItem item, string defaultKey)

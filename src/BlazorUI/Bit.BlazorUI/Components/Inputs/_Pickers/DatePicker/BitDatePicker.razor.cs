@@ -253,17 +253,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens.
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the text field of the DatePicker is underlined.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// The text of the DatePicker's label.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -328,6 +317,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
 
     /// <summary>
+    /// Enables the responsive mode in small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the DatePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -375,6 +369,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
+    /// Whether or not the text field of the DatePicker is underlined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// The title of the week number (tooltip).
@@ -462,7 +462,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-dtp-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-dtp-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-dtp-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-dtp-nbd" : string.Empty);
 
@@ -1456,14 +1456,30 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                                        _calloutId,
                                        null,
                                        IsOpen,
-                                       IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                       Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,
                                        Dir is BitDir.Rtl,
                                        "",
                                        0,
                                        "",
                                        "",
-                                       false,
-                                       RootElementClass);
+                                       false);
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-dtp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-dtp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
     }
 }

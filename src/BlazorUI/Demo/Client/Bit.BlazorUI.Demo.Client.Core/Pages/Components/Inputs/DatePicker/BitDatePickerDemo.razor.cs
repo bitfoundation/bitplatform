@@ -178,20 +178,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens."
-        },
-        new()
-        {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the Text field of the DatePicker is underlined."
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -262,6 +248,13 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "string.Empty",
             Description = "The placeholder text of the DatePicker's input."
+        },
+        new()
+        {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens."
         },
         new()
         {
@@ -350,6 +343,13 @@ public partial class BitDatePickerDemo
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum"
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the Text field of the DatePicker is underlined."
         },
         new()
         {
@@ -1216,7 +1216,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example9RazorCode = @"
 <BitDatePicker Label=""Response DatePicker""
-               IsResponsive
+               Responsive
                ShowWeekNumbers
                Placeholder=""Select a date"" />";
 

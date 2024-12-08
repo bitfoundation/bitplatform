@@ -1,4 +1,5 @@
 ﻿@import "../../../../Styles/functions.scss";
+@import "../../../../Styles/media-queries.scss";
 
 .bit-tpc {
     margin: 0;
@@ -374,8 +375,19 @@
     }
 }
 
-.bit-tpc-rsp {
-    @media only screen and (max-width: 600px) {
+.bit-tpc-res {
+    @include lt-sm {
+        top: 0;
+        left: 0;
+        opacity: 0;
+        width: 100%;
+        display: block;
+        overflow: hidden;
+        animation-name: unset;
+        transform: translateY(-100%);
+        box-shadow: $box-shadow-callout;
+        transition: transform 200ms ease-out, opacity 100ms linear;
+
         .bit-tpc-tdv {
             font-size: spacing(7);
         }

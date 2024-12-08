@@ -74,10 +74,18 @@
                readonly="@(AllowTextInput is false)" />
     }
 
-    <div style="@Styles?.Callout" class="bit-ctp-cal @Classes?.Callout" id="@_calloutId">
-        <div style="@Styles?.CalloutContainer" class="bit-ctp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
-            <div style="@Styles?.Toolbar" class="bit-ctp-tbr @Classes?.Toolbar">
-                <div style="@Styles?.HourMinuteContainer" class="bit-ctp-hmc @Classes?.HourMinuteContainer">
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="@GetCalloutCssClasses()">
+        <div @attributes=@CalloutHtmlAttributes 
+             role="dialog" 
+             aria-label="@CalloutAriaLabel"
+             style="@Styles?.CalloutContainer" 
+             class="bit-ctp-cac @Classes?.CalloutContainer" >
+            <div style="@Styles?.Toolbar" 
+                 class="bit-ctp-tbr @Classes?.Toolbar">
+                <div style="@Styles?.HourMinuteContainer" 
+                     class="bit-ctp-hmc @Classes?.HourMinuteContainer">
                     @if (EditMode == BitCircularTimePickerEditMode.Normal)
                     {
                         <button @onclick="HandleOnHourClick"
@@ -87,7 +95,8 @@
                                 class="bit-ctp-txt @(_showHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
                             @GetHourString()
                         </button>
-                        <span style="@Styles?.HourMinuteSeparator" class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
+                        <span style="@Styles?.HourMinuteSeparator" 
+                              class="bit-ctp-txt @Classes?.HourMinuteSeparator">:</span>
                         <button @onclick="HandleOnMinuteClick"
                                 type="button"
                                 style="@GetMinuteButtonStyle()"
