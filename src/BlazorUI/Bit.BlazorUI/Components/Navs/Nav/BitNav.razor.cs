@@ -688,6 +688,11 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
     }
 
+    internal string GetItemKey(TItem item, string defaultKey)
+    {
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
 
 
     internal void SetItemExpanded(TItem item, bool value)
@@ -746,26 +751,6 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         _items.Remove((option as TItem)!);
         SetSelectedItemByCurrentUrl();
         StateHasChanged();
-    }
-
-    internal string GetItemKey(TItem item)
-    {
-        return GetKey(item) ?? Guid.NewGuid().ToString();
-    }
-
-    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
-    {
-        foreach (var parent in items)
-        {
-            var childItems = GetChildItems(parent);
-            if (parent == item || (childItems.Any() && ToggleItemAndParents(childItems, item, isExpanded)))
-            {
-                SetItemExpanded(parent, isExpanded);
-                return true;
-            }
-        }
-
-        return false;
     }
 
 
@@ -930,6 +915,21 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
         _items = Items?.ToList() ?? [];
         _oldItems = Items;
+    }
+
+    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
+    {
+        foreach (var parent in items)
+        {
+            var childItems = GetChildItems(parent);
+            if (parent == item || (childItems.Any() && ToggleItemAndParents(childItems, item, isExpanded)))
+            {
+                SetItemExpanded(parent, isExpanded);
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
