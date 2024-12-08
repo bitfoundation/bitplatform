@@ -1463,7 +1463,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                                        0,
                                        "",
                                        "",
-                                       false,
-                                       RootElementClass);
+                                       false);
     }
 }

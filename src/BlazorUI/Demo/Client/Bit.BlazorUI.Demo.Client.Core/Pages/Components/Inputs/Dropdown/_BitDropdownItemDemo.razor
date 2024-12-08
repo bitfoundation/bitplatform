@@ -591,10 +591,10 @@
         <br />
         <div dir="rtl" class="example-content">
             <BitDropdown Label="تک انتخابی"
+                         Dir="BitDir.Rtl"
                          Items="GetRtlItems()"
                          DefaultValue="@string.Empty"
-                         Placeholder="لطفا انتخاب کنید"
-                         Dir="BitDir.Rtl" />
+                         Placeholder="لطفا انتخاب کنید" />
             <br /><br />
             <BitDropdown Label="چند انتخابی"
                          MultiSelect
@@ -602,6 +602,13 @@
                          Items="GetRtlItems()"
                          DefaultValue="@string.Empty"
                          Placeholder="انتخاب چند گزینه ای" />
+            <br /><br />
+            <BitDropdown Label="تک انتخابی ریسپانسیو"
+                         Responsive
+                         Dir="BitDir.Rtl"
+                         Items="GetRtlItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="لطفا انتخاب کنید" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

@@ -15,40 +15,14 @@ namespace BitBlazorUI {
     enum BitResponsiveMode {
         None,
         Panel,
-        Top
+        Top,
+        Bottom
     }
 
     export class Callouts {
         private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
         public static current = Callouts.DEFAULT_CALLOUT;
-
-        public static reset() {
-            Callouts.current = Callouts.DEFAULT_CALLOUT;
-        }
-
-        public static replaceCurrent(callout?: BitCallout) {
-            callout = callout || Callouts.DEFAULT_CALLOUT;
-            const current = Callouts.current;
-
-            if (current.calloutId.length === 0) {
-                Callouts.current = callout;
-                return;
-            }
-
-            //close the previous one
-            if (callout.calloutId !== current.calloutId) {
-                const previousCallout = document.getElementById(current.calloutId);
-                previousCallout && (previousCallout.style.display = 'none');
-
-                const overlay = current.overlayId && document.getElementById(current.overlayId);
-                overlay && (overlay.style.display = 'none');
-
-                current.dotnetObj?.invokeMethodAsync('CloseCallout');
-
-                Callouts.current = callout;
-            }
-        }
 
         public static toggle(
             dotnetObj: DotNetObject,
@@ -64,8 +38,7 @@ namespace BitBlazorUI {
             scrollOffset: number,
             headerId: string,
             footerId: string,
-            setCalloutWidth: boolean,
-            rootCssClass: string
+            setCalloutWidth: boolean
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -73,8 +46,15 @@ namespace BitBlazorUI {
             callout ??= document.getElementById(calloutId);
             if (callout == null) return false;
 
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
             if (!isCalloutOpen) {
-                callout.style.display = 'none';
+                if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
+                    callout.style.transform = '';
+                } else {
+                    callout.style.display = 'none';
+                }
                 Callouts.reset();
                 return false;
             }
@@ -106,9 +86,6 @@ namespace BitBlazorUI {
             scrollContainer.style.height = '';
             scrollContainer.style.maxHeight = '';
 
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-
             const componentWidth = component.offsetWidth;
             const componentHeight = component.offsetHeight;
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
@@ -136,11 +113,9 @@ namespace BitBlazorUI {
                 calloutWidth = width;
             }
 
-            const responseCssClass = `${rootCssClass}-rsp`;
-
             if (windowWidth < Utils.MAX_MOBILE_WIDTH && responsiveMode) {
-                callout.style.top = '0';
-                callout.style[isRtl ? 'left' : 'right'] = '0';
+                callout.style.opacity = '1';
+                callout.style.transform = 'translate(0,0)';
                 callout.style.maxHeight = windowHeight + 'px';
 
                 if (responsiveMode == BitResponsiveMode.Top) {
@@ -151,11 +126,8 @@ namespace BitBlazorUI {
                     scrollContainer.style.maxHeight = (windowHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
                 });
 
-                callout.classList.add(responseCssClass);
                 return true;
             }
-
-            callout.classList.remove(responseCssClass);
 
             let left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0);
             left = ((left + calloutWidth) > windowWidth) ? (windowWidth - calloutWidth - 2) : left;
@@ -189,6 +161,33 @@ namespace BitBlazorUI {
             }
 
             return (calloutWidth + calloutLeft) > document.body.offsetWidth;
+        }
+
+        public static reset() {
+            Callouts.current = Callouts.DEFAULT_CALLOUT;
+        }
+
+        public static replaceCurrent(callout?: BitCallout) {
+            callout = callout || Callouts.DEFAULT_CALLOUT;
+            const current = Callouts.current;
+
+            if (current.calloutId.length === 0) {
+                Callouts.current = callout;
+                return;
+            }
+
+            //close the previous one
+            if (callout.calloutId !== current.calloutId) {
+                const previousCallout = document.getElementById(current.calloutId);
+                previousCallout && (previousCallout.style.display = 'none');
+
+                const overlay = current.overlayId && document.getElementById(current.overlayId);
+                overlay && (overlay.style.display = 'none');
+
+                current.dotnetObj?.invokeMethodAsync('CloseCallout');
+
+                Callouts.current = callout;
+            }
         }
 
         public static clear(calloutId: string) {

@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 .bit-drp {
     width: 100%;
@@ -791,13 +792,32 @@
     display: none;
 }
 
-.bit-drp-rsp {
+.bit-rtl {
+    .bit-drp-res {
+        @include lt-sm {
+            left: 0;
+            transform: translateX(-100%);
+        }
+    }
+}
+
+.bit-drp-res {
     height: 100%;
     max-height: unset;
     width: spacing(34);
     box-shadow: $box-shadow-callout;
     padding: spacing(3) spacing(2.5);
-    animation-name: bit-fade-show, bit-drp-trans-x;
+
+    @include lt-sm {
+        top: 0;
+        right: 0;
+        opacity: 0;
+        display: block;
+        overflow: hidden;
+        animation-name: unset;
+        transform: translateX(100%);
+        transition: transform 200ms ease-out, opacity 100ms linear;
+    }
 
     .bit-drp-rlc {
         display: flex;

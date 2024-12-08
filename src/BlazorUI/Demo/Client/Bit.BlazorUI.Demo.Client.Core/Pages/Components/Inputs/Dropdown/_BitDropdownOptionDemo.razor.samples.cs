@@ -990,6 +990,16 @@ private readonly List<BitDropdownItem<string>> styleClassItems =
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
+</BitDropdown>
+
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Dir=""BitDir.Rtl""
+             Placeholder=""لطفا انتخاب کنید""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in rtlItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
 </BitDropdown>";
     private readonly string example16CsharpCode = @"
 private readonly List<BitDropdownItem<string>> rtlItems =

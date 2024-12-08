@@ -1143,8 +1143,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
                                                     ShowSearchBox && Combo is false ? 32 : 0,
                                                     CalloutHeaderTemplate is not null ? _headerId : "",
                                                     CalloutFooterTemplate is not null ? _footerId : "",
-                                                    PreserveCalloutWidth is false,
-                                                    RootElementClass);
+                                                    PreserveCalloutWidth is false);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -1409,6 +1408,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         {
             SetIsSelected(it, true);
         }
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-drp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-drp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
     }
 
 

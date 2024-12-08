@@ -581,8 +581,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
                                 0,
                                 "",
                                 "",
-                                true,
-                                RootElementClass);
+                                true);
     }
 
     private string GetItemKey(TItem item, string defaultKey)

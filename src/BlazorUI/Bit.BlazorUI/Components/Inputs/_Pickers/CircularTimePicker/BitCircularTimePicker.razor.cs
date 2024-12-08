@@ -510,8 +510,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
                                 0,
                                 "",
                                 "",
-                                false,
-                                RootElementClass);
+                                false);
     }
 
     private async Task UpdateTime(MouseEventArgs e)

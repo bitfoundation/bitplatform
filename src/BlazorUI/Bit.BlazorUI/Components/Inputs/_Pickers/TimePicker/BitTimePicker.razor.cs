@@ -402,8 +402,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
                                 0,
                                 string.Empty,
                                 string.Empty,
-                                true,
-                                RootElementClass);
+                                true);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)

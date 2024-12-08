@@ -2011,7 +2011,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        0,
                                        "",
                                        "",
-                                       false,
-                                       RootElementClass);
+                                       false);
     }
 }
