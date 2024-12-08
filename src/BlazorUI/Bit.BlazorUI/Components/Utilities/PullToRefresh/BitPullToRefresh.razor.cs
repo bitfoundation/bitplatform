@@ -168,7 +168,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
             classes.Add(Classes.SpinnerWrapper.Trim());
         }
 
-        return string.Join(' ', classes);
+        return string.Join(' ', classes).Trim();
     }
 
     private string? GetSpinnerWrapperCssStyles()
@@ -176,7 +176,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         List<string> styles = [];
         decimal size = 35 * _diff / Trigger;
 
-        styles.Add($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{size}px;height:{size}px;");
+        styles.Add($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{size}px;height:{size}px");
 
         if (Styles?.SpinnerWrapper?.HasValue() ?? false)
         {
@@ -210,7 +210,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
             }
         }
 
-        return string.Join(' ', classes);
+        return string.Join(' ', classes).Trim();
     }
 
     private string? GetSpinnerCssStyles()
@@ -218,7 +218,7 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         List<string> styles = [];
         decimal size = 24 * _diff / Trigger;
 
-        styles.Add($"transform:rotate({(_diff - Trigger) * 2}deg);width:{size}px;height:{size}px;");
+        styles.Add($"transform:rotate({(_diff - Trigger) * 2}deg);width:{size}px;height:{size}px");
 
         if (Styles?.Spinner?.HasValue() ?? false)
         {
