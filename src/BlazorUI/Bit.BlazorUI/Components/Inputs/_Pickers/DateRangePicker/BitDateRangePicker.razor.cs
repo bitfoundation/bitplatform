@@ -319,17 +319,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens.
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the Text field of the DateRangePicker is underlined.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// The text of the DateRangePicker's label.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -389,6 +378,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
 
     /// <summary>
+    /// Enables the responsive mode in small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the DateRangePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -431,6 +425,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Time format of the time-pickers, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
+    /// Whether or not the Text field of the DateRangePicker is underlined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// The string format used to show the DateRangePicker's value in its input.
@@ -528,7 +528,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? $"{RootElementClass}-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
@@ -2004,7 +2004,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        _calloutId,
                                        null,
                                        IsOpen,
-                                       IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                       Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,
                                        Dir is BitDir.Rtl,
                                        "",
@@ -2012,5 +2012,22 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        "",
                                        "",
                                        false);
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-dtrp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-dtrp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
     }
 }

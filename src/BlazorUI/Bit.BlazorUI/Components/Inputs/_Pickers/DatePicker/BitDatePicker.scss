@@ -1,4 +1,5 @@
 ﻿@import "../../../../Styles/functions.scss";
+@import "../../../../Styles/media-queries.scss";
 
 .bit-dtp {
     margin: 0;
@@ -184,85 +185,6 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-}
-
-.bit-dtp-rsp {
-    .bit-dtp-dwp,
-    .bit-dtp-mwp,
-    .bit-dtp-twp {
-        flex-grow: 1;
-    }
-
-    .bit-dtp-pkh {
-        min-height: spacing(5.5);
-    }
-
-    .bit-dtp-pkc {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-    }
-
-    .bit-dtp-pkr {
-        height: 100%;
-    }
-
-    .bit-dtp-nbt,
-    .bit-dtp-gtb,
-    .bit-dtp-gtn,
-    .bit-dtp-wlb,
-    .bit-dtp-dbt,
-    .bit-dtp-pkb,
-    .bit-dtp-wnm {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        aspect-ratio: 1;
-        max-width: unset;
-        align-items: center;
-        font-size: spacing(2);
-        justify-content: center;
-    }
-
-    .bit-dtp-nbt,
-    .bit-dtp-gtb,
-    .bit-dtp-gtn {
-        width: spacing(5.5);
-    }
-
-    .bit-dtp-wlb {
-        font-weight: bold;
-    }
-
-    .bit-dtp-grp {
-        justify-content: center;
-    }
-
-    .bit-dtp-tdv {
-        font-size: spacing(7);
-    }
-
-    .bit-dtp-tin {
-        width: 100%;
-        min-width: spacing(7);
-        max-width: spacing(12);
-        font-size: spacing(5);
-    }
-
-    .bit-dtp-tbt {
-        width: 100%;
-        min-width: spacing(7);
-        max-width: spacing(12);
-        font-size: spacing(3);
-    }
-
-    .bit-dtp-bam,
-    .bit-dtp-bpm {
-        width: 100%;
-        font-size: spacing(4);
-        margin: spacing(0.25);
-    }
 }
 
 .bit-dtp-cac {
@@ -822,5 +744,98 @@
         z-index: unset;
         animation: none;
         position: relative;
+    }
+}
+
+
+.bit-dtp-res {
+    @include lt-sm {
+        top: 0;
+        left: 0;
+        opacity: 0;
+        width: 100%;
+        display: block;
+        overflow: hidden;
+        animation-name: unset;
+        transform: translateY(-100%);
+        box-shadow: $box-shadow-callout;
+        transition: transform 200ms ease-out, opacity 100ms linear;
+
+        .bit-dtp-dwp,
+        .bit-dtp-mwp,
+        .bit-dtp-twp {
+            flex-grow: 1;
+        }
+
+        .bit-dtp-pkh {
+            min-height: spacing(5.5);
+        }
+
+        .bit-dtp-pkc {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .bit-dtp-pkr {
+            height: 100%;
+        }
+
+        .bit-dtp-nbt,
+        .bit-dtp-gtb,
+        .bit-dtp-gtn,
+        .bit-dtp-wlb,
+        .bit-dtp-dbt,
+        .bit-dtp-pkb,
+        .bit-dtp-wnm {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            aspect-ratio: 1;
+            max-width: unset;
+            align-items: center;
+            font-size: spacing(2);
+            justify-content: center;
+        }
+
+        .bit-dtp-nbt,
+        .bit-dtp-gtb,
+        .bit-dtp-gtn {
+            width: spacing(5.5);
+        }
+
+        .bit-dtp-wlb {
+            font-weight: bold;
+        }
+
+        .bit-dtp-grp {
+            justify-content: center;
+        }
+
+        .bit-dtp-tdv {
+            font-size: spacing(7);
+        }
+
+        .bit-dtp-tin {
+            width: 100%;
+            min-width: spacing(7);
+            max-width: spacing(12);
+            font-size: spacing(5);
+        }
+
+        .bit-dtp-tbt {
+            width: 100%;
+            min-width: spacing(7);
+            max-width: spacing(12);
+            font-size: spacing(3);
+        }
+
+        .bit-dtp-bam,
+        .bit-dtp-bpm {
+            width: 100%;
+            font-size: spacing(4);
+            margin: spacing(0.25);
+        }
     }
 }

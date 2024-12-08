@@ -81,25 +81,24 @@
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
+.bit-drm-res {
+    @include lt-sm {
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        animation-name: unset;
+        transform: translateX(100%);
+        box-shadow: $box-shadow-callout;
+        transition: transform 200ms ease-out, opacity 100ms linear;
+    }
+}
+
 .bit-rtl {
     .bit-drm-res {
         @include lt-sm {
             transform: translateX(-100%);
         }
-    }
-}
-
-.bit-drm-res {
-    height: 100%;
-    max-height: unset;
-    box-shadow: $box-shadow-callout;
-
-    @include lt-sm {
-        opacity: 0;
-        display: block;
-        overflow: hidden;
-        animation-name: unset;
-        transform: translateX(100%);
-        transition: transform 200ms ease-out, opacity 100ms linear;
     }
 }

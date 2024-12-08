@@ -118,10 +118,6 @@ namespace BitBlazorUI {
                 callout.style.transform = 'translate(0,0)';
                 callout.style.maxHeight = windowHeight + 'px';
 
-                if (responsiveMode == BitResponsiveMode.Top) {
-                    callout.style.width = '100%';
-                }
-
                 setTimeout(() => {
                     scrollContainer.style.maxHeight = (windowHeight - scrollContainer.getBoundingClientRect().y - footerHeight - 10) + 'px';
                 });

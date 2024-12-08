@@ -82,12 +82,6 @@
         }
     }
 
-    &.bit-rtl {
-        .bit-drp-rsp {
-            animation-name: bit-fade-show, bit-drp-trans-x-reverse;
-        }
-    }
-
     @keyframes bit-drp-trans-x {
         0% {
             pointer-events: none;
@@ -792,35 +786,35 @@
     display: none;
 }
 
-.bit-rtl {
-    .bit-drp-res {
-        @include lt-sm {
-            left: 0;
-            transform: translateX(-100%);
-        }
-    }
-}
-
 .bit-drp-res {
-    height: 100%;
-    max-height: unset;
-    width: spacing(34);
-    box-shadow: $box-shadow-callout;
-    padding: spacing(3) spacing(2.5);
-
     @include lt-sm {
         top: 0;
         right: 0;
         opacity: 0;
+        height: 100%;
         display: block;
         overflow: hidden;
+        max-height: unset;
+        width: spacing(34);
         animation-name: unset;
         transform: translateX(100%);
+        box-shadow: $box-shadow-callout;
+        padding: spacing(3) spacing(2.5);
         transition: transform 200ms ease-out, opacity 100ms linear;
-    }
 
-    .bit-drp-rlc {
-        display: flex;
-        justify-content: space-between;
+        .bit-drp-rlc {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+}
+
+.bit-rtl {
+    .bit-drp-res {
+        @include lt-sm {
+            left: 0;
+            right: unset;
+            transform: translateX(-100%);
+        }
     }
 }

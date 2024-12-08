@@ -103,16 +103,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the Text field of the TimePicker is underlined.
-    /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// Label for the TimePicker
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -153,6 +143,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Enables the responsive mode in small screens
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the TimePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -177,6 +172,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     /// The time format of the time-picker, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
+    /// Whether or not the Text field of the TimePicker is underlined.
+    /// </summary>
+    [Parameter] public bool Underlined { get; set; }
 
     /// <summary>
     /// The format of the time in the TimePicker
@@ -241,7 +241,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-ctp-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-ctp-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-ctp-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder ? string.Empty : "bit-ctp-nbd");
 
@@ -503,7 +503,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 BitDropDirection.TopAndBottom,
                                 Dir is BitDir.Rtl,
                                 "",
@@ -609,6 +609,26 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         var style = $"{Styles?.ClockPointerThumb?.Trim(';')};{(isMinute ? null : Styles?.ClockPointerThumbMinute)}".Trim(';');
         return style.HasValue() ? style : null;
     }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-ctp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-ctp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
+
+
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)

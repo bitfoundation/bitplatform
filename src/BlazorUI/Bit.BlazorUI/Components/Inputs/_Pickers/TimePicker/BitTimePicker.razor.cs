@@ -168,16 +168,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the Text field of the TimePicker is underlined.
-    /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// Label for the TimePicker
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -223,6 +213,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Enables the responsive mode in small screens
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the BitTimePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -249,9 +244,15 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// Whether or not the Text field of the TimePicker is underlined.
+    /// </summary>
+    [Parameter] public bool Underlined { get; set; }
+
+    /// <summary>
     /// The format of the time in the time-picker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
+
 
 
     [JSInvokable("CloseCallout")]
@@ -277,7 +278,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-tpc-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-tpc-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-tpc-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
 
@@ -395,7 +396,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 DropDirection,
                                 Dir is BitDir.Rtl,
                                 string.Empty,
@@ -601,6 +602,23 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
             : TimeFormat == BitTimeFormat.TwentyFourHours
                 ? "HH:mm"
                 : "hh:mm tt";
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-ctp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-ctp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
     }
 
 
