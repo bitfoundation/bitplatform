@@ -22,6 +22,11 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the BitPullToRefresh.
+    /// </summary>
+    [Parameter] public BitPullToRefreshClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The factor to balance the pull height out.
     /// </summary>
     [Parameter] public decimal Factor { get; set; } = 1.5m;
@@ -65,6 +70,11 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
     /// The CSS selector of the element that is the scroller in the anchor to control the behavior of the pull to refresh.
     /// </summary>
     [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitPullToRefresh.
+    /// </summary>
+    [Parameter] public BitPullToRefreshClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The threshold in pixel for pulling height that starts the pull to refresh process.
@@ -120,6 +130,12 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -131,6 +147,90 @@ public partial class BitPullToRefresh : BitComponentBase, IAsyncDisposable
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private string? GetSpinnerWrapperCssClasses()
+    {
+        List<string> classes = ["bit-ptr-spw"];
+
+        if (_refreshing)
+        {
+            classes.Add("bit-ptr-swr");
+
+            if (Classes?.SpinnerWrapperRefreshing?.HasValue() ?? false)
+            {
+                classes.Add(Classes.SpinnerWrapperRefreshing.Trim());
+            }
+        }
+
+        if (Classes?.SpinnerWrapper?.HasValue() ?? false)
+        {
+            classes.Add(Classes.SpinnerWrapper.Trim());
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
+    private string? GetSpinnerWrapperCssStyles()
+    {
+        List<string> styles = [];
+        decimal size = 35 * _diff / Trigger;
+
+        styles.Add($"margin-top:{(_refreshing ? 0 : _diff / 2)}px;width:{size}px;height:{size}px");
+
+        if (Styles?.SpinnerWrapper?.HasValue() ?? false)
+        {
+            styles.Add(Styles.SpinnerWrapper.Trim(';'));
+        }
+
+        if (_refreshing && (Styles?.SpinnerWrapperRefreshing?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerWrapperRefreshing.Trim(';'));
+        }
+
+        return string.Join(';', styles);
+    }
+
+    private string? GetSpinnerCssClasses()
+    {
+        List<string> classes = ["bit-ptr-spn"];
+
+        if (Classes?.Spinner?.HasValue() ?? false)
+        {
+            classes.Add(Classes.Spinner.Trim());
+        }
+
+        if (_refreshing)
+        {
+            classes.Add("bit-ptr-spin");
+
+            if (Classes?.SpinnerRefreshing?.HasValue() ?? false)
+            {
+                classes.Add(Classes.SpinnerRefreshing.Trim());
+            }
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
+    private string? GetSpinnerCssStyles()
+    {
+        List<string> styles = [];
+        decimal size = 24 * _diff / Trigger;
+
+        styles.Add($"transform:rotate({(_diff - Trigger) * 2}deg);width:{size}px;height:{size}px");
+
+        if (Styles?.Spinner?.HasValue() ?? false)
+        {
+            styles.Add(Styles.Spinner.Trim(';'));
+        }
+
+        if (_refreshing && (Styles?.SpinnerRefreshing?.HasValue() ?? false))
+        {
+            styles.Add(Styles.SpinnerRefreshing.Trim(';'));
+        }
+
+        return string.Join(';', styles);
     }
 
     public async ValueTask DisposeAsync()

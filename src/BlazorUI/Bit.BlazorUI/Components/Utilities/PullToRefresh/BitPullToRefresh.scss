@@ -17,13 +17,18 @@
     justify-content: center;
 }
 
-.bit-ptr-swr {
+.bit-ptr-spw {
     display: flex;
     border-radius: 50%;
     align-items: center;
     justify-content: center;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout2;
+}
+
+.bit-ptr-swr {
+    background-color: $clr-bg-ter;
+    transition: margin-top 100ms linear;
 }
 
 .bit-ptr-spn {
