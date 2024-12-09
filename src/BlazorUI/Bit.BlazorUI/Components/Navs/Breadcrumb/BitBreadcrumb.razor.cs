@@ -166,7 +166,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     {
         if (ChildContent is null && Options is null)
         {
-            _items = [.. Items];
+            _items = Items is not null ? [.. Items] : [];
         }
 
         if (_items.Any() is false) return;
