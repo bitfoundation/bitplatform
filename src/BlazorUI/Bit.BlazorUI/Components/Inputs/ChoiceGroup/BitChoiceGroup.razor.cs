@@ -130,9 +130,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         base.OnParametersSet();
 
-        if (ChildContent is not null || Items is null || !Items.Any()) return;
+        if (ChildContent is not null || Items is null || Items.Any() is false) return;
 
-        if (_oldItems != null && Items.SequenceEqual(_oldItems)) return;
+        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
 
         _oldItems = Items;
         _items = Items.ToList();
