@@ -431,6 +431,21 @@
                          MultiSelect
                          ItemsProvider="LoadItems"
                          Placeholder="Select items"
+                         NameSelectors="nameSelectors" /><br /><br /><br /><br />
+            <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
+            <BitDropdown Label="Single select"
+                         Virtualize
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select an item"
+                         InitialSelectedItems="initialSelectedItem"
+                         NameSelectors="nameSelectors" />
+            <br />
+            <BitDropdown Label="Multi select"
+                         Virtualize
+                         MultiSelect
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select items"
+                         InitialSelectedItems="initialSelectedItems"
                          NameSelectors="nameSelectors" />
         </div>
     </ExamplePreview>

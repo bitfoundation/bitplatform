@@ -144,6 +144,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
+                new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
                 new() { Text = "Text", Url = "/components/text" },
             ],
         },

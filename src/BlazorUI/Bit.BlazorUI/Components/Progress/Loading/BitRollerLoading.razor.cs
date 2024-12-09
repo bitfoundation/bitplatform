@@ -9,7 +9,7 @@ public partial class BitRollerLoading : BitLoadingBase
         base.RegisterCssStyles();
 
         StyleBuilder.Register(() => $"--bit-ldn-rol-4:{Convert(4)}px");
-        StyleBuilder.Register(() => $"--bit-ldn-rol-7:{Convert(7)}px");
+        StyleBuilder.Register(() => $"--bit-ldn-rol-8:{Convert(8)}px");
         StyleBuilder.Register(() => $"--bit-ldn-rol-12:{Convert(12)}px");
         StyleBuilder.Register(() => $"--bit-ldn-rol-17:{Convert(17)}px");
         StyleBuilder.Register(() => $"--bit-ldn-rol-24:{Convert(24)}px");

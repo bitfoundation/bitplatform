@@ -3,6 +3,21 @@
         public static MIN_MOBILE_WIDTH = 320;
         public static MAX_MOBILE_WIDTH = 600;
 
+        public static throttle(mainFunction: Function, delay: number) {
+            let timeoutItd: number | null = null;
+
+            return (...args: any[]) => {
+                if (timeoutItd === null) {
+                    mainFunction(...args);
+                    if (delay > 0) {
+                        timeoutItd = setTimeout(() => {
+                            timeoutItd = null;
+                        }, delay);
+                    }
+                }
+            };
+        }
+
         public static isTouchDevice() {
             const matchMedia = window.matchMedia("(pointer: coarse)").matches;
             const maxTouchPoints = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);

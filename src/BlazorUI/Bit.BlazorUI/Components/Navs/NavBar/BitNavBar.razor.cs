@@ -243,9 +243,9 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         StateHasChanged();
     }
 
-    private string GetItemKey(TItem item)
+    private string GetItemKey(TItem item, string defaultKey)
     {
-        return GetKey(item) ?? Guid.NewGuid().ToString();
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
     private async Task HandleOnClick(TItem item)

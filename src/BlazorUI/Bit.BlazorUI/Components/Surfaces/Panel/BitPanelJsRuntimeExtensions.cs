@@ -11,4 +11,9 @@ internal static class BitPanelJsRuntimeExtensions
     {
         return js.InvokeVoid("BitBlazorUI.Panel.setup", id, trigger, position, isRtl, dotnetObjectReference);
     }
+
+    internal static ValueTask BitPanelDispose(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Panel.dispose", id);
+    }
 }

@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPanel : BitComponentBase
+public partial class BitPanel : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;
+    private bool _disposed;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -261,5 +262,25 @@ public partial class BitPanel : BitComponentBase
         }
 
         return string.Join(';', styles);
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        try
+        {
+            await _js.BitPanelDispose(UniqueId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }
