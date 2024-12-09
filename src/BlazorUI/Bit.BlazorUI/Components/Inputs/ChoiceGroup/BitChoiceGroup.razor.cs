@@ -130,7 +130,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         base.OnParametersSet();
 
-        if (ChildContent is not null || Items.Any() is false || Items == _oldItems) return;
+        if (ChildContent is not null || Items is null || Items.Any() is false || Items == _oldItems) return;
 
         _oldItems = Items;
         _items = Items.ToList();
