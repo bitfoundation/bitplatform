@@ -136,13 +136,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override void OnParametersSet()
     {
-        if (ChildContent is null && Items is not null && Items.Any() && Items != _oldItems)
-        {
-            _oldItems = Items;
-            _items = Items.ToList();
-        }
-
         base.OnParametersSet();
+
+        if (ChildContent is not null || Items is null || Items.Any() is false) return;
+
+        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
+
+        _oldItems = Items;
+        _items = Items.ToList();
     }
 
 
