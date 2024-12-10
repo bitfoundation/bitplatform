@@ -193,15 +193,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
     }
 
-    private bool ItemValueEqualityComparer(TItem item, TValue? value)
-    {
-        var itemValue = GetValue(item);
-
-        if (itemValue is null) return false;
-
-        return EqualityComparer<TValue>.Default.Equals(itemValue, value);
-    }
-
     private async Task HandleClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
