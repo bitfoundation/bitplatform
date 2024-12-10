@@ -641,7 +641,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
     private string GetCalloutCssClasses()
     {
-        List<string> classes = ["bit-ctp-cal"];
+        List<string> classes = ["bit-tpc-cal"];
 
         if (Classes?.Callout is not null)
         {
@@ -650,7 +650,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
         if (Responsive)
         {
-            classes.Add("bit-ctp-res");
+            classes.Add("bit-tpc-res");
         }
 
         return string.Join(' ', classes).Trim();

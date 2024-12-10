@@ -3,12 +3,16 @@
         public static MIN_MOBILE_WIDTH = 320;
         public static MAX_MOBILE_WIDTH = 600;
 
-        public static throttle(mainFunction: Function, delay: number) {
+        public static getBodyWidth() {
+            return document.body.offsetWidth;
+        }
+
+        public static throttle(fn: Function, delay: number) {
             let timeoutItd: number | null = null;
 
             return (...args: any[]) => {
                 if (timeoutItd === null) {
-                    mainFunction(...args);
+                    fn(...args);
                     if (delay > 0) {
                         timeoutItd = setTimeout(() => {
                             timeoutItd = null;

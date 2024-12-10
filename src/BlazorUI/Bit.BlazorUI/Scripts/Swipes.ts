@@ -36,7 +36,7 @@
             };
 
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX === -1 && startY === -1) return;
+                if (startX === -1 || startY === -1) return;
 
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
@@ -82,8 +82,9 @@
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                startX = startY = -1;
+                if (startX === -1 || startY === -1) return;
 
+                startX = startY = -1;
                 element.style.transitionDuration = '';
                 try {
                     if (((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) && diffX < 0) {
@@ -109,7 +110,6 @@
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
-
                     element.style.transform = originalTransform;
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);

@@ -18,7 +18,8 @@ namespace BitBlazorUI {
             scrollOffset: number,
             headerId: string,
             footerId: string,
-            setCalloutWidth: boolean
+            setCalloutWidth: boolean,
+            maxWidth: number,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -106,7 +107,13 @@ namespace BitBlazorUI {
             }
 
             let left = componentX + (isRtl ? (componentWidth - calloutWidth) : 0);
-            left = ((left + calloutWidth) > windowWidth) ? (windowWidth - calloutWidth - 2) : left;
+            const right = left + calloutWidth;
+            const correctedLeft = windowWidth - calloutWidth - 3;
+            if (maxWidth) {
+                left = (windowWidth >= maxWidth && (right > windowWidth)) ? correctedLeft : left;
+            } else {
+                left = (right > windowWidth) ? correctedLeft : left;
+            }
             left = (left < 0) ? 0 : left;
             callout.style.left = left + 'px';
 

@@ -6,12 +6,9 @@ namespace Bit.BlazorUI;
 
 public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>, IAsyncDisposable
 {
+    private const int MAX_WIDTH = 470;
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
-
-
-
-    private CancellationTokenSource _cancellationTokenSource = new();
 
 
 
@@ -32,6 +29,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
     private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
@@ -642,11 +640,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpen(true) is false) return;
 
-        var result = await ToggleCallout();
+        ResetPickersState();
+
+        var bodyWidth = await _js.GetBodyWidth();
+        var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = result;
+            _showMonthPickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -656,7 +657,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showTimePickerAsOverlayInternal is false)
         {
-            _showTimePickerAsOverlayInternal = result;
+            _showTimePickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showTimePickerAsOverlayInternal)
@@ -673,6 +674,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
+
+        await ToggleCallout();
 
         await OnClick.InvokeAsync();
     }
@@ -2022,8 +2025,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (Standalone) return false;
         if (IsEnabled is false) return false;
 
-        ResetPickersState();
-
         return await _js.ToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
                                        null,
@@ -2037,7 +2038,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        0,
                                        "",
                                        "",
-                                       false);
+                                       false,
+                                       MAX_WIDTH);
     }
 
     private string GetCalloutCssClasses()
