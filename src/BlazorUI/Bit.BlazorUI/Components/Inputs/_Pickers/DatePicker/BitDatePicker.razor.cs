@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDisposable
 {
+    private const int MAX_WIDTH = 470;
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
 
@@ -569,11 +570,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
         if (await AssignIsOpen(true) is false) return;
 
-        var result = await ToggleCallout();
+        ResetPickersState();
+
+        var bodyWidth = await _js.GetBodyWidth();
+        var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = result;
+            _showMonthPickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -583,7 +587,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
         if (_showTimePickerAsOverlayInternal is false)
         {
-            _showTimePickerAsOverlayInternal = result;
+            _showTimePickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showTimePickerAsOverlayInternal)
@@ -595,6 +599,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
+
+        await ToggleCallout();
 
         await OnClick.InvokeAsync();
     }
@@ -694,10 +700,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
         if (Standalone)
         {
-            _isMonthPickerOverlayOnTop = false;
-            _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
-            _isTimePickerOverlayOnTop = false;
-            _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+            ResetPickersState();
 
             if (_showMonthPickerAsOverlayInternal)
             {
@@ -1466,15 +1469,19 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         }
     }
 
-    private async Task<bool> ToggleCallout()
+    private void ResetPickersState()
     {
-        if (Standalone) return false;
-        if (IsEnabled is false) return false;
-
+        _showMonthPicker = true;
         _isMonthPickerOverlayOnTop = false;
         _showMonthPickerAsOverlayInternal = ShowMonthPickerAsOverlay;
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+    }
+
+    private async Task<bool> ToggleCallout()
+    {
+        if (Standalone) return false;
+        if (IsEnabled is false) return false;
 
         return await _js.ToggleCallout(_dotnetObj,
                                        _datePickerId,
@@ -1489,7 +1496,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
                                        0,
                                        "",
                                        "",
-                                       false);
+                                       false, 
+                                       MAX_WIDTH);
     }
 
     private string GetCalloutCssClasses()
