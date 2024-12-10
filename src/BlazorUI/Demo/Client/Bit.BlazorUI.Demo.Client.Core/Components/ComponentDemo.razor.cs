@@ -156,7 +156,7 @@ public partial class ComponentDemo
 
     private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
+        "SearchBox", "SpinButton", "TextField", "TimePicker", "CircularTimePicker", "Toggle"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =
