@@ -4,17 +4,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
+public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>, IAsyncDisposable
 {
+    private const int MAX_WIDTH = 470;
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
 
 
 
-    private CancellationTokenSource _cancellationTokenSource = new();
-
-
-
+    private bool _disposed;
     private bool _hasFocus;
     private int _currentYear;
     private int _currentMonth;
@@ -31,6 +29,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private bool _showTimePickerAsOverlayInternal;
     private bool _showMonthPickerAsOverlayInternal;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private CancellationTokenSource _cancellationTokenSource = new();
     private DotNetObjectReference<BitDateRangePicker> _dotnetObj = default!;
     private readonly int[,] _daysOfCurrentMonth = new int[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
@@ -319,17 +318,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens.
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the Text field of the DateRangePicker is underlined.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// The text of the DateRangePicker's label.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -389,6 +377,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public string Placeholder { get; set; } = string.Empty;
 
     /// <summary>
+    /// Enables the responsive mode in small screens.
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the DateRangePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -431,6 +424,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Time format of the time-pickers, 24H or 12H.
     /// </summary>
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
+
+    /// <summary>
+    /// Whether or not the Text field of the DateRangePicker is underlined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
 
     /// <summary>
     /// The string format used to show the DateRangePicker's value in its input.
@@ -500,13 +499,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
-    public Task OpenCallout()
-    {
-        return HandleOnClick();
-    }
-
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
@@ -514,6 +508,38 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
+    }
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+
+    public Task OpenCallout()
+    {
+        return HandleOnClick();
     }
 
 
@@ -528,7 +554,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? $"{RootElementClass}-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? $"{RootElementClass}-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? $"{RootElementClass}-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? $"{RootElementClass}-nbd" : string.Empty);
 
@@ -558,6 +584,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         OnSetParameters();
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+        if (Responsive is false) return;
+
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitDateRangePickerValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -595,18 +631,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                 : "---");
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj?.Dispose();
-            _cancellationTokenSource?.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
-    }
-
 
 
     private async Task HandleOnClick()
@@ -616,11 +640,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpen(true) is false) return;
 
-        var result = await ToggleCallout();
+        ResetPickersState();
+
+        var bodyWidth = await _js.GetBodyWidth();
+        var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
         {
-            _showMonthPickerAsOverlayInternal = result;
+            _showMonthPickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showMonthPickerAsOverlayInternal)
@@ -630,7 +657,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (_showTimePickerAsOverlayInternal is false)
         {
-            _showTimePickerAsOverlayInternal = result;
+            _showTimePickerAsOverlayInternal = notEnoughWidthAvailable;
         }
 
         if (_showTimePickerAsOverlayInternal)
@@ -647,6 +674,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
+
+        await ToggleCallout();
 
         await OnClick.InvokeAsync();
     }
@@ -1996,15 +2025,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (Standalone) return false;
         if (IsEnabled is false) return false;
 
-        ResetPickersState();
-
         return await _js.ToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
                                        null,
                                        _calloutId,
                                        null,
                                        IsOpen,
-                                       IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                       Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                        BitDropDirection.TopAndBottom,
                                        Dir is BitDir.Rtl,
                                        "",
@@ -2012,6 +2039,48 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                        "",
                                        "",
                                        false,
-                                       RootElementClass);
+                                       MAX_WIDTH);
+    }
+
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-dtrp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-dtrp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        _cancellationTokenSource?.Dispose();
+        OnValueChanged -= HandleOnValueChanged;
+
+        try
+        {
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }

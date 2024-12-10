@@ -23,13 +23,9 @@
             return bitController.id;
         }
 
-        public static abort(id: string, dispose: boolean): void {
+        public static abort(id: string): void {
             const bitController = CircularTimePicker._bitControllers.find(bc => bc.id == id);
             bitController?.controller.abort();
-
-            if (dispose) {
-                bitController?.dotnetObj?.dispose();
-            }
 
             CircularTimePicker._bitControllers = CircularTimePicker._bitControllers.filter(bc => bc.id != id);
         }

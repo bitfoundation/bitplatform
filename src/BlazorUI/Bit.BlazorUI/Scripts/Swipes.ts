@@ -1,22 +1,25 @@
 ﻿namespace BitBlazorUI {
-    export class Panel {
-        private static _panels: BitPanel[] = [];
+    export class Swipes {
+        private static _swipes: BitSwipe[] = [];
 
         public static setup(
             id: string,
             trigger: number,
-            position: BitPanelPosition,
+            position: BitSwipePosition,
             isRtl: boolean,
             dotnetObj: DotNetObject) {
+            const windowWidth = window.innerWidth;
+            if (windowWidth >= Utils.MAX_MOBILE_WIDTH) return;
+
             const element = document.getElementById(id);
             if (!element) return;
-            const bcr = element.getBoundingClientRect();
 
             let diffX = 0;
             let diffY = 0;
             let startX = -1;
             let startY = -1;
             let originalTransform: string;
+            const bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
             const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
@@ -43,7 +46,7 @@
                     e.stopPropagation();
                 }
 
-                if ((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) {
+                if ((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) {
                     if (diffX < 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -51,7 +54,7 @@
                     }
                 }
 
-                if ((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) {
+                if ((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) {
                     if (diffX > 0) {
                         element.style.transform = `translateX(${diffX}px)`;
                     } else {
@@ -59,7 +62,7 @@
                     }
                 }
 
-                if (position === BitPanelPosition.Top) {
+                if (position === BitSwipePosition.Top) {
                     if (diffY < 0) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -67,7 +70,7 @@
                     }
                 }
 
-                if (position === BitPanelPosition.Bottom) {
+                if (position === BitSwipePosition.Bottom) {
                     if (diffY > 0) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
@@ -82,33 +85,31 @@
                 if (startX === -1 || startY === -1) return;
 
                 startX = startY = -1;
-
                 element.style.transitionDuration = '';
                 try {
-                    if (((!isRtl && position === BitPanelPosition.Start) || (isRtl && position === BitPanelPosition.End)) && diffX < 0) {
+                    if (((!isRtl && position === BitSwipePosition.Start) || (isRtl && position === BitSwipePosition.End)) && diffX < 0) {
                         if ((Math.abs(diffX) / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (((!isRtl && position === BitPanelPosition.End) || (isRtl && position === BitPanelPosition.Start)) && diffX > 0) {
+                    if (((!isRtl && position === BitSwipePosition.End) || (isRtl && position === BitSwipePosition.Start)) && diffX > 0) {
                         if ((diffX / bcr.width) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitPanelPosition.Top && diffY < 0) {
+                    if (position === BitSwipePosition.Top && diffY < 0) {
                         if ((Math.abs(diffY) / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitPanelPosition.Bottom && diffY > 0) {
+                    if (position === BitSwipePosition.Bottom && diffY > 0) {
                         if ((diffY / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
-
                     element.style.transform = originalTransform;
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
@@ -136,8 +137,8 @@
                 element.addEventListener('pointerleave', onEnd, false);
             }
 
-            const panel = new BitPanel(id, element, trigger, dotnetObj);
-            panel.setDisposer(() => {
+            const swipe = new BitSwipe(id, element, trigger, dotnetObj);
+            swipe.setDisposer(() => {
                 if (isTouchDevice) {
                     element.removeEventListener('touchstart', onStart);
                     element.removeEventListener('touchmove', onMove);
@@ -149,19 +150,19 @@
                     element.removeEventListener('pointerleave', onEnd, false);
                 }
             });
-            Panel._panels.push(panel);
+            Swipes._swipes.push(swipe);
         }
 
         public static dispose(id: string) {
-            const panel = Panel._panels.find(r => r.id === id);
-            if (!panel) return;
+            const swipe = Swipes._swipes.find(r => r.id === id);
+            if (!swipe) return;
 
-            Panel._panels = Panel._panels.filter(r => r.id !== id);
-            panel.dispose();
+            Swipes._swipes = Swipes._swipes.filter(r => r.id !== id);
+            swipe.dispose();
         }
     }
 
-    class BitPanel {
+    class BitSwipe {
         id: string;
         element: HTMLElement;
         trigger: number;
@@ -184,7 +185,7 @@
         }
     }
 
-    enum BitPanelPosition {
+    enum BitSwipePosition {
         Start = 0,
         End = 1,
         Top = 2,

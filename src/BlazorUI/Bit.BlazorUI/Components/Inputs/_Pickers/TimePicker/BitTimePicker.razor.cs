@@ -168,16 +168,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// Enables the responsive mode in small screens
-    /// </summary>
-    [Parameter] public bool IsResponsive { get; set; }
-
-    /// <summary>
-    /// Whether or not the Text field of the TimePicker is underlined.
-    /// </summary>
-    [Parameter] public bool IsUnderlined { get; set; }
-
-    /// <summary>
     /// Label for the TimePicker
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -223,6 +213,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Enables the responsive mode in small screens
+    /// </summary>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Whether the BitTimePicker's close button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowCloseButton { get; set; }
@@ -249,13 +244,19 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     [Parameter] public BitTimeFormat TimeFormat { get; set; }
 
     /// <summary>
+    /// Whether or not the Text field of the TimePicker is underlined.
+    /// </summary>
+    [Parameter] public bool Underlined { get; set; }
+
+    /// <summary>
     /// The format of the time in the time-picker
     /// </summary>
     [Parameter] public string? ValueFormat { get; set; }
 
 
+
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
@@ -264,6 +265,33 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
         StateHasChanged();
     }
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
+    }
+
+
 
     public Task OpenCallout() => HandleOnClick();
 
@@ -277,7 +305,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
         ClassBuilder.Register(() => IconLocation is BitIconLocation.Left ? "bit-tpc-lic" : string.Empty);
 
-        ClassBuilder.Register(() => IsUnderlined ? "bit-tpc-und" : string.Empty);
+        ClassBuilder.Register(() => Underlined ? "bit-tpc-und" : string.Empty);
 
         ClassBuilder.Register(() => HasBorder is false ? "bit-tpc-nbd" : string.Empty);
 
@@ -295,6 +323,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 
     protected override void OnInitialized()
     {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         _timePickerId = $"BitTimePicker-{UniqueId}";
         _labelId = $"BitTimePicker-{UniqueId}-label";
         _inputId = $"BitTimePicker-{UniqueId}-input";
@@ -303,11 +333,19 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+        if (Responsive is false) return;
+
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -380,8 +418,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
-
-        StateHasChanged();
     }
 
     private async Task ToggleCallout()
@@ -395,15 +431,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
                                 _calloutId,
                                 null,
                                 IsOpen,
-                                IsResponsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
+                                Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
                                 DropDirection,
                                 Dir is BitDir.Rtl,
                                 string.Empty,
                                 0,
                                 string.Empty,
                                 string.Empty,
-                                true,
-                                RootElementClass);
+                                true);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -604,6 +639,23 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
                 : "hh:mm tt";
     }
 
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-tpc-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-tpc-res");
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
 
 
     public async ValueTask DisposeAsync()
@@ -616,20 +668,15 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
     {
         if (_disposed || disposing is false) return;
 
-        if (_dotnetObj is not null)
-        {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.ClearCallout(_calloutId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-        }
-
         _cancellationTokenSource?.Dispose();
-
         OnValueChanged -= HandleOnValueChanged;
+
+        try
+        {
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _disposed = true;
     }

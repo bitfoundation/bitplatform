@@ -1,4 +1,5 @@
 @import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 .bit-drm {
     width: fit-content;
@@ -24,12 +25,6 @@
 
         .bit-drm-btn {
             cursor: default;
-        }
-    }
-
-    &.bit-rtl {
-        .bit-drm-rsp {
-            animation-name: bit-fade-show, bit-drp-trans-x-reverse;
         }
     }
 }
@@ -86,9 +81,28 @@
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
-.bit-drm-rsp {
-    height: 100%;
-    max-height: unset;
-    box-shadow: $box-shadow-callout;
-    animation-name: bit-fade-show, bit-drp-trans-x;
+.bit-drm-res {
+    @include lt-sm {
+        top: 0;
+        right: 0;
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        animation-name: unset;
+        transform: translateX(100%);
+        box-shadow: $box-shadow-callout;
+        transition: transform 200ms ease-out, opacity 100ms linear;
+    }
+}
+
+.bit-rtl {
+    .bit-drm-res {
+        @include lt-sm {
+            left: 0;
+            right: unset;
+            transform: translateX(-100%);
+        }
+    }
 }
