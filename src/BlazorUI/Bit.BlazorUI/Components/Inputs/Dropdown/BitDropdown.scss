@@ -81,30 +81,6 @@
             }
         }
     }
-
-    @keyframes bit-drp-trans-x {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-drp-trans-x-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(-5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
 }
 
 .bit-drp-hvl {

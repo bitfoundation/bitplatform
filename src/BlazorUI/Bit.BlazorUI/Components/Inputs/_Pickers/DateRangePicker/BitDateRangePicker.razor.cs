@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
+public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>, IAsyncDisposable
 {
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
@@ -15,6 +15,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
+    private bool _disposed;
     private bool _hasFocus;
     private int _currentYear;
     private int _currentMonth;
@@ -500,13 +501,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
-    public Task OpenCallout()
-    {
-        return HandleOnClick();
-    }
-
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
@@ -514,6 +510,38 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
+    }
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+
+    public Task OpenCallout()
+    {
+        return HandleOnClick();
     }
 
 
@@ -560,6 +588,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         base.OnInitialized();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+        if (Responsive is false) return;
+
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+    }
+
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitDateRangePickerValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         //if (value.HasNoValue())
@@ -593,18 +631,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                 value.EndDate.GetValueOrDefault(DateTimeOffset.Now)
                                              .ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
                                 : "---");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _dotnetObj?.Dispose();
-            _cancellationTokenSource?.Dispose();
-            OnValueChanged -= HandleOnValueChanged;
-        }
-
-        base.Dispose(disposing);
     }
 
 
@@ -2029,5 +2055,30 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        _cancellationTokenSource?.Dispose();
+        OnValueChanged -= HandleOnValueChanged;
+
+        try
+        {
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }

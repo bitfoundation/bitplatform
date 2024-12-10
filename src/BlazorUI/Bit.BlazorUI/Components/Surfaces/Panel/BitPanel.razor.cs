@@ -265,6 +265,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     }
 
 
+
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -277,7 +278,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
         try
         {
-            await _js.BitPanelDispose(UniqueId);
+            await _js.BitPanelDispose(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
