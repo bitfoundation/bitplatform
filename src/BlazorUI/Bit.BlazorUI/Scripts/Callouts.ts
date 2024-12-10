@@ -1,24 +1,4 @@
 namespace BitBlazorUI {
-    interface BitCallout {
-        calloutId: string;
-        overlayId?: string;
-        dotnetObj?: DotNetObject;
-        scrollContainerId?: string;
-        responsiveMode?: BitResponsiveMode;
-    }
-
-    enum BitDropDirection {
-        All,
-        TopAndBottom
-    }
-
-    enum BitResponsiveMode {
-        None,
-        Panel,
-        Top,
-        Bottom
-    }
-
     export class Callouts {
         private static readonly DEFAULT_CALLOUT: BitCallout = { calloutId: '' };
 
@@ -191,5 +171,25 @@ namespace BitBlazorUI {
 
             Callouts.replaceCurrent();
         }
+    }
+
+    interface BitCallout {
+        calloutId: string;
+        overlayId?: string;
+        dotnetObj?: DotNetObject;
+        scrollContainerId?: string;
+        responsiveMode?: BitResponsiveMode;
+    }
+
+    enum BitDropDirection {
+        All,
+        TopAndBottom
+    }
+
+    enum BitResponsiveMode {
+        None,
+        Panel,
+        Top,
+        Bottom
     }
 }

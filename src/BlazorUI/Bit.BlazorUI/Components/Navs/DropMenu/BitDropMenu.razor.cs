@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitDropMenu : BitComponentBase
+public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;
     private string _calloutId = default!;
@@ -82,11 +82,36 @@ public partial class BitDropMenu : BitComponentBase
 
 
     [JSInvokable("CloseCallout")]
-    public async Task __CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         await DismissCallout();
 
         StateHasChanged();
+    }
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+        
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+        
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+        
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -109,13 +134,23 @@ public partial class BitDropMenu : BitComponentBase
         StyleBuilder.Register(() => IsOpen ? Styles?.Opened : string.Empty);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
         _calloutId = $"BitDropMenu-{UniqueId}-callout";
 
-        await base.OnInitializedAsync();
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+        if (Responsive is false) return;
+
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.End, Dir is BitDir.Rtl, _dotnetObj);
     }
 
 
@@ -185,5 +220,27 @@ public partial class BitDropMenu : BitComponentBase
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        try
+        {
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }

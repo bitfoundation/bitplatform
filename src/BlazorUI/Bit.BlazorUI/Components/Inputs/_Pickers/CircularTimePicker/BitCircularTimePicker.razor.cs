@@ -190,7 +190,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
 
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
@@ -200,8 +200,33 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         StateHasChanged();
     }
 
-    [JSInvokable(nameof(HandlePointerUp))]
-    public async Task HandlePointerUp(MouseEventArgs e)
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable(nameof(_HandlePointerUp))]
+    public async Task _HandlePointerUp(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
         if (_isPointerDown is false) return;
@@ -221,13 +246,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         StateHasChanged();
     }
 
-    [JSInvokable(nameof(HandlePointerMove))]
-    public async Task HandlePointerMove(MouseEventArgs e)
+    [JSInvokable(nameof(_HandlePointerMove))]
+    public async Task _HandlePointerMove(MouseEventArgs e)
     {
         if (_isPointerDown is false) return;
 
         await UpdateTime(e);
     }
+
+
 
     public Task OpenCallout() => HandleOnClick();
 
@@ -259,6 +286,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
     protected override void OnInitialized()
     {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         _circularTimePickerId = $"BitCircularTimePicker-{UniqueId}";
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
@@ -266,8 +295,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
 
         OnValueChanged += HandleOnValueChanged;
 
@@ -280,8 +307,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         if (firstRender is false) return;
 
-        _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(HandlePointerUp));
-        _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(HandlePointerMove));
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(_HandlePointerUp));
+        _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(_HandlePointerMove));
     }
 
 
@@ -324,8 +352,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
-
-        StateHasChanged();
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -679,16 +705,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         OnValueChanged -= HandleOnValueChanged;
 
-        if (_dotnetObj is not null)
+        try
         {
-            // _dotnetObj.Dispose(); // it is getting disposed in the following js call:
-            try
-            {
-                await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId, true);
-                await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
+            await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
+            await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _disposed = true;
     }
