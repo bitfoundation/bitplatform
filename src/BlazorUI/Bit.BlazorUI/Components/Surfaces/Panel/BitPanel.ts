@@ -33,7 +33,7 @@
             };
 
             const onMove = async (e: TouchEvent | PointerEvent): Promise<void> => {
-                if (startX === -1 && startY === -1) return;
+                if (startX === -1 || startY === -1) return;
 
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
@@ -79,6 +79,8 @@
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
+                if (startX === -1 || startY === -1) return;
+
                 startX = startY = -1;
 
                 element.style.transitionDuration = '';

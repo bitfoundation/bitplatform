@@ -795,8 +795,8 @@
             aspect-ratio: 1;
             max-width: unset;
             align-items: center;
-            font-size: spacing(2);
             justify-content: center;
+            font-size: spacing(1.75);
         }
 
         .bit-dtp-nbt,
@@ -806,7 +806,7 @@
         }
 
         .bit-dtp-wlb {
-            font-weight: bold;
+            //font-weight: bold;
         }
 
         .bit-dtp-grp {
@@ -814,27 +814,27 @@
         }
 
         .bit-dtp-tdv {
-            font-size: spacing(7);
+            //font-size: spacing(7);
         }
 
         .bit-dtp-tin {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(5);
+            //font-size: spacing(5);
         }
 
         .bit-dtp-tbt {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            font-size: spacing(3);
+            //font-size: spacing(3);
         }
 
         .bit-dtp-bam,
         .bit-dtp-bpm {
             width: 100%;
-            font-size: spacing(4);
+            //font-size: spacing(4);
             margin: spacing(0.25);
         }
     }
