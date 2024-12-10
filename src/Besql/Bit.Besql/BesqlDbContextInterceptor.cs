@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -10,11 +11,11 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         DbCommand command,
         CommandExecutedEventData eventData,
         DbDataReader result,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (IsTargetedCommand(command.CommandText))
         {
-            _ = Sync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
         }
 
         return result;
@@ -28,7 +29,7 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
     {
         if (IsTargetedCommand(command.CommandText))
         {
-            _ = Sync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
         }
 
         return result;
@@ -38,11 +39,11 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         DbCommand command,
         CommandExecutedEventData eventData,
         object? result,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         if (IsTargetedCommand(command.CommandText))
         {
-            _ = Sync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
+            _ = ThrottledSync(eventData.Context!.Database.GetDbConnection().DataSource).ConfigureAwait(false);
         }
         return result;
     }
@@ -53,10 +54,18 @@ public class BesqlDbContextInterceptor(IBesqlStorage storage) : IDbCommandInterc
         return keywords.Any(k => sql.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
 
-    private async Task Sync(string dataSource)
+    private readonly ConcurrentDictionary<string, Guid?> filesSyncIds = [];
+    private async Task ThrottledSync(string dataSource)
     {
         var fileName = dataSource.Trim('/');
-        await Task.Yield();
+
+        var localLastSyncId = filesSyncIds[fileName] = Guid.NewGuid();
+
+        await Task.Delay(50).ConfigureAwait(false);
+
+        if (localLastSyncId != filesSyncIds[fileName])
+            return;
+
         await storage.Persist(fileName).ConfigureAwait(false);
     }
 }
