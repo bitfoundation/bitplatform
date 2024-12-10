@@ -67,14 +67,18 @@
                 if (startY === -1 || refreshing) return;
                 startY = -1;
 
-                await dotnetObj.invokeMethodAsync('OnEnd', diff);
+                try {
+                    await dotnetObj.invokeMethodAsync('OnEnd', diff);
 
-                if (diff >= trigger) {
-                    refreshing = true;
-                    await dotnetObj.invokeMethodAsync('Refresh');
+                    if (diff >= trigger) {
+                        refreshing = true;
+                        await dotnetObj.invokeMethodAsync('Refresh');
+                    }
+                } finally {
+                    diff = 0;
                     refreshing = false;
+                    loadingEl.style.minHeight = '0';
                 }
-                loadingEl.style.minHeight = '0';
             };
             const onLeave = (e: PointerEvent) => {
                 if (startY === -1) return;
