@@ -93,7 +93,7 @@
                                                        IconName="@BitIconName.Edit"
                                                        Color="BitColor.SecondaryForeground"
                                                        Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                       OnClick="WrapHandled(() => ToggleEditMode(todo))" />
+                                                       OnClick="WrapHandled(() => EnterEditMode(todo))" />
 
                                             <BitButton Color="BitColor.Error"
                                                        Variant="BitVariant.Text"
@@ -108,7 +108,7 @@
 
                                         <BitButton Color="BitColor.TertiaryBackground"
                                                    Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                                   OnClick="WrapHandled(() => ToggleEditMode(todo))">
+                                                   OnClick="WrapHandled(() => LeaveEditMode(todo))">
                                             @Localizer[nameof(AppStrings.Cancel)]
                                         </BitButton>
                                         <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
