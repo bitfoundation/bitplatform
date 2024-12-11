@@ -164,7 +164,7 @@ public partial class BitButtonDemo
         new()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback<bool>",
             DefaultValue = "",
             Description = "The callback for the click event of the button with a bool argument passing the current loading state.",
         },
