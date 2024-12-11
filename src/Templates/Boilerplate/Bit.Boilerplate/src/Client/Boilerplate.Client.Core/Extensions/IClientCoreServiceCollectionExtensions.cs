@@ -136,7 +136,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddTypedHttpClients();
 
         //#if (signalR == true)
-        services.AddScoped<IRetryPolicy, SignalRInfinitiesRetryPolicy>();
+        services.AddScoped<IRetryPolicy, SignalRInfinitRetryPolicy>();
         services.AddSessioned(sp =>
         {
             var authManager = sp.GetRequiredService<AuthManager>();
