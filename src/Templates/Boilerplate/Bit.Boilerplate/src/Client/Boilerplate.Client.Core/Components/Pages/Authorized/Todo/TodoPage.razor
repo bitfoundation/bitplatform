@@ -108,7 +108,7 @@
 
                                         <BitButton Color="BitColor.TertiaryBackground"
                                                    Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                                   OnClick="WrapHandled(() => LeaveEditMode(todo))">
+                                                   OnClick="WrapHandled(() => ExitEditMode(todo))">
                                             @Localizer[nameof(AppStrings.Cancel)]
                                         </BitButton>
                                         <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">

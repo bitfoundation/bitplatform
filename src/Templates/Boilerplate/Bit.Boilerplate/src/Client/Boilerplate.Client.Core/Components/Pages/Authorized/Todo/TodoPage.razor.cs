@@ -122,7 +122,7 @@ public partial class TodoPage
         todoItem.IsInEditMode = true;
     }
 
-    private void LeaveEditMode(TodoItemDto todoItem)
+    private void ExitEditMode(TodoItemDto todoItem)
     {
         todoItem.IsInEditMode = false;
     }
