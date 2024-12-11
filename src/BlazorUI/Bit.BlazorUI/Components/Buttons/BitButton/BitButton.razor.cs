@@ -33,7 +33,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// If true, shows the loading state while the OnClick event is in progress.
+    /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
     /// </summary>
     [Parameter] public bool AutoLoading { get; set; }
 
@@ -134,15 +134,20 @@ public partial class BitButton : BitComponentBase
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The callback for the click event of the button.
+    /// The callback for the click event of the button with a bool argument passing the current loading state.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<bool> OnClick { get; set; }
 
     /// <summary>
     /// The content of the primary section of the button (alias of the ChildContent).
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? PrimaryTemplate { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking in loading state when AutoLoading is enabled.
+    /// </summary>
+    [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
     /// Reverses the positions of the icon and the main content of the button.
@@ -306,15 +311,21 @@ public partial class BitButton : BitComponentBase
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (AutoLoading && IsLoading && Reclickable is false) return;
+
+        var isLoading = IsLoading;
 
         if (AutoLoading)
         {
             if (await AssignIsLoading(true) is false) return;
         }
 
-        await OnClick.InvokeAsync(e);
+        await OnClick.InvokeAsync(isLoading);
 
-        await AssignIsLoading(false);
+        if (AutoLoading)
+        {
+            await AssignIsLoading(false);
+        }
     }
 
     private void OnSetHrefAndRel()
