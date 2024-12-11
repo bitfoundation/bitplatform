@@ -314,7 +314,7 @@ public partial class BitButton : BitComponentBase
         if (AutoLoading && IsLoading && Reclickable is false) return;
 
         var isLoading = IsLoading;
-        
+
         if (AutoLoading)
         {
             if (await AssignIsLoading(true) is false) return;
@@ -322,7 +322,10 @@ public partial class BitButton : BitComponentBase
 
         await OnClick.InvokeAsync(isLoading);
 
-        await AssignIsLoading(false);
+        if (AutoLoading)
+        {
+            await AssignIsLoading(false);
+        }
     }
 
     private void OnSetHrefAndRel()
