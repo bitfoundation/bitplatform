@@ -131,7 +131,15 @@
             </div>
             <br /><br /><br />
             <div><b>AutoLoading</b>:</div><br />
-            <BitButton OnClick="AutoLoadingClick" AutoLoading>Click me</BitButton>
+            <div class="example-content">
+                <BitButton OnClick="AutoLoadingClick" AutoLoading>Click me</BitButton>
+                <div>AutoLoading click count: @autoLoadCount</div>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton OnClick="AutoLoadingReclick" AutoLoading Reclickable>Reclickable</BitButton>
+                <div>Reclickable AutoLoading click count: @reclickableAutoLoadCount</div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
