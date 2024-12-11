@@ -136,6 +136,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddTypedHttpClients();
 
         //#if (signalR == true)
+        services.AddScoped<IRetryPolicy, SignalRInfinitiesRetryPolicy>();
         services.AddSessioned(sp =>
         {
             var authManager = sp.GetRequiredService<AuthManager>();
@@ -144,6 +145,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             var hubConnection = new HubConnectionBuilder()
                 .WithStatefulReconnect()
+                .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
                     options.SkipNegotiation = false; // Required for Azure SignalR.
