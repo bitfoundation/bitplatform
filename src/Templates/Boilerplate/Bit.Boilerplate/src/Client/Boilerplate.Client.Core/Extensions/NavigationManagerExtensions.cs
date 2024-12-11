@@ -12,7 +12,7 @@ public static partial class NavigationManagerExtensions
         return new Uri(navigationManager.Uri).GetPath();
     }
 
-    public static string GetCurrentRoute(this NavigationManager navigationManager)
+    public static string GetRelativePath(this NavigationManager navigationManager)
     {
         return navigationManager.ToBaseRelativePath(navigationManager.Uri);
     }
