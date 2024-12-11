@@ -70,6 +70,7 @@ public partial class ProfileSection
     private async Task RemoveProfileImage()
     {
         if (isSaving || User is null) return;
+        isSaving = true;
 
         try
         {
@@ -82,6 +83,10 @@ public partial class ProfileSection
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 

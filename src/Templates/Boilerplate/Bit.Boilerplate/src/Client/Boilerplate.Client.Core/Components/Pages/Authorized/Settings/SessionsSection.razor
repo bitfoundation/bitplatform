@@ -52,9 +52,10 @@
                                             CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
                                             ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
                                 <BitSpacer />
-                                <BitButton Color="BitColor.Error"
+                                <BitButton AutoLoading
+                                           Color="BitColor.Error"
                                            Variant="BitVariant.Text"
-                                           OnClick="() => RevokeSession(session)"
+                                           OnClick="WrapHandled(() => RevokeSession(session))"
                                            IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
                             </BitStack>
                         </BitCard>

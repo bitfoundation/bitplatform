@@ -78,7 +78,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (string.IsNullOrEmpty(userToAdd.Email) is false)
         {
-            await SendConfirmEmailToken(userToAdd, cancellationToken);
+            await SendConfirmEmailToken(userToAdd, request.ReturnUrl, cancellationToken);
         }
 
         if (string.IsNullOrEmpty(userToAdd.PhoneNumber) is false)

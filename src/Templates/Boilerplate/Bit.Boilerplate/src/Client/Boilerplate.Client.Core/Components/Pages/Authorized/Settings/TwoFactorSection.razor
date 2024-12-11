@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <section>
     <BitStack>
@@ -48,7 +48,7 @@
                                       Label="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]"
                                       Placeholder="@Localizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodePlaceholder)]" />
                         <br />
-                        <BitButton OnClick="WrapHandled(EnableTwoFactorAuth)">
+                        <BitButton AutoLoading OnClick="WrapHandled(EnableTwoFactorAuth)">
                             @Localizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]
                         </BitButton>
                     </div>
@@ -87,7 +87,7 @@
                             @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
                         </BitMessage>
 
-                        <BitButton OnClick="WrapHandled(GenerateRecoveryCode)">
+                        <BitButton AutoLoading OnClick="WrapHandled(GenerateRecoveryCode)">
                             @Localizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
                         </BitButton>
                     }
@@ -128,7 +128,7 @@
                             <p>@Localizer[nameof(AppStrings.TfaAuthAppWarning)]</p>
                         </BitMessage>
 
-                        <BitButton OnClick="WrapHandled(ResetAuthenticatorKey)">
+                        <BitButton AutoLoading OnClick="WrapHandled(ResetAuthenticatorKey)">
                             @Localizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
                         </BitButton>
                     </BitStack>
@@ -141,7 +141,7 @@
                             <p>@Localizer[nameof(AppStrings.TfaDisable2faWarning)]</p>
                         </BitMessage>
 
-                        <BitButton OnClick="WrapHandled(DisableTwoFactorAuth)">
+                        <BitButton AutoLoading OnClick="WrapHandled(DisableTwoFactorAuth)">
                             @Localizer[nameof(AppStrings.TfaDisable2faButtonText)]
                         </BitButton>
                     </BitStack>

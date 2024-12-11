@@ -76,9 +76,9 @@
             <br />
             <BitText Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
-                <BitLink Href="@Urls.SignInPage">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitLink Href="@($"{Urls.SignInPage}?return-url={ReturnUrlQueryString}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 @Localizer[nameof(AppStrings.Or)]
-                <BitLink Href="@($"{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}")">
+                <BitLink Href="@($"{Urls.ConfirmPage}?email={Uri.EscapeDataString(signUpModel.Email??"")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber??"")}&return-url={ReturnUrlQueryString}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </BitText>

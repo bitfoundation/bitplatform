@@ -77,7 +77,6 @@ public partial class IdentityController
 
         var phoneNumber = user.PhoneNumber!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn?.ToUniversalTime()}"));
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?phoneNumber={Uri.EscapeDataString(phoneNumber!)}&phoneToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await phoneService.SendSms(Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token], phoneNumber, cancellationToken);
     }
