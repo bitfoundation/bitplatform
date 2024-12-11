@@ -36,6 +36,7 @@
                     <ValidationMessage For="() => product.Name" />
 
                     <BitDropdown @bind-Value="selectedCategoryId"
+                                 Responsive
                                  Items="allCategoryList"
                                  Label="@Localizer[(nameof(AppStrings.Category))]"
                                  Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
