@@ -1,20 +1,16 @@
-﻿.basic-container {
-    width: 100%;
-    cursor: grab;
-    height: 500px;
-    display: flex;
-    user-select: none;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
-    border: 1px solid lightgray;
-}
+﻿::deep {
+    .basic-container {
+        width: 100%;
+        cursor: grab;
+        height: 500px;
+        display: flex;
+        user-select: none;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid lightgray;
+    }
 
-
-
-
-
-::deep {
     .mobile-frame {
         width: 375px;
         height: 712px;
