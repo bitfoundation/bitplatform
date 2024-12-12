@@ -1,83 +1,71 @@
-﻿.bit-ppl
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
-.bit-pnl-hcn {
+.bit-ppl {
+    .bit-pnl-cnt {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.bit-ppl-mfl {
+    .bit-pnl.ovl {
+        background-color: $clr-bg-overlay;
+    }
+}
+
+.bit-ppl-hcn {
     top: 0;
     z-index: 1;
     display: flex;
     position: sticky;
     font-weight: 600;
-    //color: $clr-fg-pri;
-    align-items: center;
+    color: $clr-fg-pri;
     font-size: spacing(2.5);
     overflow-wrap: anywhere;
-    //background-color: $clr-bg-pri;
-    padding: spacing(2.25) spacing(3) 0;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(2) 0;
 }
 
-.bit-pnl-ttl {
-    width: 100%;
-    hyphens: auto;
-    word-break: break-word;
-    overflow-wrap: break-word;
+.bit-ppl-hdr {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
 }
 
-.bit-pnl-cls {
-    border: none;
+.bit-ppl-cls {
     display: flex;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
-    margin-left: auto;
-    height: spacing(4);
-    align-self: normal;
-    text-align: center;
+    width: spacing(5);
+    height: spacing(5);
     align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    padding: 0 spacing(0.5);
     justify-content: center;
     font-size: spacing(1.75);
     border-radius: spacing(0.25);
     background-color: transparent;
-    //color: $clr-fg-pri;
-
-    span {
-        height: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
-
-        i {
-            margin: 0 spacing(0.5);
-        }
-    }
 
     @media (hover: hover) {
         &:hover {
-            //color: $clr-fg-pri-hover;
-            //background-color: $clr-bg-pri-hover;
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
         }
     }
 
     &:active {
-        //color: $clr-fg-pri-active;
-        //background-color: $clr-bg-pri-active;
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
     }
 }
 
-.bit-pnl-bdy {
+.bit-ppl-bdy {
     flex-grow: 1;
     overflow-y: auto;
-    padding-left: spacing(3);
-    padding-right: spacing(3);
-    padding-bottom: spacing(2.5);
+    padding: spacing(2);
 }
 
-.bit-pnl-fcn {
+.bit-ppl-fcn {
     bottom: 0;
     z-index: 1;
     position: sticky;
-    padding: spacing(2) spacing(3);
-    //background-color: $clr-bg-pri;
+    background-color: $clr-bg-pri;
+    padding: 0 spacing(2) spacing(2) spacing(2);
 }

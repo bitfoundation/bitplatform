@@ -95,7 +95,7 @@ public class BitProPanelTests : BunitTestContext
         var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.FooterTemplate, footerContent);
+            parameters.Add(p => p.Footer, footerContent);
         });
 
         var elementContent = com.Find(".bit-pnl-fcn :first-child");
@@ -111,7 +111,7 @@ public class BitProPanelTests : BunitTestContext
         var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.HeaderTemplate, headerContent);
+            parameters.Add(p => p.Header, headerContent);
         });
 
         var elementContent = com.Find(".bit-pnl-hcn :first-child");
