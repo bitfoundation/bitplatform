@@ -96,7 +96,7 @@ jobs:
             encodedString: ${{ secrets.API_DATA_PROTECTION_CERTIFICATE_FILE_BASE64 }}
 
       - name: Retrieve AppleAuthKey.p8
-        run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}" > AppleAuthKey.p8
+        run: echo "${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY_ADMIN }}" > AppleAuthKey.p8
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
