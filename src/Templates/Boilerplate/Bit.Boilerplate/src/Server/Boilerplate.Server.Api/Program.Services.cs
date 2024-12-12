@@ -379,6 +379,18 @@ public static partial class Program
             });
         }
 
+        if (string.IsNullOrEmpty(configuration["Authentication:Apple:ClientId"]) is false)
+        {
+            authenticationBuilder.AddApple(options =>
+            {
+                options.UsePrivateKey(keyId =>
+                {
+                    return env.ContentRootFileProvider.GetFileInfo("AppleAuthKey.p8");
+                });
+                configuration.GetRequiredSection("Authentication:Apple").Bind(options);
+            });
+        }
+
         services.AddAuthorization();
     }
 

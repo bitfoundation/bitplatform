@@ -41,6 +41,7 @@
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+        <PackageReference Include="AspNet.Security.OAuth.Apple" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Twilio" />
