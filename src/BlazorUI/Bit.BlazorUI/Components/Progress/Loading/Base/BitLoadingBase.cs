@@ -111,6 +111,12 @@ public abstract class BitLoadingBase : BitComponentBase
 
 
 
+    internal new ElementClassBuilder ClassBuilder => base.ClassBuilder;
+
+    internal new ElementStyleBuilder StyleBuilder => base.StyleBuilder;
+
+
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => "bit-ldn");
