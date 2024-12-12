@@ -19,7 +19,6 @@ public partial class HomePage
 
     protected override async Task OnInitAsync()
     {
-        var name = typeof(BitButton).AssemblyQualifiedName;
         await base.OnInitAsync();
 
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
