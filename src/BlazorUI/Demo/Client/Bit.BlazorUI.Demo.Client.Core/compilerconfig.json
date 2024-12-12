@@ -72,6 +72,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.scss",
         "minify": { "enabled": false },
@@ -306,8 +312,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.css",
-        "inputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.scss",
+        "outputFile": "Pages/Components/Progress/Progress/BitProgressDemo.razor.css",
+        "inputFile": "Pages/Components/Progress/Progress/BitProgressDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

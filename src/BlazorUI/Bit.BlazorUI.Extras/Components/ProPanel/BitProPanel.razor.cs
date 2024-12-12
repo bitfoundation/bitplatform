@@ -1,11 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPanel : BitComponentBase, IAsyncDisposable
+public partial class BitProPanel : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;
     private bool _disposed;
     private bool _internalIsOpen;
     private string _containerId = default!;
+    private BitPanel _bitPanel = default!;
 
 
 
@@ -31,7 +32,22 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Custom CSS classes for different parts of the panel.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Classes { get; set; }
+    [Parameter] public BitProPanelClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The template used to render the footer section of the panel.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
+    /// The template used to render the header section of the panel.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The text of the header section of the panel.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// Determines the openness of the panel.
@@ -80,14 +96,29 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
+    /// Shows the close button of the Panel.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the panel component.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Styles { get; set; }
+    [Parameter] public BitProPanelClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Specifies the id for the aria-describedby attribute of the panel.
+    /// </summary>
+    [Parameter] public string? SubtitleAriaId { get; set; }
 
     /// <summary>
     /// The swiping point (difference percentage) based on the width of the panel container to trigger the close action (default is 0.25m).
     /// </summary>
     [Parameter] public decimal? SwipeTrigger { get; set; }
+
+    /// <summary>
+    /// Specifies the id for the aria-labelledby attribute of the panel.
+    /// </summary>
+    [Parameter] public string? TitleAriaId { get; set; }
 
 
 
@@ -110,22 +141,19 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     [JSInvokable("OnStart")]
     public async Task _OnStart(decimal startX, decimal startY)
     {
-        var start = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? startX : startY;
-        await OnSwipeStart.InvokeAsync(start);
+        await OnSwipeStart.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? startX : startY);
     }
 
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diffX, decimal diffY)
     {
-        var diff = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY;
-        await OnSwipeMove.InvokeAsync(diff);
+        await OnSwipeMove.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
     }
 
     [JSInvokable("OnEnd")]
     public async Task _OnEnd(decimal diffX, decimal diffY)
     {
-        var diff = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY;
-        await OnSwipeEnd.InvokeAsync(diff);
+        await OnSwipeEnd.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
     }
 
     [JSInvokable("OnClose")]
@@ -164,7 +192,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
         if (firstRender)
         {
-            var dotnetObj = DotNetObjectReference.Create(this);
+            var dotnetObj = DotNetObjectReference.Create(_bitPanel);
             await _js.BitPanelSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj);
         }
 

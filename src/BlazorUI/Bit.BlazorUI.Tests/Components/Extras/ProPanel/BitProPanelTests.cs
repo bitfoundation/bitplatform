@@ -2,10 +2,10 @@
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Components.Surfaces.Panel;
+namespace Bit.BlazorUI.Tests.Components.Extras.ProPanel;
 
 [TestClass]
-public class BitPanelTests : BunitTestContext
+public class BitProPanelTests : BunitTestContext
 {
     private bool isPanelOpen = true;
 
@@ -13,9 +13,9 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelBlockingTest(bool blocking)
+    public void BitProPanelBlockingTest(bool blocking)
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.Blocking, blocking);
             parameters.Add(p => p.IsOpen, isPanelOpen);
@@ -43,9 +43,9 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelModelessTest(bool modeless)
+    public void BitProPanelModelessTest(bool modeless)
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.Modeless, modeless);
             parameters.Add(p => p.IsOpen, true);
@@ -62,9 +62,9 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelIsOpenTest(bool isOpen)
+    public void BitProPanelIsOpenTest(bool isOpen)
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isOpen);
         });
@@ -74,9 +74,9 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPanelContentTest()
+    public void BitProPanelContentTest()
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.AddChildContent("<div>Test Content</div>");
@@ -88,9 +88,41 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPanelCloseWhenClickOutOfPanelTest()
+    public void BitProPanelFooterContentTest()
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var footerContent = "<div>Test Footer Content</div>";
+
+        var com = RenderComponent<BitProPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.FooterTemplate, footerContent);
+        });
+
+        var elementContent = com.Find(".bit-pnl-fcn :first-child");
+
+        elementContent.MarkupMatches(footerContent);
+    }
+
+    [TestMethod]
+    public void BitProPanelHeaderContentTest()
+    {
+        const string headerContent = "<div>Test Header Content</div>";
+
+        var com = RenderComponent<BitProPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HeaderTemplate, headerContent);
+        });
+
+        var elementContent = com.Find(".bit-pnl-hcn :first-child");
+
+        elementContent.MarkupMatches(headerContent);
+    }
+
+    [TestMethod]
+    public void BitProPanelCloseWhenClickOutOfPanelTest()
+    {
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, isPanelOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
@@ -107,11 +139,11 @@ public class BitPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPanelOnDismissShouldWorkCorrect()
+    public void BitProPanelOnDismissShouldWorkCorrect()
     {
         var isOpen = true;
         var currentCount = 0;
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, newValue => isOpen = newValue);
             parameters.Add(p => p.OnDismiss, () => currentCount++);
@@ -134,7 +166,7 @@ public class BitPanelTests : BunitTestContext
     ]
     public void BitPanelPositionTest(BitPanelPosition? position)
     {
-        var com = RenderComponent<BitPanel>(parameters =>
+        var com = RenderComponent<BitProPanel>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             if (position.HasValue)

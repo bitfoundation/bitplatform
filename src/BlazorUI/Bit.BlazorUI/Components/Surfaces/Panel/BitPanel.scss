@@ -44,89 +44,6 @@
     transition: transform 200ms ease-out, opacity 100ms ease-in;
 }
 
-.bit-pnl-hcn {
-    top: 0;
-    z-index: 1;
-    display: flex;
-    position: sticky;
-    font-weight: 600;
-    color: $clr-fg-pri;
-    align-items: center;
-    font-size: spacing(2.5);
-    overflow-wrap: anywhere;
-    background-color: $clr-bg-pri;
-    padding: spacing(2.25) spacing(3) 0;
-}
-
-.bit-pnl-ttl {
-    width: 100%;
-    hyphens: auto;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.bit-pnl-cls {
-    border: none;
-    display: flex;
-    cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
-    margin-left: auto;
-    height: spacing(4);
-    align-self: normal;
-    text-align: center;
-    align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    padding: 0 spacing(0.5);
-    justify-content: center;
-    font-size: spacing(1.75);
-    border-radius: spacing(0.25);
-    background-color: transparent;
-    color: $clr-fg-pri;
-
-    span {
-        height: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
-
-        i {
-            margin: 0 spacing(0.5);
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
-        }
-    }
-
-    &:active {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
-    }
-}
-
-.bit-pnl-bdy {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-left: spacing(3);
-    padding-right: spacing(3);
-    padding-bottom: spacing(2.5);
-}
-
-.bit-pnl-fcn {
-    bottom: 0;
-    z-index: 1;
-    position: sticky;
-    padding: spacing(2) spacing(3);
-    background-color: $clr-bg-pri;
-}
-
-
 .bit-pnl-start {
     height: 100%;
     max-width: 85%;
@@ -150,9 +67,9 @@
 .bit-pnl-top {
     top: 0;
     width: 100%;
-    inset-inline: 0;
     max-width: 100%;
     max-height: 85%;
+    inset-inline: 0;
     height: fit-content;
     transform: translateY(-100%);
 }
@@ -161,9 +78,9 @@
     bottom: 0;
     top: unset;
     width: 100%;
-    inset-inline: 0;
     max-width: 100%;
     max-height: 85%;
+    inset-inline: 0;
     height: fit-content;
     transform: translateY(100%);
 }
