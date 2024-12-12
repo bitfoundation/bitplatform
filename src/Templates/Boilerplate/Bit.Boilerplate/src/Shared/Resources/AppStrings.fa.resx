@@ -691,7 +691,7 @@
     <value>ورود با توییتر (X)</value>
   </data>
     <data name="AppleSignInButtonText" xml:space="preserve">
-    <value>ورود با اپل (X)</value>
+    <value>ورود با اپل</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
