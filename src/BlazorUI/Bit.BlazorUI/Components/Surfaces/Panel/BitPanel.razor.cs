@@ -200,21 +200,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         await ClosePanel(e);
     }
 
-    private async Task OnCloseButtonClicked(MouseEventArgs e)
-    {
-        await ClosePanel(e);
-    }
-
-    private string GetPositionClass() => Position switch
-    {
-        BitPanelPosition.Start => "bit-pnl-start",
-        BitPanelPosition.End => "bit-pnl-end",
-        BitPanelPosition.Top => "bit-pnl-top",
-        BitPanelPosition.Bottom => "bit-pnl-bottom",
-        _ => "bit-pnl-end"
-    };
-
-    private string GetPanelStyle()
+    private string GetContainerCssStyles()
     {
         List<string> styles = [];
 
@@ -235,6 +221,27 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         }
 
         return string.Join(';', styles);
+    }
+
+    private string GetContainerCssClasses()
+    {
+        List<string> classes = ["bit-pnl-cnt"];
+
+        classes.Add(Position switch
+        {
+            BitPanelPosition.Start => "bit-pnl-start",
+            BitPanelPosition.End => "bit-pnl-end",
+            BitPanelPosition.Top => "bit-pnl-top",
+            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            _ => "bit-pnl-end"
+        });
+
+        if (Classes?.Container is string containerClass && containerClass.HasValue())
+        {
+            classes.Add(containerClass);
+        }
+
+        return string.Join(' ', classes);
     }
 
 
