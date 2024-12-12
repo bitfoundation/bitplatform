@@ -257,7 +257,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
         overflow: hidden;
     }
 
-    .mobile-frame:before {
+    .mobile-frame::after {
         content: '';
         display: block;
         width: 60px;
