@@ -1,49 +1,21 @@
 ﻿@inherits AppComponentBase
 
 <section>
-    <BitStack Horizontal Alignment="BitAlignment.Center" Gap="3rem">
-        <BitButton AutoLoading
-                   Size="BitSize.Small"
-                   Variant="BitVariant.Text"
-                   Style="padding-block:0.5rem"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(HandleGoogle)"
-                   Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.GoogleSignInButtonText]">
+    <BitStack Horizontal Alignment="BitAlignment.Center" Gap="2rem">
+        <SocialButton OnClick="WrapHandled(HandleGoogle)" Title="@Localizer[AppStrings.GoogleSignInButtonText]">
             <GoogleIcon />
-        </BitButton>
+        </SocialButton>
 
-        <BitButton AutoLoading
-                   Size="BitSize.Small"
-                   Variant="BitVariant.Text"
-                   Style="padding-block:0.5rem"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(HandleGitHub)"
-                   Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.GitHubSignInButtonText]">
+        <SocialButton OnClick="WrapHandled(HandleGitHub)" Title="@Localizer[AppStrings.GitHubSignInButtonText]">
             <GitHubIcon />
-        </BitButton>
+        </SocialButton>
 
-        <BitButton AutoLoading
-                   Size="BitSize.Small"
-                   Variant="BitVariant.Text"
-                   Style="padding-block:0.5rem"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(HandleTwitter)"
-                   Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.TwitterSignInButtonText]">
+        <SocialButton OnClick="WrapHandled(HandleTwitter)" Title="@Localizer[AppStrings.TwitterSignInButtonText]">
             <TwitterIcon />
-        </BitButton>
+        </SocialButton>
 
-        <BitButton AutoLoading
-                   Size="BitSize.Small"
-                   Variant="BitVariant.Text"
-                   Style="padding-block:0.5rem"
-                   ButtonType="BitButtonType.Button"
-                   OnClick="WrapHandled(HandleApple)"
-                   Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.AppleSignInButtonText]">
+        <SocialButton OnClick="WrapHandled(HandleApple)" Title="@Localizer[AppStrings.AppleSignInButtonText]">
             <AppleIcon />
-        </BitButton>
+        </SocialButton>
     </BitStack>
 </section>
