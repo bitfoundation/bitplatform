@@ -77,7 +77,11 @@ public partial class BitButtonDemo
 </BitButton>
 
 
-<BitButton OnClick=""AutoLoadingClick"" AutoLoading>Click me</BitButton>";
+<BitButton OnClick=""AutoLoadingClick"" AutoLoading>Click me</BitButton>
+<div>AutoLoading click count: @autoLoadCount</div>
+
+<BitButton OnClick=""AutoLoadingReclick"" AutoLoading Reclickable>Reclickable</BitButton>
+<div>Reclickable AutoLoading click count: @reclickableAutoLoadCount</div>";
     private readonly string example5CsharpCode = @"
 private bool fillIsLoading;
 private bool outlineIsLoading;
@@ -104,9 +108,36 @@ private async Task LoadingTextClick()
     textIsLoading = false;
 }
 
+private int autoLoadCount;
 private async Task AutoLoadingClick()
 {
+    autoLoadCount++;
     await Task.Delay(3000);
+}
+
+private int reclickableAutoLoadCount;
+private TaskCompletionSource clickTsc = new();
+private CancellationTokenSource delayCts = new();
+private Task AutoLoadingReclick(bool isLoading)
+{
+    if (isLoading)
+    {
+        clickTsc.TrySetException(new TaskCanceledException());
+        delayCts.Cancel();
+    }
+
+    delayCts = new();
+    clickTsc = new();
+
+    reclickableAutoLoadCount++;
+
+    _ = Task.Delay(3000, delayCts.Token).ContinueWith(async delayTask =>
+    {
+        await delayTask;
+        clickTsc.TrySetResult();
+    });
+
+    return clickTsc.Task;
 }";
 
     private readonly string example6RazorCode = @"

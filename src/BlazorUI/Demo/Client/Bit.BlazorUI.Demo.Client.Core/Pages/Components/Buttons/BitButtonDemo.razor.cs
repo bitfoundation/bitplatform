@@ -30,7 +30,7 @@ public partial class BitButtonDemo
             Name = "AutoLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, shows the loading state while the OnClick event is in progress.",
+            Description = "If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.",
         },
         new()
         {
@@ -164,16 +164,23 @@ public partial class BitButtonDemo
         new()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback for the click event of the button.",
+            Description = "The callback for the click event of the button with a bool argument passing the current loading state.",
         },
         new()
         {
             Name = "PrimaryTemplate",
             Type = "RenderFragment?",
-            DefaultValue="",
+            DefaultValue = "",
             Description = "The content of the primary section of the button (alias of the ChildContent).",
+        },
+        new()
+        {
+            Name = "Reclickable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables re-clicking in loading state when AutoLoading is enabled.",
         },
         new()
         {
@@ -727,9 +734,36 @@ public partial class BitButtonDemo
         textIsLoading = false;
     }
 
+    private int autoLoadCount;
     private async Task AutoLoadingClick()
     {
+        autoLoadCount++;
         await Task.Delay(3000);
+    }
+
+    private int reclickableAutoLoadCount;
+    private TaskCompletionSource clickTsc = new();
+    private CancellationTokenSource delayCts = new();
+    private Task AutoLoadingReclick(bool isLoading)
+    {
+        if (isLoading)
+        {
+            clickTsc.TrySetException(new TaskCanceledException());
+            delayCts.Cancel();
+        }
+
+        delayCts = new();
+        clickTsc = new();
+
+        reclickableAutoLoadCount++;
+
+        _ = Task.Delay(3000, delayCts.Token).ContinueWith(async delayTask =>
+        {
+            await delayTask;
+            clickTsc.TrySetResult();
+        });
+
+        return clickTsc.Task;
     }
 
 
