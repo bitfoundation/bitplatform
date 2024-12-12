@@ -40,7 +40,7 @@
         background-color: var(--bit-clr-fg-sec);
     }
 
-    .mobile-frame:before {
+    .mobile-frame::after {
         top: 10px;
         left: 50%;
         content: '';

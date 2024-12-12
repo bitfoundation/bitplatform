@@ -136,7 +136,7 @@ private bool reselectable = true;
         overflow: hidden;
     }
 
-    .mobile-frame:before {
+    .mobile-frame::after {
         content: '';
         display: block;
         width: 60px;
