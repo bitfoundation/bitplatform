@@ -16,6 +16,8 @@ public partial class ConfirmPage
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IIdentityController identityController = default!;
 
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
@@ -85,7 +87,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(Urls.HomePage, replace: true);
+            NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
 
             isEmailConfirmed = true;
         });
@@ -116,7 +118,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(Urls.HomePage, replace: true);
+            NavigationManager.NavigateTo(ReturnUrlQueryString ?? Urls.HomePage, replace: true);
 
             isPhoneConfirmed = true;
         });

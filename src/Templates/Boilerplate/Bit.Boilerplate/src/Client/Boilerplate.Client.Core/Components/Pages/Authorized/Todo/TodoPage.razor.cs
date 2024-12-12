@@ -115,10 +115,16 @@ public partial class TodoPage
         FilterViewTodoItems();
     }
 
-    private void ToggleEditMode(TodoItemDto todoItem)
+    private void EnterEditMode(TodoItemDto todoItem)
     {
+        allTodoItems.ForEach(t => t.IsInEditMode = false);
         underEditTodoItemTitle = todoItem.Title;
-        todoItem.IsInEditMode = !todoItem.IsInEditMode;
+        todoItem.IsInEditMode = true;
+    }
+
+    private void ExitEditMode(TodoItemDto todoItem)
+    {
+        todoItem.IsInEditMode = false;
     }
 
     private async Task AddTodoItem()
