@@ -9,7 +9,7 @@
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(HandleGoogle)"
                    Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.GoogleSignUpButtonText]">
+                   Title="@Localizer[AppStrings.GoogleSignInButtonText]">
             <GoogleIcon />
         </BitButton>
 
@@ -20,7 +20,7 @@
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(HandleGitHub)"
                    Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.GitHubSignUpButtonText]">
+                   Title="@Localizer[AppStrings.GitHubSignInButtonText]">
             <GitHubIcon />
         </BitButton>
 
@@ -31,8 +31,19 @@
                    ButtonType="BitButtonType.Button"
                    OnClick="WrapHandled(HandleTwitter)"
                    Color="BitColor.SecondaryBackground"
-                   Title="@Localizer[AppStrings.TwitterSignUpButtonText]">
+                   Title="@Localizer[AppStrings.TwitterSignInButtonText]">
             <TwitterIcon />
+        </BitButton>
+
+        <BitButton AutoLoading
+                   Size="BitSize.Small"
+                   Variant="BitVariant.Text"
+                   Style="padding-block:0.5rem"
+                   ButtonType="BitButtonType.Button"
+                   OnClick="WrapHandled(HandleApple)"
+                   Color="BitColor.SecondaryBackground"
+                   Title="@Localizer[AppStrings.AppleSignInButtonText]">
+            <AppleIcon />
         </BitButton>
     </BitStack>
 </section>

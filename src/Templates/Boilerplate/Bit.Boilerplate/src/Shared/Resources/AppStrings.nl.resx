@@ -690,14 +690,8 @@
     <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>Inloggen met Twitter (X)</value>
   </data>
-    <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>Inloggen met Google</value>
-  </data>
-    <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>Inloggen met GitHub</value>
-  </data>
-    <data name="TwitterSignUpButtonText" xml:space="preserve">
-    <value>Meld je aan met Twitter (X)</value>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Inloggen met Apple</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Afmelden</value>
