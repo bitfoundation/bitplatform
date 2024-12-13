@@ -26,7 +26,7 @@
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
 		<!-- Version -->
-		<ReleaseVersion>9.1.0-pre-12</ReleaseVersion>
+		<ReleaseVersion>9.1.0-pre-11</ReleaseVersion>
   		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
 		<Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
@@ -41,6 +41,7 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
 
+	<!-- README and LICENSE -->
 	<PropertyGroup>
         <SignAssembly>True</SignAssembly>
         <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'AssemblyOriginatorKeyFile.snk'))\AssemblyOriginatorKeyFile.snk))</AssemblyOriginatorKeyFile>

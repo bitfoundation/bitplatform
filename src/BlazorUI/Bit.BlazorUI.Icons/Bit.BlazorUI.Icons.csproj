@@ -9,7 +9,7 @@
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net9.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>        
+        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
