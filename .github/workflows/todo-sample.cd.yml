@@ -162,6 +162,17 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        del TodoSample\src\AssemblyOriginatorKeyFile.snk
+
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: '.\TodoSample\src\'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+
     - name: Generate CSS/JS files
       run: dotnet build TodoSample\src\Client\TodoSample.Client.Core\TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" --no-restore -c Release
 
