@@ -27,7 +27,7 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 
 		<!-- Version -->
-		<ReleaseVersion>9.1.0-pre-12</ReleaseVersion>
+		<ReleaseVersion>9.1.0-pre-13</ReleaseVersion>
   		<PackageVersion>$(ReleaseVersion)</PackageVersion>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
 		<Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
