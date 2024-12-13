@@ -1,5 +1,5 @@
 ﻿var BitBesql = window.BitBesql || {};
-BitBesql.version = window['bit-besql version'] = '9.1.0-pre-11';
+BitBesql.version = window['bit-besql version'] = '9.1.0-pre-12';
 
 BitBesql.init = async function init(fileName) {
     const sqliteFilePath = `/${fileName}`;

@@ -25,13 +25,12 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
-		<ReleaseVersion>9.1.0</ReleaseVersion>
-
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-11</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-11</PackageVersion>
-
 		<!-- Version -->
-		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
+		<ReleaseVersion>9.1.0-pre-12</ReleaseVersion>
+  		<PackageVersion>$(ReleaseVersion)</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
+  		<AssemblyInformationalVersion Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion)</AssemblyInformationalVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -41,5 +40,22 @@
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
+
+	<PropertyGroup>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'AssemblyOriginatorKeyFile.snk'))\AssemblyOriginatorKeyFile.snk))</AssemblyOriginatorKeyFile>
+		<PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'LICENSE'))\LICENSE))">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'README.md'))\README.md))">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

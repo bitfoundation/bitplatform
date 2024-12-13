@@ -6,8 +6,6 @@
         <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <SignAssembly>True</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
 
@@ -20,17 +18,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"  Condition="'$(TargetFramework)' == 'net8.0'" />
         <PackageReference Include="Microsoft.JSInterop" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0"  Condition="'$(TargetFramework)' == 'net9.0'" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\..\..\LICENSE">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-        <None Include="..\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
     </ItemGroup>
 
 </Project>

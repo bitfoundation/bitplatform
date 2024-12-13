@@ -263,6 +263,17 @@ jobs:
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
         cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
   
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      run: |
+        del AdminPanel\src\AssemblyOriginatorKeyFile.snk
+
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@v1.2
+      with:
+          fileDir: '.\AdminPanel\src\'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
