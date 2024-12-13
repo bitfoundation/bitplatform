@@ -34,4 +34,9 @@
         <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.assets.scss:wwwroot/styles/bit.blazorui.assets.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <None Include="package*json" />
+    </ItemGroup>
+
 </Project>
