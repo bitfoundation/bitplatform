@@ -13,7 +13,7 @@
         <PackageId>Bit.BlazorEmpty</PackageId>
         <PackageType>Template</PackageType>
         <Title>bit BlazorEmpty</Title>
-        <PackageDescription>A template for creating a BlazorEmpty app based on the bit platform tools</PackageDescription>
+        <PackageDescription>A template for creating an empty Blazor app using the bit platform products</PackageDescription>
         <PackageTags>Bit;c#;asp.net;core;template;web;blazor</PackageTags>
         <PackageCopyright>Copyright © bit platform 2024</PackageCopyright>
         <PackageIcon>bit-icon-512.png</PackageIcon>
