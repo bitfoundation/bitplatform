@@ -4,6 +4,7 @@
         <LangVersion>13.0</LangVersion>
         <Nullable>enable</Nullable>
         <IsRoslynComponent>true</IsRoslynComponent>
+        <SignAssembly>False</SignAssembly>
     </PropertyGroup>
 
     <ItemGroup>
