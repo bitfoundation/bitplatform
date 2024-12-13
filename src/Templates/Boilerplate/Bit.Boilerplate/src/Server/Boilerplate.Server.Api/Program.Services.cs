@@ -196,16 +196,10 @@ public static partial class Program
 
             });
             //#elif (database == "MySql")
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
