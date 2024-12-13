@@ -367,20 +367,26 @@ private bool isPanelWithFooterOpen;";
 
 <BitButton OnClick=""() => isModeFullPanelOpen = true"">Open Panel</BitButton>
 <BitProPanel @bind-IsOpen=""isModeFullPanelOpen"" ModeFull ShowCloseButton>
-    <div style=""width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
-    </div>
+    <Header>ModeFull</Header>
+    <Body>
+        <div style=""width:300px"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non.
+        </div>
+    </Body>
 </BitProPanel>
 
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel HeaderText=""AutoToggleScroll"" @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
-    <div style=""width:300px"">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non.
-    </div>
+<BitProPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
+    <Header>AutoToggleScroll</Header>
+    <Body>
+        <div style=""width:300px"">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+            sagittis nunc, ut interdum ipsum vestibulum non.
+        </div>
+    </Body>
 </BitProPanel>
 
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>

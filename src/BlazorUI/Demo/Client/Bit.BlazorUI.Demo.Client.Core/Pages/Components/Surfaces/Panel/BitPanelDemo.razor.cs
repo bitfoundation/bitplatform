@@ -168,7 +168,6 @@ public partial class BitPanelDemo
     private bool isBasicPanelOpen;
 
     private bool isBlockingPanelOpen;
-    private BitPanel blockingPanelRef = default!;
     private bool isModelessPanelOpen;
     private BitPanel modelessPanelRef = default!;
     private bool isAutoToggleScrollPanelOpen;
@@ -204,7 +203,7 @@ private bool isBasicPanelOpen;";
 
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => isBlockingPanelOpen = true"">Open Panel</BitButton>
-<BitPanel @bind-IsOpen=""isBlockingPanelOpen"" @ref=""blockingPanelRef"" Blocking>
+<BitPanel @bind-IsOpen=""isBlockingPanelOpen"" Blocking>
     <div style=""width:300px;padding:1rem"">
         <h3>Blocking</h3>
         <div>
@@ -212,7 +211,7 @@ private bool isBasicPanelOpen;";
             amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
             sagittis nunc, ut interdum ipsum vestibulum non.
         </div>
-        <BitButton OnClick=""() => blockingPanelRef.Close()"">Close</BitButton>
+        <BitButton OnClick=""() => isBlockingPanelOpen = false"">Close</BitButton>
     </div>
 </BitPanel>
 
@@ -240,7 +239,6 @@ private bool isBasicPanelOpen;";
 </BitPanel>";
     private readonly string example2CsharpCode = @"
 private bool isBlockingPanelOpen;
-private BitPanel blockingPanelRef = default!;
 private bool isModelessPanelOpen;
 private BitPanel modelessPanelRef = default!;
 private bool isAutoToggleScrollPanelOpen;";

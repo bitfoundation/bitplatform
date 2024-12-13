@@ -51,9 +51,6 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-pnl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (modeless is false).ToString());
-
         var elementOverlay = com.FindAll(".bit-pnl-ovl");
         Assert.AreEqual(modeless ? 0 : 1, elementOverlay.Count);
     }
@@ -82,9 +79,9 @@ public class BitPanelTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        var elementContent = com.Find(".bit-pnl-bdy");
+        var elementContent = com.Find(".bit-pnl-cnt");
 
-        elementContent.MarkupMatches("<div class=\"bit-pnl-bdy\"><div>Test Content</div></div>");
+        elementContent.MarkupMatches("<div id:ignore style:ignore class=\"bit-pnl-cnt bit-pnl-end\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
