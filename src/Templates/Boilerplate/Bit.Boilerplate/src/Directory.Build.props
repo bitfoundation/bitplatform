@@ -83,9 +83,4 @@
         <Using Include="Boilerplate.Shared.Services.Contracts" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <SignAssembly>True</SignAssembly>
-        <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'AssemblyOriginatorKeyFile.snk'))\AssemblyOriginatorKeyFile.snk))</AssemblyOriginatorKeyFile>
-    </PropertyGroup>
-
 </Project>

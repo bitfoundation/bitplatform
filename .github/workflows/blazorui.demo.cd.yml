@@ -113,17 +113,6 @@ jobs:
       env:
         ApiServerAddress: ${{ env.SERVER_ADDRESS }}
         WindowsUpdateSettings.FilesUrl: https://windows-components.bitplatform.dev
-
-    - name: Delete AssemblyOriginatorKeyFile.snk
-      run: |
-        del src\AssemblyOriginatorKeyFile.snk
-
-    - name: Extract strong sign certificate from env
-      uses: timheuer/base64-to-file@v1.2
-      with:
-          fileDir: '.\src\'
-          fileName: 'AssemblyOriginatorKeyFile.snk'
-          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
   
     - name: Generate CSS/JS files
       run: dotnet build src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
