@@ -4,7 +4,7 @@ public partial class AppControllerBase : ControllerBase
 {
     [AutoInject] protected ServerApiSettings AppSettings = default!;
 
-    [AutoInject] protected IConfiguration Configuration = default!;
+    [AutoInject] protected ServerApiSettings Settings = default!;
 
     [AutoInject] protected AppDbContext DbContext = default!;
 

@@ -20,6 +20,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
+    public DbSet<UserSession> UserSessions { get; set; } = default!;
+
     //#if (sample == "Todo")
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#elif (sample == "Admin")
@@ -27,7 +29,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Product> Products { get; set; } = default!;
     //#endif
     //#if (notification == true)
-    public DbSet<DeviceInstallation> DeviceInstallations { get; set; } = default!;
+    public DbSet<PushNotificationSubscription> PushNotificationSubscriptions { get; set; } = default!;
     //#endif
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,13 +38,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        //#if (database != "Cosmos")
         ConfigureIdentityTableNames(modelBuilder);
-        //#else
-        ConfigureContainers(modelBuilder);
-        //#endif
 
-        //#if (database != "Sqlite" && database != "Cosmos")
+        //#if (database != "Sqlite")
         ConcurrencyStamp(modelBuilder);
         //#endif
     }
@@ -113,7 +111,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         base.ConfigureConventions(configurationBuilder);
     }
 
-    //#if (database != "Cosmos")
     private void ConfigureIdentityTableNames(ModelBuilder builder)
     {
         builder.Entity<User>()
@@ -137,70 +134,12 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<IdentityUserClaim<Guid>>()
             .ToTable("UserClaims");
     }
-    //#endif
 
-    //#if (database == "Cosmos")
-    private void ConfigureContainers(ModelBuilder builder)
-    {
-        builder.Entity<User>()
-            .ToContainer("Users").HasPartitionKey(e => e.Id);
-
-        builder.Entity<Role>()
-            .ToContainer("Roles").HasPartitionKey(e => e.Id);
-
-        builder.Entity<IdentityRoleClaim<Guid>>()
-            .ToContainer("RoleClaims").HasPartitionKey(e => e.RoleId);
-
-        builder.Entity<IdentityUserToken<Guid>>()
-            .ToContainer("UserTokens").HasPartitionKey(e => e.UserId);
-
-        builder.Entity<IdentityUserClaim<Guid>>()
-            .ToContainer("UserClaims").HasPartitionKey(e => e.UserId);
-
-        builder.Entity<IdentityUserRole<Guid>>()
-            .ToContainer("UserRoles").HasPartitionKey(e => e.UserId);
-
-        builder.Entity<IdentityUserLogin<Guid>>()
-            .ToContainer("UserLogins").HasPartitionKey(e => e.UserId);
-
-        builder.Entity<DataProtectionKey>()
-            .ToContainer("DataProtectionKeys").HasPartitionKey(e => e.Id);
-
-        //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
-        {
-            //#endif
-            builder.Entity<DataProtectionKey>()
-                .Property(p => p.Id).HasConversion(typeof(string));
-            //#if (IsInsideProjectTemplate == true)
-        }
-        //#endif
-
-        //#if (sample == "Todo")
-        builder.Entity<TodoItem>()
-            .ToContainer("TodoItems").HasPartitionKey(e => e.Id);
-
-        //#elif (sample == "Admin")
-        builder.Entity<Category>()
-            .ToContainer("Categories").HasPartitionKey(e => e.Id);
-
-        builder.Entity<Product>()
-            .ToContainer("Products").HasPartitionKey(e => e.CategoryId);
-        //#endif    
-
-        //#if (notification == true)
-        builder.Entity<DeviceInstallation>()
-            .ToContainer("DeviceInstallations").HasPartitionKey(e => e.Platform);
-        //#endif
-    }
-    //#endif
-
-    //#if (database != "Sqlite" && database != "Cosmos")
+    //#if (database != "Sqlite")
     private void ConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) ||
-            Database.ProviderName!.EndsWith("Cosmos", StringComparison.InvariantCulture))
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
             return;
         //#endif
 

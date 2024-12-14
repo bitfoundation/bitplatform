@@ -11,7 +11,7 @@ public class AppTelemetryContext : ITelemetryContext
 
     public Guid AppSessionId { get; set; } = Guid.NewGuid();
 
-    public virtual string? OS { get; set; } = RuntimeInformation.OSDescription;
+    public virtual string? Platform { get; set; } = RuntimeInformation.OSDescription;
 
     public virtual string? AppVersion { get; set; } = typeof(AppTelemetryContext).Assembly.GetName().Version?.ToString();
 

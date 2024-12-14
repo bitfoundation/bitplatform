@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Dashboard;
 
 namespace Boilerplate.Server.Api.Controllers.Dashboard;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class DashboardController : AppControllerBase, IDashboardController
 {
     [HttpGet]
@@ -22,8 +22,8 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         return result;
     }
 
-    [HttpGet]
-    public async Task<IQueryable<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats()
+    [HttpGet, EnableQuery]
+    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
     {
         return DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()

@@ -87,7 +87,9 @@
                readonly="@(AllowTextInput is false)" />
     }
 
-    <div style="@Styles?.Callout" class="bit-dtp-cal @Classes?.Callout" id="@_calloutId">
+    <div id="@_calloutId"
+         style="@Styles?.Callout" 
+         class="@GetCalloutCssClasses()">
         <div style="@Styles?.CalloutContainer" class="bit-dtp-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
             <div style="@Styles?.Group" class="bit-dtp-grp @Classes?.Group" role="group" aria-label="">
                 <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">

@@ -18,12 +18,13 @@ namespace Boilerplate.Shared.Dtos;
 /// </summary>
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
+[JsonSerializable(typeof(Dictionary<string, string?>))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(RestErrorInfo))]
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 //#if (notification == true)
-[JsonSerializable(typeof(DeviceInstallationDto))]
+[JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
 //#if (sample == "Todo")
 [JsonSerializable(typeof(TodoItemDto))]

@@ -76,10 +76,6 @@
                     "description": "PostgreSQL"
                 },
                 {
-                    "choice": "Cosmos",
-                    "description": "Azure Cosmos DB"
-                },
-                {
                     "choice": "MySql",
                     "description": "MySql - MariaDB"
                 },
@@ -209,7 +205,7 @@
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "true",
-            "description": "WPF-based Windows project supporting Windows 7 SP1 and above."
+            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
         },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
@@ -217,8 +213,8 @@
             "datatype": "bool",
             "defaultValue": "false"
         },
-        "appCenter": {
-            "displayName": "Add Visual Studio AppCenter to project?",
+        "sentry": {
+            "displayName": "Add Sentry logging to project?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
@@ -418,6 +414,7 @@
                         "src/Server/Boilerplate.Server.Api/Controllers/Todo/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/TodoMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Todo/**",
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/Todo/**",
                         "src/Shared/Controllers/Todo/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Todo/**"
                     ]
@@ -430,11 +427,17 @@
                     ]
                 },
                 {
+                    "condition": "(offlineDb != true || framework == \"net8.0\")",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Core/Data/CompiledModel/**"
+                    ]
+                },
+                {
                     "condition": "(signalR != true)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/SignalR/**",
                         "src/Shared/Services/SharedPubSubMessages.cs",
-                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfinitiesRetryPolicy.cs"
+                        "src/Client/Boilerplate.Client.Core/Services/SignalRInfiniteRetryPolicy.cs"
                     ]
                 },
                 {
@@ -453,12 +456,13 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Web/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Services/WindowsPushNotificationService.cs",
-						"src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
+                        "src/Server/Boilerplate.Server.Api/Models/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Controllers/PushNotification/**",
                         "src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs",
                         "src/Shared/Controllers/PushNotification/**",
                         "src/Shared/Dtos/PushNotification/**",
-                        "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs"
+                        "src/Server/Boilerplate.Server.Api/Mappers/PushNotificationMapper.cs",
+                        "src/Server/Boilerplate.Server.Api/Data/Configurations/PushNotification/**"
                     ]
                 },
                 {
@@ -516,7 +520,7 @@
                         "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",
                         "src/Tests/Extensions/PlaywrightCacheExtensions.cs",
                         "src/Tests/Extensions/PlaywrightHydrationExtensions.cs",
-                        "src/Tests/Extensions/BrowserContextExtensions.cs",
+                        "src/Tests/Extensions/BrowserContextExtensions.cs"
                     ]
                 },
                 {
@@ -538,11 +542,11 @@
                     }
                 },
                 {
-                  "condition": "(framework == \"net9.0\")",
-                  "exclude": [
-                    "global8.json",
-                    "src/Directory.Packages8.props"
-                  ]
+                    "condition": "(framework == \"net9.0\")",
+                    "exclude": [
+                        "global8.json",
+                        "src/Directory.Packages8.props"
+                    ]
                 }
             ]
         }

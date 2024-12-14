@@ -127,6 +127,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     [Parameter] public RenderFragment<TItem>? HeaderTemplate { get; set; }
 
     /// <summary>
+    /// The initial items that will be used to set selected items when using an ItemProvider.
+    /// </summary>
+    [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
+
+    /// <summary>
     /// Determines the opening state of the callout. (two-way bound)
     /// </summary>
     [Parameter, TwoWayBound]
@@ -369,13 +374,38 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
 
     [JSInvokable("CloseCallout")]
-    public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
 
         if (await AssignIsOpen(false) is false) return;
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await CloseCallout();
+        await InvokeAsync(StateHasChanged);
     }
 
     public async Task UnselectItem(TItem? item)
@@ -757,6 +787,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
     protected override async Task OnInitializedAsync()
     {
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         _dropdownId = $"Dropdown-{UniqueId}";
         _calloutId = $"{_dropdownId}-callout";
         _scrollContainerId = $"{_dropdownId}-scroll-container";
@@ -775,18 +807,34 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         OnValueChanged += HandleOnValueChanged;
 
-        _dotnetObj = DotNetObjectReference.Create(this);
-
         if (MultiSelect)
         {
-            if (ValuesHasBeenSet is false && DefaultValues is not null)
+            if (ItemsProvider is not null && (InitialSelectedItems?.Any() ?? false))
+            {
+                _selectedItems.AddRange(InitialSelectedItems);
+
+                if (ValuesHasBeenSet is false)
+                {
+                    await AssignValues(_selectedItems.Select(s => GetValue(s)));
+                }
+            }
+            else if (ValuesHasBeenSet is false && DefaultValues is not null)
             {
                 await AssignValues(DefaultValues);
             }
         }
         else
         {
-            if (ValueHasBeenSet is false && DefaultValue is not null)
+            if (ItemsProvider is not null && (InitialSelectedItems?.Any() ?? false))
+            {
+                _selectedItems.Add(InitialSelectedItems.First());
+
+                if (ValueHasBeenSet is false)
+                {
+                    Value = GetValue(_selectedItems.First());
+                }
+            }
+            else if (ValueHasBeenSet is false && DefaultValue is not null)
             {
                 Value = DefaultValue;
             }
@@ -795,6 +843,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         UpdateSelectedItemsFromValues();
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+        if (Responsive is false) return;
+
+        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.End, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -941,14 +999,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
-
         if (IsOpen is false) return;
 
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
-
-        StateHasChanged();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -1120,8 +1175,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
                                                     ShowSearchBox && Combo is false ? 32 : 0,
                                                     CalloutHeaderTemplate is not null ? _headerId : "",
                                                     CalloutFooterTemplate is not null ? _footerId : "",
-                                                    PreserveCalloutWidth is false,
-                                                    RootElementClass);
+                                                    PreserveCalloutWidth is false);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -1142,6 +1196,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         if (request.CancellationToken.IsCancellationRequested) return default;
 
         _lastShowItems = [.. providerResult.Items];
+
+        UpdateSelectedItemsFromValues();
+        await InvokeAsync(StateHasChanged);
 
         return new ItemsProviderResult<TItem>(providerResult.Items, providerResult.TotalItemCount);
     }
@@ -1385,6 +1442,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
     }
 
+    private string GetCalloutCssClasses()
+    {
+        List<string> classes = ["bit-drp-cal"];
+
+        if (Classes?.Callout is not null)
+        {
+            classes.Add(Classes.Callout);
+        }
+
+        if (Responsive)
+        {
+            classes.Add("bit-drp-res");
+        }
+
+        return string.Join(' ', classes).Trim();
+    }
+
 
 
     public async ValueTask DisposeAsync()
@@ -1397,16 +1471,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (_disposed || disposing is false) return;
 
-        if (_dotnetObj is not null)
+        try
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.ClearCallout(_calloutId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _js.ClearCallout(_calloutId);
+            await _js.SwipesDispose(_calloutId);
         }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         _disposed = true;
     }

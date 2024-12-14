@@ -32,7 +32,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    await App.Current.Dispatcher.InvokeAsync(() => App.Current.MainWindow.Activate());
+                    Application.OpenForms[0]!.Activate();
 
                     await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                 }
@@ -44,7 +44,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },

@@ -1,13 +1,16 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class SessionsSection
 {
-    private bool isWaiting;
+    private bool isLoading;
     private Guid? currentSessionId;
+    private bool hasRevokedAnySession;
     private UserSessionDto? currentSession;
+    private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
@@ -21,34 +24,20 @@ public partial class SessionsSection
     }
 
 
-    private async Task LoadSessions()
+    private async Task LoadSessions(bool showLoading = true)
     {
-        List<UserSessionDto> userSessions = [];
-        currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+        if (showLoading)
+        {
+            isLoading = true;
+        }
 
         try
         {
-            userSessions = await userController.GetUserSessions(CurrentCancellationToken);
-        }
-        finally
-        {
-            otherSessions = userSessions.Where(s => s.SessionUniqueId != currentSessionId).ToArray();
-            currentSession = userSessions.SingleOrDefault(s => s.SessionUniqueId == currentSessionId);
-        }
-    }
+            currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
 
-    private async Task RevokeSession(UserSessionDto session)
-    {
-        if (isWaiting || session.SessionUniqueId == currentSessionId) return;
-
-        isWaiting = true;
-
-        try
-        {
-            await userController.RevokeSession(session.SessionUniqueId, CurrentCancellationToken);
-
-            SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
-            await LoadSessions();
+            var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
+            otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
+            currentSession = userSessions.Single(s => s.Id == currentSessionId);
         }
         catch (KnownException e)
         {
@@ -56,15 +45,44 @@ public partial class SessionsSection
         }
         finally
         {
-            isWaiting = false;
+            if (showLoading)
+            {
+                isLoading = false;
+            }
         }
     }
 
-    private static string GetImageUrl(string? device)
+    private async Task RevokeSession(UserSessionDto session)
     {
-        if (string.IsNullOrEmpty(device)) return "unknown.png";
+        if (revokingSessionIds.Contains(session.Id) || session.Id == currentSessionId) return;
 
-        var d = device.ToLowerInvariant();
+        revokingSessionIds.Add(session.Id);
+
+        try
+        {
+            if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
+            {
+                await userController.RevokeSession(session.Id, CurrentCancellationToken);
+                hasRevokedAnySession = true;
+                SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
+                await LoadSessions();
+            }
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            revokingSessionIds.Remove(session.Id);
+        }
+    }
+
+    private static string GetImageUrl(string? deviceInfo)
+    {
+        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
+
+        var d = deviceInfo.ToLowerInvariant();
 
         if (d.Contains("win") /*Windows, WinUI, Win32*/) return "windows.png";
 
@@ -87,5 +105,14 @@ public partial class SessionsSection
         return DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
                     : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
                     : renewedOn.ToLocalTime().ToString("g");
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
+        {
+            // Refreshing the token to check if the user session can now be privileged.
+            await AuthManager.RefreshToken("CheckPrivilege");
+        }
     }
 }

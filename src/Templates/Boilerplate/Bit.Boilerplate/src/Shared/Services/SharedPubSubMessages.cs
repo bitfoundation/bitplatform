@@ -10,9 +10,9 @@ public static partial class SharedPubSubMessages
 {
     //#if (sample == "Admin")
     public const string DASHBOARD_DATA_CHANGED = nameof(DASHBOARD_DATA_CHANGED);
-    //#else
-    // To see examples of this class, checkout the admin panel sample.
     //#endif
+
+    public const string SESSION_REVOKED = nameof(SESSION_REVOKED);
 }
 
 public static partial class SignalREvents

@@ -30,7 +30,9 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// <summary>
     /// Items to render as children.
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitNav component.
@@ -94,7 +96,9 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// <summary>
     /// A collection of item to display in the navigation bar.
     /// </summary>
-    [Parameter] public IList<TItem> Items { get; set; } = [];
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize how content inside the item is rendered.
@@ -109,7 +113,9 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
-    [Parameter] public BitNavMode Mode { get; set; } = BitNavMode.Automatic;
+    [Parameter]
+    [CallOnSet(nameof(OnSetMode))]
+    public BitNavMode Mode { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -682,6 +688,11 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         return item.GetValueFromProperty<IEnumerable<string>?>(NameSelectors.AdditionalUrls.Name);
     }
 
+    internal string GetItemKey(TItem item, string defaultKey)
+    {
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
 
 
     internal void SetItemExpanded(TItem item, bool value)
@@ -719,12 +730,11 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
 
     internal async Task SetSelectedItem(TItem item)
     {
+        if (item == SelectedItem && Reselectable is false) return;
+
         if (await AssignSelectedItem(item) is false) return;
 
-        if (item != SelectedItem || Reselectable)
-        {
-            await OnSelectItem.InvokeAsync(item);
-        }
+        await OnSelectItem.InvokeAsync(item);
 
         StateHasChanged();
     }
@@ -732,33 +742,15 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     internal void RegisterOption(BitNavOption option)
     {
         _items.Add((option as TItem)!);
+        SetSelectedItemByCurrentUrl();
         StateHasChanged();
     }
 
     internal void UnregisterOption(BitNavOption option)
     {
         _items.Remove((option as TItem)!);
+        SetSelectedItemByCurrentUrl();
         StateHasChanged();
-    }
-
-    internal string GetItemKey(TItem item)
-    {
-        return GetKey(item) ?? Guid.NewGuid().ToString();
-    }
-
-    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
-    {
-        foreach (var parent in items)
-        {
-            var childItems = GetChildItems(parent);
-            if (parent == item || (childItems.Any() && ToggleItemAndParents(childItems, item, isExpanded)))
-            {
-                SetItemExpanded(parent, isExpanded);
-                return true;
-            }
-        }
-
-        return false;
     }
 
 
@@ -853,17 +845,6 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (ChildContent is null && Items != _oldItems)
-        {
-            _items = Items?.ToList() ?? new();
-            _oldItems = Items;
-        }
-
-        await base.OnParametersSetAsync();
-    }
-
 
 
     private List<TItem> Flatten(IList<TItem> e) => e.SelectMany(c => Flatten(GetChildItems(c))).Concat(e).ToList();
@@ -919,6 +900,36 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         if (SelectedItem is null) return;
 
         ToggleItemAndParents(_items, SelectedItem, true);
+    }
+
+    private void OnSetMode()
+    {
+        if (Mode is not BitNavMode.Automatic) return;
+
+        SetSelectedItemByCurrentUrl();
+    }
+
+    private void OnSetParameters()
+    {
+        if (ChildContent is not null || Options is not null || Items == _oldItems) return;
+
+        _items = Items?.ToList() ?? [];
+        _oldItems = Items;
+    }
+
+    private bool ToggleItemAndParents(IList<TItem> items, TItem item, bool isExpanded)
+    {
+        foreach (var parent in items)
+        {
+            var childItems = GetChildItems(parent);
+            if (parent == item || (childItems.Any() && ToggleItemAndParents(childItems, item, isExpanded)))
+            {
+                SetItemExpanded(parent, isExpanded);
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

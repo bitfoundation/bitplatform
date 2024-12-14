@@ -60,6 +60,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.css",
         "inputFile": "Pages/Components/Inputs/Calendar/BitCalendarDemo.razor.scss",
         "minify": { "enabled": false },
@@ -240,6 +252,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.css",
+        "inputFile": "Pages/Components/Navs/NavBar/BitNavBarDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Navs/Pagination/BitPaginationDemo.razor.css",
         "inputFile": "Pages/Components/Navs/Pagination/BitPaginationDemo.razor.scss",
         "minify": { "enabled": false },
@@ -384,6 +402,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.scss",
         "minify": { "enabled": false },
@@ -392,6 +416,12 @@
     {
         "outputFile": "Pages/Components/Utilities/Sticky/BitStickyDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Sticky/BitStickyDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Utilities/SwipeTrap/BitSwipeTrapDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/SwipeTrap/BitSwipeTrapDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

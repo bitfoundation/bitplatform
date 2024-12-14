@@ -19,9 +19,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The content of the BitButtonGroup, that are BitButtonGroupOption components.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetChildContentAndItems))]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
@@ -32,9 +30,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     ///  List of Item, each of which can be a button with different action in the ButtonGroup.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetChildContentAndItems))]
-    public IEnumerable<TItem> Items { get; set; } = [];
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// The content inside the item can be customized.
@@ -135,7 +131,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ => "bit-btg-md"
         });
 
-        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : "");
+        ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (ChildContent is not null || Items is null || Items.Any() is false) return;
+
+        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
+
+        _oldItems = Items;
+        _items = Items.ToList();
     }
 
 
@@ -167,15 +175,6 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
             }
         }
-    }
-
-    private void OnSetChildContentAndItems()
-    {
-        if (ChildContent is not null) return;
-        if (Items.Any() is false || Items == _oldItems) return;
-
-        _oldItems = Items;
-        _items = Items.ToList();
     }
 
     private string? GetClass(TItem? item)

@@ -26,7 +26,12 @@ public static partial class Program
 
         services.AddClientWebProjectServices(configuration);
 
-        services.AddSingleton(sp => configuration.Get<ServerWebSettings>()!);
+        services.AddSingleton(sp =>
+        {
+            ServerWebSettings settings = new();
+            configuration.Bind(settings);
+            return settings;
+        });
 
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();

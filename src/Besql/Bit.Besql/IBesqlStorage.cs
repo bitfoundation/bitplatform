@@ -2,5 +2,7 @@
 
 public interface IBesqlStorage
 {
-    Task<int> SyncDb(string filename);
+    Task Init(string filename);
+
+    Task Persist(string filename);
 }

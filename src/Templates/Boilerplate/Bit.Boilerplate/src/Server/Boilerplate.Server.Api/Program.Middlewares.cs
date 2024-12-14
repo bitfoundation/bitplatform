@@ -14,7 +14,9 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwardedHeadersOptions = configuration.Get<ServerApiSettings>()!.ForwardedHeaders;
+        ServerApiSettings settings = new();
+        configuration.Bind(settings);
+        var forwardedHeadersOptions = settings.ForwardedHeaders;
 
         if (forwardedHeadersOptions is not null 
             && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))
@@ -43,8 +45,11 @@ public static partial class Program
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            
             app.UseHsts();
+            app.UseXContentTypeOptions();
+            app.UseXXssProtection(options => options.EnabledWithBlockMode());
+            app.UseXfo(options => options.SameOrigin());
         }
 
         app.UseResponseCaching();
@@ -77,7 +82,7 @@ public static partial class Program
         }).WithTags("Test");
 
         //#if (signalR == true)
-        app.MapHub<SignalR.AppHub>("/app-hub");
+        app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
         app.MapControllers().RequireAuthorization();

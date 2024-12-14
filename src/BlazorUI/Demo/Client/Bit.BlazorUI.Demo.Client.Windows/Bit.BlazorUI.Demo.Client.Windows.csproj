@@ -1,44 +1,69 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net9.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UseWPF>true</UseWPF>
         <UseWindowsForms>true</UseWindowsForms>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <RootNamespace>Bit.BlazorUI.Demo.Client.Windows</RootNamespace>
         <StartupObject>Bit.BlazorUI.Demo.Client.Windows.Program</StartupObject>
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
+        <NoWarn>$(NoWarn);WFO5001</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>partial</TrimMode>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+        <CompressionEnabled>false</CompressionEnabled>
+        <!-- Enabling compression generates `.br` and `.gz` files for static assets.
+        While this is beneficial for Blazor WebAssembly, it only adds to the app bundle size in MAUI without offering any advantages. -->
     </PropertyGroup>
 
     <ItemGroup>
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services.Contracts" />
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
-        
-        <PackageReference Include="Bit.CodeAnalyzers" Version="9.0.1">
+        <Using Include="Bit.BlazorUI.Demo.Shared" />
+        <Watch Remove="*.scss" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="9.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="9.0.1">
+        <PackageReference Include="Bit.SourceGenerators" Version="9.1.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="9.0.10" />
+
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.21" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
         <PackageReference Include="Velopack" Version="0.0.942" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        
         <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
     </ItemGroup>
+
+    <Target Name="RemoveFilesAfterPublish" AfterTargets="Publish">
+        <!-- Unneccecary files because of Microsoft.Web.WebView2.Wpf etc. -->
+        <ItemGroup>
+            <FilesToDelete Include="$(PublishDir)wpfgfx_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)WindowsBase.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationCore.dll" />
+            <FilesToDelete Include="$(PublishDir)D3DCompiler_47_cor3.dll" />
+            <FilesToDelete Include="$(PublishDir)PresentationFramework.dll" />
+            <FilesToDelete Include="$(PublishDir)System.Windows.Forms.Design.dll" />
+        </ItemGroup>
+        <Delete Files="@(FilesToDelete)" />
+    </Target>
 
 </Project>

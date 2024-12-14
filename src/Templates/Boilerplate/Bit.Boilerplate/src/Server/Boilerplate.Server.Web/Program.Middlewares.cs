@@ -22,13 +22,15 @@ public static partial class Program
         var configuration = app.Configuration;
         var env = app.Environment;
 
-        var forwarededHeadersOptions = configuration.Get<ServerWebSettings>()!.ForwardedHeaders;
+        ServerWebSettings settings = new();
+        configuration.Bind(settings);
+        var forwardedHeadersOptions = settings.ForwardedHeaders;
 
-        if (forwarededHeadersOptions is not null
-            && (app.Environment.IsDevelopment() || forwarededHeadersOptions.AllowedHosts.Any()))
+        if (forwardedHeadersOptions is not null
+            && (app.Environment.IsDevelopment() || forwardedHeadersOptions.AllowedHosts.Any()))
         {
             // If the list is empty then all hosts are allowed. Failing to restrict this these values may allow an attacker to spoof links generated for reset password etc.
-            app.UseForwardedHeaders(forwarededHeadersOptions);
+            app.UseForwardedHeaders(forwardedHeadersOptions);
         }
 
         if (CultureInfoManager.MultilingualEnabled)
@@ -55,8 +57,11 @@ public static partial class Program
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
             app.UseHsts();
+            app.UseXContentTypeOptions();
+            app.UseXXssProtection(options => options.EnabledWithBlockMode());
+            app.UseXfo(options => options.SameOrigin());
         }
 
         app.UseResponseCaching();
@@ -79,8 +84,9 @@ public static partial class Program
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
-                            MaxAge = TimeSpan.FromDays(7),
-                            Public = true
+                            Public = true,
+                            NoTransform = true,
+                            MaxAge = TimeSpan.FromDays(7)
                         };
                     });
                 }
@@ -123,7 +129,21 @@ public static partial class Program
         }).WithTags("Test");
 
         //#if (signalR == true)
-        app.MapHub<Api.SignalR.AppHub>("/app-hub");
+        if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
+            && settings.WebAppRender.BlazorMode is not Client.Web.BlazorWebAppMode.BlazorWebAssembly)
+        {
+            // Azure SignalR is going to send blazor server / auto messages to the Azure Cloud which is useless in this case,
+            // because scale out lots of messages that are related to the current opened tab of browser only is not necessary and will cost you lots of money.
+            // https://github.com/Azure/azure-signalr/issues/1738
+            // Solutions:
+            // - Switch to Blazor WebAssembly in production. Hint: To leverage Blazor server's enhanced development experience in local dev environment, you can disable Azure SignalR by setting "Azure:SignalR:ConnectionString" to null in appsettings.json or appsettings.Development.json.
+            // OR
+            // - Use Standalone API mode:
+            //    Publish and run the Server.Api project independently to serve restful APIs and SignalR services like AppHub (Just like https://adminpanel-api.bitplatform.dev/swagger deployment)
+            //    and use the Server.Web project solely as a Blazor Server or pre-rendering service provider.
+            throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
+        }
+        app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
         app.MapControllers().RequireAuthorization();
@@ -140,9 +160,7 @@ public static partial class Program
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-        var webAppRenderMode = configuration.Get<ServerWebSettings>()!;
-
-        if (webAppRenderMode.WebAppRender.PrerenderEnabled is false)
+        if (settings.WebAppRender.PrerenderEnabled is false)
         {
             blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
         }

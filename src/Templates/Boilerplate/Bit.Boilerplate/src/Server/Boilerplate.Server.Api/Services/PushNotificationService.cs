@@ -2,6 +2,7 @@
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
 using System.Linq.Expressions;
+using System.Collections.Concurrent;
 using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Server.Api.Models.PushNotification;
 
@@ -9,94 +10,117 @@ namespace Boilerplate.Server.Api.Services;
 
 public partial class PushNotificationService
 {
-    [AutoInject] private IAdsPushSender adsPushSender = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private ILogger<PushNotificationService> logger = default!;
+    [AutoInject] private ServerApiSettings serverApiSettings = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private RootServiceScopeProvider rootServiceScopeProvider = default!;
 
-    public async Task RegisterDevice([Required] DeviceInstallationDto dto, CancellationToken cancellationToken)
+    public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
     {
         List<string> tags = [CultureInfo.CurrentUICulture.Name /* To send push notification to all users with specific culture */];
 
-        var userId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetUserId() : (Guid?)null;
+        var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        var deviceInstallation = await dbContext.DeviceInstallations.FindAsync([dto.InstallationId], cancellationToken);
+        await dbContext.PushNotificationSubscriptions
+            .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
+            .ExecuteDeleteAsync(cancellationToken);
 
-        if (deviceInstallation is null)
+        var subscription = dbContext.PushNotificationSubscriptions.Add(new()
         {
-            dbContext.DeviceInstallations.Add(deviceInstallation = new()
-            {
-                InstallationId = dto.InstallationId,
-                Platform = dto.Platform
-            });
-        }
+            DeviceId = dto.DeviceId,
+            Platform = dto.Platform
+        }).Entity;
 
-        dto.Patch(deviceInstallation);
+        dto.Patch(subscription);
 
-        deviceInstallation.UserId = userId;
-        deviceInstallation.Tags = [.. tags];
-        deviceInstallation.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
+        subscription.Tags = [.. tags];
+        subscription.UserSessionId = userSessionId;
+        subscription.RenewedOn = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        subscription.ExpirationTime = DateTimeOffset.UtcNow.AddMonths(1).ToUnixTimeSeconds();
 
-        if (deviceInstallation.Platform is "browser")
+        if (subscription.Platform is "browser")
         {
-            deviceInstallation.PushChannel = VapidSubscription.FromParameters(deviceInstallation.Endpoint, deviceInstallation.P256dh, deviceInstallation.Auth).ToAdsPushToken();
+            subscription.PushChannel = VapidSubscription.FromParameters(subscription.Endpoint, subscription.P256dh, subscription.Auth).ToAdsPushToken();
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeregisterDevice(string deviceInstallationId, CancellationToken cancellationToken)
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
     {
-        dbContext.DeviceInstallations.Remove(new() { InstallationId = deviceInstallationId });
+        dbContext.PushNotificationSubscriptions.Remove(new() { DeviceId = deviceId });
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RequestPush(string? title = null, string? message = null, string? action = null, Expression<Func<DeviceInstallation, bool>>? customDeviceFilter = null, CancellationToken cancellationToken = default)
+    public async Task RequestPush(string? title = null, string? message = null, string? action = null,
+        bool userRelatedPush = false,
+        Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
+        CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var query = dbContext.DeviceInstallations
-            .Where(dev => dev.ExpirationTime > now)
-            .WhereIf(customDeviceFilter is not null, customDeviceFilter!);
+        // userRelatedPush: If the BearerTokenExpiration is 14 days, it’s not practical to send push notifications 
+        // with sensitive information, like an OTP code to a device where the user hasn't used the app for over 14 days.  
+        // This is because, even if the user opens the app, they will be automatically signed out as their session has expired.  
 
-        if (customDeviceFilter is null)
+        var query = dbContext.PushNotificationSubscriptions
+            .Where(sub => sub.ExpirationTime > now)
+            .WhereIf(customSubscriptionFilter is not null, customSubscriptionFilter!)
+            .WhereIf(userRelatedPush is true, sub => (now - sub.RenewedOn) < serverApiSettings.Identity.BearerTokenExpiration.TotalSeconds);
+
+        if (customSubscriptionFilter is null)
         {
             query = query.OrderBy(_ => EF.Functions.Random()).Take(100);
         }
 
-        var devices = await query.ToListAsync(cancellationToken);
+        var subscriptions = await query.ToListAsync(cancellationToken);
 
-        var payload = new AdsPushBasicSendPayload()
+        _ = Task.Run(async () => // Let's not wait for the push notification to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
-            Title = AdsPushText.CreateUsingString(title ?? "Boilerplate"),
-            Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
-            Parameters = new Dictionary<string, object>()
+            await using var scope = rootServiceScopeProvider.Invoke();
+            var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<PushNotificationService>>();
+
+            var payload = new AdsPushBasicSendPayload()
             {
+                Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
+                Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
+                Parameters = new Dictionary<string, object>()
                 {
-                    "action", action ?? string.Empty
+                    {
+                        "action", action ?? string.Empty
+                    }
                 }
+            };
+
+            ConcurrentBag<Exception> exceptions = [];
+
+            await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
+            {
+                MaxDegreeOfParallelism = 10,
+                CancellationToken = default
+            }, async (subscription, _) =>
+            {
+                try
+                {
+                    var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
+                                        : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
+                                        : subscription.Platform is "apns" ? AdsPushTarget.Ios
+                                        : throw new NotImplementedException();
+
+                    await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
+                }
+                catch (Exception exp)
+                {
+                    exceptions.Add(exp);
+                }
+            });
+
+            if (exceptions.Any())
+            {
+                logger.LogError(new AggregateException(exceptions), "Failed to send push notifications");
             }
-        };
 
-        List<Task> tasks = [];
-
-        foreach (var deviceInstallation in devices)
-        {
-            var target = deviceInstallation.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
-                : deviceInstallation.Platform is "fcmV1" ? AdsPushTarget.Android
-                : deviceInstallation.Platform is "apns" ? AdsPushTarget.Ios
-                : throw new NotImplementedException();
-
-            tasks.Add(adsPushSender.BasicSendAsync(target, deviceInstallation.PushChannel, payload, cancellationToken));
-        }
-
-        try
-        {
-            await Task.WhenAll(tasks);
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to send push notification.");
-        }
+        }, default);
     }
 }

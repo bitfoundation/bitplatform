@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 @{
     var imageUrl = User?.ProfileImageName is null ? null : $"{profileImageUrl}&file={User.ProfileImageName}";
@@ -52,7 +52,7 @@
 
             @if (User?.ProfileImageName is not null)
             {
-                <BitButton OnClick="RemoveProfileImage" Color="BitColor.Error">
+                <BitButton IsLoading=@isSaving OnClick="WrapHandled(RemoveProfileImage)" Color="BitColor.Error">
                     @Localizer[nameof(AppStrings.Remove)]
                 </BitButton>
             }
@@ -66,7 +66,7 @@
                                   Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                     <ValidationMessage For="@(() => editUserDto.FullName)" />
 
-                    <BitDatePicker IsResponsive @bind-Value="editUserDto.BirthDate"
+                    <BitDatePicker Responsive @bind-Value="editUserDto.BirthDate"
                                    Class="edit-profile-dtp"
                                    Label="@Localizer[nameof(AppStrings.BirthDate)]"
                                    GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"

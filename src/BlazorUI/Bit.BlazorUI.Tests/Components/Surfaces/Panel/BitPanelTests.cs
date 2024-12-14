@@ -1,5 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using AngleSharp.Css.Dom;
 using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Panel;
 
@@ -12,42 +13,49 @@ public class BitPanelTests : BunitTestContext
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelIsBlockingTest(bool isBlocking)
+    public void BitPanelBlockingTest(bool blocking)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsBlocking, isBlocking);
+            parameters.Add(p => p.Blocking, blocking);
             parameters.Add(p => p.IsOpen, isPanelOpen);
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(1, bitPanel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
 
         var overlayElement = com.Find(".bit-pnl-ovl");
         overlayElement.Click();
 
-        bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(isBlocking ? 1 : 0, bitPanel.Count);
+        container = com.Find(".bit-pnl-cnt");
+        if (blocking)
+        {
+            Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
+        }
+        else
+        {
+            Assert.AreEqual("", container.GetStyle().CssText);
+        }
     }
 
     [DataTestMethod,
         DataRow(false),
         DataRow(true)
     ]
-    public void BitPanelIsModelessTest(bool isModeless)
+    public void BitPanelModelessTest(bool modeless)
     {
         var com = RenderComponent<BitPanel>(parameters =>
         {
-            parameters.Add(p => p.IsModeless, isModeless);
+            parameters.Add(p => p.Modeless, modeless);
             parameters.Add(p => p.IsOpen, true);
         });
 
         var element = com.Find(".bit-pnl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (isModeless is false).ToString());
+        Assert.AreEqual(element.Attributes["aria-modal"].Value, (modeless is false).ToString());
 
         var elementOverlay = com.FindAll(".bit-pnl-ovl");
-        Assert.AreEqual(isModeless ? 0 : 1, elementOverlay.Count);
+        Assert.AreEqual(modeless ? 0 : 1, elementOverlay.Count);
     }
 
     [DataTestMethod,
@@ -61,8 +69,8 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
-        var bitModel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(isOpen ? 1 : 0, bitModel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.AreEqual(isOpen, container.GetStyle().CssText.Contains("opacity: 1"));
     }
 
     [DataTestMethod,
@@ -178,14 +186,14 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, HandleIsOpenChanged);
         });
 
-        var bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(1, bitPanel.Count);
+        var container = com.Find(".bit-pnl-cnt");
+        Assert.IsTrue(container.GetStyle().CssText.Contains("opacity: 1"));
 
         var overlayElement = com.Find(".bit-pnl-ovl");
         overlayElement.Click();
 
-        bitPanel = com.FindAll(".bit-pnl");
-        Assert.AreEqual(0, bitPanel.Count);
+        container = com.Find(".bit-pnl-cnt");
+        Assert.AreEqual("", container.GetStyle().CssText);
     }
 
     [TestMethod]
@@ -208,8 +216,8 @@ public class BitPanelTests : BunitTestContext
     }
 
     [DataTestMethod,
-        DataRow(BitPanelPosition.Right),
-        DataRow(BitPanelPosition.Left),
+        DataRow(BitPanelPosition.End),
+        DataRow(BitPanelPosition.Start),
         DataRow(BitPanelPosition.Top),
         DataRow(BitPanelPosition.Bottom),
         DataRow(null)
@@ -229,12 +237,11 @@ public class BitPanelTests : BunitTestContext
 
         var positionClass = position switch
         {
-            BitPanelPosition.Right => "bit-pnl-right",
-            BitPanelPosition.Left => "bit-pnl-left",
+            BitPanelPosition.End => "bit-pnl-end",
+            BitPanelPosition.Start => "bit-pnl-start",
             BitPanelPosition.Top => "bit-pnl-top",
             BitPanelPosition.Bottom => "bit-pnl-bottom",
-
-            _ => "bit-pnl-right",
+            _ => "bit-pnl-end",
         };
 
         Assert.IsTrue(PanelElement.ClassList.Contains(positionClass));

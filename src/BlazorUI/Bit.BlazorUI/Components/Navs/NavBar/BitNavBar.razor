@@ -1,0 +1,53 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<nav @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="navigation"
+     aria-label="@AriaLabel"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    <CascadingValue Value="this" IsFixed="true">
+        <div style="display:none" hidden>@(Options ?? ChildContent)</div>
+    </CascadingValue>
+
+    <div style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
+        @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+        {
+            var itm = item;
+            var url = GetUrl(item);
+            var template = GetTemplate(item);
+            var isEnabled = GetIsEnabled(item);
+            var href = (isEnabled && (SelectedItem != itm || Reselectable)) ? url : null;
+
+            <_BitNavBarChild @key="@GetItemKey(item, idx.ToString())"
+                             Href="@href"
+                             Title="@GetTitle(item)"
+                             Target="@GetTarget(item)"
+                             Style="@GetItemCssStyle(item)"
+                             Disabled="@(isEnabled is false)"
+                             OnClick="() => HandleOnClick(itm)"
+                             Class="@GetItemCssClass(item, isEnabled)">
+                @if (template is not null)
+                {
+                    @template(item)
+                }
+                else if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    <i style="@Styles?.ItemIcon" class="bit-nbr-ico bit-icon bit-icon--@GetIconName(item) @Classes?.ItemIcon" />
+                    @if (IconOnly is false)
+                    {
+                        <span style="@Styles?.ItemText" class="bit-nbr-txt @Classes?.ItemText">@GetText(item)</span>
+                    }
+                }
+            </_BitNavBarChild>
+        }
+    </div>
+</nav>

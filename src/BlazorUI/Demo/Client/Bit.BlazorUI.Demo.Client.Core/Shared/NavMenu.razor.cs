@@ -87,6 +87,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Breadcrumb", Url = "/components/breadcrumb" },
                 new() { Text = "DropMenu", Url = "/components/dropmenu" },
                 new() { Text = "Nav", Url = "/components/nav", Description = "Tree" },
+                new() { Text = "NavBar", Url = "/components/navbar", Description = "NavMenu, TabPanel" },
                 new() { Text = "Pagination", Url = "/components/pagination" },
                 new() { Text = "Pivot", Url = "/components/pivot", Description = "Tab" },
             ]
@@ -140,8 +141,10 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Label",  Url = "/components/label" },
                 new() { Text = "Link", Url = "/components/link", Description = "Anchor" },
                 new() { Text = "Overlay", Url = "/components/overlay" },
+                new() { Text = "PullToRefresh", Url = "/components/pulltorefresh" },
                 new() { Text = "Separator", Url = "/components/separator" },
                 new() { Text = "Sticky", Url = "/components/sticky" },
+                new() { Text = "SwipeTrap", Url = "/components/swipetrap" },
                 new() { Text = "Text", Url = "/components/text" },
             ],
         },
@@ -153,6 +156,14 @@ public partial class NavMenu : IDisposable
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
+                new() 
+                { 
+                    Text = "Services",
+                    ChildItems = 
+                    [
+                        new() { Text = "ModalService", Url = "/components/modalservice" },
+                    ]
+                },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

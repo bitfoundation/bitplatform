@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
@@ -78,7 +78,7 @@
 
             <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                <BitLink Href="@Urls.SignUpPage">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                <BitLink Href="@($"{Urls.SignUpPage}?return-url={ReturnUrlQueryString}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
             </BitText>
         </BitStack>
     </BitStack>

@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitPanel : BitComponentBase
+public partial class BitPanel : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;
+    private bool _disposed;
     private bool _internalIsOpen;
     private string _containerId = default!;
 
@@ -13,88 +14,108 @@ public partial class BitPanel : BitComponentBase
 
 
     /// <summary>
-    /// Enables the auto scrollbar toggle behavior of the Panel.
+    /// Enables the auto scrollbar toggle behavior of the panel.
     /// </summary>
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// The content of the Panel, it can be any custom tag or text.
+    /// Whether the panel can be dismissed by clicking outside of it on the overlay.
+    /// </summary>
+    [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
+    /// The content of the panel.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Custom CSS classes for different parts of the BitPanel component.
+    /// Custom CSS classes for different parts of the panel.
     /// </summary>
     [Parameter] public BitPanelClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Used to customize how the footer inside the Panel is rendered.
+    /// The template used to render the footer section of the panel.
     /// </summary>
     [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
     /// <summary>
-    /// Used to customize how the header inside the Panel is rendered.
+    /// The template used to render the header section of the panel.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
-    /// Header text of Panel.
+    /// The text of the header section of the panel.
     /// </summary>
     [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
-    /// Whether the Panel can be light dismissed by clicking outside the Panel (on the overlay).
-    /// </summary>
-    [Parameter] public bool IsBlocking { get; set; }
-
-    /// <summary>
-    /// Whether the Panel should be modeless (e.g. not dismiss when focusing/clicking outside of the Panel). if true: IsBlocking is ignored, there will be no overlay.
-    /// </summary>
-    [Parameter] public bool IsModeless { get; set; }
-
-    /// <summary>
-    /// Whether the Panel is displayed.
+    /// Determines the openness of the panel.
     /// </summary>
     [Parameter, TwoWayBound]
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// A callback function for when the Panel is dismissed light dismiss, before the animation completes.
+    /// Removes the overlay element of the panel.
+    /// </summary>
+    [Parameter] public bool Modeless { get; set; }
+
+    /// <summary>
+    /// A callback function for when the Panel is dismissed.
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnDismiss { get; set; }
 
     /// <summary>
-    /// Position of the modal on the screen.
+    /// The event callback for when the swipe action starts on the container of the panel.
     /// </summary>
-    [Parameter] public BitPanelPosition Position { get; set; } = BitPanelPosition.Right;
+    [Parameter] public EventCallback<decimal> OnSwipeStart { get; set; }
 
     /// <summary>
-    /// Provides Height or Width for the Panel.
+    /// The event callback for when the swipe action moves on the container of the panel.
     /// </summary>
-    [Parameter] public double Size { get; set; }
+    [Parameter] public EventCallback<decimal> OnSwipeMove { get; set; }
 
     /// <summary>
-    /// Set the element selector for which the Panel disables its scroll if applicable.
+    /// The event callback for when the swipe action ends on the container of the panel.
     /// </summary>
-    [Parameter] public string ScrollerSelector { get; set; } = "body";
+    [Parameter] public EventCallback<decimal> OnSwipeEnd { get; set; }
 
     /// <summary>
-    /// Shows or hides the close button of the Panel.
+    /// The position of the panel to show on the screen.
     /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public BitPanelPosition? Position { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitPanel component.
+    /// The value of the height or width (based on the position) of the Panel.
+    /// </summary>
+    [Parameter] public double? Size { get; set; }
+
+    /// <summary>
+    /// Specifies the element selector for which the Panel disables its scroll if applicable.
+    /// </summary>
+    [Parameter] public string? ScrollerSelector { get; set; }
+
+    /// <summary>
+    /// Shows the close button of the Panel.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the panel component.
     /// </summary>
     [Parameter] public BitPanelClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// ARIA id for the subtitle of the Panel, if any.
+    /// Specifies the id for the aria-describedby attribute of the panel.
     /// </summary>
     [Parameter] public string? SubtitleAriaId { get; set; }
 
     /// <summary>
-    /// ARIA id for the title of the Panel, if any.
+    /// The swiping point (difference percentage) based on the width of the panel container to trigger the close action (default is 0.25m).
+    /// </summary>
+    [Parameter] public decimal? SwipeTrigger { get; set; }
+
+    /// <summary>
+    /// Specifies the id for the aria-labelledby attribute of the panel.
     /// </summary>
     [Parameter] public string? TitleAriaId { get; set; }
 
@@ -112,6 +133,33 @@ public partial class BitPanel : BitComponentBase
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
+    }
+
+
+
+    [JSInvokable("OnStart")]
+    public async Task _OnStart(decimal startX, decimal startY)
+    {
+        await OnSwipeStart.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? startX : startY);
+    }
+
+    [JSInvokable("OnMove")]
+    public async Task _OnMove(decimal diffX, decimal diffY)
+    {
+        await OnSwipeMove.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
+    }
+
+    [JSInvokable("OnEnd")]
+    public async Task _OnEnd(decimal diffX, decimal diffY)
+    {
+        await OnSwipeEnd.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
+    }
+
+    [JSInvokable("OnClose")]
+    public async Task _OnClose()
+    {
+        await ClosePanel(new());
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -141,6 +189,12 @@ public partial class BitPanel : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        if (firstRender)
+        {
+            var dotnetObj = DotNetObjectReference.Create(this);
+            await _js.BitPanelSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj);
+        }
+
         if (_internalIsOpen == IsOpen) return;
 
         _internalIsOpen = IsOpen;
@@ -149,7 +203,7 @@ public partial class BitPanel : BitComponentBase
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.ToggleOverflow(ScrollerSelector ?? "body", IsOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -168,7 +222,7 @@ public partial class BitPanel : BitComponentBase
 
     private async Task OnOverlayClicked(MouseEventArgs e)
     {
-        if (IsBlocking is not false) return;
+        if (Blocking is true) return;
 
         await ClosePanel(e);
     }
@@ -180,19 +234,54 @@ public partial class BitPanel : BitComponentBase
 
     private string GetPositionClass() => Position switch
     {
-        BitPanelPosition.Right => "bit-pnl-right",
-        BitPanelPosition.Left => "bit-pnl-left",
+        BitPanelPosition.Start => "bit-pnl-start",
+        BitPanelPosition.End => "bit-pnl-end",
         BitPanelPosition.Top => "bit-pnl-top",
         BitPanelPosition.Bottom => "bit-pnl-bottom",
-        _ => "bit-pnl-right"
+        _ => "bit-pnl-end"
     };
 
-    private string GetPanelSizeStyle()
+    private string GetPanelStyle()
     {
-        if (Size == 0) return string.Empty;
+        List<string> styles = [];
 
-        var style = Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width";
+        if (IsOpen)
+        {
+            styles.Add("transform:translate3d(0,0,0);opacity:1");
+        }
 
-        return FormattableString.Invariant($"{style}:{Size}px");
+        if (Size is not null)
+        {
+            var prop = Position is BitPanelPosition.Top or BitPanelPosition.Bottom ? "height" : "width";
+            styles.Add(FormattableString.Invariant($"{prop}:{Size}px"));
+        }
+
+        if (Styles?.Container is string containerStyle && containerStyle.HasValue())
+        {
+            styles.Add(containerStyle);
+        }
+
+        return string.Join(';', styles);
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsync(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual async ValueTask DisposeAsync(bool disposing)
+    {
+        if (_disposed || disposing is false) return;
+
+        try
+        {
+            await _js.BitPanelDispose(_containerId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        _disposed = true;
     }
 }

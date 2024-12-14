@@ -1,0 +1,46 @@
+﻿@inherits AppComponentBase
+
+<section>
+    <BitStack Class="stack">
+        <BitStack Horizontal AutoHeight>
+            <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">
+                @Title
+            </BitText>
+
+            <BitSpacer />
+
+            <BitButton OnClick="CloseModal"
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text"
+                       IconName="@BitIconName.ChromeClose" />
+        </BitStack>
+
+        <div class="body">
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitText Color="BitColor.Tertiary" Style="white-space:break-spaces;max-width:500px;">
+                    @Body
+                </BitText>
+                @if (OtpInput)
+                {
+                    <BitOtpInput @bind-Value="value"
+                                 AutoFocus
+                                 Length="6"
+                                 Size="BitSize.Large"
+                                 Type="BitInputType.Number"
+                                 Style="justify-content:center"
+                                 OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
+                }
+                else
+                {
+                    <BitTextField @bind-Value="value" AutoFocus />
+                }
+            </BitStack>
+        </div>
+
+        <BitStack Alignment="BitAlignment.Center" AutoHeight>
+            <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+                @Localizer[nameof(AppStrings.Ok)]
+            </BitButton>
+        </BitStack>
+    </BitStack>
+</section>

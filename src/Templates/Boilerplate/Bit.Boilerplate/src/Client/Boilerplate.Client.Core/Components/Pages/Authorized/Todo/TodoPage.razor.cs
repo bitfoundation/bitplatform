@@ -38,9 +38,12 @@ public partial class TodoPage
         await base.OnInitAsync();
     }
 
-    private async Task LoadTodoItems()
+    private async Task LoadTodoItems(bool showLoading = true)
     {
-        isLoading = true;
+        if (showLoading)
+        {
+            isLoading = true;
+        }
 
         try
         {
@@ -50,7 +53,10 @@ public partial class TodoPage
         }
         finally
         {
-            isLoading = false;
+            if (showLoading)
+            {
+                isLoading = false;
+            }
         }
     }
 
@@ -109,10 +115,16 @@ public partial class TodoPage
         FilterViewTodoItems();
     }
 
-    private void ToggleEditMode(TodoItemDto todoItem)
+    private void EnterEditMode(TodoItemDto todoItem)
     {
+        allTodoItems.ForEach(t => t.IsInEditMode = false);
         underEditTodoItemTitle = todoItem.Title;
-        todoItem.IsInEditMode = !todoItem.IsInEditMode;
+        todoItem.IsInEditMode = true;
+    }
+
+    private void ExitEditMode(TodoItemDto todoItem)
+    {
+        todoItem.IsInEditMode = false;
     }
 
     private async Task AddTodoItem()

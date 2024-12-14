@@ -81,11 +81,11 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "Position",
-            Type = "BitBadgePosition?",
+            Type = "BitPosition?",
             DefaultValue = "null",
             Description = "The position of the badge.",
             LinkType = LinkType.Link,
-            Href = "#badge-position-enum"
+            Href = "#position-enum"
         },
         new()
         {
@@ -204,8 +204,8 @@ public partial class BitBadgeDemo
         },
         new()
         {
-            Id = "badge-position-enum",
-            Name = "BitBadgePosition",
+            Id = "position-enum",
+            Name = "BitPosition",
             Description = "",
             Items =
             [
@@ -328,10 +328,10 @@ public partial class BitBadgeDemo
 
 
     private bool hidden;
-    private BitBadgePosition badgePosition;
-    private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValues(typeof(BitBadgePosition))
-        .Cast<BitBadgePosition>()
-        .Select(enumValue => new BitDropdownItem<BitBadgePosition>
+    private BitPosition badgePosition;
+    private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(typeof(BitPosition))
+        .Cast<BitPosition>()
+        .Select(enumValue => new BitDropdownItem<BitPosition>
         {
             Value = enumValue,
             Text = enumValue.ToString()
@@ -413,11 +413,11 @@ private bool hidden;";
 
 <BitDropdown Items=""badgePositionList"" @bind-Value=""badgePosition"" Style=""width: 8rem;"" />";
     private readonly string example8CsharpCode = @"
-private BitBadgePosition badgePosition;
+private BitPosition badgePosition;
 
-private List<BitDropdownItem<BitBadgePosition>> badgePositionList = Enum.GetValues(typeof(BitBadgePosition))
-    .Cast<BitBadgePosition>()
-    .Select(enumValue => new BitDropdownItem<BitBadgePosition>
+private List<BitDropdownItem<BitPosition>> badgePositionList = Enum.GetValues(typeof(BitPosition))
+    .Cast<BitPosition>()
+    .Select(enumValue => new BitDropdownItem<BitPosition>
     {
         Value = enumValue,
         Text = enumValue.ToString()

@@ -19,8 +19,8 @@
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
         var href = (isEnabled && (Nav.SelectedItem != Item || Nav.Reselectable)) ? url : null;
-        var itemKey = Nav.GetItemKey(Item);
     }
+
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
     {
         @if (isSeparator)
@@ -180,9 +180,10 @@
     {
         <ul role="list">
             <CascadingValue Value="this" IsFixed="true">
-                @foreach (var item in childItems)
+                @foreach (var (item, idx) in childItems.Select((item, idx) => (item, idx)))
                 {
-                    <_BitNavChild @key="Nav.GetItemKey(item)" Item="item" Depth="Depth + 1" />
+                    var key = Nav.GetItemKey(item, $"{Key}-{idx}");
+                    <_BitNavChild @key="@key" Key="@key" Item="item" Depth="Depth + 1" />
                 }
             </CascadingValue>
         </ul>

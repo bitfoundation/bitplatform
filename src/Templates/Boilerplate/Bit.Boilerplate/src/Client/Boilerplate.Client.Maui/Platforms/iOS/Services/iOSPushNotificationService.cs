@@ -21,7 +21,7 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
 
     public string GetDeviceId() => UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 
-    public override async Task<DeviceInstallationDto> GetDeviceInstallation(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
     {
         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
@@ -41,13 +41,13 @@ public partial class iOSPushNotificationService : PushNotificationServiceBase
             throw new InvalidOperationException("Unable to resolve token for APNS.", exp);
         }
 
-        var installation = new DeviceInstallationDto
+        var subscription = new PushNotificationSubscriptionDto
         {
-            InstallationId = GetDeviceId(),
+            DeviceId = GetDeviceId(),
             Platform = "apns",
             PushChannel = Token
         };
 
-        return installation;
+        return subscription;
     }
 }

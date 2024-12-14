@@ -1,47 +1,66 @@
 ﻿@inherits AppComponentBase
 
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+
 <section>
-    <BitStack>
+    <BitStack Style="padding:1px">
+        @if (isLoading)
+        {
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                <BitShimmer Shape="BitShimmerShape.Circle" Height="5rem" />
+                <BitStack Gap="0.5rem">
+                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1rem" Width="13rem" />
+                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1rem" Width="13rem" />
+                    <BitShimmer Shape="BitShimmerShape.Rectangle" Height="1rem" Width="13rem" />
+                </BitStack>
+            </BitStack>
+        }
         @if (currentSession is not null)
         {
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
-                <BitPersona PrimaryText="@(currentSession.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                            SecondaryText="@currentSession.Address"
-                            TertiaryText="@($"{currentSession.IP} - {GetLastSeenOn(currentSession.RenewedOn)}")"
-                            Size="BitPersonaSize.Size48"
+                <BitPersona PrimaryText="@($"{currentSession.Address} ({currentSession.IP})")"
+                            SecondaryText="@GetLastSeenOn(currentSession.RenewedOn)"
+                            TertiaryText="@currentSession.DeviceInfo"
+                            Class="session-persona"
+                            Size="BitPersonaSize.Size72"
                             Styles="@(new() { Image = "width:50%;height:50%" })"
-                            ImageInitials="✓"
-                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)"
-                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.Device)}")" />
+                            ImageInitials="@(currentSession.Privileged ? "✓" : "✘")"
+                            CoinColor="@(currentSession.Privileged ? null : BitColor.TertiaryBackground)"
+                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(currentSession.DeviceInfo)}")"
+                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
             </BitCard>
         }
 
         @if (otherSessions is not null && otherSessions.Any())
         {
             <br />
-            <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-
-            <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
-                <RowTemplate Context="session">
-                    <BitCard FullWidth>
-                        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                            <BitPersona Class="session-persona"
-                                        PrimaryText="@(session.Device ?? Localizer[nameof(AppStrings.UnknownDevice)])"
-                                        SecondaryText="@($"{session.Address} ({session.IP}) - {GetLastSeenOn(session.RenewedOn)}")"
-                                        Size="BitPersonaSize.Size48"
-                                        Presence="@GetPresence(session.RenewedOn)"
-                                        Styles="@(new() { Image = "width:50%;height:50%" })"
-                                        ImageInitials="@(session.IsValid ? "✓" : "✘")"
-                                        ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.Device)}")" />
-                            <BitSpacer />
-                            <BitButton Variant="BitVariant.Text"
-                                       OnClick="() => RevokeSession(session)"
-                                       IconName="@(isWaiting ? BitIconName.CloudUpload : BitIconName.Delete)" />
-                        </BitStack>
-                    </BitCard>
-                </RowTemplate>
-            </BitBasicList>
+            <BitPullToRefresh OnRefresh="async () => await LoadSessions(false)" ScrollerSelector=".sessions-list" Style="width:100%">
+                <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
+                <BitBasicList Items="otherSessions" EnableVirtualization Class="sessions-list">
+                    <RowTemplate Context="session">
+                        <BitCard FullWidth Style="margin-bottom:1rem">
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                                <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
+                                            SecondaryText="@GetLastSeenOn(session.RenewedOn)"
+                                            TertiaryText="@session.DeviceInfo"
+                                            Size="BitPersonaSize.Size72"
+                                            Class="other-session-persona"
+                                            Presence="@GetPresence(session.RenewedOn)"
+                                            Styles="@(new() { Image = "width:50%;height:50%" })"
+                                            ImageInitials="@(session.Privileged ? "✓" : "✘")"
+                                            CoinColor="@(session.Privileged ? null : BitColor.TertiaryBackground)"
+                                            ImageUrl="@($"/_content/Boilerplate.Client.Core/images/os/{GetImageUrl(session.DeviceInfo)}")" />
+                                <BitSpacer />
+                                <BitButton Color="BitColor.Error"
+                                           Variant="BitVariant.Text"
+                                           OnClick="WrapHandled(() => RevokeSession(session))"
+                                           IconName="@(revokingSessionIds.Contains(session.Id) ? BitIconName.Process : BitIconName.Delete)" />
+                            </BitStack>
+                        </BitCard>
+                    </RowTemplate>
+                </BitBasicList>
+            </BitPullToRefresh>
         }
     </BitStack>
 </section>

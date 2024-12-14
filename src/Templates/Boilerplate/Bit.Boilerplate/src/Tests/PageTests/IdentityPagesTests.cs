@@ -69,13 +69,13 @@ public partial class IdentityPagesTests : PageTestBase
         var identityHomePage = await signInPage.SignInWithEmail(email);
         await identityHomePage.AssertSignInSuccess(email, userFullName: null);
 
-        await dbContext.Entry(user).ReloadAsync();
+        await dbContext.Entry(user).Reference(u => u.Sessions).LoadAsync();
         Assert.AreEqual(1, user.Sessions.Count);
 
         var mainHomePage = await identityHomePage.SignOut();
         await mainHomePage.AssertSignOut();
 
-        await dbContext.Entry(user).ReloadAsync();
+        await dbContext.Entry(user).Reference(u => u.Sessions).LoadAsync();
         Assert.AreEqual(0, user.Sessions.Count);
     }
 

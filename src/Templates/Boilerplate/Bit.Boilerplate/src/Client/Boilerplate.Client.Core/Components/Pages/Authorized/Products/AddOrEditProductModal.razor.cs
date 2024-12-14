@@ -28,7 +28,7 @@ public partial class AddOrEditProductModal
         await InvokeAsync(() =>
         {
             isOpen = true;
-            product = productToShow;
+            productToShow.Patch(product);
             selectedCategoryId = (product.CategoryId ?? default).ToString();
 
             StateHasChanged();

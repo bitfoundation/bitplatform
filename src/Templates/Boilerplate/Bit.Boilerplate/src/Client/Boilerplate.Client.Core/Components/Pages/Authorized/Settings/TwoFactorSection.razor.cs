@@ -39,12 +39,14 @@ public partial class TwoFactorSection
         var response = await SendTwoFactorAuthRequest(request);
 
         recoveryCodes = response?.RecoveryCodes;
+        SnackBarService.Success(Localizer[nameof(AppStrings.TwoFactorAuthenticationEnabled)]);
     }
 
     private async Task DisableTwoFactorAuth()
     {
         var request = new TwoFactorAuthRequestDto { Enable = false };
         await SendTwoFactorAuthRequest(request);
+        SnackBarService.Success(Localizer[nameof(AppStrings.TwoFactorAuthenticationDisabled)]);
     }
 
     private async Task GenerateRecoveryCode()

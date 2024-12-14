@@ -30,7 +30,7 @@ public partial class BitButtonDemo
             Name = "AutoLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, shows the loading state while the OnClick event is in progress.",
+            Description = "If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.",
         },
         new()
         {
@@ -72,6 +72,36 @@ public partial class BitButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Preserves the foreground color of the button through hover and focus.",
+        },
+        new()
+        {
+            Name = "Float",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables floating behavior for the button, allowing it to be positioned relative to the viewport.",
+        },
+        new()
+        {
+            Name = "FloatAbsolute",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables floating behavior for the button, allowing it to be positioned relative to its container.",
+        },
+        new()
+        {
+            Name = "FloatOffset",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Specifies the offset of the floating button.",
+        },
+        new()
+        {
+            Name = "FloatPosition",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Specifies the position of the floating button.",
+            LinkType = LinkType.Link,
+            Href = "#button-position"
         },
         new()
         {
@@ -134,16 +164,23 @@ public partial class BitButtonDemo
         new()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
+            Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback for the click event of the button.",
+            Description = "The callback for the click event of the button with a bool argument passing the current loading state.",
         },
         new()
         {
             Name = "PrimaryTemplate",
             Type = "RenderFragment?",
-            DefaultValue="",
+            DefaultValue = "",
             Description = "The content of the primary section of the button (alias of the ChildContent).",
+        },
+        new()
+        {
+            Name = "Reclickable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables re-clicking in loading state when AutoLoading is enabled.",
         },
         new()
         {
@@ -599,7 +636,61 @@ public partial class BitButtonDemo
                     Description = "A tag (keyword) for the current document."
                 }
             ]
-        }
+        },
+        new()
+        {
+            Id = "button-position",
+            Name = "BitPosition",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "TopLeft",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "TopCenter",
+                    Value = "1"
+                },
+                new()
+                {
+                    Name = "TopRight",
+                    Value = "2"
+                },
+                new()
+                {
+                    Name = "CenterLeft",
+                    Value = "3"
+                },
+                new()
+                {
+                    Name = "Center",
+                    Value = "4"
+                },
+                new()
+                {
+                    Name = "CenterRight",
+                    Value = "5"
+                },
+                new()
+                {
+                    Name = "BottomLeft",
+                    Value = "6"
+                },
+                new()
+                {
+                    Name = "BottomCenter",
+                    Value = "7"
+                },
+                new()
+                {
+                    Name = "BottomRight",
+                    Value = "8"
+                }
+            ]
+        },
     ];
 
     private bool fillIsLoading;
@@ -610,6 +701,17 @@ public partial class BitButtonDemo
     private bool classesIsLoading;
 
     private bool templateIsLoading;
+
+    private string? floatOffset;
+    private BitPosition floatPosition = BitPosition.BottomRight;
+    private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.GetValues<BitPosition>()
+                                                                                .Cast<BitPosition>()
+                                                                                .Select(enumValue => new BitDropdownItem<BitPosition>
+                                                                                {
+                                                                                    Value = enumValue,
+                                                                                    Text = enumValue.ToString()
+                                                                                })
+                                                                                .ToList();
 
     private async Task LoadingFillClick()
     {
@@ -632,9 +734,36 @@ public partial class BitButtonDemo
         textIsLoading = false;
     }
 
+    private int autoLoadCount;
     private async Task AutoLoadingClick()
     {
+        autoLoadCount++;
         await Task.Delay(3000);
+    }
+
+    private int reclickableAutoLoadCount;
+    private TaskCompletionSource clickTsc = new();
+    private CancellationTokenSource delayCts = new();
+    private Task AutoLoadingReclick(bool isLoading)
+    {
+        if (isLoading)
+        {
+            clickTsc.TrySetException(new TaskCanceledException());
+            delayCts.Cancel();
+        }
+
+        delayCts = new();
+        clickTsc = new();
+
+        reclickableAutoLoadCount++;
+
+        _ = Task.Delay(3000, delayCts.Token).ContinueWith(async delayTask =>
+        {
+            await delayTask;
+            clickTsc.TrySetResult();
+        });
+
+        return clickTsc.Task;
     }
 
 
@@ -681,4 +810,7 @@ public partial class BitButtonDemo
     {
         formIsValidSubmit = false;
     }
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example9");
 }

@@ -104,6 +104,51 @@ public partial class _BitDropdownItemDemo
     private IEnumerable<string> comboBoxValues2 = [];
     private IEnumerable<string> comboBoxValues3 = [];
 
+    private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
+        new()
+        {
+            Text = "Product 100",
+            Value = "100",
+            Data = new ProductDto {
+                Id = 100,
+                Price = 60,
+                Name = "Product 100"
+            },
+            AriaLabel = "Product 100",
+            IsEnabled = true,
+            ItemType = BitDropdownItemType.Normal
+        }
+    ];
+
+    private IEnumerable<BitDropdownItem<string>> initialSelectedItems = [
+        new()
+        {
+            Text = "Product 100",
+            Value = "100",
+            Data = new ProductDto {
+                Id = 100,
+                Price = 60,
+                Name = "Product 100"
+            },
+            AriaLabel = "Product 100",
+            IsEnabled = true,
+            ItemType = BitDropdownItemType.Normal
+        },
+        new()
+        {
+            Text = "Product 99",
+            Value = "99",
+            Data = new ProductDto {
+                Id = 99,
+                Price = 75,
+                Name = "Product 99"
+            },
+            AriaLabel = "Product 99",
+            IsEnabled = true,
+            ItemType = BitDropdownItemType.Normal
+        }
+    ];
+
     protected override void OnInitialized()
     {
         virtualizeItems1 = Enumerable.Range(1, 10_000)

@@ -68,7 +68,7 @@ public partial class TestsInitializer
     private static async Task InitializeAuthenticationState(AppTestServer testServer, TestContext testContext)
     {
         var playwrightPage = new PageTest() { TestContext = testContext };
-        await playwrightPage.Setup();
+        await playwrightPage.ContextSetup();
         await playwrightPage.BrowserSetup();
 
         var currentMethodFullName = $"{typeof(TestsInitializer).FullName}.{(nameof(InitializeAuthenticationState))}";

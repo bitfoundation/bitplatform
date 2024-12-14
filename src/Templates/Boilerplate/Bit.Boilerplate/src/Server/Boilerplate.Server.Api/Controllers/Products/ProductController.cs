@@ -8,7 +8,7 @@ using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     //#if (signalR == true)
@@ -93,6 +93,8 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
+        // Checkout AppHub's comments for more info.
+        // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
         await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
     }
     //#endif

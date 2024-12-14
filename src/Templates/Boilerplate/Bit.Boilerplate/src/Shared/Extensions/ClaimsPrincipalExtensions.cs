@@ -30,10 +30,8 @@ public static partial class ClaimsPrincipalExtensions
     /// <summary>
     /// Returns the user session id stored in sessions column of user table after user sign in.
     /// </summary>
-    public static Guid? GetSessionId(this ClaimsPrincipal claimsPrincipal)
+    public static Guid GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
-        return claimsPrincipal.IsAuthenticated()
-            ? Guid.Parse(claimsPrincipal.FindFirst("session-id")!.Value) 
-            : null;
+        return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
 }

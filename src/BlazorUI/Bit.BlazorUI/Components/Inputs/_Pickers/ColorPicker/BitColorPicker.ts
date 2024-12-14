@@ -1,10 +1,4 @@
 ﻿namespace BitBlazorUI {
-    class BitController {
-        id: string = BitBlazorUI.Utils.uuidv4();
-        controller = new AbortController();
-        dotnetObj: DotNetObject | undefined;
-    }
-
     export class ColorPicker {
         private static _bitControllers: BitController[] = [];
 

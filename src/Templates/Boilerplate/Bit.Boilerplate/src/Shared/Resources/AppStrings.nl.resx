@@ -253,6 +253,9 @@
     <data name="RemoveSession" xml:space="preserve">
     <value>Sessie verwijderen</value>
   </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Probeer andere sessies te verwijderen</value>
+  </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Sessie succesvol verwijderd</value>
   </data>
@@ -270,6 +273,9 @@
   </data>
     <data name="Ok" xml:space="preserve">
     <value>Ok</value>
+  </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Zorg ervoor dat je niet meerdere sessies van de app tegelijkertijd uitvoert op hetzelfde apparaat of in dezelfde browser.</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
@@ -684,14 +690,8 @@
     <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>Inloggen met Twitter (X)</value>
   </data>
-    <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>Inloggen met Google</value>
-  </data>
-    <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>Inloggen met GitHub</value>
-  </data>
-    <data name="TwitterSignUpButtonText" xml:space="preserve">
-    <value>Meld je aan met Twitter (X)</value>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Inloggen met Apple</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Afmelden</value>
@@ -759,7 +759,7 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Inloggen als Anderse gebruiker</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
+    <data name="YouAreSignedInAs" xml:space="preserve">
     <value>U meldt zich aan als</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
@@ -843,6 +843,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Nadat je de QR-code hebt gescand of de bovenstaande sleutel hebt ingevoerd, geeft je tweefactorauthenticatie-app je een unieke code. Voer de code in het bevestigingsvak hieronder in.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is ingeschakeld.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Twee-factor-authenticatie is uitgeschakeld.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verificatie code:</value>
   </data>
@@ -924,6 +930,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>Het 2FA-token is gegenereerd en naar u verzonden.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Voer de verhoogde toegangstoken in die we u zojuist hebben gestuurd of de code van uw authenticator-app om door te gaan.</value>
+  </data>
+    <data name="ElevatedAccessToken" xml:space="preserve">
+    <value>Token {0}</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Je hebt de bevestigingsmail al aangevraagd. Probeer het opnieuw in {0}</value>
   </data>
@@ -935,6 +947,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>Je hebt al een OTP aangevraagd. Probeer het opnieuw in {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>U hebt al een elevated access token aangevraagd. Probeer het opnieuw in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP (Computergebruik)</value>
@@ -993,9 +1008,6 @@
     <data name="Recently" xml:space="preserve">
     <value>Onlangs</value>
   </data>
-    <data name="WaitForRevokeSessionDelay" xml:space="preserve">
-    <value>Je kunt Anderse sessies op dit moment niet intrekken. Probeer het opnieuw in {0}</value>
-  </data>
     <data name="Update" xml:space="preserve">
     <value>Update</value>
   </data>
@@ -1036,6 +1048,27 @@
     <!--#elif (sample == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Beheerderspaneel</value>
+  </data>
+    <data name="PaginatorSummary" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+    <data name="PaginatorFirstButtonTitle" xml:space="preserve">
+    <value>Ga naar de eerste pagina</value>
+  </data>
+    <data name="PaginatorPrevButtonTitle" xml:space="preserve">
+    <value>Ga naar de vorige pagina</value>
+  </data>
+    <data name="PaginatorNextButtonTitle" xml:space="preserve">
+    <value>Ga naar de volgende pagina</value>
+  </data>
+    <data name="PaginatorLastButtonTitle" xml:space="preserve">
+    <value>Ga naar de laatste pagina</value>
+  </data>
+    <data name="Page" xml:space="preserve">
+    <value>Pagina</value>
+  </data>
+    <data name="Of" xml:space="preserve">
+    <value>tot</value>
   </data>
     <data name="ProductsCount" xml:space="preserve">
     <value>Aantal producten</value>
@@ -1145,6 +1178,7 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>Dit zijn jouw analytische gegevens</value>
   </data>
+    <!--#endif -->
     <!--#if (captcha == "reCaptcha") -->
     <data name="InvalidGoogleRecaptchaResponse" xml:space="preserve">
     <value>Ongeldig Google reCAPTCHA-antwoord.</value>
@@ -1152,6 +1186,5 @@
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>U moet slagen voor de Google reCAPTCHA-uitdaging.</value>
   </data>
-    <!--#endif -->
     <!--#endif -->
 </root>

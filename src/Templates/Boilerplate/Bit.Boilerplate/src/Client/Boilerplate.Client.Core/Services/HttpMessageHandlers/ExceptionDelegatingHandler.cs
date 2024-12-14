@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using System.Diagnostics;
 using System.Net;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
@@ -67,6 +66,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
             || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
         {
+            serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
         finally

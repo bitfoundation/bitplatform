@@ -33,7 +33,7 @@ public partial class BitButton : BitComponentBase
     [Parameter] public bool AriaHidden { get; set; }
 
     /// <summary>
-    /// If true, shows the loading state while the OnClick event is in progress.
+    /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
     /// </summary>
     [Parameter] public bool AutoLoading { get; set; }
 
@@ -64,6 +64,30 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FixedColor { get; set; }
+
+    /// <summary>
+    /// Enables floating behavior for the button, allowing it to be positioned relative to the viewport.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Float { get; set; }
+
+    /// <summary>
+    /// Enables floating behavior for the button, allowing it to be positioned relative to its container.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FloatAbsolute { get; set; }
+
+    /// <summary>
+    /// Specifies the offset of the floating button.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? FloatOffset { get; set; }
+
+    /// <summary>
+    /// Specifies the position of the floating button.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitPosition? FloatPosition { get; set; }
 
     /// <summary>
     /// Expand the button width to 100% of the available width.
@@ -110,15 +134,20 @@ public partial class BitButton : BitComponentBase
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The callback for the click event of the button.
+    /// The callback for the click event of the button with a bool argument passing the current loading state.
     /// </summary>
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<bool> OnClick { get; set; }
 
     /// <summary>
     /// The content of the primary section of the button (alias of the ChildContent).
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? PrimaryTemplate { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking in loading state when AutoLoading is enabled.
+    /// </summary>
+    [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
     /// Reverses the positions of the icon and the main content of the button.
@@ -226,14 +255,33 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => ReversedIcon ? "bit-btn-rvi" : string.Empty);
 
-        ClassBuilder.Register(() => FixedColor ? "bit-btn-ftc" : string.Empty);
+        ClassBuilder.Register(() => FixedColor ? "bit-btn-fxc" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
+
+        ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
+                                  : Float ? "bit-btn-ffx" : string.Empty);
+
+        ClassBuilder.Register(() => (Float || FloatAbsolute) ? FloatPosition switch
+        {
+            BitPosition.TopRight => "bit-btn-trg",
+            BitPosition.TopCenter => "bit-btn-tcr",
+            BitPosition.TopLeft => "bit-btn-tlf",
+            BitPosition.CenterLeft => "bit-btn-clf",
+            BitPosition.BottomLeft => "bit-btn-blf",
+            BitPosition.BottomCenter => "bit-btn-bcr",
+            BitPosition.BottomRight => "bit-btn-brg",
+            BitPosition.CenterRight => "bit-btn-crg",
+            BitPosition.Center => "bit-btn-ctr",
+            _ => "bit-btn-brg"
+        } : string.Empty);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-btn-float-offset:{FloatOffset}" : string.Empty);
     }
 
     protected override void OnParametersSet()
@@ -263,15 +311,21 @@ public partial class BitButton : BitComponentBase
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+        if (AutoLoading && IsLoading && Reclickable is false) return;
+
+        var isLoading = IsLoading;
 
         if (AutoLoading)
         {
             if (await AssignIsLoading(true) is false) return;
         }
 
-        await OnClick.InvokeAsync(e);
+        await OnClick.InvokeAsync(isLoading);
 
-        await AssignIsLoading(false);
+        if (AutoLoading)
+        {
+            await AssignIsLoading(false);
+        }
     }
 
     private void OnSetHrefAndRel()

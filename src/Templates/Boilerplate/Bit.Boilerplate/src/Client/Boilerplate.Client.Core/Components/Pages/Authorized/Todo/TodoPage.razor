@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.TodoPage)]
 @attribute [Route("{culture?}" + Urls.TodoPage)]
-@attribute [Authorize]
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.TodoPageTitle)]</PageTitle>
@@ -22,7 +22,7 @@
                 @Localizer[nameof(AppStrings.Add)]
             </BitButton>
         </BitStack>
-        
+
         <BitStack Gap="0.25rem">
             <BitStack Horizontal VerticalAlign="BitAlignment.End" Gap="0.25rem" AutoHeight Class="todo-header">
                 <BitPivot SelectedKey="@selectedFilter" SelectedKeyChanged="FilterTodoItems" HeaderOnly>
@@ -67,59 +67,60 @@
             }
             else
             {
-                <BitBasicList Items="viewTodoItems" EnableVirtualization
-                              Class="todo-list">
-                    <EmptyContent>
-                        <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
-                            <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />
-                            <BitLabel>@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
-                        </BitStack>
-                    </EmptyContent>
-                    <RowTemplate Context="todo">
-                        <BitStack Alignment="BitAlignment.Center" Style="padding:1rem 1rem 0" AutoHeight>
-                            <BitStack Horizontal @key=@todo.Id VerticalAlign="BitAlignment.Center">
-                                @if (todo.IsInEditMode is false)
-                                {
-                                    <BitStack Grows Gap="0">
-                                        <BitCheckbox Label="@todo.Title"
-                                                     Styles="@(new() { Label = todo.IsDone ? "text-decoration:line-through" : "" })"
-                                                     DefaultValue="todo.IsDone"
-                                                     OnChange="() => ToggleIsDone(todo)" />
-                                        <BitText Typography="BitTypography.Body2">@todo.Date.ToLocalTime().ToString("F")</BitText>
-                                    </BitStack>
-
-                                    <BitStack Horizontal AutoWidth Gap="0.5rem">
-                                        <BitButton Variant="BitVariant.Text"
-                                                   IconName="@BitIconName.Edit"
-                                                   Color="BitColor.SecondaryForeground"
-                                                   Title="@Localizer[nameof(AppStrings.Edit)]"
-                                                   OnClick="WrapHandled(() => ToggleEditMode(todo))" />
-
-                                        <BitButton Color="BitColor.Error"
-                                                   Variant="BitVariant.Text"
-                                                   IconName="@BitIconName.Delete"
-                                                   Title="@Localizer[nameof(AppStrings.Remove)]"
-                                                   OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingTodoItem = todo; })" />
-                                    </BitStack>
-                                }
-                                else
-                                {
-                                    <BitTextField Style="flex-grow:1" @bind-Value="underEditTodoItemTitle" />
-
-                                    <BitButton Color="BitColor.TertiaryBackground"
-                                               Title="@Localizer[nameof(AppStrings.Cancel)]"
-                                               OnClick="WrapHandled(() => ToggleEditMode(todo))">
-                                        @Localizer[nameof(AppStrings.Cancel)]
-                                    </BitButton>
-                                    <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
-                                        @Localizer[nameof(AppStrings.Save)]
-                                    </BitButton>
-                                }
+                <BitPullToRefresh OnRefresh="async() => await LoadTodoItems(false)" ScrollerSelector=".todo-list" Style="width:100%">
+                    <BitBasicList Items="viewTodoItems" EnableVirtualization Class="todo-list">
+                        <EmptyContent>
+                            <BitStack Alignment="BitAlignment.Center" Style="padding:1rem;">
+                                <BitImage Src="/_content/Boilerplate.Client.Core/images/backgrounds/empty-todo-list-bg.svg" />
+                                <BitLabel>@Localizer[nameof(AppStrings.NoTodos)]</BitLabel>
                             </BitStack>
-                            <BitSeparator Border="BitColorKind.Tertiary" />
-                        </BitStack>
-                    </RowTemplate>
-                </BitBasicList>
+                        </EmptyContent>
+                        <RowTemplate Context="todo">
+                            <BitStack Alignment="BitAlignment.Center" Style="padding:1rem 1rem 0" AutoHeight>
+                                <BitStack Horizontal @key=@todo.Id VerticalAlign="BitAlignment.Center">
+                                    @if (todo.IsInEditMode is false)
+                                    {
+                                        <BitStack Grows Gap="0">
+                                            <BitCheckbox Label="@todo.Title"
+                                                         Styles="@(new() { Label = todo.IsDone ? "text-decoration:line-through" : "" })"
+                                                         DefaultValue="todo.IsDone"
+                                                         OnChange="() => ToggleIsDone(todo)" />
+                                            <BitText Typography="BitTypography.Body2">@todo.Date.ToLocalTime().ToString("F")</BitText>
+                                        </BitStack>
+
+                                        <BitStack Horizontal AutoWidth Gap="0.5rem">
+                                            <BitButton Variant="BitVariant.Text"
+                                                       IconName="@BitIconName.Edit"
+                                                       Color="BitColor.SecondaryForeground"
+                                                       Title="@Localizer[nameof(AppStrings.Edit)]"
+                                                       OnClick="WrapHandled(() => EnterEditMode(todo))" />
+
+                                            <BitButton Color="BitColor.Error"
+                                                       Variant="BitVariant.Text"
+                                                       IconName="@BitIconName.Delete"
+                                                       Title="@Localizer[nameof(AppStrings.Remove)]"
+                                                       OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingTodoItem = todo; })" />
+                                        </BitStack>
+                                    }
+                                    else
+                                    {
+                                        <BitTextField Style="flex-grow:1" @bind-Value="underEditTodoItemTitle" />
+
+                                        <BitButton Color="BitColor.TertiaryBackground"
+                                                   Title="@Localizer[nameof(AppStrings.Cancel)]"
+                                                   OnClick="WrapHandled(() => ExitEditMode(todo))">
+                                            @Localizer[nameof(AppStrings.Cancel)]
+                                        </BitButton>
+                                        <BitButton Title="@Localizer[nameof(AppStrings.Edit)]" OnClick="WrapHandled(() => SaveTodoItem(todo))">
+                                            @Localizer[nameof(AppStrings.Save)]
+                                        </BitButton>
+                                    }
+                                </BitStack>
+                                <BitSeparator Border="BitColorKind.Tertiary" />
+                            </BitStack>
+                        </RowTemplate>
+                    </BitBasicList>
+                </BitPullToRefresh>
             }
         </BitStack>
     </BitStack>

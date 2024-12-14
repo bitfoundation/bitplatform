@@ -1,0 +1,32 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @(Anchor ?? ChildContent)
+
+    <div @ref="_loadingRef"
+         style="@Styles?.Loading"
+         class="bit-ptr-lod @Classes?.Loading">
+        <div style="@GetSpinnerWrapperCssStyles()"
+             class="@GetSpinnerWrapperCssClasses()">
+            <div style="@GetSpinnerCssStyles()"
+                 class="@GetSpinnerCssClasses()">
+                @if (Loading is not null)
+                {
+                    @Loading
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
+                        <path d="M 11.841797 2.0019531 C 11.305068 2.0102637 10.757703 2.0595 10.205078 2.15625 C 6.1760781 2.86325 2.9197812 6.0805156 2.1757812 10.103516 C 1.0027812 16.447516 5.865 22 12 22 C 17.135 22 21.3785 18.109094 21.9375 13.121094 C 22.0045 12.525094 21.5375 12 20.9375 12 C 20.4375 12 20.007125 12.368234 19.953125 12.865234 C 19.520125 16.870234 16.118 20 12 20 C 7.059 20 3.1501562 15.497859 4.1601562 10.380859 C 4.7681562 7.2998594 7.2325938 4.8107812 10.308594 4.1757812 C 13.171297 3.5849222 15.834115 4.5449744 17.644531 6.3574219 L 16.214844 7.7871094 C 15.766844 8.2351094 16.083797 9 16.716797 9 L 21 9 C 21.552 9 22 8.552 22 8 L 22 3.7167969 C 22 3.0827969 21.234109 2.7648906 20.787109 3.2128906 L 19.056641 4.9433594 C 17.213353 3.0961125 14.661365 1.9582958 11.841797 2.0019531 z" />
+                    </svg>
+                }
+            </div>
+        </div>
+    </div>
+</div>

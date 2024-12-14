@@ -7,6 +7,7 @@ public partial class RootLayout : IDisposable
 {
     private BitDir? currentDir;
     private string? currentUrl;
+    private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
@@ -24,9 +25,9 @@ public partial class RootLayout : IDisposable
 
 
     [AutoInject] private Keyboard keyboard = default!;
+    [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private PubSubService pubSubService = default!;
-    [AutoInject] private AuthenticationManager authManager = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;

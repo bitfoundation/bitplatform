@@ -22,7 +22,7 @@ public partial class IdentityApiTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
-        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthenticationManager>();
+        var authenticationManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
 
         await authenticationManager.SignIn(new()
         {

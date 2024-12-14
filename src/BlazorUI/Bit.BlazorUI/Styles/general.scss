@@ -13,10 +13,10 @@ button {
 // Prevent text selection by user
 .bit-nts {
     user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
     -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .bit-input-hidden {
@@ -50,24 +50,34 @@ button {
 
 @keyframes bit-slide-down {
     0% {
-        transform: translate3d(0, spacing(-1.25), 0);
         pointer-events: none;
+        transform: translate3d(0, spacing(-1.25), 0);
     }
 
     100% {
-        transform: translate3d(0,0,0);
         pointer-events: auto;
+        transform: translate3d(0,0,0);
     }
 }
 
 @keyframes bit-fade-in {
     0% {
         opacity: 0;
-        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
         animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
     }
 
     100% {
         opacity: 1;
+    }
+}
+
+@keyframes bit-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
     }
 }

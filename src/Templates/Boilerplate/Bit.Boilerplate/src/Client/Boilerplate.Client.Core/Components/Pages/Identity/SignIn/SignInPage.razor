@@ -7,13 +7,13 @@
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
-        <EditForm Model="model" OnValidSubmit="WrapHandled(DoSignIn)" novalidate class="max-width">
+        <EditForm Model="model" OnValidSubmit="WrapHandled(DoSignIn)" novalidate>
             <AppDataAnnotationsValidator />
 
             <BitStack HorizontalAlign="BitAlignment.Center">
                 @if (requiresTwoFactor is false)
                 {
-                    @if (isOtpRequested is false)
+                    @if (isOtpSent is false)
                     {
                         <SignInPanel IsWaiting="isWaiting" Model="model" OnSocialSignIn="SocialSignIn" OnSendOtp="SendOtp" OnTabChange="HandleOnSignInPanelTabChange" />
                     }

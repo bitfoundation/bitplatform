@@ -1,0 +1,28 @@
+﻿@page "/components/navbar"
+
+<PageOutlet Url="components/navbar"
+            Title="NavBar"
+            Description="navbar component of the bit BlazorUI components" />
+
+<div>
+    <ComponentDemo ComponentName="NavBar"
+                   ComponentDescription="A tab panel that provides navigation links to the main areas of an app."
+                   ComponentParameters="componentParameters"
+                   ComponentSubClasses="componentSubClasses"
+                   ComponentSubEnums="componentSubEnums"
+                   Notes="The BitNavBar is a Multi-API component which can accept the list of Items in 3 different ways: BitNavBarItem class, a custom Generic class, and BitNavBarOption component.">
+        <BitPivot Classes="@(new() { Header = "pivot-sticky-header" })">
+            <BitPivotItem HeaderText="Item">
+                <_BitNavBarItemDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Custom">
+                <_BitNavBarCustomDemo />
+            </BitPivotItem>
+
+            <BitPivotItem HeaderText="Option">
+                <_BitNavBarOptionDemo />
+            </BitPivotItem>
+        </BitPivot>
+    </ComponentDemo>
+</div>

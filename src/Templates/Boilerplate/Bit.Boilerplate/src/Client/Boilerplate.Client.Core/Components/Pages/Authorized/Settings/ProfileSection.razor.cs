@@ -1,5 +1,6 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
+﻿//+:cnd:noEmit
 using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
@@ -7,7 +8,6 @@ public partial class ProfileSection
 {
     [Parameter] public bool Loading { get; set; }
     [Parameter] public UserDto? User { get; set; }
-
 
     [AutoInject] private IUserController userController = default!;
 
@@ -70,6 +70,7 @@ public partial class ProfileSection
     private async Task RemoveProfileImage()
     {
         if (isSaving || User is null) return;
+        isSaving = true;
 
         try
         {
@@ -82,6 +83,10 @@ public partial class ProfileSection
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 

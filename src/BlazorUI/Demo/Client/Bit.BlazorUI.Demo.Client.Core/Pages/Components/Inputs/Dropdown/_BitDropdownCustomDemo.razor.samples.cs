@@ -832,6 +832,21 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              MultiSelect
              ItemsProvider=""LoadItems""
              Placeholder=""Select items""
+             NameSelectors=""nameSelectors"" />
+
+<BitDropdown Label=""Single select""
+             Virtualize
+             ItemsProvider=""LoadItems""
+             Placeholder=""Select an item""
+             InitialSelectedItems=""initialSelectedItem""
+             NameSelectors=""nameSelectors"" />
+
+<BitDropdown Label=""Multi select""
+             Virtualize
+             MultiSelect
+             ItemsProvider=""LoadItems""
+             Placeholder=""Select items""
+             InitialSelectedItems=""initialSelectedItems""
              NameSelectors=""nameSelectors"" />";
     private readonly string example12CsharpCode = @"
 public class Product
@@ -849,6 +864,48 @@ public class Product
 
 private ICollection<Product>? virtualizeCustoms1;
 private ICollection<Product>? virtualizeCustoms2;
+
+private IEnumerable<Product> initialSelectedItem = [
+    new()
+    {
+        Text = ""Product 100"",
+        Value = ""100"",
+        Payload = new ProductDto {
+            Id = 100,
+            Price = 60,
+            Name = ""Product 100""
+        },
+        Label = ""Product 100"",
+        Type = BitDropdownItemType.Normal
+    }
+];
+
+private IEnumerable<Product> initialSelectedItems = [
+    new()
+    {
+        Text = ""Product 100"",
+        Value = ""100"",
+        Payload = new ProductDto {
+            Id = 100,
+            Price = 60,
+            Name = ""Product 100""
+        },
+        Label = ""Product 100"",
+        Type = BitDropdownItemType.Normal
+    },
+    new()
+    {
+        Text = ""Product 99"",
+        Value = ""99"",
+        Payload = new ProductDto {
+            Id = 99,
+            Price = 75,
+            Name = ""Product 99""
+        },
+        Label = ""Product 99"",
+        Type = BitDropdownItemType.Normal
+    }
+];
 
 protected override void OnInitialized()
 {
@@ -1280,7 +1337,14 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
-             Placeholder=""انتخاب چند گزینه ای"" />";
+             Placeholder=""انتخاب چند گزینه ای"" />
+
+<BitDropdown Label=""تک انتخابی ریسپانسیو""
+             Responsive
+             Dir=""BitDir.Rtl""
+             Items=""GetRtlCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""لطفا انتخاب کنید"" />";
     private readonly string example17CsharpCode = @"
 public class Product
 {

@@ -9,53 +9,10 @@
     font-size: spacing(2);
     z-index: $zindex-modal;
     font-family: $tg-font-family;
+    --bit-pnl-transform-factor: 1;
 
-    @keyframes bit-pnl-trans-x {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-x-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(-5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(-5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
+    &.bit-rtl {
+        --bit-pnl-transform-factor: -1;
     }
 }
 
@@ -72,24 +29,19 @@
 }
 
 .bit-pnl-cnt {
-    top: 0;
-    height: 100%;
+    opacity: 0;
     flex-grow: 1;
     display: flex;
     outline: none;
     overflow: auto;
     position: fixed;
-    max-width: 100%;
-    max-height: 100%;
     box-sizing: border-box;
     flex-direction: column;
     z-index: $zindex-callout;
-    animation-fill-mode: both;
-    animation-duration: 0.367s;
-    box-shadow: $box-shadow-callout;
-    animation-name: opacity, bit-pnl-trans-x;
     background-color: $clr-bg-pri;
+    box-shadow: $box-shadow-callout;
     border-radius: 0 0 spacing(0.25) spacing(0.25);
+    transition: transform 200ms ease-out, opacity 100ms ease-in;
 }
 
 .bit-pnl-hcn {
@@ -98,12 +50,12 @@
     display: flex;
     position: sticky;
     font-weight: 600;
+    color: $clr-fg-pri;
     align-items: center;
     font-size: spacing(2.5);
     overflow-wrap: anywhere;
-    color: $clr-fg-pri;
-    padding: spacing(2.25) spacing(3) 0;
     background-color: $clr-bg-pri;
+    padding: spacing(2.25) spacing(3) 0;
 }
 
 .bit-pnl-ttl {
@@ -174,33 +126,44 @@
     background-color: $clr-bg-pri;
 }
 
-.bit-pnl-right {
-    right: 0;
-    width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x;
+
+.bit-pnl-start {
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
+    inset-inline-start: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
-.bit-pnl-left {
-    left: 0;
-    width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x-reverse;
+.bit-pnl-end {
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
+    inset-inline-end: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
 .bit-pnl-top {
     top: 0;
-    left: 0;
-    right: 0;
     width: 100%;
-    height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y-reverse;
+    inset-inline: 0;
+    max-width: 100%;
+    max-height: 85%;
+    height: fit-content;
+    transform: translateY(-100%);
 }
 
 .bit-pnl-bottom {
-    left: 0;
-    right: 0;
     bottom: 0;
     top: unset;
     width: 100%;
-    height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y;
+    inset-inline: 0;
+    max-width: 100%;
+    max-height: 85%;
+    height: fit-content;
+    transform: translateY(100%);
 }
