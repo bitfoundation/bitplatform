@@ -1,6 +1,6 @@
 ﻿namespace BitBlazorUI {
     class BitController {
-        id: string = BitBlazorUI.Utils.uuidv4();
+        id: string = Utils.uuidv4();
         controller = new AbortController();
         dotnetObj: DotNetObject | undefined;
     }

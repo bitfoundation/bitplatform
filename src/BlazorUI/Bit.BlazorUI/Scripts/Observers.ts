@@ -11,7 +11,7 @@
             });
             observer.observe(element);
 
-            const id = BitBlazorUI.Utils.uuidv4();
+            const id = Utils.uuidv4();
             Observers._resizeObservers[id] = observer;
 
             return id;

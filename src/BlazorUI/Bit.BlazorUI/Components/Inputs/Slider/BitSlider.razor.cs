@@ -219,23 +219,23 @@ public partial class BitSlider : BitComponentBase
 
         if (IsRanged)
         {
-            _inputHeight = await _js.GetClientHeight(RootElement);
+            _inputHeight = await GetClientHeight(RootElement);
 
             if (Label.HasValue())
             {
-                var titleHeight = await _js.GetClientHeight(_labelRef);
+                var titleHeight = await GetClientHeight(_labelRef);
                 _inputHeight -= titleHeight;
             }
 
             if (ShowValue)
             {
-                var valueLabelHeight = await _js.GetClientHeight(_valueLabelRef);
+                var valueLabelHeight = await GetClientHeight(_valueLabelRef);
                 _inputHeight -= (valueLabelHeight * 2);
             }
         }
         else
         {
-            _inputHeight = await _js.GetClientHeight(_containerRef);
+            _inputHeight = await GetClientHeight(_containerRef);
         }
 
         FillSlider();
@@ -339,5 +339,13 @@ public partial class BitSlider : BitComponentBase
         SetInputValueOnRanged(LowerValue, UpperValue);
 
         FillSlider();
+    }
+
+    private async ValueTask<int> GetClientHeight(ElementReference element)
+    {
+        var height = await _js.GetProperty(element, "clientHeight");
+        return height.HasNoValue()
+            ? 0
+            : int.Parse(height);
     }
 }
