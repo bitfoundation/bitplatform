@@ -12,7 +12,7 @@
 
             return (...args: any[]) => {
                 if (timeoutItd === null) {
-                    try { fn(...args); } finally { }
+                    try { fn(...args); } catch { }
                     if (delay > 0) {
                         timeoutItd = setTimeout(() => {
                             timeoutItd = null;
@@ -27,7 +27,7 @@
                 const matchMedia = window.matchMedia("(pointer: coarse)").matches;
                 const maxTouchPoints = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
                 return matchMedia || maxTouchPoints;
-            } finally {
+            } catch {
                 return false;
             }
         }
@@ -37,19 +37,27 @@
 
             try {
                 element[property] = value;
-            } finally { }
+            } catch { }
         }
 
         public static getProperty(element: Record<string, any>, property: string): string | null {
             if (!element) return null;
 
-            return element[property].toString();
+            try {
+                return element[property].toString();
+            } catch {
+                return '';
+            }
         }
 
         public static getBoundingClientRect(element: HTMLElement): Partial<DOMRect> {
             if (!element) return {};
 
-            return element.getBoundingClientRect();
+            try {
+                return element.getBoundingClientRect();
+            } catch {
+                return {};
+            }
         }
 
         public static scrollElementIntoView(targetElementId: string) {
@@ -62,7 +70,7 @@
                     block: "start",
                     inline: "nearest"
                 });
-            } finally { }
+            } catch { }
         }
 
         public static selectText(element: HTMLInputElement) {
@@ -70,7 +78,7 @@
 
             try {
                 element.select();
-            } finally { }
+            } catch { }
         }
 
         public static setStyle(element: HTMLElement, key: string, value: string) {
@@ -78,7 +86,7 @@
 
             try {
                 (element.style as any)[key] = value;
-            } finally { }
+            } catch { }
         }
 
         public static toggleOverflow(selector: string, isHidden: boolean) {
@@ -86,19 +94,26 @@
 
             if (!element) return 0;
 
-            element.style.overflow = isHidden ? "hidden" : "";
-
-            return element.scrollTop;
+            try {
+                element.style.overflow = isHidden ? "hidden" : "";
+                return element.scrollTop;
+            } catch {
+                return 0;
+            }
         }
 
         public static uuidv4(): string {
-            const result = this.guidTemplate.replace(/[018]/g, (c) => {
-                const n = +c;
-                const random = crypto.getRandomValues(new Uint8Array(1));
-                const result = (n ^ random[0] & 15 >> n / 4);
-                return result.toString(16);
-            });
-            return result;
+            try {
+                const result = this.guidTemplate.replace(/[018]/g, (c) => {
+                    const n = +c;
+                    const random = crypto.getRandomValues(new Uint8Array(1));
+                    const result = (n ^ random[0] & 15 >> n / 4);
+                    return result.toString(16);
+                });
+                return result;
+            } catch {
+                return '';
+            }
         }
         // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
         private static guidTemplate = '10000000-1000-4000-8000-100000000000';
