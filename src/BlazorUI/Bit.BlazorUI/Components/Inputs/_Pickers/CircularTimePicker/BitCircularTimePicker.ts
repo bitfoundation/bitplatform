@@ -1,10 +1,4 @@
 ﻿namespace BitBlazorUI {
-    class BitController {
-        id: string = Utils.uuidv4();
-        controller = new AbortController();
-        dotnetObj: DotNetObject | undefined;
-    }
-
     export class CircularTimePicker {
         private static _bitControllers: BitController[] = [];
 
