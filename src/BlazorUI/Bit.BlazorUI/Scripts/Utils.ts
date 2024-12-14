@@ -12,7 +12,7 @@
 
             return (...args: any[]) => {
                 if (timeoutItd === null) {
-                    try { fn(...args); } catch { }
+                    try { fn(...args); } catch (e) { console.error("BitBlazorUI.Utils.throttle:", e); }
                     if (delay > 0) {
                         timeoutItd = setTimeout(() => {
                             timeoutItd = null;
@@ -27,7 +27,8 @@
                 const matchMedia = window.matchMedia("(pointer: coarse)").matches;
                 const maxTouchPoints = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
                 return matchMedia || maxTouchPoints;
-            } catch {
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.isTouchDevice:", e);
                 return false;
             }
         }
@@ -37,7 +38,7 @@
 
             try {
                 element[property] = value;
-            } catch { }
+            } catch (e) { console.error("BitBlazorUI.Utils.setProperty:", e); }
         }
 
         public static getProperty(element: Record<string, any>, property: string): string | null {
@@ -45,7 +46,8 @@
 
             try {
                 return element[property].toString();
-            } catch {
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.getProperty:", e);
                 return '';
             }
         }
@@ -55,7 +57,8 @@
 
             try {
                 return element.getBoundingClientRect();
-            } catch {
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.getBoundingClientRect:", e);
                 return {};
             }
         }
@@ -70,7 +73,7 @@
                     block: "start",
                     inline: "nearest"
                 });
-            } catch { }
+            } catch (e) { console.error("BitBlazorUI.Utils.scrollElementIntoView:", e); }
         }
 
         public static selectText(element: HTMLInputElement) {
@@ -78,7 +81,7 @@
 
             try {
                 element.select();
-            } catch { }
+            } catch (e) { console.error("BitBlazorUI.Utils.selectText:", e); }
         }
 
         public static setStyle(element: HTMLElement, key: string, value: string) {
@@ -86,7 +89,7 @@
 
             try {
                 (element.style as any)[key] = value;
-            } catch { }
+            } catch (e) { console.error("BitBlazorUI.Utils.setStyle:", e); }
         }
 
         public static toggleOverflow(selector: string, isHidden: boolean) {
@@ -97,7 +100,8 @@
             try {
                 element.style.overflow = isHidden ? "hidden" : "";
                 return element.scrollTop;
-            } catch {
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.toggleOverflow:", e);
                 return 0;
             }
         }
@@ -111,7 +115,8 @@
                     return result.toString(16);
                 });
                 return result;
-            } catch {
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.uuidv4:", e);
                 return '';
             }
         }
