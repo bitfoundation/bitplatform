@@ -44,6 +44,13 @@ public static partial class Program
 
         var host = builder.Build();
 
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException), host);
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            LogException(e.Exception, nameof(TaskScheduler.UnobservedTaskException), host);
+            e.SetObserved();
+        };
+
         if (CultureInfoManager.MultilingualEnabled)
         {
             var cultureCookie = await host.Services.GetRequiredService<Cookie>().GetValue(".AspNetCore.Culture");
@@ -64,5 +71,20 @@ public static partial class Program
         }
 
         await host.RunAsync();
+    }
+
+    private static void LogException(object? error, string reportedBy, WebAssemblyHost host)
+    {
+        if (host.Services is IServiceProvider services && error is Exception exp)
+        {
+            services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            {
+                { nameof(reportedBy), reportedBy }
+            }, nonInterrupting: true);
+        }
+        else
+        {
+            _ = System.Console.Error.WriteLineAsync(error?.ToString() ?? "Unknown error");
+        }
     }
 }
