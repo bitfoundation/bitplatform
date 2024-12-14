@@ -6,13 +6,13 @@
 
 <div>
     <ComponentDemo ComponentName="ProPanel"
-                   ComponentDescription="ProPanel is an advanced version of normal BitPanel with additional features that tailored to more usual use-cases."
+                   ComponentDescription="ProPanel is an advanced version of normal Panel with additional features that tailored to more usual use-cases."
                    ComponentParameters="componentParameters"
                    ComponentSubClasses="componentSubClasses"
                    ComponentSubEnums="componentSubEnums">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitButton OnClick="() => isBasicPanelOpen = true">Open Panel</BitButton>
+                <BitButton OnClick="() => isBasicPanelOpen = true">Open ProPanel</BitButton>
                 <BitProPanel @bind-IsOpen="isBasicPanelOpen">
                     <div style="width:300px">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -26,11 +26,11 @@
 
         <ComponentExampleBox Title="Header & Footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <ExamplePreview>
-                <BitButton OnClick="() => isPanelWithHeaderOpen = true">Open Panel with Header</BitButton>
+                <BitButton OnClick="() => isPanelWithHeaderOpen = true">Open ProPanel with Header</BitButton>
                 <BitProPanel @bind-IsOpen="isPanelWithHeaderOpen">
                     <Header>
                         <div>
-                            <div style="margin-bottom:4px">BitPanel with header content</div>
+                            <div style="margin-bottom:4px">BitProPanel with Header</div>
                             <BitSearchBox Placeholder="Search here..." />
                         </div>
                     </Header>
@@ -48,7 +48,7 @@
                     </Body>
                 </BitProPanel>
                 <br /><br />
-                <BitButton OnClick="() => isPanelWithFooterOpen = true">Open Panel with Footer</BitButton>
+                <BitButton OnClick="() => isPanelWithFooterOpen = true">Open ProPanel with Footer</BitButton>
                 <BitProPanel @bind-IsOpen="isPanelWithFooterOpen">
                     <Body>
                         <div style="width:300px">
@@ -72,10 +72,9 @@
 
         <ComponentExampleBox Title="Advanced options" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <ExamplePreview>
-                <div>BitPanel has some advanced options to be customized.</div>
+                <div>BitProPanel has some advanced options to be customized.</div>
                 <br /><br />
-                <div>ShowCloseButton:</div><br />
-                <BitButton OnClick="() => bitPanelRef.Open()">Open Panel</BitButton>
+                <BitButton OnClick="() => bitPanelRef.Open()">Open ProPanel with ShowCloseButton</BitButton>
                 <BitProPanel @ref="bitPanelRef" ShowCloseButton>
                     <Header>ShowCloseButton</Header>
                     <Body>
@@ -87,8 +86,7 @@
                     </Body>
                 </BitProPanel>
                 <br /><br /><br />
-                <div>Blocking:</div><br />
-                <BitButton OnClick="() => isBlockingPanelOpen = true">Open Panel</BitButton>
+                <BitButton OnClick="() => isBlockingPanelOpen = true">Open ProPanel with Blocking</BitButton>
                 <BitProPanel @bind-IsOpen="isBlockingPanelOpen" Blocking ShowCloseButton>
                     <Header>Blocking</Header>
                     <Body>
@@ -100,8 +98,7 @@
                     </Body>
                 </BitProPanel>
                 <br /><br /><br />
-                <div>Modeless:</div><br />
-                <BitButton OnClick="() => isModelessPanelOpen = true">Open Panel</BitButton>
+                <BitButton OnClick="() => isModelessPanelOpen = true">Open ProPanel with Modeless</BitButton>
                 <BitProPanel @bind-IsOpen="isModelessPanelOpen" Modeless ShowCloseButton>
                     <Header>Modeless</Header>
                     <Body>
@@ -113,8 +110,7 @@
                     </Body>
                 </BitProPanel>
                 <br /><br /><br />
-                <div>ModeFull:</div><br />
-                <BitButton OnClick="() => isModeFullPanelOpen = true">Open Panel</BitButton>
+                <BitButton OnClick="() => isModeFullPanelOpen = true">Open ProPanel with ModeFull</BitButton>
                 <BitProPanel @bind-IsOpen="isModeFullPanelOpen" ModeFull ShowCloseButton>
                     <Header>ModeFull</Header>
                     <Body>
@@ -126,8 +122,7 @@
                     </Body>
                 </BitProPanel>
                 <br /><br /><br />
-                <div>AutoToggleScroll:</div><br />
-                <BitButton OnClick="() => isAutoToggleScrollPanelOpen = true">Open Panel</BitButton>
+                <BitButton OnClick="() => isAutoToggleScrollPanelOpen = true">Open ProPanel with AutoToggleScroll</BitButton>
                 <BitProPanel @bind-IsOpen="isAutoToggleScrollPanelOpen" AutoToggleScroll>
                     <Header>AutoToggleScroll</Header>
                     <Body>
@@ -158,22 +153,22 @@
                 </div>
 
                 <BitProPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionStart" Position="BitPanelPosition.Start">
-                    BitPanel with Start position and custom Size.
+                    BitProPanel with Start position and custom Size.
                     <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </BitProPanel>
 
                 <BitProPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenPositionEnd" Position="BitPanelPosition.End">
-                    BitPanel with End position and custom Size.
+                    BitProPanel with End position and custom Size.
                     <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </BitProPanel>
 
                 <BitProPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionTop" Position="BitPanelPosition.Top">
-                    BitPanel with Top position and custom Size.
+                    BitProPanel with Top position and custom Size.
                     <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </BitProPanel>
 
                 <BitProPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionBottom" Position="BitPanelPosition.Bottom">
-                    BitPanel with Bottom position and custom Size.
+                    BitProPanel with Bottom position and custom Size.
                     <BitSpinButton @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </BitProPanel>
             </ExamplePreview>
@@ -181,22 +176,22 @@
 
         <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <ExamplePreview>
-                <div>Explore styling and class customization for BitPanel, including component styles, custom classes, and detailed styles.</div>
+                <div>Explore styling and class customization for BitProPanel, including component styles, custom classes, and detailed styles.</div>
                 <br /><br />
                 <div>Component's Style & Class:</div><br />
-                <BitButton OnClick="() => isStyledPanelOpen = true">Open Styled panel</BitButton>
+                <BitButton OnClick="() => isStyledPanelOpen = true">Open Styled ProPanel</BitButton>
                 <BitProPanel @bind-IsOpen="isStyledPanelOpen" Style="font-size: 3rem;">
                     <Header>Style</Header>
                     <Body>
-                        BitPanel with custom style.
+                        BitProPanel with custom style.
                     </Body>
                 </BitProPanel>
                 <br /><br />
-                <BitButton OnClick="() => isClassedPanelOpen = true">Open Classed panel</BitButton>
+                <BitButton OnClick="() => isClassedPanelOpen = true">Open Classed ProPanel</BitButton>
                 <BitProPanel @bind-IsOpen="isClassedPanelOpen" Class="custom-class">
                     <Header>Class</Header>
                     <Body>
-                        BitPanel with custom class:
+                        BitProPanel with custom class:
                         <div class="item">Item 1</div>
                         <div class="item">Item 2</div>
                         <div class="item">Item 3</div>
@@ -204,18 +199,18 @@
                 </BitProPanel>
                 <br /><br /><br />
                 <div><b>Styles</b> & <b>Classes</b>:</div><br />
-                <BitButton OnClick="() => isPanelStylesOpen = true">Open panel Styles</BitButton>
+                <BitButton OnClick="() => isPanelStylesOpen = true">Open ProPanel Styles</BitButton>
                 <BitProPanel @bind-IsOpen="isPanelStylesOpen"
                              Styles="@(new() { Overlay = "background-color: #4776f433;",
                                                Container = "box-shadow: 0 0 1rem tomato;" })">
                     <Header>Styles</Header>
                     <Body>
-                        BitPanel with
+                        BitProPanel with
                         <b>Styles</b> to customize its elements.
                     </Body>
                 </BitProPanel>
                 <br /><br />
-                <BitButton OnClick="() => isPanelClassesOpen = true">Open panel Classes</BitButton>
+                <BitButton OnClick="() => isPanelClassesOpen = true">Open ProPanel Classes</BitButton>
                 <BitProPanel @bind-IsOpen="isPanelClassesOpen"
                              Classes="@(new() { Container = "custom-container",
                                                 Overlay = "custom-overlay",
@@ -223,7 +218,7 @@
                                                 Header = "custom-header" })">
                     <Header>Classes</Header>
                     <Body>
-                        BitPanel with
+                        BitProPanel with
                         <b>Classes</b> to customize its elements.
                     </Body>
                 </BitProPanel>
@@ -232,7 +227,7 @@
 
         <ComponentExampleBox Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <ExamplePreview>
-                <div>Use BitPanel in right-to-left (RTL).</div>
+                <div>Use BitProPanel in right-to-left (RTL).</div>
                 <br /><br />
                 <div>
                     <div class="position-btn" dir="rtl">
