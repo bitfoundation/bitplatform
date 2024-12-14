@@ -22,3 +22,11 @@ window.addEventListener('resize', (e: any) => {
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
+
+namespace BitBlazorUI {
+    export class BitController {
+        id: string = Utils.uuidv4();
+        controller = new AbortController();
+        dotnetObj: DotNetObject | undefined;
+    }
+}
