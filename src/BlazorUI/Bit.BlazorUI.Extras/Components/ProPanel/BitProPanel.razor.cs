@@ -33,9 +33,19 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
+    /// The text of the footer section of the panel.
+    /// </summary>
+    [Parameter] public string? FooterText { get; set; }
+
+    /// <summary>
     /// The template used to render the header section of the panel.
     /// </summary>
     [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// The text of the header section of the panel.
+    /// </summary>
+    [Parameter] public string? HeaderText { get; set; }
 
     /// <summary>
     /// Determines the openness of the panel.

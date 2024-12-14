@@ -8,7 +8,7 @@
 }
 
 .bit-ppl-mfl {
-    .bit-pnl.ovl {
+    .bit-pnl-ovl {
         background-color: $clr-bg-overlay;
     }
 }
@@ -20,7 +20,6 @@
     position: sticky;
     font-weight: 600;
     color: $clr-fg-pri;
-    font-size: spacing(2.5);
     overflow-wrap: anywhere;
     background-color: $clr-bg-pri;
     padding: spacing(2) spacing(2) 0;
@@ -30,6 +29,7 @@
     flex-grow: 1;
     display: flex;
     align-items: center;
+    font-size: spacing(2.5);
 }
 
 .bit-ppl-cls {

@@ -50,10 +50,24 @@ public partial class BitProPanelDemo
         },
         new()
         {
+            Name = "FooterText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the footer section of the panel.",
+        },
+        new()
+        {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The template used to render the header section of the panel.",
+        },
+        new()
+        {
+            Name = "HeaderText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the header section of the panel.",
         },
         new()
         {
@@ -242,36 +256,38 @@ public partial class BitProPanelDemo
 
 
 
-    private bool isBasicPanelOpen;
+    private bool isBasicProPanelOpen;
 
-    private bool isPanelWithHeaderOpen;
-    private bool isPanelWithFooterOpen;
+    private bool isProPanelWithHeaderTextOpen;
+    private bool isProPanelWithHeaderOpen;
+    private bool isProPanelWithFooterTextOpen;
+    private bool isProPanelWithFooterOpen;
 
-    private bool isBlockingPanelOpen;
-    private bool isModelessPanelOpen;
-    private bool isModeFullPanelOpen;
-    private bool isAutoToggleScrollPanelOpen;
-    private BitProPanel bitPanelRef = default!;
+    private bool isBlockingProPanelOpen;
+    private bool isModelessProPanelOpen;
+    private bool isModeFullProPanelOpen;
+    private bool isAutoToggleScrollProPanelOpen;
+    private BitProPanel bitProPanelRef = default!;
 
-    private double customPanelSize = 300;
-    private bool isOpenInPositionStart;
-    private bool isOpenPositionEnd;
-    private bool isOpenInPositionTop;
-    private bool isOpenInPositionBottom;
+    private double customProPanelSize = 300;
+    private bool isStartProPanelOpen;
+    private bool isEndProPanelOpen;
+    private bool isTopProPanelOpen;
+    private bool isBottomProPanelOpen;
 
-    private bool isStyledPanelOpen;
-    private bool isClassedPanelOpen;
-    private bool isPanelStylesOpen;
-    private bool isPanelClassesOpen;
+    private bool isStyledProPanelOpen;
+    private bool isClassedProPanelOpen;
+    private bool isProPanelStylesOpen;
+    private bool isProPanelClassesOpen;
 
-    private bool isRtlPanelOpenStart;
-    private bool isRtlPanelOpenEnd;
+    private bool isRtlProPanelOpenStart;
+    private bool isRtlProPanelOpenEnd;
 
 
 
     private readonly string example1RazorCode = @"
-<BitButton OnClick=""() => isBasicPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isBasicPanelOpen"">
+<BitButton OnClick=""() => isBasicProPanelOpen = true"">Open ProPanel</BitButton>
+<BitProPanel @bind-IsOpen=""isBasicProPanelOpen"">
     <div style=""width:300px"">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -280,14 +296,28 @@ public partial class BitProPanelDemo
     </div>
 </BitProPanel>";
     private readonly string example1CsharpCode = @"
-private bool isBasicPanelOpen;";
+private bool isBasicProPanelOpen;";
 
     private readonly string example2RazorCode = @"
-<BitButton OnClick=""() => isPanelWithHeaderOpen = true"">Open Panel with Header</BitButton>
-<BitProPanel @bind-IsOpen=""isPanelWithHeaderOpen"">
+<BitButton OnClick=""() => isProPanelWithHeaderTextOpen = true"">Open ProPanel with HeaderText</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelWithHeaderTextOpen"" HeaderText=""BitProPanel with HeaderText"">
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitProPanel>
+
+<BitButton OnClick=""() => isProPanelWithHeaderOpen = true"">Open ProPanel with Header</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelWithHeaderOpen"">
     <Header>
         <div>
-            <div style=""margin-bottom:4px"">BitPanel with header content</div>
+            <div style=""margin-bottom:4px"">BitProPanel with Header</div>
             <BitSearchBox Placeholder=""Search here..."" />
         </div>
     </Header>
@@ -305,8 +335,23 @@ private bool isBasicPanelOpen;";
     </Body>
 </BitProPanel>
 
-<BitButton OnClick=""() => isPanelWithFooterOpen = true"">Open Panel with Footer</BitButton>
-<BitProPanel @bind-IsOpen=""isPanelWithFooterOpen"">
+
+<BitButton OnClick=""() => isProPanelWithFooterTextOpen = true"">Open ProPanel with FooterText</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelWithFooterTextOpen"" FooterText=""BitProPanel with FooterText"">
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitProPanel>
+
+<BitButton OnClick=""() => isProPanelWithFooterOpen = true"">Open ProPanel with Footer</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelWithFooterOpen"">
     <Body>
         <div style=""width:300px"">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -320,119 +365,125 @@ private bool isBasicPanelOpen;";
         </div>
     </Body>
     <Footer>
-        <BitButton OnClick=""() => isPanelWithFooterOpen = false"">Save</BitButton>
-        <BitButton OnClick=""() => isPanelWithFooterOpen = false"" Variant=""BitVariant.Outline"">Close</BitButton>
+        <h3 style=""margin-bottom:4px"">BitProPanel with Footer</h3>
+        <BitButton OnClick=""() => isProPanelWithFooterOpen = false"">Save</BitButton>
+        <BitButton OnClick=""() => isProPanelWithFooterOpen = false"" Variant=""BitVariant.Outline"">Close</BitButton>
     </Footer>
 </BitProPanel>";
     private readonly string example2CsharpCode = @"
-private bool isPanelWithHeaderOpen;
-private bool isPanelWithFooterOpen;";
+private bool isProPanelWithHeaderTextOpen;
+private bool isProPanelWithHeaderOpen;
+private bool isProPanelWithFooterTextOpen;
+private bool isProPanelWithFooterOpen;";
 
     private readonly string example3RazorCode = @"
-<BitButton OnClick=""() => bitPanelRef.Open()"">Open Panel</BitButton>
-<BitProPanel @ref=""bitPanelRef"" ShowCloseButton>
-    <Header>ShowCloseButton</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
+<BitButton OnClick=""() => bitProPanelRef.Open()"">Open ProPanel with ShowCloseButton</BitButton>
+<BitProPanel @ref=""bitProPanelRef"" HeaderText=""ShowCloseButton"" ShowCloseButton>
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isBlockingPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isBlockingPanelOpen"" Blocking ShowCloseButton>
-    <Header>Blocking</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
+<BitButton OnClick=""() => isBlockingProPanelOpen = true"">Open ProPanel with Blocking</BitButton>
+<BitProPanel @bind-IsOpen=""isBlockingProPanelOpen"" HeaderText=""Blocking"" ShowCloseButton Blocking>
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isModelessPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isModelessPanelOpen"" Modeless ShowCloseButton>
-    <Header>Modeless</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
+<BitButton OnClick=""() => isModelessProPanelOpen = true"">Open ProPanel with Modeless</BitButton>
+<BitProPanel @bind-IsOpen=""isModelessProPanelOpen"" HeaderText=""Modeless"" ShowCloseButton Modeless>
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isModeFullPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isModeFullPanelOpen"" ModeFull ShowCloseButton>
-    <Header>ModeFull</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
+<BitButton OnClick=""() => isModeFullProPanelOpen = true"">Open ProPanel with ModeFull</BitButton>
+<BitProPanel @bind-IsOpen=""isModeFullProPanelOpen"" HeaderText=""ModeFull"" ShowCloseButton ModeFull>
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
-    <Header>AutoToggleScroll</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
-</BitProPanel>
-
-<BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>
-<BitProPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
-    <Header>AutoToggleScroll</Header>
-    <Body>
-        <div style=""width:300px"">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-            amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-            sagittis nunc, ut interdum ipsum vestibulum non.
-        </div>
-    </Body>
+<BitButton OnClick=""() => isAutoToggleScrollProPanelOpen = true"">Open ProPanel with AutoToggleScroll</BitButton>
+<BitProPanel @bind-IsOpen=""isAutoToggleScrollProPanelOpen"" HeaderText=""AutoToggleScroll"" AutoToggleScroll>
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non.
+    </div>
 </BitProPanel>";
     private readonly string example3CsharpCode = @"
-private bool isBlockingPanelOpen;
-private bool isModelessPanelOpen;
-private bool isModeFullPanelOpen;
-private bool isAutoToggleScrollPanelOpen;
-private BitProPanel bitPanelRef = default!;";
+private bool isBlockingProPanelOpen;
+private bool isModelessProPanelOpen;
+private bool isModeFullProPanelOpen;
+private bool isAutoToggleScrollProPanelOpen;
+private BitProPanel bitProPanelRef = default!;";
 
     private readonly string example4RazorCode = @"
-<BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
 
-<BitButton OnClick=""() => isOpenInPositionStart = true"">Start</BitButton>
-<BitButton OnClick=""() => isOpenPositionEnd = true"">End</BitButton>
-<BitButton OnClick=""() => isOpenInPositionTop = true"">Top</BitButton>
-<BitButton OnClick=""() => isOpenInPositionBottom = true"">Bottom</BitButton>
+<BitButton OnClick=""() => isStartProPanelOpen = true"">Start</BitButton>
+<BitButton OnClick=""() => isEndProPanelOpen = true"">End</BitButton>
 
-<BitProPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenInPositionStart"" Position=""BitPanelPosition.Start"">
-    BitPanel with Start position and custom Size.
-    <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitButton OnClick=""() => isTopProPanelOpen = true"">Top</BitButton>
+<BitButton OnClick=""() => isBottomProPanelOpen = true"">Bottom</BitButton>
+
+
+<BitProPanel @bind-Size=""customProPanelSize""
+             @bind-IsOpen=""isStartProPanelOpen""
+             HeaderText=""Start BitProPanel""
+             Position=""BitPanelPosition.Start"">
+    BitProPanel with Start position and custom Size.
+    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis.
 </BitProPanel>
 
-<BitProPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenPositionEnd"" Position=""BitPanelPosition.End"">
-    BitPanel with End position and custom Size.
-    <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitProPanel @bind-Size=""customProPanelSize""
+             @bind-IsOpen=""isEndProPanelOpen""
+             HeaderText=""End BitProPanel""
+             Position=""BitPanelPosition.End"">
+    BitProPanel with End position and custom Size.
+    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis.
 </BitProPanel>
 
-<BitProPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenInPositionTop"" Position=""BitPanelPosition.Top"">
-    BitPanel with Top position and custom Size.
-    <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitProPanel @bind-Size=""customProPanelSize""
+             @bind-IsOpen=""isTopProPanelOpen""
+             HeaderText=""Top BitProPanel""
+             Position=""BitPanelPosition.Top"">
+    BitProPanel with Top position and custom Size.
+    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis.
 </BitProPanel>
 
-<BitProPanel @bind-Size=""customPanelSize"" @bind-IsOpen=""isOpenInPositionBottom"" Position=""BitPanelPosition.Bottom"">
-    BitPanel with Bottom position and custom Size.
-    <BitSpinButton @bind-Value=""customPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+<BitProPanel @bind-Size=""customProPanelSize""
+             @bind-IsOpen=""isBottomProPanelOpen""
+             HeaderText=""Bottom BitProPanel""
+             Position=""BitPanelPosition.Bottom"">
+    BitProPanel with Bottom position and custom Size.
+    <BitSpinButton @bind-Value=""customProPanelSize"" Mode=""BitSpinButtonMode.Inline"" Label=""Custom size"" />
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+    turpis.
 </BitProPanel>";
     private readonly string example4CsharpCode = @"
 private double customPanelSize = 300;
@@ -444,8 +495,8 @@ private bool isOpenInPositionBottom;";
     private readonly string example5RazorCode = @"
 <style>
     .custom-class .item {
-        width: 3rem;
-        height: 3rem;
+        color: black;
+        padding: 1rem;
         margin: 0.5rem;
         border-radius: 0.5rem;
         background-color: brown;
@@ -453,66 +504,84 @@ private bool isOpenInPositionBottom;";
 
     .custom-container {
         border: 0.25rem solid #0054C6;
-        border-end-start-radius: 1rem;
-        border-start-start-radius: 1rem;
     }
 
     .custom-overlay {
         background-color: #ffbd5a66;
     }
 
-    .custom-header {
-        padding-bottom: 1.25rem;
+    .custom-header-container {
+        padding: 1.5rem;
         background-color: tomato;
     }
 
+    .custom-header {
+        font-size: 2rem;
+    }
+
     .custom-body {
-        padding-top: 1.25rem;
+        color: black;
         background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
     }
 </style>
 
-<BitButton OnClick=""() => isStyledPanelOpen = true"">Open Styled panel</BitButton>
-<BitProPanel @bind-IsOpen=""isStyledPanelOpen"" Style=""font-size: 3rem;"">
-    <Header>Style</Header>
-    <Body>
-        BitPanel with custom style.
-    </Body>
+<BitButton OnClick=""() => isStyledProPanelOpen = true"">Open Styled ProPanel</BitButton>
+<BitProPanel @bind-IsOpen=""isStyledProPanelOpen"" HeaderText=""Style"" ShowCloseButton Style=""font-size: 3rem;"">
+    BitProPanel with custom style.
 </BitProPanel>
 
-<BitButton OnClick=""() => isClassedPanelOpen = true"">Open Classed panel</BitButton>
-<BitProPanel @bind-IsOpen=""isClassedPanelOpen"" Class=""custom-class"">
-    <Header>Class</Header>
-    <Body>
-        BitPanel with custom class:
-        <div class=""item"">Item 1</div>
-        <div class=""item"">Item 2</div>
-        <div class=""item"">Item 3</div>
-    </Body>
+<BitButton OnClick=""() => isClassedProPanelOpen = true"">Open Classed ProPanel</BitButton>
+<BitProPanel @bind-IsOpen=""isClassedProPanelOpen"" HeaderText=""Class"" ShowCloseButton Class=""custom-class"">
+    BitProPanel with custom class:
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isPanelStylesOpen = true"">Open panel Styles</BitButton>
-<BitProPanel @bind-IsOpen=""isPanelStylesOpen""
+<BitButton OnClick=""() => isProPanelStylesOpen = true"">Open ProPanel Styles</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelStylesOpen""
+             HeaderText=""Styles"" ShowCloseButton
              Styles=""@(new() { Overlay = ""background-color: #4776f433;"",
                                Container = ""box-shadow: 0 0 1rem tomato;"" })"">
-    <Header>Styles</Header>
-    <Body>
-        BitPanel with
-        <b>Styles</b> to customize its elements.
-    </Body>
+    BitProPanel with <b>Styles</b> to customize its elements.
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis.
+    </div>
 </BitProPanel>
 
-<BitButton OnClick=""() => isPanelClassesOpen = true"">Open panel Classes</BitButton>
-<BitProPanel @bind-IsOpen=""isPanelClassesOpen""
+<BitButton OnClick=""() => isProPanelClassesOpen = true"">Open ProPanel Classes</BitButton>
+<BitProPanel @bind-IsOpen=""isProPanelClassesOpen""
+             HeaderText=""Classes"" ShowCloseButton
+             FooterText=""This is a footer text!""
              Classes=""@(new() { Container = ""custom-container"",
                                 Overlay = ""custom-overlay"",
+                                HeaderContainer = ""custom-header-container"",
+                                Header = ""custom-header"",
                                 Body = ""custom-body"",
-                                Header = ""custom-header"" })"">
-    <Header>Classes</Header>
-    <Body>
-        BitPanel with
-        <b>Classes</b> to customize its elements.
-    </Body>
+                                Footer = ""custom-footer"" })"">
+    BitProPanel with <b>Classes</b> to customize its elements.
+    <div style=""width:300px"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis.
+    </div>
 </BitProPanel>";
     private readonly string example5CsharpCode = @"
 private bool isStyledPanelOpen;
@@ -524,30 +593,29 @@ private bool isPanelClassesOpen;";
 <BitButton OnClick=""() => isRtlPanelOpenStart = true"">آغاز</BitButton>
 <BitButton OnClick=""() => isRtlPanelOpenEnd = true"">پایان</BitButton>
 
-<BitProPanel @bind-IsOpen=""isRtlPanelOpenStart"" Dir=""BitDir.Rtl"" Position=""BitPanelPosition.Start"">
-    <Header>سرصفحه ی آغاز</Header>
-    <Body>
-        <div style=""width:300px"">
-            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-        </div>
-    </Body>
-</BitProPanel>
-
-<BitProPanel @bind-IsOpen=""isRtlPanelOpenEnd"" Dir=""BitDir.Rtl"" Position=""BitPanelPosition.End"">
-    <Header>سرصفحه ی پایان</Header>
-    <Body>
-        <div style=""width:300px"">
-            لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
-            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-            کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-            در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-        </div>
-    </Body>
+<BitProPanel @bind-IsOpen=""isRtlProPanelOpenStart""
+             Dir=""BitDir.Rtl""
+             HeaderText=""سرصفحه ی آغاز""
+             Position=""BitPanelPosition.Start"">
+    <div style=""width:300px"">
+        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+    </div>
+</BitProPanel
+<BitProPanel @bind-IsOpen=""isRtlProPanelOpenEnd""
+             Dir=""BitDir.Rtl""
+             HeaderText=""سرصفحه ی پایان""
+             Position=""BitPanelPosition.End"">
+    <div style=""width:300px"">
+        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
+        چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
+        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
+        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+    </div>
 </BitProPanel>";
     private readonly string example6CsharpCode = @"
-private bool isRtlPanelOpenStart;
-private bool isRtlPanelOpenEnd;";
+private bool isRtlProPanelOpenStart;
+private bool isRtlProPanelOpenEnd;";
 }

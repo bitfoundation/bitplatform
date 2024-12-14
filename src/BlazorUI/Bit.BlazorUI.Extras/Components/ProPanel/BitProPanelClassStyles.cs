@@ -30,5 +30,5 @@ public class BitProPanelClassStyles : BitPanelClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the footer of the BitProPanel.
     /// </summary>
-    public string? FooterContainer { get; set; }
+    public string? Footer { get; set; }
 }

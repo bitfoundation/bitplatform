@@ -4,7 +4,7 @@
 <BitPanel AriaLabel="@AriaLabel"
           Class="@ClassBuilder.Value"
           Dir="Dir"
-          @attributes="@HtmlAttributes"
+          @attributes="HtmlAttributes"
           Id="@Id"
           IsEnabled="IsEnabled"
           Style="@StyleBuilder.Value"
@@ -21,16 +21,22 @@
           OnSwipeEnd="OnSwipeEnd"
           Position="Position"
           Size="Size"
-          ScrollerSelector="ScrollerSelector"
+          ScrollerSelector="@ScrollerSelector"
           Styles="Styles"
           SwipeTrigger="SwipeTrigger">
-    @if (Header is not null || ShowCloseButton)
+    @if (Header is not null || HeaderText is not null || ShowCloseButton)
     {
-        <div style="@Styles?.HeaderContainer" class="bit-ppl-hcn @Classes?.Header">
+        <div style="@Styles?.HeaderContainer" class="bit-ppl-hcn @Classes?.HeaderContainer">
             @if (Header is not null)
             {
                 <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
                     @Header
+                </div>
+            }
+            else if (HeaderText is not null)
+            {
+                <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
+                    @HeaderText
                 </div>
             }
 
@@ -51,8 +57,14 @@
 
     @if (Footer is not null)
     {
-        <div style="@Styles?.FooterContainer" class="bit-ppl-fcn @Classes?.FooterContainer">
+        <div style="@Styles?.Footer" class="bit-ppl-fcn @Classes?.Footer">
             @Footer
+        </div>
+    }
+    else if (FooterText is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-ppl-fcn @Classes?.Footer">
+            @FooterText
         </div>
     }
 </BitPanel>
