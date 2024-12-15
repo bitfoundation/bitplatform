@@ -152,9 +152,6 @@ public static partial class Program
         app.UseSiteMap();
 
         // Handle the rest of requests with blazor
-        //#if (framework == 'net9.0')
-        app.MapStaticAssets();
-        //#endif
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
