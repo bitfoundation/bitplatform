@@ -184,24 +184,20 @@ public partial class BitSwipeTrapDemo
 
 
     private bool isTriggeredBasic;
-    private BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
-    private BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
-
+    BitSwipeTrapEventArgs? swipeTrapEventArgsBasic;
+    BitSwipeTrapTriggerArgs? swipeTrapTriggerArgsBasic;
     private void HandleOnStartBasic(BitSwipeTrapEventArgs args)
     {
         swipeTrapEventArgsBasic = args;
     }
-
     private void HandleOnMoveBasic(BitSwipeTrapEventArgs args)
     {
         swipeTrapEventArgsBasic = args;
     }
-
     private void HandleOnEndBasic(BitSwipeTrapEventArgs args)
     {
         swipeTrapEventArgsBasic = args;
     }
-
     private void HandleOnTriggerBasic(BitSwipeTrapTriggerArgs args)
     {
         isTriggeredBasic = true;
@@ -216,30 +212,24 @@ public partial class BitSwipeTrapDemo
     }
 
 
-
     private decimal diffXPanel;
     private bool isPanelOpen;
-
     private void OpenPanel()
     {
         isPanelOpen = true;
     }
-
     private void ClosePanel()
     {
         isPanelOpen = false;
     }
-
     private void HandleOnMovePanel(BitSwipeTrapEventArgs args)
     {
         diffXPanel = args.DiffX;
     }
-
     private void HandleOnEndPanel(BitSwipeTrapEventArgs args)
     {
         diffXPanel = 0;
     }
-
     private void HandleOnTriggerPanel(BitSwipeTrapTriggerArgs args)
     {
         if (args.Direction == BitSwipeDirection.Left)
@@ -247,28 +237,18 @@ public partial class BitSwipeTrapDemo
             diffXPanel = 0;
             ClosePanel();
         }
-        else if (args.Direction == BitSwipeDirection.Right)
-        {
-            OpenPanel();
-        }
     }
     private string GetPanelStyle()
     {
-        return diffXPanel switch
-        {
-            0 => string.Empty,
-            < 0 => $"transform: translateX({diffXPanel}px)",
-            > 0 => $"transform: translateX(calc(-100% + {diffXPanel}px))"
-        };
+        return diffXPanel < 0 ? $"transform: translateX({diffXPanel}px)" : "";
     }
 
 
     private int deletingIndex = -1;
     private bool isListDialogOpen;
     private TaskCompletionSource listTcs;
-    private List<int> itemsList = [.. Enumerable.Range(0, 13)];
-    private decimal[] diffXList = [.. Enumerable.Repeat(0m, 13)];
-
+    private List<int> itemsList = Enumerable.Range(0, 10).ToList();
+    private decimal[] diffXList = Enumerable.Repeat(0m, 10).ToArray();
     private void HandleOnMoveList(BitSwipeTrapEventArgs args, int index)
     {
         diffXList[index] = args.DiffX;
@@ -280,7 +260,6 @@ public partial class BitSwipeTrapDemo
             diffXList[index] = 0;
         }
     }
-
     private async Task HandleOnTriggerList(BitSwipeTrapTriggerArgs args, int index)
     {
         if (args.Direction == BitSwipeDirection.Right)
@@ -294,13 +273,11 @@ public partial class BitSwipeTrapDemo
             deletingIndex = -1;
         }
     }
-
     private string GetRowStyle(int index)
     {
         var x = Math.Min(diffXList[index], 60);
-        return x > 0 ? $"transform: translateX({x}px)" : string.Empty;
+        return x > 0 ? $"transform: translateX({x}px)" : "";
     }
-
     private void HandleOnOkList()
     {
         if (deletingIndex != -1)
@@ -309,10 +286,101 @@ public partial class BitSwipeTrapDemo
         }
         listTcs.SetResult();
     }
-
     private void HandleOnCancelList()
     {
         listTcs.SetResult();
+    }
+    private void ResetList()
+    {
+        itemsList = Enumerable.Range(0, 10).ToList();
+    }
+
+
+    private decimal? diffXPanelAdvanced;
+    private BitSwipeDirection? direction;
+    private BitSwipeDirection? panelOpen;
+    private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
+    {
+        panelOpen = swipeDirection;
+        diffXPanelAdvanced = 0;
+    }
+    private void ClosePanelAdvanced()
+    {
+        panelOpen = null;
+        diffXPanelAdvanced = null;
+    }
+    private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
+    {
+        diffXPanelAdvanced = args.DiffX;
+
+        if (Math.Abs(args.DiffX) > 20 || Math.Abs(args.DiffY) > 20)
+        {
+            direction = Math.Abs(args.DiffX) > Math.Abs(args.DiffY)
+            ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
+            : args.DiffY > 0 ? BitSwipeDirection.Bottom : BitSwipeDirection.Top;
+        }
+        else
+        {
+            direction = null;
+        }
+    }
+    private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
+    {
+        if (args.Direction == BitSwipeDirection.Left)
+        {
+            if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Right)
+            {
+                OpenPanelAdvanced(BitSwipeDirection.Right);
+            }
+            else if (panelOpen == BitSwipeDirection.Left)
+            {
+                ClosePanelAdvanced();
+            }
+        }
+        else if (args.Direction == BitSwipeDirection.Right)
+        {
+            if (panelOpen.HasValue is false || panelOpen == BitSwipeDirection.Left)
+            {
+                OpenPanelAdvanced(BitSwipeDirection.Left);
+            }
+            else if (panelOpen == BitSwipeDirection.Right)
+            {
+                ClosePanelAdvanced();
+            }
+        }
+
+    }
+    private string GetLeftPanelAdvancedStyle()
+    {
+        if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) ||
+            panelOpen == BitSwipeDirection.Left)
+        {
+            return diffXPanelAdvanced switch
+            {
+                0 or > 200 => "transform: translateX(0px)",
+                < 0 and < 200 => $"transform: translateX({diffXPanelAdvanced}px)",
+                > 0 => $"transform: translateX(calc(-100% + {diffXPanelAdvanced}px))",
+                _ => string.Empty
+            };
+        }
+
+        return string.Empty;
+    }
+    private string GetRightPanelAdvancedStyle()
+    {
+        if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) ||
+            panelOpen == BitSwipeDirection.Right)
+        {
+            return diffXPanelAdvanced switch
+            {
+                0 or < -200 => "transform: translateX(0px)",
+                > 0 => $"transform: translateX({diffXPanelAdvanced}px)",
+                < 0 => $"transform: translateX(calc(100% - {(-1 * diffXPanelAdvanced)}px))",
+                _ => string.Empty
+            };
+        }
+
+        return string.Empty;
     }
 }
 
