@@ -124,16 +124,16 @@ public partial class Program
 
     private static void LogException(object? error, string reportedBy)
     {
-        var errorMessage = error?.ToString() ?? "Unknown error";
         if (Services is not null && error is Exception exp)
         {
-            Services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new() 
-            { 
+            Services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            {
                 { nameof(reportedBy), reportedBy }
-            });
+            }, nonInterrupting: true);
         }
         else
         {
+            var errorMessage = error?.ToString() ?? "Unknown error";
             Clipboard.SetText(errorMessage);
             System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

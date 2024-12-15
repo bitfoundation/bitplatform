@@ -2,12 +2,6 @@
 
 internal static class UtilsJsRuntimeExtensions
 {
-    internal static ValueTask Log(this IJSRuntime jsRuntime, object value)
-    {
-        return jsRuntime.InvokeVoid("console.log", value);
-    }
-
-
     internal static ValueTask<decimal> GetBodyWidth(this IJSRuntime jsRuntime)
     {
         return jsRuntime.Invoke<decimal>("BitBlazorUI.Utils.getBodyWidth");
@@ -23,12 +17,6 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask<string> GetProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
     {
         return jsRuntime.Invoke<string>("BitBlazorUI.Utils.getProperty", element, property);
-    }
-
-
-    internal static ValueTask<int> GetClientHeight(this IJSRuntime jsRuntime, ElementReference element)
-    {
-        return jsRuntime.Invoke<int>("BitBlazorUI.Utils.getClientHeight", element);
     }
 
 
@@ -53,18 +41,6 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask SetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setStyle", element, key, value);
-    }
-
-
-    internal static ValueTask PreventDefault(this IJSRuntime jsRuntime, ElementReference element, string @event)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefault", element, @event);
-    }
-
-
-    internal static ValueTask<TransformMatrix> GetComputedTransform(this IJSRuntime jsRuntime, ElementReference element)
-    {
-        return jsRuntime.Invoke<TransformMatrix>("BitBlazorUI.Utils.getComputedTransform", element);
     }
 
 
