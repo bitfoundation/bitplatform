@@ -16,6 +16,14 @@
         <SupportedPlatform Include="browser" />
     </ItemGroup>
 
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <InternalsVisibleTo Include="Bit.BlazorUI.Extras, PublicKey=00240000048000009400000006020000002400005253413100040000010001008d726fe8f1bed8ca2a003848640c872c6a5f2191c81eda677b249a6e34bd9134eba9ff7251582a5020cb3eee83a61e7034ce712f5873d60f7c3c61f48592b256c560d7b3384e9889e4f81e4d406bc2b639915a4062d60751193ae66028d7bd4b9a3bf0823f1e38abe5eadc3cd9615c6ff811974a9f6f89297dc2a722bf23d0bb"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+        <InternalsVisibleTo Include="Bit.BlazorUI.Extras, PublicKey=002400000480000094000000060200000024000052534131000400000100010081a58360c43da697fbbc3b729e3565c1e4ef444878d7764f2e187ff0ca054413b6ad2b2eba16f4f1ad6da8e8be445bb410c43930195696e7f2317dd80164fed318366a83af39ab4c135349f75b3f2b9ad5875fad68025c9e1c4e8d16469addd506f3e1ed13461dd17a8f23f3faeb2cbd933cef6ebead4e50197943798f638aa9"/>
+    </ItemGroup>
+
+
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />

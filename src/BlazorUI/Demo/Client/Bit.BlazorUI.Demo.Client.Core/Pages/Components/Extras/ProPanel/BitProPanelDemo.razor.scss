@@ -1,10 +1,5 @@
 ﻿@import '../../../../Styles/abstracts/functions';
 
-.panel-body {
-    width: 300px;
-    padding: 1rem;
-}
-
 .btn-container {
     display: flex;
     gap: rem2(16px);
@@ -26,8 +21,8 @@
 ::deep {
     .custom-class {
         .item {
-            width: 3rem;
-            height: 3rem;
+            color: black;
+            padding: 1rem;
             margin: 0.5rem;
             border-radius: 0.5rem;
             background-color: brown;
@@ -35,13 +30,31 @@
     }
 
     .custom-container {
-        padding: 1rem;
         border: 0.25rem solid #0054C6;
-        border-end-start-radius: 1rem;
-        border-start-start-radius: 1rem;
     }
 
     .custom-overlay {
         background-color: #ffbd5a66;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
     }
 }

@@ -51,9 +51,6 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        var element = com.Find(".bit-pnl");
-        Assert.AreEqual(element.Attributes["aria-modal"].Value, (modeless is false).ToString());
-
         var elementOverlay = com.FindAll(".bit-pnl-ovl");
         Assert.AreEqual(modeless ? 0 : 1, elementOverlay.Count);
     }
@@ -73,64 +70,6 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(isOpen, container.GetStyle().CssText.Contains("opacity: 1"));
     }
 
-    [DataTestMethod,
-        DataRow(null),
-        DataRow(""),
-        DataRow("Test-S-A-Id")
-    ]
-    public void BitPanelSubtitleAriaIdTest(string subtitleAriaId)
-    {
-        var com = RenderComponent<BitPanel>(parameters =>
-        {
-            parameters.Add(p => p.SubtitleAriaId, subtitleAriaId);
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var element = com.Find(".bit-pnl");
-
-        if (subtitleAriaId == null)
-        {
-            Assert.IsFalse(element.HasAttribute("aria-describedby"));
-        }
-        else if (subtitleAriaId == string.Empty)
-        {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, string.Empty);
-        }
-        else
-        {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, subtitleAriaId);
-        }
-    }
-
-    [DataTestMethod,
-        DataRow(null),
-        DataRow(""),
-        DataRow("Test-T-A-Id")
-    ]
-    public void BitPanelTitleAriaIdTest(string titleAriaId)
-    {
-        var com = RenderComponent<BitPanel>(parameters =>
-        {
-            parameters.Add(p => p.TitleAriaId, titleAriaId);
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var element = com.Find(".bit-pnl");
-
-        if (titleAriaId == null)
-        {
-            Assert.IsFalse(element.HasAttribute("aria-labelledby"));
-        }
-        else if (titleAriaId == string.Empty)
-        {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, string.Empty);
-        }
-        else
-        {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, titleAriaId);
-        }
-    }
-
     [TestMethod]
     public void BitPanelContentTest()
     {
@@ -140,41 +79,9 @@ public class BitPanelTests : BunitTestContext
             parameters.AddChildContent("<div>Test Content</div>");
         });
 
-        var elementContent = com.Find(".bit-pnl-bdy");
+        var elementContent = com.Find(".bit-pnl-cnt");
 
-        elementContent.MarkupMatches("<div class=\"bit-pnl-bdy\"><div>Test Content</div></div>");
-    }
-
-    [TestMethod]
-    public void BitPanelFooterContentTest()
-    {
-        var footerContent = "<div>Test Footer Content</div>";
-
-        var com = RenderComponent<BitPanel>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.FooterTemplate, footerContent);
-        });
-
-        var elementContent = com.Find(".bit-pnl-fcn :first-child");
-
-        elementContent.MarkupMatches(footerContent);
-    }
-
-    [TestMethod]
-    public void BitPanelHeaderContentTest()
-    {
-        const string headerContent = "<div>Test Header Content</div>";
-
-        var com = RenderComponent<BitPanel>(parameters =>
-        {
-            parameters.Add(p => p.IsOpen, true);
-            parameters.Add(p => p.HeaderTemplate, headerContent);
-        });
-
-        var elementContent = com.Find(".bit-pnl-hcn :first-child");
-
-        elementContent.MarkupMatches(headerContent);
+        elementContent.MarkupMatches("<div id:ignore style:ignore class=\"bit-pnl-cnt bit-pnl-end\"><div>Test Content</div></div>");
     }
 
     [TestMethod]
