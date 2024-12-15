@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.SignalR;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;

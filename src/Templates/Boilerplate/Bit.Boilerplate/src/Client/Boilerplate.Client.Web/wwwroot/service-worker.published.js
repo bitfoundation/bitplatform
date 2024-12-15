@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.1.0
+// bit version: 9.1.1
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -27,7 +27,8 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
     // If a PDF viewer is needed in the PWA, remove these two lines:
     /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/
+    /pdfjs-4\.7\.76-worker\.js$/,
+    /Boilerplate\.Client\.Web\.styles\.css$/
 ];
 self.externalAssets = [
     {
@@ -35,12 +36,12 @@ self.externalAssets = [
     },
     {
         //#if (framework == "net9.0")
-        url: "_framework/blazor.web.js?ver=9.0.0"
+        url: "_framework/blazor.web.js"
         //#else
             //#if (IsInsideProjectTemplate == true)
             /*
             //#endif
-        url: "_framework/blazor.web.js?ver=8.0.11"
+        url: "_framework/blazor.web.js"
             //#if (IsInsideProjectTemplate == true)
             */
             //#endif
@@ -68,11 +69,11 @@ self.defaultUrl = "/";
 self.isPassive = true;
 self.errorTolerance = 'lax';
 self.caseInsensitiveUrl = true;
+self.noPrerenderQuery = 'no-prerender=true';
 
 
-// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following two lines.
+// on apps with Prerendering enabled, to have the best experience for the end user un-comment the following line.
 // more info: https://bitplatform.dev/bswup/service-worker
-// self.noPrerenderQuery = 'no-prerender=true';
 // self.disablePassiveFirstBoot = true;
 
 

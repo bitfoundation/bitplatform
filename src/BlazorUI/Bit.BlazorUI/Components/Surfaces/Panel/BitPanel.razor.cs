@@ -34,21 +34,6 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     [Parameter] public BitPanelClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The template used to render the footer section of the panel.
-    /// </summary>
-    [Parameter] public RenderFragment? FooterTemplate { get; set; }
-
-    /// <summary>
-    /// The template used to render the header section of the panel.
-    /// </summary>
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
-
-    /// <summary>
-    /// The text of the header section of the panel.
-    /// </summary>
-    [Parameter] public string? HeaderText { get; set; }
-
-    /// <summary>
     /// Determines the openness of the panel.
     /// </summary>
     [Parameter, TwoWayBound]
@@ -95,29 +80,14 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     [Parameter] public string? ScrollerSelector { get; set; }
 
     /// <summary>
-    /// Shows the close button of the Panel.
-    /// </summary>
-    [Parameter] public bool ShowCloseButton { get; set; }
-
-    /// <summary>
     /// Custom CSS styles for different parts of the panel component.
     /// </summary>
     [Parameter] public BitPanelClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Specifies the id for the aria-describedby attribute of the panel.
-    /// </summary>
-    [Parameter] public string? SubtitleAriaId { get; set; }
-
-    /// <summary>
     /// The swiping point (difference percentage) based on the width of the panel container to trigger the close action (default is 0.25m).
     /// </summary>
     [Parameter] public decimal? SwipeTrigger { get; set; }
-
-    /// <summary>
-    /// Specifies the id for the aria-labelledby attribute of the panel.
-    /// </summary>
-    [Parameter] public string? TitleAriaId { get; set; }
 
 
 
@@ -140,19 +110,22 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
     [JSInvokable("OnStart")]
     public async Task _OnStart(decimal startX, decimal startY)
     {
-        await OnSwipeStart.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? startX : startY);
+        var start = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? startX : startY;
+        await OnSwipeStart.InvokeAsync(start);
     }
 
     [JSInvokable("OnMove")]
     public async Task _OnMove(decimal diffX, decimal diffY)
     {
-        await OnSwipeMove.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
+        var diff = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY;
+        await OnSwipeMove.InvokeAsync(diff);
     }
 
     [JSInvokable("OnEnd")]
     public async Task _OnEnd(decimal diffX, decimal diffY)
     {
-        await OnSwipeEnd.InvokeAsync((Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY);
+        var diff = (Position == BitPanelPosition.Start || Position == BitPanelPosition.End) ? diffX : diffY;
+        await OnSwipeEnd.InvokeAsync(diff);
     }
 
     [JSInvokable("OnClose")]
@@ -192,7 +165,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPanelSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj);
+            await _js.SwipesSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj, false);
         }
 
         if (_internalIsOpen == IsOpen) return;
@@ -227,21 +200,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         await ClosePanel(e);
     }
 
-    private async Task OnCloseButtonClicked(MouseEventArgs e)
-    {
-        await ClosePanel(e);
-    }
-
-    private string GetPositionClass() => Position switch
-    {
-        BitPanelPosition.Start => "bit-pnl-start",
-        BitPanelPosition.End => "bit-pnl-end",
-        BitPanelPosition.Top => "bit-pnl-top",
-        BitPanelPosition.Bottom => "bit-pnl-bottom",
-        _ => "bit-pnl-end"
-    };
-
-    private string GetPanelStyle()
+    private string GetContainerCssStyles()
     {
         List<string> styles = [];
 
@@ -264,6 +223,27 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         return string.Join(';', styles);
     }
 
+    private string GetContainerCssClasses()
+    {
+        List<string> classes = ["bit-pnl-cnt"];
+
+        classes.Add(Position switch
+        {
+            BitPanelPosition.Start => "bit-pnl-start",
+            BitPanelPosition.End => "bit-pnl-end",
+            BitPanelPosition.Top => "bit-pnl-top",
+            BitPanelPosition.Bottom => "bit-pnl-bottom",
+            _ => "bit-pnl-end"
+        });
+
+        if (Classes?.Container is string containerClass && containerClass.HasValue())
+        {
+            classes.Add(containerClass);
+        }
+
+        return string.Join(' ', classes);
+    }
+
 
 
     public async ValueTask DisposeAsync()
@@ -278,7 +258,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
         try
         {
-            await _js.BitPanelDispose(_containerId);
+            await _js.SwipesDispose(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

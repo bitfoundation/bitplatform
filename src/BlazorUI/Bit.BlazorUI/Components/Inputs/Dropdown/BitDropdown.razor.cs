@@ -852,7 +852,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, SwipesPosition.End, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)

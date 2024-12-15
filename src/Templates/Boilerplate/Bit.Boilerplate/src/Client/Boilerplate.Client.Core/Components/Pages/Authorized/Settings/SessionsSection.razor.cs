@@ -8,7 +8,6 @@ public partial class SessionsSection
 {
     private bool isLoading;
     private Guid? currentSessionId;
-    private bool hasRevokedAnySession;
     private UserSessionDto? currentSession;
     private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
@@ -63,7 +62,6 @@ public partial class SessionsSection
             if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
             {
                 await userController.RevokeSession(session.Id, CurrentCancellationToken);
-                hasRevokedAnySession = true;
                 SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
                 await LoadSessions();
             }
@@ -105,14 +103,5 @@ public partial class SessionsSection
         return DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
                     : DateTimeOffset.UtcNow - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
                     : renewedOn.ToLocalTime().ToString("g");
-    }
-
-    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
-    {
-        if (hasRevokedAnySession && await AuthorizationService.AuthorizeAsync((await AuthenticationStateTask).User, AuthPolicies.PRIVILEGED_ACCESS) is { Succeeded: false })
-        {
-            // Refreshing the token to check if the user session can now be privileged.
-            await AuthManager.RefreshToken("CheckPrivilege");
-        }
     }
 }

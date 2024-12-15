@@ -7,9 +7,12 @@
             trigger: number,
             position: BitSwipePosition,
             isRtl: boolean,
-            dotnetObj: DotNetObject) {
-            const windowWidth = window.innerWidth;
-            if (windowWidth >= Utils.MAX_MOBILE_WIDTH) return;
+            dotnetObj: DotNetObject,
+            isResponsive: boolean) {
+            if (isResponsive) {
+                const windowWidth = window.innerWidth;
+                if (windowWidth >= Utils.MAX_MOBILE_WIDTH) return;
+            }
 
             const element = document.getElementById(id);
             if (!element) return;
