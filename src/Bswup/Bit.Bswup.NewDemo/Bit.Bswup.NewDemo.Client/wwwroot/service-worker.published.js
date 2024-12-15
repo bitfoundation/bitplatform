@@ -1,7 +1,9 @@
 ﻿// bit version: 9.1.0
 
 self.assetsInclude = [];
-self.assetsExclude = [];
+self.assetsExclude = [
+    /Bit\.Bswup\.NewDemo\.Client\.styles\.css$/
+];
 self.defaultUrl = '/';
 self.prohibitedUrls = [];
 self.assetsUrl = '/service-worker-assets.js';
