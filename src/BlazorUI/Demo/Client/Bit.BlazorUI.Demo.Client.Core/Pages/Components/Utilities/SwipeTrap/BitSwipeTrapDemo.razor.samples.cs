@@ -464,8 +464,7 @@ private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
 }
 private string GetLeftPanelAdvancedStyle()
 {
-    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) ||
-        panelOpen == BitSwipeDirection.Left)
+    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || panelOpen == BitSwipeDirection.Left)
     {
         return diffXPanelAdvanced switch
         {
@@ -480,8 +479,7 @@ private string GetLeftPanelAdvancedStyle()
 }
 private string GetRightPanelAdvancedStyle()
 {
-    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) ||
-        panelOpen == BitSwipeDirection.Right)
+    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || panelOpen == BitSwipeDirection.Right)
     {
         return diffXPanelAdvanced switch
         {
