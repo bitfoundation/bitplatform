@@ -348,7 +348,6 @@ public partial class BitSwipeTrapDemo
                 ClosePanelAdvanced();
             }
         }
-
     }
     private string GetLeftPanelAdvancedStyle()
     {

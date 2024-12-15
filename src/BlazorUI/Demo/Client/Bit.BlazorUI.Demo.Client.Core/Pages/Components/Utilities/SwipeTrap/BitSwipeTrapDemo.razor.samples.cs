@@ -460,7 +460,6 @@ private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
             ClosePanelAdvanced();
         }
     }
-
 }
 private string GetLeftPanelAdvancedStyle()
 {
