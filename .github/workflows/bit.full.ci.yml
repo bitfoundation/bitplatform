@@ -140,25 +140,25 @@ jobs:
 
     - name: Test PostgreSQL, MySql, Other database options
       run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0
+        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0 --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestMySql --database MySql --framework net8.0
+        dotnet new bit-bp --name TestMySql --database MySql --framework net8.0 --sample Admin --offlineDb
         cd TestMySql/src/Server/TestMySql.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other --framework net9.0
+        dotnet new bit-bp --name TestOther --database Other --framework net9.0 --sample Todo --sentry
         cd TestOther/src/Server/TestOther.Server.Api/
         dotnet build
 
     - name: Test file storage options
       run: |
-        dotnet new bit-bp --name TestLocal --filesStorage Local --framework net8.0
+        dotnet new bit-bp --name TestLocal --filesStorage Local --framework net8.0 --appInsights
         cd TestLocal/src/Server/TestLocal.Server.Api/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage --framework net9.0
+        dotnet new bit-bp --name TestAzureBlobStorage --filesStorage AzureBlobStorage --framework net9.0 --captcha reCaptcha  --notification
         cd TestAzureBlobStorage/src/Server/TestAzureBlobStorage.Server.Api/
         dotnet build
 
