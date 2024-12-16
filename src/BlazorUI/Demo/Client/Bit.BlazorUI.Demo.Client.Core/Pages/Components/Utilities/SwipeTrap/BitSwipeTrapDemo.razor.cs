@@ -301,6 +301,8 @@ public partial class BitSwipeTrapDemo
     private BitSwipeDirection? panelOpen;
     private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
     {
+        if (panelOpen == swipeDirection) return;
+
         panelOpen = swipeDirection;
         diffXPanelAdvanced = 0;
     }

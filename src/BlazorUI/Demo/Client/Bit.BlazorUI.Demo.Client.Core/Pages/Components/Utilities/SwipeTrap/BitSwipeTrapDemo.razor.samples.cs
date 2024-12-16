@@ -281,42 +281,15 @@ private void ResetList()
         overflow: hidden;
         position: relative;
         border-radius: 36px;
+        background-color: #fff;
         border: 16px solid #333;
-        box-shadow: 0 0 10px rgba(0,0,0,.1);
-        background-color: var(--bit-clr-fg-sec)
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .mobile-frame:before {
-        left: 50%;
-        z-index: 2;
-        content: "";
-        width: 50px;
-        height: 50px;
-        bottom: 10px;
-        display: block;
-        background: #333;
-        position: absolute;
-        border-radius: 50%;
-        transform: translateX(-50%)
-    }
-
-    .mobile-frame:after {
-        top: 10px;
-        left: 50%;
-        content: "";
-        width: 60px;
-        height: 5px;
-        display: block;
-        background: #333;
-        position: absolute;
-        border-radius: 10px;
-        transform: translateX(-50%)
-    }
-
-    .screen {
+    .mobile-frame .screen {
         width: 100%;
         height: 100%;
-        overflow: auto
+        overflow: auto;
     }
 
     .panel-adv-container {
@@ -374,35 +347,30 @@ private void ResetList()
                                 OnMove=""HandleOnMovePanelAdvanced""
                                 OnTrigger=""HandleOnTriggerPanelAdvanced"" Trigger=""20"">
                     <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
-                        <BitText Typography=""BitTypography.H4"" Color=""BitColor.SecondaryBackground"">
+                        <BitText Style=""user-select:none""
+                                    Typography=""BitTypography.H4""
+                                    Color=""BitColor.SecondaryBackground"">
                             Swipe left or right
                         </BitText>
                     </BitStack>
-                </BitSwipeTrap>
-                <div class=""panel-adv left"" style=""@GetLeftPanelAdvancedStyle()"">
-                    <BitSwipeTrap Style=""width:100%;height:100%""
-                                    OnMove=""HandleOnMovePanelAdvanced""
-                                    OnTrigger=""HandleOnTriggerPanelAdvanced"">
+
+                    <div class=""panel-adv left"" style=""@GetLeftPanelAdvancedStyle()"">
                         <div class=""panel-adv-trap"">
                             <h3>Left Menu</h3>
                             <div>Item1</div>
                             <div>Item2</div>
                             <div>Item3</div>
                         </div>
-                    </BitSwipeTrap>
-                </div>
-                <div class=""panel-adv right"" style=""@GetRightPanelAdvancedStyle()"">
-                    <BitSwipeTrap Style=""width:100%;height:100%""
-                                    OnMove=""HandleOnMovePanelAdvanced""
-                                    OnTrigger=""HandleOnTriggerPanelAdvanced"">
+                    </div>
+                    <div class=""panel-adv right"" style=""@GetRightPanelAdvancedStyle()"">
                         <div class=""panel-adv-trap"">
                             <h3>Right Menu</h3>
                             <div>Item1</div>
                             <div>Item2</div>
                             <div>Item3</div>
                         </div>
-                    </BitSwipeTrap>
-                </div>
+                    </div>
+                </BitSwipeTrap>
             </Main>
         </BitLayout>
     </div>
@@ -413,6 +381,8 @@ private BitSwipeDirection? direction;
 private BitSwipeDirection? panelOpen;
 private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
 {
+    if (panelOpen == swipeDirection) return;
+
     panelOpen = swipeDirection;
     diffXPanelAdvanced = 0;
 }
