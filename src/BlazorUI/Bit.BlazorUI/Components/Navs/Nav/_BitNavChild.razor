@@ -118,7 +118,7 @@
             {
                 <_BitNavItemContainer Href="@href"
                                       Target="@target"
-                                      OnClick="HandleOnClick"
+                                      OnClick="() => HandleOnClick(renderLink)"
                                       RenderLink="renderLink"
                                       Disabled="@(isEnabled is false)"
                                       AriaLabel="@Nav.GetAriaLabel(Item)"
