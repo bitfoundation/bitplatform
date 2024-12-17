@@ -60,34 +60,31 @@
     }
     <Routes @rendermode=renderMode />
 
-    @if (HttpContext.Request.IsCrawlerClient() is false)
+    <Script src="_framework/blazor.web.js?v=9.0.0" autostart="false"></Script>
+    @if (AppRenderMode.PwaEnabled)
     {
-        <Script src="_framework/blazor.web.js?v=9.0.0" autostart="false"></Script>
-        @if (AppRenderMode.PwaEnabled)
-        {
-            <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-            <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-            <AppBswupProgressBar />
-        }
-        else
-        {
-            <Script>
-                Blazor.start({
-                    webAssembly: {
-                        loadBootResource: function (type, name, defaultUri, integrity) {
-                            if (integrity != null && integrity != '')
-                                return `${defaultUri}?v=${integrity}`;
-                            return null; // default blazor asset loading mechanism.
-                        }
-                    }
-                });
-            </Script>
-        }
-        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
-        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
-        <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
     }
+    else
+    {
+        <Script>
+            Blazor.start({
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        if (integrity != null && integrity != '')
+                            return `${defaultUri}?v=${integrity}`;
+                        return null; // default blazor asset loading mechanism.
+                    }
+                }
+            });
+        </Script>
+    }
+    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/prism-1.28.0/prism.js"></Script>
+    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+    <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+    <Script src="_content/Bit.BlazorUI.Demo.Client.Core/scripts/app.js"></Script>
 </body>
 
 </html>

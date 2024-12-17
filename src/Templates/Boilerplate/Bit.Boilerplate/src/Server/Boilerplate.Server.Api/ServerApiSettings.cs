@@ -39,6 +39,8 @@ public partial class ServerApiSettings : SharedSettings
 
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
 
+    public CorsOptions? Cors { get; set; }
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
@@ -156,4 +158,9 @@ public partial class SmsOptions
     public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
                               string.IsNullOrEmpty(TwilioAccountSid) is false &&
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
+}
+
+public class CorsOptions
+{
+    public string[] AllowedOrigins { get; set; } = [];
 }
