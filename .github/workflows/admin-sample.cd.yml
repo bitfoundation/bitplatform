@@ -118,7 +118,7 @@ jobs:
     - name: Upload to asw
       run: |
           npm install -g @azure/static-web-apps-cli
-          swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client
+          swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
 
   deploy_api_blazor:
     name: deploy api + blazor
