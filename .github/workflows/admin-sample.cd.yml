@@ -88,7 +88,7 @@ jobs:
        cd src/Templates/Boilerplate && dotnet build -c Release
        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
        dotnet new install Bit.Boilerplate.0.0.0.nupkg
-       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl https://adminpanel.bitplatform.cc --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
+       cd ../../../ && dotnet new bit-bp --name AdminPanel --database PostgreSQL --sample Admin --appInsights --sentry --serverUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net9.0
        
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
