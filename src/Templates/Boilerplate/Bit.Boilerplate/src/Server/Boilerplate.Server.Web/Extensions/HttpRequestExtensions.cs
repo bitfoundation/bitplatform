@@ -18,23 +18,4 @@ public static partial class HttpRequestExtensions
 
         return uriBuilder.Uri;
     }
-
-    public static bool IsCrawlerClient(this HttpRequest request)
-    {
-        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out StringValues userAgentHeaderValue) is false)
-            return false;
-
-        string? userAgent = userAgentHeaderValue.FirstOrDefault();
-
-        if (userAgent is null)
-            return false;
-
-        if (userAgent.Contains("google", StringComparison.InvariantCultureIgnoreCase)) return true;
-
-        if (userAgent.Contains("bing", StringComparison.InvariantCultureIgnoreCase)) return true;
-
-        if (userAgent.Contains("lighthouse", StringComparison.InvariantCultureIgnoreCase)) return true;
-
-        return false;
-    }
 }

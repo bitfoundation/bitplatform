@@ -68,49 +68,46 @@
 
     <Routes @rendermode=renderMode />
 
-    @if (HttpContext.Request.IsCrawlerClient() is false)
-    {
-        @*#if (framework == "net9.0")*@
-        <Script src="_framework/blazor.web.js?ver=9.0.0" autostart="false"></Script>
-        @*#else*@
-            @*#if (IsInsideProjectTemplate == true)*@
-            /*
-            @*#endif)*@
-        <Script src="_framework/blazor.web.js?ver=8.0.11" autostart="false"></Script>
-            @*#if (IsInsideProjectTemplate == true)*@
-            */
-            @*#endif)*@
+    @*#if (framework == "net9.0")*@
+    <Script src="_framework/blazor.web.js?ver=9.0.0" autostart="false"></Script>
+    @*#else*@
+        @*#if (IsInsideProjectTemplate == true)*@
+        /*
         @*#endif)*@
-        <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
-             This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
-        @if (serverWebSettings.WebAppRender.PwaEnabled)
-        {
-            <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
-            <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
-            <AppBswupProgressBar />
-        }
-        else
-        {
-            <Script>
-                Blazor.start({
-                    webAssembly: {
-                        loadBootResource: function (type, name, defaultUri, integrity) {
-                            if (integrity != null && integrity != '')
-                                return `${defaultUri}?v=${integrity}`;
-                            return null; // default blazor asset loading mechanism.
-                        }
-                    }
-                });
-            </Script>
-        }
-        <Script src="_content/Bit.Butil/bit-butil.js"></Script>
-        @*#if (offlineDb == true)*@
-        <Script src="_content/Bit.Besql/bit-besql.js"></Script>
-        @*#endif*@
-        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-        <Script src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
-        <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+    <Script src="_framework/blazor.web.js?ver=8.0.11" autostart="false"></Script>
+        @*#if (IsInsideProjectTemplate == true)*@
+        */
+        @*#endif)*@
+    @*#endif)*@
+    <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
+            This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
+    @if (serverWebSettings.WebAppRender.PwaEnabled)
+    {
+        <Script src="_content/Bit.Bswup/bit-bswup.js"></Script>
+        <Script src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
+        <AppBswupProgressBar />
     }
+    else
+    {
+        <Script>
+            Blazor.start({
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        if (integrity != null && integrity != '')
+                            return `${defaultUri}?v=${integrity}`;
+                        return null; // default blazor asset loading mechanism.
+                    }
+                }
+            });
+        </Script>
+    }
+    <Script src="_content/Bit.Butil/bit-butil.js"></Script>
+    @*#if (offlineDb == true)*@
+    <Script src="_content/Bit.Besql/bit-besql.js"></Script>
+    @*#endif*@
+    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+    <Script src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
+    <Script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
 </body>
 
 </html>
