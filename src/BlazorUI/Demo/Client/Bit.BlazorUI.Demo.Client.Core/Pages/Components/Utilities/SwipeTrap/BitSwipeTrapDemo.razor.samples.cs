@@ -295,27 +295,28 @@ private void ResetList()
     .panel-adv-container {
         cursor: grab;
         overflow: hidden;
-        position: relative
+        position: relative;
     }
 
     .panel-adv-container .panel-adv {
         color: #000;
         cursor: grab;
         inset-block: 0;
+        user-select: none;
         position: absolute;
-        background-color: #d3d3d3
+        background-color: #d3d3d3;
     }
 
     .panel-adv-container .panel-adv.left {
         left: 0;
         width: 200px;
-        transform: translateX(-100%)
+        transform: translateX(-100%);
     }
 
     .panel-adv-container .panel-adv.right {
         right: 0;
         width: 200px;
-        transform: translateX(100%)
+        transform: translateX(100%);
     }
 
     .panel-adv-container .panel-adv .panel-adv-trap {
@@ -325,7 +326,7 @@ private void ResetList()
         padding-top: .2rem;
         padding-left: .8rem;
         flex-direction: column;
-        background-color: gray
+        background-color: gray;
     }
 </style>
 
@@ -345,6 +346,7 @@ private void ResetList()
             <Main>
                 <BitSwipeTrap Style=""width:100%;height:100%""
                                 OnMove=""HandleOnMovePanelAdvanced""
+                                OnEnd=""HandleOnEndPanelAdvanced""
                                 OnTrigger=""HandleOnTriggerPanelAdvanced"" Trigger=""20"">
                     <BitStack HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
                         <BitText Style=""user-select:none""
@@ -383,6 +385,7 @@ private void OpenPanelAdvanced(BitSwipeDirection swipeDirection)
 {
     if (panelOpen == swipeDirection) return;
 
+    direction = null;
     panelOpen = swipeDirection;
     diffXPanelAdvanced = 0;
 }
@@ -395,7 +398,7 @@ private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
 {
     diffXPanelAdvanced = args.DiffX;
 
-    if (Math.Abs(args.DiffX) > 20 || Math.Abs(args.DiffY) > 20)
+    if (Math.Abs(args.DiffX) > 2 || Math.Abs(args.DiffY) > 2)
     {
         direction = Math.Abs(args.DiffX) > Math.Abs(args.DiffY)
         ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
@@ -404,6 +407,17 @@ private void HandleOnMovePanelAdvanced(BitSwipeTrapEventArgs args)
     else
     {
         direction = null;
+    }
+}
+private void HandleOnEndPanelAdvanced(BitSwipeTrapEventArgs args)
+{
+    if (panelOpen.HasValue)
+    {
+        diffXPanelAdvanced = 0;
+    }
+    else
+    {
+        diffXPanelAdvanced = null;
     }
 }
 private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
@@ -433,7 +447,11 @@ private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
 }
 private string GetLeftPanelAdvancedStyle()
 {
-    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || panelOpen == BitSwipeDirection.Left)
+    if (panelOpen == BitSwipeDirection.Left && direction != BitSwipeDirection.Left)
+    {
+        return ""transform: translateX(0px)"";
+    }
+    else if((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
     {
         return diffXPanelAdvanced switch
         {
@@ -448,7 +466,11 @@ private string GetLeftPanelAdvancedStyle()
 }
 private string GetRightPanelAdvancedStyle()
 {
-    if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || panelOpen == BitSwipeDirection.Right)
+    if (panelOpen == BitSwipeDirection.Right && direction != BitSwipeDirection.Right)
+    {
+        return ""transform: translateX(0px)"";
+    }
+    else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || (panelOpen == BitSwipeDirection.Right && direction == BitSwipeDirection.Right))
     {
         return diffXPanelAdvanced switch
         {

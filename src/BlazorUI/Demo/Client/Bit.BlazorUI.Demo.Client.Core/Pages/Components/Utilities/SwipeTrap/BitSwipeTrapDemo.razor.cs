@@ -303,6 +303,7 @@ public partial class BitSwipeTrapDemo
     {
         if (panelOpen == swipeDirection) return;
 
+        direction = null;
         panelOpen = swipeDirection;
         diffXPanelAdvanced = 0;
     }
@@ -315,7 +316,7 @@ public partial class BitSwipeTrapDemo
     {
         diffXPanelAdvanced = args.DiffX;
 
-        if (Math.Abs(args.DiffX) > 20 || Math.Abs(args.DiffY) > 20)
+        if (Math.Abs(args.DiffX) > 2 || Math.Abs(args.DiffY) > 2)
         {
             direction = Math.Abs(args.DiffX) > Math.Abs(args.DiffY)
             ? args.DiffX > 0 ? BitSwipeDirection.Right : BitSwipeDirection.Left
@@ -324,6 +325,17 @@ public partial class BitSwipeTrapDemo
         else
         {
             direction = null;
+        }
+    }
+    private void HandleOnEndPanelAdvanced(BitSwipeTrapEventArgs args)
+    {
+        if (panelOpen.HasValue)
+        {
+            diffXPanelAdvanced = 0;
+        }
+        else
+        {
+            diffXPanelAdvanced = null;
         }
     }
     private void HandleOnTriggerPanelAdvanced(BitSwipeTrapTriggerArgs args)
@@ -353,7 +365,11 @@ public partial class BitSwipeTrapDemo
     }
     private string GetLeftPanelAdvancedStyle()
     {
-        if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || panelOpen == BitSwipeDirection.Left)
+        if (panelOpen == BitSwipeDirection.Left && direction != BitSwipeDirection.Left)
+        {
+            return "transform: translateX(0px)";
+        }
+        else if((panelOpen.HasValue is false && direction == BitSwipeDirection.Right) || (panelOpen == BitSwipeDirection.Left && direction == BitSwipeDirection.Left))
         {
             return diffXPanelAdvanced switch
             {
@@ -368,7 +384,11 @@ public partial class BitSwipeTrapDemo
     }
     private string GetRightPanelAdvancedStyle()
     {
-        if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || panelOpen == BitSwipeDirection.Right)
+        if (panelOpen == BitSwipeDirection.Right && direction != BitSwipeDirection.Right)
+        {
+            return "transform: translateX(0px)";
+        }
+        else if ((panelOpen.HasValue is false && direction == BitSwipeDirection.Left) || (panelOpen == BitSwipeDirection.Right && direction == BitSwipeDirection.Right))
         {
             return diffXPanelAdvanced switch
             {
