@@ -116,7 +116,9 @@ jobs:
       run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -p:PwaEnabled=true -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
 
     - name: Upload to asw
-      run: swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.ADMINPANEL_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client
 
   deploy_api_blazor:
     name: deploy api + blazor
