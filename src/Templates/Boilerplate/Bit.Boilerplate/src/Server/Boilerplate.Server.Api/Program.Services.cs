@@ -125,9 +125,17 @@ public static partial class Program
 
                 var webClientUrl = settings.WebClientUrl;
 
-                policy.SetIsOriginAllowed(origin =>
-                            AllowedOriginsRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                if (string.IsNullOrEmpty(webClientUrl) is false)
+                {
+                    policy.WithOrigins(webClientUrl);
+                }
+
+                if (settings.Cors is not null)
+                {
+                    policy.WithOrigins(settings.Cors.AllowedOrigins);
+                }
+
+                policy.SetIsOriginAllowed(origin => AllowedOriginsRegex().IsMatch(origin))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
