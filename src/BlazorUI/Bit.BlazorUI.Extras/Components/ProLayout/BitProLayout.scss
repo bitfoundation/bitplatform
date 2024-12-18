@@ -1,0 +1,75 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+:root {
+    --bit-ply-inset-top: env(safe-area-inset-top);
+    --bit-ply-inset-left: env(safe-area-inset-left);
+    --bit-ply-inset-right: env(safe-area-inset-right);
+    --bit-ply-inset-bottom: env(safe-area-inset-bottom);
+    //--
+    --bit-ply-width-vw: calc(100vw - var(--bit-ply-inset-left) - var(--bit-ply-inset-right));
+    --bit-ply-height-vh: calc(100vh - var(--bit-ply-inset-top) - var(--bit-ply-inset-bottom));
+    --bit-ply-width-per: calc(100% - var(--bit-ply-inset-left) - var(--bit-ply-inset-right));
+    --bit-ply-height-per: calc(100% - var(--bit-ply-inset-top) - var(--bit-ply-inset-bottom));
+    --bit-ply-width: calc(var(--win-width) - var(--bit-ply-inset-left) - var(--bit-ply-inset-right));
+    --bit-ply-height: calc(var(--win-height) - var(--bit-ply-inset-top) - var(--bit-ply-inset-bottom));
+    //--
+    --bit-ply-inset-inline-start: var(--bit-ply-inset-left);
+    --bit-ply-inset-inline-end: var(--bit-ply-inset-right);
+
+    [dir="rtl"] {
+        --bit-ply-inset-inline-start: var(--bit-ply-inset-right);
+        --bit-ply-inset-inline-end: var(--bit-ply-inset-left);
+    }
+}
+
+.bit-ply {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: $clr-bg-pri;
+}
+
+.bit-ply-top {
+    width: 100%;
+    z-index: 999999;
+    height: var(--bit-ply-inset-top);
+    background-color: $clr-bg-pri;
+}
+
+.bit-ply-bottom {
+    width: 100%;
+    z-index: 999999;
+    height: var(--bit-ply-inset-bottom);
+    background-color: $clr-bg-pri;
+}
+
+.bit-ply-center {
+    width: 100%;
+    display: flex;
+    height: calc(100% - var(--bit-ply-inset-top) - var(--bit-ply-inset-bottom));
+}
+
+.bit-ply-main {
+    height: 100%;
+    display: flex;
+    overflow: auto;
+    position: relative;
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    width: calc(100% - var(--bit-ply-inset-left) - var(--bit-ply-inset-right));
+}
+
+.bit-ply-left {
+    height: 100%;
+    z-index: 999999;
+    width: var(--bit-ply-inset-left);
+    background-color: $clr-bg-pri;
+}
+
+.bit-ply-right {
+    height: 100%;
+    z-index: 999999;
+    width: var(--bit-ply-inset-right);
+    background-color: $clr-bg-pri;
+}

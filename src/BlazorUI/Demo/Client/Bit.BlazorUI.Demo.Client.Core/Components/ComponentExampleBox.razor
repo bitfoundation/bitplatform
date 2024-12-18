@@ -3,25 +3,28 @@
 <section class="box">
     <div class="box-header">
         <BitText Typography="BitTypography.H5" Class="section-title" Id="@Id" example-section-title>@Title</BitText>
-        <div class="header-btn-group">
-            <BitActionButton OnClick="() => showCode = !showCode"
-                             Class="@($"header-btn show-code{(showCode ? " code-shown":"")}")"
-                             Classes="@(new() { Content = "show-code-lbl" })"
-                             IconName="@BitIconName.CodeEdit"
-                             Title="@(showCode ? "Hide code" : "Show code")">
-                @(showCode ? "Hide code" : "Show code")
-            </BitActionButton>
-            <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
-                             Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
-                             Title="@copyLinkMessage"
-                             IconName="@linkIcon"
-                             OnClick="@CopyLinkToClipboard">
-                @if (isLinkCopied)
-                {
-                    <span>@copyLinkMessage</span>
-                }
-            </BitActionButton>
-        </div>
+        @if (RazorCode is not null || CsharpCode is not null)
+        {
+            <div class="header-btn-group">
+                <BitActionButton OnClick="() => showCode = !showCode"
+                                 Class="@($"header-btn show-code{(showCode ? " code-shown":"")}")"
+                                 Classes="@(new() { Content = "show-code-lbl" })"
+                                 IconName="@BitIconName.CodeEdit"
+                                 Title="@(showCode ? "Hide code" : "Show code")">
+                    @(showCode ? "Hide code" : "Show code")
+                </BitActionButton>
+                <BitActionButton Class="@($"header-btn copy-link {(isLinkCopied ? "copied" : "")}")"
+                                 Styles="@(new() { Content = (isLinkCopied ? "" : "display: none") })"
+                                 Title="@copyLinkMessage"
+                                 IconName="@linkIcon"
+                                 OnClick="@CopyLinkToClipboard">
+                    @if (isLinkCopied)
+                    {
+                        <span>@copyLinkMessage</span>
+                    }
+                </BitActionButton>
+            </div>
+        }
     </div>
 
     <div class="box-content">
@@ -39,16 +42,16 @@
             </BitActionButton>
 
             <pre class="code">
-                <code class="language-cshtml">@RazorCode.Trim()</code>
+            <code class="language-cshtml">@RazorCode.Trim()</code>
 
                 @if (CsharpCode.HasValue())
                 {
-                    <code class="language-csharp">
-&#64code {
-     @CsharpCode.Trim().Replace("\n", "\n     ")
-}</code>
+                <code class="language-csharp">
+        &#64code {
+                        @CsharpCode.Trim().Replace("\n", "\n     ")
+        }</code>
                 }
-            </pre>
+                </pre>
         }
 
         <div class="example-container">
