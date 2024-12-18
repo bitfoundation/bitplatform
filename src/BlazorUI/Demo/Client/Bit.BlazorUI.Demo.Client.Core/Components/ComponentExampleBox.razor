@@ -42,16 +42,20 @@
             </BitActionButton>
 
             <pre class="code">
-            <code class="language-cshtml">@RazorCode.Trim()</code>
+                
+                <code class="language-cshtml">
+                    @RazorCode?.Trim()
+                </code>
 
                 @if (CsharpCode.HasValue())
                 {
-                <code class="language-csharp">
-        &#64code {
-                        @CsharpCode.Trim().Replace("\n", "\n     ")
-        }</code>
+                    <code class="language-csharp">
+&#64code {
+    @CsharpCode?.Trim().Replace("\n", "\n     ")
+}
+                    </code>
                 }
-                </pre>
+            </pre>
         }
 
         <div class="example-container">
