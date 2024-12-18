@@ -91,5 +91,59 @@
                            OnCancel="HandleOnCancelList" />
             </ExamplePreview>
         </ComponentExampleBox>
+
+        <ComponentExampleBox Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <ExamplePreview>
+                <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+                <br />
+                <div class="mobile-frame">
+                    <div class="screen">
+                        <BitLayout Classes="@(new() { MainContent = "panel-adv-container" })">
+                            <Header>
+                                <BitCard FullWidth>
+                                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                        <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                                        <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                                            bit BlazorUI
+                                        </BitText>
+                                    </BitStack>
+                                </BitCard>
+                            </Header>
+                            <Main>
+                                <BitSwipeTrap Style="width:100%;height:100%"
+                                              OnMove="HandleOnMovePanelAdvanced"
+                                              OnEnd="HandleOnEndPanelAdvanced"
+                                              OnTrigger="HandleOnTriggerPanelAdvanced">
+                                    <BitStack HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                        <BitText Style="user-select:none"
+                                                 Typography="BitTypography.H4"
+                                                 Color="BitColor.SecondaryBackground">
+                                            Swipe left or right
+                                        </BitText>
+                                    </BitStack>
+
+                                    <div class="panel-adv left" style="@GetLeftPanelAdvancedStyle()">
+                                        <div class="panel-adv-trap">
+                                            <h3>Left Menu</h3>
+                                            <div>Item1</div>
+                                            <div>Item2</div>
+                                            <div>Item3</div>
+                                        </div>
+                                    </div>
+                                    <div class="panel-adv right" style="@GetRightPanelAdvancedStyle()">
+                                        <div class="panel-adv-trap">
+                                            <h3>Right Menu</h3>
+                                            <div>Item1</div>
+                                            <div>Item2</div>
+                                            <div>Item3</div>
+                                        </div>
+                                    </div>
+                                </BitSwipeTrap>
+                            </Main>
+                        </BitLayout>
+                    </div>
+                </div>
+            </ExamplePreview>
+        </ComponentExampleBox>
     </ComponentDemo>
 </div>
