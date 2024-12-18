@@ -26,6 +26,12 @@ public static partial class HttpRequestExtensions
 
         if (agent.Contains("bing")) return true;
 
+        if (agent.Contains("yahoo")) return true;
+
+        if (agent.Contains("duckduck")) return true;
+
+        if (agent.Contains("yandex")) return true;
+
         return false;
     }
 
