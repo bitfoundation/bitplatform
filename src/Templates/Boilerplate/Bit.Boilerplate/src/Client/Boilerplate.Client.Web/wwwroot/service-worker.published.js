@@ -34,17 +34,7 @@ self.externalAssets = [
         "url": "/"
     },
     {
-        //#if (framework == "net9.0")
         url: "_framework/blazor.web.js"
-        //#else
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-        url: "_framework/blazor.web.js"
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-        //#endif
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"

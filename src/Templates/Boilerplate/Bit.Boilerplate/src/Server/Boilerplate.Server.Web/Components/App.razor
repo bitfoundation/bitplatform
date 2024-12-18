@@ -1,6 +1,5 @@
 ﻿@using Boilerplate.Client.Web.Components
 @using Microsoft.AspNetCore.Components.Routing
-@attribute [StreamRendering(enabled: true)]
 @*+:cnd:noEmit*@
 
 @{
@@ -66,19 +65,21 @@
         <LoadingComponent @rendermode="null" />
     }
 
-    <Routes @rendermode=renderMode />
+    @if (HttpContext.Request.IsCrawlerClient())
+    {
+        // For StreamRenderingDisabledContainer, read comments in App.razor.cs
+        <StreamRenderingDisabledContainer>
+            <Routes @rendermode=renderMode />
+        </StreamRenderingDisabledContainer>
+    }
+    else
+    {
+        <StreamRenderingEnabledContainer>
+            <Routes @rendermode=renderMode />
+        </StreamRenderingEnabledContainer>
+    }
 
-    @*#if (framework == "net9.0")*@
-    <Script src="_framework/blazor.web.js?ver=9.0.0" autostart="false"></Script>
-    @*#else*@
-        @*#if (IsInsideProjectTemplate == true)*@
-        /*
-        @*#endif)*@
-    <Script src="_framework/blazor.web.js?ver=8.0.11" autostart="false"></Script>
-        @*#if (IsInsideProjectTemplate == true)*@
-        */
-        @*#endif)*@
-    @*#endif)*@
+    <Script src="_framework/blazor.web.js" autostart="false"></Script>
     <!-- Ensure that the version of `blazor.web.js` matches the version specified in `service-worker.published.js`.
             This alignment is necessary for the PWA functionality of the Blazor app to work correctly. -->
     @if (serverWebSettings.WebAppRender.PwaEnabled)
