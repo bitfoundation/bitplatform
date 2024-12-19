@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Controllers.Identity;
 public interface IUserController : IAppController
 {
     [HttpGet]
-    Task<UserDto> GetCurrentUser(CancellationToken cancellationToken);
+    Task<UserDto> GetCurrentUser(CancellationToken cancellationToken) => default!;
 
     [HttpGet]
     Task<List<UserSessionDto>> GetUserSessions(CancellationToken cancellationToken) => default!;
@@ -18,7 +18,7 @@ public interface IUserController : IAppController
     Task RevokeSession(Guid id, CancellationToken cancellationToken);
 
     [HttpPut]
-    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken);
+    Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken) => default!;
 
     [HttpPost]
     Task ChangePassword(ChangePasswordRequestDto request, CancellationToken cancellationToken);

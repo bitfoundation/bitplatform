@@ -101,6 +101,11 @@ public partial class AttachmentController : AppControllerBase
         if (user?.ProfileImageName is null)
             throw new ResourceNotFoundException();
 
+        var currentETag = user.ConcurrencyStamp; // Let's re-use cache if the image hasn't changed.
+        if (Request.Headers.TryGetValue("If-None-Match", out var requestETag) && requestETag == currentETag)
+            return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers["ETag"] = currentETag;
+
         var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
