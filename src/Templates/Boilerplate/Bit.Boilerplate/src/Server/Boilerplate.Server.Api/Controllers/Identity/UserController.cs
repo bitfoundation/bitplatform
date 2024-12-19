@@ -33,12 +33,17 @@ public partial class UserController : AppControllerBase, IUserController
     //#endif
 
     [HttpGet]
-    public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
+    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
         var user = await userManager.FindByIdAsync(userId.ToString())
             ?? throw new ResourceNotFoundException();
+
+        var currentETag = user.ConcurrencyStamp; // Let's re-use cache if the user hasn't changed.
+        if (Request.Headers.TryGetValue("If-None-Match", out var requestETag) && requestETag == currentETag)
+            return StatusCode(StatusCodes.Status304NotModified);
+        Response.Headers["ETag"] = currentETag;
 
         return user.Map();
     }
@@ -94,7 +99,7 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     [HttpPut]
-    public async Task<UserDto> Update(EditUserDto userDto, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserDto>> Update(EditUserDto userDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
