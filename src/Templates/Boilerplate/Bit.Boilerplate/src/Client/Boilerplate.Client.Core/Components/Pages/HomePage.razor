@@ -23,71 +23,71 @@
                 <BitStack>
                     <BitText Typography="BitTypography.H5">Statistics</BitText>
                     <BitPivot Style="width:100%" Styles="@(new() { Body = "overflow:auto" })">
-                        <BitPivotItem HeaderText="GitHub">
-                            @if (isLoadingGitHub)
-                            {
-                                <BitStack HorizontalAlign="BitAlignment.Center">
-                                    <BitRippleLoading />
-                                </BitStack>
-                            }
-                            else if (gitHubStats is not null)
-                            {
-                                <BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Name:</BitText>
-                                        <BitText><b>@gitHubStats.Name</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Total stars:</BitText>
-                                        <BitText><b>@gitHubStats.StargazersCount.ToString("N0")</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Forks count:</BitText>
-                                        <BitText><b>@gitHubStats.ForksCount.ToString("N0")</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Repo:</BitText>
-                                        <BitLink Target="_blank"
-                                                 Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
-                                            <BitImage Alt="bitplatform GitHub stars"
-                                                      Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
-                                        </BitLink>
-                                    </BitStack>
-                                </BitStack>
-                            }
-                            else
-                            {
-                                <BitText Typography="BitTypography.H4">GitHub stats could not be loaded.</BitText>
-                            }
-                        </BitPivotItem>
                         <BitPivotItem HeaderText="Nuget">
                             @if (isLoadingNuget)
                             {
-                                <BitStack HorizontalAlign="BitAlignment.Center">
-                                    <BitRippleLoading />
-                                </BitStack>
+                                    <BitStack HorizontalAlign="BitAlignment.Center">
+                                        <BitRippleLoading />
+                                    </BitStack>
                             }
                             else if (nugetStats is not null)
                             {
                                 var data = nugetStats.Data[0];
-                                <BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Package id:</BitText>
-                                        <BitText><b>@data.Id</b></BitText>
+                                    <BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Package id:</BitText>
+                                            <BitText><b>@data.Id</b></BitText>
+                                        </BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Version:</BitText>
+                                            <BitText><b>@data.Version</b></BitText>
+                                        </BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Total downloads:</BitText>
+                                            <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
+                                        </BitStack>
                                     </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Version:</BitText>
-                                        <BitText><b>@data.Version</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Total downloads:</BitText>
-                                        <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
-                                    </BitStack>
-                                </BitStack>
                             }
                             else
                             {
-                                <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
+                                    <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
+                            }
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="GitHub">
+                            @if (isLoadingGitHub)
+                            {
+                                    <BitStack HorizontalAlign="BitAlignment.Center">
+                                        <BitRippleLoading />
+                                    </BitStack>
+                            }
+                            else if (gitHubStats is not null)
+                            {
+                                    <BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Name:</BitText>
+                                            <BitText><b>@gitHubStats.Name</b></BitText>
+                                        </BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Total stars:</BitText>
+                                            <BitText><b>@gitHubStats.StargazersCount.ToString("N0")</b></BitText>
+                                        </BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Forks count:</BitText>
+                                            <BitText><b>@gitHubStats.ForksCount.ToString("N0")</b></BitText>
+                                        </BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText>Repo:</BitText>
+                                            <BitLink Target="_blank"
+                                                     Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
+                                                <BitImage Alt="bitplatform GitHub stars"
+                                                          Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
+                                            </BitLink>
+                                        </BitStack>
+                                    </BitStack>
+                            }
+                            else
+                            {
+                                    <BitText Typography="BitTypography.H4">GitHub stats could not be loaded.</BitText>
                             }
                         </BitPivotItem>
                     </BitPivot>
