@@ -26,7 +26,7 @@ public partial class AttachmentController : AppControllerBase
         if (user is null)
             throw new ResourceNotFoundException();
 
-        var destFileName = $"{userId}_{Guid.NewGuid()}_{file.FileName}";
+        var destFileName = $"{userId}_{file.FileName}";
 
         if (user.ProfileImageName is not null)
         {
