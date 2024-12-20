@@ -36,15 +36,12 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryDto>> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
-
-        if (ValidateETag(dto.ConcurrencyStamp.ToStampString()!, out var statusCode))
-            return statusCode!;
 
         return dto;
     }

@@ -6,7 +6,7 @@ namespace Boilerplate.Shared.Controllers.Categories;
 public interface ICategoryController : IAppController
 {
     [HttpGet("{id}")]
-    Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken) => default!;
+    Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken);
 
     [HttpPost]
     Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken);
