@@ -21,8 +21,9 @@
                 tabindex="@(isEnabled ? 0 : -1)"
                 disabled="@(isEnabled is false)"
                 aria-disabled="@(isEnabled is false)"
+                title="@GetItemTitle(item)"
                 style="@GetStyle(item)"
-                class="bit-btg-itm @GetClass(item)">
+                class="@GetItemClass(item)">
             @if (template is not null)
             {
                 @template(item)
@@ -33,12 +34,17 @@
             }
             else
             {
-                var iconName = GetIconName(item);
+                var iconName = GetItemIconName(item);
                 @if (iconName.HasValue())
                 {
                     <i class="bit-icon bit-icon--@iconName" />
                 }
-                <span class="bit-btg-btx">@GetText(item)</span>
+
+                var text = GetItemText(item);
+                if (text.HasValue())
+                {
+                    <span class="bit-btg-btx">@text</span>
+                }
             }
         </button>
     }

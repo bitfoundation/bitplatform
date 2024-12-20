@@ -29,9 +29,44 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     [Parameter] public string? Key { get; set; }
 
     /// <summary>
+    /// The icon of the option when it is not checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OffIconName { get; set; }
+
+    /// <summary>
+    /// The text of the option when it is not checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OffText { get; set; }
+
+    /// <summary>
+    /// The title of the option when it is not checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OffTitle { get; set; }
+
+    /// <summary>
+    /// The icon of the option when it is checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OnIconName { get; set; }
+
+    /// <summary>
+    /// The text of the option when it is checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OnText { get; set; }
+
+    /// <summary>
+    /// The title of the option when it is checked in toggle mode.
+    /// </summary>
+    [Parameter] public string? OnTitle { get; set; }
+
+    /// <summary>
     /// Click event handler of the option.
     /// </summary>
     [Parameter] public EventCallback<BitButtonGroupOption> OnClick { get; set; }
+
+    /// <summary>
+    /// Reverses the positions of the icon and the main content of the option.
+    /// </summary>
+    [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the option.
@@ -47,6 +82,11 @@ public partial class BitButtonGroupOption : ComponentBase, IDisposable
     /// Text to render in the option
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// Title to render in the option
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
 
 
