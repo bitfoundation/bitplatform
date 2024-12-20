@@ -16,15 +16,12 @@ public partial class ProfileSection
     private bool isUploading;
     private string? profileImageUrl;
     private string? profileImageUploadUrl;
-    private string? removeProfileImageHttpUrl;
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
     protected override async Task OnInitAsync()
     {
         var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
-
-        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={accessToken}";
 
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 
@@ -76,7 +73,7 @@ public partial class ProfileSection
 
         try
         {
-            await HttpClient.DeleteAsync(removeProfileImageHttpUrl, CurrentCancellationToken);
+            await HttpClient.DeleteAsync("api/Attachment/RemoveProfileImage", CurrentCancellationToken);
 
             User.ProfileImageName = profileImageUrl = null;
 
