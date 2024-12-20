@@ -33,12 +33,9 @@ public partial class ProfileSection
 
     protected override void OnParametersSet()
     {
-        base.OnParametersSet();
+        User?.Patch(editUserDto);
 
-        if (User is not null)
-        {
-            User.Patch(editUserDto);
-        }
+        base.OnParametersSet();
     }
 
 

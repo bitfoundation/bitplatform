@@ -36,7 +36,7 @@
                             @Localizer[nameof(AppStrings.ProfileTitle)]
                         </BitActionButton>
 
-                        @if (cultures is not null && cultures.Length > 0)
+                        @if (CultureInfoManager.MultilingualEnabled)
                         {
                             <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
                                 <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
