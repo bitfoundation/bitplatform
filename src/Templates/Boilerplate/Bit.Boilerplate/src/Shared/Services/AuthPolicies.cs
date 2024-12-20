@@ -1,6 +1,4 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-
-namespace Boilerplate.Shared.Services;
+﻿namespace Boilerplate.Shared.Services;
 
 public class AuthPolicies
 {
