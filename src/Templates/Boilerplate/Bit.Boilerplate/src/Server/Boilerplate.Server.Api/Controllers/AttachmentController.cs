@@ -91,7 +91,7 @@ public partial class AttachmentController : AppControllerBase
 
     [AllowAnonymous]
     [HttpGet("{userId}")]
-    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any)]
+    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
     public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());

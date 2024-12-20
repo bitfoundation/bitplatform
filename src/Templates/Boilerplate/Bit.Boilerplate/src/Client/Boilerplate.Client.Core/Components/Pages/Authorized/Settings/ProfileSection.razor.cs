@@ -20,7 +20,6 @@ public partial class ProfileSection
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
 
-
     protected override async Task OnInitAsync()
     {
         var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
@@ -34,11 +33,13 @@ public partial class ProfileSection
 
     protected override void OnParametersSet()
     {
-        User!.Patch(editUserDto);
-
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User!.Id}?version={User.ConcurrencyStamp}").ToString();
-
         base.OnParametersSet();
+
+        if (User is not null)
+        {
+            User.Patch(editUserDto);
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?file={User.ProfileImageName}&version={User.ConcurrencyStamp}").ToString();
+        }
     }
 
 
@@ -99,7 +100,9 @@ public partial class ProfileSection
         {
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
-            User.ProfileImageName = updatedUser.ProfileImageName;
+            updatedUser.Patch(User);
+
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?file={User.ProfileImageName}&version={User.ConcurrencyStamp}").ToString();
 
             PublishUserDataUpdated();
         }
