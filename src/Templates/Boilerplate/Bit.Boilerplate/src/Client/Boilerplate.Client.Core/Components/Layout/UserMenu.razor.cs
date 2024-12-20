@@ -42,11 +42,9 @@ public partial class UserMenu
             await InvokeAsync(StateHasChanged);
         });
 
-        var concurrencyStamp = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetConcurrencyStamp());
-        userController.AddQueryString("version", concurrencyStamp);
         user = await userController.GetCurrentUser(CurrentCancellationToken);
 
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?version={concurrencyStamp}").ToString();
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?version={user.ConcurrencyStamp}").ToString();
 
         await base.OnInitAsync();
     }

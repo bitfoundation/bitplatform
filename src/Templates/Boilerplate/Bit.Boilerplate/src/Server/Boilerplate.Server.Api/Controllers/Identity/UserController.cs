@@ -33,7 +33,6 @@ public partial class UserController : AppControllerBase, IUserController
     //#endif
 
     [HttpGet]
-    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any)]
     public async Task<UserDto> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

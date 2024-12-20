@@ -27,12 +27,6 @@ public partial class ProfileSection
 
         removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={accessToken}";
 
-        var (userId, concurrencyStamp) = await PrerenderStateService.GetValue(async () =>
-        {
-            var user = (await AuthenticationStateTask).User;
-            return (user.GetUserId(), user.GetConcurrencyStamp());
-        });
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{userId}&version={concurrencyStamp}").ToString();
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
@@ -40,7 +34,9 @@ public partial class ProfileSection
 
     protected override void OnParametersSet()
     {
-        User?.Patch(editUserDto);
+        User!.Patch(editUserDto);
+
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User!.Id}?version={User.ConcurrencyStamp}").ToString();
 
         base.OnParametersSet();
     }
@@ -101,8 +97,6 @@ public partial class ProfileSection
 
         try
         {
-            var concurrencyStamp = (await AuthenticationStateTask).User.GetConcurrencyStamp();
-            userController.AddQueryString("version", concurrencyStamp);
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
             User.ProfileImageName = updatedUser.ProfileImageName;
