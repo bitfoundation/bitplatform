@@ -30,20 +30,7 @@ public partial class HomePage
         // However, the logic in other HTTP message handlers, such as **LoggingDelegatingHandler** and **RetryDelegatingHandler**,
         // effectively addresses most scenarios.
 
-        await Task.WhenAll(LoadGitHub(), LoadNuget());
-    }
-
-    private async Task LoadGitHub()
-    {
-        try
-        {
-            gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
-        }
-        finally
-        {
-            isLoadingGitHub = false;
-            await InvokeAsync(StateHasChanged);
-        }
+        await Task.WhenAll(LoadNuget(), LoadGitHub());
     }
 
     private async Task LoadNuget()
@@ -55,6 +42,29 @@ public partial class HomePage
         finally
         {
             isLoadingNuget = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadGitHub()
+    {
+        try
+        {
+            // GitHub results (2nd Bit Pivot tab) aren't shown by default and aren't critical for SEO,
+            // so we can skip it in pre-rendering to save time.
+            if (InPrerenderSession is false)
+            {
+                gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
+            }
+        }
+        catch
+        {
+            // GetGitHubStats method calls the GitHub API directly from the client.
+            // We've intentionally ignored proper exception handling to keep this example simple. 
+        }
+        finally
+        {
+            isLoadingGitHub = false;
             await InvokeAsync(StateHasChanged);
         }
     }

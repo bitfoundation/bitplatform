@@ -8,7 +8,6 @@ public partial class UserMenu
     private bool isOpen;
     private bool showCultures;
     private UserDto user = new();
-    private string? profileImageUrl;
     private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -22,6 +21,9 @@ public partial class UserMenu
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
+
+
+    private string? ProfileImageUrl => user.GetProfileImageUrl(AbsoluteServerAddress);
 
 
     protected override async Task OnInitAsync()
@@ -43,9 +45,6 @@ public partial class UserMenu
         });
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
-
-        var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
     }

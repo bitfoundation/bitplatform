@@ -23,6 +23,36 @@
                 <BitStack>
                     <BitText Typography="BitTypography.H5">Statistics</BitText>
                     <BitPivot Style="width:100%" Styles="@(new() { Body = "overflow:auto" })">
+                        <BitPivotItem HeaderText="Nuget">
+                            @if (isLoadingNuget)
+                            {
+                                <BitStack HorizontalAlign="BitAlignment.Center">
+                                    <BitRippleLoading />
+                                </BitStack>
+                            }
+                            else if (nugetStats is not null)
+                            {
+                                var data = nugetStats.Data[0];
+                                <BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Package id:</BitText>
+                                        <BitText><b>@data.Id</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Version:</BitText>
+                                        <BitText><b>@data.Version</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Total downloads:</BitText>
+                                        <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
+                                    </BitStack>
+                                </BitStack>
+                            }
+                            else
+                            {
+                                <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
+                            }
+                        </BitPivotItem>
                         <BitPivotItem HeaderText="GitHub">
                             @if (isLoadingGitHub)
                             {
@@ -58,36 +88,6 @@
                             else
                             {
                                 <BitText Typography="BitTypography.H4">GitHub stats could not be loaded.</BitText>
-                            }
-                        </BitPivotItem>
-                        <BitPivotItem HeaderText="Nuget">
-                            @if (isLoadingNuget)
-                            {
-                                <BitStack HorizontalAlign="BitAlignment.Center">
-                                    <BitRippleLoading />
-                                </BitStack>
-                            }
-                            else if (nugetStats is not null)
-                            {
-                                var data = nugetStats.Data[0];
-                                <BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Package id:</BitText>
-                                        <BitText><b>@data.Id</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Version:</BitText>
-                                        <BitText><b>@data.Version</b></BitText>
-                                    </BitStack>
-                                    <BitStack Horizontal>
-                                        <BitText>Total downloads:</BitText>
-                                        <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
-                                    </BitStack>
-                                </BitStack>
-                            }
-                            else
-                            {
-                                <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
                             }
                         </BitPivotItem>
                     </BitPivot>

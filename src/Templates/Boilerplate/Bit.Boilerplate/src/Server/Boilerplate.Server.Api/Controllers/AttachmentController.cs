@@ -10,8 +10,6 @@ public partial class AttachmentController : AppControllerBase
 {
     [AutoInject] private UserManager<User> userManager = default!;
 
-    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
-
     [AutoInject] private IBlobStorage blobStorage = default!;
 
     [HttpPost]
@@ -91,11 +89,11 @@ public partial class AttachmentController : AppControllerBase
         await blobStorage.DeleteAsync(filePath, cancellationToken);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetProfileImage(CancellationToken cancellationToken)
+    [AllowAnonymous]
+    [HttpGet("{userId}")]
+    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
+    public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
         var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user?.ProfileImageName is null)

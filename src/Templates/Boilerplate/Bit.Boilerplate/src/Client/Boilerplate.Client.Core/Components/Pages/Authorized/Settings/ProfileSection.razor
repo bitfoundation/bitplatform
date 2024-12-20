@@ -1,9 +1,5 @@
 ﻿@inherits AppComponentBase
 
-@{
-    var imageUrl = User?.ProfileImageName is null ? null : $"{profileImageUrl}&file={User.ProfileImageName}";
-}
-
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
         @if (Loading)
@@ -32,7 +28,7 @@
                         @if (isUploading is false)
                         {
                             <BitPersona HidePersonaDetails
-                                        ImageUrl="@imageUrl"
+                                        ImageUrl="@ProfileImageUrl"
                                         PrimaryText="@User?.FullName"
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
