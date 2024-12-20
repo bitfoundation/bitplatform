@@ -38,7 +38,7 @@ public partial class ProfileSection
         if (User is not null)
         {
             User.Patch(editUserDto);
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?v={User.ConcurrencyStamp}").ToString();
+            profileImageUrl = User.GetProfileImageUrl(AbsoluteServerAddress);
         }
     }
 
@@ -102,7 +102,7 @@ public partial class ProfileSection
 
             updatedUser.Patch(User);
 
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?v={User.ConcurrencyStamp}").ToString();
+            profileImageUrl = User.GetProfileImageUrl(AbsoluteServerAddress);
 
             PublishUserDataUpdated();
         }

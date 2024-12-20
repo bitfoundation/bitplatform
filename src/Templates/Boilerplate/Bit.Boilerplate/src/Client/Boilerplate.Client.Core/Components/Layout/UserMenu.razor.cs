@@ -39,14 +39,14 @@ public partial class UserMenu
 
             user = (UserDto)payload;
 
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?v={user.ConcurrencyStamp}").ToString();
+            profileImageUrl = user.GetProfileImageUrl(AbsoluteServerAddress);
 
             await InvokeAsync(StateHasChanged);
         });
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
 
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?v={user.ConcurrencyStamp}").ToString();
+        profileImageUrl = user.GetProfileImageUrl(AbsoluteServerAddress);
 
         await base.OnInitAsync();
     }

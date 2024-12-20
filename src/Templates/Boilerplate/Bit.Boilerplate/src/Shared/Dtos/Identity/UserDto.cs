@@ -37,6 +37,14 @@ public partial class UserDto : IValidatableObject
 
     public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
+    public string? GetProfileImageUrl(Uri absoluteServerAddress)
+    {
+        if (ProfileImageName is null)
+            return null;
+
+        return new Uri(absoluteServerAddress, $"/api/Attachment/GetProfileImage/{Id}?v={ConcurrencyStamp}").ToString();
+    }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))
