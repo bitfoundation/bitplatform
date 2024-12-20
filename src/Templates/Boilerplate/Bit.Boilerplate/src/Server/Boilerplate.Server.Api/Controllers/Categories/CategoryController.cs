@@ -37,19 +37,12 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryDto>> Get(Guid id, CancellationToken cancellationToken)
+    public async Task<CategoryDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
         if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
-
-        //#if (database != "Sqlite")
-        // Example for proper http caching using ConcurrencyStamp as ETag.
-        if (Request.Headers.TryGetValue("If-None-Match", out var etag) && dto.ConcurrencyStamp.ToHexString() == etag)
-            return StatusCode(StatusCodes.Status304NotModified);
-        Response.Headers.ETag = dto.ConcurrencyStamp.ToHexString();
-        //#endif
 
         return dto;
     }
