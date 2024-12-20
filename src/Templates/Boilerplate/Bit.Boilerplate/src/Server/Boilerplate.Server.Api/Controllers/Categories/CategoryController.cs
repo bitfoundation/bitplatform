@@ -5,7 +5,6 @@ using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Controllers.Categories;
-using FluentStorage.Utils.Extensions;
 
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
