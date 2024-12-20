@@ -39,10 +39,9 @@ public partial class UserDto : IValidatableObject
 
     public string? GetProfileImageUrl(Uri absoluteServerAddress)
     {
-        if (ProfileImageName is null)
-            return null;
-
-        return new Uri(absoluteServerAddress, $"/api/Attachment/GetProfileImage/{Id}?v={ConcurrencyStamp}").ToString();
+        return ProfileImageName is null
+            ? null
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProfileImage/{Id}?v={ConcurrencyStamp}").ToString();
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

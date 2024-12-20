@@ -6,7 +6,7 @@
                  Classes="@(new() { Callout="user-menu-callout" })">
         <Template>
             <BitPersona Class="persona"
-                        ImageUrl="@profileImageUrl"
+                        ImageUrl="@ProfileImageUrl"
                         Size=@BitPersonaSize.Size32
                         PrimaryText="@user.DisplayName"
                         Classes="@(new() { DetailsContainer="persona-details" })"
@@ -19,7 +19,7 @@
                 {
                     <BitStack AutoSize>
                         <BitPersona Class="persona"
-                                    ImageUrl="@profileImageUrl"
+                                    ImageUrl="@ProfileImageUrl"
                                     OnImageClick="GoToProfile"
                                     Size="BitPersonaSize.Size48"
                                     PrimaryText="@user.DisplayName"
@@ -36,15 +36,18 @@
                             @Localizer[nameof(AppStrings.ProfileTitle)]
                         </BitActionButton>
 
-                        <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
-                            <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
-                                @Localizer[nameof(AppStrings.Language)]
-                                <BitSpacer />
-                                <BitIcon Size="BitSize.Small"
-                                         Color="BitColor.SecondaryForeground"
-                                         IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
-                            </BitStack>
-                        </BitActionButton>
+                        @if (cultures is not null && cultures.Length > 0)
+                        {
+                            <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures=true">
+                                <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                    @Localizer[nameof(AppStrings.Language)]
+                                    <BitSpacer />
+                                    <BitIcon Size="BitSize.Small"
+                                             Color="BitColor.SecondaryForeground"
+                                             IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
+                                </BitStack>
+                            </BitActionButton>
+                        }
 
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1"

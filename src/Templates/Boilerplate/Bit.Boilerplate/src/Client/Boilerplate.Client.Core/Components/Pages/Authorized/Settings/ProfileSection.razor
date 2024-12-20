@@ -28,7 +28,7 @@
                         @if (isUploading is false)
                         {
                             <BitPersona HidePersonaDetails
-                                        ImageUrl="@profileImageUrl"
+                                        ImageUrl="@ProfileImageUrl"
                                         PrimaryText="@User?.FullName"
                                         Size=@BitPersonaSize.Size72
                                         Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />

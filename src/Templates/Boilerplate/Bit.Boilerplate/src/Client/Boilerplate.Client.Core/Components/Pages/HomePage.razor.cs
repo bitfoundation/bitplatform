@@ -50,12 +50,18 @@ public partial class HomePage
     {
         try
         {
-            if (InPrerenderSession is false) // GitHub results (2nd Bit Pivot tab) aren't shown by default and aren't critical for SEO, so skip pre-rendering to save time.
+            // GitHub results (2nd Bit Pivot tab) aren't shown by default and aren't critical for SEO,
+            // so we can skip it in pre-rendering to save time.
+            if (InPrerenderSession is false)
             {
                 gitHubStats = await statisticsController.GetGitHubStats(CurrentCancellationToken);
             }
         }
-        catch { /* `GetGitHubStats` calls the GitHub API directly from the client. We've intentionally skipped proper exception handling to keep this example simple. */ }
+        catch
+        {
+            // GetGitHubStats method calls the GitHub API directly from the client.
+            // We've intentionally ignored proper exception handling to keep this example simple. 
+        }
         finally
         {
             isLoadingGitHub = false;

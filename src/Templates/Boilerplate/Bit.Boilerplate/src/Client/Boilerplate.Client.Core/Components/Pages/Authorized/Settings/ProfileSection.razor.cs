@@ -14,10 +14,13 @@ public partial class ProfileSection
 
     private bool isSaving;
     private bool isUploading;
-    private string? profileImageUrl;
     private string? profileImageUploadUrl;
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
+
+    
+    private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
+
 
     protected override async Task OnInitAsync()
     {
@@ -35,7 +38,6 @@ public partial class ProfileSection
         if (User is not null)
         {
             User.Patch(editUserDto);
-            profileImageUrl = User.GetProfileImageUrl(AbsoluteServerAddress);
         }
     }
 
@@ -75,7 +77,7 @@ public partial class ProfileSection
         {
             await HttpClient.DeleteAsync("api/Attachment/RemoveProfileImage", CurrentCancellationToken);
 
-            User.ProfileImageName = profileImageUrl = null;
+            User.ProfileImageName = null;
 
             PublishUserDataUpdated();
         }
@@ -98,8 +100,6 @@ public partial class ProfileSection
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
             updatedUser.Patch(User);
-
-            profileImageUrl = User.GetProfileImageUrl(AbsoluteServerAddress);
 
             PublishUserDataUpdated();
         }

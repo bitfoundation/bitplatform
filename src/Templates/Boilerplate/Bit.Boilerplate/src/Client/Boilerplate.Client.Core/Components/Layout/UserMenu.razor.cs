@@ -8,7 +8,6 @@ public partial class UserMenu
     private bool isOpen;
     private bool showCultures;
     private UserDto user = new();
-    private string? profileImageUrl;
     private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -22,6 +21,9 @@ public partial class UserMenu
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
+
+
+    private string? ProfileImageUrl => user.GetProfileImageUrl(AbsoluteServerAddress);
 
 
     protected override async Task OnInitAsync()
@@ -39,14 +41,10 @@ public partial class UserMenu
 
             user = (UserDto)payload;
 
-            profileImageUrl = user.GetProfileImageUrl(AbsoluteServerAddress);
-
             await InvokeAsync(StateHasChanged);
         });
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
-
-        profileImageUrl = user.GetProfileImageUrl(AbsoluteServerAddress);
 
         await base.OnInitAsync();
     }
