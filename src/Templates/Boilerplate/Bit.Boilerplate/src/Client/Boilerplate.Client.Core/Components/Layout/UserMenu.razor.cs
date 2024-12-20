@@ -44,7 +44,7 @@ public partial class UserMenu
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
 
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?version={user.ConcurrencyStamp}").ToString();
+        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?v={user.ConcurrencyStamp}").ToString();
 
         await base.OnInitAsync();
     }
