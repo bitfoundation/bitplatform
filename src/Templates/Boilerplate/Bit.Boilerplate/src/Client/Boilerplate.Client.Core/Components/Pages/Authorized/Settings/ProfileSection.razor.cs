@@ -38,7 +38,7 @@ public partial class ProfileSection
         if (User is not null)
         {
             User.Patch(editUserDto);
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?file={User.ProfileImageName}&v={User.ConcurrencyStamp}").ToString();
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?v={User.ConcurrencyStamp}").ToString();
         }
     }
 
@@ -78,7 +78,7 @@ public partial class ProfileSection
         {
             await HttpClient.DeleteAsync(removeProfileImageHttpUrl, CurrentCancellationToken);
 
-            User.ProfileImageName = null;
+            User.ProfileImageName = profileImageUrl = null;
 
             PublishUserDataUpdated();
         }
@@ -102,7 +102,7 @@ public partial class ProfileSection
 
             updatedUser.Patch(User);
 
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?file={User.ProfileImageName}&v={User.ConcurrencyStamp}").ToString();
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{User.Id}?v={User.ConcurrencyStamp}").ToString();
 
             PublishUserDataUpdated();
         }

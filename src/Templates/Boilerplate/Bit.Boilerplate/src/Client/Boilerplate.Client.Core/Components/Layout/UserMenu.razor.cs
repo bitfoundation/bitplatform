@@ -39,6 +39,8 @@ public partial class UserMenu
 
             user = (UserDto)payload;
 
+            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?v={user.ConcurrencyStamp}").ToString();
+
             await InvokeAsync(StateHasChanged);
         });
 

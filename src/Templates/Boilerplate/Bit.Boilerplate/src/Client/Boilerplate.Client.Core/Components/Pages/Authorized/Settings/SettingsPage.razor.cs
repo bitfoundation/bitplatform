@@ -18,7 +18,6 @@ public partial class SettingsPage
 
     private UserDto? user;
     private bool isLoading;
-    private string? profileImageUrl;
     private string? openedAccordion;
 
 
@@ -31,8 +30,6 @@ public partial class SettingsPage
         try
         {
             user = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/User/GetCurrentUser", JsonSerializerOptions.GetTypeInfo<UserDto>(), CurrentCancellationToken)))!;
-
-            profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage/{user.Id}?v={user.ConcurrencyStamp}").ToString();
         }
         finally
         {

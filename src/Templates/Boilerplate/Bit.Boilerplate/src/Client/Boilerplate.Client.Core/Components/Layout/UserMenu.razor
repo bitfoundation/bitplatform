@@ -1,8 +1,4 @@
-@inherits AppComponentBase
-
-@{
-    var imageUrl = user.ProfileImageName is null ? null : $"{profileImageUrl}&file={user.ProfileImageName}";
-}
+﻿@inherits AppComponentBase
 
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
@@ -10,7 +6,7 @@
                  Classes="@(new() { Callout="user-menu-callout" })">
         <Template>
             <BitPersona Class="persona"
-                        ImageUrl="@imageUrl"
+                        ImageUrl="@profileImageUrl"
                         Size=@BitPersonaSize.Size32
                         PrimaryText="@user.DisplayName"
                         Classes="@(new() { DetailsContainer="persona-details" })"
@@ -23,7 +19,7 @@
                 {
                     <BitStack AutoSize>
                         <BitPersona Class="persona"
-                                    ImageUrl="@imageUrl"
+                                    ImageUrl="@profileImageUrl"
                                     OnImageClick="GoToProfile"
                                     Size="BitPersonaSize.Size48"
                                     PrimaryText="@user.DisplayName"
