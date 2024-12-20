@@ -34,4 +34,12 @@ public static partial class ClaimsPrincipalExtensions
     {
         return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
+
+    /// <summary>
+    /// <inheritdoc cref="AppClaimTypes.CONCURRENCY_STAMP"/>
+    /// </summary>
+    public static string GetConcurrencyStamp(this ClaimsPrincipal claimsPrincipal)
+    {
+        return claimsPrincipal.FindFirst(AppClaimTypes.CONCURRENCY_STAMP)!.Value;
+    }
 }

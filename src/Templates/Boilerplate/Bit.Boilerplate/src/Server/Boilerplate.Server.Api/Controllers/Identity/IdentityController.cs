@@ -104,6 +104,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, userSession.Id.ToString()));
+        userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.CONCURRENCY_STAMP, user.ConcurrencyStamp!));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.StartedOn.ToUnixTimeSeconds().ToString()));
         if (userSession.Privileged)
         {
@@ -250,6 +251,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             userSession.RenewedOn = DateTimeOffset.UtcNow;
 
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_ID, currentSessionId.ToString()));
+            userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.CONCURRENCY_STAMP, user.ConcurrencyStamp!));
             userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.SESSION_STAMP, userSession.RenewedOn.Value.ToUnixTimeSeconds().ToString()));
 
             userSession.Privileged = await IsUserSessionPrivileged(userSession, cancellationToken);

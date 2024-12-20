@@ -33,6 +33,8 @@ public partial class UserDto : IValidatableObject
 
     public string? ProfileImageName { get; set; }
 
+    public string? ConcurrencyStamp { get; set; }
+
     public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

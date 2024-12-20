@@ -1,4 +1,6 @@
-﻿namespace Boilerplate.Shared.Services;
+﻿using Boilerplate.Shared.Controllers.Identity;
+
+namespace Boilerplate.Shared.Services;
 
 public class AuthPolicies
 {
@@ -46,4 +48,11 @@ public class AppClaimTypes
     /// on the maximum number of concurrent privileged sessions of the user.
     /// </summary>
     public const string SESSION_STAMP = "session_stamp";
+
+    /// <summary>
+    /// Stores the user's concurrency stamp in the JWT token.
+    /// This value is included as a query parameter (?version=xxx) when calling <see cref="IUserController.GetCurrentUser(CancellationToken)"/> or GetProfileImage.
+    /// The server uses this for accurate caching and ensuring updated data is served.
+    /// </summary>
+    public const string CONCURRENCY_STAMP = "concurrency_stamp";
 }
