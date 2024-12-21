@@ -1,4 +1,5 @@
-﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+﻿@import '../../Styles/extra-variables.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 .bit-ply {
     width: 100%;
@@ -11,21 +12,21 @@
 .bit-ply-top {
     width: 100%;
     z-index: 999999;
-    height: var(--bit-env-inset-top);
+    height: $bit-env-inset-top;
     background-color: $clr-bg-pri;
 }
 
 .bit-ply-bottom {
     width: 100%;
     z-index: 999999;
-    height: var(--bit-env-inset-bottom);
+    height: $bit-env-inset-bottom;
     background-color: $clr-bg-pri;
 }
 
 .bit-ply-center {
     width: 100%;
     display: flex;
-    height: calc(100% - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
+    height: calc(100% - $bit-env-inset-top - $bit-env-inset-bottom);
 }
 
 .bit-ply-main {
@@ -35,19 +36,19 @@
     position: relative;
     scroll-behavior: smooth;
     overscroll-behavior: none;
-    width: calc(100% - var(--bit-env-inset-left) - var(--bit-env-inset-right));
+    width: calc(100% - $bit-env-inset-left - $bit-env-inset-right);
 }
 
 .bit-ply-left {
     height: 100%;
     z-index: 999999;
-    width: var(--bit-env-inset-left);
+    width: $bit-env-inset-left;
     background-color: $clr-bg-pri;
 }
 
 .bit-ply-right {
     height: 100%;
     z-index: 999999;
-    width: var(--bit-env-inset-right);
+    width: $bit-env-inset-right;
     background-color: $clr-bg-pri;
 }

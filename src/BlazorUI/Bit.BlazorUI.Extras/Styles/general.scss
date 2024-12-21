@@ -8,8 +8,8 @@
     --bit-env-height-vh: calc(100vh - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
     --bit-env-width-per: calc(100% - var(--bit-env-inset-left) - var(--bit-env-inset-right));
     --bit-env-height-per: calc(100% - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
-    --bit-env-width: calc(var(--win-width) - var(--bit-env-inset-left) - var(--bit-env-inset-right));
-    --bit-env-height: calc(var(--win-height) - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
+    --bit-env-width-avl: calc(var(--win-width) - var(--bit-env-inset-left) - var(--bit-env-inset-right));
+    --bit-env-height-avl: calc(var(--win-height) - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
     //--
     --bit-env-inset-inline-start: var(--bit-env-inset-left);
     --bit-env-inset-inline-end: var(--bit-env-inset-right);

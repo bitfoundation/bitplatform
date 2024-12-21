@@ -9,11 +9,13 @@
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.Top" class="bit-ply-top @Classes?.Top" />
     <div style="@Styles?.Center"
-         class="bit-ply-center @Classes?.Center" 
+         class="bit-ply-center @Classes?.Center"
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ply-left @Classes?.Left"></div>
         <div style="@Styles?.Main" class="bit-ply-main @Classes?.Main">
-            @ChildContent
+            <BitCascadingValueProvider Values="Values">
+                @ChildContent
+            </BitCascadingValueProvider>
         </div>
         <div style="@Styles?.Right" class="bit-ply-right @Classes?.Right"></div>
     </div>
