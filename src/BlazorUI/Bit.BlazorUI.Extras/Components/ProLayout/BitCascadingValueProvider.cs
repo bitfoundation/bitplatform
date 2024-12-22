@@ -40,7 +40,7 @@ public class BitCascadingValueProvider : ComponentBase
 
             rf = b => { CreateCascadingValue(b, s, v.Name, v.Value, v.IsFixed, r); };
 
-            seq += v.Name.HasValue() ? 4 : 3;
+            seq += v.Name.HasValue() ? 5 : 4;
         }
 
         builder.AddContent(seq, rf);
@@ -50,7 +50,7 @@ public class BitCascadingValueProvider : ComponentBase
     private void CreateCascadingValue(RenderTreeBuilder builder,
         int seq,
         string? name,
-        object? value,
+        object value,
         bool isFixed,
         RenderFragment? childContent)
     {
