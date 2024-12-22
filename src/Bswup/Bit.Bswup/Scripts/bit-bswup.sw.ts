@@ -1,4 +1,4 @@
-﻿self['bit-bswup.sw version'] = '9.1.0-pre-08';
+﻿self['bit-bswup.sw version'] = '9.1.1';
 
 interface Window {
     clients: any
@@ -24,6 +24,7 @@ interface Window {
     errorTolerance: any
     enableDiagnostics: any
     enableFetchDiagnostics: any
+    disableHashlessAssetsUpdate: any
 }
 
 interface Event {
@@ -210,8 +211,8 @@ async function createAssetsCache(ignoreProgressReport = false) {
         }
     }
 
-    let keys = await newCache.keys();
-    const firstTime = keys.length === 0;
+    let newCacheKeys = await newCache.keys();
+    const firstTime = newCacheKeys.length === 0;
     const passiveFirstTime = self.isPassive && firstTime
     if (passiveFirstTime && self.disablePassiveFirstBoot) {
         if (!ignoreProgressReport) {
@@ -251,23 +252,20 @@ async function createAssetsCache(ignoreProgressReport = false) {
 
     const oldUrls = [];
     const updatedAssets = [];
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
+    for (let i = 0; i < newCacheKeys.length; i++) {
+        const key = newCacheKeys[i];
         if (!key || !key.url) continue;
 
         const lastIndex = key.url.lastIndexOf('.');
         let url = lastIndex === -1 ? key.url : key.url.substring(0, lastIndex);
         let hash = lastIndex === -1 ? '' : key.url.substring(lastIndex + 1);
-        if (!hash.startsWith('sha256')) {
-            url = key.url;
-            hash = '';
-        }
         oldUrls.push({ url, hash });
+
         const foundAsset = UNIQUE_ASSETS.find(a => url.endsWith(a.url));
         if (!foundAsset) {
             diag('*** removed oldUrl:', key.url);
             newCache.delete(key.url);
-        } else if (hash && hash !== foundAsset.hash) {
+        } else if ((hash && hash !== foundAsset.hash) || (!hash && !self.disableHashlessAssetsUpdate)) {
             diag('*** updated oldUrl:', key.url);
             newCache.delete(key.url);
             updatedAssets.push(foundAsset);
@@ -341,11 +339,11 @@ function createCacheUrl(asset: any) {
 function createNewAssetRequest(asset) {
     let assetUrl;
     if (asset.url === DEFAULT_URL && self.noPrerenderQuery) {
-        assetUrl = `${asset.url}?${self.noPrerenderQuery}&v=${asset.hash || self.assetsManifest.version}`;
+        assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}&${self.noPrerenderQuery}`;
     } else {
         assetUrl = `${asset.url}?v=${asset.hash || self.assetsManifest.version}`;
     }
-    const requestInit: RequestInit = asset.hash && self.enableIntegrityCheck
+    const requestInit: RequestInit = asset.hash && asset.hash.startsWith('sha') && self.enableIntegrityCheck
         ? { cache: 'no-store', integrity: asset.hash, headers: [['cache-control', 'public, max-age=3153600']] }
         : { cache: 'no-store', headers: [['cache-control', 'public, max-age=3153600']] };
 

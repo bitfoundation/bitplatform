@@ -1,0 +1,70 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<BitPanel AriaLabel="@AriaLabel"
+          Class="@ClassBuilder.Value"
+          Dir="Dir"
+          @attributes="HtmlAttributes"
+          Id="@Id"
+          IsEnabled="IsEnabled"
+          Style="@StyleBuilder.Value"
+          Visibility="Visibility"
+          AutoToggleScroll="AutoToggleScroll"
+          Blocking="Blocking"
+          Classes="Classes"
+          IsOpen="IsOpen"
+          IsOpenChanged="AssignIsOpen"
+          Modeless="Modeless"
+          OnDismiss="OnDismiss"
+          OnSwipeStart="OnSwipeStart"
+          OnSwipeMove="OnSwipeMove"
+          OnSwipeEnd="OnSwipeEnd"
+          Position="Position"
+          Size="Size"
+          ScrollerSelector="@ScrollerSelector"
+          Styles="Styles"
+          SwipeTrigger="SwipeTrigger">
+    @if (Header is not null || HeaderText is not null || ShowCloseButton)
+    {
+        <div style="@Styles?.HeaderContainer" class="bit-ppl-hcn @Classes?.HeaderContainer">
+            @if (Header is not null)
+            {
+                <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
+                    @Header
+                </div>
+            }
+            else if (HeaderText is not null)
+            {
+                <div style="@Styles?.Header" class="bit-ppl-hdr @Classes?.Header">
+                    @HeaderText
+                </div>
+            }
+
+            @if (ShowCloseButton)
+            {
+                <button @onclick="ClosePanel"
+                        style="@Styles?.CloseButton"
+                        class="bit-ppl-cls @Classes?.CloseButton">
+                    <i style="@Styles?.CloseIcon" class="bit-icon bit-icon--Cancel @Classes?.CloseIcon" />
+                </button>
+            }
+        </div>
+    }
+
+    <div style="@Styles?.Body" class="bit-ppl-bdy @Classes?.Body">
+        @(Body ?? ChildContent)
+    </div>
+
+    @if (Footer is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-ppl-fcn @Classes?.Footer">
+            @Footer
+        </div>
+    }
+    else if (FooterText is not null)
+    {
+        <div style="@Styles?.Footer" class="bit-ppl-fcn @Classes?.Footer">
+            @FooterText
+        </div>
+    }
+</BitPanel>

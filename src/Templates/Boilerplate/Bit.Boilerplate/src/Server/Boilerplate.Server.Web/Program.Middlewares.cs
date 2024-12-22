@@ -57,8 +57,11 @@ public static partial class Program
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
             app.UseHsts();
+            app.UseXContentTypeOptions();
+            app.UseXXssProtection(options => options.EnabledWithBlockMode());
+            app.UseXfo(options => options.SameOrigin());
         }
 
         app.UseResponseCaching();
@@ -140,7 +143,7 @@ public static partial class Program
             //    and use the Server.Web project solely as a Blazor Server or pre-rendering service provider.
             throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
         }
-        app.MapHub<Api.SignalR.AppHub>("/app-hub");
+        app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
         app.MapControllers().RequireAuthorization();
@@ -149,9 +152,6 @@ public static partial class Program
         app.UseSiteMap();
 
         // Handle the rest of requests with blazor
-        //#if (framework == 'net9.0')
-        app.MapStaticAssets();
-        //#endif
         var blazorApp = app.MapRazorComponents<Components.App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()

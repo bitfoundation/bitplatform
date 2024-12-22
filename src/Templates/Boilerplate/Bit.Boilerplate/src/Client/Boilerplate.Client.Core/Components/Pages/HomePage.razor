@@ -18,97 +18,81 @@
 
         <br />
 
-        <BitButton Target="_blank"
-                   Title="@Localizer[nameof(AppStrings.GitHubRepo)]"
-                   Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
-            @Localizer[nameof(AppStrings.GitHubRepo)]
-        </BitButton>
-        <BitImage Alt="bitplatform GitHub stars"
-                  Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
         <CascadingValue Value="BitDir.Ltr">
-            <BitAccordion Title="Statistics" Dir="BitDir.Ltr">
-                <BitPivot Styles="@(new() { Body = "max-height:300px;overflow:auto" })" Dir="BitDir.Ltr">
-                    <BitPivotItem HeaderText="GitHub">
-                        @if (isLoading)
-                        {
-                            <BitRippleLoading />
-                        }
-                        else if (gitHubStats is not null)
-                        {
-                            <BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Name:</BitText>
-                                    <BitText><b>@gitHubStats.Name</b></BitText>
+            <BitCard FullWidth Style="padding:2rem">
+                <BitStack>
+                    <BitText Typography="BitTypography.H5">Statistics</BitText>
+                    <BitPivot Style="width:100%" Styles="@(new() { Body = "overflow:auto" })">
+                        <BitPivotItem HeaderText="Nuget">
+                            @if (isLoadingNuget)
+                            {
+                                <BitStack HorizontalAlign="BitAlignment.Center">
+                                    <BitRippleLoading />
                                 </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Description:</BitText>
-                                    <BitText><b>@gitHubStats.Description</b></BitText>
+                            }
+                            else if (nugetStats is not null)
+                            {
+                                var data = nugetStats.Data[0];
+                                <BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Package id:</BitText>
+                                        <BitText><b>@data.Id</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Version:</BitText>
+                                        <BitText><b>@data.Version</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Total downloads:</BitText>
+                                        <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
+                                    </BitStack>
                                 </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Homepage:</BitText>
-                                    <BitText><b>@gitHubStats.Homepage</b></BitText>
+                            }
+                            else
+                            {
+                                <BitText Typography="BitTypography.H4">Nuget stats could not be loaded.</BitText>
+                            }
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="GitHub">
+                            @if (isLoadingGitHub)
+                            {
+                                <BitStack HorizontalAlign="BitAlignment.Center">
+                                    <BitRippleLoading />
                                 </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Total stars:</BitText>
-                                    <BitText><b>@gitHubStats.StargazersCount.ToString("N0")</b></BitText>
+                            }
+                            else if (gitHubStats is not null)
+                            {
+                                <BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Name:</BitText>
+                                        <BitText><b>@gitHubStats.Name</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Total stars:</BitText>
+                                        <BitText><b>@gitHubStats.StargazersCount.ToString("N0")</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Forks count:</BitText>
+                                        <BitText><b>@gitHubStats.ForksCount.ToString("N0")</b></BitText>
+                                    </BitStack>
+                                    <BitStack Horizontal>
+                                        <BitText>Repo:</BitText>
+                                        <BitLink Target="_blank"
+                                                 Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
+                                            <BitImage Alt="bitplatform GitHub stars"
+                                                      Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
+                                        </BitLink>
+                                    </BitStack>
                                 </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Forks count:</BitText>
-                                    <BitText><b>@gitHubStats.ForksCount.ToString("N0")</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Open issues count:</BitText>
-                                    <BitText><b>@gitHubStats.OpenIssuesCount.ToString("N0")</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Default branch:</BitText>
-                                    <BitText><b>@gitHubStats.DefaultBranch</b></BitText>
-                                </BitStack>
-                            </BitStack>
-                        }
-                        else
-                        {
-                            <BitText Typography="BitTypography.H4">Stats could not be loaded.</BitText>
-                        }
-                    </BitPivotItem>
-                    <BitPivotItem HeaderText="Nuget">
-                        @if (isLoading)
-                        {
-                            <BitRippleLoading />
-                        }
-                        else if (nugetStats is not null)
-                        {
-                            var data = nugetStats.Data[0];
-                            <BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Package id:</BitText>
-                                    <BitText><b>@data.Id</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Version:</BitText>
-                                    <BitText><b>@data.Version</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Title:</BitText>
-                                    <BitText><b>@data.Title</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Project url:</BitText>
-                                    <BitText><b>@data.ProjectUrl</b></BitText>
-                                </BitStack>
-                                <BitStack Horizontal>
-                                    <BitText>Total downloads:</BitText>
-                                    <BitText><b>@data.TotalDownloads.ToString("N0")</b></BitText>
-                                </BitStack>
-                            </BitStack>
-                        }
-                        else
-                        {
-                            <BitText Typography="BitTypography.H4">Stats could not be loaded.</BitText>
-                        }
-                    </BitPivotItem>
-                </BitPivot>
-            </BitAccordion>
+                            }
+                            else
+                            {
+                                <BitText Typography="BitTypography.H4">GitHub stats could not be loaded.</BitText>
+                            }
+                        </BitPivotItem>
+                    </BitPivot>
+                </BitStack>
+            </BitCard>
         </CascadingValue>
         <br />
 
@@ -116,13 +100,13 @@
             <BitStack HorizontalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">bit platform</BitText>
                 <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.BitPlatformMessage)]</BitText>
-                <BitLink Href="https://bitplatform.dev" NoUnderline>
+                <BitLink Href="https://bitplatform.dev" Target="_blank" NoUnderline>
                     <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
                         @Localizer[nameof(AppStrings.LearnMore)]
                         <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
                     </BitStack>
                 </BitLink>
-                <BitLink Href="https://www.nuget.org/profiles/bit-foundation" NoUnderline>
+                <BitLink Href="https://www.nuget.org/profiles/bit-foundation" Target="_blank" NoUnderline>
                     <BitImage Src="https://img.shields.io/badge/packages_download-5.5M-blue.svg?logo=nuget" Alt="nuget downloads" />
                 </BitLink>
             </BitStack>
@@ -135,10 +119,10 @@
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
                         @Localizer[nameof(AppStrings.BitBlazorUIMessage)]
                     </BitText>
-                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=ahgpbDAshmY">
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=ahgpbDAshmY" Target="_blank">
                         @Localizer[nameof(AppStrings.WatchVideo)]
                     </BitButton>
-                    <BitLink Href="https://blazorui.bitplatform.dev/" NoUnderline>
+                    <BitLink Href="https://blazorui.bitplatform.dev/" Target="_blank" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
                             @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />
@@ -153,10 +137,10 @@
                     <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
                         @Localizer[nameof(AppStrings.BitProjectTemplateMessage)]
                     </BitText>
-                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=UjdWBvb0xac">
+                    <BitButton Variant="BitVariant.Outline" Href="https://www.youtube.com/watch?v=UjdWBvb0xac" Target="_blank">
                         @Localizer[nameof(AppStrings.WatchVideo)]
                     </BitButton>
-                    <BitLink Href="https://bitplatform.dev/templates/overview/" NoUnderline>
+                    <BitLink Href="https://bitplatform.dev/templates/overview/" Target="_blank" NoUnderline>
                         <BitStack Horizontal VerticalAlign="BitAlignment.Baseline" Gap="0.5rem">
                             @Localizer[nameof(AppStrings.LearnMore)]
                             <BitIcon Size="BitSize.Small" IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBack : BitIconName.ChromeBackMirrored)" />

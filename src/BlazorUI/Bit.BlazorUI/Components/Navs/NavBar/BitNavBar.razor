@@ -15,7 +15,7 @@
     </CascadingValue>
 
     <div style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
-        @foreach (var item in _items)
+        @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
         {
             var itm = item;
             var url = GetUrl(item);
@@ -23,7 +23,8 @@
             var isEnabled = GetIsEnabled(item);
             var href = (isEnabled && (SelectedItem != itm || Reselectable)) ? url : null;
 
-            <_BitNavBarChild Href="@href"
+            <_BitNavBarChild @key="@GetItemKey(item, idx.ToString())"
+                             Href="@href"
                              Title="@GetTitle(item)"
                              Target="@GetTarget(item)"
                              Style="@GetItemCssStyle(item)"

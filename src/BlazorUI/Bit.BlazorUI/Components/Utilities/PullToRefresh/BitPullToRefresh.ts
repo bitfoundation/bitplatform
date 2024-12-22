@@ -15,15 +15,13 @@
             dotnetObj: DotNetObject) {
             const anchorEl = anchor ?? document.body as HTMLElement;
             const scrollerEl = scrollerElement ?? ((scrollerSelector && document.querySelector(scrollerSelector)) ?? (!!anchor ? anchor.children[0] : anchorEl)) as HTMLElement;
-            const isTouchDevice = Utils.isTouchDevice();
+
+            let diff = 0;
             let startY = -1;
             let refreshing = false;
+            const isTouchDevice = Utils.isTouchDevice();
 
-            const getY = (e: TouchEvent | PointerEvent) => {
-                return (e instanceof TouchEvent)
-                    ? e.touches[0].screenY
-                    : e.screenY;
-            }
+            const getY = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenY : (e as PointerEvent).screenY;
 
             const onScroll = () => {
                 anchorEl.style.touchAction = scrollerEl.scrollTop === 0 ? 'pan-x pan-down pinch-zoom' : "";
@@ -43,15 +41,13 @@
                 if (startY === -1 || refreshing) return;
 
                 if (scrollerEl.scrollTop !== 0) {
-                    //startY = getY(e);
                     startY = -1;
                     return;
                 }
 
-                let diff = getY(e) - startY;
+                diff = getY(e) - startY;
 
                 if (diff < 0) {
-                    //startY = getY(e);
                     startY = -1;
                     return;
                 }
@@ -69,20 +65,20 @@
             };
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (startY === -1 || refreshing) return;
-
-                let diff = parseInt(loadingEl.style.minHeight);
-                diff = isNaN(diff) ? 0 : diff;
-                diff = (diff - margin) / factor;
-
-                await dotnetObj.invokeMethodAsync('OnEnd', diff);
-
                 startY = -1;
-                if (diff >= trigger) {
-                    refreshing = true;
-                    await dotnetObj.invokeMethodAsync('Refresh');
+
+                try {
+                    await dotnetObj.invokeMethodAsync('OnEnd', diff);
+
+                    if (diff >= trigger) {
+                        refreshing = true;
+                        await dotnetObj.invokeMethodAsync('Refresh');
+                    }
+                } finally {
+                    diff = 0;
                     refreshing = false;
+                    loadingEl.style.minHeight = '0';
                 }
-                loadingEl.style.minHeight = '0';
             };
             const onLeave = (e: PointerEvent) => {
                 if (startY === -1) return;

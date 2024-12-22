@@ -17,26 +17,4 @@ public static class HttpRequestExtensions
 
         return uriBuilder.Uri.AbsoluteUri;
     }
-
-    public static bool IsCrawlerClient(this HttpRequest request)
-    {
-        var agent = GetLoweredUserAgent(request);
-
-        if (agent.Contains("google")) return true;
-
-        if (agent.Contains("bing")) return true;
-
-        if (agent.Contains("lighthouse")) return true;
-
-        return false;
-    }
-
-    private static string GetLoweredUserAgent(HttpRequest request)
-    {
-        var userAgent = request.Headers[HeaderNames.UserAgent].ToString();
-
-        if (string.IsNullOrEmpty(userAgent)) return string.Empty;
-
-        return userAgent.ToLowerInvariant();
-    }
 }

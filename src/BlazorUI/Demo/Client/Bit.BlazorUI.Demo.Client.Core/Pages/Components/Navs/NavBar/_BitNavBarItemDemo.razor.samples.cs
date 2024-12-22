@@ -167,7 +167,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
         overflow: hidden;
     }
 
-    .mobile-frame:before {
+    .mobile-frame::after {
         content: '';
         display: block;
         width: 60px;

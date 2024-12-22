@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
+public partial class _BitNavChild<TItem> where TItem : class
 {
     [CascadingParameter] protected BitNav<TItem> Nav { get; set; } = default!;
 
@@ -12,11 +12,13 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
     [Parameter] public TItem Item { get; set; } = default!;
 
+    [Parameter] public string? Key { get; set; }
+
     [Parameter] public int Depth { get; set; }
 
 
 
-    private async Task HandleOnClick()
+    private async Task HandleOnClick(bool renderLink)
     {
         if (Nav is null) return;
         if (Nav.GetIsEnabled(Item) is false) return;
@@ -32,6 +34,10 @@ public partial class _BitNavChild<TItem> : ComponentBase where TItem : class
 
         if (Nav.SelectedItem != Item || Nav.Reselectable)
         {
+            if (renderLink)
+            {
+                await Task.Yield(); // wait for the link to navigate first
+            }
             await Nav.OnItemClick.InvokeAsync(Item);
         }
     }

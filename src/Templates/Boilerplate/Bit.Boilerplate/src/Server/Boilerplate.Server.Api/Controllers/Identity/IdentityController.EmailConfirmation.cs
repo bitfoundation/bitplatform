@@ -19,7 +19,7 @@ public partial class IdentityController
         if (await userManager.IsEmailConfirmedAsync(user))
             throw new BadRequestException(Localizer[nameof(AppStrings.EmailAlreadyConfirmed)]);
 
-        await SendConfirmEmailToken(user, cancellationToken);
+        await SendConfirmEmailToken(user, returnUrl: null, cancellationToken);
     }
 
     [HttpPost, Produces<TokenResponseDto>()]
@@ -61,8 +61,10 @@ public partial class IdentityController
     }
 
 
-    private async Task SendConfirmEmailToken(User user, CancellationToken cancellationToken)
+    private async Task SendConfirmEmailToken(User user, string? returnUrl, CancellationToken cancellationToken)
     {
+        returnUrl ??= Urls.HomePage;
+
         var resendDelay = (DateTimeOffset.Now - user.EmailTokenRequestedOn) - AppSettings.Identity.EmailTokenLifetime;
 
         if (resendDelay < TimeSpan.Zero)
@@ -76,7 +78,7 @@ public partial class IdentityController
 
         var email = user.Email!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyEmail:{email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
+        var link = new Uri(HttpContext.Request.GetWebClientUrl(), $"{Urls.ConfirmPage}?email={Uri.EscapeDataString(email)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}&return-url={returnUrl}");
 
         await emailService.SendEmailToken(user, email, token, link, cancellationToken);
     }

@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Client.Core.Services;
 
-public class SignalRInfinitiesRetryPolicy : IRetryPolicy
+public class SignalRInfiniteRetryPolicy : IRetryPolicy
 {
     public TimeSpan? NextRetryDelay(RetryContext retryContext)
     {

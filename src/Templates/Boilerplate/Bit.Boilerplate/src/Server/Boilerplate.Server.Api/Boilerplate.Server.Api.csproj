@@ -19,6 +19,7 @@
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+        <PackageReference Include="NWebsec.AspNetCore.Middleware" />
         <PackageReference Include="QRCoder" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="FluentEmail.Smtp" />
@@ -33,13 +34,14 @@
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Condition=" ('$(database)' == 'MySql' OR '$(database)' == '') AND '$(framework)' == 'net8.0' " Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
         <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="all" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+        <PackageReference Include="AspNet.Security.OAuth.Apple" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Twilio" />

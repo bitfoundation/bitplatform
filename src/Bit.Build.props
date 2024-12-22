@@ -22,16 +22,16 @@
 		<AllowedOutputExtensionsInPackageBuildOutputFolder Condition=" '$(Configuration)' == 'Release' ">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PackageDescription>$(MSBuildProjectName)</PackageDescription>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>PackageIcon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
-		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-
-		<ReleaseVersion>9.1.0</ReleaseVersion>
-
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)-pre-08</PackageReleaseNotes>
-		<PackageVersion>$(ReleaseVersion)-pre-08</PackageVersion>
 
 		<!-- Version -->
-		<Version Condition=" '$(Configuration)' == 'Release' ">$(ReleaseVersion).$([System.DateTime]::Now.ToString(HHmm))</Version>
+		<ReleaseVersion>9.1.1</ReleaseVersion>
+  		<PackageVersion>$(ReleaseVersion)</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
+		<Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
+  		<Deterministic>true</Deterministic>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -41,5 +41,26 @@
 		<!-- https://stackoverflow.com/a/46815541/2720104 -->
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 	</PropertyGroup>
+
+	<!-- README and LICENSE -->
+	<PropertyGroup>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'AssemblyOriginatorKeyFile.snk'))\AssemblyOriginatorKeyFile.snk))</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'LICENSE'))\LICENSE))">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'README.md'))\README.md))">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="$([System.IO.Path]::GetFullPath($([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'PackageIcon.png'))\PackageIcon.png))">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>

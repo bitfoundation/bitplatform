@@ -124,10 +124,15 @@ public static partial class Program
                 configuration.Bind(settings);
 
                 var webClientUrl = settings.WebClientUrl;
+                var allowedOrigins = settings.Cors?.AllowedOrigins?.ToList() ?? [];
 
-                policy.SetIsOriginAllowed(origin =>
-                            AllowedOriginsRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                if (string.IsNullOrEmpty(webClientUrl) is false)
+                {
+                    allowedOrigins.Add(webClientUrl);
+                }
+
+                policy.SetIsOriginAllowed(origin => AllowedOriginsRegex().IsMatch(origin) 
+                                                    || allowedOrigins.Any(o => string.Equals(o, origin, StringComparison.InvariantCultureIgnoreCase)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
@@ -196,16 +201,10 @@ public static partial class Program
 
             });
             //#elif (database == "MySql")
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
@@ -376,6 +375,18 @@ public static partial class Program
                 options.RetrieveUserDetails = true;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
                 configuration.GetRequiredSection("Authentication:Twitter").Bind(options);
+            });
+        }
+
+        if (string.IsNullOrEmpty(configuration["Authentication:Apple:ClientId"]) is false)
+        {
+            authenticationBuilder.AddApple(options =>
+            {
+                options.UsePrivateKey(keyId =>
+                {
+                    return env.ContentRootFileProvider.GetFileInfo("AppleAuthKey.p8");
+                });
+                configuration.GetRequiredSection("Authentication:Apple").Bind(options);
             });
         }
 

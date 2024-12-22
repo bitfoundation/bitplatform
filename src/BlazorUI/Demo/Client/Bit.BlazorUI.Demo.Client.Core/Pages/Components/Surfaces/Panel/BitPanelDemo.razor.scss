@@ -1,5 +1,10 @@
 ﻿@import '../../../../Styles/abstracts/functions';
 
+.panel-body {
+    width: 300px;
+    padding: 1rem;
+}
+
 .btn-container {
     display: flex;
     gap: rem2(16px);
@@ -19,29 +24,18 @@
 }
 
 ::deep {
-    .header-margin, .custom-header {
-        margin-top: var(--bit-status-bar-height);
-
-        @supports (-webkit-touch-callout: none) {
-            margin-top: env(safe-area-inset-top);
+    .custom-class {
+        .item {
+            width: 3rem;
+            height: 3rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: brown;
         }
-    }
-
-    .footer-margin {
-        @supports (-webkit-touch-callout: none) {
-            margin-top: env(safe-area-inset-bottom);
-        }
-    }
-
-    .custom-class .item {
-        width: 3rem;
-        height: 3rem;
-        margin: 0.5rem;
-        border-radius: 0.5rem;
-        background-color: brown;
     }
 
     .custom-container {
+        padding: 1rem;
         border: 0.25rem solid #0054C6;
         border-end-start-radius: 1rem;
         border-start-start-radius: 1rem;
@@ -49,15 +43,5 @@
 
     .custom-overlay {
         background-color: #ffbd5a66;
-    }
-
-    .custom-header {
-        padding-bottom: 1.25rem;
-        background-color: tomato;
-    }
-
-    .custom-body {
-        padding-top: 1.25rem;
-        background-color: lightseagreen;
     }
 }

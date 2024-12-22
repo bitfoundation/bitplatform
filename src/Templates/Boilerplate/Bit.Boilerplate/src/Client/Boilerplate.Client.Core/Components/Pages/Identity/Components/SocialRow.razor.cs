@@ -19,4 +19,9 @@ public partial class SocialRow
     {
         await OnClick.InvokeAsync("Twitter");
     }
+
+    private async Task HandleApple()
+    {
+        await OnClick.InvokeAsync("Apple");
+    }
 }

@@ -1,15 +1,15 @@
 ﻿<Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.BlazorUI" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.Bswup" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.0-pre-08" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="9.1.0-pre-08" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.50" />
+        <PackageVersion Include="Bit.Butil" Version="9.1.1" />
+        <PackageVersion Include="Bit.BlazorUI" Version="9.1.1" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.1.1" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.1.1" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.1.1" />
+        <PackageVersion Include="Bit.Bswup" Version="9.1.1" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.1.1" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="9.1.1" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.52" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
@@ -21,6 +21,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.100" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="8.0.100" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+        <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Velopack" Version="0.0.942" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
@@ -45,7 +46,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.0" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.1.0-pre-08" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.1.1" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.11" />
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.29.0" />
         <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
@@ -73,12 +74,13 @@
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11" />
-        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.0.0" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="8.0.11" />
+		<PackageVersion Include="AspNet.Security.OAuth.Apple" Version="8.3.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.3.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
-        <PackageVersion Include="Twilio" Version="7.7.0" />
+        <PackageVersion Include="Twilio" Version="7.8.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
@@ -90,7 +92,7 @@
         <PackageVersion Include="FakeItEasy" Version="8.3.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
         <PackageVersion Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.6.3" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.6.3" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.6.4" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.6.4" />
     </ItemGroup>
 </Project>

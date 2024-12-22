@@ -6,9 +6,10 @@
         <Nullable>enable</Nullable>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <BlazorCacheBootResources>false</BlazorCacheBootResources>
-        <WasmBuildNative>true</WasmBuildNative>
+        <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
     </PropertyGroup>
 
     <ItemGroup>

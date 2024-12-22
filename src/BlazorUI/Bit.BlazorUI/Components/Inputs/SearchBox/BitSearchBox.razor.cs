@@ -295,8 +295,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
                                 0,
                                 string.Empty,
                                 string.Empty,
-                                true,
-                                RootElementClass);
+                                true);
     }
 
     private async Task CloseCallout()

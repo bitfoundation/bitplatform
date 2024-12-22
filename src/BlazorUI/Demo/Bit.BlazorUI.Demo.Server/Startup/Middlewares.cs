@@ -86,7 +86,6 @@ public class Middlewares
         UseSiteMap(app);
 
         // Handle the rest of requests with blazor
-        app.MapStaticAssets();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()

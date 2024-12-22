@@ -6,11 +6,10 @@ namespace Boilerplate.Client.Core.Services;
 
 public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandler, IExceptionHandler
 {
-    [AutoInject] protected Bit.Butil.Console Console = default!;
-    [AutoInject] protected ITelemetryContext TelemetryContext = default!;
     [AutoInject] protected readonly SnackBarService SnackBarService = default!;
-    [AutoInject] protected ILogger<ClientExceptionHandlerBase> Logger = default!;
+    [AutoInject] protected readonly ITelemetryContext TelemetryContext = default!;
     [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly ILogger<ClientExceptionHandlerBase> Logger = default!;
 
     public void Handle(Exception exception,
         bool nonInterrupting = false,

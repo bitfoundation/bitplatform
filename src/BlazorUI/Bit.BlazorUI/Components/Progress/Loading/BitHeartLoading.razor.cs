@@ -9,6 +9,7 @@ public partial class BitHeartLoading : BitLoadingBase
         base.RegisterCssStyles();
 
         StyleBuilder.Register(() => $"--bit-ldn-hrt-24:{Convert(24)}px");
+        StyleBuilder.Register(() => $"--bit-ldn-hrt-28:{Convert(28)}px");
         StyleBuilder.Register(() => $"--bit-ldn-hrt-32:{Convert(32)}px");
         StyleBuilder.Register(() => $"--bit-ldn-hrt-40:{Convert(40)}px");
     }

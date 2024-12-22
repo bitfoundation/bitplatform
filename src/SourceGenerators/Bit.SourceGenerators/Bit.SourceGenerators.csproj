@@ -8,6 +8,7 @@
         <IsRoslynComponent>true</IsRoslynComponent>
         <PackageTags>$(PackageTags) Source-Generators</PackageTags>
         <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+        <SignAssembly>False</SignAssembly>
     </PropertyGroup>
 
     <ItemGroup>

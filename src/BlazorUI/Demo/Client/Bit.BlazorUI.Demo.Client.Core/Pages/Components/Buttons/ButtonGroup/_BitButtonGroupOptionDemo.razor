@@ -317,7 +317,135 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Vertical" RazorCode="@example5RazorCode" Id="example5">
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" Id="example5">
+    <ExamplePreview>
+        <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption" IconOnly>
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption" IconOnly>
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption" IconOnly>
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+                <BitButtonGroupOption IconName="@BitIconName.Edit" />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ReversedIcon" RazorCode="@example6RazorCode" Id="example6">
+    <ExamplePreview>
+        <div>Reverses the positions of the icon and the main content of the button.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" ReversedIcon />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" ReversedIcon />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" ReversedIcon />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" ReversedIcon />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" ReversedIcon />
+                <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" ReversedIcon />
+                <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Toggled" RazorCode="@example7RazorCode" Id="example7">
+    <ExamplePreview>
+        <div>The Toggled in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption" Toggled>
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+                <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption" Toggled>
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+                <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption" Toggled>
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+                <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Vertical" RazorCode="@example8RazorCode" Id="example8">
     <ExamplePreview>
         <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
         <br /><br />
@@ -346,7 +474,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" Id="example6">
+<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" Id="example9">
     <ExamplePreview>
         <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
         <br /><br />
@@ -391,7 +519,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -416,7 +544,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Managing button click events.</div>
         <br /><br />
@@ -442,7 +570,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
     <ExamplePreview>
         <div>Use BitButtonGroup in right-to-left (RTL).</div>
         <br />

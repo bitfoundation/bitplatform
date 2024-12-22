@@ -36,6 +36,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
 
+    private Action? unsubscribe;
+
     protected override async Task OnInitAsync()
     {
         if (AppPlatform.IsBlazorHybrid)
@@ -45,6 +47,10 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
+            unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+            {
+                NavigationManager.NavigateTo(uri!.ToString()!);
+            });
             TelemetryContext.UserAgent = await navigator.GetUserAgent();
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -83,6 +89,7 @@ public partial class ClientAppCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
     }
 
+    private Guid? lastPropagatedUserId = Guid.Empty;
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
@@ -91,11 +98,14 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         try
         {
-            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
-
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
-            TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
+            var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
+            if (lastPropagatedUserId == userId)
+                return;
+            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+            lastPropagatedUserId = userId;
+            TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
             // Typically, we use the logger directly without utilizing logger.BeginScope.
@@ -242,6 +252,8 @@ public partial class ClientAppCoordinator : AppComponentBase
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubscribe?.Invoke();
+
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 

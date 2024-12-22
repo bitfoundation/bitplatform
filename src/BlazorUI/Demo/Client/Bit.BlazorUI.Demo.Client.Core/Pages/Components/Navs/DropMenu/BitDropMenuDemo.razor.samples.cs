@@ -146,6 +146,12 @@ private int clickCounter;";
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>
     </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""ریسپانسیو منو"" Dir=""BitDir.Rtl"" Responsive>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>
+    </BitStack>
 </BitDropMenu>";
 
 }

@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
+
 public enum BitPanelPosition
 {
-    Right,
-    Left,
+    Start,
+    End,
     Top,
     Bottom,
 }

@@ -20,6 +20,9 @@ public partial class SignUpRequestDto : IdentityRequestDto
     public string? GoogleRecaptchaResponse { get; set; }
     //#endif
 
+    /// <example>/</example>
+    public string? ReturnUrl { get; set; } = Urls.HomePage;
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(PhoneNumber))

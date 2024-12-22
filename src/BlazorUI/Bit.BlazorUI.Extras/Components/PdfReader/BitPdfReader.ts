@@ -95,6 +95,8 @@ namespace BitBlazorUI {
                     canvas = document.getElementById(`${config.id}-${pageNumber}`) as HTMLCanvasElement;
                 }
 
+                if (!canvas) return;
+
                 const context = canvas.getContext('2d')!;
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
