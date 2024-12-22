@@ -46,7 +46,7 @@ public partial class BitProLayoutDemo
             Id = "cascading-value",
             Title = "BitCascadingValue",
             Description = "The cascading value to be provided using the BitCascadingValueProvider component.",
-            Parameters=
+            Parameters =
             [
                 new()
                 {
@@ -75,7 +75,7 @@ public partial class BitProLayoutDemo
         {
             Id = "class-styles",
             Title = "BitProLayoutClassStyles",
-            Parameters=
+            Parameters =
             [
                 new()
                 {
