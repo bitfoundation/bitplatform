@@ -1,11 +1,19 @@
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+@import "../../../Bit.BlazorUI/Styles/media-queries.scss";
+
 .bit-npn {
     top: 0;
     padding: 1rem;
     position: sticky;
+    min-width: 14rem;
+    max-width: 14rem;
     overflow: hidden auto;
-    height: var(--app-height);
-    min-width: var(--nav-menu-width);
-    max-width: var(--nav-menu-width);
+    height: var(--bit-env-height-avl);
+
+    &.toggled {
+        min-width: 6rem;
+        max-width: 6rem;
+    }
 
     &::-webkit-scrollbar {
         width: 0;
@@ -16,8 +24,8 @@
         padding: 0;
         position: fixed;
         height: unset !important;
-        top: var(--app-inset-top);
-        bottom: var(--app-inset-bottom);
+        top: var(--bit-env-inset-top);
+        bottom: var(--bit-env-inset-bottom);
 
         &.closed {
             display: none;
@@ -25,13 +33,11 @@
     }
 }
 
-.bit-macos {
-    section {
-        height: -webkit-fill-available;
+.bit-macos .bit-npn {
+    height: -webkit-fill-available;
 
-        ::deep .panel {
-            height: -webkit-fill-available;
-        }
+    .bit-npn-cnt {
+        height: -webkit-fill-available;
     }
 }
 
@@ -48,28 +54,36 @@
     }
 }
 
-::deep {
-    .panel {
-        width: auto;
-        display: flex;
-        padding: 0.5rem;
-        min-height: 100%;
-        height: fit-content;
-        flex-direction: column;
-        background-color: $bit-color-background-secondary;
+.bit-npn-cnt {
+    width: auto;
+    display: flex;
+    padding: 0.5rem;
+    min-height: 100%;
+    height: fit-content;
+    flex-direction: column;
+    background-color: $clr-bg-sec;
 
-        @include lt-md {
-            padding: 1rem;
-        }
+    @include lt-md {
+        padding: 1rem;
     }
+}
 
-    .toggle-btn {
-        @include lt-md {
-            display: none;
-        }
-    }
+.bit-npn-hdr {
+    display: flex;
+    align-items: center;
+}
 
-    a {
-        text-decoration: none;
+.bit-npn-img {
+    max-width: 38px;
+    max-height: 38px;
+}
+
+.bit-npn-spc {
+    flex-grow: 1;
+}
+
+.bit-npn-tbn {
+    @include lt-md {
+        display: none;
     }
 }

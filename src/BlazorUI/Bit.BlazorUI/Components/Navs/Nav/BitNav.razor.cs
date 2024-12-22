@@ -94,7 +94,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
     [Parameter] public int IndentReversedPadding { get; set; } = 4;
 
     /// <summary>
-    /// A collection of item to display in the navigation bar.
+    /// A collection of items to display in the BitNav component.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
@@ -334,6 +334,28 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.CollapseAriaLabel.Name);
+    }
+
+    internal object? GetData(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Data;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Data;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Data.Selector is not null)
+        {
+            return NameSelectors.Data.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Data.Name);
     }
 
     internal string? GetDescription(TItem item)

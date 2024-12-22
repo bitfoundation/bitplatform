@@ -1,21 +1,28 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;
     private bool _isPanelOpen;
-    private bool _isMenuToggled;
-    private List<BitNavItem> allNavItems = [];
+    private bool _isPanelToggled;
+    private BitNav<TItem> _bitNavRef = default!;
+    private IList<TItem> _filteredNavItems = [];
     private BitSearchBox _searchBoxRef = default!;
-    private List<BitNavItem> _flatNavItemList = [];
-    private List<BitNavItem> _filteredNavItems = [];
-
+    private IEnumerable<TItem> _flatNavItemList = [];
 
 
     /// <summary>
-    /// A collection of item to display in the navigation bar.
+    /// The custom template to render as the header of the nav panel.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The custom template to render as the header of the nav panel.
+    /// </summary>
+    [Parameter] public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// A collection of items to display in the nav panel.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetItems))]
@@ -23,27 +30,18 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
 
 
-    protected override string RootElementClass => "bit-nav";
+    protected override string RootElementClass => "bit-npn";
 
     protected override async Task OnInitializedAsync()
     {
-        //CreateNavItems();
-        _flatNavItemList = Flatten(allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-
         SearchNavItems(null);
-
-        //unsubOpenNavPanel = PubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
-        //{
-        //    isMenuOpen = true;
-        //    StateHasChanged();
-        //});
     }
 
-    private async Task HandleNavItemClick(BitNavItem item)
+    private async Task HandleNavItemClick(TItem item)
     {
-        if (string.IsNullOrEmpty(item.Url)) return;
+        if (string.IsNullOrEmpty(_bitNavRef.GetUrl(item))) return;
 
-        _filteredNavItems = allNavItems;
+        _filteredNavItems = Items;
 
         await CloseMenu();
     }
@@ -55,8 +53,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ToggleNavPanel()
     {
-        _isMenuToggled = !_isMenuToggled;
-        if (_isMenuToggled)
+        _isPanelToggled = !_isPanelToggled;
+
+        if (_isPanelToggled)
         {
             SearchNavItems(null);
         }
@@ -64,40 +63,32 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ToggleForSearch()
     {
-        _isMenuToggled = false;
+        _isPanelToggled = false;
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();
     }
 
     private void SearchNavItems(string? searchText)
     {
-        _filteredNavItems = allNavItems;
-        if (searchText is null) return;
+        _filteredNavItems = Items;
+        if (searchText.HasNoValue()) return;
 
-        _filteredNavItems = allNavItems;
-        if (string.IsNullOrEmpty(searchText)) return;
+        var mainItems = _flatNavItemList.Where(item => searchText!.Split(' ')
+                                                                  .Where(t => string.IsNullOrEmpty(t) is false)
+                                                                  .Any(t => $"{_bitNavRef.GetText(item)} {_bitNavRef.GetDescription(item)}"
+                                                                             .Contains(t, StringComparison.InvariantCultureIgnoreCase)));
 
-        var mainItems = _flatNavItemList
-                            .FindAll(item => searchText.Split(' ')
-                                                 .Where(t => string.IsNullOrEmpty(t) is false)
-                                                 .Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
-
-        var subItems = _flatNavItemList
-                            .FindAll(item => searchText.Split(' ')
-                                                 .Where(t => string.IsNullOrEmpty(t) is false)
-                                                 .Any(t => item.Data?.ToString()?.Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
+        var subItems = _flatNavItemList.Where(item => searchText!.Split(' ')
+                                                                 .Where(t => string.IsNullOrEmpty(t) is false)
+                                                                 .Any(t => _bitNavRef.GetData(item)?.ToString()?
+                                                                                     .Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
 
         _filteredNavItems = [.. mainItems, .. subItems];
     }
 
-    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
-
     private void OnSetItems()
     {
-        if (ChildContent is not null || Options is not null || Items == _oldItems) return;
-
-        _items = Items?.ToList() ?? [];
-        _oldItems = Items;
+        _flatNavItemList = Items.Flatten(_bitNavRef.GetChildItems).Where(item => _bitNavRef.GetUrl(item).HasValue());
     }
 
 
