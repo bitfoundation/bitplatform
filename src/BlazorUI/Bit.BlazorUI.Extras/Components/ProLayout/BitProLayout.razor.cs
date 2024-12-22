@@ -5,7 +5,7 @@ public partial class BitProLayout : BitComponentBase
     /// <summary>
     /// The cascading values to be provided for the children of the layout.
     /// </summary>
-    [Parameter] public IEnumerable<BitCascadingValue> Values { get; set; } = [];
+    [Parameter] public IEnumerable<BitCascadingValue>? CascadingValues { get; set; }
 
     /// <summary>
     /// The content of the layout.

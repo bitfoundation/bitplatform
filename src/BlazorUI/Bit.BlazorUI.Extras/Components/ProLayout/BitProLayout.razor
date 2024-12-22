@@ -13,7 +13,7 @@
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ply-left @Classes?.Left"></div>
         <div style="@Styles?.Main" class="bit-ply-main @Classes?.Main">
-            <BitCascadingValueProvider Values="Values">
+            <BitCascadingValueProvider Values="CascadingValues">
                 @ChildContent
             </BitCascadingValueProvider>
         </div>

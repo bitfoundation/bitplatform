@@ -6,6 +6,15 @@ public partial class BitProLayoutDemo
     [
          new()
          {
+            Name = "CascadingValues",
+            Type = "IEnumerable<BitCascadingValue>?",
+            DefaultValue = "null",
+            Description = "The cascading values to be provided for the children of the layout.",
+            LinkType = LinkType.Link,
+            Href = "#cascading-value"
+         },
+         new()
+         {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -32,9 +41,38 @@ public partial class BitProLayoutDemo
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
-    [
+    [new()
+        {
+            Id = "cascading-value",
+            Title = "BitCascadingValue",
+            Description = "The cascading value to be provided using the BitCascadingValueProvider component.",
+            Parameters=
+            [
+                new()
+                {
+                    Name = "Name",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The optional name of the cascading value.",
+                },
+                new()
+                {
+                    Name = "Value",
+                    Type = "object?",
+                    DefaultValue = "null",
+                    Description = "The value to be provided.",
+                },
+                new()
+                {
+                    Name = "IsFixed",
+                    Type = "bool",
+                    DefaultValue = "null",
+                    Description = "If true, indicates that Value will not change.",
+                }
+            ]
+        },
         new()
-         {
+        {
             Id = "class-styles",
             Title = "BitProLayoutClassStyles",
             Parameters=
