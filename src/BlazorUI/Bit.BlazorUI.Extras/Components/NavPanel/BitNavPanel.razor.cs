@@ -1,23 +1,34 @@
-﻿namespace Bit.BlazorUI;
+﻿using Microsoft.Extensions.Options;
 
-public partial class BitNavPanel : IDisposable
+namespace Bit.BlazorUI;
+
+public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TItem : class
 {
-    private bool disposed;
-    private bool isPanelOpen;
-    private bool isMenuToggled;
-    private bool isSignOutConfirmOpen;
+    private bool _disposed;
+    private bool _isPanelOpen;
+    private bool _isMenuToggled;
     private List<BitNavItem> allNavItems = [];
-    private Action unsubOpenNavPanel = default!;
-    private BitSearchBox searchBoxRef = default!;
-    private Action unsubUserDataChange = default!;
-    private List<BitNavItem> flatNavItemList = [];
-    private List<BitNavItem> filteredNavItems = [];
+    private BitSearchBox _searchBoxRef = default!;
+    private List<BitNavItem> _flatNavItemList = [];
+    private List<BitNavItem> _filteredNavItems = [];
 
+
+
+    /// <summary>
+    /// A collection of item to display in the navigation bar.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetItems))]
+    public IList<TItem> Items { get; set; } = [];
+
+
+
+    protected override string RootElementClass => "bit-nav";
 
     protected override async Task OnInitializedAsync()
     {
         //CreateNavItems();
-        flatNavItemList = Flatten(allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
+        _flatNavItemList = Flatten(allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
 
         SearchNavItems(null);
 
@@ -28,31 +39,24 @@ public partial class BitNavPanel : IDisposable
         //});
     }
 
-
-    private async Task ShowSignOutConfirm()
-    {
-        isSignOutConfirmOpen = true;
-        await CloseMenu();
-    }
-
     private async Task HandleNavItemClick(BitNavItem item)
     {
         if (string.IsNullOrEmpty(item.Url)) return;
 
-        filteredNavItems = allNavItems;
+        _filteredNavItems = allNavItems;
 
         await CloseMenu();
     }
 
     private async Task CloseMenu()
     {
-        isPanelOpen = false;
+        _isPanelOpen = false;
     }
 
     private async Task ToggleNavPanel()
     {
-        isMenuToggled = !isMenuToggled;
-        if (isMenuToggled)
+        _isMenuToggled = !_isMenuToggled;
+        if (_isMenuToggled)
         {
             SearchNavItems(null);
         }
@@ -60,37 +64,53 @@ public partial class BitNavPanel : IDisposable
 
     private async Task ToggleForSearch()
     {
-        isMenuToggled = false;
+        _isMenuToggled = false;
         await Task.Delay(1);
-        await searchBoxRef.FocusAsync();
+        await _searchBoxRef.FocusAsync();
     }
 
     private void SearchNavItems(string? searchText)
     {
-        filteredNavItems = allNavItems;
+        _filteredNavItems = allNavItems;
         if (searchText is null) return;
 
-        filteredNavItems = allNavItems;
+        _filteredNavItems = allNavItems;
         if (string.IsNullOrEmpty(searchText)) return;
 
-        var mainItems = flatNavItemList
+        var mainItems = _flatNavItemList
                             .FindAll(item => searchText.Split(' ')
                                                  .Where(t => string.IsNullOrEmpty(t) is false)
                                                  .Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
 
-        var subItems = flatNavItemList
+        var subItems = _flatNavItemList
                             .FindAll(item => searchText.Split(' ')
                                                  .Where(t => string.IsNullOrEmpty(t) is false)
                                                  .Any(t => item.Data?.ToString()?.Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
 
-        filteredNavItems = [.. mainItems, .. subItems];
+        _filteredNavItems = [.. mainItems, .. subItems];
     }
 
     private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
 
+    private void OnSetItems()
+    {
+        if (ChildContent is not null || Options is not null || Items == _oldItems) return;
+
+        _items = Items?.ToList() ?? [];
+        _oldItems = Items;
+    }
+
 
     public void Dispose()
     {
-        disposed = true;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing is false || _disposed) return;
+
+        _disposed = true;
     }
 }

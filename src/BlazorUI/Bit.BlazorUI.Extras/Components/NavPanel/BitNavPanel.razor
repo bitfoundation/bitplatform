@@ -1,11 +1,13 @@
 @namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
 
 @{
-    var isToggled = !isPanelOpen && isMenuToggled;
+    var isToggled = !_isPanelOpen && _isMenuToggled;
 }
 
-<div class="bit-npn @($"{(isPanelOpen ? "" : "closed")} {(isToggled ? "6rem" : "14rem")}")">
-    @if (isPanelOpen)
+<div class="bit-npn @($"{(_isPanelOpen ? "" : "closed")} {(isToggled ? "6rem" : "14rem")}")">
+    @if (_isPanelOpen)
     {
         <div class="bit-npn-ovl" @onclick=CloseMenu></div>
     }
@@ -24,7 +26,7 @@
                            Color="BitColor.TertiaryBackground" />
             </BitStack>
 
-            <BitSearchBox @ref="searchBoxRef"
+            <BitSearchBox @ref="_searchBoxRef"
                           Underlined Immediate DebounceTime="500"
                           OnChange="SearchNavItems"
                           Style="@(isToggled ? "display:none" : "")"
@@ -42,7 +44,7 @@
                            Color="BitColor.TertiaryBackground" />
             }
 
-            @if (filteredNavItems.Count == 0)
+            @if (_filteredNavItems.Count == 0)
             {
                 if (isToggled is false)
                 {
@@ -53,9 +55,9 @@
             {
                 <BitNav FullWidth
                         IconOnly="isToggled"
-                        Items="filteredNavItems"
+                        Items="_filteredNavItems"
                         Accent="BitColor.SecondaryBackground"
-                        DefaultSelectedItem="filteredNavItems[0]"
+                        DefaultSelectedItem="_filteredNavItems[0]"
                         OnItemClick="(BitNavItem item) => HandleNavItemClick(item)"
                         Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })" />
             }
