@@ -281,8 +281,8 @@ private double gap = 1;
 </style>
 
 <BitStack Horizontal Wrap Gap=""2rem"">
-    <BitToggle @bind-Value=""isHorizontal"" DefaultText=""Horizontal"" />
-    <BitToggle @bind-Value=""isReversed"" DefaultText=""Reversed"" />
+    <BitToggle @bind-Value=""isHorizontal"" Text=""Horizontal"" />
+    <BitToggle @bind-Value=""isReversed"" Text=""Reversed"" />
 </BitStack>
 
 <BitChoiceGroup Label=""Direction""
