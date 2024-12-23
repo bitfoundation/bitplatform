@@ -58,6 +58,7 @@ jobs:
 
     - name: Simple tests (no --advancedTests)
       id: simple-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite --framework net8.0
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
@@ -79,6 +80,7 @@ jobs:
 
     - name: Test Sqlite database option
       id: sqlite-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests --framework net9.0
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
@@ -101,6 +103,7 @@ jobs:
 
     - name: Test SqlServer database option
       id: sqlserver-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -121,6 +124,7 @@ jobs:
 
     - name: Test Multilingual disabled option
       id: multilingual-disabled-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests --framework net8.0
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/

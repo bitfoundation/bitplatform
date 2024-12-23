@@ -39,7 +39,9 @@ public partial class UserMenu
         {
             if (payload is null) return;
 
-            user = (UserDto)payload;
+            user = payload is JsonElement jsonDocument 
+                ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
+                : (UserDto)payload;
 
             await InvokeAsync(StateHasChanged);
         });
