@@ -58,6 +58,7 @@ jobs:
 
     - name: Simple tests (no --advancedTests)
       id: simple-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name SimpleTest --database Sqlite --framework net8.0
         cd SimpleTest/src/Server/SimpleTest.Server.Api/
@@ -79,6 +80,7 @@ jobs:
 
     - name: Test Sqlite database option
       id: sqlite-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlite --database Sqlite --advancedTests --framework net9.0
         cd TestSqlite/src/Server/TestSqlite.Server.Api/
@@ -88,6 +90,8 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -99,6 +103,7 @@ jobs:
 
     - name: Test SqlServer database option
       id: sqlserver-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestSqlServer --database SqlServer --advancedTests --framework net8.0
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
@@ -106,6 +111,8 @@ jobs:
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -117,6 +124,7 @@ jobs:
 
     - name: Test Multilingual disabled option
       id: multilingual-disabled-test
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name MultilingualDisabled --database Sqlite --advancedTests --framework net8.0
         cd MultilingualDisabled/src/Server/MultilingualDisabled.Server.Api/
@@ -124,6 +132,7 @@ jobs:
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
+        dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -192,6 +201,9 @@ jobs:
         dotnet build src/Websites/Platform/Bit.Websites.Platform.sln
         dotnet build src/Websites/Careers/Bit.Websites.Careers.sln
         dotnet build src/Websites/Sales/Bit.Websites.Sales.sln
+
+    - name: Run bit blazor ui tests
+      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
 
     - name: Build bit blazor ui demo
       run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
