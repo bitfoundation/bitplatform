@@ -58,8 +58,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         {
             MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
         }
-
-        if (isDevEnv)
+        else if (displayKind is ExceptionDisplayKind.None && isDevEnv)
         {
             Debugger.Break();
         }
