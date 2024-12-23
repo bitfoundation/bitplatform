@@ -107,9 +107,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         async Task RefreshTokenImplementation()
         {
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
+            string? refreshToken = await storageService.GetItem("refresh_token");
             try
             {
-                string? refreshToken = await storageService.GetItem("refresh_token");
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
@@ -130,7 +130,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                     { "RefreshTokenRequestedBy", requestedBy }
                 }, nonInterrupting: exp is ReusedRefreshTokenException);
 
-                if (exp is UnauthorizedException) // refresh token is also invalid.
+                if (exp is UnauthorizedException // refresh token is also invalid.
+                    || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))
                 {
                     await ClearTokens();
                 }
