@@ -8,14 +8,14 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// The alias of the ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Body { get; set; }
-
-    /// <summary>
     /// Whether the panel can be dismissed by clicking outside of it on the overlay.
     /// </summary>
     [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
+    /// The alias of the ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
     /// The content of the panel.

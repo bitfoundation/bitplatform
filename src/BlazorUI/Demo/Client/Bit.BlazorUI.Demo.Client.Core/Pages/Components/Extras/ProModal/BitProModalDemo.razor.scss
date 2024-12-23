@@ -1,0 +1,68 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+.modal-header {
+    gap: 0.5rem;
+    display: flex;
+    font-weight: 600;
+    align-items: center;
+    font-size: rem2(24px);
+    border-top: rem2(4px) solid #0054C6;
+    padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
+}
+
+.modal-header-text {
+    flex-grow: 1;
+}
+
+.modal-body {
+    overflow-y: hidden;
+    max-width: rem2(960px);
+    line-height: rem2(20px);
+    padding: 0 rem2(24px) rem2(24px);
+}
+
+.relative-container {
+    width: 100%;
+    overflow: auto;
+    margin-top: 1rem;
+    position: relative;
+    height: rem2(400px);
+    border: rem2(2px) lightgreen solid;
+}
+
+.position-btn-container {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
+::deep {
+    .position-button {
+        width: 130px;
+    }
+
+    .custom-class {
+        border: 0.5rem solid tomato;
+        background-color: darkgoldenrod;
+    }
+
+    .custom-root {
+        border: 0.25rem solid #0054C6;
+    }
+
+    .custom-overlay {
+        background-color: #ffbd5a66;
+    }
+
+    .custom-content {
+        margin: 1rem;
+        box-shadow: 0 0 10rem purple;
+        border-end-end-radius: 1rem;
+        border-end-start-radius: 1rem;
+    }
+}

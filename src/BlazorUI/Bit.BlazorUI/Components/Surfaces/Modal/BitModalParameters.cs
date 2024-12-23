@@ -27,7 +27,7 @@ public class BitModalParameters
 
     public bool FullWidth { get { return _modal?.FullWidth ?? field; } set; }
 
-    public bool? IsAlert { get { return _modal?.IsAlert ?? field; } set; }
+    public bool? Alert { get { return _modal?.Alert ?? field; } set; }
 
     public bool Modeless { get { return _modal?.Modeless ?? field; } set; }
 
@@ -97,7 +97,7 @@ public class BitModalParameters
             FullHeight = params1.FullHeight || params2.FullHeight,
             FullSize = params1.FullSize || params2.FullSize,
             FullWidth = params1.FullWidth || params2.FullWidth,
-            IsAlert = params1.IsAlert ?? params2.IsAlert,
+            Alert = params1.Alert ?? params2.Alert,
             Modeless = params1.Modeless || params2.Modeless,
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
             {

@@ -1,0 +1,29 @@
+@page "/components/promodal"
+
+<PageOutlet Url="components/promodal"
+            Title="ProModal"
+            Description="promodal component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="ProModal"
+               ComponentDescription="ProModals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a promodal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses"
+               ComponentSubEnums="componentSubEnums">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <BitButton OnClick="() => isOpenBasic = true">Open ProModal</BitButton>
+            <BitProModal @bind-IsOpen="isOpenBasic">
+                <div style="padding:1rem;max-width:40rem">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+                    efficitur.
+                </div>
+            </BitProModal>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

@@ -6,17 +6,24 @@ public partial class BitModalDemo
     [
         new()
         {
-            Name = "AutoToggleScroll",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the auto scrollbar toggle behavior of the Modal.",
-        },
-        new()
-        {
             Name = "AbsolutePosition",
             Type = "bool",
             DefaultValue = "false",
             Description = "When true, the Modal will be positioned absolute instead of fixed.",
+        },
+        new()
+        {
+            Name = "Alert",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.",
+        },
+        new()
+        {
+            Name = "AutoToggleScroll",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the auto scrollbar toggle behavior of the Modal.",
         },
         new()
         {
@@ -75,13 +82,6 @@ public partial class BitModalDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the Modal width 100% of its parent container.",
-        },
-        new()
-        {
-            Name = "IsAlert",
-            Type = "bool?",
-            DefaultValue = "null",
-            Description = "Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.",
         },
         new()
         {
