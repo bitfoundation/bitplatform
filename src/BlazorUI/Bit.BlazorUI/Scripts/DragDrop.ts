@@ -1,14 +1,17 @@
 ﻿namespace BitBlazorUI {
-    export class Modal {
+    export class DragDrops {
         private static _dragDropListeners: any = {};
 
-        public static setupDragDrop(containerId: string, dragElementSelector: string) {
-            Modal.removeDragDrop(containerId, dragElementSelector);
+        public static setup(id: string, dragElementSelector: string) {
+            DragDrops.remove(id, dragElementSelector);
             const listeners: any = {};
-            Modal._dragDropListeners[containerId] = listeners;
+            DragDrops._dragDropListeners[id] = listeners;
 
-            const element = document.getElementById(containerId)! as HTMLElement;
-            const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
+            const element = document.getElementById(id) as HTMLElement;
+            if (!element) return;
+
+            const dragElement = document.querySelector(dragElementSelector) as HTMLElement;
+            if (!dragElement) return;
 
             let x = 0;
             let y = 0;
@@ -16,7 +19,7 @@
             listeners['pointerdown'] = handlePointerDown;
             dragElement.addEventListener('pointerdown', handlePointerDown);
             dragElement.style.cursor = 'move';
-            dragElement.classList.add('bit-mdl-nta');
+            dragElement.classList.add('bit-nta');
 
             function handlePointerDown(e: PointerEvent) {
                 //e.preventDefault();
@@ -55,15 +58,15 @@
             }
         }
 
-        public static removeDragDrop(id: string, dragElementSelector: string) {
-            const listeners = Modal._dragDropListeners[id];
+        public static remove(id: string, dragElementSelector: string) {
+            const listeners = DragDrops._dragDropListeners[id];
             if (!listeners) return;
 
             const dragElement = document.querySelector(dragElementSelector)! as HTMLElement;
 
             dragElement.removeEventListener('pointerdown', listeners['pointerdown']);
             dragElement.style.cursor = '';
-            dragElement.classList.remove('bit-mdl-nta');
+            dragElement.classList.remove('bit-nta');
 
             document.removeEventListener('pointermove', listeners['pointermove']);
 
@@ -74,7 +77,7 @@
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
-            delete Modal._dragDropListeners[id];
+            delete DragDrops._dragDropListeners[id];
         }
     }
 }

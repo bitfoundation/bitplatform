@@ -19,14 +19,6 @@
     transition: opacity 300ms ease 0s;
 }
 
-.bit-mdl-nta {
-    touch-action: none;
-
-    * {
-        touch-action: none;
-    }
-}
-
 .bit-mdl-abs {
     z-index: unset;
     position: absolute;

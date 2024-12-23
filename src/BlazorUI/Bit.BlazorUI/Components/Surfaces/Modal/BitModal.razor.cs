@@ -179,16 +179,16 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         {
             if (ModalParameters.Draggable)
             {
-                _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.DragDropsSetup(_containerId, GetDragElementSelector());
             }
             else
             {
-                _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.DragDropsRemove(_containerId, GetDragElementSelector());
             }
         }
         else
         {
-            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            _ = _js.DragDropsRemove(_containerId, GetDragElementSelector());
         }
 
         _offsetTop = 0;
@@ -250,7 +250,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         try
         {
             await ToggleScroll(false);
-            await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            await _js.DragDropsRemove(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

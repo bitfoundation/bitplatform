@@ -9,7 +9,16 @@ button {
     outline: none;
 }
 
-// Prevent text selection by user
+// none touch action
+.bit-nta {
+    touch-action: none;
+
+    * {
+        touch-action: none;
+    }
+}
+
+// none text selection
 .bit-nts {
     user-select: none;
     -ms-user-select: none;
