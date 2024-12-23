@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public partial class BitActionButton : BitComponentBase
 {
+    private string? _rel;
     private int? _tabIndex;
     private BitButtonType _buttonType;
 
@@ -62,7 +63,9 @@ public partial class BitActionButton : BitComponentBase
     /// The value of the href attribute of the link rendered by the button.
     /// If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
-    [Parameter] public string? Href { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public string? Href { get; set; }
 
     /// <summary>
     /// The icon name of the icon to render inside the button.
@@ -89,6 +92,13 @@ public partial class BitActionButton : BitComponentBase
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool ReversedIcon { get; set; }
+
+    /// <summary>
+    /// If Href provided, specifies the relationship between the current document and the linked document.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetHrefAndRel))]
+    public BitLinkRel? Rel { get; set; }
 
     /// <summary>
     /// The size of the button.
@@ -171,5 +181,16 @@ public partial class BitActionButton : BitComponentBase
         {
             await OnClick.InvokeAsync(e);
         }
+    }
+
+    private void OnSetHrefAndRel()
+    {
+        if (Rel.HasValue is false || Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        _rel = BitLinkRelUtils.GetRels(Rel.Value);
     }
 }
