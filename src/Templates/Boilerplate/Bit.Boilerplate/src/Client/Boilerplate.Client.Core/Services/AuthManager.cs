@@ -128,7 +128,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
-                }, nonInterrupting: exp is ReusedRefreshTokenException);
+                }, displayKind: exp is ReusedRefreshTokenException ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.Interrupting);
 
                 if (exp is UnauthorizedException // refresh token is also invalid.
                     || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))
@@ -182,7 +182,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
         catch (TooManyRequestsExceptions exp)
         {
-            exceptionHandler.Handle(exp, nonInterrupting: true); // Let's show prompt anyway.
+            exceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.NonInterrupting); // Let's show prompt anyway.
         }
 
         var token = await promptService.Show(localizer[AppStrings.EnterElevatedAccessToken], title: "Boilerplate", otpInput: true);
