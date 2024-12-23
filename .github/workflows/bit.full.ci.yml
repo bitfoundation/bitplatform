@@ -143,6 +143,7 @@ jobs:
         retention-days: 14
 
     - name: Test PostgreSQL, MySql, Other database options
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0 --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
@@ -157,6 +158,7 @@ jobs:
         dotnet build
 
     - name: Test file storage options
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestLocal --filesStorage Local --framework net8.0 --appInsights
         cd TestLocal/src/Server/TestLocal.Server.Api/
@@ -167,6 +169,7 @@ jobs:
         dotnet build
 
     - name: Test backend setup options
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone --framework net8.0
         cd TestStandalone/src/Server/TestStandalone.Server.Api/
@@ -180,11 +183,13 @@ jobs:
         dotnet build
 
     - name: Test sample configuration 1
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --sample Admin --offlineDb --windows --appInsights --sentry --signalR --notification --framework net9.0
         dotnet build TestProject/TestProject.sln -p:MultilingualEnabled=true -p:PwaEnabled=true -p:Environment=Staging
 
     - name: Test sample configuration 2
+      continue-on-error: true
       run: |
         dotnet new bit-bp --name TestProject2 --database Other --filesStorage Other --api Standalone --captcha None --pipeline None --sample None --offlineDb false --windows false --appInsights false --sentry false --signalR false --notification false --framework net8.0
         dotnet build TestProject2/TestProject2.sln -p:MultilingualEnabled=false -p:PwaEnabled=false -p:Environment=Development

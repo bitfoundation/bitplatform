@@ -10,4 +10,6 @@ public partial class RefreshRequestDto
     /// <inheritdoc cref="AuthPolicies.ELEVATED_ACCESS" />
     /// </summary>
     public string? ElevatedAccessToken { get; set; }
+
+    public string? DeviceInfo { get; set; }
 }

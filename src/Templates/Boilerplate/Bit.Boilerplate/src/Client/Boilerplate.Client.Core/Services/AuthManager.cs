@@ -15,6 +15,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private IAuthTokenProvider tokenProvider = default!;
+    [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] private IIdentityController identityController = default!;
@@ -106,13 +107,18 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         async Task RefreshTokenImplementation()
         {
             authLogger.LogInformation("Refreshing access token requested by {RequestedBy}", requestedBy);
+            string? refreshToken = await storageService.GetItem("refresh_token");
             try
             {
-                string? refreshToken = await storageService.GetItem("refresh_token");
                 if (string.IsNullOrEmpty(refreshToken))
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
-                var refreshTokenResponse = await identityController.Refresh(new() { RefreshToken = refreshToken, ElevatedAccessToken = elevatedAccessToken }, default);
+                var refreshTokenResponse = await identityController.Refresh(new()
+                {
+                    RefreshToken = refreshToken,
+                    DeviceInfo = telemetryContext.Platform,
+                    ElevatedAccessToken = elevatedAccessToken
+                }, default);
                 await StoreTokens(refreshTokenResponse);
                 accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
             }
@@ -122,9 +128,10 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
-                });
+                }, nonInterrupting: exp is ReusedRefreshTokenException);
 
-                if (exp is UnauthorizedException) // refresh token is also invalid.
+                if (exp is UnauthorizedException // refresh token is also invalid.
+                    || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))
                 {
                     await ClearTokens();
                 }

@@ -3,7 +3,10 @@ using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Core.Services;
 
-public partial class ClientPubSubMessages : SharedPubSubMessages
+public partial class ClientPubSubMessages
+    //#if (signalR == true)
+    : SharedPubSubMessages
+    //#endif
 {
     public const string SHOW_SNACK = nameof(SHOW_SNACK);
     public const string SHOW_MODAL = nameof(SHOW_MODAL);
@@ -26,4 +29,8 @@ public partial class ClientPubSubMessages : SharedPubSubMessages
     /// </summary>
     public const string NAVIGATE_TO = nameof(NAVIGATE_TO);
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
+
+    //#if (signalR != true)
+    public const string PROFILE_UPDATED = nameof(PROFILE_UPDATED);
+    //#endif
 }
