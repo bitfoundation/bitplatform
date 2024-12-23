@@ -1,6 +1,12 @@
-﻿using Boilerplate.Server.Api.Models.Identity;
-using FluentStorage.Blobs;
+﻿//+:cnd:noEmit
 using ImageMagick;
+using FluentStorage.Blobs;
+//#if (signalR == true)
+using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
+//#endif
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Server.Api.Models.Identity;
 
 namespace Boilerplate.Server.Api.Controllers;
 
@@ -8,9 +14,11 @@ namespace Boilerplate.Server.Api.Controllers;
 [ApiController]
 public partial class AttachmentController : AppControllerBase
 {
-    [AutoInject] private UserManager<User> userManager = default!;
-
     [AutoInject] private IBlobStorage blobStorage = default!;
+    [AutoInject] private UserManager<User> userManager = default!;
+    //#if (signalR == true)
+    [AutoInject] private IHubContext<AppHub> appHubContext = default!;
+    //#endif
 
     [HttpPost]
     [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
@@ -63,6 +71,10 @@ public partial class AttachmentController : AppControllerBase
 
             throw;
         }
+
+        //#if (signalR == true)
+        await PublishUserProfileUpdated(user.Map(), cancellationToken);
+        //#endif
     }
 
     [HttpDelete]
@@ -87,6 +99,10 @@ public partial class AttachmentController : AppControllerBase
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
         await blobStorage.DeleteAsync(filePath, cancellationToken);
+
+        //#if (signalR == true)
+        await PublishUserProfileUpdated(user.Map(), cancellationToken);
+        //#endif
     }
 
     [AllowAnonymous]
@@ -106,4 +122,17 @@ public partial class AttachmentController : AppControllerBase
 
         return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
     }
+
+    //#if (signalR == true)
+    private async Task PublishUserProfileUpdated(UserDto user, CancellationToken cancellationToken)
+    {
+        // Notify other sessions of the user that user's info has been updated, so they'll update their UI.
+        var currentUserSessionId = User.GetSessionId();
+        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+        .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, user, cancellationToken);
+    }
+    //#endif
 }
