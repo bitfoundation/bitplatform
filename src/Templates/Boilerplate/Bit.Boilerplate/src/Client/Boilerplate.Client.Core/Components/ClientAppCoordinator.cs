@@ -180,10 +180,10 @@ public partial class ClientAppCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
+        signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
         {
             logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
-            PubSubService.Publish(message);
+            PubSubService.Publish(message, payload);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
