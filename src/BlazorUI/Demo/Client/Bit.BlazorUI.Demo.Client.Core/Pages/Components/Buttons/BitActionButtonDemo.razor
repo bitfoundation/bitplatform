@@ -38,7 +38,23 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example3RazorCode" Id="example3">
+    <ComponentExampleBox Title="Rel" RazorCode="@example3RazorCode" Id="example3">
+        <ExamplePreview>
+            <div>Use BitActionButton as a hyperlink to external URLs, with a rel attribute.</div>
+            <br />
+            <div class="example-content">
+                <BitActionButton Rel="BitLinkRel.NoFollow" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev with a rel attribute (nofollow)
+                </BitActionButton>
+
+                <BitActionButton Rel="BitLinkRel.NoFollow | BitLinkRel.NoReferrer" Href="https://bitplatform.dev" Target="_blank" IconName="@BitIconName.Globe" Variant="BitVariant.Outline">
+                    Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
+                </BitActionButton>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example4RazorCode" Id="example4">
         <ExamplePreview>
             <div>Demonstrates BitActionButton with various predefined colors: Primary, Secondary, Tertiary, Info, Success, Warning, SevereWarning, and Error.</div>
             <br />
@@ -133,7 +149,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example4RazorCode" Id="example4">
+    <ComponentExampleBox Title="Size" RazorCode="@example5RazorCode" Id="example5">
         <ExamplePreview>
             <div>Show BitActionButton in different sizes: Small, Medium, and Large.</div>
             <br />
@@ -145,7 +161,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
         <ExamplePreview>
             <div>Customize the appearance of BitActionButton using styles and CSS classes.</div>
             <br />
@@ -167,7 +183,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Template" RazorCode="@example6RazorCode" Id="example6">
+    <ComponentExampleBox Title="Template" RazorCode="@example7RazorCode" Id="example7">
         <ExamplePreview>
             <div>Add custom template within BitActionButton.</div>
             <br />
@@ -182,7 +198,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ComponentExampleBox Title="Button Type" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <ExamplePreview>
             <div>Use BitActionButton within a form and validate its state.</div>
             <br />
@@ -214,7 +230,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+    <ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" Id="example9">
         <ExamplePreview>
             <div>Use BitActionButton in right-to-left (RTL).</div>
             <br />

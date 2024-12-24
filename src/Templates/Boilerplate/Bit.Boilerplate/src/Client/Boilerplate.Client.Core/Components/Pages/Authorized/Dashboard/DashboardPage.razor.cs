@@ -18,7 +18,7 @@ public partial class DashboardPage
     protected async override Task OnInitAsync()
     {
         //#if (signalR == true)
-        unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>
+        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>
         {
             NavigationManager.NavigateTo(Urls.DashboardPage, replace: true);
         });
