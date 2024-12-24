@@ -8,7 +8,6 @@ public partial class UserMenu
     private bool isOpen;
     private bool showCultures;
     private UserDto user = new();
-    private string? profileImageUrl;
     private bool isSignOutConfirmOpen;
     private Action unsubscribeUerDataUpdated = default!;
     private BitChoiceGroupItem<string>[] cultures = default!;
@@ -24,6 +23,9 @@ public partial class UserMenu
     [CascadingParameter(Name = Parameters.CurrentTheme)] private AppThemeType? currentTheme { get; set; }
 
 
+    private string? ProfileImageUrl => user.GetProfileImageUrl(AbsoluteServerAddress);
+
+
     protected override async Task OnInitAsync()
     {
         if (CultureInfoManager.MultilingualEnabled)
@@ -37,15 +39,14 @@ public partial class UserMenu
         {
             if (payload is null) return;
 
-            user = (UserDto)payload;
+            user = payload is JsonElement jsonDocument 
+                ? jsonDocument.Deserialize(JsonSerializerOptions.GetTypeInfo<UserDto>())! // PROFILE_UPDATED can be invoked from server through SignalR
+                : (UserDto)payload;
 
             await InvokeAsync(StateHasChanged);
         });
 
         user = await userController.GetCurrentUser(CurrentCancellationToken);
-
-        var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
     }

@@ -10,7 +10,7 @@ public partial class SnackBar : IDisposable
     {
         unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_SNACK, async args =>
         {
-            var (title, body, color) = (ValueTuple<string, string, BitColor>)args!;
+            var (title, body, color) = ((string, string, BitColor))args!;
 
             await snackbarRef.Show(title, body, color);
         });

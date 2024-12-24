@@ -14,6 +14,7 @@
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

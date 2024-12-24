@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/bitfoundation/bitplatform.svg)
 ![CI Status](https://github.com/bitfoundation/bitplatform/actions/workflows/bit.ci.yml/badge.svg)
 ![NuGet version](https://img.shields.io/nuget/v/bit.blazorui.svg?logo=nuget)
-[![Nuget downloads](https://img.shields.io/badge/packages_download-5.5M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
+[![Nuget downloads](https://img.shields.io/badge/packages_download-5.6M-blue.svg?logo=nuget)](https://www.nuget.org/profiles/bit-foundation)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/bitfoundation/bitplatform.svg)](http://isitmaintained.com/project/bitfoundation/bitplatform "Percentage of issues still open")
 
@@ -47,7 +47,9 @@ The following apps are our open-source projects powered by the bit platform show
 1. [bitplatform.dev](https://bitplatform.dev): .NET 9 Pre-rendered SPA with Blazor WebAssembly
 2. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 9 Pre-rendered PWA with Blazor WebAssembly
 3. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 8 Pre-rendered PWA with Blazor WebAssembly
-5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly Standalone (Hosted on Cloudflare Pages)
+5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly
+6. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 9 PWA with Blazor WebAssembly Standalone (Free Azure static web app)
+7. [todo.bitplatform.cc](https://todo.bitplatform.cc): AOT Compiled .NET 9 PWA with Blazor WebAssembly Standalone (Free Azure static web app)
 
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
 

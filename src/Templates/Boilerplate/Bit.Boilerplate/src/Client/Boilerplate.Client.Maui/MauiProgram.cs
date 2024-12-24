@@ -201,7 +201,7 @@ public static partial class MauiProgram
             services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
-            }, nonInterrupting: true);
+            }, displayKind: AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
         }
         else
         {

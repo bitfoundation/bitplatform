@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-// bit version: 9.1.1
+// bit version: 9.1.2
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -27,25 +27,14 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
     // If a PDF viewer is needed in the PWA, remove these two lines:
     /pdfjs-4\.7\.76\.js$/,
-    /pdfjs-4\.7\.76-worker\.js$/,
-    /Boilerplate\.Client\.Web\.styles\.css$/
+    /pdfjs-4\.7\.76-worker\.js$/
 ];
 self.externalAssets = [
     {
         "url": "/"
     },
     {
-        //#if (framework == "net9.0")
         url: "_framework/blazor.web.js"
-        //#else
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-        url: "_framework/blazor.web.js"
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-        //#endif
     },
     {
         "url": "Boilerplate.Server.Web.styles.css"

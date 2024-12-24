@@ -187,7 +187,129 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Vertical" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" IconOnly />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" IconOnly />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" IconOnly />
+        </div>
+        <br /><br />
+        <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ReversedIcon" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div>Reverses the positions of the icon and the main content of the button.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconCustoms"
+                            NameSelectors="@(new() { Text = { Selector = i => i.Name },
+                                                     IconName = { Selector = i => i.Icon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Toggled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>The Toggled in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="toggledCustoms"
+                            NameSelectors="@(new() { OnText = { Selector = i => i.OnName },
+                                                     OffText = { Selector = i => i.OffName },
+                                                     OnTitle = { Selector = i => i.OnTitle },
+                                                     OffTitle = { Selector = i => i.OffTitle },
+                                                     OnIconName = { Selector = i => i.OnIcon },
+                                                     OffIconName = { Selector = i => i.OffIcon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" Toggled />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="toggledCustoms"
+                            NameSelectors="@(new() { OnText = { Selector = i => i.OnName },
+                                                     OffText = { Selector = i => i.OffName },
+                                                     OnTitle = { Selector = i => i.OnTitle },
+                                                     OffTitle = { Selector = i => i.OffTitle },
+                                                     OnIconName = { Selector = i => i.OnIcon },
+                                                     OffIconName = { Selector = i => i.OffIcon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" Toggled />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="toggledCustoms"
+                            NameSelectors="@(new() { OnText = { Selector = i => i.OnName },
+                                                     OffText = { Selector = i => i.OffName },
+                                                     OnTitle = { Selector = i => i.OnTitle },
+                                                     OffTitle = { Selector = i => i.OffTitle },
+                                                     OnIconName = { Selector = i => i.OnIcon },
+                                                     OffIconName = { Selector = i => i.OffIcon },
+                                                     ReversedIcon = { Selector = i => i.ReversedIcon } })" Toggled />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Vertical" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <ExamplePreview>
         <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
         <br /><br />
@@ -210,7 +332,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Size" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
     <ExamplePreview>
         <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
         <br /><br />
@@ -237,7 +359,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -257,7 +379,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<ComponentExampleBox Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Managing button click events.</div>
         <br /><br />
@@ -280,7 +402,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div>Use BitButtonGroup in right-to-left (RTL).</div>
         <br />
