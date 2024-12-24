@@ -20,3 +20,9 @@
         width: 100%;
     }
 }
+
+.bit-pmd-tbr {
+    .bit-mdl-ctn {
+        border-top: rem2(4px) solid $clr-pri;
+    }
+}

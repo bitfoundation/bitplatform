@@ -99,12 +99,19 @@ public partial class BitProModal : BitComponentBase
     /// <summary>
     /// Renders the overlay in full mode that gives it an opaque background.
     /// </summary>
-    [Parameter] public bool ModeFull { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool ModeFull { get; set; }
 
     /// <summary>
     /// Whether the Modal should be modeless (e.g. not dismiss when focusing/clicking outside of the Modal). if true: Blocking is ignored, there will be no overlay.
     /// </summary>
     [Parameter] public bool Modeless { get; set; }
+
+    /// <summary>
+    /// Removes the default top border of the modal.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
 
     /// <summary>
     /// A callback function for when the Modal is dismissed.
@@ -137,16 +144,6 @@ public partial class BitProModal : BitComponentBase
     /// </summary>
     [Parameter] public BitProModalClassStyles? Styles { get; set; }
 
-    /// <summary>
-    /// ARIA id for the subtitle of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? SubtitleAriaId { get; set; }
-
-    /// <summary>
-    /// ARIA id for the title of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? TitleAriaId { get; set; }
-
 
 
     public async Task Open()
@@ -173,6 +170,7 @@ public partial class BitProModal : BitComponentBase
         ClassBuilder.Register(() => FullSize || FullWidth ? "bit-pmd-fwi" : string.Empty);
 
         ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
+        ClassBuilder.Register(() => NoBorder ? "" : "bit-pmd-tbr");
     }
 
 

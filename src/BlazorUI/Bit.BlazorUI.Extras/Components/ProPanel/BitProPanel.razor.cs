@@ -56,7 +56,8 @@ public partial class BitProPanel : BitComponentBase
     /// <summary>
     /// Renders the overlay in full mode that gives it an opaque background.
     /// </summary>
-    [Parameter] public bool ModeFull { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool ModeFull { get; set; }
 
     /// <summary>
     /// Removes the overlay element of the panel.

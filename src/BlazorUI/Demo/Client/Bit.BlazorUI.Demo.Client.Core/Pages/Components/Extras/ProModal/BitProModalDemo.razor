@@ -5,14 +5,14 @@
             Description="promodal component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="ProModal"
-               ComponentDescription="ProModals are advanced modals with more pratical features that can take care of a wider range of requirements."
+               ComponentDescription="ProModals are advanced modals with more practical features that can take care of a wider range of requirements."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <BitButton OnClick="() => isOpenBasic = true">Open ProModal</BitButton>
-            <BitModal @bind-IsOpen="isOpenBasic">
+            <BitProModal @bind-IsOpen="isOpenBasic">
                 <div style="padding:1rem;max-width:40rem">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -23,7 +23,7 @@
                     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
                     efficitur.
                 </div>
-            </BitModal>
+            </BitProModal>
         </ExamplePreview>
     </ComponentExampleBox>
 
