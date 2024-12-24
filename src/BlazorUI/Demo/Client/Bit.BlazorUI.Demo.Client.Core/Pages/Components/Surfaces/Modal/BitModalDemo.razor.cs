@@ -292,7 +292,9 @@ private bool isOpenModeless;";
 
 <BitButton OnClick=""() => isOpenAbsolutePosition = true"">Open Modal</BitButton>
 
-<div class=""relative-container"">
+<BitButton OnClick=""() => isOpenScrollerSelector = true"">Open Modal (AutoToggleScroll & ScrollerSelector)</BitButton>
+
+<div class=""relative-container"" id=""modal-scroller"">
     <BitModal @bind-IsOpen=""isOpenAbsolutePosition"" AbsolutePosition>
         <div style=""padding: 1rem; max-width: 40rem"">
             <h3>AbsolutePosition</h3>
@@ -305,32 +307,7 @@ private bool isOpenModeless;";
             Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
             efficitur.
         </div>
-    </BitModal
-    <div>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-        efficitur.
-    </div>
-</div>
-
-
-
-<BitButton OnClick=""() => isOpenScrollerSelector = true"">Open Modal (AutoToggleScroll & ScrollerSelector)</BitButton>
-
-<div class=""relative-container"" id=""modal-scroller"">
+    </BitModal>
     <BitModal @bind-IsOpen=""isOpenScrollerSelector"" AbsolutePosition AutoToggleScroll ScrollerSelector=""#modal-scroller"">
         <div style=""padding: 1rem; max-width: 40rem"">
             <h3>AbsolutePosition with AutoToggleScroll and ScrollerSelector</h3>
@@ -343,7 +320,7 @@ private bool isOpenModeless;";
             Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
             efficitur.
         </div>
-    </BitModal
+    </BitModal>
     <div>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor

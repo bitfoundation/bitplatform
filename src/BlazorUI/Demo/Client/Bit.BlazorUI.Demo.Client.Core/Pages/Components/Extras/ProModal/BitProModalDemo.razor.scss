@@ -1,33 +1,10 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-
-.modal-header {
-    gap: 0.5rem;
-    display: flex;
-    font-weight: 600;
-    align-items: center;
-    font-size: rem2(24px);
-    border-top: rem2(4px) solid #0054C6;
-    padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
-}
-
-.modal-header-text {
-    flex-grow: 1;
-}
-
-.modal-body {
-    overflow-y: hidden;
-    max-width: rem2(960px);
-    line-height: rem2(20px);
-    padding: 0 rem2(24px) rem2(24px);
-}
-
-.relative-container {
+﻿.relative-container {
     width: 100%;
+    height: 400px;
     overflow: auto;
     margin-top: 1rem;
     position: relative;
-    height: rem2(400px);
-    border: rem2(2px) lightgreen solid;
+    border: 2px lightgreen solid;
 }
 
 .position-btn-container {

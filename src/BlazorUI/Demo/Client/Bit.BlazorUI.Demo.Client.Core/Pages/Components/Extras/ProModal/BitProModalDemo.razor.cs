@@ -195,6 +195,47 @@ public partial class BitProModalDemo
 
     private bool isOpenBasic;
 
+    private bool isProModalWithHeaderTextOpen;
+    private bool isProModalWithHeaderOpen;
+    private bool isProModalWithFooterTextOpen;
+    private bool isProModalWithFooterOpen;
+
+    private bool isCloseButtonProModalOpen;
+    private bool isBlockingProModalOpen;
+    private bool isModelessProModalOpen;
+    private bool isModeFullProModalOpen;
+    private bool isAutoToggleScrollProModalOpen;
+    private bool isNoBorderProModalOpen;
+
+    private bool isFullSize;
+    private bool isOpenFullSize;
+    private bool isFullWidth;
+    private bool isOpenFullWidth;
+    private bool isFullHeight;
+    private bool isOpenFullHeight;
+
+    private bool isOpenAbsolutePosition;
+    private bool isOpenScrollerSelector;
+
+    private bool isOpenPosition;
+    private BitPosition position;
+    private void OpenModalInPosition(BitPosition positionValue)
+    {
+        isOpenPosition = true;
+        position = positionValue;
+    }
+
+    private bool isOpenDraggable;
+    private bool isOpenDraggableSelector;
+
+    private bool isOpenStyle;
+    private bool isOpenClass;
+    private bool isOpenStyles;
+    private bool isOpenClasses;
+
+    private bool isOpenRtl;
+
+
 
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
@@ -248,5 +289,113 @@ private bool isOpenBasic;";
     </div>
 </BitModal>";
     private readonly string example3CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example4RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example4CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example5RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example5CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example6RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example6CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example7RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example7CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example8RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example8CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example9RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example9CsharpCode = @"
 private bool isOpenBasic;";
 }

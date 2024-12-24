@@ -5,21 +5,35 @@
         <BitText Typography="BitTypography.H3" Class="title">@ComponentName</BitText>
         <section id="overview-section" class="page-section">
             <BitText Typography="BitTypography.Subtitle1">
-                @ComponentDescription
+                @if (DescriptionTemplate is not null)
+                {
+                    @DescriptionTemplate
+                }
+                else
+                {
+                    @ComponentDescription
+                }
             </BitText>
         </section>
 
-        @if (Notes.HasValue())
+        @if (NotesTemplate is not null || Notes.HasValue())
         {
             <section id="notes-section" class="page-section">
                 <BitText Typography="BitTypography.H4" Class="subtitle">Notes</BitText>
-                @Notes
+                @if (NotesTemplate is not null)
+                {
+                    @NotesTemplate
+                }
+                else
+                {
+                    @Notes
+                }
             </section>
         }
 
         <section id="usage-section" class="page-section">
             <BitText Typography="BitTypography.H4" Class="subtitle">Usage</BitText>
-            @ChildContent
+            @(Body ?? ChildContent)
         </section>
 
         <section id="api-section" class="page-section">

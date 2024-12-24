@@ -4,14 +4,21 @@
 }
 
 .bit-pmd-mfl {
-    .bit-pnl-ovl {
+    .bit-mdl-ovl {
         background-color: $clr-bg-overlay;
+    }
+}
+
+.bit-pmd-tbr {
+    .bit-mdl-ctn {
+        border-top: spacing(0.5) solid $clr-pri;
     }
 }
 
 .bit-pmd-fhe {
     .bit-mdl-ctn {
         height: 100%;
+        border-top: none;
     }
 }
 
@@ -19,10 +26,66 @@
     .bit-mdl-ctn {
         width: 100%;
     }
+
+    .bit-pmd-bdy {
+        max-width: unset;
+    }
 }
 
-.bit-pmd-tbr {
-    .bit-mdl-ctn {
-        border-top: rem2(4px) solid $clr-pri;
+.bit-pmd-hcn {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    font-weight: 600;
+    color: $clr-fg-pri;
+    overflow-wrap: anywhere;
+    background-color: $clr-bg-pri;
+    padding: spacing(2) spacing(2) 0;
+}
+
+.bit-pmd-hdr {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: spacing(2.5);
+}
+
+.bit-pmd-cls {
+    display: flex;
+    cursor: pointer;
+    width: spacing(5);
+    height: spacing(5);
+    align-items: center;
+    justify-content: center;
+    font-size: spacing(1.75);
+    border-radius: spacing(0.25);
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri-hover;
+            background-color: $clr-bg-pri-hover;
+        }
     }
+
+    &:active {
+        color: $clr-fg-pri-active;
+        background-color: $clr-bg-pri-active;
+    }
+}
+
+.bit-pmd-bdy {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: spacing(2);
+    max-width: spacing(75);
+}
+
+.bit-pmd-fcn {
+    bottom: 0;
+    z-index: 1;
+    position: sticky;
+    background-color: $clr-bg-pri;
+    padding: 0 spacing(2) spacing(2) spacing(2);
 }

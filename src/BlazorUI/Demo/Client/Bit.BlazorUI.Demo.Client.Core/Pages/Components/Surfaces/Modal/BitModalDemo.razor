@@ -29,7 +29,7 @@
 
     <ComponentExampleBox Title="Options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
-            <div>BitModal has some advanced options.</div><br />
+            <div>BitModal has some options.</div><br />
             <BitButton OnClick="() => isOpenBlocking = true">Open Modal (Blocking)</BitButton>
             <BitModal @bind-IsOpen="isOpenBlocking" Blocking>
                 <div style="padding: 1rem; max-width: 40rem">
@@ -83,7 +83,9 @@
             <div>BitModal has an absolute position option to further customize its location.</div><br />
             <BitButton OnClick="() => isOpenAbsolutePosition = true">Open Modal</BitButton>
             <br /><br />
-            <div class="relative-container">
+            <BitButton OnClick="() => isOpenScrollerSelector = true">Open Modal (AutoToggleScroll & ScrollerSelector)</BitButton>
+            <br /><br />
+            <div class="relative-container" id="modal-scroller">
                 <BitModal @bind-IsOpen="isOpenAbsolutePosition" AbsolutePosition>
                     <div style="padding: 1rem; max-width: 40rem">
                         <h3>AbsolutePosition</h3>
@@ -97,31 +99,6 @@
                         efficitur.
                     </div>
                 </BitModal>
-
-                <div>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                    efficitur.
-
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
-                    amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
-                    sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
-                    turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
-                    ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
-                    Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
-                    Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
-                    efficitur.
-                </div>
-            </div>
-            <br /><br /><br /><br />
-            <BitButton OnClick="() => isOpenScrollerSelector = true">Open Modal (AutoToggleScroll & ScrollerSelector)</BitButton>
-            <br /><br />
-            <div class="relative-container" id="modal-scroller">
                 <BitModal @bind-IsOpen="isOpenScrollerSelector" AbsolutePosition AutoToggleScroll ScrollerSelector="#modal-scroller">
                     <div style="padding: 1rem; max-width: 40rem">
                         <h3>AbsolutePosition with AutoToggleScroll and ScrollerSelector</h3>
