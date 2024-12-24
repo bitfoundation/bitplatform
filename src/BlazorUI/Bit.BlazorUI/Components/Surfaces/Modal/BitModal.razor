@@ -8,8 +8,6 @@
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
          dir="@ModalParameters.Dir?.ToString().ToLower()"
-         aria-labelledby="@ModalParameters.TitleAriaId"
-         aria-describedby="@ModalParameters.SubtitleAriaId"
          aria-modal="@((ModalParameters.Modeless is false).ToString().ToLower())"
          role="@GetRole()">
         @if (ModalParameters.Modeless is false)

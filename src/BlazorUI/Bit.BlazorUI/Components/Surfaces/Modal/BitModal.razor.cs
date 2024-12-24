@@ -59,24 +59,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     [Parameter] public bool Draggable { get; set; }
 
     /// <summary>
-    /// Makes the Modal height 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullHeight { get; set; }
-
-    /// <summary>
-    /// Makes the Modal width and height 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullSize { get; set; }
-
-    /// <summary>
-    /// Makes the Modal width 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullWidth { get; set; }
-
-    /// <summary>
     /// Whether the Modal is displayed.
     /// </summary>
     [Parameter, TwoWayBound]
@@ -113,16 +95,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public BitModalClassStyles? Styles { get; set; }
 
-    /// <summary>
-    /// ARIA id for the subtitle of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? SubtitleAriaId { get; set; }
-
-    /// <summary>
-    /// ARIA id for the title of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? TitleAriaId { get; set; }
-
 
 
     protected override string RootElementClass => "bit-mdl";
@@ -133,9 +105,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         ClassBuilder.Register(() => ModalParameters.Classes?.Root);
 
         ClassBuilder.Register(() => ModalParameters.AbsolutePosition ? "bit-mdl-abs" : string.Empty);
-
-        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullHeight ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullWidth ? "bit-mdl-fwi" : string.Empty);
 
         ClassBuilder.Register(() => ModalParameters.Position switch
         {

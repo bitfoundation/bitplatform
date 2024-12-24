@@ -1,13 +1,11 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
-
-.modal-header {
+﻿.modal-header {
     gap: 0.5rem;
     display: flex;
+    font-size: 24px;
     font-weight: 600;
     align-items: center;
-    font-size: rem2(24px);
-    border-top: rem2(4px) solid #0054C6;
-    padding: rem2(12px) rem2(12px) rem2(14px) rem2(24px);
+    padding: 12px 12px 14px 24px;
+    border-top: 4px solid #0054C6;
 }
 
 .modal-header-text {
@@ -15,19 +13,18 @@
 }
 
 .modal-body {
+    max-width: 960px;
+    line-height: 20px;
     overflow-y: hidden;
-    max-width: rem2(960px);
-    line-height: rem2(20px);
-    padding: 0 rem2(24px) rem2(24px);
+    padding: 0 24px 24px;
 }
 
 .relative-container {
     width: 100%;
+    height: 345px;
     overflow: auto;
-    margin-top: 1rem;
     position: relative;
-    height: rem2(400px);
-    border: rem2(2px) lightgreen solid;
+    border: 2px lightgreen solid;
 }
 
 .position-btn-container {
@@ -61,8 +58,8 @@
 
     .custom-content {
         margin: 1rem;
-        box-shadow: 0 0 10rem purple;
         border-end-end-radius: 1rem;
+        box-shadow: 0 0 10rem purple;
         border-end-start-radius: 1rem;
     }
 }

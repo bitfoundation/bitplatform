@@ -133,20 +133,6 @@ public partial class BitProModalDemo
             Description = "Custom CSS styles for different parts of the BitModal component.",
             LinkType = LinkType.Link,
             Href = "#modal-class-styles",
-        },
-        new()
-        {
-            Name = "SubtitleAriaId",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "ARIA id for the subtitle of the Modal, if any.",
-        },
-        new()
-        {
-            Name = "TitleAriaId",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "ARIA id for the title of the Modal, if any.",
         }
     ];
 
@@ -226,5 +212,41 @@ public partial class BitProModalDemo
     </div>
 </BitModal>";
     private readonly string example1CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example2RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example2CsharpCode = @"
+private bool isOpenBasic;";
+
+    private readonly string example3RazorCode = @"
+<BitButton OnClick=""() => isOpenBasic = true"">Open Modal</BitButton>
+
+<BitModal @bind-IsOpen=""isOpenBasic"">
+    <div style=""padding:1rem; max-width:40rem"">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
+        amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
+        sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
+        turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh,
+        ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros.
+        Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante.
+        Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
+        efficitur.
+    </div>
+</BitModal>";
+    private readonly string example3CsharpCode = @"
 private bool isOpenBasic;";
 }

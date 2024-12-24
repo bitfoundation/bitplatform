@@ -5,14 +5,14 @@
             Description="promodal component of the bit BlazorUI components" />
 
 <ComponentDemo ComponentName="ProModal"
-               ComponentDescription="ProModals are temporary pop-ups that take focus from the page or app and require people to interact with them. Unlike a dialog box (Dialog), a promodal should be used for hosting lengthy content, such as privacy statements or license agreements, or for asking people to perform complex or multiple actions, such as changing settings."
+               ComponentDescription="ProModals are advanced modals with more pratical features that can take care of a wider range of requirements."
                ComponentParameters="componentParameters"
                ComponentSubClasses="componentSubClasses"
                ComponentSubEnums="componentSubEnums">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <BitButton OnClick="() => isOpenBasic = true">Open ProModal</BitButton>
-            <BitProModal @bind-IsOpen="isOpenBasic">
+            <BitModal @bind-IsOpen="isOpenBasic">
                 <div style="padding:1rem;max-width:40rem">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
                     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -23,7 +23,77 @@
                     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend
                     efficitur.
                 </div>
-            </BitProModal>
+            </BitModal>
         </ExamplePreview>
     </ComponentExampleBox>
+
+    @* <ComponentExampleBox Title="Customizing content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2"> *@
+    @*     <ExamplePreview> *@
+    @*         <BitButton OnClick="() => isOpenCustomContent = true">Open Modal</BitButton> *@
+    @*         <BitModal @bind-IsOpen="isOpenCustomContent"> *@
+    @*             <div class="modal-header"> *@
+    @*                 <span class="modal-header-text">Lorem Ipsum</span> *@
+    @*                 <BitButton Variant="BitVariant.Text" OnClick="() => isOpenCustomContent = false" IconName="@BitIconName.ChromeClose" Title="Close" /> *@
+    @*             </div> *@
+    @*             <div class="modal-body"> *@
+    @*                 <p> *@
+    @*                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit *@
+    @*                     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor *@
+    @*                     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut *@
+    @*                     turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh, *@
+    @*                     ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros. *@
+    @*                     Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante. *@
+    @*                     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend *@
+    @*                     efficitur. *@
+    @*                 </p> *@
+    @*                 <p> *@
+    @*                     Mauris at nunc eget lectus lobortis facilisis et eget magna. Vestibulum venenatis augue sapien, rhoncus *@
+    @*                     faucibus magna semper eget. Proin rutrum libero sagittis sapien aliquet auctor. Suspendisse tristique a *@
+    @*                     magna at facilisis. Duis rhoncus feugiat magna in rutrum. Suspendisse semper, dolor et vestibulum lacinia, *@
+    @*                     nunc felis malesuada ex, nec hendrerit justo ex et massa. Quisque quis mollis nulla. Nam commodo est ornare, *@
+    @*                     rhoncus odio eu, pharetra tellus. Nunc sed velit mi. *@
+    @*                 </p> *@
+    @*                 <p> *@
+    @*                     Sed condimentum ultricies turpis convallis pharetra. Sed sagittis quam pharetra luctus porttitor. Cras vel *@
+    @*                     consequat lectus. Sed nec fringilla urna, a aliquet libero. Aenean sed nisl purus. Vivamus vulputate felis *@
+    @*                     et odio efficitur suscipit. Ut volutpat dictum lectus, ac rutrum massa accumsan at. Sed pharetra auctor *@
+    @*                     finibus. In augue libero, commodo vitae nisi non, sagittis convallis ante. Phasellus malesuada eleifend *@
+    @*                     mollis. Curabitur ultricies leo ac metus venenatis elementum. *@
+    @*                 </p> *@
+    @*             </div> *@
+    @*         </BitModal> *@
+    @*     </ExamplePreview> *@
+    @* </ComponentExampleBox> *@
+
+    @* <ComponentExampleBox Title="FullSize" RazorCode="@example3RazorCode" CSharpCode="@example3CsharpCode" Id="example3"> *@
+    @*     <ExamplePreview> *@
+    @*         <div>The FullSize parameter of the BitModal allows the modal to be full-screen.</div><br /> *@
+    @*         <BitButton OnClick="() => isOpenFullSize = true">Open Modal</BitButton> *@
+    @*         <BitModal @bind-IsOpen="isOpenFullSize" FullSize="isFullSize"> *@
+    @*             <div class="modal-header"> *@
+    @*                 <span class="modal-header-text">Full size modal</span> *@
+    @*                 <BitButton Variant="BitVariant.Text" *@
+    @*                            OnClick="() => isFullSize = !isFullSize" *@
+    @*                            IconName="@(isFullSize ? BitIconName.BackToWindow : BitIconName.ChromeFullScreen)" *@
+    @*                            Title="@(isFullSize ? "Exit FullScreen" : "FullScreen")" /> *@
+    @*                 <BitButton Variant="BitVariant.Text" *@
+    @*                            OnClick="() => isOpenFullSize = false" *@
+    @*                            IconName="@BitIconName.ChromeClose" *@
+    @*                            Title="Close" /> *@
+    @*             </div> *@
+    @*             <div class="modal-body"> *@
+    @*                 <p> *@
+    @*                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit *@
+    @*                     amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor *@
+    @*                     sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut *@
+    @*                     turpis. In hac habitasse platea dictumst. In a odio eget enim porttitor maximus. Aliquam nulla nibh, *@
+    @*                     ullamcorper aliquam placerat eu, viverra et dui. Phasellus ex lectus, maximus in mollis ac, luctus vel eros. *@
+    @*                     Vivamus ultrices, turpis sed malesuada gravida, eros ipsum venenatis elit, et volutpat eros dui et ante. *@
+    @*                     Quisque ultricies mi nec leo ultricies mollis. Vivamus egestas volutpat lacinia. Quisque pharetra eleifend *@
+    @*                     efficitur. *@
+    @*                 </p> *@
+    @*             </div> *@
+    @*         </BitModal> *@
+    @*     </ExamplePreview> *@
+    @* </ComponentExampleBox> *@
 </ComponentDemo>

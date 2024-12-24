@@ -169,6 +169,9 @@ public partial class BitProModal : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => FullSize || FullHeight ? "bit-pmd-fhe" : string.Empty);
+        ClassBuilder.Register(() => FullSize || FullWidth ? "bit-pmd-fwi" : string.Empty);
+
         ClassBuilder.Register(() => ModeFull ? "bit-pmd-mfl" : string.Empty);
     }
 

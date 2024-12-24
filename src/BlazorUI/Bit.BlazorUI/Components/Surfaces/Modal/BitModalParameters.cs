@@ -21,12 +21,6 @@ public class BitModalParameters
 
     public bool Draggable { get { return _modal?.Draggable ?? field; } set; }
 
-    public bool FullHeight { get { return _modal?.FullHeight ?? field; } set; }
-
-    public bool FullSize { get { return _modal?.FullSize ?? field; } set; }
-
-    public bool FullWidth { get { return _modal?.FullWidth ?? field; } set; }
-
     public bool? Alert { get { return _modal?.Alert ?? field; } set; }
 
     public bool Modeless { get { return _modal?.Modeless ?? field; } set; }
@@ -63,10 +57,6 @@ public class BitModalParameters
 
     public BitModalClassStyles? Styles { get; set; }
 
-    public string? SubtitleAriaId { get { return _modal?.SubtitleAriaId ?? field; } set; }
-
-    public string? TitleAriaId { get { return _modal?.TitleAriaId ?? field; } set; }
-
 
     private BitModal? _modal;
     public void SetModal(BitModal modal)
@@ -94,9 +84,6 @@ public class BitModalParameters
             Classes = BitModalClassStyles.Merge(params1.Classes, params2.Classes),
             DragElementSelector = params1.DragElementSelector ?? params2.DragElementSelector,
             Draggable = params1.Draggable || params2.Draggable,
-            FullHeight = params1.FullHeight || params2.FullHeight,
-            FullSize = params1.FullSize || params2.FullSize,
-            FullWidth = params1.FullWidth || params2.FullWidth,
             Alert = params1.Alert ?? params2.Alert,
             Modeless = params1.Modeless || params2.Modeless,
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(new object(), async () =>
@@ -112,8 +99,6 @@ public class BitModalParameters
             Position = params1.Position ?? params2.Position,
             ScrollerSelector = params1.ScrollerSelector ?? params2.ScrollerSelector,
             Styles = BitModalClassStyles.Merge(params1.Styles, params2.Styles),
-            SubtitleAriaId = params1.SubtitleAriaId ?? params2.SubtitleAriaId,
-            TitleAriaId = params1.TitleAriaId ?? params2.TitleAriaId,
         };
     }
 }
