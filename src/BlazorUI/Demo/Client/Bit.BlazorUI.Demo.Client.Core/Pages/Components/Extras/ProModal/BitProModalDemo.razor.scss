@@ -1,7 +1,8 @@
 ﻿.relative-container {
     width: 100%;
-    height: 345px;
+    height: 400px;
     overflow: auto;
+    margin-top: 1rem;
     position: relative;
     border: 2px lightgreen solid;
 }
@@ -37,8 +38,8 @@
 
     .custom-content {
         margin: 1rem;
-        border-end-end-radius: 1rem;
         box-shadow: 0 0 10rem purple;
+        border-end-end-radius: 1rem;
         border-end-start-radius: 1rem;
     }
 }

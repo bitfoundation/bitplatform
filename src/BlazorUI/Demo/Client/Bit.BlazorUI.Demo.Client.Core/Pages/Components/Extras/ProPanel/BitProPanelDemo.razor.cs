@@ -13,17 +13,17 @@ public partial class BitProPanelDemo
         },
         new()
         {
-            Name = "Body",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "The alias of the ChildContent.",
-        },
-        new()
-        {
             Name = "Blocking",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the panel can be dismissed by clicking outside of it on the overlay.",
+        },
+        new()
+        {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The alias of the ChildContent.",
         },
         new()
         {

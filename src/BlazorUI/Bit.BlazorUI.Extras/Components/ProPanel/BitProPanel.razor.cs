@@ -8,14 +8,14 @@ public partial class BitProPanel : BitComponentBase
     [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
-    /// The alias of the ChildContent.
-    /// </summary>
-    [Parameter] public RenderFragment? Body { get; set; }
-
-    /// <summary>
     /// Whether the panel can be dismissed by clicking outside of it on the overlay.
     /// </summary>
     [Parameter] public bool Blocking { get; set; }
+
+    /// <summary>
+    /// The alias of the ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
 
     /// <summary>
     /// The content of the panel.
@@ -56,7 +56,8 @@ public partial class BitProPanel : BitComponentBase
     /// <summary>
     /// Renders the overlay in full mode that gives it an opaque background.
     /// </summary>
-    [Parameter] public bool ModeFull { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool ModeFull { get; set; }
 
     /// <summary>
     /// Removes the overlay element of the panel.

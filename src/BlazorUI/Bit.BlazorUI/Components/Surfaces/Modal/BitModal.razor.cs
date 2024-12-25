@@ -16,16 +16,22 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     private BitModalParameters modalParameters = new();
 
 
-    /// <summary>
-    /// Enables the auto scrollbar toggle behavior of the Modal.
-    /// </summary>
-    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// When true, the Modal will be positioned absolute instead of fixed.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool AbsolutePosition { get; set; }
+
+    /// <summary>
+    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
+    /// </summary>
+    [Parameter] public bool? Alert { get; set; }
+
+    /// <summary>
+    /// Enables the auto scrollbar toggle behavior of the Modal.
+    /// </summary>
+    [Parameter] public bool AutoToggleScroll { get; set; }
 
     /// <summary>
     /// Whether the Modal can be light dismissed by clicking outside the Modal (on the overlay).
@@ -51,29 +57,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// Whether the Modal can be dragged around.
     /// </summary>
     [Parameter] public bool Draggable { get; set; }
-
-    /// <summary>
-    /// Makes the Modal height 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullHeight { get; set; }
-
-    /// <summary>
-    /// Makes the Modal width and height 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullSize { get; set; }
-
-    /// <summary>
-    /// Makes the Modal width 100% of its parent container.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool FullWidth { get; set; }
-
-    /// <summary>
-    /// Determines the ARIA role of the Modal (alertdialog/dialog). If this is set, it will override the ARIA role determined by Blocking and Modeless.
-    /// </summary>
-    [Parameter] public bool? IsAlert { get; set; }
 
     /// <summary>
     /// Whether the Modal is displayed.
@@ -112,16 +95,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public BitModalClassStyles? Styles { get; set; }
 
-    /// <summary>
-    /// ARIA id for the subtitle of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? SubtitleAriaId { get; set; }
-
-    /// <summary>
-    /// ARIA id for the title of the Modal, if any.
-    /// </summary>
-    [Parameter] public string? TitleAriaId { get; set; }
-
 
 
     protected override string RootElementClass => "bit-mdl";
@@ -132,9 +105,6 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         ClassBuilder.Register(() => ModalParameters.Classes?.Root);
 
         ClassBuilder.Register(() => ModalParameters.AbsolutePosition ? "bit-mdl-abs" : string.Empty);
-
-        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullHeight ? "bit-mdl-fhe" : string.Empty);
-        ClassBuilder.Register(() => ModalParameters.FullSize || ModalParameters.FullWidth ? "bit-mdl-fwi" : string.Empty);
 
         ClassBuilder.Register(() => ModalParameters.Position switch
         {
@@ -179,16 +149,16 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         {
             if (ModalParameters.Draggable)
             {
-                _ = _js.BitModalSetupDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.DragDropsSetup(_containerId, GetDragElementSelector());
             }
             else
             {
-                _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+                _ = _js.DragDropsRemove(_containerId, GetDragElementSelector());
             }
         }
         else
         {
-            _ = _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            _ = _js.DragDropsRemove(_containerId, GetDragElementSelector());
         }
 
         _offsetTop = 0;
@@ -225,7 +195,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
 
     private string GetRole()
     {
-        return (ModalParameters.IsAlert ?? (ModalParameters.Blocking && ModalParameters.Modeless is false)) ? "alertdialog" : "dialog";
+        return (ModalParameters.Alert ?? (ModalParameters.Blocking && ModalParameters.Modeless is false)) ? "alertdialog" : "dialog";
     }
 
     private async Task ToggleScroll(bool isOpen)
@@ -250,7 +220,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
         try
         {
             await ToggleScroll(false);
-            await _js.BitModalRemoveDragDrop(_containerId, GetDragElementSelector());
+            await _js.DragDropsRemove(_containerId, GetDragElementSelector());
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

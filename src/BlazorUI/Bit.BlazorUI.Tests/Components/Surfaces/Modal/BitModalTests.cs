@@ -17,7 +17,7 @@ public class BitModalTests : BunitTestContext
     {
         var com = RenderComponent<BitModal>(parameters =>
         {
-            parameters.Add(p => p.IsAlert, isAlert);
+            parameters.Add(p => p.Alert, isAlert);
             parameters.Add(p => p.IsOpen, true);
         });
 
@@ -80,64 +80,6 @@ public class BitModalTests : BunitTestContext
 
         var bitModel = com.FindAll(".bit-mdl");
         Assert.AreEqual(isOpen ? 1 : 0, bitModel.Count);
-    }
-
-    [DataTestMethod,
-        DataRow(null),
-        DataRow(""),
-        DataRow("Test-S-A-Id")
-    ]
-    public void BitModalSubtitleAriaIdTest(string subtitleAriaId)
-    {
-        var com = RenderComponent<BitModal>(parameters =>
-        {
-            parameters.Add(p => p.SubtitleAriaId, subtitleAriaId);
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var element = com.Find(".bit-mdl");
-
-        if (subtitleAriaId == null)
-        {
-            Assert.IsFalse(element.HasAttribute("aria-describedby"));
-        }
-        else if (subtitleAriaId == string.Empty)
-        {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, string.Empty);
-        }
-        else
-        {
-            Assert.AreEqual(element.Attributes["aria-describedby"].Value, subtitleAriaId);
-        }
-    }
-
-    [DataTestMethod,
-        DataRow(null),
-        DataRow(""),
-        DataRow("Test-T-A-Id")
-    ]
-    public void BitModalTitleAriaIdTest(string titleAriaId)
-    {
-        var com = RenderComponent<BitModal>(parameters =>
-        {
-            parameters.Add(p => p.TitleAriaId, titleAriaId);
-            parameters.Add(p => p.IsOpen, true);
-        });
-
-        var element = com.Find(".bit-mdl");
-
-        if (titleAriaId == null)
-        {
-            Assert.IsFalse(element.HasAttribute("aria-labelledby"));
-        }
-        else if (titleAriaId == string.Empty)
-        {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, string.Empty);
-        }
-        else
-        {
-            Assert.AreEqual(element.Attributes["aria-labelledby"].Value, titleAriaId);
-        }
     }
 
     [TestMethod]
