@@ -42,7 +42,6 @@ public partial class Program
             Application.Restart();
         });
 
-
         // https://github.com/velopack/velopack
         VelopackApp.Build().Run(Services.GetRequiredService<ILogger<VelopackApp>>());
         _ = Task.Run(async () =>
