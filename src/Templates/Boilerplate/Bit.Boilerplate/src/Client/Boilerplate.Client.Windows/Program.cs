@@ -3,8 +3,8 @@ using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Services;
-using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace Boilerplate.Client.Windows;
 
