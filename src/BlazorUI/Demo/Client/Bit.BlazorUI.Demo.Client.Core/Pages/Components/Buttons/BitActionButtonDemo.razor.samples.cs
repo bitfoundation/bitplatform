@@ -18,6 +18,15 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example3RazorCode = @"
+<BitActionButton Rel=""BitLinkRel.NoFollow"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Open bitplatform.dev with a rel attribute (nofollow)
+</BitActionButton>
+
+<BitActionButton Rel=""BitLinkRel.NoFollow | BitLinkRel.NoReferrer"" Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
+    Open bitplatform.dev with a rel attribute (nofollow & noreferrer)
+</BitActionButton>";
+
+    private readonly string example4RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">Primary</BitActionButton>
 <BitActionButton Color=""BitColor.Primary"">Primary</BitActionButton>
 
@@ -69,12 +78,12 @@ public partial class BitActionButtonDemo
 <BitActionButton Color=""BitColor.TertiaryBorder"" IconName=""@BitIconName.ColorSolid"">TertiaryBorder</BitActionButton>
 <BitActionButton Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">Small</BitActionButton>
 <BitActionButton Size=""BitSize.Medium"" IconName=""@BitIconName.FontSize"">Medium</BitActionButton>
 <BitActionButton Size=""BitSize.Large"" IconName=""@BitIconName.FontSize"">Large</BitActionButton>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -119,7 +128,7 @@ public partial class BitActionButtonDemo
     Action Button Classes (Hover me)
 </BitActionButton>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitActionButton IconName=""@BitIconName.AddFriend"">
     <div style=""display:flex;gap:0.5rem;"">
         <div>This is a custom template</div>
@@ -127,7 +136,7 @@ public partial class BitActionButtonDemo
     </div>
 </BitActionButton>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <EditForm Model=""validationButtonModel"" OnValidSubmit=""HandleValidSubmit"">
     <DataAnnotationsValidator />
 
@@ -144,7 +153,7 @@ public partial class BitActionButtonDemo
         <BitActionButton IconName=""@BitIconName.ButtonControl"" ButtonType=""BitButtonType.Button"">Button</BitActionButton>
     </div>
 </EditForm>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 public class ButtonValidationModel
 {
     [Required]
@@ -164,7 +173,7 @@ private async Task HandleValidSubmit()
     StateHasChanged();
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">ساخت حساب</BitActionButton>";
 
 }

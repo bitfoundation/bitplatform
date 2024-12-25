@@ -50,8 +50,8 @@
                     <ValidationMessage For="() => product.Price" />
 
                     <BitTextField @bind-Value="product.Description"
+                                  Multiline
                                   Rows="3"
-                                  IsMultiline="true"
                                   Label="@Localizer[(nameof(AppStrings.Description))]" />
                     <ValidationMessage For="() => product.Description" />
 

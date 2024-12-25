@@ -11,7 +11,7 @@ public partial class AuthorizedHeader : AppComponentBase
     {
         unsubscribePageTitleChanged = PubSubService.Subscribe(ClientPubSubMessages.PAGE_TITLE_CHANGED, async payload =>
         {
-            (pageTitle, pageSubtitle) = (ValueTuple<string?, string?>)payload!;
+            (pageTitle, pageSubtitle) = ((string, string))payload!;
 
             StateHasChanged();
         });

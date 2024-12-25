@@ -260,6 +260,6 @@ public partial class AppComponentBase : ComponentBase, IAsyncDisposable
         }
         parameters["ComponentType"] = GetType().FullName;
 
-        ExceptionHandler.Handle(exp, nonInterrupting: false, parameters, lineNumber, memberName, filePath);
+        ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.Interrupting, parameters, lineNumber, memberName, filePath);
     }
 }

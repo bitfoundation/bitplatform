@@ -88,7 +88,7 @@ public partial class UserController : AppControllerBase, IUserController
         // Checkout AppHub's comments for more info.
         if (userSession.SignalRConnectionId is not null)
         {
-            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, cancellationToken);
+            await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.SESSION_REVOKED, null, cancellationToken);
         }
         //#endif
     }
@@ -107,7 +107,19 @@ public partial class UserController : AppControllerBase, IUserController
         if (result.Succeeded is false)
             throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
 
-        return await GetCurrentUser(cancellationToken);
+        var updatedUser = await GetCurrentUser(cancellationToken);
+
+        //#if (signalR == true)
+        // Notify other sessions of the user that user's info has been updated, so they'll update their UI.
+        var currentUserSessionId = User.GetSessionId();
+        var userSessionIdsExceptCurrentUserSessionId = await DbContext.UserSessions
+            .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
+            .Select(us => us.SignalRConnectionId!)
+            .ToArrayAsync(cancellationToken);
+        await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, updatedUser, cancellationToken);
+        //#endif
+
+        return updatedUser;
     }
 
     [HttpPost]
