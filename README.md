@@ -50,8 +50,8 @@ The following apps are our open-source projects powered by the bit platform show
 5. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 9 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 6. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 9 PWA with Blazor WebAssembly Standalone (Azure static web app)
 7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): AOT Compiled .NET 9 PWA with Blazor WebAssembly Standalone (Azure static web app)
-7. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): Todo demo app with smallest download footprint (Azure static web app)
-7. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): Todo demo app with ef-core & sqlite (Azure static web app)
+8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): Todo demo app with smallest download footprint (Azure static web app)
+9. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): Todo demo app with ef-core & sqlite (Azure static web app)
 
 [Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram. 
 
