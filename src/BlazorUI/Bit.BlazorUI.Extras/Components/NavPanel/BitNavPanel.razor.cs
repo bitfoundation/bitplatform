@@ -3,13 +3,17 @@
 public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;
-    private bool _isPanelOpen;
-    private bool _isPanelToggled;
     private BitNav<TItem> _bitNavRef = default!;
     private IList<TItem> _filteredNavItems = [];
     private BitSearchBox _searchBoxRef = default!;
     private IEnumerable<TItem> _flatNavItemList = [];
 
+
+
+    /// <summary>
+    /// The custom template to render as the footer of the nav panel.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
@@ -22,15 +26,30 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public string? ImageUrl { get; set; }
 
     /// <summary>
+    /// 
+    /// </summary>
+    [Parameter, TwoWayBound, ResetClassBuilder]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Parameter, TwoWayBound]
+    public bool IsToggled { get; set; }
+
+    /// <summary>
     /// A collection of items to display in the nav panel.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetItems))]
-    public IList<TItem> Items { get; set; } = [];
+    [Parameter] public IList<TItem> Items { get; set; } = [];
 
 
 
     protected override string RootElementClass => "bit-npn";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,14 +67,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task CloseMenu()
     {
-        _isPanelOpen = false;
+        if (await AssignIsOpen(false)) return;
     }
 
     private async Task ToggleNavPanel()
     {
-        _isPanelToggled = !_isPanelToggled;
+        if (await AssignIsToggled(!IsToggled)) return;
 
-        if (_isPanelToggled)
+        if (IsToggled)
         {
             SearchNavItems(null);
         }
@@ -63,7 +82,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ToggleForSearch()
     {
-        _isPanelToggled = false;
+        if (await AssignIsToggled(false)) return;
+
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();
     }
@@ -72,6 +92,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     {
         _filteredNavItems = Items;
         if (searchText.HasNoValue()) return;
+
+        _flatNavItemList = Items.Flatten(_bitNavRef.GetChildItems).Where(item => _bitNavRef.GetUrl(item).HasValue());
 
         var mainItems = _flatNavItemList.Where(item => searchText!.Split(' ')
                                                                   .Where(t => string.IsNullOrEmpty(t) is false)
@@ -84,11 +106,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
                                                                                      .Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
 
         _filteredNavItems = [.. mainItems, .. subItems];
-    }
-
-    private void OnSetItems()
-    {
-        _flatNavItemList = Items.Flatten(_bitNavRef.GetChildItems).Where(item => _bitNavRef.GetUrl(item).HasValue());
     }
 
 

@@ -10,26 +10,44 @@
     overflow: hidden auto;
     height: var(--bit-env-height-avl);
 
-    &.toggled {
+    @include lt-md {
+        left: 0;
+        padding: 0;
+        opacity: 1;
+        position: fixed;
+        z-index: $zindex-callout;
+        height: unset !important;
+        top: var(--bit-env-inset-top);
+        bottom: var(--bit-env-inset-bottom);
+        transition: transform 150ms ease-out, opacity 100ms ease-in;
+
+        &.bit-rtl {
+            right: 0;
+            left: unset;
+        }
+
+        &.bit-npn-cls {
+            opacity: 0;
+            transform: translateX(-100%);
+
+            &.bit-rtl {
+                transform: translateX(100%);
+            }
+        }
+    }
+
+    &.bit-npn-tgl {
         min-width: 6rem;
         max-width: 6rem;
+
+        @include lt-md {
+            min-width: 4rem;
+            max-width: 4rem;
+        }
     }
 
     &::-webkit-scrollbar {
         width: 0;
-    }
-
-    @include lt-md {
-        z-index: 3;
-        padding: 0;
-        position: fixed;
-        height: unset !important;
-        top: var(--bit-env-inset-top);
-        bottom: var(--bit-env-inset-bottom);
-
-        &.closed {
-            display: none;
-        }
     }
 }
 
@@ -43,11 +61,12 @@
 
 .bit-npn-ovl {
     inset: 0;
-    z-index: 2;
     width: 100%;
     height: 100%;
     position: fixed;
     min-height: 100vh;
+    z-index: $zindex-overlay;
+    background-color: $clr-bg-overlay;
 
     @include gt-sm {
         display: none;
@@ -55,6 +74,7 @@
 }
 
 .bit-npn-cnt {
+    gap: 1rem;
     width: auto;
     display: flex;
     padding: 0.5rem;
@@ -64,13 +84,14 @@
     background-color: $clr-bg-sec;
 
     @include lt-md {
-        padding: 1rem;
+        //padding: 1rem;
     }
 }
 
 .bit-npn-hdr {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .bit-npn-img {
@@ -84,6 +105,6 @@
 
 .bit-npn-tbn {
     @include lt-md {
-        display: none;
+        //display: none;
     }
 }

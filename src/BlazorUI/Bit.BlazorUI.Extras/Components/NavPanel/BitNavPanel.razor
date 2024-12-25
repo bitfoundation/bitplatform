@@ -2,23 +2,18 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@{
-    var isToggled = !_isPanelOpen && _isPanelToggled;
+@if (IsOpen)
+{
+    <div class="bit-npn-ovl" @onclick=CloseMenu></div>
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="dialog"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value @($"{(_isPanelOpen ? "" : "closed")} {(isToggled ? "toggled" : "")}")"
+     class="@ClassBuilder.Value @($"{(IsToggled ? "bit-npn-tgl" : "")}")"
      dir="@Dir?.ToString().ToLower()">
-
-    @if (_isPanelOpen)
-    {
-        <div class="bit-npn-ovl" @onclick=CloseMenu></div>
-    }
-
-    <div class="bit-npn-cnt" style="@( $"justify-content:{(isToggled ? "":"")}")">
+    <div class="bit-npn-cnt">
         @if (HeaderTemplate is not null)
         {
             @HeaderTemplate
@@ -28,9 +23,11 @@
             <div class="bit-npn-hdr">
                 @if (ImageUrl.HasValue())
                 {
-                    <img src="@ImageUrl" class="bit-npn-img" style="@(isToggled ? "display:none" : "")" />
+                    <img src="@ImageUrl" class="bit-npn-img" style="@(IsToggled ? "display:none" : "")" />
                 }
-                <BitSpacer Visibility="@(isToggled ? BitVisibility.Collapsed : BitVisibility.Visible)" />
+                
+                <div class="bit-npn-spc" style="@(IsToggled ? "display:none" : "")" />
+
                 <BitButton IconOnly FixedColor
                            Class="bit-npn-tbn"
                            Size="BitSize.Large"
@@ -44,10 +41,10 @@
         <BitSearchBox @ref="_searchBoxRef"
                       Underlined Immediate DebounceTime="500"
                       OnChange="SearchNavItems"
-                      Style="@(isToggled ? "display:none" : "")"
+                      Style="@(IsToggled ? "display:none" : "")"
                       Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
 
-        @if (isToggled)
+        @if (IsToggled)
         {
             <BitButton IconOnly
                        FixedColor
@@ -61,7 +58,7 @@
 
         @if (_filteredNavItems.Any() is false)
         {
-            if (isToggled is false)
+            if (IsToggled is false)
             {
                 <BitText>Nothing found!</BitText>
             }
@@ -70,7 +67,7 @@
         {
             <BitNav @ref=_bitNavRef
                     FullWidth
-                    IconOnly="isToggled"
+                    IconOnly="IsToggled"
                     Items="_filteredNavItems"
                     Accent="BitColor.SecondaryBackground"
                     DefaultSelectedItem="_filteredNavItems[0]"
@@ -80,6 +77,9 @@
 
         <BitSpacer />
 
-        @* <Footer></Footer> *@
+        @if(FooterTemplate is not null)
+        {
+            @FooterTemplate
+        }
     </div>
 </div>
