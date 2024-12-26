@@ -11,28 +11,38 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
 
     /// <summary>
+    /// Custom CSS classes for different parts of the nav panel.
+    /// </summary>
+    [Parameter] public BitNavPanelClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The custom message for when the search result is empty.
+    /// </summary>
+    [Parameter] public string? EmptyListMessage { get; set; }
+
+    /// <summary>
     /// The custom template to render as the footer of the nav panel.
     /// </summary>
-    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
     /// </summary>
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
     /// The custom template to render as the header of the nav panel.
     /// </summary>
-    [Parameter] public string? ImageUrl { get; set; }
+    [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
-    /// 
+    /// Determines if the nav panel is open in small screens.
     /// </summary>
     [Parameter, TwoWayBound, ResetClassBuilder]
     public bool IsOpen { get; set; }
 
     /// <summary>
-    /// 
+    /// Determines if the nav panel is in the toggled state.
     /// </summary>
     [Parameter, TwoWayBound]
     public bool IsToggled { get; set; }
@@ -42,13 +52,44 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
+    /// <summary>
+    /// Custom CSS classes for different parts of the nav component of the nav panel.
+    /// </summary>
+    [Parameter] public BitNavClassStyles? NavClasses { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the nav component of the nav panel.
+    /// </summary>
+    [Parameter] public BitNavClassStyles? NavStyles { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the search box of the nav panel.
+    /// </summary>
+    [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the search box of the nav panel.
+    /// </summary>
+    [Parameter] public BitSearchBoxClassStyles? SearchBoxStyles { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the nav panel.
+    /// </summary>
+    [Parameter] public BitNavPanelClassStyles? Styles { get; set; }
+
 
 
     protected override string RootElementClass => "bit-npn";
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override async Task OnInitializedAsync()

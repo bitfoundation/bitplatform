@@ -4,7 +4,7 @@
 
 @if (IsOpen)
 {
-    <div class="bit-npn-ovl" @onclick=CloseMenu></div>
+    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick=CloseMenu></div>
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -13,46 +13,53 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value @($"{(IsToggled ? "bit-npn-tgl" : "")}")"
      dir="@Dir?.ToString().ToLower()">
-    <div class="bit-npn-cnt">
-        @if (HeaderTemplate is not null)
+    <div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
+        @if (Header is not null)
         {
-            @HeaderTemplate
+            @Header
         }
         else
         {
-            <div class="bit-npn-hdr">
-                @if (ImageUrl.HasValue())
+            <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
+                @if (IconUrl.HasValue())
                 {
-                    <img src="@ImageUrl" class="bit-npn-img" style="@(IsToggled ? "display:none" : "")" />
+                    <img src="@IconUrl" 
+                         class="bit-npn-img @Classes?.HeaderIcon" 
+                         style="@(IsToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                 }
-                
-                <div class="bit-npn-spc" style="@(IsToggled ? "display:none" : "")" />
+
+                <div class="bit-npn-spc" style="@(IsToggled ? "display:none;" : "")" />
 
                 <BitButton IconOnly FixedColor
-                           Class="bit-npn-tbn"
                            Size="BitSize.Large"
                            OnClick="ToggleNavPanel"
                            Variant="BitVariant.Text"
+                           Style="@Styles?.ToggleButton"
+                           Class="@Classes?.ToggleButton"
                            IconName="ColumnRightTwoThirds"
                            Color="BitColor.TertiaryBackground" />
             </div>
         }
 
         <BitSearchBox @ref="_searchBoxRef"
-                      Underlined Immediate DebounceTime="500"
+                      Underlined
                       OnChange="SearchNavItems"
-                      Style="@(IsToggled ? "display:none" : "")"
-                      Styles="@(new() { Root="width:100%", InputContainer="width:100%" })" />
+                      Immediate DebounceTime="500"
+                      Styles="SearchBoxStyles"
+                      Classes="SearchBoxClasses"
+                      Class="@Classes?.SearchBox"
+                      Style="@($"{(IsToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
         @if (IsToggled)
         {
             <BitButton IconOnly
                        FixedColor
                        IconName="Search"
-                       Class="toggle-btn"
                        Size="BitSize.Large"
                        OnClick="ToggleForSearch"
                        Variant="BitVariant.Text"
+                       Style="@Styles?.ToggleSearchButton"
+                       Class="@Classes?.ToggleSearchButton"
                        Color="BitColor.TertiaryBackground" />
         }
 
@@ -60,26 +67,31 @@
         {
             if (IsToggled is false)
             {
-                <BitText>Nothing found!</BitText>
+                <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
+                    @(EmptyListMessage ?? "Nothing found!")
+                </BitText>
             }
         }
         else
         {
             <BitNav @ref=_bitNavRef
                     FullWidth
+                    Styles="NavStyles"
+                    Classes="NavClasses"
                     IconOnly="IsToggled"
+                    Style="@Styles?.Nav"
+                    Class="@Classes?.Nav"
                     Items="_filteredNavItems"
                     Accent="BitColor.SecondaryBackground"
                     DefaultSelectedItem="_filteredNavItems[0]"
-                    OnItemClick="(TItem item) => HandleNavItemClick(item)"
-                    Styles="@(new() { SelectedItemContainer = "background-color: var(--bit-clr-bg-sec-active)" })" />
+                    OnItemClick="(TItem item) => HandleNavItemClick(item)" />
         }
 
         <BitSpacer />
 
-        @if(FooterTemplate is not null)
+        @if (Footer is not null)
         {
-            @FooterTemplate
+            @Footer
         }
     </div>
 </div>

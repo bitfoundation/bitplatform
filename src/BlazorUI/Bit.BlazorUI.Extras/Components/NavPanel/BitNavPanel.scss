@@ -49,6 +49,10 @@
     &::-webkit-scrollbar {
         width: 0;
     }
+
+    .bit-srb, .bit-srb-cnt {
+        width: 100%;
+    }
 }
 
 .bit-macos .bit-npn {
@@ -101,10 +105,4 @@
 
 .bit-npn-spc {
     flex-grow: 1;
-}
-
-.bit-npn-tbn {
-    @include lt-md {
-        //display: none;
-    }
 }
