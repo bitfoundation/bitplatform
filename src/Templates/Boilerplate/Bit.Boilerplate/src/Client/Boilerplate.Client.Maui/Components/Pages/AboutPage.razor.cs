@@ -1,4 +1,8 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
+
+//#if (framework == 'net9.0')
+using Maui.AppStores;
+//#endif
 
 namespace Boilerplate.Client.Maui.Components.Pages;
 
@@ -10,12 +14,12 @@ public partial class AboutPage
     protected override string? Subtitle => string.Empty;
 
 
-    private string appName = default!;
-    private string appVersion = default!;
-    private string processId = default!;
-    private string platform = default!;
-    private string webView = default!;
     private string oem = default!;
+    private string appName = default!;
+    private string webView = default!;
+    private string platform = default!;
+    private string processId = default!;
+    private string appVersion = default!;
 
     protected async override Task OnInitAsync()
     {
@@ -23,11 +27,14 @@ public partial class AboutPage
         // call third-party Java, Kotlin, Swift, and Objective-C libraries.
         // https://stackoverflow.com/a/2941199/2720104
         appName = AppInfo.Name;
-        appVersion = telemetryContext.AppVersion!;
-        platform = telemetryContext.Platform!;
         webView = telemetryContext.WebView!;
-        processId = Environment.ProcessId.ToString();
+        platform = telemetryContext.Platform!;
         oem = DeviceInfo.Current.Manufacturer;
+        appVersion = telemetryContext.AppVersion!;
+        processId = Environment.ProcessId.ToString();
+        //#if (framework == 'net9.0')
+        appVersion += $" Latest: {await AppStoreInfo.Current.GetLatestVersionAsync(CurrentCancellationToken)}";
+        //#endif
 
         await base.OnInitAsync();
     }

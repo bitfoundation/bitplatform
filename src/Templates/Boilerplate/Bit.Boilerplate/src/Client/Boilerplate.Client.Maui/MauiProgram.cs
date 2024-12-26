@@ -6,17 +6,17 @@ using Plugin.LocalNotification;
 //#endif
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
-#if iOS || Mac
-using UIKit;
-using WebKit;
-using Foundation;
-#endif
 //#if (framework == 'net9.0')
 using Maui.AppStores;
 using Maui.InAppReviews;
 using Maui.Android.InAppUpdates;
 //#endif
 //-:cnd:noEmit
+#if iOS || Mac
+using UIKit;
+using WebKit;
+using Foundation;
+#endif
 
 namespace Boilerplate.Client.Maui;
 
