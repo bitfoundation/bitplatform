@@ -111,13 +111,16 @@ public partial class App
         {
             if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
             {
-                if (await storageService.GetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested") is not "true")
+                var newVersion = AppStoreInfo.Current.GetLatestVersionAsync();
+                var releaseNotes = (await AppStoreInfo.Current.GetInformationAsync()).ReleaseNotes;
+
+                if (await storageService.GetItem($"{newVersion}_UpdateFromVersionIsRequested") is not "true")
                 {
-                    await storageService.SetItem($"{AppInfo.Version}_UpdateFromVersionIsRequested", "true");
+                    await storageService.SetItem($"{newVersion}_UpdateFromVersionIsRequested", "true");
 
                     // It's an opportune moment to request an update. (:
                     // https://github.com/oscoreio/Maui.AppStoreInfo
-                    if (await App.Current!.Windows[0].Page!.DisplayAlert(AppStrings.NewVersionIsAvailable, AppStrings.UpdateToNewVersion, AppStrings.Yes, AppStrings.No) is true)
+                    if (await App.Current!.Windows[0].Page!.DisplayAlert(localizer[nameof(AppStrings.NewVersionIsAvailable)], localizer[nameof(AppStrings.UpdateToNewVersion), releaseNotes], localizer[nameof(AppStrings.Yes)], localizer[nameof(AppStrings.No)]) is true)
                     {
                         await AppStoreInfo.Current.OpenApplicationInStoreAsync();
                     }

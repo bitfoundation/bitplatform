@@ -1015,7 +1015,7 @@
     <value>نسخه جدید در دسترس است</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>آیا می خواهید به نسخه جدید بروید؟</value>
+    <value>آیا می خواهید به نسخه جدید بروید؟ {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>درباره</value>

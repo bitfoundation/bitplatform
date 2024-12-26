@@ -1015,7 +1015,7 @@
     <value>Nieuwe versie is beschikbaar</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>Wilt u updaten naar de nieuwe versie?</value>
+    <value>Wilt u updaten naar de nieuwe versie? {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>Over</value>

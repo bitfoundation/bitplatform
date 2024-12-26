@@ -33,7 +33,7 @@ public partial class AboutPage
         appVersion = telemetryContext.AppVersion!;
         processId = Environment.ProcessId.ToString();
         //#if (framework == 'net9.0')
-        appVersion += $" Latest: {await AppStoreInfo.Current.GetLatestVersionAsync(CurrentCancellationToken)}";
+        appVersion += $" / {await AppStoreInfo.Current.GetLatestVersionAsync(CurrentCancellationToken)}";
         //#endif
 
         await base.OnInitAsync();
