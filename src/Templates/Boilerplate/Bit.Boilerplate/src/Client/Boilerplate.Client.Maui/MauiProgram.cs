@@ -1,11 +1,9 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
-//+:cnd:noEmit
 //#if (notification == true)
 using Plugin.LocalNotification;
 //#endif
-//-:cnd:noEmit
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
 #if iOS || Mac
@@ -13,6 +11,12 @@ using UIKit;
 using WebKit;
 using Foundation;
 #endif
+//#if (framework == 'net9.0')
+using Maui.AppStores;
+using Maui.InAppReviews;
+using Maui.Android.InAppUpdates;
+//#endif
+//-:cnd:noEmit
 
 namespace Boilerplate.Client.Maui;
 
@@ -38,6 +42,11 @@ public static partial class MauiProgram
         //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
+            //#if (framework == 'net9.0')
+            .UseInAppReviews()
+            .UseAppStoreInfo()
+            .UseAndroidInAppUpdates()
+            //#endif
             //#if (sentry == true)
             .UseSentry(options =>
             {
