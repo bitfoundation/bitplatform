@@ -1012,7 +1012,7 @@
     <value>بروز رسانی</value>
   </data>
     <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>نسخه جدید در دسترس است</value>
+    <value>نسخه ورژن {0} در دسترس است</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
     <value>آیا می خواهید به نسخه جدید بروید؟ {0}</value>
