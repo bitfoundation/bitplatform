@@ -44,10 +44,7 @@ public static partial class MauiProgram
             .UseMauiApp<App>()
             //#if (framework == 'net9.0')
             .UseInAppReviews()
-            .UseAppStoreInfo(config =>
-            {
-                config.CountryCode = CultureInfoManager.GetCurrentRegion().TwoLetterISORegionName.ToLowerInvariant();
-            })
+            .UseAppStoreInfo()
             .UseAndroidInAppUpdates()
             //#endif
             //#if (sentry == true)
