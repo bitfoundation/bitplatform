@@ -37,6 +37,11 @@ public partial class CultureInfoManager
         return cultureInfo;
     }
 
+    public static RegionInfo GetCurrentRegion()
+    {
+        return new RegionInfo((MultilingualEnabled ? CultureInfo.CurrentUICulture : DefaultCulture).Name);
+    }
+
     public void SetCurrentCulture(string cultureName)
     {
         var cultureInfo = SupportedCultures.FirstOrDefault(sc => string.Equals(sc.Culture.Name, cultureName, StringComparison.InvariantCultureIgnoreCase)).Culture ?? DefaultCulture;
