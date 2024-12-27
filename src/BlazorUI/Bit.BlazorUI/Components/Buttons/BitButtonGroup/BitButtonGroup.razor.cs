@@ -22,6 +22,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the ButtonGroup.
+    /// </summary>
+    [Parameter] public BitButtonGroupClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -64,6 +69,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Custom CSS styles for different parts of the ButtonGroup.
+    /// </summary>
+    [Parameter] public BitButtonGroupClassStyles? Styles { get; set; }
+
+    /// <summary>
     /// Display ButtonGroup with toggle mode enabled for each button.
     /// </summary>
     [Parameter] public bool Toggled { get; set; }
@@ -103,6 +113,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => Classes?.Root);
+
         ClassBuilder.Register(() => Variant switch
         {
             BitVariant.Fill => "bit-btg-fil",
@@ -142,6 +154,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
     }
 
     protected override void OnParametersSet()
@@ -211,6 +228,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (_toggleItem == item)
         {
             classes.Add("bit-btg-chk");
+
+            if (Classes?.ToggledButton.HasValue() ?? false)
+            {
+                classes.Add(Classes.ToggledButton!);
+            }
         }
 
         var classItem = GetClass(item);
@@ -219,7 +241,35 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             classes.Add(classItem!);
         }
 
+        if (Classes?.Button.HasValue() ?? false)
+        {
+            classes.Add(Classes.Button!);
+        }
+
         return string.Join(' ', classes);
+    }
+
+    private string? GetItemStyle(TItem? item)
+    {
+        List<string> styles = new();
+
+        var style = GetStyle(item);
+        if (style.HasValue())
+        {
+            styles.Add(style!.Trim(';'));
+        }
+
+        if (Styles?.Button.HasValue() ?? false)
+        {
+            styles.Add(Styles.Button!.Trim(';'));
+        }
+
+        if (_toggleItem == item && (Styles?.ToggledButton.HasValue() ?? false))
+        {
+            styles.Add(Styles.ToggledButton!);
+        }
+
+        return string.Join(';', styles);
     }
 
     private string? GetItemText(TItem? item)

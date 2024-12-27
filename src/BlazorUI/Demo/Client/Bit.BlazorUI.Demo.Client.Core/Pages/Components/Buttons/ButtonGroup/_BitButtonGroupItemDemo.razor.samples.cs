@@ -34,6 +34,117 @@ private List<BitButtonGroupItem> disabledItems =
 ];";
 
     private readonly string example3RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""iconItems"" />";
+    private readonly string example3CsharpCode = @"
+private List<BitButtonGroupItem> iconItems = 
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add },
+    new() { Text = ""Edit"", IconName = BitIconName.Edit },
+    new() { Text = ""Delete"", IconName = BitIconName.Delete }
+];";
+
+    private readonly string example4RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconItems"" IconOnly />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconItems"" IconOnly />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""iconItems"" IconOnly />
+
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""onlyIconItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""onlyIconItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""onlyIconItems"" />";
+    private readonly string example4CsharpCode = @"
+private List<BitButtonGroupItem> iconItems = 
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add },
+    new() { Text = ""Edit"", IconName = BitIconName.Edit },
+    new() { Text = ""Delete"", IconName = BitIconName.Delete }
+];
+
+private List<BitButtonGroupItem> onlyIconItems =
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add },
+    new() { IconName = BitIconName.Edit },
+    new() { Text = ""Delete"", IconName = BitIconName.Delete }
+];";
+
+    private readonly string example5RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""reversedIconItems"" />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""reversedIconItems"" />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""reversedIconItems"" />";
+    private readonly string example5CsharpCode = @"
+private List<BitButtonGroupItem> reversedIconItems =
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add, ReversedIcon = true },
+    new() { Text = ""Edit"", IconName = BitIconName.Edit, ReversedIcon = true },
+    new() { Text = ""Delete"", IconName = BitIconName.Delete, ReversedIcon = true }
+];";
+
+    private readonly string example6RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""toggledItems"" Toggled />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""toggledItems"" Toggled />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""toggledItems"" Toggled />";
+    private readonly string example6CsharpCode = @"
+private List<BitButtonGroupItem> toggledItems =
+[
+    new() { OnText = ""Back (2X)"", OffText = ""Back"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
+    new() { OnTitle = ""Resume"", OffTitle = ""Play"", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
+    new() { OnText = ""Forward (2X)"", OffText = ""Forward"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
+];";
+
+    private readonly string example7RazorCode = @"
+<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" Vertical />
+<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" Vertical />";
+    private readonly string example7CsharpCode = @"
+private List<BitButtonGroupItem> basicItems =
+[
+    new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
+];";
+
+    private readonly string example8RazorCode = @"
+<BitButtonGroup Items=""basicItems"" OnItemClick=""(BitButtonGroupItem item) => clickedItem = item.Text"" />
+<div>Clicked item: <b>@clickedItem</b></div>
+
+<BitButtonGroup Items=""eventsItems"" />
+<div>Click count: <b>@clickCounter</b></div>";
+    private readonly string example8CsharpCode = @"
+private int clickCounter;
+private string? clickedItem;
+
+private List<BitButtonGroupItem> eventsItems =
+[
+    new() { Text = ""Increase"", IconName = BitIconName.Add },
+    new() { Text = ""Reset"", IconName = BitIconName.Reset },
+    new() { Text = ""Decrease"", IconName = BitIconName.Remove }
+];
+
+protected override void OnInitialized()
+{
+    eventsItems[0].OnClick = _ => { clickCounter++; StateHasChanged(); };
+    eventsItems[1].OnClick = _ => { clickCounter = 0; StateHasChanged(); };
+    eventsItems[2].OnClick = _ => { clickCounter--; StateHasChanged(); };
+}";
+
+    private readonly string example9RazorCode = @"
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""basicItems"" />
+
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
+<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
+    private readonly string example9CsharpCode = @"
+private List<BitButtonGroupItem> basicItems =
+[
+    new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
+];";
+
+    private readonly string example10RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""basicItems"" />
@@ -104,100 +215,13 @@ private List<BitButtonGroupItem> disabledItems =
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
-    private readonly string example3CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = 
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
 ];";
 
-    private readonly string example4RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconItems"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconItems"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""iconItems"" />";
-    private readonly string example4CsharpCode = @"
-private List<BitButtonGroupItem> iconItems = 
-[
-    new() { Text = ""Add"", IconName = BitIconName.Add },
-    new() { Text = ""Edit"", IconName = BitIconName.Edit },
-    new() { Text = ""Delete"", IconName = BitIconName.Delete }
-];";
-
-    private readonly string example5RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""iconItems"" IconOnly />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""iconItems"" IconOnly />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""iconItems"" IconOnly />
-
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""onlyIconItems"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""onlyIconItems"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""onlyIconItems"" />";
-    private readonly string example5CsharpCode = @"
-private List<BitButtonGroupItem> iconItems = 
-[
-    new() { Text = ""Add"", IconName = BitIconName.Add },
-    new() { Text = ""Edit"", IconName = BitIconName.Edit },
-    new() { Text = ""Delete"", IconName = BitIconName.Delete }
-];
-
-private List<BitButtonGroupItem> onlyIconItems =
-[
-    new() { Text = ""Add"", IconName = BitIconName.Add },
-    new() { IconName = BitIconName.Edit },
-    new() { Text = ""Delete"", IconName = BitIconName.Delete }
-];";
-
-    private readonly string example6RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""reversedIconItems"" />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""reversedIconItems"" />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""reversedIconItems"" />";
-    private readonly string example6CsharpCode = @"
-private List<BitButtonGroupItem> reversedIconItems =
-[
-    new() { Text = ""Add"", IconName = BitIconName.Add, ReversedIcon = true },
-    new() { Text = ""Edit"", IconName = BitIconName.Edit, ReversedIcon = true },
-    new() { Text = ""Delete"", IconName = BitIconName.Delete, ReversedIcon = true }
-];";
-
-    private readonly string example7RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""toggledItems"" Toggled />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""toggledItems"" Toggled />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""toggledItems"" Toggled />";
-    private readonly string example7CsharpCode = @"
-private List<BitButtonGroupItem> toggledItems =
-[
-    new() { OnText = ""Back (2X)"", OffText = ""Back"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
-    new() { OnTitle = ""Resume"", OffTitle = ""Play"", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
-    new() { OnText = ""Forward (2X)"", OffText = ""Forward"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
-];";
-
-    private readonly string example8RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""basicItems"" Vertical />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""basicItems"" Vertical />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""basicItems"" Vertical />";
-    private readonly string example8CsharpCode = @"
-private List<BitButtonGroupItem> basicItems =
-[
-    new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
-];";
-
-    private readonly string example9RazorCode = @"
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicItems"" />
-
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Items=""basicItems"" />
-
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
-<BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
-    private readonly string example9CsharpCode = @"
-private List<BitButtonGroupItem> basicItems =
-[
-    new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
-];";
-
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -220,14 +244,28 @@ private List<BitButtonGroupItem> basicItems =
         color: peachpuff;
         background-color: tomato;
     }
+
+    .custom-btn {
+        color: aliceblue;
+        border-color: aliceblue;
+        background-color: crimson;
+    }
 </style>
 
 
 <BitButtonGroup Items=""basicItems"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"" />
 <BitButtonGroup Items=""basicItems"" Class=""custom-class"" Variant=""BitVariant.Outline"" />
 
-<BitButtonGroup Items=""styleClassItems"" Variant=""BitVariant.Text"" />";
-    private readonly string example10CsharpCode = @"
+<BitButtonGroup Items=""styleClassItems"" Variant=""BitVariant.Text"" />
+
+<BitButtonGroup Items=""basicItems""
+                Variant=""BitVariant.Text""
+                Styles=""@(new() { Button = ""color: darkcyan; border-color: deepskyblue; background-color: azure;"" })"" />
+
+<BitButtonGroup Items=""basicItems""
+                Variant=""BitVariant.Text""
+                Classes=""@(new() { Button = ""custom-btn"" })"" />";
+    private readonly string example11CsharpCode = @"
 private List<BitButtonGroupItem> basicItems =
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
@@ -248,30 +286,6 @@ private List<BitButtonGroupItem> styleClassItems =
         IconName = BitIconName.FormatPainter,
     }
 ];";
-
-    private readonly string example11RazorCode = @"
-<BitButtonGroup Items=""basicItems"" OnItemClick=""(BitButtonGroupItem item) => clickedItem = item.Text"" />
-<div>Clicked item: <b>@clickedItem</b></div>
-
-<BitButtonGroup Items=""eventsItems"" />
-<div>Click count: <b>@clickCounter</b></div>";
-    private readonly string example11CsharpCode = @"
-private int clickCounter;
-private string? clickedItem;
-
-private List<BitButtonGroupItem> eventsItems =
-[
-    new() { Text = ""Increase"", IconName = BitIconName.Add },
-    new() { Text = ""Reset"", IconName = BitIconName.Reset },
-    new() { Text = ""Decrease"", IconName = BitIconName.Remove }
-];
-
-protected override void OnInitialized()
-{
-    eventsItems[0].OnClick = _ => { clickCounter++; StateHasChanged(); };
-    eventsItems[1].OnClick = _ => { clickCounter = 0; StateHasChanged(); };
-    eventsItems[2].OnClick = _ => { clickCounter--; StateHasChanged(); };
-}";
 
     private readonly string example12RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" Items=""rtlItems"" />
