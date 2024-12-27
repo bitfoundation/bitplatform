@@ -1012,10 +1012,10 @@
     <value>بروز رسانی</value>
   </data>
     <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>نسخه جدید در دسترس است</value>
+    <value>نسخه جدید {0} در دسترس است</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>آیا می خواهید به نسخه جدید بروید؟</value>
+    <value>آیا می خواهید به نسخه جدید بروید؟ {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>درباره</value>

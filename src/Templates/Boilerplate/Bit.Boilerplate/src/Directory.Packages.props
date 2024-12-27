@@ -29,6 +29,9 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="9.0.0" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageVersion Include="Oscore.Maui.AppStoreInfo" Version="1.1.0" />
+        <PackageVersion Include="Oscore.Maui.InAppReviews" Version="1.1.0" />
+        <PackageVersion Include="Oscore.Maui.Android.InAppUpdates" Version="1.2.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.0.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.0.0" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.0.0" />

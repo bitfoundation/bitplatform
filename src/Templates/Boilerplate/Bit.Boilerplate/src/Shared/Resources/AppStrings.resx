@@ -1012,10 +1012,10 @@
     <value>Update</value>
   </data>
     <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>New version is available</value>
+    <value>New version {0} is available</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>Would you like to update to the new version?</value>
+    <value>Would you like to update to the new version? {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>About</value>
