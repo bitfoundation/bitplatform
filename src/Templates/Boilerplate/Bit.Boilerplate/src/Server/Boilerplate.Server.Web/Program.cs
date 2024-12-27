@@ -3,7 +3,6 @@
 using Boilerplate.Server.Api.Data;
 //#endif
 using Boilerplate.Client.Core.Services.Contracts;
-using Boilerplate.Client.Core.Services;
 
 namespace Boilerplate.Server.Web;
 
