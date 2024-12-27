@@ -105,6 +105,9 @@ public partial class App
     //#if (framework == 'net9.0')
     private async Task CheckForUpdates()
     {
+        if (AppPlatform.IsAndroid)
+            return; // Android has in-app update feature.
+
         await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
 
         try

@@ -27,7 +27,7 @@ public partial class CultureInfoManager
 
     public static CultureInfo CreateCultureInfo(string name)
     {
-        var cultureInfo = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture(name) : new CultureInfo(name);
+        var cultureInfo = AppPlatform.IsBrowser ? CultureInfo.CreateSpecificCulture(name) : new CultureInfo(name);
 
         if (name == "fa-IR")
         {

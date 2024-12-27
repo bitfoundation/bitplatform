@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Versioning;
 
-namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Shared.Services;
 
 public static partial class AppPlatform
 {
