@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public partial class BitProLayout : BitComponentBase
+public partial class BitAppShell : BitComponentBase
 {
     /// <summary>
     /// The cascading values to be provided for the children of the layout.
@@ -15,16 +15,16 @@ public partial class BitProLayout : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the layout.
     /// </summary>
-    [Parameter] public BitProLayoutClassStyles? Classes { get; set; }
+    [Parameter] public BitAppShellClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the layout.
     /// </summary>
-    [Parameter] public BitProLayoutClassStyles? Styles { get; set; }
+    [Parameter] public BitAppShellClassStyles? Styles { get; set; }
 
 
 
-    protected override string RootElementClass => "bit-ply";
+    protected override string RootElementClass => "bit-ash";
 
     protected override void RegisterCssClasses()
     {

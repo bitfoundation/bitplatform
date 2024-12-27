@@ -57,10 +57,10 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "HideNavMenu",
+            Name = "HideNavPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides NavMenu content when true.",
+            Description = "Hides NavPanel content when true.",
         },
         new()
         {
@@ -71,10 +71,10 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "NavMenu",
+            Name = "NavPanel",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the nav-menu section.",
+            Description = "The content of the nav panel section.",
         },
         new()
         {
@@ -125,7 +125,7 @@ public partial class BitLayoutDemo
                 },
                 new()
                 {
-                    Name = "NavMenu",
+                    Name = "NavPanel",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the nav-menu section of the BitLayout."
@@ -150,7 +150,7 @@ public partial class BitLayoutDemo
 
 
 
-    private bool hideNavMenu;
+    private bool HideNavPanel;
 
     private int headerHeight = 60;
     private int footerHeight = 60;
@@ -217,15 +217,15 @@ public partial class BitLayoutDemo
 </style>
 
 
-<BitToggle Label=""Hide NavMenu"" @bind-Value=""hideNavMenu"" />
+<BitToggle Label=""Hide NavPanel"" @bind-Value=""HideNavPanel"" />
 
-<BitLayout HideNavMenu=""hideNavMenu"">
+<BitLayout HideNavPanel=""HideNavPanel"">
     <Header>
         <div class=""header"">Header</div>
     </Header>
-    <NavMenu>
-        <div class=""nav-menu"">NavMenu</div>
-    </NavMenu>
+    <NavPanel>
+        <div class=""nav-menu"">NavPanel</div>
+    </NavPanel>
     <Main>
         <div class=""main"">Main</div>
     </Main>
@@ -234,7 +234,7 @@ public partial class BitLayoutDemo
     </Footer>
 </BitLayout>";
     private readonly string example2CsharpCode = @"
-private bool hideNavMenu;";
+private bool HideNavPanel;";
 
     private readonly string example3RazorCode = @"
 <style>
@@ -285,11 +285,11 @@ private bool hideNavMenu;";
 <BitLayout Styles=""@(new() { Main = ""height: 19rem;"" })"" 
            Classes=""@(new() { Header = ""header2"",
                               Main = ""main2"",
-                              NavMenu = ""nav-menu2"",
+                              NavPanel = ""nav-menu2"",
                               MainContent = ""main-content2"",
                               Footer = ""footer2"" })"">
     <Header>Header</Header>
-    <NavMenu>NavMenu</NavMenu>
+    <NavPanel>NavPanel</NavPanel>
     <Main>Main</Main>
     <Footer>Footer</Footer>
 </BitLayout>";
@@ -303,11 +303,11 @@ private bool hideNavMenu;";
            Styles=""@(new() { Root = ""color: black;"",
                              Header = ""background: lightcoral;"",
                              Main = ""background: lightgreen;"",
-                             NavMenu = ""padding: 1rem;"",
+                             NavPanel = ""padding: 1rem;"",
                              MainContent = ""padding: 1rem;"",
                              Footer = ""background: lightblue;"" })"">
     <Header>Header</Header>
-    <NavMenu>NavMenu</NavMenu>
+    <NavPanel>NavPanel</NavPanel>
     <Main>Main</Main>
     <Footer>Footer</Footer>
 </BitLayout>";

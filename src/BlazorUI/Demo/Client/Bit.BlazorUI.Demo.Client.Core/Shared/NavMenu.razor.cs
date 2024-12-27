@@ -157,7 +157,7 @@ public partial class NavMenu : IDisposable
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
-                new() { Text = "ProLayout", Url = "/components/prolayout" },
+                new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
                 new() 
                 { 

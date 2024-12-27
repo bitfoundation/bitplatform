@@ -38,9 +38,9 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public int HeaderHeight { get; set; }
 
     /// <summary>
-    /// Hides NavMenu content when true.
+    /// Hides NavPanel content.
     /// </summary>
-    [Parameter] public bool HideNavMenu { get; set; }
+    [Parameter] public bool HideNavPanel { get; set; }
 
     /// <summary>
     /// The content of the main section.
@@ -48,9 +48,9 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public RenderFragment? Main { get; set; }
 
     /// <summary>
-    /// The content of the nav-menu section.
+    /// The content of the nav panel section.
     /// </summary>
-    [Parameter] public RenderFragment? NavMenu { get; set; }
+    [Parameter] public RenderFragment? NavPanel { get; set; }
 
     /// <summary>
     /// The height of the status bar on mobile devices to calculate heights and paddings.

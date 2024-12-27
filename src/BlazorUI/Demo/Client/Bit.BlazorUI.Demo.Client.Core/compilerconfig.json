@@ -48,6 +48,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/AppShell/BitAppShellDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/AppShell/BitAppShellDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/Chart/BitChartDemo.razor.css",
         "inputFile": "Pages/Components/Extras/Chart/BitChartDemo.razor.scss",
         "minify": { "enabled": false },
@@ -498,38 +504,32 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppFooter.razor.css",
+        "inputFile": "Shared/AppFooter.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppHeader.razor.css",
+        "inputFile": "Shared/AppHeader.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/NavMenu.razor.css",
-        "inputFile": "Shared/NavMenu.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/Header.razor.css",
-        "inputFile": "Shared/Header.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/NotFoundComponent.razor.css",
         "inputFile": "Shared/NotFoundComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

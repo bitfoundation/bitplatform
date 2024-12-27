@@ -158,21 +158,6 @@ main {
     background-color: $bit-color-foreground-secondary;
 }
 
-.status-bar {
-    top: 0;
-    z-index: 12;
-    width: 100%;
-    display: none;
-    position: fixed;
-    overflow: hidden;
-    text-align: center;
-    align-items: center;
-    font-size: rem2(14px);
-    justify-content: center;
-    color: $bit-color-background-primary;
-    background-color: $bit-color-background-primary;
-}
-
 .bit-windows, .bit-macos {
     .status-bar {
         display: flex;

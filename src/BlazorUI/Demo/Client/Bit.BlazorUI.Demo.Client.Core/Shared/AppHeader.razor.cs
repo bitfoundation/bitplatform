@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
-public partial class Header
+public partial class AppHeader
 {
     private string _currentUrl = string.Empty;
     private bool _isHeaderMenuOpen;
