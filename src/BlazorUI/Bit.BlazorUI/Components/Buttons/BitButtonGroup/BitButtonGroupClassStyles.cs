@@ -25,5 +25,5 @@ public class BitButtonGroupClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the button when in toggle mode of the BitButtonGroup.
     /// </summary>
-    public string? ToggleButton { get; set; }
+    public string? ToggledButton { get; set; }
 }

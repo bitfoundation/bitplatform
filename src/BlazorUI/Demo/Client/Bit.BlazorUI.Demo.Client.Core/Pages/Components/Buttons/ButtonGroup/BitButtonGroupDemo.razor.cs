@@ -395,7 +395,7 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
-                   Name = "ToggleButton",
+                   Name = "ToggledButton",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the button when in toggle mode of the BitButtonGroup.",

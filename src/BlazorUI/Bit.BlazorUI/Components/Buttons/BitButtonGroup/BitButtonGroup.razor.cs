@@ -229,9 +229,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             classes.Add("bit-btg-chk");
 
-            if (Classes?.ToggleButton.HasValue() ?? false)
+            if (Classes?.ToggledButton.HasValue() ?? false)
             {
-                classes.Add(Classes.ToggleButton!);
+                classes.Add(Classes.ToggledButton!);
             }
         }
 
@@ -264,9 +264,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             styles.Add(Styles.Button!.Trim(';'));
         }
 
-        if (_toggleItem == item && (Styles?.ToggleButton.HasValue() ?? false))
+        if (_toggleItem == item && (Styles?.ToggledButton.HasValue() ?? false))
         {
-            styles.Add(Styles.ToggleButton!);
+            styles.Add(Styles.ToggledButton!);
         }
 
         return string.Join(';', styles);
