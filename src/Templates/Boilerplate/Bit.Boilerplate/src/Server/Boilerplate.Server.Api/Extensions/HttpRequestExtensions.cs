@@ -13,14 +13,14 @@ public static partial class HttpRequestExtensions
         var origins = req.Query["origin"].Union(req.Headers["X-Origin"]);
 
         if (origins.Any() is false)
-            return serverUrl;
+            return serverUrl; // Assume that web app and server are hosted in one place.
 
-        if (origins.FirstOrDefault(origin => string.Equals(origin, serverUrl) || settings.IsAllowedOrigin(origin)) is string validOrigin)
+        if (origins.SingleOrDefault(origin => string.Equals(origin, serverUrl) || settings.IsAllowedOrigin(origin)) is string validOrigin)
         {
             return new Uri(validOrigin);
         }
 
-        throw new BadRequestException($"No valid origin found among {string.Join(',', origins)}");
+        throw new BadRequestException($"None of the provided origins are valid: {string.Join(", ", origins)}");
     }
 
     /// <summary>
