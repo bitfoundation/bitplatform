@@ -15,15 +15,29 @@
     }
 }
 
+.bit-lyt-shd {
+    height: fit-content;
+
+    .bit-lyt-hdr {
+        top: 0;
+        position: sticky;
+        z-index: $zindex-base;
+    }
+}
+
+.bit-lyt-sft {
+    height: fit-content;
+
+    .bit-lyt-ftr {
+        bottom: 0;
+        position: sticky;
+        z-index: $zindex-base;
+    }
+}
+
 .bit-lyt-hdr {
     width: 100%;
     box-sizing: border-box;
-}
-
-.bit-lyt-fhd {
-    top: 0;
-    position: fixed;
-    z-index: $zindex-base;
 }
 
 .bit-lyt-man {
@@ -38,16 +52,11 @@
 
 .bit-lyt-mcn {
     flex-grow: 1;
+    overflow-x: auto;
     box-sizing: border-box;
 }
 
 .bit-lyt-ftr {
     width: 100%;
     box-sizing: border-box;
-}
-
-.bit-lyt-fft {
-    bottom: 0;
-    position: fixed;
-    z-index: $zindex-base;
 }

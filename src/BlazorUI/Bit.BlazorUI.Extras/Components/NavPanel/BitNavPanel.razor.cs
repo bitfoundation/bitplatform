@@ -77,6 +77,16 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     /// </summary>
     [Parameter] public BitNavPanelClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// Enables the toggle feature of the nav panel.
+    /// </summary>
+    [Parameter] public bool Togglable { get; set; }
+
+    /// <summary>
+    /// The top CSS property value of the root element of the nav panel.
+    /// </summary>
+    [Parameter] public int Top { get; set; }
+
 
 
     protected override string RootElementClass => "bit-npn";
@@ -90,6 +100,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+        StyleBuilder.Register(() => Top > 0 ? $"top:{Top}px;height:calc(var(--bit-env-height-avl) - {Top}px)" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()

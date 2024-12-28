@@ -15,20 +15,6 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "FixedHeader",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables fixed positioning of the header at the top of the viewport.",
-        },
-        new()
-        {
-            Name = "FixedFooter",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables fixed positioning of the footer at the bottom of the viewport.",
-        },
-        new()
-        {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -36,24 +22,10 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "FooterHeight",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The height of the footer to calculate heights and paddings.",
-        },
-        new()
-        {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content of the header section.",
-        },
-        new()
-        {
-            Name = "HeaderHeight",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The height of the header to calculate heights and paddings.",
         },
         new()
         {
@@ -78,20 +50,27 @@ public partial class BitLayoutDemo
         },
         new()
         {
-            Name = "StatusBarHeight",
-            Type = "int",
-            DefaultValue = "0",
-            Description = "The height of the status bar on mobile devices to calculate heights and paddings.",
-        },
-        new()
-        {
             Name = "Styles",
             Type = "BitLayoutClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitLayout.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
-        }
+        },
+        new()
+        {
+            Name = "StickyFooter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables sticky positioning of the footer at the bottom of the viewport.",
+        },
+        new()
+        {
+            Name = "StickyHeader",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables sticky positioning of the header at the top of the viewport.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -152,8 +131,6 @@ public partial class BitLayoutDemo
 
     private bool HideNavPanel;
 
-    private int headerHeight = 60;
-    private int footerHeight = 60;
 
 
     private readonly string example1RazorCode = @"
@@ -288,24 +265,6 @@ private bool HideNavPanel;";
                               NavPanel = ""nav-menu2"",
                               MainContent = ""main-content2"",
                               Footer = ""footer2"" })"">
-    <Header>Header</Header>
-    <NavPanel>NavPanel</NavPanel>
-    <Main>Main</Main>
-    <Footer>Footer</Footer>
-</BitLayout>";
-
-    private readonly string example4RazorCode = @"
-<BitNumberField Label=""Header height"" @bind-Value=""headerHeight"" />
-<BitNumberField Label=""Footer height"" @bind-Value=""footerHeight"" />
-
-<BitLayout HeaderHeight=""headerHeight"" 
-           FooterHeight=""footerHeight""
-           Styles=""@(new() { Root = ""color: black;"",
-                             Header = ""background: lightcoral;"",
-                             Main = ""background: lightgreen;"",
-                             NavPanel = ""padding: 1rem;"",
-                             MainContent = ""padding: 1rem;"",
-                             Footer = ""background: lightblue;"" })"">
     <Header>Header</Header>
     <NavPanel>NavPanel</NavPanel>
     <Main>Main</Main>

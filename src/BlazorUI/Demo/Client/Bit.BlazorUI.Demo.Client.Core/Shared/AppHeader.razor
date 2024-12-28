@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<header class="header @(_currentUrl == "/" ? "header--full-page" : null)">
+<div class="header @(_currentUrl == "/" ? "header--full-page" : null)">
     <div class="container">
         <div class="content">
             @if (_currentUrl != "/")
@@ -25,4 +25,4 @@
             </button>
         </div>
     </div>
-</header>
+</div>

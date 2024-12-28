@@ -66,29 +66,4 @@
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
-
-    <ComponentExampleBox Title="Customization" RazorCode="@example4RazorCode" Id="example4">
-        <ExamplePreview>
-            <div class="text-container">
-                <BitNumberField Label="Header height" @bind-Value="headerHeight" />
-                <BitNumberField Label="Footer height" @bind-Value="footerHeight" />
-            </div>
-            <br />
-            <div class="container">
-                <BitLayout HeaderHeight="headerHeight" 
-                           FooterHeight="footerHeight"
-                           Styles="@(new() { Root = "color: black;",
-                                             Header = "background: lightcoral;",
-                                             Main = "background: lightgreen;",
-                                             NavPanel = "padding: 1rem;",
-                                             MainContent = "padding: 1rem;",
-                                             Footer = "background: lightblue;" })">
-                    <Header>Header</Header>
-                    <NavPanel>NavPanel</NavPanel>
-                    <Main>Main</Main>
-                    <Footer>Footer</Footer>
-                </BitLayout>
-            </div>
-        </ExamplePreview>
-    </ComponentExampleBox>
 </ComponentDemo>

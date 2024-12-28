@@ -7,11 +7,14 @@
     <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick=CloseMenu></div>
 }
 
+@{
+    var isToggled = Togglable && IsToggled;
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     role="dialog"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value @($"{(IsToggled ? "bit-npn-tgl" : "")}")"
+     class="@ClassBuilder.Value @($"{(isToggled ? "bit-npn-tgl" : "")}")"
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
         @if (Header is not null)
@@ -23,21 +26,24 @@
             <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
                 @if (IconUrl.HasValue())
                 {
-                    <img src="@IconUrl" 
-                         class="bit-npn-img @Classes?.HeaderIcon" 
-                         style="@(IsToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                    <img src="@IconUrl"
+                         class="bit-npn-img @Classes?.HeaderIcon"
+                         style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
                 }
 
-                <div class="bit-npn-spc" style="@(IsToggled ? "display:none;" : "")" />
+                <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
 
-                <BitButton IconOnly FixedColor
-                           Size="BitSize.Large"
-                           OnClick="ToggleNavPanel"
-                           Variant="BitVariant.Text"
-                           Style="@Styles?.ToggleButton"
-                           Class="@Classes?.ToggleButton"
-                           IconName="ColumnRightTwoThirds"
-                           Color="BitColor.TertiaryBackground" />
+                @if (Togglable)
+                {
+                    <BitButton IconOnly FixedColor
+                               Size="BitSize.Large"
+                               OnClick="ToggleNavPanel"
+                               Variant="BitVariant.Text"
+                               Style="@Styles?.ToggleButton"
+                               Class="@Classes?.ToggleButton"
+                               IconName="ColumnRightTwoThirds"
+                               Color="BitColor.TertiaryBackground" />
+                }
             </div>
         }
 
@@ -48,9 +54,9 @@
                       Styles="SearchBoxStyles"
                       Classes="SearchBoxClasses"
                       Class="@Classes?.SearchBox"
-                      Style="@($"{(IsToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
+                      Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
-        @if (IsToggled)
+        @if (isToggled)
         {
             <BitButton IconOnly
                        FixedColor
@@ -65,7 +71,7 @@
 
         @if (_filteredNavItems.Any() is false)
         {
-            if (IsToggled is false)
+            if (isToggled is false)
             {
                 <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
                     @(EmptyListMessage ?? "Nothing found!")
@@ -78,11 +84,10 @@
                     FullWidth
                     Styles="NavStyles"
                     Classes="NavClasses"
-                    IconOnly="IsToggled"
+                    IconOnly="isToggled"
                     Style="@Styles?.Nav"
                     Class="@Classes?.Nav"
                     Items="_filteredNavItems"
-                    Accent="BitColor.SecondaryBackground"
                     DefaultSelectedItem="_filteredNavItems[0]"
                     OnItemClick="(TItem item) => HandleNavItemClick(item)" />
         }

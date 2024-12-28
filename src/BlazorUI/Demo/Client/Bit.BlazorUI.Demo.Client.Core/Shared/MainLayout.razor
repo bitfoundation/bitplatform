@@ -1,24 +1,17 @@
 ﻿@inherits LayoutComponentBase
 
 <BitAppShell>
-    <BitLayout>
+    <BitLayout HideNavPanel="_isHomePage" StickyHeader>
         <Header>
             <AppHeader />
         </Header>
         <NavPanel>
-            <BitNavPanel Items="_navItems" />
+            <BitNavPanel Items="_navItems" Top="65" />
         </NavPanel>
         <Main>
-            <main class="@($"{BitCss.Class.Color.Background.Primary}{(_currentUrl == "/" ? " full-page" : "")}")">
-                @if (_currentUrl != "/")
-                {
-                    <NavMenu />
-                }
-
-                <div class="site-content">
-                    @Body
-                </div>
-            </main>
+            <div class="site-content">
+                @Body
+            </div>
         </Main>
         <Footer>
             <AppFooter />

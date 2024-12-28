@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 public partial class MainLayout : IDisposable
 {
     private string? _pageTitle;
-    private string? _currentUrl;
+    private bool _isHomePage;
     private Action _unsubscribe = default!;
 
     private readonly List<BitNavItem> _navItems =
@@ -215,7 +215,8 @@ public partial class MainLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        _currentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        var url = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        _isHomePage = url == "/";
     }
 
     public void Dispose()

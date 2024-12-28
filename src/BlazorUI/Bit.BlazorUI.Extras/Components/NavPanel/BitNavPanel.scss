@@ -3,7 +3,6 @@
 
 .bit-npn {
     top: 0;
-    padding: 1rem;
     position: sticky;
     min-width: 14rem;
     max-width: 14rem;
@@ -81,15 +80,9 @@
     gap: 1rem;
     width: auto;
     display: flex;
-    padding: 0.5rem;
     min-height: 100%;
     height: fit-content;
     flex-direction: column;
-    background-color: $clr-bg-sec;
-
-    @include lt-md {
-        //padding: 1rem;
-    }
 }
 
 .bit-npn-hdr {
