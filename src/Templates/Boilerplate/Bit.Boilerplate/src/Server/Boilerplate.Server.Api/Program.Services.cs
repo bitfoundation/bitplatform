@@ -122,7 +122,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(origin))
+                policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
