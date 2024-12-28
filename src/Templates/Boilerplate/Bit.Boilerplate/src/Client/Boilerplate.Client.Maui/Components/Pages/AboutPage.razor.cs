@@ -21,7 +21,7 @@ public partial class AboutPage
     private string processId = default!;
     private string appVersion = default!;
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         // You have direct access to the Android, iOS, macOS, and Windows SDK features along with the ability to
         // call third-party Java, Kotlin, Swift, and Objective-C libraries.
@@ -33,7 +33,7 @@ public partial class AboutPage
         appVersion = telemetryContext.AppVersion!;
         processId = Environment.ProcessId.ToString();
         //#if (framework == 'net9.0')
-        appVersion += $" / {await AppStoreInfo.Current.GetLatestVersionAsync(CurrentCancellationToken)}";
+        appVersion += $" / {(AppStoreInfo.Current.CachedInformation?.LatestVersion?.ToString() ?? "?")}";
         //#endif
 
         await base.OnInitAsync();

@@ -9,7 +9,7 @@ public partial class WebPushNotificationService : PushNotificationServiceBase
     [AutoInject] private readonly IJSRuntime jSRuntime = default!;
     [AutoInject] private readonly ClientWebSettings clientWebSettings = default!;
 
-    public async override Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
+    public override async Task<PushNotificationSubscriptionDto> GetSubscription(CancellationToken cancellationToken)
     {
         return await jSRuntime.GetPushNotificationSubscription(clientWebSettings.AdsPushVapid!.PublicKey);
     }

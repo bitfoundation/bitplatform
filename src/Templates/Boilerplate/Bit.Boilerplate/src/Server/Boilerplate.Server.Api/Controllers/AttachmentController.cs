@@ -29,10 +29,7 @@ public partial class AttachmentController : AppControllerBase
 
         var userId = User.GetUserId();
 
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user is null)
-            throw new ResourceNotFoundException();
+        var user = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
 
         var destFileName = $"{userId}_{file.FileName}";
 

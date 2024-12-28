@@ -55,7 +55,7 @@ public interface ITelemetryContext
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
-        var data = new Dictionary<string, object?>(additionalParameters ??= [])
+        var data = new Dictionary<string, object?>(additionalParameters ?? [])
         {
             { nameof(UserId), UserId },
             { nameof(UserSessionId), UserSessionId },

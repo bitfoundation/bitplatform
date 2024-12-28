@@ -3,10 +3,9 @@ using System.Reflection;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class RootLayout : IDisposable
+public partial class RootLayout : IAsyncDisposable
 {
     private BitDir? currentDir;
-    private string? currentUrl;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
@@ -70,7 +69,6 @@ public partial class RootLayout : IDisposable
             isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             SetCurrentDir();
-            SetCurrentUrl();
             currentTheme = await themeService.GetCurrentTheme();
 
             await base.OnInitializedAsync();
@@ -119,7 +117,6 @@ public partial class RootLayout : IDisposable
 
     private void NavigationManagerLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        SetCurrentUrl();
         StateHasChanged();
     }
 
@@ -127,18 +124,6 @@ public partial class RootLayout : IDisposable
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
-    }
-
-    private void SetCurrentUrl()
-    {
-        var path = navigationManager.GetUriPath();
-
-        currentUrl = Urls.All.SingleOrDefault(pageUrl =>
-        {
-            return pageUrl == Urls.HomePage
-                    ? pageUrl == path
-                    : path.StartsWith(pageUrl);
-        });
     }
 
     /// <summary>
@@ -186,8 +171,7 @@ public partial class RootLayout : IDisposable
         return authClass + crossClass;
     }
 
-
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         navigationManager.LocationChanged -= NavigationManagerLocationChanged;
 
@@ -195,6 +179,9 @@ public partial class RootLayout : IDisposable
 
         unsubscribers.ForEach(d => d.Invoke());
 
-        _ = keyboard?.DisposeAsync();
+        if (keyboard is not null)
+        {
+            await keyboard.DisposeAsync();
+        }
     }
 }

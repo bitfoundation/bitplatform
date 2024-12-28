@@ -9,7 +9,6 @@ public partial class RootContainer
     /// </summary>
     [Parameter] public bool? IsOnline { get; set; }
     [Parameter] public BitDir? CurrentDir { get; set; }
-    [Parameter] public string? CurrentUrl { get; set; }
     [Parameter] public bool? IsAuthenticated { get; set; }
     /// <summary>
     /// <inheritdoc cref="Parameters.IsCrossLayoutPage"/>

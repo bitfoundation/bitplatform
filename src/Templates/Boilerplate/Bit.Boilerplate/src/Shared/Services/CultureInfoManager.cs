@@ -68,5 +68,5 @@ public partial class CultureInfoManager
     }
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_calendar")]
-    extern static ref Calendar Get_CalendarField(CultureInfo cultureInfo);
+    static extern ref Calendar Get_CalendarField(CultureInfo cultureInfo);
 }

@@ -297,7 +297,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         var (magicLinkToken, url) = await GenerateAutomaticSignInLink(user, returnUrl, originalAuthenticationMethod: "Email");
 
-        var link = new Uri(HttpContext.Request.GetWebClientUrl(), url);
+        var link = new Uri(HttpContext.Request.GetWebAppUrl(), url);
 
         List<Task> sendMessagesTasks = [];
 

@@ -48,10 +48,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
-        if (rememberMe is null)
-        {
-            rememberMe = await storageService.IsPersistent("refresh_token");
-        }
+        rememberMe ??= await storageService.IsPersistent("refresh_token");
 
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);

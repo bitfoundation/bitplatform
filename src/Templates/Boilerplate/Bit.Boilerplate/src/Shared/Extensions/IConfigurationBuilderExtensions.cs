@@ -15,7 +15,7 @@ public static partial class IConfigurationBuilderExtensions
     /// </summary>
     public static void AddSharedConfigurations(this IConfigurationBuilder builder)
     {
-        IConfigurationBuilder configBuilder = new ConfigurationBuilder();
+        var configBuilder = new ConfigurationBuilder();
 
         var sharedAssembly = Assembly.Load("Boilerplate.Shared");
 

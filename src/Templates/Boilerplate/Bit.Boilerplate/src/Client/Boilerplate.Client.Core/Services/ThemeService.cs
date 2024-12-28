@@ -2,7 +2,6 @@
 
 public partial class ThemeService
 {
-    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
