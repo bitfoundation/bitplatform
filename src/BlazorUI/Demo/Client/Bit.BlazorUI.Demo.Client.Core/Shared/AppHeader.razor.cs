@@ -7,9 +7,10 @@ public partial class AppHeader
     private string _currentUrl = string.Empty;
     private bool _isHeaderMenuOpen;
 
-    [AutoInject] private NavManuService _menuService { get; set; } = default!;
-    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
+    [Parameter] public EventCallback OnToggleNavPanel { get; set; }
+
     [AutoInject] private BitThemeManager _bitThemeManager { get; set; } = default!;
+    [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
     protected override async Task OnInitAsync()
     {
@@ -29,7 +30,7 @@ public partial class AppHeader
     private async Task ToggleNavMenu()
     {
         _isHeaderMenuOpen = false;
-        await _menuService.ToggleMenu();
+        await OnToggleNavPanel.InvokeAsync();
     }
 
     private async Task ToggleHeaderMenu()

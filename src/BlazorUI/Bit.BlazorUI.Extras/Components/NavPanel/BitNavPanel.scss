@@ -7,6 +7,7 @@
     min-width: 14rem;
     max-width: 14rem;
     overflow: hidden auto;
+    background-color: $clr-bg-pri;
     height: var(--bit-env-height-avl);
 
     @include lt-md {
@@ -14,10 +15,10 @@
         padding: 0;
         opacity: 1;
         position: fixed;
-        z-index: $zindex-callout;
         height: unset !important;
-        top: var(--bit-env-inset-top);
+        z-index: $zindex-callout;
         bottom: var(--bit-env-inset-bottom);
+        top: var(--bit-env-inset-top) !important;
         transition: transform 150ms ease-out, opacity 100ms ease-in;
 
         &.bit-rtl {

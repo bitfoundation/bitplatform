@@ -3,10 +3,10 @@
 <BitAppShell>
     <BitLayout HideNavPanel="_isHomePage" StickyHeader>
         <Header>
-            <AppHeader />
+            <AppHeader OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
         <NavPanel>
-            <BitNavPanel Items="_navItems" Top="65" />
+            <BitNavPanel @bind-IsOpen="_isNavPanelOpen" Items="_navItems" Top="65" />
         </NavPanel>
         <Main>
             <div class="site-content">
