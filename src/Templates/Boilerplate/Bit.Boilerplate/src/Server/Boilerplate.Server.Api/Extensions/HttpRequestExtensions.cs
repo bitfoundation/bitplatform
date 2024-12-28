@@ -10,7 +10,7 @@ public static partial class HttpRequestExtensions
 
         var serverUrl = req.GetBaseUrl();
 
-        var origins = req.Headers["X-Origin"].Union(req.Query["origin"]);
+        var origins = req.Query["origin"].Union(req.Headers["X-Origin"]);
 
         if (origins.Any() is false)
             return serverUrl;
