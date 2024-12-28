@@ -51,7 +51,7 @@
             "id": "notification"
         },
         {
-            "id": "serverUrl",
+            "id": "apiServerUrl",
             "isVisible": false
         },
         {

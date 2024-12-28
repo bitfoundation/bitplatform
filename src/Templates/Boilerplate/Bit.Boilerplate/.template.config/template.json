@@ -285,11 +285,11 @@
             },
             "replaces": "4030"
         },
-        "serverUrl": {
+        "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
             "datatype": "string",
-            "defaultValue": "use-your-server-url-here.com",
+            "defaultValue": "use-your-api-server-url-here.com",
             "description": "The backend api server url. You can change its value later if needed."
         },
         "normalizedServerUrl": {
@@ -297,7 +297,7 @@
             "generator": "regex",
             "dataType": "string",
             "parameters": {
-                "source": "serverUrl",
+                "source": "apiServerUrl",
                 "steps": [
                     {
                         "regex": "^(https|http):\/\/",
@@ -305,7 +305,7 @@
                     }
                 ]
             },
-            "replaces": "use-your-server-url-here.com"
+            "replaces": "use-your-api-server-url-here.com"
         },
         "webAppUrl": {
             "displayName": "web app url",
@@ -327,7 +327,7 @@
                     }
                 ]
             },
-            "replaces": "use-your-server-url-here.com"
+            "replaces": "use-your-api-server-url-here.com"
         },
         "advancedTests": {
             "displayName": "Include advanced automated tests?",
