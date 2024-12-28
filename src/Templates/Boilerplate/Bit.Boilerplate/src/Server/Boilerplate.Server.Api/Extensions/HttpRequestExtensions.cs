@@ -8,12 +8,19 @@ public static partial class HttpRequestExtensions
     {
         var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
 
-        if (req.Headers["X-Origin"].Union(req.Query["origin"]).FirstOrDefault(origin => string.IsNullOrEmpty(origin) is false && settings.IsAllowedOrigin(origin)) is string validOrigin)
+        var serverUrl = req.GetBaseUrl();
+
+        var origins = req.Headers["X-Origin"].Union(req.Query["origin"]);
+
+        if (origins.Any() is false)
+            return serverUrl;
+
+        if (origins.FirstOrDefault(origin => string.Equals(origin, serverUrl) || settings.IsAllowedOrigin(origin)) is string validOrigin)
         {
             return new Uri(validOrigin);
         }
 
-        return req.GetBaseUrl(); // API server and web app are hosted on the same location.
+        throw new BadRequestException($"No valid origin found among {string.Join(',', origins)}");
     }
 
     /// <summary>
