@@ -22,7 +22,7 @@ public partial class EmailService
 
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendEmail(logger, subject, user.Email!, "ResetPassword", Uri.UnescapeDataString(link.ToString()));
+            LogSendEmail(logger, subject, user.Email!, "ResetPassword", link.ToString());
         }
 
         var body = await BuildBody<ResetPasswordTokenTemplate>(new Dictionary<string, object?>()
@@ -45,7 +45,7 @@ public partial class EmailService
 
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendEmail(logger, subject, user.Email!, "Otp", Uri.UnescapeDataString(link.ToString()));
+            LogSendEmail(logger, subject, user.Email!, "Otp", link.ToString());
         }
 
         var body = await BuildBody<OtpTemplate>(new Dictionary<string, object?>()
@@ -86,7 +86,7 @@ public partial class EmailService
 
         if (hostEnvironment.IsDevelopment())
         {
-            LogSendEmail(logger, subject, user.Email!, "EmailToken", Uri.UnescapeDataString(link.ToString()));
+            LogSendEmail(logger, subject, user.Email!, "EmailToken", link.ToString());
         }
 
         var body = await BuildBody<EmailTokenTemplate>(new Dictionary<string, object?>()
