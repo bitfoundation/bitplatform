@@ -1,5 +1,4 @@
 ﻿//+:cnd:noEmit
-using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Windows.Services;
 
@@ -17,10 +16,14 @@ public static partial class Program
         services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
-            HttpClient httpClient = new(handler)
+            var httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
+            if (sp.GetRequiredService<ClientWindowsSettings>().WebAppUrl is string origin)
+            {
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin);
+            }
             return httpClient;
         });
 

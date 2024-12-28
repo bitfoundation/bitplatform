@@ -11,7 +11,7 @@ public partial class ODataOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        if (operation.Parameters is null) operation.Parameters = [];
+        operation.Parameters ??= [];
 
         if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor descriptor)
             return;
@@ -40,7 +40,7 @@ public partial class ODataOperationFilter : IOperationFilter
                 {
                     Type = "string",
                 },
-                Description = "Include only the selected objects. (ex. Childrens, Locations)",
+                Description = "Include only the selected objects. (ex. Orders, Locations)",
                 Required = false
             });
 

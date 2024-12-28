@@ -4,6 +4,19 @@ namespace Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
+    internal static Uri GetClientUrl(this HttpRequest req)
+    {
+        var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
+
+        if (req.Headers["X-Origin"].Union(req.Headers.Origin).Union(req.Headers.Referer)
+            .FirstOrDefault(origin => string.IsNullOrEmpty(origin) is false && settings.IsAllowedOrigin(origin)) is string validOrigin)
+        {
+            return new Uri(validOrigin);
+        }
+
+        return req.GetBaseUrl();
+    }
+
     /// <summary>
     /// https://blog.elmah.io/how-to-get-base-url-in-asp-net-core/
     /// </summary>
@@ -16,17 +29,5 @@ public static partial class HttpRequestExtensions
         }
 
         return uriBuilder.Uri;
-    }
-
-    internal static Uri GetWebClientUrl(this HttpRequest req)
-    {
-        var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
-
-        var webClientUrl = settings.WebClientUrl;
-
-        if (string.IsNullOrEmpty(webClientUrl) is false)
-            return new Uri(webClientUrl);
-
-        return req.GetBaseUrl();
     }
 }

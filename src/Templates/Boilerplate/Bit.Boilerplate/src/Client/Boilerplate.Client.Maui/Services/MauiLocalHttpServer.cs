@@ -31,7 +31,14 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    _ = Task.Delay(1)
+                        .ContinueWith(async _ =>
+                        {
+                            await MainThread.InvokeOnMainThreadAsync(async () =>
+                            {
+                                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                            });
+                        });
                 }
                 catch (Exception exp)
                 {

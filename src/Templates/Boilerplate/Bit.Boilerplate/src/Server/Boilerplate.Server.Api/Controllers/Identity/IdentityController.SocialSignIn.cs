@@ -95,9 +95,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Settings.WebClientUrl;
-        if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
-        return LocalRedirect($"~{url}");
+        return Redirect(new Uri(Request.HttpContext.Request.GetClientUrl(), url).ToString());
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]

@@ -15,7 +15,7 @@ namespace Boilerplate.Client.Core.Components;
 public partial class AppDataAnnotationsValidator : AppComponentBase
 {
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_OtherPropertyDisplayName")]
-    extern static void SetOtherPropertyDisplayName(CompareAttribute valAttribute, string name);
+    static extern void SetOtherPropertyDisplayName(CompareAttribute valAttribute, string name);
 
     private bool disposed;
     private ValidationMessageStore validationMessageStore = default!;
