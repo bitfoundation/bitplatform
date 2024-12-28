@@ -43,7 +43,7 @@ public partial class ServerApiSettings : SharedSettings
     /// <summary>
     /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
     /// </summary>
-    public string[] AllowedOrigins { get; set; } = [];
+    public Uri[] AllowedOrigins { get; set; } = [];
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -97,10 +97,10 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
         return validationResults;
     }
 
-    internal bool IsAllowedOrigin(string origin)
+    internal bool IsAllowedOrigin(Uri origin)
     {
-        return AllowedOrigins.Any(allowedOrigin => string.Equals(allowedOrigin, origin, StringComparison.InvariantCultureIgnoreCase))
-            || AllowedOriginsRegex().IsMatch(origin);
+        return AllowedOrigins.Any(allowedOrigin => allowedOrigin == origin)
+            || AllowedOriginsRegex().IsMatch(origin.ToString());
     }
 
     //-:cnd:noEmit
