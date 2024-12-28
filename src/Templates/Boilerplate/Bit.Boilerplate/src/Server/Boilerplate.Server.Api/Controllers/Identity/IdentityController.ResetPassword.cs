@@ -36,7 +36,7 @@ public partial class IdentityController
         var isEmail = string.IsNullOrEmpty(request.Email) is false;
         var qs = $"{(isEmail ? "email" : "phoneNumber")}={Uri.EscapeDataString(isEmail ? request.Email! : request.PhoneNumber!)}";
         var url = $"{Urls.ResetPasswordPage}?token={Uri.EscapeDataString(token)}&{qs}&culture={CultureInfo.CurrentUICulture.Name}";
-        var link = new Uri(HttpContext.Request.GetClientUrl(), url);
+        var link = new Uri(HttpContext.Request.GetWebAppUrl(), url);
 
         List<Task> sendMessagesTasks = [];
 

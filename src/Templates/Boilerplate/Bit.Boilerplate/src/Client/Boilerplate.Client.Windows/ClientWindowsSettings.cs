@@ -6,7 +6,8 @@ namespace Boilerplate.Client.Windows;
 public class ClientWindowsSettings : ClientCoreSettings
 {
     /// <summary>
-    /// Specify the web app url in if API server and web app are hosted separately for proper link/url generation (e.g., email confirmation, social sign-in).
+    /// When the Windows app sends a request to the API server, and the API server and web app are hosted on different URLs,
+    /// the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value.
     /// </summary>
     public string? WebAppUrl { get; set; }
 

@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
-    internal static Uri GetClientUrl(this HttpRequest req)
+    internal static Uri GetWebAppUrl(this HttpRequest req)
     {
         var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
 
@@ -14,7 +14,7 @@ public static partial class HttpRequestExtensions
             return new Uri(validOrigin);
         }
 
-        return req.GetBaseUrl();
+        return req.GetBaseUrl(); // API server and web app are hosted on the same location.
     }
 
     /// <summary>

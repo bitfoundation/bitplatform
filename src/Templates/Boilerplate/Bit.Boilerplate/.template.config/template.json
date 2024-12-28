@@ -308,7 +308,7 @@
             "replaces": "use-your-server-url-here.com"
         },
         "webAppUrl": {
-            "displayName": "Server url",
+            "displayName": "web app url",
             "type": "parameter",
             "datatype": "string",
             "defaultValue": "use-your-web-app-url-here.com",
