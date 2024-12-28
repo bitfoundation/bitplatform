@@ -8,6 +8,7 @@ public partial class MainLayout : IDisposable
     private string? _pageTitle;
     private bool _isNavPanelOpen;
     private Action _unsubscribe = default!;
+    private BitAppShell _appShellRef = default!;
 
     [AutoInject] private IPubSubService _pubSubService = default!;
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;

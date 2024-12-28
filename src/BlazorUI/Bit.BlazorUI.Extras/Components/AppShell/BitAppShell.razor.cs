@@ -2,6 +2,13 @@
 
 public partial class BitAppShell : BitComponentBase
 {
+    private ElementReference _containerRef = default!;
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// The cascading values to be provided for the children of the layout.
     /// </summary>
@@ -21,6 +28,13 @@ public partial class BitAppShell : BitComponentBase
     /// Custom CSS styles for different parts of the layout.
     /// </summary>
     [Parameter] public BitAppShellClassStyles? Styles { get; set; }
+
+
+
+    public async Task GoToTop()
+    {
+        await _js.BitExtrasGoToTop(_containerRef);
+    }
 
 
 

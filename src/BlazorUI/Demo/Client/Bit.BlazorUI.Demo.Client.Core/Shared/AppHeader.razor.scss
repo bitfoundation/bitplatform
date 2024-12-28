@@ -9,18 +9,6 @@
     -webkit-backdrop-filter: blur(20px);
 }
 
-.bit-ios {
-    .header {
-        padding-top: env(safe-area-inset-top);
-    }
-}
-
-.header--full-page {
-    .container {
-        max-width: rem2(1200px);
-    }
-}
-
 .container {
     width: 100%;
     display: flex;
@@ -37,6 +25,10 @@
     @include lt-lg {
         padding-left: rem2(10px);
         padding-right: rem2(10px);
+    }
+
+    &.home-page {
+        max-width: rem2(1200px);
     }
 }
 
@@ -72,11 +64,11 @@
     text-decoration: none;
     box-sizing: border-box;
     color: $bit-color-foreground-secondary;
-}
 
-.link--active {
-    font-weight: 600;
-    color: $bit-color-primary;
+    &.active {
+        font-weight: 600;
+        color: $bit-color-primary;
+    }
 }
 
 .right-section {

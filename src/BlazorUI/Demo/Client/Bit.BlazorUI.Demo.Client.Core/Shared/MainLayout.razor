@@ -1,9 +1,9 @@
 ﻿@inherits LayoutComponentBase
 
-<BitAppShell>
+<BitAppShell @ref="_appShellRef">
     <BitLayout HideNavPanel="_isHomePage" StickyHeader>
         <Header>
-            <AppHeader OnToggleNavPanel="() => _isNavPanelOpen = true" />
+            <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
         <NavPanel>
             <BitNavPanel @bind-IsOpen="_isNavPanelOpen" Items="_navItems" Top="65" />
@@ -14,7 +14,7 @@
             </div>
         </Main>
         <Footer>
-            <AppFooter />
+            <AppFooter AppShell="_appShellRef" />
         </Footer>
     </BitLayout>
 </BitAppShell>

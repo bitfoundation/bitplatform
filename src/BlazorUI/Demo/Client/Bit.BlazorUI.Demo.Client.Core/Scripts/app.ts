@@ -1,15 +1,5 @@
 ﻿declare var Prism: any;
 
-function toggleBodyOverflow(isMenuOpen: boolean) {
-    if (window.innerWidth < 901) {
-        if (isMenuOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "auto";
-        }
-    }
-}
-
 function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
 
@@ -37,15 +27,6 @@ function highlightSnippet() {
     document.querySelectorAll('pre code').forEach((el) => {
         Prism.highlightElement(el);
     });
-}
-
-function goToTop() {
-    window.scrollTo({ top: 0 });
-}
-
-function applyBodyElementClasses(cssClasses: string[], cssVariables: any) {
-    cssClasses?.forEach(c => document.body.classList.add(c));
-    Object.keys(cssVariables).forEach(key => document.body.style.setProperty(key, cssVariables[key]));
 }
 
 declare class BitTheme { static init(options: any): void; };

@@ -12,7 +12,7 @@
          class="bit-ash-center @Classes?.Center"
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
-        <div style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
+        <div @ref="_containerRef" style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
             <BitCascadingValueProvider Values="CascadingValues">
                 @ChildContent
             </BitCascadingValueProvider>

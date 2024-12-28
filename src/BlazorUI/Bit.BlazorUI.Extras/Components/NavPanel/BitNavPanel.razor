@@ -4,7 +4,7 @@
 
 @if (IsOpen)
 {
-    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick="CloseMenu"></div>
+    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick="ClosePanel"></div>
 }
 
 @{
@@ -13,97 +13,104 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     style="@StyleBuilder.Value"
+     style="@GetPanelStyle()"
      class="@ClassBuilder.Value @($"{(isToggled ? "bit-npn-tgl" : "")}")"
      dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
-        @if (Header is not null)
-        {
-            @Header
-        }
-        else
-        {
-            <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
-                @if (IconUrl.HasValue())
+         <BitSwipeTrap Style="width:100%; height:100%"
+                       Threshold="5"
+                       Throttle="10"
+                       OnMove="HandleOnSwipeMove"
+                       OnEnd="HandleOnSwipeEnd"
+                       OnTrigger="HandleOnSwipeTrigger">
+            <div @ref="_containerRef" style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
+                @if (Header is not null)
                 {
-                    <img src="@IconUrl"
-                         class="bit-npn-img @Classes?.HeaderIcon"
-                         style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
-                }
-
-                <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
-
-                @if (Togglable)
-                {
-                    <BitButton IconOnly FixedColor
-                               Size="BitSize.Large"
-                               OnClick="ToggleNavPanel"
-                               Variant="BitVariant.Text"
-                               Style="@Styles?.ToggleButton"
-                               Class="@Classes?.ToggleButton"
-                               IconName="ColumnRightTwoThirds"
-                               Color="BitColor.TertiaryBackground" />
-                }
-            </div>
-        }
-
-        <BitSearchBox @ref="_searchBoxRef"
-                      Underlined
-                      OnChange="SearchNavItems"
-                      Immediate DebounceTime="500"
-                      Styles="SearchBoxStyles"
-                      Classes="SearchBoxClasses"
-                      Class="@Classes?.SearchBox"
-                      Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
-
-        @if (isToggled)
-        {
-            <BitButton IconOnly
-                       FixedColor
-                       IconName="Search"
-                       Size="BitSize.Large"
-                       OnClick="ToggleForSearch"
-                       Variant="BitVariant.Text"
-                       Style="@Styles?.ToggleSearchButton"
-                       Class="@Classes?.ToggleSearchButton"
-                       Color="BitColor.TertiaryBackground" />
-        }
-
-        @if (_filteredNavItems.Any() is false)
-        {
-            if (isToggled is false)
-            {
-                if (EmptyListTemplate is not null)
-                {
-                    @EmptyListTemplate
+                    @Header
                 }
                 else
                 {
-                    <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
-                        @(EmptyListMessage ?? "Nothing found!")
-                    </BitText>
+                    <div style="@Styles?.Header" class="bit-npn-hdr @Classes?.Header">
+                        @if (IconUrl.HasValue())
+                        {
+                            <img src="@IconUrl"
+                                 class="bit-npn-img @Classes?.HeaderIcon"
+                                 style="@(isToggled ? "display:none;" : "") @Styles?.HeaderIcon" />
+                        }
+
+                        <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
+
+                        @if (Togglable)
+                        {
+                            <BitButton IconOnly FixedColor
+                                       Size="BitSize.Large"
+                                       OnClick="ToggleNavPanel"
+                                       Variant="BitVariant.Text"
+                                       Style="@Styles?.ToggleButton"
+                                       Class="@Classes?.ToggleButton"
+                                       IconName="ColumnRightTwoThirds"
+                                       Color="BitColor.TertiaryBackground" />
+                        }
+                    </div>
                 }
-            }
-        }
-        else
-        {
-            <BitNav @ref=_bitNavRef
-                    FullWidth
-                    Styles="NavStyles"
-                    Classes="NavClasses"
-                    IconOnly="isToggled"
-                    Style="@Styles?.Nav"
-                    Class="@Classes?.Nav"
-                    Items="_filteredNavItems"
-                    DefaultSelectedItem="_filteredNavItems[0]"
-                    OnItemClick="(TItem item) => HandleNavItemClick(item)" />
-        }
 
-        <BitSpacer />
+                <BitSearchBox @ref="_searchBoxRef"
+                              Underlined
+                              OnChange="SearchNavItems"
+                              Immediate DebounceTime="500"
+                              Styles="SearchBoxStyles"
+                              Classes="SearchBoxClasses"
+                              Class="@Classes?.SearchBox"
+                              Style="@($"{(isToggled ? "display:none;" : "")}{Styles?.SearchBox}".Trim())" />
 
-        @if (Footer is not null)
-        {
-            @Footer
-        }
-    </div>
+                @if (isToggled)
+                {
+                    <BitButton IconOnly
+                               FixedColor
+                               IconName="Search"
+                               Size="BitSize.Large"
+                               OnClick="ToggleForSearch"
+                               Variant="BitVariant.Text"
+                               Style="@Styles?.ToggleSearchButton"
+                               Class="@Classes?.ToggleSearchButton"
+                               Color="BitColor.TertiaryBackground" />
+                }
+
+                @if (_filteredNavItems.Any() is false)
+                {
+                    if (isToggled is false)
+                    {
+                        if (EmptyListTemplate is not null)
+                        {
+                            @EmptyListTemplate
+                        }
+                        else
+                        {
+                            <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
+                                @(EmptyListMessage ?? "Nothing found!")
+                            </BitText>
+                        }
+                    }
+                }
+                else
+                {
+                    <BitNav @ref=_bitNavRef
+                            FullWidth
+                            Styles="NavStyles"
+                            Classes="NavClasses"
+                            IconOnly="isToggled"
+                            Style="@Styles?.Nav"
+                            Class="@Classes?.Nav"
+                            Items="_filteredNavItems"
+                            DefaultSelectedItem="_filteredNavItems[0]"
+                            OnItemClick="(TItem item) => HandleNavItemClick(item)" />
+                }
+
+                <BitSpacer />
+
+                @if (Footer is not null)
+                {
+                    @Footer
+                }
+            </div>
+    </BitSwipeTrap>
 </div>

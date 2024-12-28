@@ -3,10 +3,15 @@
 public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;
+    private decimal diffXPanel;
     private BitNav<TItem> _bitNavRef = default!;
     private IList<TItem> _filteredNavItems = [];
     private BitSearchBox _searchBoxRef = default!;
+    private ElementReference _containerRef = default;
     private IEnumerable<TItem> _flatNavItemList = [];
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -119,10 +124,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
         _filteredNavItems = Items;
 
-        await CloseMenu();
+        await ClosePanel();
     }
 
-    private async Task CloseMenu()
+    private async Task ClosePanel()
     {
         if (await AssignIsOpen(false)) return;
     }
@@ -163,6 +168,54 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
                                                                                      .Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
 
         _filteredNavItems = [.. mainItems, .. subItems];
+    }
+
+    private decimal _oldDiffY = 0;
+    private void HandleOnSwipeMove(BitSwipeTrapEventArgs args)
+    {
+        if (IsOpen is false) return;
+
+        if (Math.Abs(args.DiffX) > Math.Abs(args.DiffY))
+        {
+            diffXPanel = args.DiffX;
+            StateHasChanged();
+        }
+        else
+        {
+            var diff = args.DiffY - _oldDiffY;
+            _js.BitExtrasScrollBy(RootElement, 0, diff > 0 ? -10 : 10);
+            _oldDiffY = args.DiffY;
+        }
+
+    }
+    private void HandleOnSwipeEnd(BitSwipeTrapEventArgs args)
+    {
+        if (IsOpen is false) return;
+
+        diffXPanel = 0;
+        StateHasChanged();
+    }
+    private async Task HandleOnSwipeTrigger(BitSwipeTrapTriggerArgs args)
+    {
+        if (IsOpen is false) return;
+
+        if ((Dir != BitDir.Rtl && args.Direction == BitSwipeDirection.Left) ||
+            (Dir == BitDir.Rtl && args.Direction == BitSwipeDirection.Right))
+        {
+            diffXPanel = 0;
+            await ClosePanel();
+            StateHasChanged();
+        }
+    }
+
+    private string GetPanelStyle()
+    {
+        if (IsOpen is false) return string.Empty;
+
+        var translate = ((Dir != BitDir.Rtl && diffXPanel < 0) || (Dir == BitDir.Rtl && diffXPanel > 0))
+                            ? $"transform: translateX({diffXPanel}px)"
+                            : string.Empty;
+        return $"{translate};{StyleBuilder.Value}".Trim(';');
     }
 
 
