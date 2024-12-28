@@ -4,7 +4,7 @@
 
 @if (IsOpen)
 {
-    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick=CloseMenu></div>
+    <div style="@Styles?.Overlay" class="bit-npn-ovl @Classes?.Overlay" @onclick="CloseMenu"></div>
 }
 
 @{
@@ -73,9 +73,16 @@
         {
             if (isToggled is false)
             {
-                <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
-                    @(EmptyListMessage ?? "Nothing found!")
-                </BitText>
+                if (EmptyListTemplate is not null)
+                {
+                    @EmptyListTemplate
+                }
+                else
+                {
+                    <BitText Style="@Styles?.EmptyListMessageText" Class="@Classes?.EmptyListMessageText">
+                        @(EmptyListMessage ?? "Nothing found!")
+                    </BitText>
+                }
             }
         }
         else

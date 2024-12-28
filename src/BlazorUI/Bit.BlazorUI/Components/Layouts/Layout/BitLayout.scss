@@ -18,7 +18,7 @@
 .bit-lyt-shd {
     height: fit-content;
 
-    .bit-lyt-hdr {
+    > .bit-lyt-hdr {
         top: 0;
         position: sticky;
         z-index: $zindex-base;
@@ -28,7 +28,7 @@
 .bit-lyt-sft {
     height: fit-content;
 
-    .bit-lyt-ftr {
+    > .bit-lyt-ftr {
         bottom: 0;
         position: sticky;
         z-index: $zindex-base;

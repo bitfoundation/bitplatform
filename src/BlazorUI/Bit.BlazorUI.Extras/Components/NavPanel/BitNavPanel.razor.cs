@@ -16,6 +16,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public BitNavPanelClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The custom template for when the search result is empty.
+    /// </summary>
+    [Parameter] public RenderFragment? EmptyListTemplate { get; set; }
+
+    /// <summary>
     /// The custom message for when the search result is empty.
     /// </summary>
     [Parameter] public string? EmptyListMessage { get; set; }
@@ -31,7 +36,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The custom template to render as the header of the nav panel.
+    /// The icon url to show in the header of the nav panel.
     /// </summary>
     [Parameter] public string? IconUrl { get; set; }
 
@@ -83,7 +88,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public bool Togglable { get; set; }
 
     /// <summary>
-    /// The top CSS property value of the root element of the nav panel.
+    /// The top CSS property value of the root element of the nav panel in px.
     /// </summary>
     [Parameter] public int Top { get; set; }
 
