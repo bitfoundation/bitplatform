@@ -35,11 +35,11 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     _ = Task.Delay(1)
                         .ContinueWith(async _ =>
                         {
-                            await Application.OpenForms[0]!.InvokeAsync(async () =>
+                            Application.OpenForms[0]!.Invoke(() =>
                             {
                                 Application.OpenForms[0]!.Activate();
-                                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                             });
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
                         });
                 }
                 catch (Exception exp)
