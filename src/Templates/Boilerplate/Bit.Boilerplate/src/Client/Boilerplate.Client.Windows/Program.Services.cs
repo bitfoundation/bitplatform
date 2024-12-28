@@ -20,9 +20,9 @@ public static partial class Program
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
-            if (sp.GetRequiredService<ClientWindowsSettings>().WebAppUrl is string origin)
+            if (sp.GetRequiredService<ClientWindowsSettings>().WebAppUrl is Uri origin)
             {
-                httpClient.DefaultRequestHeaders.Add("X-Origin", origin);
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
             }
             return httpClient;
         });

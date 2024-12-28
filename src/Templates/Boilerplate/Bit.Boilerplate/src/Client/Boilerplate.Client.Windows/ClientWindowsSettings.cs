@@ -9,7 +9,7 @@ public class ClientWindowsSettings : ClientCoreSettings
     /// When the Windows app sends a request to the API server, and the API server and web app are hosted on different URLs,
     /// the origin of the generated links (e.g., email confirmation links) will depend on `WebAppUrl` value.
     /// </summary>
-    public string? WebAppUrl { get; set; }
+    public Uri? WebAppUrl { get; set; }
 
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
 

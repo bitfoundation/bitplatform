@@ -24,9 +24,9 @@ public static partial class MauiProgram
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
-            if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is string origin)
+            if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is Uri origin)
             {
-                httpClient.DefaultRequestHeaders.Add("X-Origin", origin);
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
             }
             return httpClient;
         });

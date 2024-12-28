@@ -18,7 +18,7 @@ public static partial class HttpRequestExtensions
         if (origin == serverUrl || settings.IsAllowedOrigin(origin))
             return origin;
 
-        throw new BadRequestException($"Invalid origin");
+        throw new BadRequestException($"Invalid origin {origin}");
     }
 
     /// <summary>
