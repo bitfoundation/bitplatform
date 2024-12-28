@@ -10,17 +10,15 @@ public static partial class HttpRequestExtensions
 
         var serverUrl = req.GetBaseUrl();
 
-        var origins = req.Query["origin"].Union(req.Headers["X-Origin"]).Select(origin => new Uri(origin));
+        var origin = req.Query["origin"].Union(req.Headers["X-Origin"]).Select(o => new Uri(o)).SingleOrDefault();
 
-        if (origins.Any() is false)
+        if (origin is null)
             return serverUrl; // Assume that web app and server are hosted in one place.
 
-        if (origins.SingleOrDefault(origin => origin == serverUrl || settings.IsAllowedOrigin(origin)) is Uri validOrigin)
-        {
-            return validOrigin;
-        }
+        if (origin == serverUrl || settings.IsAllowedOrigin(origin))
+            return origin;
 
-        throw new BadRequestException($"None of the provided origins are valid: {string.Join(", ", origins)}");
+        throw new BadRequestException($"Invalid origin");
     }
 
     /// <summary>
