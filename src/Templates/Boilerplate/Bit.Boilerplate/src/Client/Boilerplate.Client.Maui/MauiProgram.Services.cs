@@ -39,17 +39,7 @@ public static partial class MauiProgram
             return settings;
         });
         services.AddSingleton(ITelemetryContext.Current!);
-        if (AppPlatform.IsWindows
-            || AppPlatform.IsMacOS
-            || AppEnvironment.IsDev())
-        {
-            // About AppEnvironment.IsDev:
-            // In the development environment, universal links are not configured. Universal links are required to provide the
-            // same user experience (UX) that you can test in the production app (available on Google Play at https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template).
-            // As a workaround, we will fallback to a local HTTP server. This will provide a slightly degraded UX, but it will allow you to test the app in the development environment.
-
-            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
-        }
+        services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
 
         services.AddMauiBlazorWebView();
         services.AddBlazorWebViewDeveloperTools();
