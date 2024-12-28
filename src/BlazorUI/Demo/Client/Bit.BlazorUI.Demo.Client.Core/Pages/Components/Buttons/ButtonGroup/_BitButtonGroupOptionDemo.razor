@@ -412,34 +412,34 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Toggled" RazorCode="@example7RazorCode" Id="example7">
+<ComponentExampleBox Title="Toggle" RazorCode="@example7RazorCode" Id="example7">
     <ExamplePreview>
-        <div>The Toggled in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
+        <div>The Toggle in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
         <br /><br />
         <div class="example-content">
             <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" TItem="BitButtonGroupOption" Toggled>
-                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroup Toggle Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
                 <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" TItem="BitButtonGroupOption" Toggled>
-                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroup Toggle Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
                 <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
             </BitButtonGroup>
         </div>
         <br /><br />
         <div class="example-content">
             <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption" Toggled>
-                <BitButtonGroupOption OnText="Back (2X)" OffText="Back" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
+            <BitButtonGroup Toggle Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption OnText="Back (2X)" OffText="Back (1X)" OnIconName="@BitIconName.RewindTwoX" OffIconName="@BitIconName.Rewind" />
                 <BitButtonGroupOption OnTitle="Resume" OffTitle="Play" OnIconName="@BitIconName.PlayResume" OffIconName="@BitIconName.Play" />
-                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
+                <BitButtonGroupOption OnText="Forward (2X)" OffText="Forward (1X)" OnIconName="@BitIconName.FastForwardTwoX" OffIconName="@BitIconName.FastForward" ReversedIcon />
             </BitButtonGroup>
         </div>
     </ExamplePreview>

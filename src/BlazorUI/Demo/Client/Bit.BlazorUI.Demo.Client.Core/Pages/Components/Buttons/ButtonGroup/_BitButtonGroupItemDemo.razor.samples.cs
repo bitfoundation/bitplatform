@@ -158,15 +158,15 @@ private List<BitButtonGroupItem> reversedIconItems =
 ];";
 
     private readonly string example7RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""toggledItems"" Toggled />
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""toggledItems"" Toggled />
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""toggledItems"" Toggled />";
+<BitButtonGroup Toggle Variant=""BitVariant.Fill"" Items=""toggledItems"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Text"" Items=""toggledItems"" />";
     private readonly string example7CsharpCode = @"
 private List<BitButtonGroupItem> toggledItems =
 [
-    new() { OnText = ""Back (2X)"", OffText = ""Back"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
+    new() { OnText = ""Back (2X)"", OffText = ""Back (1X)"", OnIconName = BitIconName.RewindTwoX, OffIconName = BitIconName.Rewind },
     new() { OnTitle = ""Resume"", OffTitle = ""Play"", OnIconName = BitIconName.PlayResume, OffIconName = BitIconName.Play },
-    new() { OnText = ""Forward (2X)"", OffText = ""Forward"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
+    new() { OnText = ""Forward (2X)"", OffText = ""Forward (1X)"", OnIconName = BitIconName.FastForwardTwoX, OffIconName = BitIconName.FastForward, ReversedIcon = true }
 ];";
 
     private readonly string example8RazorCode = @"
