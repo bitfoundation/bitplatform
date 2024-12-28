@@ -8,8 +8,7 @@ public static partial class HttpRequestExtensions
     {
         var settings = req.HttpContext.RequestServices.GetRequiredService<ServerApiSettings>();
 
-        if (req.Headers["X-Origin"].Union(req.Headers.Origin).Union(req.Headers.Referer)
-            .FirstOrDefault(origin => string.IsNullOrEmpty(origin) is false && settings.IsAllowedOrigin(origin)) is string validOrigin)
+        if (req.Headers["X-Origin"].Union(req.Query["origin"]).FirstOrDefault(origin => string.IsNullOrEmpty(origin) is false && settings.IsAllowedOrigin(origin)) is string validOrigin)
         {
             return new Uri(validOrigin);
         }
