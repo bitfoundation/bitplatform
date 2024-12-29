@@ -1,12 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
 <BitAppShell @ref="_appShellRef">
-    <BitLayout HideNavPanel="_isHomePage" StickyHeader>
+    <BitLayout HideNavPanel="_isHomePage" NavPanelWidth="_isNavPanelOpen ? 0 : 14*16" StickyHeader>
         <Header>
             <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
         <NavPanel>
-            <BitNavPanel @bind-IsOpen="_isNavPanelOpen" Items="_navItems" Top="65" />
+            <BitNavPanel @bind-IsOpen="_isNavPanelOpen" Items="_navItems" Top="65" SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
         </NavPanel>
         <Main>
             <div class="site-content">

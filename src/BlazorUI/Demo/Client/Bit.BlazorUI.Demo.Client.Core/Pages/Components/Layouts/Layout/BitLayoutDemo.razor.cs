@@ -50,6 +50,13 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "NavPanelWidth",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The width of the nav panel section in px.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitLayoutClassStyles?",
             DefaultValue = "null",

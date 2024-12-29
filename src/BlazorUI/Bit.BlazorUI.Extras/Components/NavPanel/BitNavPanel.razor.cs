@@ -7,7 +7,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     private BitNav<TItem> _bitNavRef = default!;
     private IList<TItem> _filteredNavItems = [];
     private BitSearchBox _searchBoxRef = default!;
-    private ElementReference _containerRef = default;
     private IEnumerable<TItem> _flatNavItemList = [];
 
 
@@ -95,7 +94,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     /// <summary>
     /// The top CSS property value of the root element of the nav panel in px.
     /// </summary>
-    [Parameter] public int Top { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public int Top { get; set; }
 
 
 
@@ -208,9 +208,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
         }
     }
 
-    private string GetPanelStyle()
+    private string? GetPanelStyle()
     {
-        if (IsOpen is false) return string.Empty;
+        if (IsOpen is false) return StyleBuilder.Value;
 
         var translate = ((Dir != BitDir.Rtl && diffXPanel < 0) || (Dir == BitDir.Rtl && diffXPanel > 0))
                             ? $"transform: translateX({diffXPanel}px)"

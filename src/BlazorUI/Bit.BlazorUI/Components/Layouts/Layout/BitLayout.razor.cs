@@ -33,14 +33,21 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public RenderFragment? NavPanel { get; set; }
 
     /// <summary>
+    /// The width of the nav panel section in px.
+    /// </summary>
+    [Parameter] public int NavPanelWidth { get; set; }
+
+    /// <summary>
     /// Enables sticky positioning of the footer at the bottom of the viewport.
     /// </summary>
-    [Parameter] public bool StickyFooter { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool StickyFooter { get; set; }
 
     /// <summary>
     /// Enables sticky positioning of the header at the top of the viewport.
     /// </summary>
-    [Parameter] public bool StickyHeader { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool StickyHeader { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitLayout.
