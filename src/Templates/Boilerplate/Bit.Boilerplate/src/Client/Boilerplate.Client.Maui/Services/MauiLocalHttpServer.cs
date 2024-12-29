@@ -27,12 +27,12 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    if (MauiExternalNavigationService.ShowExternalBrowser)
+                    if (MauiExternalNavigationService.ShowExternalBrowser) // External browser: It `may` be closed using `window.close()` in SocialSignedInPage.razor. If it remains open, that's acceptable.
                     {
                         var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
                         ctx.Redirect(url);
                     }
-                    else
+                    else // In-app browser: It *must* be closed using the following code. Leaving it open is unacceptable as it is a blocker.
                     {
                         await MainThread.InvokeOnMainThreadAsync(() =>
                         {
