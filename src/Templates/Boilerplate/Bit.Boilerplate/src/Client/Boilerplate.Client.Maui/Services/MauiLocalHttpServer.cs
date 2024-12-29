@@ -27,18 +27,18 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    if (MauiExternalNavigationService.ShowExternalBrowser) // External browser: It *may* be closed using `window.close()` in SocialSignedInPage.razor. If it remains open, that's acceptable.
+                    if (AppPlatform.IsIOS is false)
                     {
+                        // Redirect to SocialSignedInPage.razor that will close the browser window.
+                        // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
                         var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
                         ctx.Redirect(url);
                     }
-                    else // In-app browser: It *must* be closed using the following code. Leaving it open is unacceptable as it is a blocker.
+                    else
                     {
                         await MainThread.InvokeOnMainThreadAsync(() =>
                         {
-#if Android
-                            Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.OnBackPressed();
-#elif iOS
+#if iOS
                             if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
                             {
                                 controller.DismissViewController(animated: true, completionHandler: null);
