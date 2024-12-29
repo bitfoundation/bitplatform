@@ -3,7 +3,7 @@
 <div class="header">
     <div class="container@(IsHomePage ? " home-page" : "")">
         <div class="content">
-            @if (_currentUrl != "/")
+            @if (IsHomePage is false)
             {
                 <BitButton FixedColor
                            Class="menu-btn"
