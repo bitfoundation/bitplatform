@@ -118,22 +118,22 @@ public partial class _BitButtonGroupOptionDemo
 </BitButtonGroup>";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"" Toggled>
-    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
     <BitButtonGroupOption OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
-    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
+    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
 </BitButtonGroup>
 
-<BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"" Toggled>
-    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
     <BitButtonGroupOption OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
-    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
+    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
 </BitButtonGroup>
 
-<BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"" Toggled>
-    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
+<BitButtonGroup Toggle Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption OnText=""Back (2X)"" OffText=""Back (1X)"" OnIconName=""@BitIconName.RewindTwoX"" OffIconName=""@BitIconName.Rewind"" />
     <BitButtonGroupOption OnTitle=""Resume"" OffTitle=""Play"" OnIconName=""@BitIconName.PlayResume"" OffIconName=""@BitIconName.Play"" />
-    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
+    <BitButtonGroupOption OnText=""Forward (2X)"" OffText=""Forward (1X)"" OnIconName=""@BitIconName.FastForwardTwoX"" OffIconName=""@BitIconName.FastForward"" ReversedIcon />
 </BitButtonGroup>";
 
     private readonly string example7RazorCode = @"

@@ -76,7 +76,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Display ButtonGroup with toggle mode enabled for each button.
     /// </summary>
-    [Parameter] public bool Toggled { get; set; }
+    [Parameter] public bool Toggle { get; set; }
 
     /// <summary>
     /// The visual variant of the button group.
@@ -203,7 +203,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        if (Toggled)
+        if (Toggle)
         {
             if (_toggleItem == item)
             {
@@ -276,7 +276,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (IconOnly) return null;
 
-        if (Toggled)
+        if (Toggle)
         {
             if (_toggleItem == item)
             {
@@ -301,7 +301,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private string? GetItemTitle(TItem? item)
     {
-        if (Toggled)
+        if (Toggle)
         {
             if (_toggleItem == item)
             {
@@ -326,7 +326,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     private string? GetItemIconName(TItem? item)
     {
-        if (Toggled)
+        if (Toggle)
         {
             if (_toggleItem == item)
             {

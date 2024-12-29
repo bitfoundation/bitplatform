@@ -76,7 +76,7 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "Toggled",
+            Name = "Toggle",
             Type = "bool",
             DefaultValue = "false",
             Description = "Display ButtonGroup with toggle mode enabled for each button.",
