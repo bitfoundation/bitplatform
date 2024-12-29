@@ -27,15 +27,13 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    if (AppPlatform.IsIOS is false)
+                    // Redirect to SocialSignedInPage.razor that will close the browser window.
+                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
+                    ctx.Redirect(url);
+
+                    if (AppPlatform.IsIOS)
                     {
-                        // Redirect to SocialSignedInPage.razor that will close the browser window.
                         // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
-                        var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-                        ctx.Redirect(url);
-                    }
-                    else
-                    {
                         await MainThread.InvokeOnMainThreadAsync(() =>
                         {
 #if iOS
