@@ -158,7 +158,7 @@ private List<Operation> reversedIconCustoms =
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggle />
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
 <BitButtonGroup Toggle
                 Items=""toggledCustoms""
@@ -169,7 +169,7 @@ private List<Operation> reversedIconCustoms =
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggle />
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
 <BitButtonGroup Toggle
                 Items=""toggledCustoms""
@@ -180,7 +180,7 @@ private List<Operation> reversedIconCustoms =
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggled />";
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />";
     private readonly string example6CsharpCode = @"
 public class Operation
 {
