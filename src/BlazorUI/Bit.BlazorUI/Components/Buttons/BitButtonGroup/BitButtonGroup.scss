@@ -70,6 +70,15 @@
     }
 }
 
+.bit-btg-flw {
+    display: flex;
+    max-width: 100%;
+
+    .bit-btg-itm {
+        flex: 1;
+    }
+}
+
 .bit-btg-rvi {
     flex-direction: row-reverse;
 }

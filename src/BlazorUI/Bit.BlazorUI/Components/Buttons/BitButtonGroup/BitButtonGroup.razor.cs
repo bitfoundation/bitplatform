@@ -33,6 +33,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Expand the ButtonGroup width to 100% of the available width.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
     [Parameter] public bool IconOnly { get; set; }
@@ -154,6 +160,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-btg-flw" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
