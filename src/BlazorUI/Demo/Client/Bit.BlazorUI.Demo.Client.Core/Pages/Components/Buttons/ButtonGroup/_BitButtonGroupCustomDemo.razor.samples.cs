@@ -151,7 +151,9 @@ private List<Operation> reversedIconCustoms =
 ];";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""toggledCustoms""
+<BitButtonGroup Toggle
+                Items=""toggledCustoms""
+                Variant=""BitVariant.Fill"" 
                 NameSelectors=""@(new() { OnText = { Selector = i => i.OnName },
                                           OffText = { Selector = i => i.OffName },
                                           OnTitle = { Selector = i => i.OnTitle },
