@@ -27,7 +27,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
+                    if (MauiExternalNavigationService.ShowExternalBrowser)
                     {
                         var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
                         ctx.Redirect(url);

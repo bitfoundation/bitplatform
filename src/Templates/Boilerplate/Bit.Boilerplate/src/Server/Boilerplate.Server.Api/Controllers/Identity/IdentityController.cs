@@ -385,7 +385,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignedIn([FromQuery] bool autoClose = true)
+    public async Task<ActionResult> SocialSignedIn()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
                     (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>()).ToHtmlString());
