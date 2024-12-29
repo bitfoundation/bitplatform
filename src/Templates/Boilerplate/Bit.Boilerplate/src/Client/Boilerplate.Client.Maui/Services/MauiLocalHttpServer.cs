@@ -27,18 +27,32 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    // Redirect to SocialSignedInPage.razor that will close the browser window.
                     var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-
                     ctx.Redirect(url);
 
-                    _ = Task.Delay(1)
-                        .ContinueWith(async _ =>
+                    if (AppPlatform.IsIOS)
+                    {
+                        // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
+                        await MainThread.InvokeOnMainThreadAsync(() =>
                         {
-                            await MainThread.InvokeOnMainThreadAsync(async () =>
+#if iOS
+                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
                             {
-                                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
-                            });
+                                controller.DismissViewController(animated: true, completionHandler: null);
+                            }
+#endif
                         });
+                    }
+
+                    _ = Task.Delay(1)
+                    .ContinueWith(async _ =>
+                    {
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                        });
+                    });
                 }
                 catch (Exception exp)
                 {
