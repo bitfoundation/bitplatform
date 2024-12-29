@@ -288,7 +288,7 @@ public static partial class Program
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
