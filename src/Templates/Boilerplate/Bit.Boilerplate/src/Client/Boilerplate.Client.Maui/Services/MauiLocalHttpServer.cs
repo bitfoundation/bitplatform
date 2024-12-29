@@ -27,18 +27,40 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
+                    bool autoCloseSocialSignedInPage = AppPlatform.IsWindows || AppPlatform.IsMacOS;
+                    // The social sign-in process uses an external browser on Windows and macOS, and an in-app browser on Android and iOS (See MauiExternalNavigationService.cs)
+                    // Upon completion, the browser is automatically closed via JavaScript (`window.close()`) in SocialSignedInPage.razor. 
+                    // However, this method might not always work, although the impact on the user experience is minimal.
+                    // For Android and iOS, where the in-app browser is used, a more reliable C# approach is necessary to ensure the in-app browser closes properly.
+                    // To achieve this, we set autoClose=false to prevent SocialSignedInPage.razor from attempting to close it and instead use the following C# code to close the browser forcefully.
+
+                    var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}&autoClose={autoCloseSocialSignedInPage.ToString().ToLowerInvariant()}").ToString();
 
                     ctx.Redirect(url);
 
-                    _ = Task.Delay(1)
-                        .ContinueWith(async _ =>
+                    if (autoCloseSocialSignedInPage is false)
+                    {
+                        await MainThread.InvokeOnMainThreadAsync(() =>
                         {
-                            await MainThread.InvokeOnMainThreadAsync(async () =>
+#if Android
+                            Microsoft.Maui.ApplicationModel.Platform.CurrentActivity.OnBackPressed();
+#elif iOS
+                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
                             {
-                                await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
-                            });
+                                controller.DismissViewController(animated: true, completionHandler: null);
+                            }
+#endif
                         });
+                    }
+
+                    _ = Task.Delay(1)
+                    .ContinueWith(async _ =>
+                    {
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                        });
+                    });
                 }
                 catch (Exception exp)
                 {

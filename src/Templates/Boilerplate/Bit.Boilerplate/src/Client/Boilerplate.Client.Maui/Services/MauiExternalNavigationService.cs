@@ -4,6 +4,6 @@ public partial class MauiExternalNavigationService : IExternalNavigationService
 {
     public async Task NavigateToAsync(string url)
     {
-        await Browser.OpenAsync(url, BrowserLaunchMode.SystemPreferred);
+        await Browser.OpenAsync(url, AppPlatform.IsAndroid || AppPlatform.IsIOS ? BrowserLaunchMode.SystemPreferred : BrowserLaunchMode.External /*Windows,macOS*/);
     }
 }

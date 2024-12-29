@@ -1,5 +1,6 @@
 ﻿@code {
     [Inject] public IStringLocalizer<AppStrings> Localizer { get; set; } = default!;
+    [Parameter] public bool AutoClose { get; set; } = true;
 }
 
 <!DOCTYPE html>
@@ -46,9 +47,12 @@
             <h3>@Localizer[nameof(AppStrings.SocialSignedInMessageBody)]</h3>
         </div>
     </main>
-    <script type="text/javascript">
-        window.close();
-    </script>
+    @if (AutoClose)
+    {
+        <script type="text/javascript">
+            window.close();
+        </script>
+    }
 </body>
 
 </html>

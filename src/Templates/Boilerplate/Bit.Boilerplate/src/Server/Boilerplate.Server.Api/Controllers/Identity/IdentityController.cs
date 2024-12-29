@@ -385,10 +385,13 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignedIn()
+    public async Task<ActionResult> SocialSignedIn([FromQuery] bool autoClose = true)
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-                    (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>()).ToHtmlString());
+                    (await htmlRenderer.RenderComponentAsync<SocialSignedInPage>(Microsoft.AspNetCore.Components.ParameterView.FromDictionary(new Dictionary<string, object?>
+                    {
+                        { nameof(SocialSignedInPage.AutoClose), autoClose }
+                    }))).ToHtmlString());
 
         return Content(html, "text/html");
     }
