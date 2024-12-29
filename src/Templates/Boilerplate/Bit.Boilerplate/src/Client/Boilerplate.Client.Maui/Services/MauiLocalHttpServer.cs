@@ -27,7 +27,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
-                    if (MauiExternalNavigationService.ShowExternalBrowser) // External browser: It `may` be closed using `window.close()` in SocialSignedInPage.razor. If it remains open, that's acceptable.
+                    if (MauiExternalNavigationService.ShowExternalBrowser) // External browser: It *may* be closed using `window.close()` in SocialSignedInPage.razor. If it remains open, that's acceptable.
                     {
                         var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
                         ctx.Redirect(url);
