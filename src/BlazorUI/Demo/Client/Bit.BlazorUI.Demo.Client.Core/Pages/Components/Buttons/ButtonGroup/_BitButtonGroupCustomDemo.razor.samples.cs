@@ -151,32 +151,38 @@ private List<Operation> reversedIconCustoms =
 ];";
 
     private readonly string example6RazorCode = @"
-<BitButtonGroup Variant=""BitVariant.Fill"" Items=""toggledCustoms""
+<BitButtonGroup Toggle
+                Items=""toggledCustoms""
+                Variant=""BitVariant.Fill"" 
                 NameSelectors=""@(new() { OnText = { Selector = i => i.OnName },
                                           OffText = { Selector = i => i.OffName },
                                           OnTitle = { Selector = i => i.OnTitle },
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggled />
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
-<BitButtonGroup Variant=""BitVariant.Outline"" Items=""toggledCustoms""
+<BitButtonGroup Toggle
+                Items=""toggledCustoms""
+                Variant=""BitVariant.Outline"" 
                 NameSelectors=""@(new() { OnText = { Selector = i => i.OnName },
                                           OffText = { Selector = i => i.OffName },
                                           OnTitle = { Selector = i => i.OnTitle },
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggled />
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />
 
-<BitButtonGroup Variant=""BitVariant.Text"" Items=""toggledCustoms""
+<BitButtonGroup Toggle
+                Items=""toggledCustoms""
+                Variant=""BitVariant.Text"" 
                 NameSelectors=""@(new() { OnText = { Selector = i => i.OnName },
                                           OffText = { Selector = i => i.OffName },
                                           OnTitle = { Selector = i => i.OnTitle },
                                           OffTitle = { Selector = i => i.OffTitle },
                                           OnIconName = { Selector = i => i.OnIcon },
                                           OffIconName = { Selector = i => i.OffIcon },
-                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" Toggled />";
+                                          ReversedIcon = { Selector = i => i.ReversedIcon } })"" />";
     private readonly string example6CsharpCode = @"
 public class Operation
 {
@@ -191,9 +197,9 @@ public class Operation
 
 private List<Operation> toggledCustoms =
 [
-    new() { OnName = ""Back (2X)"", OffName = ""Back"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
+    new() { OnName = ""Back (2X)"", OffName = ""Back (1X)"", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
     new() { OnTitle = ""Resume"", OffTitle = ""Play"", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-    new() { OnName = ""Forward (2X)"", OffName = ""Forward"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+    new() { OnName = ""Forward (2X)"", OffName = ""Forward (1X)"", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
 ];";
 
     private readonly string example7RazorCode = @"

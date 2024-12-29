@@ -40,9 +40,9 @@ public partial class _BitButtonGroupCustomDemo
 
     private List<Operation> toggledCustoms =
     [
-        new() { OnName = "Back (2X)", OffName = "Back", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
+        new() { OnName = "Back (2X)", OffName = "Back (1X)", OnIcon = BitIconName.RewindTwoX, OffIcon = BitIconName.Rewind },
         new() { OnTitle = "Resume", OffTitle = "Play", OnIcon = BitIconName.PlayResume, OffIcon = BitIconName.Play },
-        new() { OnName = "Forward (2X)", OffName = "Forward", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
+        new() { OnName = "Forward (2X)", OffName = "Forward (1X)", OnIcon = BitIconName.FastForwardTwoX, OffIcon = BitIconName.FastForward, ReversedIcon = true }
     ];
 
     private List<Operation> eventsCustoms =
