@@ -6,14 +6,14 @@
     src: url('../fonts/FabMDL2.4.66.bit.BlazorUI.Extras.woff2') format("woff2");
 }
 
-.bit-icon {
+.bit-icon-ex {
     font-style: normal;
     font-weight: normal;
     display: inline-block;
     font-family: 'Fabric MDL2 bit BlazorUI Extras' !important;
 }
 
-.bit-Icon--ChevronLeftEnd6:before { content: "\F371"; }
-.bit-Icon--ChevronLeftSmall:before { content: "\E96F"; }
-.bit-Icon--More:before { content: "\E712"; }
-.bit-Icon--ColumnRightTwoThirds:before { content: "\F1D7"; }
+.bit-icon-ex--ChevronLeftEnd6:before { content: "\F371"; }
+.bit-icon-ex--ChevronLeftSmall:before { content: "\E96F"; }
+.bit-icon-ex--More:before { content: "\E712"; }
+.bit-icon-ex--ColumnRightTwoThirds:before { content: "\F1D7"; }
