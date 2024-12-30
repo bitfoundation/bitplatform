@@ -8,7 +8,7 @@
 		<Product>bit platform</Product>
 		<Title>$(MSBuildProjectName)</Title>
 		<Description>$(MSBuildProjectName)</Description>
-		<Copyright>Copyright © bit platform 2024</Copyright>
+		<Copyright>Copyright © bit platform 2025</Copyright>
 
 		<!-- Repo -->
 		<RepositoryUrl>https://github.com/bitfoundation/bitplatform</RepositoryUrl>
