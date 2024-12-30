@@ -77,6 +77,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
 
     /// <summary>
+    /// The placeholder of the input element of the search box of the nav panel.
+    /// </summary>
+    [Parameter] public string? SearchBoxPlaceholder { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxStyles { get; set; }

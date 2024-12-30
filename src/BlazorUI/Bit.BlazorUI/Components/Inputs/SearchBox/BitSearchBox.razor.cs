@@ -146,7 +146,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     /// </summary>
     public async Task Clear()
     {
-        await _js.BitUtilsSetProperty(InputElement, "value", "");
+        await SetCurrentValueAsync(null);
+        await _js.BitUtilsSetProperty(InputElement, "value", null);
     }
 
 

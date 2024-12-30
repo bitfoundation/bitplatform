@@ -8,7 +8,7 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsSetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
+    internal static ValueTask BitUtilsSetProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object? value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setProperty", element, property, value);
     }

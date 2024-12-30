@@ -6,7 +6,11 @@
             <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
         <NavPanel>
-            <BitNavPanel @bind-IsOpen="_isNavPanelOpen" Items="_navItems" Top="65" SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
+            <BitNavPanel @bind-IsOpen="_isNavPanelOpen"
+                         Top="65"
+                         Items="_navItems"
+                         SearchBoxPlaceholder="Search component"
+                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
         </NavPanel>
         <Main>
             <div class="site-content">

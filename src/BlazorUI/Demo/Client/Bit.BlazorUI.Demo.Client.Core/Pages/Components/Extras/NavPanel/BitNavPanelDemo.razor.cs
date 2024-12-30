@@ -91,6 +91,13 @@ public partial class BitNavPanelDemo
          },
          new()
          {
+            Name = "SearchBoxPlaceholder",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The placeholder of the input element of the search box of the nav panel.",
+         },
+         new()
+         {
             Name = "SearchBoxStyles",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
