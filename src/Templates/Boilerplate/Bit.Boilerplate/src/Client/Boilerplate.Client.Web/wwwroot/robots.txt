@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Disallow: 
 
-Sitemap: https://use-your-server-url-here.com/sitemap.xml
+Sitemap: https://use-your-web-app-url-here.com/sitemap.xml

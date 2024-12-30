@@ -116,7 +116,7 @@ public partial class PushNotificationService
                 }
             });
 
-            if (exceptions.Any())
+            if (exceptions.IsEmpty is false)
             {
                 logger.LogError(new AggregateException(exceptions), "Failed to send push notifications");
             }

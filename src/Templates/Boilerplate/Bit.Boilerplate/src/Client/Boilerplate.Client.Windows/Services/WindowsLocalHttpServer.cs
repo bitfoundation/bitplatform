@@ -32,9 +32,15 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    Application.OpenForms[0]!.Activate();
-
-                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    _ = Task.Delay(1)
+                        .ContinueWith(async _ =>
+                        {
+                            Application.OpenForms[0]!.Invoke(() =>
+                            {
+                                Application.OpenForms[0]!.Activate();
+                            });
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                        });
                 }
                 catch (Exception exp)
                 {

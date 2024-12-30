@@ -170,7 +170,7 @@ public partial class UserController : AppControllerBase, IUserController
             FormattableString.Invariant($"ChangeEmail:{request.Email},{user.EmailTokenRequestedOn?.ToUniversalTime()}"));
 
         var link = new Uri(
-            HttpContext.Request.GetWebClientUrl(),
+            HttpContext.Request.GetWebAppUrl(),
             $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}?email={Uri.EscapeDataString(request.Email!)}&emailToken={Uri.EscapeDataString(token)}&culture={CultureInfo.CurrentUICulture.Name}");
 
         await emailService.SendEmailToken(user, request.Email!, token, link, cancellationToken);

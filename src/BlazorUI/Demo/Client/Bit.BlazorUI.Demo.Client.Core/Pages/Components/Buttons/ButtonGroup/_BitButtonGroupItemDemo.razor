@@ -33,7 +33,188 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+<ComponentExampleBox Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <ExamplePreview>
+        <div>Each item in the ButtonGroup can have an icon.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="iconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <ExamplePreview>
+        <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="iconItems" IconOnly />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="iconItems" IconOnly />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" IconOnly />
+        </div>
+        <br /><br />
+        <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <ExamplePreview>
+        <div>Reverses the positions of the icon and the main content of the button.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <ExamplePreview>
+        <div>The Toggle in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Fill (default)</div>
+            <BitButtonGroup Toggle Variant="BitVariant.Fill" Items="toggledItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Outline</div>
+            <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Text</div>
+            <BitButtonGroup Toggle Variant="BitVariant.Text" Items="toggledItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <ExamplePreview>
+        <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
+        <br /><br />
+        <div class="buttons-container">
+            <div class="example-content">
+                <div>Fill (default)</div>
+                <BitButtonGroup Variant="BitVariant.Fill" Items="basicItems" Vertical />
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Outline</div>
+                <BitButtonGroup Variant="BitVariant.Outline" Items="basicItems" Vertical />
+            </div>
+            <br /><br />
+            <div class="example-content">
+                <div>Text</div>
+                <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" Vertical />
+            </div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <ExamplePreview>
+        <div>Managing button click events.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Component's ItemClick event:</div>
+            <BitButtonGroup Items="basicItems" OnItemClick="(BitButtonGroupItem item) => clickedItem = item.Text" />
+            <div>Clicked item: <b>@clickedItem</b></div>
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Item's Click event:</div>
+            <BitButtonGroup Items="eventsItems" />
+            <div>Click count: <b>@clickCounter</b></div>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ExamplePreview>
+        <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
+        <br /><br />
+        <div class="example-content">
+            <div>Small</div>
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Medium</div>
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicItems" />
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>Large</div>
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="FullWidth" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ExamplePreview>
+        <div>Setting the FullWidth makes the button group occupy 100% of its container's width.</div>
+        <br /><br />
+        <div class="example-content">
+            <BitButtonGroup FullWidth Variant="BitVariant.Fill" Items="basicItems" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" Items="basicItems" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Text" Items="basicItems" />
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+<ComponentExampleBox Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
@@ -160,158 +341,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Icon" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-    <ExamplePreview>
-        <div>Each item in the ButtonGroup can have an icon.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" Items="iconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" Items="iconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-    <ExamplePreview>
-        <div>The IconOnly allows buttons to display only icons without any text, ideal for minimalistic designs or limited space.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" Items="iconItems" IconOnly />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" Items="iconItems" IconOnly />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" Items="iconItems" IconOnly />
-        </div>
-        <br /><br />
-        <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconItems" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="ReversedIcon" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <ExamplePreview>
-        <div>Reverses the positions of the icon and the main content of the button.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconItems" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Toggled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-    <ExamplePreview>
-        <div>The Toggled in BitButtonGroup allows you to control the active or inactive state of each button, providing clear visual feedback to users about which buttons are selected or currently in use.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Fill (default)</div>
-            <BitButtonGroup Variant="BitVariant.Fill" Items="toggledItems" Toggled />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Outline</div>
-            <BitButtonGroup Variant="BitVariant.Outline" Items="toggledItems" Toggled />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Text</div>
-            <BitButtonGroup Variant="BitVariant.Text" Items="toggledItems" Toggled />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Vertical" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <ExamplePreview>
-        <div>By default the BitButtonGroup component is horizontal, but can be turned vertical by adding the <strong>Vertical</strong> property.</div>
-        <br /><br />
-        <div class="buttons-container">
-            <div class="example-content">
-                <div>Fill (default)</div>
-                <BitButtonGroup Variant="BitVariant.Fill" Items="basicItems" Vertical />
-            </div>
-            <br /><br />
-            <div class="example-content">
-                <div>Outline</div>
-                <BitButtonGroup Variant="BitVariant.Outline" Items="basicItems" Vertical />
-            </div>
-            <br /><br />
-            <div class="example-content">
-                <div>Text</div>
-                <BitButtonGroup Variant="BitVariant.Text" Items="basicItems" Vertical />
-            </div>
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Size" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <ExamplePreview>
-        <div>Different sizes for buttons to meet design needs, ensuring flexibility within your application.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Small</div>
-            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Medium</div>
-            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicItems" />
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Large</div>
-            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicItems" />
-            <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicItems" />
-        </div>
-    </ExamplePreview>
-</ComponentExampleBox>
-
-<ComponentExampleBox Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -325,28 +355,21 @@
             <div>Item's style & class:</div>
             <BitButtonGroup Items="styleClassItems" Variant="BitVariant.Text" />
         </div>
-    </ExamplePreview>
-</ComponentExampleBox>
+        <br /><br />
+        <div class="example-content">
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <BitButtonGroup Items="basicItems"
+                            Variant="BitVariant.Text"
+                            Styles="@(new() { Button = "color: darkcyan; border-color: deepskyblue; background-color: azure;" })" />
 
-<ComponentExampleBox Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <ExamplePreview>
-        <div>Managing button click events.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>Component's ItemClick event:</div>
-            <BitButtonGroup Items="basicItems" OnItemClick="(BitButtonGroupItem item) => clickedItem = item.Text" />
-            <div>Clicked item: <b>@clickedItem</b></div>
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Item's Click event:</div>
-            <BitButtonGroup Items="eventsItems" />
-            <div>Click count: <b>@clickCounter</b></div>
+            <BitButtonGroup Items="basicItems"
+                            Variant="BitVariant.Text"
+                            Classes="@(new() { Button = "custom-btn" })" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <ExamplePreview>
         <div>Use BitButtonGroup in right-to-left (RTL).</div>
         <br />

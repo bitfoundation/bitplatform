@@ -48,12 +48,12 @@
                style="padding:20px; text-align:center;">
             <tr>
                 <td style="padding-bottom: 10px;">
-                    <img alt="Company Logo" src="@(new Uri(HttpContext.Request.GetBaseUrl(), "images/icon.png"))" width="30" height="20" />
+                    <img alt="Company Logo" src="@(new Uri(HttpContext.Request.GetWebAppUrl(), "images/icon.png"))" width="30" height="20" />
                 </td>
             </tr>
             <tr>
                 <td>
-                    <a style="text-decoration:none; color:#0065EF; font-weight:400; font-size:12px; line-height:150%;" href="@HttpContext.Request.GetBaseUrl()">
+                    <a style="text-decoration:none; color:#0065EF; font-weight:400; font-size:12px; line-height:150%;" href="@HttpContext.Request.GetWebAppUrl()">
                         @EmailLocalizer[nameof(EmailStrings.AppName)]
                     </a>
                 </td>

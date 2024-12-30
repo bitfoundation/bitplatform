@@ -20,12 +20,28 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "Classes",
+            Type = "BitButtonGroupClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the ButtonGroup.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The general color of the button group.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the ButtonGroup width to 100% of the available width.",
         },
         new()
         {
@@ -67,7 +83,7 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
-            Name = "Toggled",
+            Name = "Toggle",
             Type = "bool",
             DefaultValue = "false",
             Description = "Display ButtonGroup with toggle mode enabled for each button.",
@@ -80,6 +96,15 @@ public partial class BitButtonGroupDemo
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitButtonGroupClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the ButtonGroup.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -340,6 +365,49 @@ public partial class BitButtonGroupDemo
                    Description = "Title to render in the option.",
                }
             ]
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitButtonGroupClassStyles",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitButtonGroup.",
+               },
+               new()
+               {
+                   Name = "Button",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the internal button of the BitButtonGroup.",
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitButtonGroup."
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text of the BitButtonGroup."
+               },
+               new()
+               {
+                   Name = "ToggledButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the button when in toggle mode of the BitButtonGroup.",
+               },
+            ],
         },
         new()
         {

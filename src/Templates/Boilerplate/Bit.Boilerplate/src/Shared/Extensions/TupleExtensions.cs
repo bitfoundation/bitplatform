@@ -16,8 +16,8 @@ namespace System.Threading.Tasks;
 ///     ProductDto[] products;
 ///     protected override async Task OnInitAsync()
 ///     {
-///         categories = await HttpClient.GetJsonAsync("api/categories"); // Tooks 150ms
-///         products = await HttpClient.GetJsonAsync("api/products"); // Tooks 150ms
+///         categories = await HttpClient.GetJsonAsync("api/categories"); // Took 150ms
+///         products = await HttpClient.GetJsonAsync("api/products"); // Took 150ms
 ///         // The total time is 300ms 😖
 ///     }
 /// }
@@ -29,7 +29,7 @@ namespace System.Threading.Tasks;
 ///     ProductDto[] products;
 ///     protected override async Task OnInitAsync()
 ///     {
-///         (categories, products) = await (HttpClient.GetJsonAsync("api/categories"), HttpClient.GetJsonAsync("api/products")); // Tooks 150ms
+///         (categories, products) = await (HttpClient.GetJsonAsync("api/categories"), HttpClient.GetJsonAsync("api/products")); // Took 150ms
 ///         // The total time is 150ms 👍
 ///     }
 /// }

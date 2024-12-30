@@ -38,10 +38,8 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
-        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (dto is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return dto;
     }

@@ -118,6 +118,8 @@ public static partial class Program
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.Referer, string.Join(',', headerValues.AsEnumerable()));
             }
 
+            httpClient.DefaultRequestHeaders.Add("X-Origin", currentRequest.GetBaseUrl().ToString());
+
             return httpClient;
         });
 

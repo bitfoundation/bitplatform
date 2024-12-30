@@ -32,10 +32,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpGet("{id}")]
     public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
     {
-        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (dto is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         return dto;
     }
@@ -59,10 +57,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
-
-        if (entityToUpdate is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         dto.Patch(entityToUpdate);
 

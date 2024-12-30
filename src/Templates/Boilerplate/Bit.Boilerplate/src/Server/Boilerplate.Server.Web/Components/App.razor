@@ -36,7 +36,7 @@
     <Link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     @*#endif*@
 
-    <Link rel="preconnect" href="https://use-your-server-url-here.com" />@* for PWA *@
+    <Link rel="preconnect" href="@absoluteServerAddress.ToString()" />@* for PWA *@
 
     <Link rel="icon" href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />

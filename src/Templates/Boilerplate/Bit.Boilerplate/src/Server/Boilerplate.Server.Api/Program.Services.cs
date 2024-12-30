@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-using System.Text.RegularExpressions;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
@@ -123,16 +122,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                var webClientUrl = settings.WebClientUrl;
-                var allowedOrigins = settings.Cors?.AllowedOrigins?.ToList() ?? [];
-
-                if (string.IsNullOrEmpty(webClientUrl) is false)
-                {
-                    allowedOrigins.Add(webClientUrl);
-                }
-
-                policy.SetIsOriginAllowed(origin => AllowedOriginsRegex().IsMatch(origin) 
-                                                    || allowedOrigins.Any(o => string.Equals(o, origin, StringComparison.InvariantCultureIgnoreCase)))
+                policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
@@ -288,7 +278,7 @@ public static partial class Program
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
@@ -431,10 +421,4 @@ public static partial class Program
             });
         });
     }
-
-    /// <summary>
-    /// For either Blazor Hybrid web view, localhost, dev tunnels etc in dev environment.
-    /// </summary>
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
-    private static partial Regex AllowedOriginsRegex();
 }
