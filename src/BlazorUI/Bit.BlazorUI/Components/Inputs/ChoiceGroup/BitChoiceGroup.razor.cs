@@ -215,7 +215,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         StringBuilder cssStyle = new();
 
-        if (string.IsNullOrEmpty(GetStyle(item)) is false)
+        if (GetStyle(item).HasValue())
         {
             cssStyle.Append(GetStyle(item));
         }
@@ -237,7 +237,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         StringBuilder cssClass = new("bit-chg-icn");
 
-        if (string.IsNullOrEmpty(GetClass(item)) is false)
+        if (GetClass(item).HasValue())
         {
             cssClass.Append(' ').Append(GetClass(item));
         }

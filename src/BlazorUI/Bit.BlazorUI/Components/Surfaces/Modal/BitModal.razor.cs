@@ -232,7 +232,7 @@ public partial class BitModal : BitComponentBase, IAsyncDisposable
     {
         if (ModalParameters.AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(ModalParameters.ScrollerSelector ?? "body", isOpen);
     }
 
 

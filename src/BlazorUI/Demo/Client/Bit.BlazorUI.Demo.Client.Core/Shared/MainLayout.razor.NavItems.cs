@@ -1,13 +1,9 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
-public partial class NavMenu : IDisposable
+public partial class MainLayout
 {
-    private bool _disposed;
-    private bool _isNavOpen = false;
-    private string _searchText = string.Empty;
-    private List<BitNavItem> _flatNavItemList = default!;
-    private List<BitNavItem> _filteredNavItems = default!;
-    private readonly List<BitNavItem> _allNavItems =
+
+    private readonly List<BitNavItem> _navItems =
     [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
@@ -155,13 +151,14 @@ public partial class NavMenu : IDisposable
             [
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "Chart", Url = "/components/chart" },
+                new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
-                new() { Text = "ProLayout", Url = "/components/prolayout" },
+                new() { Text = "AppShell", Url = "/components/appshell" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
-                new() 
-                { 
+                new()
+                {
                     Text = "Services",
-                    ChildItems = 
+                    ChildItems =
                     [
                         new() { Text = "ModalService", Url = "/components/modalservice" },
                     ]
@@ -171,84 +168,4 @@ public partial class NavMenu : IDisposable
         new() { Text = "Iconography", Url = "/iconography" },
         new() { Text = "Theming", Url = "/theming" },
     ];
-
-
-    [Inject] public NavManuService _navMenuService { get; set; } = default!;
-
-
-    protected override async Task OnInitAsync()
-    {
-        _flatNavItemList = Flatten(_allNavItems).ToList().FindAll(link => !string.IsNullOrEmpty(link.Url));
-
-        HandleClear();
-        _navMenuService.OnToggleMenu += ToggleMenu;
-
-        await base.OnInitAsync();
-    }
-
-
-    private async Task ToggleMenu()
-    {
-        try
-        {
-            _isNavOpen = !_isNavOpen;
-
-            await JSRuntime.ToggleBodyOverflow(_isNavOpen);
-        }
-        catch (Exception ex)
-        {
-            ExceptionHandler.Handle(ex);
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
-
-    private void HandleClear()
-    {
-        _filteredNavItems = _allNavItems;
-    }
-
-    private void HandleChange(string text)
-    {
-        _searchText = text;
-        _filteredNavItems = _allNavItems;
-        if (string.IsNullOrEmpty(text)) return;
-
-        var mainItems = _flatNavItemList
-                            .FindAll(item => text.Split(' ')
-                                                 .Where(t => t.HasValue())
-                                                 .Any(t => $"{item.Text} {item.Description}".Contains(t, StringComparison.InvariantCultureIgnoreCase)));
-
-        var subItems = _flatNavItemList
-                            .FindAll(item => text.Split(' ')
-                                                 .Where(t => t.HasValue())
-                                                 .Any(t => item.Data?.ToString()?.Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
-
-        _filteredNavItems = [.. mainItems, .. subItems];
-    }
-
-    private async Task HandleOnItemClick(BitNavItem item)
-    {
-        if (item.Url.HasNoValue()) return;
-
-        _searchText = string.Empty;
-        _filteredNavItems = _allNavItems;
-
-        await ToggleMenu();
-    }
-
-    private static IEnumerable<BitNavItem> Flatten(IEnumerable<BitNavItem> e) => e.SelectMany(c => Flatten(c.ChildItems)).Concat(e);
-
-    public override void Dispose()
-    {
-        if (_disposed) return;
-
-        _navMenuService.OnToggleMenu -= ToggleMenu;
-
-        _disposed = true;
-
-        base.Dispose();
-    }
 }

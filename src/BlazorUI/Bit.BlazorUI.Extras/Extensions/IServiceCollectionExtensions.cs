@@ -16,10 +16,12 @@ public static class IServiceCollectionExtensions
         if (trySingleton)
         {
             services.TryAddSingleton<BitModalService>();
+            services.TryAddSingleton<BitExtraServices>();
         }
         else
         {
             services.TryAddScoped<BitModalService>();
+            services.TryAddScoped<BitExtraServices>();
         }
 
         return services;

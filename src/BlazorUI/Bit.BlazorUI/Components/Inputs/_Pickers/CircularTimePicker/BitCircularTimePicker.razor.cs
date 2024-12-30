@@ -307,7 +307,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         if (firstRender is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
         _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(_HandlePointerUp));
         _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(_HandlePointerMove));
     }
@@ -523,7 +523,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
         if (Standalone) return;
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _circularTimePickerId,
                                 null,
                                 _calloutId,
@@ -543,7 +543,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
     {
         if (IsEnabled is false || InvalidValueBinding()) return;
 
-        var rect = await _js.GetBoundingClientRect(_clockRef);
+        var rect = await _js.BitUtilsGetBoundingClientRect(_clockRef);
         var radius = rect.Width / 2;
         var centerX = radius;
         var centerY = radius;
@@ -707,8 +707,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         try
         {
-            await _js.ClearCallout(_calloutId);
-            await _js.SwipesDispose(_calloutId);
+            await _js.BitCalloutClearCallout(_calloutId);
+            await _js.BitSwipesDispose(_calloutId);
             await _js.BitCircularTimePickerAbort(_pointerUpAbortControllerId);
             await _js.BitCircularTimePickerAbort(_pointerMoveAbortControllerId);
         }

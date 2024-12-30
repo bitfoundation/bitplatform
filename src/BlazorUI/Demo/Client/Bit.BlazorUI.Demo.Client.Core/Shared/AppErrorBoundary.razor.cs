@@ -2,16 +2,15 @@
 
 public partial class AppErrorBoundary
 {
+    private bool _showException;
+
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
-
     [AutoInject] private NavigationManager _navigationManager = default!;
-
-    private bool ShowException { get; set; }
 
 #if DEBUG
     protected override void OnInitialized()
     {
-        ShowException = true;
+        _showException = true;
     }
 #endif
 

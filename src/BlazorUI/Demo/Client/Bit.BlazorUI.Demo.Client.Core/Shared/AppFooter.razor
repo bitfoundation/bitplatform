@@ -1,6 +1,6 @@
 ﻿@inherits AppComponentBase
 
-<footer class="@BitCss.Class.Color.Background.Primary">
+<div class="footer">
     <section>
         <div>
             <div class="bit-logo" />
@@ -23,7 +23,7 @@
                 <BitLink Href="https://github.com/bitfoundation/bitplatform/issues" Target="_blank">Github Issues</BitLink>
             </div>
 
-            <button class="go-to-top" onclick="goToTop()">Go to top</button>
+            <button class="go-to-top" @onclick="GoToTop">Go to top</button>
         </div>
     </section>
 
@@ -43,4 +43,4 @@
             <div class="copy-right-txt">Copyright © 2025 bit platform | All Rights Reserved </div>
         </div>
     </section>
-</footer>
+</div>

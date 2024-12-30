@@ -170,7 +170,7 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 
     private async Task SetIndeterminate()
     {
-        await _js.SetProperty(InputElement, "indeterminate", Indeterminate);
+        await _js.BitUtilsSetProperty(InputElement, "indeterminate", Indeterminate);
     }
 
     private async Task HandleOnCheckboxClick(MouseEventArgs args)
@@ -199,6 +199,6 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     {
         if (await AssignIndeterminate(value) is false) return;
 
-        await _js.SetProperty(InputElement, "indeterminate", value);
+        await _js.BitUtilsSetProperty(InputElement, "indeterminate", value);
     }
 }

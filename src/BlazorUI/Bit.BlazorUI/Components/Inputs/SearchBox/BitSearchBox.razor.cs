@@ -141,8 +141,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
 
 
+    /// <summary>
+    /// Clears the input element. 
+    /// </summary>
+    public async Task Clear()
+    {
+        await SetCurrentValueAsync(null);
+        await _js.BitUtilsSetProperty(InputElement, "value", null);
+    }
+
+
+
     [JSInvokable("CloseCallout")]
-    public void CloseCalloutBeforeAnotherCalloutIsOpened()
+    public void _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
 
@@ -264,7 +275,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
         }
         else if (eventArgs.Key == "Enter")
         {
-            CurrentValue = await _js.GetProperty(InputElement, "value");
+            CurrentValue = await _js.BitUtilsGetProperty(InputElement, "value");
             await CloseCallout();
             await OnSearch.InvokeAsync(CurrentValue);
         }
@@ -282,7 +293,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _Id,
                                 null,
                                 _calloutId,
@@ -435,7 +446,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
             try
             {
-                await _js.ClearCallout(_calloutId);
+                await _js.BitCalloutClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

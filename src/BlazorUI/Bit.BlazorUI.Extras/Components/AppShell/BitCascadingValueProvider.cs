@@ -57,7 +57,7 @@ public class BitCascadingValueProvider : ComponentBase
 #pragma warning disable IL2055 // Either the type on which the MakeGenericType is called can't be statically determined, or the type parameters to be used for generic arguments can't be statically determined.
         builder.OpenComponent(seq, _cascadingValueType.MakeGenericType(value.GetType()));
 #pragma warning restore IL2055 // Either the type on which the MakeGenericType is called can't be statically determined, or the type parameters to be used for generic arguments can't be statically determined.
-        if (string.IsNullOrEmpty(name) is false)
+        if (name.HasValue())
         {
             builder.AddComponentParameter(++seq, "Name", name);
         }

@@ -852,7 +852,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -1162,7 +1162,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
     {
         if (IsEnabled is false) return;
 
-        _isResponsiveMode = await _js.ToggleCallout(_dotnetObj,
+        _isResponsiveMode = await _js.BitCalloutToggleCallout(_dotnetObj,
                                                     _dropdownId,
                                                     null,
                                                     _calloutId,
@@ -1252,7 +1252,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
         }
         else if (eventArgs.Key == "Enter")
         {
-            _searchText = await _js.GetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
+            _searchText = await _js.BitUtilsGetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
 
             await AddDynamicItem();
 
@@ -1473,8 +1473,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue>, IAsyncDi
 
         try
         {
-            await _js.ClearCallout(_calloutId);
-            await _js.SwipesDispose(_calloutId);
+            await _js.BitCalloutClearCallout(_calloutId);
+            await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

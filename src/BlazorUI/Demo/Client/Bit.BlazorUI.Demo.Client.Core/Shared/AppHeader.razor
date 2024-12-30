@@ -1,18 +1,20 @@
 ﻿@inherits AppComponentBase
 
-<header class="header @(_currentUrl == "/" ? "header--full-page" : null)">
-    <div class="container">
+<div class="header">
+    <div class="container@(IsHomePage ? " home-page" : "")">
         <div class="content">
-            @if (_currentUrl != "/")
+            @if (IsHomePage is false)
             {
-                <BitButton Class="menu-btn"
+                <BitButton FixedColor
+                           Class="menu-btn"
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.CollapseMenu"
+                           Color="BitColor.SecondaryBackground"
                            OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
             }
             <a class="logo" href="/" aria-label="Homepage"></a>
-            <a class="link @(_currentUrl == "/" ? "link--active" : "")" href="/">Home</a>
-            <a class="link @(_currentUrl != "/" ? "link--active" : "")" href="/overview">Docs</a>
+            <a class="link@(IsHomePage ? " active" : "")" href="/">Home</a>
+            <a class="link@(IsHomePage ? "" : " active")" href="/overview">Docs</a>
         </div>
         <div class="right-section">
             <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
@@ -25,4 +27,4 @@
             </button>
         </div>
     </div>
-</header>
+</div>

@@ -132,7 +132,7 @@ public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
     private async Task SetSaturationPickerThumbPositionAsync()
     {
         var (_, saturation, value) = _color.Hsv;
-        var saturationPickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
+        var saturationPickerRect = await _js.BitUtilsGetBoundingClientRect(_saturationPickerRef);
 
         var width = saturationPickerRect?.Width ?? 0;
         var height = saturationPickerRect?.Height ?? 0;
@@ -152,7 +152,7 @@ public partial class BitColorPicker : BitComponentBase, IAsyncDisposable
     {
         if (ColorHasBeenSet && ColorChanged.HasDelegate is false) return;
 
-        var pickerRect = await _js.GetBoundingClientRect(_saturationPickerRef);
+        var pickerRect = await _js.BitUtilsGetBoundingClientRect(_saturationPickerRef);
         var left = e.ClientX < pickerRect.Left ? 0
                     : e.ClientX > pickerRect.Left + pickerRect.Width
                     ? pickerRect.Width

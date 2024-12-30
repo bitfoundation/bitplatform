@@ -20,7 +20,7 @@ public class BitLayoutClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the nav-menu section of the BitLayout.
     /// </summary>
-    public string? NavMenu { get; set; }
+    public string? NavPanel { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the main-content section of the BitLayout.

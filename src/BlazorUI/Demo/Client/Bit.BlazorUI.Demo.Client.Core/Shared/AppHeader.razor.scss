@@ -1,30 +1,12 @@
-﻿@import '../Styles/abstracts/_vars.scss';
-@import '../Styles/abstracts/_functions.scss';
+﻿@import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
 .header {
-    top: 0;
     width: 100%;
-    z-index: 11;
-    position: fixed;
     backdrop-filter: blur(20px);
     box-shadow: $bit-box-shadow-1;
     -webkit-backdrop-filter: blur(20px);
-    padding-top: var(--bit-status-bar-height);
-    transition: top 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-}
-
-.bit-ios {
-    .header {
-        padding-top: env(safe-area-inset-top);
-    }
-}
-
-.header--full-page {
-    .container {
-        max-width: rem2(1200px);
-    }
 }
 
 .container {
@@ -34,15 +16,19 @@
     margin-right: auto;
     align-items: center;
     flex-flow: row nowrap;
+    min-height: rem2(65px);
     box-sizing: border-box;
     padding-left: rem2(20px);
     padding-right: rem2(20px);
-    min-height: rem2($HeaderHeight);
     justify-content: space-between;
 
     @include lt-lg {
         padding-left: rem2(10px);
         padding-right: rem2(10px);
+    }
+
+    &.home-page {
+        max-width: rem2(1200px);
     }
 }
 
@@ -78,11 +64,11 @@
     text-decoration: none;
     box-sizing: border-box;
     color: $bit-color-foreground-secondary;
-}
 
-.link--active {
-    font-weight: 600;
-    color: $bit-color-primary;
+    &.active {
+        font-weight: 600;
+        color: $bit-color-primary;
+    }
 }
 
 .right-section {
