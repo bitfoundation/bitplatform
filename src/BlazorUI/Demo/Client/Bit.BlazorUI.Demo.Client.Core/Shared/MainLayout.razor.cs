@@ -55,6 +55,12 @@ public partial class MainLayout : IDisposable
         _isHomePage = url == "/";
     }
 
+    private async Task HandleOnNavItemClick()
+    {
+        await Task.Delay(1);
+        await _appShellRef.GoToTop();
+    }
+
 
     public void Dispose()
     {

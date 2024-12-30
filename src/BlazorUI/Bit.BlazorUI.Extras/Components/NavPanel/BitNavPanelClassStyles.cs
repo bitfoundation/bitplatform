@@ -45,7 +45,7 @@ public class BitNavPanelClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the text element of the empty list message of the BitNavPanel.
     /// </summary>
-    public string? EmptyListMessageText { get; set; }
+    public string? EmptyListMessage { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the nav component of the BitNavPanel.

@@ -10,7 +10,8 @@
                          Top="65"
                          Items="_navItems"
                          SearchBoxPlaceholder="Search component"
-                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })" />
+                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })"
+                         OnItemClick="async (BitNavItem item) => await HandleOnNavItemClick()" />
         </NavPanel>
         <Main>
             <div class="site-content">

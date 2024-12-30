@@ -11,6 +11,8 @@ public partial class BitNavPanelDemo
             Type = "BitNavPanelClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the nav panel.",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
          },
          new()
          {
@@ -84,6 +86,13 @@ public partial class BitNavPanelDemo
          },
          new()
          {
+            Name = "OnItemClick",
+            Type = "EventCallback<TItem>",
+            DefaultValue = "",
+            Description = "Event fired up when an item is clicked.",
+         },
+         new()
+         {
             Name = "SearchBoxClasses",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
@@ -109,6 +118,8 @@ public partial class BitNavPanelDemo
             Type = "BitNavPanelClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the nav panel.",
+            Href = "#class-styles",
+            LinkType = LinkType.Link,
          },
          new()
          {
@@ -136,10 +147,73 @@ public partial class BitNavPanelDemo
             [
                 new()
                 {
-                    Name = "Id",
-                    Type = "string",
-                    DefaultValue = "Guid.NewGuid().ToString()",
-                    Description = "The id of the pdf reader instance and its canvas element(s).",
+                    Name = "Overlay",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the overlay of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "Root",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header container of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "HeaderIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header icon of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "ToggleButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toggle button of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "SearchBox",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "ToggleSearchButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the toggle search button of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "EmptyListMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the empty list message of the BitNavPanel.",
+                },
+                new()
+                {
+                    Name = "Nav",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the nav component of the BitNavPanel.",
                 },
             ]
         }
@@ -205,7 +279,7 @@ public partial class BitNavPanelDemo
     private readonly string example1RazorCode = @"
 <BitToggleButton @bind-IsChecked=""basicIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel Items=""basicNavItems"" @bind-IsOpen=""basicIsOpen"" />";
+<BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" Togglable />";
     private readonly string example1CsharpCode = @"
 private bool basicIsOpen;
 
@@ -263,7 +337,7 @@ private List<BitNavItem> basicNavItems =
     private readonly string example2RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel Items=""basicNavItems"" @bind-IsOpen=""rtlIsOpen"" Dir=""BitDir.Rtl"" />";
+<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""basicNavItems"" Dir=""BitDir.Rtl"" Togglable Padded />";
     private readonly string example2CsharpCode = @"
 private bool rtlIsOpen;
 

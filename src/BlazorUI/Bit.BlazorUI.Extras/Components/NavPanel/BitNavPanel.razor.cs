@@ -72,6 +72,17 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public BitNavClassStyles? NavStyles { get; set; }
 
     /// <summary>
+    /// Event fired up when an item is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
+
+    /// <summary>
+    /// Enables the padded mode of the nav panel.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Padded { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the search box of the nav panel.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? SearchBoxClasses { get; set; }
@@ -110,6 +121,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     {
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
+        ClassBuilder.Register(() => Padded ? "bit-npn-pad" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -126,6 +138,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     private async Task HandleNavItemClick(TItem item)
     {
         if (_bitNavRef.GetUrl(item).HasNoValue()) return;
+
+        await OnItemClick.InvokeAsync(item);
 
         await _searchBoxRef.Clear();
 

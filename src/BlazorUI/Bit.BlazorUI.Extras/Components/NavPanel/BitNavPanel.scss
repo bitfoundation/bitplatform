@@ -37,12 +37,25 @@
     }
 
     &.bit-npn-tgl {
-        min-width: 6rem;
-        max-width: 6rem;
+        min-width: 3rem;
+        max-width: 3rem;
 
-        @include lt-md {
-            min-width: 4rem;
-            max-width: 4rem;
+        .bit-npn-cnt {
+            align-items: center;
+        }
+
+        &.bit-npn-pad {
+            min-width: 6rem;
+            max-width: 6rem;
+        }
+    }
+
+    &.bit-npn-pad {
+        padding: 1rem;
+
+        .bit-npn-cnt {
+            padding: 0.5rem;
+            background-color: $clr-bg-sec;
         }
     }
 

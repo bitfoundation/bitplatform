@@ -16,7 +16,7 @@
             <div style="display:flex; justify-content:center">
                 <BitToggleButton @bind-IsChecked="basicIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel Items="basicNavItems" @bind-IsOpen="basicIsOpen" />
+            <BitNavPanel @bind-IsOpen="basicIsOpen" Items="basicNavItems" Togglable />
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -25,7 +25,7 @@
             <div style="display:flex; justify-content:center">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel Items="basicNavItems" @bind-IsOpen="rtlIsOpen" Dir="BitDir.Rtl" />
+            <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="basicNavItems" Dir="BitDir.Rtl" Togglable Padded />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
