@@ -343,7 +343,7 @@ public partial class BitSlider : BitComponentBase
 
     private async ValueTask<int> GetClientHeight(ElementReference element)
     {
-        var height = await _js.GetProperty(element, "clientHeight");
+        var height = await _js.BitUtilsGetProperty(element, "clientHeight");
         return height.HasNoValue()
             ? 0
             : int.Parse(height);

@@ -440,7 +440,7 @@ public partial class BitSpinButton : BitInputBase<double>
 
         await OnFocus.InvokeAsync(e);
 
-        await _js.SelectText(InputElement);
+        await _js.BitUtilsSelectText(InputElement);
     }
 
     private void SetValue(double value)

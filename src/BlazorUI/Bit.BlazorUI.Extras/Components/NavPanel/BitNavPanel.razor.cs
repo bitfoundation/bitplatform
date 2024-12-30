@@ -122,6 +122,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     {
         if (string.IsNullOrEmpty(_bitNavRef.GetUrl(item))) return;
 
+        await _searchBoxRef.Clear();
+
         _filteredNavItems = Items;
 
         await ClosePanel();

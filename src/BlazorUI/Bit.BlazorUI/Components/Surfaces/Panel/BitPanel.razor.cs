@@ -165,7 +165,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.SwipesSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj, false);
+            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj, false);
         }
 
         if (_internalIsOpen == IsOpen) return;
@@ -176,7 +176,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector ?? "body", IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector ?? "body", IsOpen);
 
         StyleBuilder.Reset();
         StateHasChanged();
@@ -258,7 +258,7 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
 
         try
         {
-            await _js.SwipesDispose(_containerId);
+            await _js.BitSwipesDispose(_containerId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

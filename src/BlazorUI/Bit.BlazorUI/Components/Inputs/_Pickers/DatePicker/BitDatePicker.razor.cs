@@ -530,7 +530,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTimeOffset? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -572,7 +572,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
         ResetPickersState();
 
-        var bodyWidth = await _js.GetBodyWidth();
+        var bodyWidth = await _js.BitUtilsGetBodyWidth();
         var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
@@ -1279,14 +1279,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputTimeHourRef);
+        await _js.BitUtilsSelectText(_inputTimeHourRef);
     }
 
     private async Task HandleOnTimeMinuteFocus()
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputTimeMinuteRef);
+        await _js.BitUtilsSelectText(_inputTimeMinuteRef);
     }
 
     private void ToggleAmPmTime()
@@ -1483,7 +1483,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
         if (Standalone) return false;
         if (IsEnabled is false) return false;
 
-        return await _js.ToggleCallout(_dotnetObj,
+        return await _js.BitCalloutToggleCallout(_dotnetObj,
                                        _datePickerId,
                                        null,
                                        _calloutId,
@@ -1534,8 +1534,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDispos
 
         try
         {
-            await _js.ClearCallout(_calloutId);
-            await _js.SwipesDispose(_calloutId);
+            await _js.BitCalloutClearCallout(_calloutId);
+            await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
