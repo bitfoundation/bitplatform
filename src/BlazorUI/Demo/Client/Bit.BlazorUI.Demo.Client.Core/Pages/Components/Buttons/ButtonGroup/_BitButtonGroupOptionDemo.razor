@@ -316,7 +316,26 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Color" RazorCode="@example10RazorCode" Id="example10">
+<ComponentExampleBox Title="FullWidth" RazorCode="@example10RazorCode" Id="example10">
+    <ExamplePreview>
+        <div>Setting the FullWidth makes the button group occupy 100% of its container's width.</div>
+        <br /><br />
+        <div class="example-content">
+            <BitButtonGroup FullWidth Variant="BitVariant.Fill" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <BitButtonGroup FullWidth Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" /><BitButtonGroupOption Text="Edit" /><BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+        </div>
+    </ExamplePreview>
+</ComponentExampleBox>
+
+
+<ComponentExampleBox Title="Color" RazorCode="@example11RazorCode" Id="example11">
     <ExamplePreview>
         <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
         <br /><br />
@@ -545,7 +564,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+<ComponentExampleBox Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
     <ExamplePreview>
         <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
         <br /><br />
@@ -585,7 +604,7 @@
     </ExamplePreview>
 </ComponentExampleBox>
 
-<ComponentExampleBox Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+<ComponentExampleBox Title="RTL" RazorCode="@example13RazorCode" Id="example13">
     <ExamplePreview>
         <div>Use BitButtonGroup in right-to-left (RTL).</div>
         <br />

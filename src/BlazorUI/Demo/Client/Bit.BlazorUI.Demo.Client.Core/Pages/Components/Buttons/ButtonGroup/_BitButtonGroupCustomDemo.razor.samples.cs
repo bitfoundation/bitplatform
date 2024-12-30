@@ -287,6 +287,23 @@ private List<Operation> basicCustoms =
 ];";
 
     private readonly string example10RazorCode = @"
+<BitButtonGroup FullWidth Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup FullWidth Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
+<BitButtonGroup FullWidth Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
+    private readonly string example10CsharpCode = @"
+private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
+
+public class Operation
+{
+    public string? Name { get; set; }
+}
+
+private List<Operation> basicCustoms =
+[
+    new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
+];";
+
+    private readonly string example11RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
@@ -357,7 +374,7 @@ private List<Operation> basicCustoms =
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />
 <BitButtonGroup Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicCustoms"" NameSelectors=""nameSelector"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
 public class Operation
@@ -370,7 +387,7 @@ private List<Operation> basicCustoms =
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
 ];";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -419,7 +436,7 @@ private List<Operation> basicCustoms =
                 Variant=""BitVariant.Text""
                 NameSelectors=""nameSelector""
                 Classes=""@(new() { Button = ""custom-btn"" })"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
 
 public class Operation
@@ -451,7 +468,7 @@ private List<Operation> styleClassCustoms =
     }
 ];";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl""
                 Items=""rtlCustoms""
                 Variant=""BitVariant.Fill""
@@ -469,7 +486,7 @@ private List<Operation> styleClassCustoms =
                 Variant=""BitVariant.Text""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Icon } })"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }

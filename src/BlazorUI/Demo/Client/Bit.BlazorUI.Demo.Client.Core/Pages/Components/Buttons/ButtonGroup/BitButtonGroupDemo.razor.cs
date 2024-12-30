@@ -38,6 +38,13 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the ButtonGroup width to 100% of the available width.",
+        },
+        new()
+        {
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
