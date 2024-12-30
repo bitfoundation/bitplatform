@@ -125,7 +125,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task HandleNavItemClick(TItem item)
     {
-        if (string.IsNullOrEmpty(_bitNavRef.GetUrl(item))) return;
+        if (_bitNavRef.GetUrl(item).HasNoValue()) return;
 
         await _searchBoxRef.Clear();
 
@@ -165,12 +165,12 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
         _flatNavItemList = Items.Flatten(_bitNavRef.GetChildItems).Where(item => _bitNavRef.GetUrl(item).HasValue());
 
         var mainItems = _flatNavItemList.Where(item => searchText!.Split(' ')
-                                                                  .Where(t => string.IsNullOrEmpty(t) is false)
+                                                                  .Where(t => t.HasValue())
                                                                   .Any(t => $"{_bitNavRef.GetText(item)} {_bitNavRef.GetDescription(item)}"
                                                                              .Contains(t, StringComparison.InvariantCultureIgnoreCase)));
 
         var subItems = _flatNavItemList.Where(item => searchText!.Split(' ')
-                                                                 .Where(t => string.IsNullOrEmpty(t) is false)
+                                                                 .Where(t => t.HasValue())
                                                                  .Any(t => _bitNavRef.GetData(item)?.ToString()?
                                                                                      .Contains(t, StringComparison.InvariantCultureIgnoreCase) ?? false));
 

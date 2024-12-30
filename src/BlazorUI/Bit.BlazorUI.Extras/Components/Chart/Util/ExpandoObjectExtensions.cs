@@ -21,7 +21,7 @@ internal static class ExpandoObjectExtensions
     {
         value ??= new ExpandoObject();
 
-        if (string.IsNullOrWhiteSpace(path)) return value;
+        if (path.HasNoValue()) return value;
 
         string[] segments = path.Split('.');
         IDictionary<string, object> source = value;
@@ -80,10 +80,10 @@ internal static class ExpandoObjectExtensions
     /// <returns></returns>
     public static IEnumerable<object> EnumeratePath(this ExpandoObject value, string path)
     {
-        if (value == null)
+        if (value is null)
             throw new ArgumentNullException(nameof(value));
 
-        if (string.IsNullOrWhiteSpace(path))
+        if (path.HasNoValue())
             throw new ArgumentException("The path cannot be null or whitespace.");
 
         string[] segments = path.Split('.');
@@ -131,7 +131,7 @@ internal static class ExpandoObjectExtensions
     /// <returns></returns>
     public static ExpandoObject SetValue(this ExpandoObject expando, string path, object value)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (path.HasNoValue())
             throw new ArgumentException("The path cannot be null or whitespace.");
 
         string[] segments = path.Split('.');
