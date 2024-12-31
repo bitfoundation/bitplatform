@@ -72,15 +72,20 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public BitNavClassStyles? NavStyles { get; set; }
 
     /// <summary>
+    /// Disables the padded mode of the nav panel.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoPad { get; set; }
+
+    /// <summary>
+    /// Disables the toggle feature of the nav panel.
+    /// </summary>
+    [Parameter] public bool NoToggle { get; set; }
+
+    /// <summary>
     /// Event fired up when an item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
-
-    /// <summary>
-    /// Enables the padded mode of the nav panel.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Padded { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the search box of the nav panel.
@@ -103,11 +108,6 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     [Parameter] public BitNavPanelClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// Enables the toggle feature of the nav panel.
-    /// </summary>
-    [Parameter] public bool Togglable { get; set; }
-
-    /// <summary>
     /// The top CSS property value of the root element of the nav panel in px.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -121,7 +121,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
     {
         ClassBuilder.Register(() => Classes?.Root);
         ClassBuilder.Register(() => IsOpen ? string.Empty : "bit-npn-cls");
-        ClassBuilder.Register(() => Padded ? "bit-npn-pad" : string.Empty);
+        ClassBuilder.Register(() => NoPad ? string.Empty : "bit-npn-pad");
     }
 
     protected override void RegisterCssStyles()
@@ -150,7 +150,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ClosePanel()
     {
-        if (await AssignIsOpen(false)) return;
+        await AssignIsOpen(false);
     }
 
     private async Task ToggleNavPanel()
@@ -165,7 +165,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ToggleForSearch()
     {
-        if (await AssignIsToggled(false)) return;
+        if (await AssignIsToggled(false) is false) return;
 
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();

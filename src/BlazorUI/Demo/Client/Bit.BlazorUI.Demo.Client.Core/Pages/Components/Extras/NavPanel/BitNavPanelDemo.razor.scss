@@ -1,0 +1,10 @@
+@import "../../../../Styles/abstracts/_media-queries.scss";
+
+.open-btn {
+    display: none;
+    justify-content: center;
+
+    @include lt-lg {
+        display: flex;
+    }
+}

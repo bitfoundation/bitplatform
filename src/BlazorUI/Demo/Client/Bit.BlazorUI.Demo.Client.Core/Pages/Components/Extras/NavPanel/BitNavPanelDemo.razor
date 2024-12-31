@@ -13,19 +13,19 @@
                ComponentSubClasses="componentSubClasses">
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
-            <div style="display:flex; justify-content:center">
+            <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="basicIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel @bind-IsOpen="basicIsOpen" Items="basicNavItems" Togglable />
+            <BitNavPanel @bind-IsOpen="basicIsOpen" Items="basicNavItems" NoPad />
         </ExamplePreview>
     </ComponentExampleBox>
 
     <ComponentExampleBox Title="RTL" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
-            <div style="display:flex; justify-content:center">
+            <div class="open-btn">
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>
-            <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="basicNavItems" Dir="BitDir.Rtl" Togglable Padded />
+            <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="basicNavItems" Dir="BitDir.Rtl" />
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>
