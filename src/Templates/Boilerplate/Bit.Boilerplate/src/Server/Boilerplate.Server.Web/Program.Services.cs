@@ -4,6 +4,8 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.ResponseCompression;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
+//#else
+using Microsoft.AspNetCore.Identity;
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
@@ -36,7 +38,6 @@ public static partial class Program
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-
         services.AddResponseCaching();
 
         services.AddHttpContextAccessor();
@@ -56,6 +57,31 @@ public static partial class Program
         //#endif
 
         services.AddAntiforgery();
+
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = IdentityConstants.BearerScheme;
+        }).AddBearerToken(IdentityConstants.BearerScheme, options =>
+        {
+            options.BearerTokenProtector = new SimpleJWTFormat();
+            options.RefreshTokenProtector = new SimpleJWTFormat();
+
+            options.Events = new()
+            {
+                OnMessageReceived = async context =>
+                {
+                    // The server accepts the accessToken from either the authorization header, the cookie, or the request URL query string
+                    context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
+                }
+            };
+        });
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
+        services.AddAuthorization();
         //#endif
 
         services.AddOptions<ServerWebSettings>()
