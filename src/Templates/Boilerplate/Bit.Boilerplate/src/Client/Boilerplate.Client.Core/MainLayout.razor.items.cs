@@ -46,19 +46,6 @@ public partial class MainLayout
                 Url = Urls.TodoPage,
             },
             //#endif
-            new()
-            {
-                Text = localizer[nameof(AppStrings.Settings)],
-                IconName = BitIconName.Equalizer,
-                Url = Urls.SettingsPage,
-                AdditionalUrls =
-                [
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
-                    $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
-                ]
-            },
             //#if (offlineDb == true)
             new()
             {
@@ -88,5 +75,19 @@ public partial class MainLayout
                 Url = Urls.AboutPage,
             });
         }
+
+        navPanelItems.Add(new()
+        {
+            Text = localizer[nameof(AppStrings.Settings)],
+            IconName = BitIconName.Equalizer,
+            Url = Urls.SettingsPage,
+            AdditionalUrls =
+            [
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Profile}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Account}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Tfa}",
+                $"{Urls.SettingsPage}/{Urls.SettingsSections.Sessions}",
+            ]
+        });
     }
 }
