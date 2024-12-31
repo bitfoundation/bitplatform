@@ -53,6 +53,15 @@
     &.bit-npn-pad {
         padding: 1rem;
 
+        @include lt-md {
+            padding: 0;
+
+            &.bit-npn-tgl {
+                min-width: 4rem;
+                max-width: 4rem;
+            }
+        }
+
         .bit-npn-cnt {
             padding: 0.5rem;
             background-color: $clr-bg-sec;

@@ -8,7 +8,7 @@
 }
 
 @{
-    var isToggled = Togglable && IsToggled;
+    var isToggled = (NoToggle is false) && IsToggled;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -39,7 +39,7 @@
 
                     <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
 
-                    @if (Togglable)
+                    @if (NoToggle is false)
                     {
                         <BitButton IconOnly FixedColor
                                    Size="BitSize.Large"
