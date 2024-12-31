@@ -241,13 +241,6 @@ public partial class ClientAppCoordinator : AppComponentBase
                                                  await storageService.GetItem("Culture") ?? // 2- User settings
                                                  CultureInfo.CurrentUICulture.Name); // 3- OS settings
         }
-
-        var platformCssClass = AppPlatform.IsWindows ? "bit-windows" :
-                               AppPlatform.IsMacOS ? "bit-macos" :
-                               AppPlatform.IsIOS ? "bit-ios" :
-                               AppPlatform.IsAndroid ? "bit-android" : "bit-unknown";
-
-        await jsRuntime.ApplyBodyElementClasses(cssClasses: [platformCssClass], cssVariables: []);
     }
 
     private List<IDisposable> signalROnDisposables = [];

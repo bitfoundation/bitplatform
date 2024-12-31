@@ -42,22 +42,22 @@ section {
         @include lt-sm {
             height: unset;
             box-shadow: none;
-            bottom: var(--app-inset-bottom);
-            top: var(--app-inset-top) !important;
+            bottom: $bit-env-inset-bottom;
+            top: $bit-env-inset-top !important;
         }
     }
 
     .todo-list {
         width: 100%;
         background-color: var(--bit-clr-bg-sec);
-        height: calc(var(--app-height) - 14rem);
+        height: calc(#{$bit-env-height-available} - 14rem);
 
         @include lt-md {
-            height: calc(var(--app-height) - 17rem);
+            height: calc(#{$bit-env-height-available} - 17rem);
         }
 
         @include lt-sm {
-            height: calc(var(--app-height) - 18rem);
+            height: calc(#{$bit-env-height-available} - 18rem);
         }
     }
 }

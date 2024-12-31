@@ -7,7 +7,7 @@ main {
 
     @include lt-md {
         height: unset;
-        min-height: var(--app-height);
+        min-height: $bit-env-height-available;
     }
 
     &.unauthenticated {

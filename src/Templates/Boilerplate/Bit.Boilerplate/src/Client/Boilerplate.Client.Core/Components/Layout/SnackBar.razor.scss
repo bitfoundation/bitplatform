@@ -1,3 +1,5 @@
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
 .snackbar {
-    bottom: calc(var(--app-inset-bottom) + var(--bit-spa-scaling-factor));
+    bottom: calc(#{$bit-env-inset-bottom} + 1rem);
 }
