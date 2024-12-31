@@ -28,8 +28,8 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
-    [AutoInject] BitExtraServices bitExtraServices = default!;
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private BitExtraServices bitExtraServices = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
