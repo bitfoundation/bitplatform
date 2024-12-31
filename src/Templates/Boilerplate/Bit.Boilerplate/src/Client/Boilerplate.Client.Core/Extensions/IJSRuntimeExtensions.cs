@@ -8,11 +8,6 @@ namespace Microsoft.JSInterop;
 
 public static partial class IJSRuntimeExtensions
 {
-    public static ValueTask<string> GetBrowserPlatform(this IJSRuntime jsRuntime)
-    {
-        return jsRuntime.InvokeAsync<string>("App.getPlatform");
-    }
-
     public static ValueTask<string> GetTimeZone(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeAsync<string>("App.getTimeZone");

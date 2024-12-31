@@ -13,7 +13,7 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
 
         if (request.Headers.UserAgent.Any() is false)
         {
-            request.Headers.UserAgent.TryParseAdd(telemetryContext.UserAgent ?? telemetryContext.Platform);
+            request.Headers.UserAgent.TryParseAdd(telemetryContext.Platform);
         }
 
         if (CultureInfoManager.MultilingualEnabled && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
