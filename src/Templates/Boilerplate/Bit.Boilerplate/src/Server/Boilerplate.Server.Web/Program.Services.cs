@@ -66,8 +66,8 @@ public static partial class Program
             options.DefaultScheme = IdentityConstants.BearerScheme;
         }).AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            options.BearerTokenProtector = new SimpleJWTFormat();
-            options.RefreshTokenProtector = new SimpleJWTFormat();
+            options.BearerTokenProtector = new SimpleJwtSecureDataFormat();
+            options.RefreshTokenProtector = new SimpleJwtSecureDataFormat();
 
             options.Events = new()
             {
