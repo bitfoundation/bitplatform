@@ -150,7 +150,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ClosePanel()
     {
-        if (await AssignIsOpen(false)) return;
+        await AssignIsOpen(false);
     }
 
     private async Task ToggleNavPanel()
@@ -165,7 +165,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
 
     private async Task ToggleForSearch()
     {
-        if (await AssignIsToggled(false)) return;
+        if (await AssignIsToggled(false) is false) return;
 
         await Task.Delay(1);
         await _searchBoxRef.FocusAsync();
