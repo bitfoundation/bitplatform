@@ -27,7 +27,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 var accessToken = await tokenProvider.GetAccessToken();
                 if (string.IsNullOrEmpty(accessToken) is false && HasAuthorizedApiAttribute(request))
                 {
-                    if (tokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                    if (IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                     {
                         logScopeData["ClientSideAccessTokenValidationFailed"] = true;
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);

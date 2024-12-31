@@ -158,7 +158,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                         var accessToken = await authTokenProvider.GetAccessToken();
 
                         if (string.IsNullOrEmpty(accessToken) is false &&
-                            authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                            IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                         {
                             return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
                         }
