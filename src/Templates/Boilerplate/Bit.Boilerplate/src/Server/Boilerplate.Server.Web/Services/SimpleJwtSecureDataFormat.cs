@@ -9,7 +9,7 @@ namespace Boilerplate.Server.Web.Services;
 /// Since the `AppSecureJWTFormat` in the Server.Api project strictly validates access tokens using the provided PFX file, 
 /// strict validation isn't necessary here. Instead, we simply parse the token, similar to how it's handled on the client side (Blazor WASM and Blazor Hybrid).
 /// </summary>
-public partial class SimpleJWTFormat : ISecureDataFormat<AuthenticationTicket>
+public partial class SimpleJwtSecureDataFormat : ISecureDataFormat<AuthenticationTicket>
 {
     public AuthenticationTicket? Unprotect(string? protectedText) => Unprotect(protectedText, null);
 
