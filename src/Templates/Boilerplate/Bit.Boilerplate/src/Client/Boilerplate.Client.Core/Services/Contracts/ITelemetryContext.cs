@@ -41,8 +41,6 @@ public interface ITelemetryContext
 
     public string? PageUrl { get; set; }
 
-    public string? UserAgent { get; set; }
-
     public string? TimeZone { get; set; }
     public string? Culture { get; set; }
 
@@ -63,7 +61,6 @@ public interface ITelemetryContext
             { nameof(Platform), Platform },
             { nameof(AppVersion), AppVersion },
             { nameof(PageUrl), PageUrl },
-            { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
             { "ClientDateTime", DateTimeOffset.UtcNow.ToString("u") },
             { nameof(Culture), Culture },
