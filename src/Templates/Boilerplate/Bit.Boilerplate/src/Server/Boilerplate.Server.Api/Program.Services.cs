@@ -325,8 +325,8 @@ public static partial class Program
                 AuthenticationType = IdentityConstants.BearerScheme
             };
 
-            options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
-            options.RefreshTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
+            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
+            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
 
             options.Events = new()
             {

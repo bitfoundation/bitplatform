@@ -33,8 +33,12 @@ public partial class Program
 
         if (CultureInfoManager.MultilingualEnabled)
         {
+            var culture = Services.GetRequiredService<IStorageService>()
+                .GetItem("Culture")
+                .GetAwaiter()
+                .GetResult();
             Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
-                Application.UserAppDataRegistry.GetValue("Culture") as string ?? // 1- User settings
+                culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
         Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
