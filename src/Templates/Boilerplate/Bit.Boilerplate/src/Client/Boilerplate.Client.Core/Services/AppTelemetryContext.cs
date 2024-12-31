@@ -19,8 +19,6 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual string? PageUrl { get; set; }
 
-    public virtual string? UserAgent { get; set; }
-
     public string? TimeZone { get; set; }
 
     public string? Culture { get; set; } = CultureInfo.CurrentCulture.Name;
