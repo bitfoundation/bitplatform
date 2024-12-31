@@ -299,9 +299,9 @@ public static partial class Program
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
-            options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
             options.DefaultScheme = IdentityConstants.BearerScheme;
+            options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+            options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
@@ -339,6 +339,8 @@ public static partial class Program
 
             configuration.GetRequiredSection("Identity").Bind(options);
         });
+
+        services.AddAuthorization();
 
         if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
         {
@@ -379,8 +381,6 @@ public static partial class Program
                 configuration.GetRequiredSection("Authentication:Apple").Bind(options);
             });
         }
-
-        services.AddAuthorization();
     }
 
     private static void AddSwaggerGen(WebApplicationBuilder builder)

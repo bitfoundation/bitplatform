@@ -47,7 +47,9 @@ public static partial class Program
             app.UseRequestLocalization(options);
         }
 
+        //#if (api == "Integrated")
         app.UseExceptionHandler("/", createScopeForErrors: true);
+        //#endif
 
         if (env.IsDevelopment())
         {
@@ -107,7 +109,9 @@ public static partial class Program
             });
         }
 
+        //#if (api == "Integrated")
         app.UseCors();
+        //#endif
 
         app.UseAuthentication();
         app.UseAuthorization();

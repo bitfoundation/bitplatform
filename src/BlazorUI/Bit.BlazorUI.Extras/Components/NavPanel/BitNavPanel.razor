@@ -8,7 +8,7 @@
 }
 
 @{
-    var isToggled = Togglable && IsToggled;
+    var isToggled = (NoToggle is false) && IsToggled;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -39,7 +39,7 @@
 
                     <div class="bit-npn-spc" style="@(isToggled ? "display:none;" : "")" />
 
-                    @if (Togglable)
+                    @if (NoToggle is false)
                     {
                         <BitButton IconOnly FixedColor
                                    Size="BitSize.Large"
@@ -103,7 +103,7 @@
                         Class="@Classes?.Nav"
                         Items="_filteredNavItems"
                         DefaultSelectedItem="_filteredNavItems[0]"
-                        Accent="Padded ? BitColor.SecondaryBackground : null"
+                        Accent="NoPad ? null : BitColor.SecondaryBackground"
                         OnItemClick="(TItem item) => HandleNavItemClick(item)" />
             }
 

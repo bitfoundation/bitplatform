@@ -1,14 +1,15 @@
+@import "../../Styles/extra-variables.scss";
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 @import "../../../Bit.BlazorUI/Styles/media-queries.scss";
 
 .bit-npn {
     top: 0;
     position: sticky;
-    min-width: 14rem;
-    max-width: 14rem;
     overflow: hidden auto;
+    max-width: spacing(28);
+    min-width: spacing(28);
     background-color: $clr-bg-pri;
-    height: var(--bit-env-height-avl);
+    height: $bit-env-height-available;
 
     @include lt-md {
         left: 0;
@@ -17,8 +18,8 @@
         position: fixed;
         height: unset !important;
         z-index: $zindex-callout;
-        bottom: var(--bit-env-inset-bottom);
-        top: var(--bit-env-inset-top) !important;
+        bottom: $bit-env-inset-bottom;
+        top: $bit-env-inset-top !important;
         transition: transform 150ms ease-out, opacity 100ms ease-in;
 
         &.bit-rtl {
@@ -37,24 +38,33 @@
     }
 
     &.bit-npn-tgl {
-        min-width: 3rem;
-        max-width: 3rem;
+        min-width: spacing(6);
+        max-width: spacing(6);
 
         .bit-npn-cnt {
             align-items: center;
         }
 
         &.bit-npn-pad {
-            min-width: 6rem;
-            max-width: 6rem;
+            min-width: spacing(12);
+            max-width: spacing(12);
         }
     }
 
     &.bit-npn-pad {
-        padding: 1rem;
+        padding: spacing(2);
+
+        @include lt-md {
+            padding: 0;
+
+            &.bit-npn-tgl {
+                min-width: spacing(8);
+                max-width: spacing(8);
+            }
+        }
 
         .bit-npn-cnt {
-            padding: 0.5rem;
+            padding: spacing(1);
             background-color: $clr-bg-sec;
         }
     }
@@ -91,9 +101,9 @@
 }
 
 .bit-npn-cnt {
-    gap: 1rem;
     width: auto;
     display: flex;
+    gap: spacing(2);
     min-height: 100%;
     height: fit-content;
     flex-direction: column;
@@ -106,8 +116,8 @@
 }
 
 .bit-npn-img {
-    max-width: 38px;
-    max-height: 38px;
+    max-width: spacing(4.75);
+    max-height: spacing(4.75);
 }
 
 .bit-npn-spc {

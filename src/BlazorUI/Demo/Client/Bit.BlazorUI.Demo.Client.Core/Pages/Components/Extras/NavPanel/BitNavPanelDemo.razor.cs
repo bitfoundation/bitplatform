@@ -86,6 +86,20 @@ public partial class BitNavPanelDemo
          },
          new()
          {
+            Name = "NoPad",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the padded mode of the nav panel.",
+         },
+         new()
+         {
+            Name = "NoToggle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the toggle feature of the nav panel.",
+         },
+         new()
+         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
             DefaultValue = "",
@@ -120,13 +134,6 @@ public partial class BitNavPanelDemo
             Description = "Custom CSS styles for different parts of the nav panel.",
             Href = "#class-styles",
             LinkType = LinkType.Link,
-         },
-         new()
-         {
-            Name = "Togglable",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the toggle feature of the nav panel.",
          },
          new()
          {
@@ -279,7 +286,7 @@ public partial class BitNavPanelDemo
     private readonly string example1RazorCode = @"
 <BitToggleButton @bind-IsChecked=""basicIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" Togglable />";
+<BitNavPanel @bind-IsOpen=""basicIsOpen"" Items=""basicNavItems"" NoPad />";
     private readonly string example1CsharpCode = @"
 private bool basicIsOpen;
 
@@ -337,7 +344,7 @@ private List<BitNavItem> basicNavItems =
     private readonly string example2RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""basicNavItems"" Dir=""BitDir.Rtl"" Togglable Padded />";
+<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""basicNavItems"" Dir=""BitDir.Rtl"" />";
     private readonly string example2CsharpCode = @"
 private bool rtlIsOpen;
 

@@ -525,7 +525,8 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json",
+                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
                     ]
                 },
                 {
