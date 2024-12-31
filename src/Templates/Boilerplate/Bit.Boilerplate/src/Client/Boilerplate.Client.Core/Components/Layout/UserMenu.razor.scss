@@ -1,4 +1,5 @@
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
     .user-menu-callout {
@@ -7,9 +8,9 @@
         @include lt-sm {
             height: unset;
             box-shadow: none;
-            top: var(--app-inset-top) !important;
-            bottom: var(--app-inset-bottom) !important;
-            inset-inline-end: var(--app-inset-inline-start) !important;
+            top: $bit-env-inset-top !important;
+            bottom: $bit-env-inset-bottom !important;
+            inset-inline-end: $bit-env-inset-inline-start !important;
         }
     }
 

@@ -1,9 +1,10 @@
 ﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
     padding: 1rem;
     min-width: 20rem;
-    max-height: var(--app-height);
+    max-height: $bit-env-height-available;
 
     @include lt-md {
         min-width: unset;
@@ -20,6 +21,6 @@ section {
 
 ::deep {
     .stack {
-        max-height: calc(var(--app-height) - 3rem);
+        max-height: calc(#{$bit-env-height-available} - 3rem);
     }
 }
