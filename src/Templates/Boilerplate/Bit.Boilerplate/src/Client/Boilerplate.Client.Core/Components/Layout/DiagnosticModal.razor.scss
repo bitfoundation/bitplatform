@@ -1,4 +1,5 @@
 @import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
 
 section {
     width: 100%;
@@ -8,10 +9,10 @@ section {
 ::deep {
     .modal {
         width: unset;
-        top: var(--app-inset-top);
-        left: var(--app-inset-left);
-        right: var(--app-inset-right);
-        bottom: var(--app-inset-bottom);
+        top: $bit-env-inset-top;
+        left: $bit-env-inset-left;
+        right: $bit-env-inset-right;
+        bottom: $bit-env-inset-bottom;
     }
 
     .container {
@@ -26,7 +27,7 @@ section {
         left: 50%;
         position: fixed;
         transform: translateX(-50%);
-        bottom: calc(var(--app-inset-bottom) + 1rem);
+        bottom: calc(#{$bit-env-inset-bottom} + 1rem);
     }
 
     .log-modal {
@@ -34,7 +35,7 @@ section {
         max-width: 40rem;
         max-height: 40rem;
         white-space: nowrap;
-        height: min(20rem, var(--app-height) - 4rem);
-        width: min(40rem, calc(var(--app-width) - 2rem));
+        height: min(20rem, #{$bit-env-height-available} - 4rem);
+        width: min(40rem, calc(#{$bit-env-width-available} - 2rem));
     }
 }

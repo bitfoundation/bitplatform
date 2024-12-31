@@ -3,9 +3,10 @@ using System.Reflection;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-public partial class RootLayout : IAsyncDisposable
+public partial class MainLayout : IAsyncDisposable
 {
     private BitDir? currentDir;
+    private bool isNavPanelOpen;
     private readonly BitModalParameters modalParameters = new() { Classes = new() { Root = "modal" } };
 
     /// <summary>
@@ -21,11 +22,13 @@ public partial class RootLayout : IAsyncDisposable
     private AppThemeType? currentTheme;
     private RouteData? currentRouteData;
     private List<Action> unsubscribers = [];
+    private List<BitNavItem> navPanelItems = [];
 
 
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] BitExtraServices bitExtraServices = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IExceptionHandler exceptionHandler = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
@@ -40,19 +43,24 @@ public partial class RootLayout : IAsyncDisposable
     {
         try
         {
+            InitializeNavPanelItems();
+
             navigationManager.LocationChanged += NavigationManagerLocationChanged;
             authManager.AuthenticationStateChanged += AuthenticationStateChanged;
+
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async _ =>
             {
                 SetCurrentDir();
                 StateHasChanged();
             }));
+
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.THEME_CHANGED, async payload =>
             {
                 if (payload is null) return;
                 currentTheme = (AppThemeType)payload;
                 StateHasChanged();
             }));
+
             unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.ROUTE_DATA_UPDATED, async payload =>
             {
                 currentRouteData = (RouteData?)payload;
@@ -66,10 +74,18 @@ public partial class RootLayout : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }));
 
+            unsubscribers.Add(pubSubService.Subscribe(ClientPubSubMessages.OPEN_NAV_PANEL, async _ =>
+            {
+                isNavPanelOpen = true;
+                StateHasChanged();
+            }));
+
             isAuthenticated = await prerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.IsAuthenticated());
 
             SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
+
+            await bitExtraServices.AddRootCssClasses();
 
             await base.OnInitializedAsync();
         }

@@ -1,11 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
-<RootContainer IsOnline="isOnline"
-               CurrentDir="currentDir"
-               CurrentTheme="currentTheme"
-               IsAuthenticated="isAuthenticated"
-               CurrentRouteData="currentRouteData"
-               IsCrossLayoutPage="isCrossLayoutPage">
+
+<BitAppShell CascadingValues="@([new(currentDir),
+                                 new(isOnline, Parameters.IsOnline),
+                                 new(currentTheme, Parameters.CurrentTheme),
+                                 new(isAuthenticated, Parameters.IsAuthenticated),
+                                 new(currentRouteData, Parameters.CurrentRouteData),
+                                 new(isCrossLayoutPage, Parameters.IsCrossLayoutPage)])">
     <main class="@GetMainCssClass()">
         <div class="root">
             @if (isAuthenticated is false)
@@ -14,7 +15,7 @@
             }
             else if (isAuthenticated is true)
             {
-                <NavPanel />
+                <BitNavPanel @bind-IsOpen="isNavPanelOpen" Items="navPanelItems" Togglable Padded />
             }
 
             <div class="stack">
@@ -41,7 +42,7 @@
             <NavBar />
         }
     </main>
-</RootContainer>
+</BitAppShell>
 
 <SnackBar />
 <DiagnosticModal />
