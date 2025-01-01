@@ -23,8 +23,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip!.Value)
-                     .TakeIf(odataQuery.Top is not null, odataQuery.Top!.Value);
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResult<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }

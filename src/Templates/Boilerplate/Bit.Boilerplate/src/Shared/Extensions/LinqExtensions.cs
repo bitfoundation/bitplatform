@@ -31,6 +31,16 @@ public static partial class LinqExtensions
         return predicate ? query.Take(count) : query;
     }
 
+    public static IQueryable<T> SkipIf<T>(this IQueryable<T> query, bool predicate, int? count)
+    {
+        return (predicate && count.HasValue) ? query.Skip(count.Value) : query;
+    }
+
+    public static IQueryable<T> TakeIf<T>(this IQueryable<T> query, bool predicate, int? count)
+    {
+        return (predicate && count.HasValue) ? query.Take(count.Value) : query;
+    }
+
     public static IEnumerable<T> WhereIf<T>(this IEnumerable<T> source, bool predicate, Func<T, bool> itemPredicate)
     {
         return predicate ? source.Where(itemPredicate) : source;
@@ -54,5 +64,15 @@ public static partial class LinqExtensions
     public static IEnumerable<T> TakeIf<T>(this IEnumerable<T> source, bool predicate, int count)
     {
         return predicate ? source.Take(count) : source;
+    }
+
+    public static IEnumerable<T> SkipIf<T>(this IEnumerable<T> source, bool predicate, int? count)
+    {
+        return (predicate && count.HasValue) ? source.Skip(count.Value) : source;
+    }
+
+    public static IEnumerable<T> TakeIf<T>(this IEnumerable<T> source, bool predicate, int? count)
+    {
+        return (predicate && count.HasValue) ? source.Take(count.Value) : source;
     }
 }
