@@ -21,6 +21,7 @@
             if (!ac) return;
 
             ac.abort();
+            delete OtpInput.abortControllers[id];
         }
 
         private static setupSmsAutofill(id: string, dotnetObj: DotNetObject) {
