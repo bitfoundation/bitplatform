@@ -10,7 +10,7 @@
                 <BitStack FillContent>
                     @if (Email is not null)
                     {
-                        <BitTag Variant="BitVariant.Outline" Text="@Email" Color="BitColor.Info" />
+                        <BitTextField ReadOnly Value="@Email" />
                     }
 
                     <BitTextField @bind-Value="sendModel.Email"
