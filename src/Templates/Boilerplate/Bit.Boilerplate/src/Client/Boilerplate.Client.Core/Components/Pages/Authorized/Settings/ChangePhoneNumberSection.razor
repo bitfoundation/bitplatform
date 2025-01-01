@@ -10,7 +10,7 @@
                 <BitStack FillContent>
                     @if (PhoneNumber is not null)
                     {
-                        <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Color="BitColor.Info" />
+                        <BitTextField ReadOnly Value="@PhoneNumber" />
                     }
 
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
