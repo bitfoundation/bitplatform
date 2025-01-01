@@ -884,10 +884,7 @@ public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem :
         var currentItem = Flatten(_items).FirstOrDefault(item => GetUrl(item) == currentUrl
                                                         || (GetAdditionalUrls(item)?.Contains(currentUrl) ?? false));
 
-        if (currentItem is not null)
-        {
-            _ = AssignSelectedItem(currentItem);
-        }
+        _ = AssignSelectedItem(currentItem);
     }
 
     private void SetIsExpanded(TItem item, bool value)
