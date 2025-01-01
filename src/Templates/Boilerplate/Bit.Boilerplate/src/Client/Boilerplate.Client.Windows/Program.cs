@@ -3,6 +3,7 @@ using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace Boilerplate.Client.Windows;
@@ -32,8 +33,12 @@ public partial class Program
 
         if (CultureInfoManager.MultilingualEnabled)
         {
+            var culture = Services.GetRequiredService<IStorageService>()
+                .GetItem("Culture")
+                .GetAwaiter()
+                .GetResult();
             Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
-                Application.UserAppDataRegistry.GetValue("Culture") as string ?? // 1- User settings
+                culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
         Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
@@ -42,7 +47,7 @@ public partial class Program
         });
 
         // https://github.com/velopack/velopack
-        VelopackApp.Build().Run();
+        VelopackApp.Build().Run(Services.GetRequiredService<ILogger<VelopackApp>>());
         _ = Task.Run(async () =>
         {
             try

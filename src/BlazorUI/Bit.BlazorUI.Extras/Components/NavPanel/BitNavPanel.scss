@@ -1,0 +1,125 @@
+@import "../../Styles/extra-variables.scss";
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+@import "../../../Bit.BlazorUI/Styles/media-queries.scss";
+
+.bit-npn {
+    top: 0;
+    position: sticky;
+    overflow: hidden auto;
+    max-width: spacing(28);
+    min-width: spacing(28);
+    background-color: $clr-bg-pri;
+    height: $bit-env-height-available;
+
+    @include lt-md {
+        left: 0;
+        padding: 0;
+        opacity: 1;
+        position: fixed;
+        height: unset !important;
+        z-index: $zindex-callout;
+        bottom: $bit-env-inset-bottom;
+        top: $bit-env-inset-top !important;
+        transition: transform 150ms ease-out, opacity 100ms ease-in;
+
+        &.bit-rtl {
+            right: 0;
+            left: unset;
+        }
+
+        &.bit-npn-cls {
+            opacity: 0;
+            transform: translateX(-100%);
+
+            &.bit-rtl {
+                transform: translateX(100%);
+            }
+        }
+    }
+
+    &.bit-npn-tgl {
+        min-width: spacing(6);
+        max-width: spacing(6);
+
+        .bit-npn-cnt {
+            align-items: center;
+        }
+
+        &.bit-npn-pad {
+            min-width: spacing(12);
+            max-width: spacing(12);
+        }
+    }
+
+    &.bit-npn-pad {
+        padding: spacing(2);
+
+        @include lt-md {
+            padding: 0;
+
+            &.bit-npn-tgl {
+                min-width: spacing(8);
+                max-width: spacing(8);
+            }
+        }
+
+        .bit-npn-cnt {
+            padding: spacing(1);
+            background-color: $clr-bg-sec;
+        }
+    }
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    .bit-srb, .bit-srb-cnt {
+        width: 100%;
+    }
+}
+
+.bit-macos .bit-npn {
+    height: -webkit-fill-available;
+
+    .bit-npn-cnt {
+        height: -webkit-fill-available;
+    }
+}
+
+.bit-npn-ovl {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    min-height: 100vh;
+    z-index: $zindex-overlay;
+    background-color: $clr-bg-overlay;
+
+    @include gt-sm {
+        display: none;
+    }
+}
+
+.bit-npn-cnt {
+    width: auto;
+    display: flex;
+    gap: spacing(2);
+    min-height: 100%;
+    height: fit-content;
+    flex-direction: column;
+}
+
+.bit-npn-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-npn-img {
+    max-width: spacing(4.75);
+    max-height: spacing(4.75);
+}
+
+.bit-npn-spc {
+    flex-grow: 1;
+}

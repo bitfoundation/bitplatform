@@ -4,29 +4,32 @@
 {
     @ChildContent
 }
-else if (ErrorContent is null)
+else if (ErrorContent is not null)
 {
-    <div class="main">
-        <div class="header">
-            <BitButton IconName="@BitIconName.ChromeClose"
-                       Variant="BitVariant.Text"
-                       OnClick="Recover" />
-        </div>
-        <div>
-            <img src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/error-triangle.svg" />
-        </div>
-        <h1 class="title">Oops, something went wrong...</h1>
-        @if (ShowException)
-        {
-            <div class="exception">@CurrentException?.ToString()</div>
-        }
-        <div class="buttons">
-            <BitButton OnClick="Refresh" Variant="BitVariant.Fill">Refresh</BitButton>
-            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
-        </div>
-    </div>
+    @ErrorContent(CurrentException)
 }
 else
 {
-    @ErrorContent(CurrentException)
+    <main>
+        <BitStack Alignment="BitAlignment.Center">
+            <BitImage Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/error-triangle.svg" />
+
+            <BitText Color="BitColor.Error" Typography="BitTypography.H3">
+                Oops, something went wrong...
+            </BitText>
+
+            @if (_showException)
+            {
+                <div class="exception">
+                    @CurrentException?.ToString()
+                </div>
+            }
+
+            <BitStack Horizontal Alignment="BitAlignment.Center" AutoHeight>
+                <BitButton OnClick="Refresh">Refresh</BitButton>
+                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
+                <BitButton OnClick="Recover" Variant="BitVariant.Outline">Recover</BitButton>
+            </BitStack>
+        </BitStack>
+    </main>
 }

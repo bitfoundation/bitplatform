@@ -1,0 +1,138 @@
+﻿@import '../Styles/abstracts/_functions.scss';
+@import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
+
+.header {
+    width: 100%;
+    backdrop-filter: blur(20px);
+    box-shadow: $bit-box-shadow-1;
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    flex-flow: row nowrap;
+    min-height: rem2(65px);
+    box-sizing: border-box;
+    padding-left: rem2(20px);
+    padding-right: rem2(20px);
+    justify-content: space-between;
+
+    @include lt-lg {
+        padding-left: rem2(10px);
+        padding-right: rem2(10px);
+    }
+
+    &.home-page {
+        max-width: rem2(1200px);
+    }
+}
+
+.content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.logo {
+    cursor: pointer;
+    width: rem2(50px);
+    height: rem2(50px);
+    margin-right: rem2(30px);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('images/bit-logo.svg');
+
+    @include lt-lg {
+        margin: 0 rem2(10px);
+    }
+}
+
+.link {
+    height: 100%;
+    cursor: pointer;
+    line-height: 1.5;
+    padding-bottom: 0;
+    padding: rem2(10px);
+    font-size: rem2(16px);
+    text-decoration: none;
+    box-sizing: border-box;
+    color: $bit-color-foreground-secondary;
+
+    &.active {
+        font-weight: 600;
+        color: $bit-color-primary;
+    }
+}
+
+.right-section {
+    gap: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.github-btn {
+    cursor: pointer;
+    width: rem2(40px);
+    height: rem2(40px);
+    border-radius: 50%;
+}
+
+.bit-theme-dark .github-btn {
+    background-image: url('images/github-icon-dark.svg');
+}
+
+.bit-theme-light .github-btn {
+    background-image: url('images/github-icon-light.svg');
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    height: rem2(35px);
+    min-width: rem2(35px);
+    border-radius: 50%;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+
+    .icon-container {
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+
+        .bit-icon {
+            margin: 0 rem2(4px);
+        }
+    }
+
+    &.dark-theme {
+        .icon-container {
+            padding: 2px 0px 0 1px;
+        }
+    }
+}
+
+.bit-theme-dark .light-theme {
+    display: none;
+}
+
+.bit-theme-light .dark-theme {
+    display: none;
+}
+
+::deep {
+    .menu-btn {
+        @include gt-md {
+            display: none;
+        }
+    }
+}

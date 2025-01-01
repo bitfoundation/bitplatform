@@ -2,9 +2,9 @@
 
 .bit-btg {
     overflow: hidden;
+    width: fit-content;
     flex-direction: row;
     display: inline-flex;
-    max-width: fit-content;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-border-radius;
@@ -24,7 +24,12 @@
     }
 }
 
+.bit-btg-flw {
+    width: 100%;
+}
+
 .bit-btg-itm {
+    flex-grow: 1;
     display: flex;
     gap: spacing(1);
     cursor: pointer;

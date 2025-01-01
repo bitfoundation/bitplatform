@@ -1,0 +1,46 @@
+﻿@inherits AppComponentBase
+
+<div class="footer">
+    <section>
+        <div>
+            <div class="bit-logo" />
+            <BitText Typography="BitTypography.Body2">
+                A platform that simplifies the development process for freelancers and software companies through its clean project templates and easy-to-use one-click build and deployment feature.
+            </BitText>
+        </div>
+
+        <div class="links-container">
+            <div class="column">
+                <BitText Typography="BitTypography.H6" Gutter>Explore</BitText>
+                <BitLink Href="overview" Target="_blank">Docs</BitLink>
+                <BitLink Href="iconography" Target="_blank">Iconography</BitLink>
+            </div>
+
+            <div class="column">
+                <BitText Typography="BitTypography.H6" Gutter>Quick links</BitText>
+                <BitLink Href="https://github.com/bitfoundation" Target="_blank">Github Org</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">Github Repo</BitLink>
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/issues" Target="_blank">Github Issues</BitLink>
+            </div>
+
+            <button class="go-to-top" @onclick="GoToTop">Go to top</button>
+        </div>
+    </section>
+
+    <section>
+        <div class="address-info">
+            <a class="address" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+        <div>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="copy-right-txt">Copyright © 2025 bit platform | All Rights Reserved </div>
+        </div>
+    </section>
+</div>

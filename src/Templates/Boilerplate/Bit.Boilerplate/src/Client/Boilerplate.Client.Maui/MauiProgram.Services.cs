@@ -20,10 +20,14 @@ public static partial class MauiProgram
         services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
-            HttpClient httpClient = new(handler)
+            var httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
+            if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is Uri origin)
+            {
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
+            }
             return httpClient;
         });
 
@@ -35,8 +39,10 @@ public static partial class MauiProgram
             return settings;
         });
         services.AddSingleton(ITelemetryContext.Current!);
-        if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
+        if (AppPlatform.IsAndroid is false)
         {
+            // Handle social sign-in callback on local HTTP server.
+            // But in Android, leverage Universal Links for smoother sign-in flows.
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
         }
 

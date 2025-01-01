@@ -1,5 +1,4 @@
-﻿@import '../../Styles/abstracts/_vars.scss';
-@import '../../Styles/abstracts/_colors.scss';
+﻿@import '../../Styles/abstracts/_colors.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
@@ -32,7 +31,7 @@
     }
 
     &.sample-side {
-        top: calc(rem2($HeaderHeight) + var(--bit-status-bar-height) + 5px);
+        top: rem2(70px);
         position: sticky;
     }
 }
@@ -58,15 +57,12 @@
     position: relative;
     display: inline-flex;
     flex-flow: row nowrap;
-    margin-top: rem2(10px);
-    -ms-user-select: none;
     text-decoration: none;
+    margin-top: rem2(10px);
     box-sizing: border-box;
-    -moz-user-select: none;
     align-items: flex-start;
     border-radius: rem2(2px);
     transition-property: all;
-    -webkit-user-select: none;
     transition-duration: 150ms;
     justify-content: flex-start;
     background-color: transparent;
@@ -82,8 +78,8 @@
         border-radius: 50%;
         align-items: center;
         min-width: rem2(36px);
-        margin-right: rem2(20px);
         justify-content: center;
+        margin-right: rem2(20px);
 
         @include lt-lg {
             margin-bottom: rem2(10px);
@@ -113,8 +109,8 @@
         text-align: left;
         font-weight: 400;
         letter-spacing: 0;
-        margin-top: rem2(5px);
         font-size: rem2(14px);
+        margin-top: rem2(5px);
         margin-bottom: rem2(5px);
         color: $bit-color-foreground-secondary;
     }
@@ -158,8 +154,8 @@
         min-height: rem2(200px);
 
         &::-webkit-scrollbar-thumb:hover {
-            background-color: #c8c6c4 !important;
             border-radius: rem2(8px);
+            background-color: #c8c6c4 !important;
             border: rem2(4px) solid #c8c6c4 !important;
         }
     }

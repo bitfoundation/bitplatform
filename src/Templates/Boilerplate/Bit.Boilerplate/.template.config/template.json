@@ -285,19 +285,19 @@
             },
             "replaces": "4030"
         },
-        "serverUrl": {
+        "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
             "datatype": "string",
-            "defaultValue": "use-your-server-url-here.com",
-            "description": "The backend server url. You can change its value later if needed."
+            "defaultValue": "use-your-api-server-url-here.com",
+            "description": "The backend api server url. You can change its value later if needed."
         },
         "normalizedServerUrl": {
             "type": "generated",
             "generator": "regex",
             "dataType": "string",
             "parameters": {
-                "source": "serverUrl",
+                "source": "apiServerUrl",
                 "steps": [
                     {
                         "regex": "^(https|http):\/\/",
@@ -305,7 +305,29 @@
                     }
                 ]
             },
-            "replaces": "use-your-server-url-here.com"
+            "replaces": "use-your-api-server-url-here.com"
+        },
+        "webAppUrl": {
+            "displayName": "web app url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-web-app-url-here.com",
+            "description": "The web app url. You can change its value later if needed."
+        },
+        "normalizedWebAppUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "webAppUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-web-app-url-here.com"
         },
         "advancedTests": {
             "displayName": "Include advanced automated tests?",
@@ -503,7 +525,8 @@
                 {
                     "condition": "(api == Integrated)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/appsettings*.json"
+                        "src/Server/Boilerplate.Server.Web/appsettings*.json",
+                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
                     ]
                 },
                 {

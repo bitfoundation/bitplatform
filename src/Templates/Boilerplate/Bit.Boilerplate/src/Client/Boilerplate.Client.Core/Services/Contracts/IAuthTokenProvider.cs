@@ -6,9 +6,9 @@ public interface IAuthTokenProvider
 {
     Task<string?> GetAccessToken();
 
-    public ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
+    public static ClaimsPrincipal Anonymous() => new(new ClaimsIdentity());
 
-    public ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
+    public static ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
     {
         if (string.IsNullOrEmpty(accessToken) is true)
             return Anonymous();
@@ -25,7 +25,7 @@ public interface IAuthTokenProvider
         return claimPrinciple;
     }
 
-    private IEnumerable<Claim>? ReadClaims(string accessToken, bool validateExpiry)
+    private static IEnumerable<Claim>? ReadClaims(string accessToken, bool validateExpiry)
     {
         var parsedClaims = DeserializeAccessToken(accessToken);
 
@@ -55,7 +55,7 @@ public interface IAuthTokenProvider
         return claims;
     }
 
-    private Dictionary<string, JsonElement> DeserializeAccessToken(string accessToken)
+    private static Dictionary<string, JsonElement> DeserializeAccessToken(string accessToken)
     {
         // Split the token to get the payload
         string base64UrlPayload = accessToken.Split('.')[1];
@@ -72,7 +72,7 @@ public interface IAuthTokenProvider
         return claims;
     }
 
-    private string ConvertBase64UrlToBase64(string base64Url)
+    private static string ConvertBase64UrlToBase64(string base64Url)
     {
         base64Url = base64Url.Replace('-', '+').Replace('_', '/');
 

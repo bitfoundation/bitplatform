@@ -22,7 +22,7 @@
                 disabled="@(isEnabled is false)"
                 aria-disabled="@(isEnabled is false)"
                 title="@GetItemTitle(item)"
-                style="@GetStyle(item)"
+                style="@GetItemStyle(item)"
                 class="@GetItemClass(item)">
             @if (template is not null)
             {
@@ -37,13 +37,13 @@
                 var iconName = GetItemIconName(item);
                 @if (iconName.HasValue())
                 {
-                    <i class="bit-icon bit-icon--@iconName" />
+                    <i style="@Styles?.Icon" class="bit-icon bit-icon--@iconName @Classes?.Icon" />
                 }
 
                 var text = GetItemText(item);
                 if (text.HasValue())
                 {
-                    <span class="bit-btg-btx">@text</span>
+                    <span style="@Styles?.Text" class="bit-btg-btx @Classes?.Text">@text</span>
                 }
             }
         </button>

@@ -150,7 +150,7 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
     }
 
 
@@ -182,7 +182,7 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _Id,
                                 null,
                                 _calloutId,
@@ -236,8 +236,8 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
 
         try
         {
-            await _js.ClearCallout(_calloutId);
-            await _js.SwipesDispose(_calloutId);
+            await _js.BitCalloutClearCallout(_calloutId);
+            await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 

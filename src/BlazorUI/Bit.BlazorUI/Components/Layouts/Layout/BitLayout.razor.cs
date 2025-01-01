@@ -8,24 +8,9 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public BitLayoutClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Enables fixed positioning of the header at the top of the viewport.
-    /// </summary>
-    [Parameter] public bool FixedHeader { get; set; }
-
-    /// <summary>
-    /// Enables fixed positioning of the footer at the bottom of the viewport.
-    /// </summary>
-    [Parameter] public bool FixedFooter { get; set; }
-
-    /// <summary>
     /// The content of the footer section.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
-
-    /// <summary>
-    /// The height of the footer in px to calculate heights and paddings.
-    /// </summary>
-    [Parameter] public int FooterHeight { get; set; }
 
     /// <summary>
     /// The content of the header section.
@@ -33,14 +18,9 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public RenderFragment? Header { get; set; }
 
     /// <summary>
-    /// The height of the header in px to calculate heights and paddings.
+    /// Hides NavPanel content.
     /// </summary>
-    [Parameter] public int HeaderHeight { get; set; }
-
-    /// <summary>
-    /// Hides NavMenu content when true.
-    /// </summary>
-    [Parameter] public bool HideNavMenu { get; set; }
+    [Parameter] public bool HideNavPanel { get; set; }
 
     /// <summary>
     /// The content of the main section.
@@ -48,14 +28,26 @@ public partial class BitLayout : BitComponentBase
     [Parameter] public RenderFragment? Main { get; set; }
 
     /// <summary>
-    /// The content of the nav-menu section.
+    /// The content of the nav panel section.
     /// </summary>
-    [Parameter] public RenderFragment? NavMenu { get; set; }
+    [Parameter] public RenderFragment? NavPanel { get; set; }
 
     /// <summary>
-    /// The height of the status bar on mobile devices to calculate heights and paddings.
+    /// The width of the nav panel section in px.
     /// </summary>
-    [Parameter] public int StatusBarHeight { get; set; }
+    [Parameter] public int NavPanelWidth { get; set; }
+
+    /// <summary>
+    /// Enables sticky positioning of the footer at the bottom of the viewport.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StickyFooter { get; set; }
+
+    /// <summary>
+    /// Enables sticky positioning of the header at the top of the viewport.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StickyHeader { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitLayout.
@@ -69,6 +61,9 @@ public partial class BitLayout : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => StickyHeader ? "bit-lyt-shd" : string.Empty);
+        ClassBuilder.Register(() => StickyFooter ? "bit-lyt-sft" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

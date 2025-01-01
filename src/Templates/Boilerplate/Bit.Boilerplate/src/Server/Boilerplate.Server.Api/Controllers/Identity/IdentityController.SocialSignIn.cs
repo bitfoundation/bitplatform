@@ -11,14 +11,17 @@ public partial class IdentityController
     [HttpGet]
     public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
-        var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort })!;
+        var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();
     }
 
     [HttpGet]
-    public async Task<ActionResult> SocialSignIn(string provider, string? returnUrl = null, int? localHttpPort = null)
+    public async Task<ActionResult> SocialSignIn(string provider,
+        string? returnUrl = null, /* Specifies the relative page address to navigate to after completion. */
+        int? localHttpPort = null, /* Defines the local HTTP server port awaiting the social sign-in result on Windows/macOS versions of the app. */
+        [FromQuery] string? origin = null /* Indicates the base address URL for redirection after the process completes. */ )
     {
-        var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", new { returnUrl, localHttpPort });
+        var redirectUrl = Url.Action(nameof(SocialSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
         var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return new ChallengeResult(provider, properties);
     }
@@ -95,9 +98,7 @@ public partial class IdentityController
         }
 
         if (localHttpPort is not null) return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), url).ToString());
-        var webClientUrl = Settings.WebClientUrl;
-        if (string.IsNullOrEmpty(webClientUrl) is false) return Redirect(new Uri(new Uri(webClientUrl), url).ToString());
-        return LocalRedirect($"~{url}");
+        return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), url).ToString());
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to perform {loginProvider} social sign in for {principal}")]

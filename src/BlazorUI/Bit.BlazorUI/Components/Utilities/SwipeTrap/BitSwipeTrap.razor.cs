@@ -93,7 +93,7 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 10, dotnetObj);
+            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);

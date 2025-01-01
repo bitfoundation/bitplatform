@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div style="@Styles?.Top" class="bit-ash-top @Classes?.Top" />
+    <div style="@Styles?.Center"
+         class="bit-ash-center @Classes?.Center"
+         dir="@Dir?.ToString().ToLower()">
+        <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
+        <div @ref="_containerRef" style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
+            <BitCascadingValueProvider Values="CascadingValues">
+                @ChildContent
+            </BitCascadingValueProvider>
+        </div>
+        <div style="@Styles?.Right" class="bit-ash-right @Classes?.Right"></div>
+    </div>
+    <div style="@Styles?.Bottom" class="bit-ash-bottom @Classes?.Bottom"></div>
+</div>

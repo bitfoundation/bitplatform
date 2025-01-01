@@ -1,55 +1,41 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
-     @attributes="HtmlAttributes"
+@{
+    var showNavPanel = NavPanel is not null && HideNavPanel is false;
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-
-    @{
-        var headerHeight = HeaderHeight + StatusBarHeight;
-        var headerHeightStyle = $"{(headerHeight > 0 ? $"height:{headerHeight}px;" : "")}";
-        var headerPaddingStyle = $"{(StatusBarHeight > 0 ? $"padding-top:{StatusBarHeight}px;" : "")}";
-        var headerStyles = $"{headerHeightStyle}{headerPaddingStyle}{Styles?.Header}";
-        var headerClasses = $"bit-lyt-hdr{(FixedHeader ? " bit-lyt-fhd" : "")} {Classes?.Header}";
-
-        var mainPaddingTopStyle = $"{(FixedHeader && headerHeight > 0 ? $"padding-top:{headerHeight}px;" : "")}";
-        var mainPaddingBottomStyle = $"{(FixedFooter && FooterHeight > 0 ? $"padding-bottom:{FooterHeight}px;" : "")}";
-        var mainStyles = $"{mainPaddingTopStyle}{mainPaddingBottomStyle}{Styles?.Main}";
-        var mainClasses = $"bit-lyt-man {Classes?.Main}";
-
-        var footerHeightStyle = $"{(FooterHeight > 0 ? $"height:{FooterHeight}px;" : "")}";
-        var footerStyles = $"{footerHeightStyle}{Styles?.Footer}";
-        var footerClasses = $"bit-lyt-ftr{(FixedFooter ? " bit-lyt-fft" : "")} {Classes?.Footer}";
-    }
     <CascadingValue Value="Dir">
         @if (Header is not null)
         {
-            <header class="@headerClasses" style="@headerStyles">
+            <header style="@Styles?.Header" class="bit-lyt-hdr @Classes?.Header">
                 @Header
             </header>
         }
 
-        <main class="@mainClasses" style="@mainStyles">
-            @if (NavMenu is not null && HideNavMenu is false)
+        <main style="@Styles?.Main" class="bit-lyt-man @Classes?.Main">
+            @if (showNavPanel)
             {
-                <div style="@Styles?.NavMenu" class="bit-lyt-nmn @Classes?.NavMenu">
-                    @NavMenu
+                <div style="@Styles?.NavPanel" class="bit-lyt-nmn @Classes?.NavPanel">
+                    @NavPanel
                 </div>
             }
 
-            <div style="@Styles?.MainContent" class="bit-lyt-mcn @Classes?.MainContent">
+            <div style="@($"{(showNavPanel ? $"width:calc(100% - {NavPanelWidth}px);" : "")};{Styles?.MainContent}".Trim(';'))" class="bit-lyt-mcn @Classes?.MainContent">
                 @Main
             </div>
         </main>
 
         @if (Footer is not null)
         {
-            <footer class="@footerClasses" style="@footerStyles">
+                <footer style="@Styles?.Footer" class="bit-lyt-ftr @Classes?.Footer">
                 @Footer
-            </footer>
+                </footer>
         }
     </CascadingValue>
 </div>

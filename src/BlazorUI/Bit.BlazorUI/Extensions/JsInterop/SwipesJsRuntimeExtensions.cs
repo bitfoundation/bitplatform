@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 internal static class SwipesJsRuntimeExtensions
 {
-    internal static ValueTask SwipesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IJSRuntime js,
+    internal static ValueTask BitSwipesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IJSRuntime js,
         string id,
         decimal trigger,
         BitPanelPosition position,
@@ -15,7 +15,7 @@ internal static class SwipesJsRuntimeExtensions
         return js.InvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, position, isRtl, dotnetObj, isResponsive);
     }
 
-    internal static ValueTask SwipesDispose(this IJSRuntime jsRuntime, string id)
+    internal static ValueTask BitSwipesDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Swipes.dispose", id);
     }

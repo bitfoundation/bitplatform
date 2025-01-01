@@ -73,7 +73,7 @@ public partial class BitLink : BitComponentBase
     {
         if (IsEnabled is false) return;
 
-        await _js.ScrollElementIntoView(Href![1..]);
+        await _js.BitUtilsScrollElementIntoView(Href![1..]);
     }
 
     private void OnSetHrefAndRel()

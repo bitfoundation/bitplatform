@@ -48,10 +48,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
     public async Task StoreTokens(TokenResponseDto response, bool? rememberMe = null)
     {
-        if (rememberMe is null)
-        {
-            rememberMe = await storageService.IsPersistent("refresh_token");
-        }
+        rememberMe ??= await storageService.IsPersistent("refresh_token");
 
         await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
@@ -160,18 +157,18 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         {
             var accessToken = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
 
-            return new AuthenticationState(tokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
+            return new AuthenticationState(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp); // Do not throw exceptions in GetAuthenticationStateAsync. This will fault CascadingAuthenticationState's state unless NotifyAuthenticationStateChanged is called again.
-            return new AuthenticationState(tokenProvider.Anonymous());
+            return new AuthenticationState(IAuthTokenProvider.Anonymous());
         }
     }
 
     public async Task<bool> TryEnterElevatedAccessMode(CancellationToken cancellationToken)
     {
-        var user = tokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
+        var user = IAuthTokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: true);
         var hasElevatedAccess = await authorizationService.AuthorizeAsync(user, AuthPolicies.ELEVATED_ACCESS) is { Succeeded: true };
         if (hasElevatedAccess)
             return true;

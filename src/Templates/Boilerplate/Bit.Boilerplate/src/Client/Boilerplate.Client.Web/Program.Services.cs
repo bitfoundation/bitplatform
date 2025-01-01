@@ -23,7 +23,14 @@ public static partial class Program
             serverAddress = new Uri(new Uri(builder.HostEnvironment.BaseAddress), serverAddress);
         }
 
-        services.AddScoped(sp => new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress });
+        services.AddScoped(sp =>
+        {
+            var httpClient = new HttpClient(sp.GetRequiredService<HttpMessageHandler>()) { BaseAddress = serverAddress };
+
+            httpClient.DefaultRequestHeaders.Add("X-Origin", builder.HostEnvironment.BaseAddress);
+
+            return httpClient;
+        });
     }
 
     public static void AddClientWebProjectServices(this IServiceCollection services, IConfiguration configuration)

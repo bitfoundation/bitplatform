@@ -944,14 +944,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputTimeHourRef);
+        await _js.BitUtilsSelectText(_inputTimeHourRef);
     }
 
     private async Task HandleOnTimeMinuteFocus()
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(_inputTimeMinuteRef);
+        await _js.BitUtilsSelectText(_inputTimeMinuteRef);
     }
 
     private void ToggleAmPmTime()

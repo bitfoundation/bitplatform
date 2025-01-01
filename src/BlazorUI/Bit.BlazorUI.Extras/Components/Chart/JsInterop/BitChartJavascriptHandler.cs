@@ -25,7 +25,7 @@ public class BitChartJavascriptHandler<T> : IBitChartMethodHandler<T>
     /// <param name="methodName">The namespace and name of a JavaScript function (see <see cref="MethodName"/> for details).</param>
     public BitChartJavascriptHandler(string methodName)
     {
-        if (string.IsNullOrWhiteSpace(methodName))
+        if (methodName.HasNoValue())
             throw new ArgumentException("The method name cannot be null or whitespace. It has to include the namespace and name of the js-function.");
 
         if (methodName.Length < 3 || methodName.Count(c => c == '.') > 1)

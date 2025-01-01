@@ -1,23 +1,28 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="status-bar">@_pageTitle - bit BlazorUI</div>
-
-<Header />
-
-<main class="@($"{BitCss.Class.Color.Background.Primary}{(CurrentUrl == "/" ? " full-page" : "")}")">
-    @if (CurrentUrl != "/")
-    {
-        <NavMenu />
-    }
-
-    <div class="site-content">
-        <AppErrorBoundary>
-            @Body
-        </AppErrorBoundary>
-
-    </div>
-</main>
-
-<Footer />
+<BitAppShell @ref="_appShellRef">
+    <BitLayout HideNavPanel="_isHomePage" NavPanelWidth="_isNavPanelOpen ? 0 : 14*16" StickyHeader>
+        <Header>
+            <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
+        </Header>
+        <NavPanel>
+            <BitNavPanel @bind-IsOpen="_isNavPanelOpen"
+                         Top="65"
+                         NoPad NoToggle
+                         Items="_navItems"
+                         SearchBoxPlaceholder="Search component"
+                         SearchBoxStyles="@(new() { Root = "padding-inline:8px" })"
+                         OnItemClick="async (BitNavItem item) => await HandleOnNavItemClick()" />
+        </NavPanel>
+        <Main>
+            <div class="site-content">
+                @Body
+            </div>
+        </Main>
+        <Footer>
+            <AppFooter AppShell="_appShellRef" />
+        </Footer>
+    </BitLayout>
+</BitAppShell>
 
 <MessageBox />

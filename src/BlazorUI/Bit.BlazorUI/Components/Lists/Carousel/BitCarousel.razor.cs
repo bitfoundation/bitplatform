@@ -176,7 +176,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
 
         var itemsCount = _allItems.Count;
-        var rect = await _js.GetBoundingClientRect(_carousel);
+        var rect = await _js.BitUtilsGetBoundingClientRect(_carousel);
         if (rect is null) return;
         var sign = Dir == BitDir.Rtl ? -1 : 1;
         for (int i = 0; i < itemsCount; i++)
@@ -332,7 +332,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         if (Math.Abs(delta) <= 20) return;
 
         _isPointerDown = false;
-        await _js.SetStyle(_carousel, "cursor", "");
+        await _js.BitUtilsSetStyle(_carousel, "cursor", "");
 
         if (delta < 0)
         {
@@ -348,14 +348,14 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     {
         _isPointerDown = true;
         _pointerX = e.ClientX;
-        await _js.SetStyle(_carousel, "cursor", "grabbing");
+        await _js.BitUtilsSetStyle(_carousel, "cursor", "grabbing");
         StateHasChanged();
     }
 
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
-        await _js.SetStyle(_carousel, "cursor", "");
+        await _js.BitUtilsSetStyle(_carousel, "cursor", "");
         StateHasChanged();
     }
 

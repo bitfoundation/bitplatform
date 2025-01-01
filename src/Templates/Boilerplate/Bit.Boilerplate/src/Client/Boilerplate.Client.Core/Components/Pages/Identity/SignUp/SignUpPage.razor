@@ -29,7 +29,7 @@
                         <BitPivot Alignment="BitAlignment.Center">
                         @* <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.UserName)]">
                             <BitTextField @bind-Value="signUpModel.UserName"
-                                          AutoFocus TabIndex="1"
+                                          TabIndex="1"
                                           Type="BitInputType.Text"
                                           Label="@Localizer[nameof(AppStrings.UserName)]"
                                           Placeholder="@Localizer[nameof(AppStrings.UserName)]" />
@@ -38,7 +38,7 @@
 
                             <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.Email)]">
                                 <BitTextField @bind-Value="signUpModel.Email"
-                                              AutoFocus TabIndex="1"
+                                              TabIndex="1"
                                               Type="BitInputType.Email"
                                               Label="@Localizer[nameof(AppStrings.Email)]"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />

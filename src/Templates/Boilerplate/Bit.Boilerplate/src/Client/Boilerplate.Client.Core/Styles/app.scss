@@ -1,30 +1,9 @@
 @import '../Styles/abstracts/_media-queries.scss';
+@import '../Styles/abstracts/_bit-css-variables.scss';
 
 :root[bit-theme="dark"] {
     //--bit-clr-bg-pri: #010409;
     // In case you need to change the background color, make sure to also update ThemeColors.cs's PrimaryDarkBgColor accordingly.
-}
-
-:root {
-    --app-inset-top: env(safe-area-inset-top);
-    --app-inset-left: env(safe-area-inset-left);
-    --app-inset-right: env(safe-area-inset-right);
-    --app-inset-bottom: env(safe-area-inset-bottom);
-    //--
-    --app-width-vw: calc(100vw - var(--app-inset-left) - var(--app-inset-right));
-    --app-height-vh: calc(100vh - var(--app-inset-top) - var(--app-inset-bottom));
-    --app-width-per: calc(100% - var(--app-inset-left) - var(--app-inset-right));
-    --app-height-per: calc(100% - var(--app-inset-top) - var(--app-inset-bottom));
-    --app-width: calc(var(--win-width) - var(--app-inset-left) - var(--app-inset-right));
-    --app-height: calc(var(--win-height) - var(--app-inset-top) - var(--app-inset-bottom));
-    //--
-    --app-inset-inline-start: var(--app-inset-left);
-    --app-inset-inline-end: var(--app-inset-right);
-
-    [dir="rtl"] {
-        --app-inset-inline-start: var(--app-inset-right);
-        --app-inset-inline-end: var(--app-inset-left);
-    }
 }
 
 * {
@@ -72,12 +51,12 @@ p {
 }
 
 .modal {
-    width: var(--app-width);
-    height: var(--app-height);
-    top: var(--app-inset-top);
-    left: var(--app-inset-left);
-    right: var(--app-inset-right);
-    bottom: var(--app-inset-bottom);
+    top: $bit-env-inset-top;
+    left: $bit-env-inset-left;
+    right: $bit-env-inset-right;
+    bottom: $bit-env-inset-bottom;
+    width: $bit-env-width-available;
+    height: $bit-env-height-available;
 }
 
 div[dir=rtl] {

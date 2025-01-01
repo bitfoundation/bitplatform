@@ -1,0 +1,30 @@
+﻿@inherits AppComponentBase
+
+<div class="header">
+    <div class="container@(IsHomePage ? " home-page" : "")">
+        <div class="content">
+            @if (IsHomePage is false)
+            {
+                <BitButton FixedColor
+                           Class="menu-btn"
+                           Variant="BitVariant.Text"
+                           IconName="@BitIconName.CollapseMenu"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
+            }
+            <a class="logo" href="/" aria-label="Homepage"></a>
+            <a class="link@(IsHomePage ? " active" : "")" href="/">Home</a>
+            <a class="link@(IsHomePage ? "" : " active")" href="/overview">Docs</a>
+        </div>
+        <div class="right-section">
+            <a class="github-btn" target="_blank" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
+
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
+                <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
+            </button>
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
+                <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@page "/components/navpanel"
+
+@inherits AppComponentBase
+
+<PageOutlet Url="components/navpanel"
+            Title="NavPanel"
+            Description="navpanel component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="NavPanel"
+               ComponentDescription="BitNavPanel is a navigation component specialized to be rendered in a vertical panel."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <ExamplePreview>
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="basicIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <BitNavPanel @bind-IsOpen="basicIsOpen" Items="basicNavItems" NoPad />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="RTL" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <div class="open-btn">
+                <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
+            </div>
+            <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="basicNavItems" Dir="BitDir.Rtl" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

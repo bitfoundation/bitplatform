@@ -568,7 +568,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _Id,
                                 null,
                                 _calloutId,
@@ -607,7 +607,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable w
 
             try
             {
-                await _js.ClearCallout(_calloutId);
+                await _js.BitCalloutClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

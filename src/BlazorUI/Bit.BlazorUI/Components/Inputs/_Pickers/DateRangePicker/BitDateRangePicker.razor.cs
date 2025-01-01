@@ -593,7 +593,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.SwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitDateRangePickerValue? result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -642,7 +642,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ResetPickersState();
 
-        var bodyWidth = await _js.GetBodyWidth();
+        var bodyWidth = await _js.BitUtilsGetBodyWidth();
         var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)
@@ -1629,14 +1629,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
+        await _js.BitUtilsSelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
     }
 
     private async Task HandleOnMinuteInputFocus(bool isStartTime)
     {
         if (IsEnabled is false || ShowTimePicker is false) return;
 
-        await _js.SelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
+        await _js.BitUtilsSelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
     }
 
     private void HandleOnAmClick(bool isStartTime)
@@ -2025,7 +2025,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (Standalone) return false;
         if (IsEnabled is false) return false;
 
-        return await _js.ToggleCallout(_dotnetObj,
+        return await _js.BitCalloutToggleCallout(_dotnetObj,
                                        _dateRangePickerId,
                                        null,
                                        _calloutId,
@@ -2076,8 +2076,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         try
         {
-            await _js.ClearCallout(_calloutId);
-            await _js.SwipesDispose(_calloutId);
+            await _js.BitCalloutClearCallout(_calloutId);
+            await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
