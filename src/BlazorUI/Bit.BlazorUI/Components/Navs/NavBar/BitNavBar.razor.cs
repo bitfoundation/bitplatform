@@ -211,10 +211,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.OrdinalIgnoreCase) ||
                                                         (GetAdditionalUrls(item)?.Any(u => string.Equals(u, currentUrl, StringComparison.OrdinalIgnoreCase)) ?? false));
 
-        if (currentItem is not null)
-        {
-            _ = AssignSelectedItem(currentItem);
-        }
+        _ = AssignSelectedItem(currentItem);
     }
 
     private void OnSetParameters()
