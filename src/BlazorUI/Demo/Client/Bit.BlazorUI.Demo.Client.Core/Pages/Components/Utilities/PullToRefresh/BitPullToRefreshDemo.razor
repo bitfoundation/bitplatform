@@ -46,7 +46,7 @@
 
     <ComponentExampleBox Title="Multiple" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <ExamplePreview>
-            <div style="display:flex; gap:1rem;">
+            <div class="example-content">
                 <div>
                     <BitPullToRefresh OnRefresh="HandleOnRefresh1">
                         <div class="anchor">
@@ -68,6 +68,67 @@
                         </div>
                     </BitPullToRefresh>
                 </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+
+
+    <ComponentExampleBox Title="Advanced" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <div>An illustrative example of integrating this component into a straightforward mobile application.</div>
+            <br />
+            <div class="mobile-frame">
+                <div class="screen">
+                    <BitLayout Classes="@(new() { MainContent = "custom-main" })">
+                        <Header>
+                            <BitCard FullWidth>
+                                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" VerticalAlign="BitAlignment.Center">
+                                    <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="50" />
+                                    <BitText Typography="BitTypography.H4" Color="BitColor.Info">
+                                        bit BlazorUI
+                                    </BitText>
+                                </BitStack>
+                            </BitCard>
+                        </Header>
+                        <Main>
+                            <BitPullToRefresh OnRefresh="HandleOnRefreshAdvanced" ScrollerSelector=".custom-main" Style="width:100%">
+                                @foreach (var (idx, i) in advancedItems)
+                                {
+                                    <div class="row" @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                                }
+                            </BitPullToRefresh>
+                        </Main>
+                    </BitLayout>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+            <br /><br />
+            <div class="example-content">
+                <BitPullToRefresh OnRefresh="HandleOnRefreshStyle"
+                                  Styles="@(new() { Loading = "background-color: rgb(76, 255, 0, 0.1)", Spinner = "padding: 5px;border-radius: 50%;background-color: #4cff00;" })">
+                    <div class="anchor">
+                        @foreach (var (idx, i) in styleItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </BitPullToRefresh>
+
+                <BitPullToRefresh OnRefresh="HandleOnRefreshClass"
+                                  Classes="@(new() { Loading = "custom-loading", Spinner = "custom-spinner" })">
+                    <div class="anchor">
+                        @foreach (var (idx, i) in classItems)
+                        {
+                            <div @key="idx">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </BitPullToRefresh>
             </div>
         </ExamplePreview>
     </ComponentExampleBox>
