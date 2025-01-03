@@ -236,8 +236,7 @@ async function createAssetsCache(ignoreProgressReport = false) {
             .concat(Object.keys(blazorBootJson.resources.wasmNative || {}))
             .concat(Object.keys(blazorBootJson.resources.coreAssembly || {})) // after .NET 9
             .concat(Object.keys(blazorBootJson.resources.icu || {}))
-            .concat(Object.keys(blazorBootJson.resources.jsModuleGlobalization || {}))
-            ;
+            .concat(Object.keys(blazorBootJson.resources.jsModuleGlobalization || {}));
         const blazorAssets = blazorResources.map(r => UNIQUE_ASSETS.find(a => a.url.endsWith(`/${r}`))).filter(a => !!a);
 
         diag('blazorBootAsset:', blazorBootAsset);
