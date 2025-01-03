@@ -14,8 +14,8 @@
 }
 
 .mobile-frame {
-    width: 375px;
-    height: 712px;
+    width: 300px;
+    height: 600px;
     overflow: hidden;
     position: relative;
     border-radius: 36px;
@@ -29,6 +29,13 @@
     }
 }
 
+.advanced-anchor {
+    cursor: grab;
+    height: 490px;
+    overflow: auto;
+    user-select: none;
+}
+
 ::deep {
     .custom-loading {
         background-color: rgb(255, 106, 0, 0.1);
@@ -38,12 +45,6 @@
         padding: 5px;
         border-radius: 50%;
         background-color: #ff6a00;
-    }
-
-    .custom-main {
-        cursor: grab;
-        overflow: auto;
-        user-select: none;
     }
 
     .row {

@@ -145,8 +145,8 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     private readonly string example4RazorCode = @"
 <style>
     .mobile-frame {
-        width: 375px;
-        height: 712px;
+        width: 300px;
+        height: 600px;
         overflow: hidden;
         position: relative;
         border-radius: 36px;
@@ -160,8 +160,9 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
         height: 100%;
     }
 
-    .custom-main {
+    .advanced-anchor {
         cursor: grab;
+        height: 490px;
         overflow: auto;
         user-select: none;
     }
@@ -174,28 +175,30 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
 </style>
 
 <div class=""mobile-frame"">
-<div class=""screen"">
-    <BitLayout Classes=""@(new() { MainContent = ""custom-main"" })"">
-        <Header>
-            <BitCard FullWidth>
-                <BitStack Horizontal HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
-                    <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
-                    <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
-                        bit BlazorUI
-                    </BitText>
-                </BitStack>
-            </BitCard>
-        </Header>
-        <Main>
-            <BitPullToRefresh OnRefresh=""HandleOnRefreshAdvanced"" ScrollerSelector="".custom-main"" Style=""width:100%"">
-                @foreach (var (idx, i) in advancedItems)
-                {
-                    <div class=""row"" @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
-                }
-            </BitPullToRefresh>
-        </Main>
-    </BitLayout>
-</div>
+    <div class=""screen"">
+        <BitLayout>
+            <Header>
+                <BitCard FullWidth>
+                    <BitStack Horizontal HorizontalAlign=""BitAlignment.Center"" VerticalAlign=""BitAlignment.Center"">
+                        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""50"" />
+                        <BitText Typography=""BitTypography.H4"" Color=""BitColor.Info"">
+                            BlazorUI
+                        </BitText>
+                    </BitStack>
+                </BitCard>
+            </Header>
+            <Main>
+                <BitPullToRefresh OnRefresh=""HandleOnRefreshAdvanced"" ScrollerSelector="".advanced-anchor"" Style=""width:100%"">
+                    <div class=""advanced-anchor"">
+                        @foreach (var (idx, i) in advancedItems)
+                        {
+                            <div class=""row"" @key=""idx"">@(idx.ToString().PadLeft(2, '0')). Item @i</div>
+                        }
+                    </div>
+                </BitPullToRefresh>
+            </Main>
+        </BitLayout>
+    </div>
 </div>";
     private readonly string example4CsharpCode = @"
 private (int, int)[] advancedItems = GenerateRandomNumbers(1, 51);
