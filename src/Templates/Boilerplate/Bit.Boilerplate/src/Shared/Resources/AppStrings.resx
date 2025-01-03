@@ -934,7 +934,8 @@
     <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
-    <value>Token {0}</value>
+    <value>Token {0}
+{1} {0}</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
@@ -988,19 +989,24 @@
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
     <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
-    <value>{0} is your change phone number token in Boilerplate.</value>
+    <value>{0} is your change phone number token in Boilerplate
+{1} {0}</value>
   </data>
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
-    <value>{0} is your confirm phone number token in Boilerplate.</value>
+    <value>{0} is your confirm phone number token in Boilerplate
+{1} {0}</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} is your two factor token in Boilerplate.</value>
+    <value>{0} is your two factor token in Boilerplate
+{1} {0}</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} is your OTP in Boilerplate.</value>
+    <value>{0} is your OTP in Boilerplate
+{1} {0}</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} is your reset password token in Boilerplate.</value>
+    <value>{0} is your reset password token in Boilerplate
+{1} {0}</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>Online</value>

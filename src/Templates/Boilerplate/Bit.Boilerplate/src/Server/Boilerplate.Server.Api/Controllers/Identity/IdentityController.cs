@@ -308,7 +308,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            var smsMessage = Localizer[nameof(AppStrings.OtpShortText), await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"))].ToString();
+            var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"));
+            var smsMessage = Localizer[nameof(AppStrings.OtpShortText), $"#{token}", $"@{HttpContext.Request.GetWebAppUrl().Host}" /*Web OTP*/].ToString();
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
@@ -364,15 +365,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             sendMessagesTasks.Add(emailService.SendTwoFactorToken(user, token, cancellationToken));
         }
 
-        var message = Localizer[nameof(AppStrings.TwoFactorTokenShortText), token].ToString();
-
         if (firstStepAuthenticationMethod != "Sms" && await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
+            var smsMessage = Localizer[nameof(AppStrings.TwoFactorTokenShortText), $"#{token}", $"@{HttpContext.Request.GetWebAppUrl().Host}" /*Web OTP*/].ToString();
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
         if (firstStepAuthenticationMethod != "Push")
         {
+            var message = Localizer[nameof(AppStrings.TwoFactorTokenShortText), token].ToString();
             //#if (signalR == true)
             sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
             //#endif
