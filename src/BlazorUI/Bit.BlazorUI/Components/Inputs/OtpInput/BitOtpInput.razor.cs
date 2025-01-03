@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
-public partial class BitOtpInput : BitInputBase<string?>, IDisposable
+public partial class BitOtpInput : BitInputBase<string?>
 {
     private string _labelId = default!;
     private string?[] _inputIds = default!;
@@ -116,14 +116,16 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
     /// </summary>
     public ValueTask FocusAsync(int index = 0) => _inputRefs[index].FocusAsync();
 
-    [JSInvokable]
-    public async Task SetPastedData(string pastedValue)
+
+
+    [JSInvokable("SetValue")]
+    public async Task _SetValue(string value)
     {
         if (IsEnabled is false || InvalidValueBinding()) return;
-        if (pastedValue.HasNoValue()) return;
-        if (Type is BitInputType.Number && int.TryParse(pastedValue, out _) is false) return;
+        if (value.HasNoValue()) return;
+        if (Type is BitInputType.Number && int.TryParse(value, out _) is false) return;
 
-        SetInputsValue(pastedValue);
+        SetInputsValue(value);
 
         CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
@@ -195,7 +197,7 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
 
         foreach (var inputRef in _inputRefs)
         {
-            await _js.BitOtpInputSetup(_dotnetObj, inputRef);
+            await _js.BitOtpInputSetup(_Id, _dotnetObj, inputRef);
         }
     }
 
@@ -206,11 +208,12 @@ public partial class BitOtpInput : BitInputBase<string?>, IDisposable
         return true;
     }
 
-    protected override void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing)
         {
             _dotnetObj?.Dispose();
+            await _js.BitOtpInputDispose(_Id);
         }
 
         base.Dispose(disposing);
