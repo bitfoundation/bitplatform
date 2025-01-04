@@ -96,7 +96,7 @@ public partial class SignInPage : IDisposable
     {
         try
         {
-            var port = localHttpServer.Start(CurrentCancellationToken);
+            var port = localHttpServer.UseLocalHttpServerForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
 

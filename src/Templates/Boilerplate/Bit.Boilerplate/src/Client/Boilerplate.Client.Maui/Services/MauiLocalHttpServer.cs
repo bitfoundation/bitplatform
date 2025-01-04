@@ -1,16 +1,15 @@
 ﻿using EmbedIO;
 using System.Net;
-using System.Net.Sockets;
 using EmbedIO.Actions;
+using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Services;
 
-/// <summary>
-/// <inheritdoc cref="ILocalHttpServer"/>
-/// </summary>
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
+    [AutoInject] private ILogger<ILocalHttpServer> logger;
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
@@ -88,5 +87,13 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
         var port = ((IPEndPoint)l.LocalEndpoint).Port;
         l.Stop();
         return port;
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="ILocalHttpServer.UseLocalHttpServerForSocialSignIn"/>
+    /// </summary>
+    public bool UseLocalHttpServerForSocialSignIn()
+    {
+        return AppPlatform.IsAndroid is false;
     }
 }
