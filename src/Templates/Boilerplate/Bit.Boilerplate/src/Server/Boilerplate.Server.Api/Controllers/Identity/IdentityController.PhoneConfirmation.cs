@@ -78,7 +78,7 @@ public partial class IdentityController
         var phoneNumber = user.PhoneNumber!;
         var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"VerifyPhoneNumber:{phoneNumber},{user.PhoneNumberTokenRequestedOn?.ToUniversalTime()}"));
 
-        var message = Localizer[nameof(AppStrings.ConfirmPhoneTokenSmsText), token];
+        var message = Localizer[nameof(AppStrings.ConfirmPhoneTokenShortText), token];
         var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
         await phoneService.SendSms(smsMessage, phoneNumber, cancellationToken);
     }

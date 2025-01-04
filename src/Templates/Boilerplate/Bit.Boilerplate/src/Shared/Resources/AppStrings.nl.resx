@@ -933,8 +933,8 @@
     <data name="EnterElevatedAccessToken" xml:space="preserve">
     <value>Voer de verhoogde toegangstoken in die we u zojuist hebben gestuurd of de code van uw authenticator-app om door te gaan.</value>
   </data>
-    <data name="ElevatedAccessToken" xml:space="preserve">
-    <value>Token {0}</value>
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} is je code in Boilerplate.</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>Je hebt de bevestigingsmail al aangevraagd. Probeer het opnieuw in {0}</value>
@@ -987,20 +987,20 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>Je hebt de e-mail met de 2FA-token al aangevraagd. Probeer het opnieuw in {0}.</value>
   </data>
-    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
-    <value>{0} is het token voor het wijzigen van uw telefoonnummer in Boilerplate.</value>
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} is je code in Boilerplate.</value>
   </data>
-    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
-    <value>{0} is uw bevestigingstelefoonnummer token in Boilerplate.</value>
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} is je code in Boilerplate.</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} is je tweefactortoken in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} is uw OTP in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} is het token voor het opnieuw instellen van uw wachtwoord in Boilerplate.</value>
+    <value>{0} is je code in Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>Online</value>

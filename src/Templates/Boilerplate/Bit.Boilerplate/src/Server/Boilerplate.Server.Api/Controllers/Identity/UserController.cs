@@ -228,7 +228,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
-        var message = Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token];
+        var message = Localizer[nameof(AppStrings.ChangePhoneNumberTokenShortText), token];
         var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
 
         await phoneService.SendSms(smsMessage, request.PhoneNumber!, cancellationToken);
@@ -391,7 +391,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-        var message = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
+        var message = Localizer[nameof(AppStrings.ElevatedAccessTokenShortText), token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
