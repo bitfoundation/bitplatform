@@ -2,9 +2,9 @@
 //#if (framework == 'net9.0')
 using Maui.AppStores;
 using Maui.InAppReviews;
-using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
 //#endif
+using Microsoft.Extensions.Logging;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
