@@ -10,7 +10,6 @@ using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 using Boilerplate.Server.Api.Services.Identity;
-using Twilio.Jwt.AccessToken;
 
 namespace Boilerplate.Server.Api.Controllers.Identity;
 
@@ -310,8 +309,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
             var token = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"Otp_Sms,{user.OtpRequestedOn?.ToUniversalTime()}"));
-            var smsMessage = Localizer[nameof(AppStrings.OtpShortText), token].ToString();
-            smsMessage += $"{smsMessage}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
+            var message = Localizer[nameof(AppStrings.OtpShortText), token].ToString();
+            var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
