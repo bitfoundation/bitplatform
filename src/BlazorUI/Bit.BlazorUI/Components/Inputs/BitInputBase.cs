@@ -64,6 +64,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
     [Parameter] public string? Name { get; set; }
 
     /// <summary>
+    /// Disables the validation of the input.
+    /// </summary>
+    [Parameter] public bool NoValidate { get; set; }
+
+    /// <summary>
     /// Callback for when the input value changes.
     /// </summary>
     [Parameter] public EventCallback<TValue?> OnChange { get; set; }
@@ -141,6 +146,11 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
         {
             switch (parameter.Key)
             {
+                case nameof(NoValidate):
+                    NoValidate = (bool)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(CascadedEditContext):
                     CascadedEditContext = (EditContext?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
@@ -198,26 +208,29 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
             }
         }
 
-        if (_hasInitializedParameters is false)
+        if (NoValidate is false)
         {
-            // This is the first run
-            // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInitialized to call base.OnInitialized()
+            if (_hasInitializedParameters is false)
+            {
+                // This is the first run
+                // Could put this logic in OnInitialized, but its nice to avoid forcing people who override OnInitialized to call base.OnInitialized()
 
-            CreateFieldIdentifier();
+                CreateFieldIdentifier();
 
-            _hasInitializedParameters = true;
+                _hasInitializedParameters = true;
+            }
+            else if (CascadedEditContext != EditContext)
+            {
+                // Not the first run
+
+                // We don't support changing EditContext because it's messy to be clearing up state and event
+                // handlers for the previous one, and there's no strong use case. If a strong use case
+                // emerges, we can consider changing this.
+                throw new InvalidOperationException($"{GetType()} does not support changing the {nameof(EditContext)} dynamically.");
+            }
+
+            UpdateValidationAttributes();
         }
-        else if (CascadedEditContext != EditContext)
-        {
-            // Not the first run
-
-            // We don't support changing EditContext because it's messy to be clearing up state and event
-            // handlers for the previous one, and there's no strong use case. If a strong use case
-            // emerges, we can consider changing this.
-            throw new InvalidOperationException($"{GetType()} does not support changing the {nameof(EditContext)} dynamically.");
-        }
-
-        UpdateValidationAttributes();
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
@@ -334,7 +347,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
                 await SetCurrentValueAsync(parsedValue);
             }
         }
-        else
+        else if (NoValidate is false)
         {
             _parsingFailed = true;
 
@@ -347,6 +360,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
                 // Since we're not writing to CurrentValue, we'll need to notify about modification from here
                 EditContext.NotifyFieldChanged(FieldIdentifier);
             }
+        }
+        else
+        {
+            _parsingFailed = false;
         }
 
         // We can skip the validation notification if we were previously valid and still are
@@ -365,7 +382,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
 
         await ValueChanged.InvokeAsync(value);
 
-        EditContext?.NotifyFieldChanged(FieldIdentifier);
+        if (EditContext is not null && NoValidate is false)
+        {
+            EditContext.NotifyFieldChanged(FieldIdentifier);
+        }
 
         await OnChange.InvokeAsync(value);
     }
@@ -388,7 +408,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase, IDisposable, IAsy
 
     private void UpdateValidationAttributes()
     {
-        if (EditContext is null) return;
+        if (EditContext is null || NoValidate) return;
 
         var hasAriaInvalidAttribute = InputHtmlAttributes is not null && InputHtmlAttributes.ContainsKey("aria-invalid");
 
