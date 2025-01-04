@@ -45,14 +45,13 @@ public partial class IdentityController
             sendMessagesTasks.Add(emailService.SendResetPasswordToken(user, token, link, cancellationToken));
         }
 
+        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token].ToString();
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            var smsMessage = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), $"#{token}", $"@{HttpContext.Request.GetWebAppUrl().Host}" /*Web OTP*/].ToString();
-            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
+            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
         }
 
-        var message = Localizer[nameof(AppStrings.ResetPasswordTokenShortText), token].ToString();
         //#if (signalR == true)
         sendMessagesTasks.Add(appHubContext.Clients.User(user.Id.ToString()).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         //#endif

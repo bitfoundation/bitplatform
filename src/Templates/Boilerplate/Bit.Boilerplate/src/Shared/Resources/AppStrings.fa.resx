@@ -934,8 +934,7 @@
     <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
     <data name="ElevatedAccessToken" xml:space="preserve">
-    <value>توکن {0}
-{1} {0}</value>
+    <value>توکن {0}</value>
   </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
@@ -989,24 +988,19 @@
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
-    <value>{0} توکن تغییر شماره تلفن شما است در Boilerplate
-{1} {0}</value>
+    <value>{0} توکن تغییر شماره تلفن شما است در Boilerplate.</value>
   </data>
     <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
-    <value>{0} توکن تایید شماره تلفن شما است در Boilerplate
-{1} {0}</value>
+    <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate
-{1} {0}</value>
+    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate
-{1} {0}</value>
+    <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} توکن تغییر رمز عبور شما است در Boilerplate
-{1} {0}</value>
+    <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>آنلاین</value>

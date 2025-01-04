@@ -228,7 +228,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
-        await phoneService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), $"#{token}", $"@{HttpContext.Request.GetWebAppUrl().Host}" /*Web OTP*/], request.PhoneNumber!, cancellationToken);
+        await phoneService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
@@ -388,18 +388,16 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-
-        if (await userManager.IsPhoneNumberConfirmedAsync(user))
-        {
-            var smsMessage = Localizer[nameof(AppStrings.ElevatedAccessToken), $"#{token}", $"@{HttpContext.Request.GetWebAppUrl().Host}" /*Web OTP*/].ToString();
-            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
-        }
-
         var messageText = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
             sendMessagesTasks.Add(emailService.SendElevatedAccessToken(user, token, cancellationToken));
+        }
+
+        if (await userManager.IsPhoneNumberConfirmedAsync(user))
+        {
+            sendMessagesTasks.Add(phoneService.SendSms(messageText, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalR == true)
