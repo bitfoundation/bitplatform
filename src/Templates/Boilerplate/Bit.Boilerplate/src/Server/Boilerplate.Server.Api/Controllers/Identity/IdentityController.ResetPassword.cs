@@ -49,7 +49,8 @@ public partial class IdentityController
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(phoneService.SendSms(message, user.PhoneNumber!, cancellationToken));
+            var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalR == true)

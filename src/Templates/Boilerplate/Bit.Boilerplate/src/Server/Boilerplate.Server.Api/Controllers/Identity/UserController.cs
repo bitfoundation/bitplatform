@@ -228,7 +228,10 @@ public partial class UserController : AppControllerBase, IUserController
 
         var token = await userManager.GenerateChangePhoneNumberTokenAsync(user!, request.PhoneNumber!);
 
-        await phoneService.SendSms(Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token], request.PhoneNumber!, cancellationToken);
+        var message = Localizer[nameof(AppStrings.ChangePhoneNumberTokenSmsText), token];
+        var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
+
+        await phoneService.SendSms(smsMessage, request.PhoneNumber!, cancellationToken);
     }
 
     [HttpPost]
@@ -388,7 +391,7 @@ public partial class UserController : AppControllerBase, IUserController
 
         List<Task> sendMessagesTasks = [];
 
-        var messageText = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
+        var message = Localizer[nameof(AppStrings.ElevatedAccessToken), token].ToString();
 
         if (await userManager.IsEmailConfirmedAsync(user))
         {
@@ -397,7 +400,8 @@ public partial class UserController : AppControllerBase, IUserController
 
         if (await userManager.IsPhoneNumberConfirmedAsync(user))
         {
-            sendMessagesTasks.Add(phoneService.SendSms(messageText, user.PhoneNumber!, cancellationToken));
+            var smsMessage = $"{message}{Environment.NewLine}@{HttpContext.Request.GetWebAppUrl().Host} #{token}" /* Web OTP */;
+            sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!, cancellationToken));
         }
 
         //#if (signalR == true)
@@ -406,11 +410,11 @@ public partial class UserController : AppControllerBase, IUserController
             .Where(us => us.UserId == user.Id && us.Id != currentUserSessionId && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
-        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, messageText, cancellationToken));
+        sendMessagesTasks.Add(appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.SHOW_MESSAGE, message, cancellationToken));
         //#endif
 
         //#if (notification == true)
-        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: messageText, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
+        sendMessagesTasks.Add(pushNotificationService.RequestPush(message: message, userRelatedPush: true, customSubscriptionFilter: us => us.UserSession!.UserId == user.Id && us.UserSessionId != currentUserSessionId, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);
