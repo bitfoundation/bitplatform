@@ -2,14 +2,12 @@
 using System.Net;
 using EmbedIO.Actions;
 using System.Net.Sockets;
-using Microsoft.Extensions.Logging;
 using Boilerplate.Client.Core.Components;
 
 namespace Boilerplate.Client.Maui.Services;
 
 public partial class MauiLocalHttpServer : ILocalHttpServer
 {
-    [AutoInject] private ILogger<ILocalHttpServer> logger;
     [AutoInject] private IExceptionHandler exceptionHandler;
     [AutoInject] private AbsoluteServerAddressProvider absoluteServerAddress;
 
