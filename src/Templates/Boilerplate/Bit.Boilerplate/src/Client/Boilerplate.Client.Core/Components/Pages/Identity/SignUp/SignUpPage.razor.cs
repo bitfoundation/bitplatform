@@ -75,7 +75,7 @@ public partial class SignUpPage
     {
         try
         {
-            var port = localHttpServer.UseLocalHttpServerForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
+            var port = localHttpServer.ShouldUseForSocialSignIn() ? localHttpServer.Start(CurrentCancellationToken) : -1;
 
             var redirectUrl = await identityController.GetSocialSignInUri(provider, localHttpPort: port is -1 ? null : port, cancellationToken: CurrentCancellationToken);
 

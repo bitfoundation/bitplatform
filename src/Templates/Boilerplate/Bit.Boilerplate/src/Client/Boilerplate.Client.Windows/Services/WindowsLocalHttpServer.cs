@@ -69,10 +69,10 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
     }
 
     /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.UseLocalHttpServerForSocialSignIn"/>
+    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
     /// </summary>
 
-    public bool UseLocalHttpServerForSocialSignIn() => true;
+    public bool ShouldUseForSocialSignIn() => true;
 
     private int GetAvailableTcpPort()
     {

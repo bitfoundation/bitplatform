@@ -14,5 +14,5 @@ public interface ILocalHttpServer
     /// - **iOS, Windows, and macOS**: Use local HTTP server implementations in MAUI and Windows projects.
     /// - **Android**: Use universal links.
     /// </summary>
-    bool UseLocalHttpServerForSocialSignIn();
+    bool ShouldUseForSocialSignIn();
 }

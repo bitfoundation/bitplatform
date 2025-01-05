@@ -5,7 +5,7 @@ public partial class NoopLocalHttpServer : ILocalHttpServer
     public int Start(CancellationToken cancellationToken) => throw new NotImplementedException();
 
     /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.UseLocalHttpServerForSocialSignIn"/>
+    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
     /// </summary>
-    public bool UseLocalHttpServerForSocialSignIn() => false;
+    public bool ShouldUseForSocialSignIn() => false;
 }

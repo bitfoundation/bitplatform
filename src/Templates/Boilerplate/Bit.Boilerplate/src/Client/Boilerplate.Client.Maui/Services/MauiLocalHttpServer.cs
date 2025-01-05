@@ -88,9 +88,9 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
     }
 
     /// <summary>
-    /// <inheritdoc cref="ILocalHttpServer.UseLocalHttpServerForSocialSignIn"/>
+    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
     /// </summary>
-    public bool UseLocalHttpServerForSocialSignIn()
+    public bool ShouldUseForSocialSignIn()
     {
         return AppPlatform.IsAndroid is false;
     }
