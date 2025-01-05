@@ -184,6 +184,13 @@ public partial class ComponentDemo
         },
         new()
         {
+            Name = "NoValidate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the validation of the input.",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<TValue?>",
             DefaultValue = "",

@@ -29,8 +29,8 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip!.Value)
-                     .TakeIf(odataQuery.Top is not null, odataQuery.Top!.Value);
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResult<CategoryDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }

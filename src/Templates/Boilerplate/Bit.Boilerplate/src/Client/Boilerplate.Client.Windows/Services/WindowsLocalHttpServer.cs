@@ -1,6 +1,5 @@
 ﻿using EmbedIO;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using EmbedIO.Actions;
 using Boilerplate.Client.Core.Components;
@@ -68,6 +67,12 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         return port;
     }
+
+    /// <summary>
+    /// <inheritdoc cref="ILocalHttpServer.ShouldUseForSocialSignIn"/>
+    /// </summary>
+
+    public bool ShouldUseForSocialSignIn() => true;
 
     private int GetAvailableTcpPort()
     {
