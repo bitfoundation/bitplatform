@@ -21,7 +21,7 @@ namespace Boilerplate.Client.Core.Data
                 "Boilerplate.Shared.Dtos.Identity.UserDto",
                 typeof(UserDto),
                 baseEntityType,
-                propertyCount: 9,
+                propertyCount: 10,
                 keyCount: 1);
 
             var id = runtimeEntityType.AddProperty(
@@ -40,6 +40,13 @@ namespace Boilerplate.Client.Core.Data
                 fieldInfo: typeof(UserDto).GetField("<BirthDate>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
                 nullable: true,
                 valueConverter: new DateTimeOffsetToBinaryConverter());
+
+            var concurrencyStamp = runtimeEntityType.AddProperty(
+                "ConcurrencyStamp",
+                typeof(string),
+                propertyInfo: typeof(UserDto).GetProperty("ConcurrencyStamp", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                fieldInfo: typeof(UserDto).GetField("<ConcurrencyStamp>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly),
+                nullable: true);
 
             var email = runtimeEntityType.AddProperty(
                 "Email",

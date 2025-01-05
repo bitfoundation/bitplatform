@@ -135,6 +135,48 @@ public partial class _BitDropdownCustomDemo
     private IEnumerable<string> comboBoxValues2 = [];
     private IEnumerable<string> comboBoxValues3 = [];
 
+    private IEnumerable<Product> initialSelectedItem = [
+        new()
+        {
+            Text = "Product 100",
+            Value = "100",
+            Payload = new ProductDto {
+                Id = 100,
+                Price = 60,
+                Name = "Product 100"
+            },
+            Label = "Product 100",
+            Type = BitDropdownItemType.Normal
+        }
+    ];
+
+    private IEnumerable<Product> initialSelectedItems = [
+        new()
+        {
+            Text = "Product 100",
+            Value = "100",
+            Payload = new ProductDto {
+                Id = 100,
+                Price = 60,
+                Name = "Product 100"
+            },
+            Label = "Product 100",
+            Type = BitDropdownItemType.Normal
+        },
+        new()
+        {
+            Text = "Product 99",
+            Value = "99",
+            Payload = new ProductDto {
+                Id = 99,
+                Price = 75,
+                Name = "Product 99"
+            },
+            Label = "Product 99",
+            Type = BitDropdownItemType.Normal
+        }
+    ];
+
     protected override void OnInitialized()
     {
         virtualizeCustoms1 = Enumerable.Range(1, 10_000)

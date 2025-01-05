@@ -59,7 +59,7 @@ public partial class SettingsPage
 
     public string GetPhoneToken()
     {
-        var pattern = AppStrings.ChangePhoneNumberTokenSmsText.Replace("{0}", @"\b\d{6}\b");
+        var pattern = AppStrings.ChangePhoneNumberTokenShortText.Replace("{0}", @"\b\d{6}\b");
         return FakePhoneService.GetLastOtpFor(newPhone, pattern);
     }
 

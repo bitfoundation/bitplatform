@@ -7,14 +7,14 @@ section {
 
 .grid-container {
     overflow: auto;
-    height: calc(var(--app-height) - 14rem);
+    height: calc(#{$bit-env-height-available} - 14rem);
 
     @include lt-md {
-        height: calc(var(--app-height) - 17rem);
+        height: calc(#{$bit-env-height-available} - 17rem);
     }
 
     @include lt-sm {
-        height: calc(var(--app-height) - 16rem);
+        height: calc(#{$bit-env-height-available} - 16rem);
     }
 }
 

@@ -13,12 +13,35 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines that only the icon should be rendered.",
+        },
+        new()
+        {
+            Name = "Classes",
+            Type = "BitButtonGroupClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS classes for different parts of the ButtonGroup.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The general color of the button group.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expand the ButtonGroup width to 100% of the available width.",
         },
         new()
         {
@@ -60,12 +83,28 @@ public partial class BitButtonGroupDemo
         },
         new()
         {
+            Name = "Toggle",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Display ButtonGroup with toggle mode enabled for each button.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
             LinkType = LinkType.Link,
             Href = "#button-size-enum",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitButtonGroupClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the ButtonGroup.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles",
         },
         new()
         {
@@ -123,10 +162,59 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "OffIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon of the item when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OffText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text of the item when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OffTitle",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title of the item when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon of the item when it is checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text of the item when it is checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnTitle",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title of the item when it is checked in toggle mode.",
+               },
+               new()
+               {
                    Name = "OnClick",
                    Type = "EventCallback",
                    DefaultValue = "",
                    Description = "Click event handler of the item.",
+               },
+               new()
+               {
+                   Name = "ReversedIcon",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Reverses the positions of the icon and the main content of the item.",
                },
                new()
                {
@@ -148,6 +236,13 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to render in the item.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Title to render in the item.",
                }
             ]
         },
@@ -187,10 +282,59 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "OffIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon of the option when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OffText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text of the option when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OffTitle",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title of the option when it is not checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnIconName",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The icon of the option when it is checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text of the option when it is checked in toggle mode.",
+               },
+               new()
+               {
+                   Name = "OnTitle",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The title of the option when it is checked in toggle mode.",
+               },
+               new()
+               {
                    Name = "OnClick",
                    Type = "EventCallback",
                    DefaultValue = "",
                    Description = "Click event handler of the option.",
+               },
+               new()
+               {
+                   Name = "ReversedIcon",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Reverses the positions of the icon and the main content of the option.",
                },
                new()
                {
@@ -212,8 +356,58 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Text to render in the option.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Title to render in the option.",
                }
             ]
+        },
+        new()
+        {
+            Id = "class-styles",
+            Title = "BitButtonGroupClassStyles",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Root",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the root element of the BitButtonGroup.",
+               },
+               new()
+               {
+                   Name = "Button",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the internal button of the BitButtonGroup.",
+               },
+               new()
+               {
+                   Name = "Icon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the icon of the BitButtonGroup."
+               },
+               new()
+               {
+                   Name = "Text",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text of the BitButtonGroup."
+               },
+               new()
+               {
+                   Name = "ToggledButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the button when in toggle mode of the BitButtonGroup.",
+               },
+            ],
         },
         new()
         {
@@ -259,10 +453,73 @@ public partial class BitButtonGroupDemo
                 },
                 new()
                 {
+                    Name = "OffIconName",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OffIconName))",
+                    Description = "OffIconName field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OffText",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OffText))",
+                    Description = "OffText field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OffTitle",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OffTitle))",
+                    Description = "OffTitle field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OnIconName",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OnIconName))",
+                    Description = "OnIconName field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OnText",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OnText))",
+                    Description = "OnText field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "OnTitle",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.OnTitle))",
+                    Description = "OnTitle field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
                     Name = "OnClick",
                     Type = "BitNameSelectorPair<TItem, Action<TItem>?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.OnClick))",
                     Description = "OnClick field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "ReversedIcon",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.ReversedIcon))",
+                    Description = "ReversedIcon field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -293,6 +550,15 @@ public partial class BitButtonGroupDemo
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
+                new()
+                {
+                    Name = "Title",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Title))",
+                    Description = "Title field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                }
             ]
         },
         new()

@@ -1,0 +1,10 @@
+@namespace Bit.BlazorUI
+
+@foreach (var modalReference in _modalRefs)
+{
+    <CascadingValue Value="modalReference">
+        <CascadingValue Value="BitModalParameters.Merge(modalReference.Parameters, ModalParameters)">
+            @modalReference.Modal
+        </CascadingValue>
+    </CascadingValue>
+}

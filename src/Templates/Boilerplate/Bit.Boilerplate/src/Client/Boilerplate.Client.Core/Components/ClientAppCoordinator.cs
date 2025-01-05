@@ -25,17 +25,19 @@ public partial class ClientAppCoordinator : AppComponentBase
     [AutoInject] private IApplicationInsights appInsights = default!;
     //#endif
     [AutoInject] private Navigator navigator = default!;
+    [AutoInject] private UserAgent userAgent = default!;
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IStorageService storageService = default!;
-    [AutoInject] private AuthenticationManager authManager = default!;
+    [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<ClientAppCoordinator> logger = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
-    [AutoInject] private ILogger<AuthenticationManager> authLogger = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+
+    private Action? unsubscribe;
 
     protected override async Task OnInitAsync()
     {
@@ -46,13 +48,17 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (InPrerenderSession is false)
         {
-            TelemetryContext.UserAgent = await navigator.GetUserAgent();
+            unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.NAVIGATE_TO, async (uri) =>
+            {
+                NavigationManager.NavigateTo(uri!.ToString()!);
+            });
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
             TelemetryContext.PageUrl = NavigationManager.Uri;
             if (AppPlatform.IsBlazorHybrid is false)
             {
-                TelemetryContext.OS = await jsRuntime.GetBrowserPlatform();
+                var userAgentData = await userAgent.Extract();
+                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
             }
 
             //#if (appInsights == true)
@@ -68,11 +74,11 @@ public partial class ClientAppCoordinator : AppComponentBase
             //#endif
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
-            AuthenticationManager.AuthenticationStateChanged += AuthenticationStateChanged;
+            AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
             //#if (signalR == true)
             SubscribeToSignalREventsMessages();
             //#endif
-            await PropagateUserId(firstRun: true, AuthenticationManager.GetAuthenticationStateAsync());
+            await PropagateUserId(firstRun: true, AuthenticationStateTask);
         }
 
         await base.OnInitAsync();
@@ -81,9 +87,10 @@ public partial class ClientAppCoordinator : AppComponentBase
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = e.Location;
-        navigatorLogger.LogInformation("Navigation's location changed to {Location}", e.Location);
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", e.Location);
     }
 
+    private Guid? lastPropagatedUserId = Guid.Empty;
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
     /// ensuring the user is correctly set or cleared as needed.
@@ -92,11 +99,14 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         try
         {
-            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
-
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
-            TelemetryContext.UserId = isAuthenticated ? user.GetUserId() : null;
+            var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
+            if (lastPropagatedUserId == userId)
+                return;
+            Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+            lastPropagatedUserId = userId;
+            TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
             // Typically, we use the logger directly without utilizing logger.BeginScope.
@@ -123,7 +133,7 @@ public partial class ClientAppCoordinator : AppComponentBase
             var data = TelemetryContext.ToDictionary();
             using var scope = authLogger.BeginScope(data);
             {
-                authLogger.LogInformation($"Propagating {(firstRun ? "initial" : "changed")} authentication state.");
+                authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
             //#if (notification == true)
@@ -150,11 +160,12 @@ public partial class ClientAppCoordinator : AppComponentBase
     {
         signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.SHOW_MESSAGE, async (message) =>
         {
+            logger.LogInformation("SignalR Message {Message} received from server to show.", message);
             if (await notification.IsNotificationAvailable())
             {
                 // Show local notification
                 // Note that this code has nothing to do with push notification.
-                await notification.Show("Boilerplate", new() { Body = message });
+                await notification.Show("Boilerplate SignalR", new() { Body = message });
             }
             else
             {
@@ -170,10 +181,10 @@ public partial class ClientAppCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        signalROnDisposables.Add(hubConnection.On<string>(SignalREvents.PUBLISH_MESSAGE, async (message) =>
+        signalROnDisposables.Add(hubConnection.On<string, object?>(SignalREvents.PUBLISH_MESSAGE, async (message, payload) =>
         {
-            logger.LogInformation("Message {Message} received from server.", message);
-            PubSubService.Publish(message);
+            logger.LogInformation("SignalR Message {Message} received from server to publish.", message);
+            PubSubService.Publish(message, payload);
         }));
 
         hubConnection.Closed += HubConnectionStateChange;
@@ -207,7 +218,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
         if (exception is null)
         {
-            logger.LogInformation("SignalR state changed {State}", hubConnection!.State);
+            logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
         }
         else
         {
@@ -215,7 +226,7 @@ public partial class ClientAppCoordinator : AppComponentBase
 
             if (exception is HubException && exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
             {
-                await AuthenticationManager.RefreshToken(requestedBy: nameof(HubException));
+                await AuthManager.RefreshToken(requestedBy: nameof(HubException));
             }
         }
     }
@@ -230,20 +241,15 @@ public partial class ClientAppCoordinator : AppComponentBase
                                                  await storageService.GetItem("Culture") ?? // 2- User settings
                                                  CultureInfo.CurrentUICulture.Name); // 3- OS settings
         }
-
-        var platformCssClass = AppPlatform.IsWindows ? "bit-windows" :
-                               AppPlatform.IsMacOS ? "bit-macos" :
-                               AppPlatform.IsIOS ? "bit-ios" :
-                               AppPlatform.IsAndroid ? "bit-android" : "bit-unknown";
-
-        await jsRuntime.ApplyBodyElementClasses(cssClasses: [platformCssClass], cssVariables: []);
     }
 
     private List<IDisposable> signalROnDisposables = [];
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubscribe?.Invoke();
+
         NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
-        AuthenticationManager.AuthenticationStateChanged -= AuthenticationStateChanged;
+        AuthManager.AuthenticationStateChanged -= AuthenticationStateChanged;
 
         //#if (signalR == true)
         hubConnection.Closed -= HubConnectionStateChange;

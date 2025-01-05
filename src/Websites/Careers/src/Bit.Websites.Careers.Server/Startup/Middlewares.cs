@@ -38,8 +38,9 @@ public class Middlewares
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
-                            MaxAge = TimeSpan.FromDays(7),
-                            Public = true
+                            Public = true,
+                            NoTransform = true,
+                            MaxAge = TimeSpan.FromDays(7)
                         };
                     });
                 }
@@ -74,7 +75,6 @@ public class Middlewares
 
         UseSiteMap(app);
 
-        app.MapStaticAssets();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()

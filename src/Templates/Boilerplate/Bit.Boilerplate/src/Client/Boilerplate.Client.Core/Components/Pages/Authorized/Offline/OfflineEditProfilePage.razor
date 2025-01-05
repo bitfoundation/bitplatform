@@ -29,7 +29,7 @@
                               Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                 <ValidationMessage For="@(() => userToEdit.FullName)" />
 
-                <BitDatePicker IsResponsive @bind-Value="userToEdit.BirthDate"
+                <BitDatePicker Responsive @bind-Value="userToEdit.BirthDate"
                                Class="edit-profile-dtp"
                                Label="@Localizer[nameof(AppStrings.BirthDate)]"
                                GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"

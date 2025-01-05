@@ -36,13 +36,12 @@ public partial class IdentityPagesTests : PageTest
 
         await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
         await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToBeVisibleAsync();
         await Expect(Page.Locator(".bit-prs.persona").First).ToContainTextAsync(userFullName);
         await Expect(Page.Locator(".bit-prs.persona").Last).ToContainTextAsync(userFullName);
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
     }
 

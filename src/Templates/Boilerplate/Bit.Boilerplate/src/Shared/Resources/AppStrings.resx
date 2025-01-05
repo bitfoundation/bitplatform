@@ -253,6 +253,9 @@
     <data name="RemoveSession" xml:space="preserve">
     <value>Remove session</value>
   </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>Try removing other sessions</value>
+  </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
     <value>Session removed successfully</value>
   </data>
@@ -270,6 +273,9 @@
   </data>
     <data name="Ok" xml:space="preserve">
     <value>Ok</value>
+  </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser.</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
@@ -684,14 +690,8 @@
     <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>Sign in with Twitter (X)</value>
   </data>
-    <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>Sign up with Google</value>
-  </data>
-    <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>Sign up with GitHub</value>
-  </data>
-    <data name="TwitterSignUpButtonText" xml:space="preserve">
-    <value>Sign up with Twitter (X)</value>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>Sign in with Apple</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
@@ -759,8 +759,8 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>Sign in as different user</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
-    <value>You're sign in as</value>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>You're signed in as</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
     <value>Forgot password?</value>
@@ -843,6 +843,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>Two-factor authentication has been enabled.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>Two-factor authentication has been disabled.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verification Code:</value>
   </data>
@@ -924,6 +930,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>The 2FA token has been generated and sent to you.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>Please enter the elevated access token we just sent you or your authenticator app code to continue.</value>
+  </data>
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} is your code in Boilerplate.</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the confirmation email. Try again in {0}</value>
   </data>
@@ -935,6 +947,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>You have already requested an OTP. Try again in {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>You have already requested a elevated access token. Try again in {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>OTP</value>
@@ -972,20 +987,20 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>You have already requested the 2FA token email. Try again in {0}.</value>
   </data>
-    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
-    <value>{0} is your change phone number token in Boilerplate.</value>
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} is your code in Boilerplate.</value>
   </data>
-    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
-    <value>{0} is your confirm phone number token in Boilerplate.</value>
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} is your two factor token in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} is your OTP in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} is your reset password token in Boilerplate.</value>
+    <value>{0} is your code in Boilerplate.</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>Online</value>
@@ -997,10 +1012,10 @@
     <value>Update</value>
   </data>
     <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>New version is available</value>
+    <value>New version {0} is available</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>Would you like to update to the new version?</value>
+    <value>Would you like to update to the new version? {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>About</value>
@@ -1170,11 +1185,6 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>You need to pass the Google reCAPTCHA challenge.</value>
-  </data>
-    <!--#endif -->
-    <!--#if (signalR == true) -->
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>Please ensure you're not running multiple sessions of the app simultaneously on the same device or browser, and try again.</value>
   </data>
     <!--#endif -->
 </root>

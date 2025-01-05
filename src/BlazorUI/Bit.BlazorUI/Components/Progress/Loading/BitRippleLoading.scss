@@ -22,34 +22,34 @@
 
 @keyframes bit-ldn-rpl-anm {
     0% {
-        width: 0;
-        height: 0;
         opacity: 0;
         top: var(--bit-ldn-rpl-36);
         left: var(--bit-ldn-rpl-36);
+        width: var(--bit-ldn-rpl-8);
+        height: var(--bit-ldn-rpl-8);
     }
 
     4.9% {
-        width: 0;
-        height: 0;
         opacity: 0;
         top: var(--bit-ldn-rpl-36);
         left: var(--bit-ldn-rpl-36);
+        width: var(--bit-ldn-rpl-8);
+        height: var(--bit-ldn-rpl-8);
     }
 
     5% {
-        width: 0;
-        height: 0;
         opacity: 1;
         top: var(--bit-ldn-rpl-36);
         left: var(--bit-ldn-rpl-36);
+        width: var(--bit-ldn-rpl-8);
+        height: var(--bit-ldn-rpl-8);
     }
 
     100% {
         top: 0px;
         left: 0px;
         opacity: 0;
-        width: var(--bit-ldn-rpl-72);
-        height: var(--bit-ldn-rpl-72);
+        width: var(--bit-ldn-rpl-80);
+        height: var(--bit-ldn-rpl-80);
     }
 }

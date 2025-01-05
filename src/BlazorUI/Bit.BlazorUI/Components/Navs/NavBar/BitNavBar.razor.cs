@@ -211,10 +211,7 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         var currentItem = _items.FirstOrDefault(item => string.Equals(GetUrl(item), currentUrl, StringComparison.OrdinalIgnoreCase) ||
                                                         (GetAdditionalUrls(item)?.Any(u => string.Equals(u, currentUrl, StringComparison.OrdinalIgnoreCase)) ?? false));
 
-        if (currentItem is not null)
-        {
-            _ = AssignSelectedItem(currentItem);
-        }
+        _ = AssignSelectedItem(currentItem);
     }
 
     private void OnSetParameters()
@@ -243,23 +240,23 @@ public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TIte
         StateHasChanged();
     }
 
-    private string GetItemKey(TItem item)
+    private string GetItemKey(TItem item, string defaultKey)
     {
-        return GetKey(item) ?? Guid.NewGuid().ToString();
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
     private async Task HandleOnClick(TItem item)
     {
         if (GetIsEnabled(item) is false) return;
 
-        if (Mode == BitNavMode.Manual)
-        {
-            await SetSelectedItem(item);
-        }
-
         if (SelectedItem != item || Reselectable)
         {
             await OnItemClick.InvokeAsync(item);
+        }
+
+        if (Mode == BitNavMode.Manual)
+        {
+            await SetSelectedItem(item);
         }
     }
 

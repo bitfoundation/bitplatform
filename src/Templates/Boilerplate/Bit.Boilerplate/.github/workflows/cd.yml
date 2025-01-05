@@ -3,7 +3,7 @@
 # https://bitplatform.dev/templates/dev-ops
 
 env:
-  SERVER_ADDRESS: 'https://use-your-server-url-here.com/'
+  SERVER_ADDRESS: 'https://use-your-api-server-url-here.com/'
   APP_SERVICE_NAME: 'app-service-bp-test'
   IOS_CODE_SIGN_PROVISION: 'Boilerplate'
 
@@ -56,7 +56,7 @@ jobs:
 
     - name: Build migrations bundle
       run: |
-        cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj
+        cd src/Server/Boilerplate.Server.Api/ && dotnet tool restore && dotnet ef migrations bundle --self-contained -r linux-x64 --project Boilerplate.Server.Api.csproj --verbose
 
     - name: Upload ef migrations bundle
       uses: actions/upload-artifact@v4
@@ -150,7 +150,7 @@ jobs:
         files: 'src\Shared\appsettings.json, src\Client\Boilerplate.Client.Core\appsettings.json, src\Client\Boilerplate.Client.Windows\appsettings.json'
       env:
         ServerAddress: ${{ env.SERVER_ADDRESS }}
-        WindowsUpdate.FilesUrl: 'https://use-your-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
+        WindowsUpdate.FilesUrl: 'https://use-your-api-server-url-here.com/windows' # Deploy the published Windows application files to your desired hosting location and use the host url here.
   
     - name: Generate CSS/JS files
       run: dotnet build src\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj -t:BeforeBuildTasks --no-restore -c Release
@@ -237,7 +237,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1.6.0
       with:
-        xcode-version: '16.0'
+        xcode-version: '16.2'
 
     - uses: actions/setup-node@v4
       with:

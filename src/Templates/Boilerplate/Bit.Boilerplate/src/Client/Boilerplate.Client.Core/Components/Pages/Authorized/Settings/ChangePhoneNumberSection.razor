@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center">
@@ -10,7 +10,7 @@
                 <BitStack FillContent>
                     @if (PhoneNumber is not null)
                     {
-                        <BitTag Variant="BitVariant.Outline" Text="@PhoneNumber" Color="BitColor.Info" />
+                        <BitTextField Value="@PhoneNumber" ReadOnly NoValidate />
                     }
 
                     <BitTextField @bind-Value="sendModel.PhoneNumber"
@@ -43,7 +43,7 @@
                 @Localizer[nameof(AppStrings.ConfirmPhoneMessage)]
             </BitText>
 
-            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" novalidate>
+            <EditForm Model="changeModel" OnValidSubmit="WrapHandled(ChangePhoneNumber)" novalidate class="max-width">
                 <AppDataAnnotationsValidator />
 
                 <BitStack FillContent>
@@ -54,10 +54,13 @@
                                   Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                     <ValidationMessage For="@(() => changeModel.PhoneNumber)" />
 
-                    <BitTextField @bind-Value="changeModel.Token"
-                                  Type="BitInputType.Number"
-                                  Label="@Localizer[nameof(AppStrings.PhoneToken)]"
-                                  Placeholder="@Localizer[nameof(AppStrings.PhoneTokenPlaceholder)]" />
+                    <BitOtpInput @bind-Value="changeModel.Token"
+                                 AutoFocus
+                                 Length="6"
+                                 Size="BitSize.Large"
+                                 Type="BitInputType.Number"
+                                 OnFill="WrapHandled(ChangePhoneNumber)"
+                                 Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                     <ValidationMessage For="@(() => changeModel.Token)" />
 
                     <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">

@@ -1,13 +1,15 @@
-﻿using Boilerplate.Shared.Controllers.Identity;
-using Boilerplate.Shared.Dtos.Identity;
+﻿using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Controllers.Identity;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Settings;
 
 public partial class SessionsSection
 {
-    private bool isWaiting;
+    private bool isLoading;
     private Guid? currentSessionId;
     private UserSessionDto? currentSession;
+    private List<Guid> revokingSessionIds = [];
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
@@ -21,34 +23,20 @@ public partial class SessionsSection
     }
 
 
-    private async Task LoadSessions()
+    private async Task LoadSessions(bool showLoading = true)
     {
-        List<UserSessionDto> userSessions = [];
-        currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+        if (showLoading)
+        {
+            isLoading = true;
+        }
 
         try
         {
-            userSessions = await userController.GetUserSessions(CurrentCancellationToken);
-        }
-        finally
-        {
+            currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+
+            var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
             currentSession = userSessions.Single(s => s.Id == currentSessionId);
-        }
-    }
-
-    private async Task RevokeSession(UserSessionDto session)
-    {
-        if (isWaiting || session.Id == currentSessionId) return;
-
-        isWaiting = true;
-
-        try
-        {
-            await userController.RevokeSession(session.Id, CurrentCancellationToken);
-
-            SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
-            await LoadSessions();
         }
         catch (KnownException e)
         {
@@ -56,7 +44,35 @@ public partial class SessionsSection
         }
         finally
         {
-            isWaiting = false;
+            if (showLoading)
+            {
+                isLoading = false;
+            }
+        }
+    }
+
+    private async Task RevokeSession(UserSessionDto session)
+    {
+        if (revokingSessionIds.Contains(session.Id) || session.Id == currentSessionId) return;
+
+        revokingSessionIds.Add(session.Id);
+
+        try
+        {
+            if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
+            {
+                await userController.RevokeSession(session.Id, CurrentCancellationToken);
+                SnackBarService.Success(Localizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
+                await LoadSessions();
+            }
+        }
+        catch (KnownException e)
+        {
+            SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            revokingSessionIds.Remove(session.Id);
         }
     }
 

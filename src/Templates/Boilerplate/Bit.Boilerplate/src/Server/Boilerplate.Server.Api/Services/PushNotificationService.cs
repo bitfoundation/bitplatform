@@ -2,6 +2,7 @@
 using AdsPush.Vapid;
 using AdsPush.Abstraction;
 using System.Linq.Expressions;
+using System.Collections.Concurrent;
 using Boilerplate.Shared.Dtos.PushNotification;
 using Boilerplate.Server.Api.Models.PushNotification;
 
@@ -10,10 +11,9 @@ namespace Boilerplate.Server.Api.Services;
 public partial class PushNotificationService
 {
     [AutoInject] private AppDbContext dbContext = default!;
-    [AutoInject] private IAdsPushSender adsPushSender = default!;
-    [AutoInject] private ILogger<PushNotificationService> logger = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private RootServiceScopeProvider rootServiceScopeProvider = default!;
 
     public async Task Subscribe([Required] PushNotificationSubscriptionDto dto, CancellationToken cancellationToken)
     {
@@ -21,16 +21,15 @@ public partial class PushNotificationService
 
         var userSessionId = httpContextAccessor.HttpContext!.User.IsAuthenticated() ? httpContextAccessor.HttpContext.User.GetSessionId() : (Guid?)null;
 
-        var subscription = await dbContext.PushNotificationSubscriptions.FindAsync([dto.DeviceId], cancellationToken);
+        await dbContext.PushNotificationSubscriptions
+            .Where(s => s.DeviceId == dto.DeviceId || s.UserSessionId == userSessionId /* pushManager's subscription has been renewed. */)
+            .ExecuteDeleteAsync(cancellationToken);
 
-        if (subscription is null)
+        var subscription = dbContext.PushNotificationSubscriptions.Add(new()
         {
-            dbContext.PushNotificationSubscriptions.Add(subscription = new()
-            {
-                DeviceId = dto.DeviceId,
-                Platform = dto.Platform
-            });
-        }
+            DeviceId = dto.DeviceId,
+            Platform = dto.Platform
+        }).Entity;
 
         dto.Patch(subscription);
 
@@ -76,37 +75,52 @@ public partial class PushNotificationService
 
         var subscriptions = await query.ToListAsync(cancellationToken);
 
-        var payload = new AdsPushBasicSendPayload()
+        _ = Task.Run(async () => // Let's not wait for the push notification to be sent. Consider using a proper message queue or background job system like Hangfire.
         {
-            Title = AdsPushText.CreateUsingString(title ?? "Boilerplate"),
-            Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
-            Parameters = new Dictionary<string, object>()
+            await using var scope = rootServiceScopeProvider.Invoke();
+            var adsPushSender = scope.ServiceProvider.GetRequiredService<IAdsPushSender>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<PushNotificationService>>();
+
+            var payload = new AdsPushBasicSendPayload()
             {
+                Title = AdsPushText.CreateUsingString(title ?? "Boilerplate push"),
+                Detail = AdsPushText.CreateUsingString(message ?? string.Empty),
+                Parameters = new Dictionary<string, object>()
                 {
-                    "action", action ?? string.Empty
+                    {
+                        "action", action ?? string.Empty
+                    }
                 }
+            };
+
+            ConcurrentBag<Exception> exceptions = [];
+
+            await Parallel.ForEachAsync(subscriptions, parallelOptions: new()
+            {
+                MaxDegreeOfParallelism = 10,
+                CancellationToken = default
+            }, async (subscription, _) =>
+            {
+                try
+                {
+                    var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
+                                        : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
+                                        : subscription.Platform is "apns" ? AdsPushTarget.Ios
+                                        : throw new NotImplementedException();
+
+                    await adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, default);
+                }
+                catch (Exception exp)
+                {
+                    exceptions.Add(exp);
+                }
+            });
+
+            if (exceptions.IsEmpty is false)
+            {
+                logger.LogError(new AggregateException(exceptions), "Failed to send push notifications");
             }
-        };
 
-        List<Task> tasks = [];
-
-        foreach (var subscription in subscriptions)
-        {
-            var target = subscription.Platform is "browser" ? AdsPushTarget.BrowserAndPwa
-                : subscription.Platform is "fcmV1" ? AdsPushTarget.Android
-                : subscription.Platform is "apns" ? AdsPushTarget.Ios
-                : throw new NotImplementedException();
-
-            tasks.Add(adsPushSender.BasicSendAsync(target, subscription.PushChannel, payload, cancellationToken));
-        }
-
-        try
-        {
-            await Task.WhenAll(tasks);
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to send push notification.");
-        }
+        }, default);
     }
 }

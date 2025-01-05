@@ -35,10 +35,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.ToTable("Categories");
 
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "Categories")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
-
                 b.HasData(
                     new
                     {
@@ -85,9 +81,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("ConcurrencyStamp")
                     .IsConcurrencyToken()
-                    .ValueGeneratedOnAddOrUpdate()
-                    .HasColumnType("TEXT")
-                    .HasAnnotation("Cosmos:PropertyName", "_etag");
+                    .HasColumnType("TEXT");
 
                 b.Property<string>("Name")
                     .HasMaxLength(50)
@@ -104,10 +98,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasDatabaseName("RoleNameIndex");
 
                 b.ToTable("Roles", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "Roles")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
@@ -124,9 +114,10 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("ConcurrencyStamp")
                     .IsConcurrencyToken()
-                    .ValueGeneratedOnAddOrUpdate()
-                    .HasColumnType("TEXT")
-                    .HasAnnotation("Cosmos:PropertyName", "_etag");
+                    .HasColumnType("TEXT");
+
+                b.Property<long?>("ElevatedAccessTokenRequestedOn")
+                    .HasColumnType("INTEGER");
 
                 b.Property<string>("Email")
                     .HasMaxLength(256)
@@ -211,10 +202,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.ToTable("Users", (string)null);
 
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "Users")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
-
                 b.HasData(
                     new
                     {
@@ -254,8 +241,14 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<string>("IP")
                     .HasColumnType("TEXT");
 
+                b.Property<bool>("Privileged")
+                    .HasColumnType("INTEGER");
+
                 b.Property<long?>("RenewedOn")
                     .HasColumnType("INTEGER");
+
+                b.Property<string>("SignalRConnectionId")
+                    .HasColumnType("TEXT");
 
                 b.Property<long>("StartedOn")
                     .HasColumnType("INTEGER");
@@ -303,10 +296,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("CategoryId");
 
                 b.ToTable("Products");
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "Products")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "CategoryId" });
 
                 b.HasData(
                     new
@@ -583,10 +572,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasFilter("[UserSessionId] IS NOT NULL");
 
                 b.ToTable("PushNotificationSubscriptions");
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "PushNotificationSubscriptions")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Platform" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
@@ -613,10 +598,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("UserId");
 
                 b.ToTable("TodoItems");
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "TodoItems")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -634,10 +615,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasKey("Id");
 
                 b.ToTable("DataProtectionKeys");
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "DataProtectionKeys")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "Id" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -660,10 +637,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("RoleId");
 
                 b.ToTable("RoleClaims", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "RoleClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "RoleId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -686,10 +659,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("UserId");
 
                 b.ToTable("UserClaims", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "UserClaims")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
@@ -711,10 +680,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("UserId");
 
                 b.ToTable("UserLogins", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "UserLogins")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -730,10 +695,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("RoleId");
 
                 b.ToTable("UserRoles", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "UserRoles")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -753,10 +714,6 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasKey("UserId", "LoginProvider", "Name");
 
                 b.ToTable("UserTokens", (string)null);
-
-                b
-                    .HasAnnotation("Cosmos:ContainerName", "UserTokens")
-                    .HasAnnotation("Cosmos:PartitionKeyNames", new List<string> { "UserId" });
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>
@@ -785,7 +742,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.UserSession", "UserSession")
                     .WithOne("PushNotificationSubscription")
-                    .HasForeignKey("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", "UserSessionId");
+                    .HasForeignKey("Boilerplate.Server.Api.Models.PushNotification.PushNotificationSubscription", "UserSessionId")
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 b.Navigation("UserSession");
             });
@@ -793,7 +751,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Todo.TodoItem", b =>
             {
                 b.HasOne("Boilerplate.Server.Api.Models.Identity.User", "User")
-                    .WithMany()
+                    .WithMany("TodoItems")
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -860,6 +818,8 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.User", b =>
             {
                 b.Navigation("Sessions");
+
+                b.Navigation("TodoItems");
             });
 
         modelBuilder.Entity("Boilerplate.Server.Api.Models.Identity.UserSession", b =>

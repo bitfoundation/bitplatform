@@ -104,7 +104,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         if (_isPointerDown is false) return;
 
         _isPointerDown = false;
-        await _js.SetStyle(_swiper, "cursor", "");
+        await _js.BitUtilsSetStyle(_swiper, "cursor", "");
 
         var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
         var distance = Math.Abs(clientX - _pointerDownX);
@@ -114,7 +114,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         var swipeSpeed = distance / time;
 
         var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.SetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
 
         var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
         await Swipe(x);
@@ -192,7 +192,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     private async Task Go(bool isNext)
     {
         await GetDimensions();
-        await _js.SetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
 
         var sign = isNext ? -1 : 1;
         var scrollX = _swiperWidth / _allItems.Count * _internalScrollItemsCount;
@@ -235,8 +235,8 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
         await GetDimensions();
 
-        await _js.SetStyle(_swiper, "cursor", "grabbing");
-        await _js.SetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "cursor", "grabbing");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
     }
 
     private async Task HandlePointerUp(MouseEventArgs e) => await HandlePointerLeave(e.ClientX);
@@ -256,7 +256,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
             if (x < -_swiperEffectiveWidth) x = -_swiperEffectiveWidth;
         }
 
-        await _js.SetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
+        await _js.BitUtilsSetStyle(_swiper, "transform", FormattableString.Invariant($"translateX({x}px)"));
 
         SetNavigationButtonsVisibility(x);
     }

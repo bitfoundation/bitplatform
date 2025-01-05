@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-using System.Text.RegularExpressions;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
@@ -23,11 +22,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Server.Api.Controllers;
 using Boilerplate.Server.Api.Models.Identity;
 using Boilerplate.Server.Api.Services.Identity;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Signalr;
-using Boilerplate.Server.Api.SignalR;
-//#endif
 
 namespace Boilerplate.Server.Api;
 
@@ -113,7 +107,7 @@ public static partial class Program
             .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
         //#if (appInsights == true)
-        services.AddApplicationInsightsTelemetry(configuration);
+        services.AddApplicationInsightsTelemetry(options => configuration.GetRequiredSection("ApplicationInsights").Bind(options));
         //#endif
 
         services.AddCors(builder =>
@@ -128,11 +122,7 @@ public static partial class Program
                 ServerApiSettings settings = new();
                 configuration.Bind(settings);
 
-                var webClientUrl = settings.WebClientUrl;
-
-                policy.SetIsOriginAllowed(origin =>
-                            AllowedOriginsRegex().IsMatch(origin) ||
-                            (string.IsNullOrEmpty(webClientUrl) is false && string.Equals(origin, webClientUrl, StringComparison.InvariantCultureIgnoreCase)))
+                policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId);
@@ -160,11 +150,17 @@ public static partial class Program
             });
 
         //#if (signalR == true)
-        services.AddSingleton<HubConnectionHandler<AppHub>, AppHubConnectionHandler>();
-        services.AddSignalR(options =>
+        var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
         });
+        if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
+        {
+            signalRBuilder.AddAzureSignalR(options =>
+            {
+                configuration.GetRequiredSection("Azure:SignalR").Bind(options);
+            });
+        }
         //#endif
 
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
@@ -194,22 +190,11 @@ public static partial class Program
             {
 
             });
-            //#elif (database == "Cosmos")
-            options.UseCosmos(configuration.GetConnectionString("CosmosConnectionString")!, "BoilerplateDb", options =>
-            {
-
-            });
             //#elif (database == "MySql")
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
             options.UseMySql(configuration.GetConnectionString("MySqlSQLConnectionString"), ServerVersion.AutoDetect(configuration.GetConnectionString("MySqlSQLConnectionString")), dbOptions =>
             {
 
             });
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
             //#elif (database == "Other")
             throw new NotImplementedException("Install and configure any database supported by ef core (https://learn.microsoft.com/en-us/ef/core/providers)");
             //#endif
@@ -293,7 +278,7 @@ public static partial class Program
         var identityOptions = appSettings.Identity;
 
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
-        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, OperatingSystem.IsWindows() ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
+        var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
@@ -314,15 +299,12 @@ public static partial class Program
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
-            options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
             options.DefaultScheme = IdentityConstants.BearerScheme;
+            options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+            options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
         .AddBearerToken(IdentityConstants.BearerScheme, options =>
         {
-            options.BearerTokenExpiration = identityOptions.BearerTokenExpiration;
-            options.RefreshTokenExpiration = identityOptions.RefreshTokenExpiration;
-
             var validationParameters = new TokenValidationParameters
             {
                 ClockSkew = TimeSpan.Zero,
@@ -343,8 +325,8 @@ public static partial class Program
                 AuthenticationType = IdentityConstants.BearerScheme
             };
 
-            options.BearerTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
-            options.RefreshTokenProtector = new AppSecureJwtDataFormat(appSettings, validationParameters);
+            options.BearerTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
+            options.RefreshTokenProtector = new AppJwtSecureDataFormat(appSettings, validationParameters);
 
             options.Events = new()
             {
@@ -354,15 +336,18 @@ public static partial class Program
                     context.Token ??= context.Request.Query.ContainsKey("access_token") ? context.Request.Query["access_token"] : context.Request.Cookies["access_token"];
                 }
             };
+
+            configuration.GetRequiredSection("Identity").Bind(options);
         });
+
+        services.AddAuthorization();
 
         if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
         {
             authenticationBuilder.AddGoogle(options =>
             {
-                options.ClientId = configuration["Authentication:Google:ClientId"]!;
-                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:Google").Bind(options);
             });
         }
 
@@ -370,9 +355,8 @@ public static partial class Program
         {
             authenticationBuilder.AddGitHub(options =>
             {
-                options.ClientId = configuration["Authentication:GitHub:ClientId"]!;
-                options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"]!;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:GitHub").Bind(options);
             });
         }
 
@@ -380,14 +364,23 @@ public static partial class Program
         {
             authenticationBuilder.AddTwitter(options =>
             {
-                options.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"]!;
-                options.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"]!;
                 options.RetrieveUserDetails = true;
                 options.SignInScheme = IdentityConstants.ExternalScheme;
+                configuration.GetRequiredSection("Authentication:Twitter").Bind(options);
             });
         }
 
-        services.AddAuthorization();
+        if (string.IsNullOrEmpty(configuration["Authentication:Apple:ClientId"]) is false)
+        {
+            authenticationBuilder.AddApple(options =>
+            {
+                options.UsePrivateKey(keyId =>
+                {
+                    return env.ContentRootFileProvider.GetFileInfo("AppleAuthKey.p8");
+                });
+                configuration.GetRequiredSection("Authentication:Apple").Bind(options);
+            });
+        }
     }
 
     private static void AddSwaggerGen(WebApplicationBuilder builder)
@@ -428,10 +421,4 @@ public static partial class Program
             });
         });
     }
-
-    /// <summary>
-    /// For either Blazor Hybrid web view, localhost, dev tunnels etc in dev environment.
-    /// </summary>
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
-    private static partial Regex AllowedOriginsRegex();
 }

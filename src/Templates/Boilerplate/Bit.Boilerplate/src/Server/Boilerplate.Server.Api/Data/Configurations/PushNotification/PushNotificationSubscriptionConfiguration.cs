@@ -10,7 +10,7 @@ public class PushNotificationSubscriptionConfiguration : IEntityTypeConfiguratio
             .HasOne(sub => sub.UserSession)
             .WithOne(us => us.PushNotificationSubscription)
             .HasForeignKey<PushNotificationSubscription>(sub => sub.UserSessionId)
-            .OnDelete(DeleteBehavior.ClientSetNull);
+            .OnDelete(DeleteBehavior.SetNull);
 
         //#if (database != "PostgreSQL")
         builder

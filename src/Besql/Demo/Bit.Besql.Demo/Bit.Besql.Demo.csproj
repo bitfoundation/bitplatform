@@ -13,17 +13,19 @@
 
     <ItemGroup>
         <!-- 
-			 To add migrations or optimize db context, first install
-			 Microsoft.EntityFrameworkCore.Design & Microsoft.EntityFrameworkCore.Tools nuget packages.			 
-			 Then Set `Bit.Besql.Demo` project as startup project in solution explorer,
-			 and open Nuget Package Manager Console, and select `Bit.Besql.Demo` project as default project
+			 To add migrations or optimize db context, first set `Bit.Besql.Demo` project as startup project in solution explorer,
+			 and open Nuget Package Manager Console, and select `Bit.Besql.Demo.Client` project as default project
 			 Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
-			 Optimize-DbContext -OutputDir Data/CompiledModel commands. -->
+			 Optimize-DbContext -OutputDir Data\CompiledModel commands. -->
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tasks" Version="9.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

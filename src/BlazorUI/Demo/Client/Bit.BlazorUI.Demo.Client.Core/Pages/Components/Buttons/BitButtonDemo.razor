@@ -131,7 +131,15 @@
             </div>
             <br /><br /><br />
             <div><b>AutoLoading</b>:</div><br />
-            <BitButton OnClick="AutoLoadingClick" AutoLoading>Click me</BitButton>
+            <div class="example-content">
+                <BitButton OnClick="AutoLoadingClick" AutoLoading>Click me</BitButton>
+                <div>AutoLoading click count: @autoLoadCount</div>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitButton OnClick="AutoLoadingReclick" AutoLoading Reclickable>Reclickable</BitButton>
+                <div>Reclickable AutoLoading click count: @reclickableAutoLoadCount</div>
+            </div>
         </ExamplePreview>
     </ComponentExampleBox>
 
@@ -209,7 +217,30 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Button Type" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <ComponentExampleBox Title="Float" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <ExamplePreview>
+            <div>Demonstrates a floating button with adjustable float modes and customizable positions.</div>
+            <br />
+            <div class="example-content">
+                <BitDropdown Label="FloatPosition" Items="floatPositionList" @bind-Value="floatPosition" FitWidth />
+                <BitTextField Label="FloatOffset" @bind-Value="floatOffset" Immediate />
+            </div>
+            <br />
+            <BitButton Float FloatPosition="floatPosition" FloatOffset="@floatOffset" IconName="@BitIconName.Add" Size="BitSize.Large" IconOnly OnClick="ScrollToFloat" />
+            <br /><br />
+            <div><b>FloatAbsolute</b>:</div><br />
+            <div style="position: relative; border:1px gray solid">
+                <BitButton FloatAbsolute FloatPosition="floatPosition" FloatOffset="@floatOffset" IconName="@BitIconName.Edit" IconOnly />
+                <div style="height: 300px; overflow: auto">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu ligula quis orci accumsan pharetra. Fusce mattis sit amet enim vitae imperdiet. Maecenas hendrerit sapien nisl, quis consectetur mi bibendum vel. Pellentesque vel rhoncus quam, non bibendum arcu. Vivamus euismod tellus non felis finibus, dictum finibus eros elementum. Vivamus a massa sit amet leo volutpat blandit at vel tortor. Praesent posuere, nulla eu tempus accumsan, nibh elit rhoncus mauris, eu semper tellus risus et nisi. Duis felis ipsum, luctus eget ultrices sit amet, scelerisque quis metus.<br />Suspendisse blandit erat ac lobortis pulvinar. Donec nunc leo, tempus sit amet accumsan in, sagittis sed odio. Pellentesque tristique felis sed purus pellentesque, ac dictum ex fringilla. Integer a tincidunt eros, non porttitor turpis. Sed gravida felis massa, in viverra massa aliquam sit amet. Etiam vitae dolor in velit sodales tristique id nec turpis. Proin sit amet urna sollicitudin, malesuada enim et, lacinia mi. Fusce nisl massa, efficitur sit amet elementum convallis, porttitor vel turpis. Fusce congue dui sit amet mollis pulvinar. Suspendisse vulputate leo quis nunc tincidunt, nec dictum risus congue.</p>
+                </div>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Button Type" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <ExamplePreview>
             <div>BitButton supports three different types, 'Submit' for sending form data, 'Reset' to clear form inputs, and 'Button' to provide flexibility for different interaction purposes.</div>
             <br />
@@ -241,7 +272,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <ComponentExampleBox Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <ExamplePreview>
             <div>Here are some examples of customizing the button content.</div>
             <br />
@@ -291,7 +322,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <ComponentExampleBox Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <ExamplePreview>
             <div>
                 Managing button click event (OnClick).
@@ -303,7 +334,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <ComponentExampleBox Title="Size" RazorCode="@example13RazorCode" Id="example13">
         <ExamplePreview>
             <div>Varying sizes for buttons tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
             <br />
@@ -345,17 +376,33 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="FullWidth" RazorCode="@example13RazorCode" Id="example13">
+    <ComponentExampleBox Title="FullWidth" RazorCode="@example14RazorCode" Id="example14">
         <ExamplePreview>
             <div>Setting the FullWidth makes the button occupy 100% of its container's width.</div>
             <br />
-            <div>
-                <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
-            </div>
+            <BitButton FullWidth IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill">Full Width Button</BitButton>
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <ComponentExampleBox Title="FixedColor" RazorCode="@example15RazorCode" Id="example15">
+        <ExamplePreview>
+            <div>FixedColor flag parameter makes the foreground color to be fixed regardless of its hovering state.</div>
+            <br />
+            <BitButton FixedColor IconOnly
+                       Size="BitSize.Large"
+                       Variant="BitVariant.Outline"
+                       IconName="@BitIconName.Emoji2"
+                       Color="BitColor.TertiaryBackground" />
+
+            <BitButton FixedColor IconOnly
+                       Size="BitSize.Large"
+                       Variant="BitVariant.Text"
+                       IconName="@BitIconName.Emoji2"
+                       Color="BitColor.TertiaryBackground" />
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <ExamplePreview>
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br />
@@ -469,7 +516,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
@@ -512,7 +559,7 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <ComponentExampleBox Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <ExamplePreview>
             <div>Use BitButton in right-to-left (RTL).</div>
             <br />

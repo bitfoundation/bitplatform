@@ -34,14 +34,12 @@ public interface ITelemetryContext
 
     public Guid AppSessionId { get; set; }
 
-    public string? OS { get; set; }
+    public string? Platform { get; set; }
 
     public string? AppVersion { get; set; }
     public string? WebView { get; set; }
 
     public string? PageUrl { get; set; }
-
-    public string? UserAgent { get; set; }
 
     public string? TimeZone { get; set; }
     public string? Culture { get; set; }
@@ -55,15 +53,14 @@ public interface ITelemetryContext
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
-        var data = new Dictionary<string, object?>(additionalParameters ??= [])
+        var data = new Dictionary<string, object?>(additionalParameters ?? [])
         {
             { nameof(UserId), UserId },
             { nameof(UserSessionId), UserSessionId },
             { nameof(AppSessionId), AppSessionId },
-            { nameof(OS), OS },
+            { nameof(Platform), Platform },
             { nameof(AppVersion), AppVersion },
             { nameof(PageUrl), PageUrl },
-            { nameof(UserAgent), UserAgent },
             { nameof(TimeZone), TimeZone },
             { "ClientDateTime", DateTimeOffset.UtcNow.ToString("u") },
             { nameof(Culture), Culture },

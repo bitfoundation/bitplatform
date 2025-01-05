@@ -1,4 +1,5 @@
-﻿using Boilerplate.Client.Core.Services.DiagnosticLog;
+﻿using Boilerplate.Shared.Controllers.Diagnostics;
+using Boilerplate.Client.Core.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
@@ -27,6 +28,8 @@ public partial class DiagnosticModal : IDisposable
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
+    [AutoInject] private MessageBoxService messageBoxService = default!;
+    [AutoInject] private IDiagnosticsController diagnosticsController = default!;
 
 
     protected override Task OnInitAsync()
@@ -122,6 +125,24 @@ public partial class DiagnosticModal : IDisposable
     private async Task ReloadLogs()
     {
         ResetLogs();
+    }
+
+    private static bool showKnownException = true;
+    private async Task ThrowTestException()
+    {
+        await Task.Delay(250);
+
+        showKnownException = !showKnownException;
+
+        throw showKnownException
+            ? new InvalidOperationException("Something critical happened.")
+            : new DomainLogicException("Something bad happened.");
+    }
+
+    private async Task CallDiagnosticsApi()
+    {
+        var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
+        messageBoxService.Show(result, "Diagnostics Result");
     }
 
     private void ResetLogs()

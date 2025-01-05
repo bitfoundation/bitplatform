@@ -425,6 +425,22 @@
                          ItemsProvider="LoadItems"
                          Placeholder="Select items"
                          TItem="BitDropdownItem<string>" TValue="string" />
+            <br /><br /><br /><br />
+            <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
+            <BitDropdown Label="Single select"
+                         Virtualize
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select an item"
+                         InitialSelectedItems="initialSelectedItem"
+                         TItem="BitDropdownItem<string>" TValue="string" />
+            <br />
+            <BitDropdown Label="Multi select"
+                         Virtualize
+                         MultiSelect
+                         ItemsProvider="LoadItems"
+                         Placeholder="Select items"
+                         InitialSelectedItems="initialSelectedItems"
+                         TItem="BitDropdownItem<string>" TValue="string" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>
@@ -575,10 +591,10 @@
         <br />
         <div dir="rtl" class="example-content">
             <BitDropdown Label="تک انتخابی"
+                         Dir="BitDir.Rtl"
                          Items="GetRtlItems()"
                          DefaultValue="@string.Empty"
-                         Placeholder="لطفا انتخاب کنید"
-                         Dir="BitDir.Rtl" />
+                         Placeholder="لطفا انتخاب کنید" />
             <br /><br />
             <BitDropdown Label="چند انتخابی"
                          MultiSelect
@@ -586,6 +602,13 @@
                          Items="GetRtlItems()"
                          DefaultValue="@string.Empty"
                          Placeholder="انتخاب چند گزینه ای" />
+            <br /><br />
+            <BitDropdown Label="تک انتخابی ریسپانسیو"
+                         Responsive
+                         Dir="BitDir.Rtl"
+                         Items="GetRtlItems()"
+                         DefaultValue="@string.Empty"
+                         Placeholder="لطفا انتخاب کنید" />
         </div>
     </ExamplePreview>
 </ComponentExampleBox>

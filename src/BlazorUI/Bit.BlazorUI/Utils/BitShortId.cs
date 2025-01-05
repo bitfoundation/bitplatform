@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-internal class BitShortId
+public class BitShortId
 {
     private static readonly string _chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     private static readonly int _length = _chars.Length;

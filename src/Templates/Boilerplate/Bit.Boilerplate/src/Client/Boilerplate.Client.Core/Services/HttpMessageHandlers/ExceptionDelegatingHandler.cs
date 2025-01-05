@@ -35,7 +35,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
 
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : restError.Message! };
+                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
 
                 if (exceptionType == typeof(ResourceValidationException))
                 {
@@ -66,9 +66,9 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
             || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
         {
+            serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
         }
-        //#if (signalR != true)
         finally
         {
             if (isInternalRequest)
@@ -76,6 +76,5 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 pubSubService.Publish(ClientPubSubMessages.IS_ONLINE_CHANGED, serverCommunicationSuccess);
             }
         }
-        //#endif
     }
 }

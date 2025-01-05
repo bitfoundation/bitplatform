@@ -1,206 +1,72 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-pnl {
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
     font-weight: 400;
     font-size: spacing(2);
     z-index: $zindex-modal;
     font-family: $tg-font-family;
+    --bit-pnl-transform-factor: 1;
 
-    @keyframes bit-pnl-trans-x {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-x-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(spacing(-5), 0px, 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
-    }
-
-    @keyframes bit-pnl-trans-y-reverse {
-        0% {
-            pointer-events: none;
-            transform: translate3d(0px, spacing(-5), 0px);
-        }
-
-        100% {
-            pointer-events: auto;
-            transform: translate3d(0px, 0px, 0px);
-        }
+    &.bit-rtl {
+        --bit-pnl-transform-factor: -1;
     }
 }
 
 .bit-pnl-ovl {
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    cursor: pointer;
     position: fixed;
-    pointer-events: auto;
     z-index: $zindex-overlay;
-    background: $clr-bg-overlay;
 }
 
 .bit-pnl-cnt {
-    top: 0;
-    height: 100%;
-    flex-grow: 1;
-    display: flex;
-    outline: none;
-    overflow: auto;
+    opacity: 0;
     position: fixed;
-    max-width: 100%;
-    max-height: 100%;
     box-sizing: border-box;
-    flex-direction: column;
     z-index: $zindex-callout;
-    animation-fill-mode: both;
-    animation-duration: 0.367s;
+    background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
-    animation-name: opacity, bit-pnl-trans-x;
-    background-color: $clr-bg-pri;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
+    transition: transform 200ms ease-out, opacity 100ms ease-in;
 }
 
-.bit-pnl-hcn {
-    top: 0;
-    z-index: 1;
-    display: flex;
-    position: sticky;
-    font-weight: 600;
-    align-items: center;
-    font-size: spacing(2.5);
-    overflow-wrap: anywhere;
-    color: $clr-fg-pri;
-    padding: spacing(2.25) spacing(3) 0;
-    background-color: $clr-bg-pri;
+.bit-pnl-start {
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
+    inset-inline-start: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * -100%));
 }
 
-.bit-pnl-ttl {
-    width: 100%;
-    hyphens: auto;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.bit-pnl-cls {
-    border: none;
-    display: flex;
-    cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
-    margin-left: auto;
-    height: spacing(4);
-    align-self: normal;
-    text-align: center;
-    align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    padding: 0 spacing(0.5);
-    justify-content: center;
-    font-size: spacing(1.75);
-    border-radius: spacing(0.25);
-    background-color: transparent;
-    color: $clr-fg-pri;
-
-    span {
-        height: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
-
-        i {
-            margin: 0 spacing(0.5);
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
-        }
-    }
-
-    &:active {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
-    }
-}
-
-.bit-pnl-bdy {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-left: spacing(3);
-    padding-right: spacing(3);
-    padding-bottom: spacing(2.5);
-}
-
-.bit-pnl-fcn {
-    bottom: 0;
-    z-index: 1;
-    position: sticky;
-    padding: spacing(2) spacing(3);
-    background-color: $clr-bg-pri;
-}
-
-.bit-pnl-right {
-    right: 0;
-    width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x;
-}
-
-.bit-pnl-left {
-    left: 0;
-    width: spacing(40);
-    animation-name: opacity, bit-pnl-trans-x-reverse;
+.bit-pnl-end {
+    height: 100%;
+    max-width: 85%;
+    inset-block: 0;
+    max-height: 100%;
+    width: fit-content;
+    inset-inline-end: 0;
+    transform: translateX(calc(var(--bit-pnl-transform-factor) * 100%));
 }
 
 .bit-pnl-top {
     top: 0;
-    left: 0;
-    right: 0;
     width: 100%;
-    height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y-reverse;
+    max-width: 100%;
+    max-height: 85%;
+    inset-inline: 0;
+    height: fit-content;
+    transform: translateY(-100%);
 }
 
 .bit-pnl-bottom {
-    left: 0;
-    right: 0;
     bottom: 0;
     top: unset;
     width: 100%;
-    height: spacing(40);
-    animation-name: opacity, bit-pnl-trans-y;
+    max-width: 100%;
+    max-height: 85%;
+    inset-inline: 0;
+    height: fit-content;
+    transform: translateY(100%);
 }

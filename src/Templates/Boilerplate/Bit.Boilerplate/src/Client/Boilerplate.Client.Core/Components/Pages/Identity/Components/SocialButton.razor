@@ -1,0 +1,16 @@
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
+
+<BitButton AutoLoading
+           Title="@Title"
+           OnClick="OnClick"
+           Size="BitSize.Small"
+           Class="social-button"
+           Variant="BitVariant.Fill"
+           ButtonType="BitButtonType.Button"
+           Color="BitColor.SecondaryBackground">
+    @ChildContent
+</BitButton>

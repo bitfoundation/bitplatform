@@ -4,18 +4,17 @@ namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout : IDisposable
 {
+    private bool _isHomePage;
     private string? _pageTitle;
+    private bool _isNavPanelOpen;
     private Action _unsubscribe = default!;
-
-    [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
+    private BitAppShell _appShellRef = default!;
 
     [AutoInject] private IPubSubService _pubSubService = default!;
-
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
-
     [AutoInject] private NavigationManager _navigationManager = default!;
+    [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
 
-    public string? CurrentUrl { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -52,8 +51,16 @@ public partial class MainLayout : IDisposable
 
     private void SetCurrentUrl()
     {
-        CurrentUrl = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        var url = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        _isHomePage = url == "/";
     }
+
+    private async Task HandleOnNavItemClick()
+    {
+        await Task.Delay(1);
+        await _appShellRef.GoToTop();
+    }
+
 
     public void Dispose()
     {

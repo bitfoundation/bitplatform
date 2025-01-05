@@ -7,9 +7,9 @@ section {
     height: 3.5rem;
     position: fixed;
     align-items: center;
-    max-width: var(--app-width);
+    bottom: $bit-env-inset-bottom;
     justify-content: space-around;
-    bottom: var(--app-inset-bottom);
+    max-width: $bit-env-width-available;
     background-color: $bit-color-background-primary;
     border-top: 1px solid $bit-color-border-tertiary;
 

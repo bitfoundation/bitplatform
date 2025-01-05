@@ -132,6 +132,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "InitialSelectedItems",
+            Type = "IEnumerable<TItem>?",
+            DefaultValue = "null",
+            Description = "The initial items that will be used to set selected items when using an ItemProvider.",
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",

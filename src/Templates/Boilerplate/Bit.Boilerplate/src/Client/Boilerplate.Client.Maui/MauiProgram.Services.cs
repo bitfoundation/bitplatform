@@ -20,55 +20,53 @@ public static partial class MauiProgram
         services.AddScoped(sp =>
         {
             var handler = sp.GetRequiredService<HttpMessageHandler>();
-            HttpClient httpClient = new(handler)
+            var httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(configuration.GetServerAddress(), UriKind.Absolute)
             };
+            if (sp.GetRequiredService<ClientMauiSettings>().WebAppUrl is Uri origin)
+            {
+                httpClient.DefaultRequestHeaders.Add("X-Origin", origin.ToString());
+            }
             return httpClient;
         });
 
         services.AddSingleton<IStorageService, MauiStorageService>();
-        services.AddSingleton(sp => configuration.Get<ClientMauiSettings>()!);
-        services.AddSingleton(ITelemetryContext.Current!);
-        if (AppPlatform.IsWindows || AppPlatform.IsMacOS)
+        var settings = new ClientMauiSettings();
+        configuration.Bind(settings);
+        services.AddSingleton(sp =>
         {
+            return settings;
+        });
+        services.AddSingleton(ITelemetryContext.Current!);
+        if (AppPlatform.IsAndroid is false)
+        {
+            // Handle social sign-in callback on local HTTP server.
+            // But in Android, leverage Universal Links for smoother sign-in flows.
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
         }
 
         services.AddMauiBlazorWebView();
         services.AddBlazorWebViewDeveloperTools();
 
-        builder.Logging.ConfigureLoggers();
-        builder.Logging.AddConfiguration(configuration.GetSection("Logging"));
+        builder.Logging.ConfigureLoggers(configuration);
 
         builder.Logging.AddEventSourceLogger();
 
         if (AppPlatform.IsWindows)
         {
-            builder.Logging.AddEventLog();
+            builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
         }
 
         //+:cnd:noEmit
-
-        //#if (appCenter == true)
-        if (Microsoft.AppCenter.AppCenter.Configured)
-        {
-            builder.Logging.AddAppCenter(options => options.IncludeScopes = true);
-        }
-        //#endif
-
         //#if (appInsights == true)
-        var connectionString = configuration.Get<ClientMauiSettings>()!.ApplicationInsights?.ConnectionString;
-        if (string.IsNullOrEmpty(connectionString) is false)
+        if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
         {
             builder.Logging.AddApplicationInsights(config =>
             {
                 config.TelemetryInitializers.Add(new MauiAppInsightsTelemetryInitializer());
-                config.ConnectionString = connectionString;
-            }, options =>
-            {
-                options.IncludeScopes = true;
-            });
+                configuration.GetRequiredSection("ApplicationInsights").Bind(config);
+            }, options => configuration.GetRequiredSection("Logging:ApplicationInsights").Bind(options));
         }
         //#endif
         //-:cnd:noEmit

@@ -15,5 +15,10 @@ public enum BitResponsiveMode
     /// <summary>
     /// Enables the top responsive mode.
     /// </summary>
-    Top
+    Top,
+
+    /// <summary>
+    /// Enables the bottom responsive mode.
+    /// </summary>
+    Bottom
 }

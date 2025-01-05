@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '9.1.0-pre-01';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '9.2.1-pre-02';
 
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
@@ -22,3 +22,11 @@ window.addEventListener('resize', (e: any) => {
 
     BitBlazorUI.Callouts.replaceCurrent();
 }, true);
+
+namespace BitBlazorUI {
+    export class BitController {
+        id: string = Utils.uuidv4();
+        controller = new AbortController();
+        dotnetObj: DotNetObject | undefined;
+    }
+}

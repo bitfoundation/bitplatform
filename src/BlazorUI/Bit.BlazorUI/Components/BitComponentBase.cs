@@ -177,9 +177,9 @@ public abstract partial class BitComponentBase : ComponentBase
 
     protected abstract string RootElementClass { get; }
 
-    internal ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
+    protected ElementClassBuilder ClassBuilder { get; private set; } = new ElementClassBuilder();
 
-    internal ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
+    protected ElementStyleBuilder StyleBuilder { get; private set; } = new ElementStyleBuilder();
 
     protected virtual void RegisterCssStyles() { }
 

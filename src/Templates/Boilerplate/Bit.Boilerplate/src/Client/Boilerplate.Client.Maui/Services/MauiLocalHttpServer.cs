@@ -27,11 +27,32 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
             {
                 try
                 {
+                    // Redirect to SocialSignedInPage.razor that will close the browser window.
                     var url = new Uri(absoluteServerAddress, $"/api/Identity/SocialSignedIn?culture={CultureInfo.CurrentUICulture.Name}").ToString();
-
                     ctx.Redirect(url);
 
-                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    if (AppPlatform.IsIOS)
+                    {
+                        // SocialSignedInPage.razor's `window.close()` does NOT work on iOS's in app browser.
+                        await MainThread.InvokeOnMainThreadAsync(() =>
+                        {
+#if iOS
+                            if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
+                            {
+                                controller.DismissViewController(animated: true, completionHandler: null);
+                            }
+#endif
+                        });
+                    }
+
+                    _ = Task.Delay(1)
+                    .ContinueWith(async _ =>
+                    {
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                        });
+                    });
                 }
                 catch (Exception exp)
                 {
@@ -41,7 +62,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },

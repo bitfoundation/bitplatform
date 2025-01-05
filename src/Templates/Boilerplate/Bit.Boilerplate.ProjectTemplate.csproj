@@ -13,9 +13,9 @@
         <PackageId>Bit.Boilerplate</PackageId>
         <PackageType>Template</PackageType>
         <Title>bit Boilerplate</Title>
-        <PackageDescription>A template for creating a full featured app base on the bit platform</PackageDescription>
+        <PackageDescription>A template for creating a full featured app using the bit platform products</PackageDescription>
         <PackageTags>bit;c#;asp;template;web;blazor;ef;api;rest;maui;</PackageTags>
-        <PackageCopyright>Copyright © bit platform 2024</PackageCopyright>
+        <PackageCopyright>Copyright © bit platform 2025</PackageCopyright>
         <PackageIcon>bit-icon-512.png</PackageIcon>
         
     </PropertyGroup>

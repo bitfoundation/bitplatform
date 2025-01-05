@@ -156,7 +156,7 @@ public partial class ComponentDemo
 
     private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "SpinButton", "TextField", "TimePicker", "Toggle"
+        "SearchBox", "SpinButton", "TextField", "TimePicker", "CircularTimePicker", "Toggle"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =
@@ -181,6 +181,13 @@ public partial class ComponentDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the name of the element. Allows access by name from the associated form.",
+        },
+        new()
+        {
+            Name = "NoValidate",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables the validation of the input.",
         },
         new()
         {
@@ -281,5 +288,5 @@ public partial class ComponentDemo
 
 
 
-    private readonly List<string> _extraComponents = ["DataGrid", "Chart"];
+    private readonly List<string> _extraComponents = ["DataGrid", "Chart", "PdfReader", "ModalService"];
 }

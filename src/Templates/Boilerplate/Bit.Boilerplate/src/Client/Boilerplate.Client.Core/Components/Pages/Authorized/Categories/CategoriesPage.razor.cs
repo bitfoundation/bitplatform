@@ -101,6 +101,10 @@ public partial class CategoriesPage
 
             await RefreshData();
         }
+        catch (KnownException exp)
+        {
+            SnackBarService.Error(exp.Message);
+        }
         finally
         {
             deletingCategory = null;

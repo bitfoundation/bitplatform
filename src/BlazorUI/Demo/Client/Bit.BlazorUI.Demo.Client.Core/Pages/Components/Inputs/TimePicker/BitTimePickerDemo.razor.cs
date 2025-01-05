@@ -103,20 +103,6 @@ public partial class BitTimePickerDemo
         },
         new()
         {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
-        },
-        new()
-        {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the Text field of the TimePicker is underlined.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -175,6 +161,13 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
@@ -211,6 +204,13 @@ public partial class BitTimePickerDemo
             Description = "The time format of the time-picker, 24H or 12H.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the Text field of the TimePicker is underlined.",
         },
         new()
         {
@@ -660,7 +660,7 @@ private async Task HandleValidSubmit()
 }";
 
     private readonly string example8RazorCode = @"
-<BitTimePicker IsResponsive
+<BitTimePicker Responsive
                ShowCloseButton
                Placeholder=""Select a time..."" />";
 

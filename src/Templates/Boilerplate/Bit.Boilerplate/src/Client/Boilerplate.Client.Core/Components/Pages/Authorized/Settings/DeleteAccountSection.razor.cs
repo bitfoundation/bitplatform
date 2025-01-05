@@ -6,14 +6,15 @@ public partial class DeleteAccountSection
 {
     private bool isDialogOpen;
 
-
     [AutoInject] IUserController userController = default!;
-
 
     private async Task DeleteAccount()
     {
-        await userController.Delete(CurrentCancellationToken);
+        if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken))
+        {
+            await userController.Delete(CurrentCancellationToken);
 
-        await AuthenticationManager.SignOut(CurrentCancellationToken);
+            await AuthManager.SignOut(CurrentCancellationToken);
+        }
     }
 }

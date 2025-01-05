@@ -3,6 +3,7 @@ using Velopack;
 using Microsoft.Web.WebView2.Core;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace Boilerplate.Client.Windows;
@@ -12,16 +13,9 @@ public partial class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
-        {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-
-        Application.ThreadException += (_, e) => LogException(e.Exception);
-        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject);
+        Application.ThreadException += (_, e) => LogException(e.Exception, reportedBy: nameof(Application.ThreadException));
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException));
+        TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception, reportedBy: nameof(TaskScheduler.UnobservedTaskException)); e.SetObserved(); };
 
         ApplicationConfiguration.Initialize();
 
@@ -32,17 +26,19 @@ public partial class Program
         Application.SetColorMode(SystemColorMode.System);
         //#endif
 
+        var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows").Build();
         var services = new ServiceCollection();
-        ConfigurationBuilder configurationBuilder = new();
-        configurationBuilder.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows");
-        var configuration = configurationBuilder.Build();
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
         if (CultureInfoManager.MultilingualEnabled)
         {
+            var culture = Services.GetRequiredService<IStorageService>()
+                .GetItem("Culture")
+                .GetAwaiter()
+                .GetResult();
             Services.GetRequiredService<CultureInfoManager>().SetCurrentCulture(
-                Application.UserAppDataRegistry.GetValue("Culture") as string ?? // 1- User settings
+                culture ?? // 1- User settings
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
         Services.GetRequiredService<PubSubService>().Subscribe(ClientPubSubMessages.CULTURE_CHANGED, async culture =>
@@ -51,7 +47,7 @@ public partial class Program
         });
 
         // https://github.com/velopack/velopack
-        VelopackApp.Build().Run();
+        VelopackApp.Build().Run(Services.GetRequiredService<ILogger<VelopackApp>>());
         _ = Task.Run(async () =>
         {
             try
@@ -81,6 +77,9 @@ public partial class Program
         var form = new Form()
         {
             Text = "Boilerplate",
+            Height = 768,
+            Width = 1024,
+            MinimumSize = new Size(375, 667),
             WindowState = FormWindowState.Maximized,
             BackColor = ColorTranslator.FromHtml("#0D2960"),
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
@@ -117,12 +116,8 @@ public partial class Program
                 settings.IsZoomControlEnabled = false;
                 settings.AreBrowserAcceleratorKeysEnabled = false;
             }
-            bool hasBlazorStarted = false;
             blazorWebView.WebView.NavigationCompleted += async delegate
             {
-                if (hasBlazorStarted)
-                    return;
-                hasBlazorStarted = true;
                 await blazorWebView.WebView.ExecuteScriptAsync("Blazor.start()");
             };
         };
@@ -132,15 +127,18 @@ public partial class Program
         Application.Run(form);
     }
 
-    private static void LogException(object? error)
+    private static void LogException(object? error, string reportedBy)
     {
-        var errorMessage = error?.ToString() ?? "Unknown error";
         if (Services is not null && error is Exception exp)
         {
-            Services.GetRequiredService<IExceptionHandler>().Handle(exp);
+            Services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            {
+                { nameof(reportedBy), reportedBy }
+            }, displayKind: AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
         }
         else
         {
+            var errorMessage = error?.ToString() ?? "Unknown error";
             Clipboard.SetText(errorMessage);
             System.Windows.Forms.MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

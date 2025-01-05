@@ -14,6 +14,9 @@ public partial class SignInPanel
 
     [Parameter] public EventCallback<SignInPanelTab> OnTabChange { get; set; }
 
+    [Parameter, SupplyParameterFromQuery(Name = "return-url")]
+    public string? ReturnUrlQueryString { get; set; }
+
 
     private const string EmailKey = nameof(EmailKey);
     private const string PhoneKey = nameof(PhoneKey);

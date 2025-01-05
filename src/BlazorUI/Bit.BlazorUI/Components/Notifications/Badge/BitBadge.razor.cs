@@ -67,7 +67,7 @@ public partial class BitBadge : BitComponentBase
     /// The position of the badge.
     /// </summary>
     [Parameter, ResetClassBuilder]
-    public BitBadgePosition? Position { get; set; }
+    public BitPosition? Position { get; set; }
 
     /// <summary>
     /// The size of badge, Possible values: Small | Medium | Large
@@ -113,15 +113,15 @@ public partial class BitBadge : BitComponentBase
 
         ClassBuilder.Register(() => Position switch
         {
-            BitBadgePosition.TopRight => "bit-bdg-trg",
-            BitBadgePosition.TopCenter => "bit-bdg-tcr",
-            BitBadgePosition.TopLeft => "bit-bdg-tlf",
-            BitBadgePosition.CenterLeft => "bit-bdg-clf",
-            BitBadgePosition.BottomLeft => "bit-bdg-blf",
-            BitBadgePosition.BottomCenter => "bit-bdg-bcr",
-            BitBadgePosition.BottomRight => "bit-bdg-brg",
-            BitBadgePosition.CenterRight => "bit-bdg-crg",
-            BitBadgePosition.Center => "bit-bdg-ctr",
+            BitPosition.TopRight => "bit-bdg-trg",
+            BitPosition.TopCenter => "bit-bdg-tcr",
+            BitPosition.TopLeft => "bit-bdg-tlf",
+            BitPosition.CenterLeft => "bit-bdg-clf",
+            BitPosition.BottomLeft => "bit-bdg-blf",
+            BitPosition.BottomCenter => "bit-bdg-bcr",
+            BitPosition.BottomRight => "bit-bdg-brg",
+            BitPosition.CenterRight => "bit-bdg-crg",
+            BitPosition.Center => "bit-bdg-ctr",
             _ => "bit-bdg-trg"
         });
 

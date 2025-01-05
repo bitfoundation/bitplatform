@@ -27,6 +27,12 @@ public partial class JsBridge : IDisposable
         PubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }
 
+    [JSInvokable(nameof(PublishMessage))]
+    public async Task PublishMessage(string message, string? payload)
+    {
+        PubSubService.Publish(message, payload);
+    }
+
     public void Dispose()
     {
         dotnetObj?.Dispose();

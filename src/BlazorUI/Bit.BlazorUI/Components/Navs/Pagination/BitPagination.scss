@@ -27,6 +27,11 @@
     --bit-pgn-clr-btn-sel-bg-active: var(--bit-pgn-clr-sel-active);
     --bit-pgn-clr-btn-sel-brd-active: var(--bit-pgn-clr-sel-active);
 
+    &.bit-rtl {
+        --bit-pgn-ico-transform-end: scaleX(-1);
+        --bit-pgn-ico-transform-start: scaleX(1);
+    }
+
     &.bit-dis {
         cursor: default;
         color: $clr-fg-dis;
@@ -40,11 +45,6 @@
 
 .bit-pgn-tre {
     transform: var(--bit-pgn-ico-transform-end);
-}
-
-.bit-rtl {
-    --bit-pgn-ico-transform-end: scaleX(-1);
-    --bit-pgn-ico-transform-start: scaleX(1);
 }
 
 .bit-pgn-elp {

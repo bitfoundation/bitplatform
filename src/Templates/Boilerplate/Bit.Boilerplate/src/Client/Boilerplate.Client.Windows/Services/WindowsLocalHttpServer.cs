@@ -32,9 +32,15 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
                     ctx.Redirect(url);
 
-                    Application.OpenForms[0]!.Activate();
-
-                    await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                    _ = Task.Delay(1)
+                        .ContinueWith(async _ =>
+                        {
+                            Application.OpenForms[0]!.Invoke(() =>
+                            {
+                                Application.OpenForms[0]!.Activate();
+                            });
+                            await Routes.OpenUniversalLink(ctx.Request.Url.PathAndQuery, replace: true);
+                        });
                 }
                 catch (Exception exp)
                 {
@@ -44,7 +50,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         localHttpServer.HandleHttpException(async (context, exception) =>
         {
-            exceptionHandler.Handle(new HttpRequestException(exception.Message), new Dictionary<string, object?>()
+            exceptionHandler.Handle(new HttpRequestException(exception.Message), parameters: new Dictionary<string, object?>()
             {
                 { "StatusCode" , exception.StatusCode },
                 { "RequestUri" , context.Request.Url },

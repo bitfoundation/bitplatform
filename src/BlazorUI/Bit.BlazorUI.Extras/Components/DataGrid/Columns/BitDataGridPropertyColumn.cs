@@ -37,7 +37,7 @@ public class BitDataGridPropertyColumn<TGridItem, TProp> : BitDataGridColumnBase
             _lastAssignedProperty = Property;
             var compiledPropertyExpression = Property.Compile();
 
-            if (!string.IsNullOrEmpty(Format))
+            if (Format.HasValue())
             {
                 if (typeof(IFormattable).IsAssignableFrom(typeof(TProp)))
                 {

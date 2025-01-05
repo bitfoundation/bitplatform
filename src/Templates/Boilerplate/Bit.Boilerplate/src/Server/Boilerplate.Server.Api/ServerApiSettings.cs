@@ -2,6 +2,7 @@
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
+using System.Text.RegularExpressions;
 
 namespace Boilerplate.Server.Api;
 
@@ -38,6 +39,11 @@ public partial class ServerApiSettings : SharedSettings
     //#endif
 
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
+
+    /// <summary>
+    /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
+    /// </summary>
+    public Uri[] AllowedOrigins { get; set; } = [];
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -81,7 +87,7 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
             //#endif
 
             //#if (notification == true)
-            if (AdsPushVapid?.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid?.Subject is "mailto: <test@bitplatform.dev>")
+            if (AdsPushVapid?.PrivateKey is "dMIR1ICj-lDWYZ-ZYCwXKyC2ShYayYYkEL-oOPnpq9c" || AdsPushVapid?.Subject is "mailto:test@bitplatform.dev")
             {
                 throw new InvalidOperationException("The AdsPushVapid's PrivateKey and Subject are not set. Please set them in the server's appsettings.json file.");
             }
@@ -90,6 +96,24 @@ command in the Server.Api's project's folder and replace P@ssw0rdP@ssw0rd with t
 
         return validationResults;
     }
+
+    internal bool IsAllowedOrigin(Uri origin)
+    {
+        return AllowedOrigins.Any(allowedOrigin => allowedOrigin == origin)
+            || AllowedOriginsRegex().IsMatch(origin.ToString());
+    }
+
+    //-:cnd:noEmit
+    /// <summary>
+    /// Blazor Hybrid's webview, localhost, devtunnels, github codespaces.
+    /// </summary>
+#if Development
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
+#else
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
+#endif
+    //+:cnd:noEmit
+    private partial Regex AllowedOriginsRegex();
 }
 
 public partial class AppIdentityOptions : IdentityOptions
@@ -121,6 +145,11 @@ public partial class AppIdentityOptions : IdentityOptions
     /// To sign in with either Otp or magic link.
     /// </summary>
     public TimeSpan OtpTokenLifetime { get; set; }
+
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// </summary>
+    public int MaxConcurrentPrivilegedSessions { get; set; }
 }
 
 public partial class EmailOptions

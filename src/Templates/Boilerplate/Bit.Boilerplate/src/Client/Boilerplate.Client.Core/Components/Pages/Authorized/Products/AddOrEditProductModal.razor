@@ -36,6 +36,7 @@
                     <ValidationMessage For="() => product.Name" />
 
                     <BitDropdown @bind-Value="selectedCategoryId"
+                                 Responsive
                                  Items="allCategoryList"
                                  Label="@Localizer[(nameof(AppStrings.Category))]"
                                  Placeholder="@Localizer[(nameof(AppStrings.SelectCategory))]"
@@ -43,14 +44,14 @@
                     <ValidationMessage For="@(() => product.CategoryId)" />
 
                     <BitNumberField @bind-Value="product.Price"
-                                    Suffix="$"
-                                    NumberFormat="C2"
+                                    Suffix="@CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol"
+                                    NumberFormat="N"
                                     Label="@Localizer[(nameof(AppStrings.Price))]" />
                     <ValidationMessage For="() => product.Price" />
 
                     <BitTextField @bind-Value="product.Description"
+                                  Multiline
                                   Rows="3"
-                                  IsMultiline="true"
                                   Label="@Localizer[(nameof(AppStrings.Description))]" />
                     <ValidationMessage For="() => product.Description" />
 

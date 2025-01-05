@@ -42,24 +42,21 @@
 
     <Routes @rendermode=RenderModeProvider.Current />
 
-    @if (HttpContext.Request.IsCrawlerClient() is false)
-    {
-        <Script src="_framework/blazor.web.js" autostart="false"></Script>
-        <Script>
-            Blazor.start({
-                webAssembly: {
-                    loadBootResource: function (type, name, defaultUri, integrity) {
-                        if (integrity != null && integrity != '')
-                            return `${defaultUri}?v=${integrity}`;
-                        return null; // default blazor asset loading mechanism.
-                    }
+    <Script src="_framework/blazor.web.js" autostart="false"></Script>
+    <Script>
+        Blazor.start({
+            webAssembly: {
+                loadBootResource: function (type, name, defaultUri, integrity) {
+                    if (integrity != null && integrity != '')
+                        return `${defaultUri}?v=${integrity}`;
+                    return null; // default blazor asset loading mechanism.
                 }
-            });
-        </Script>
-        <Script src="_content/Bit.Butil/bit-butil.js"></Script>
-        <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
-        <Script src="scripts/app.js"></Script>
-    }
+            }
+        });
+    </Script>
+    <Script src="_content/Bit.Butil/bit-butil.js"></Script>
+    <Script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+    <Script src="scripts/app.js"></Script>
 </body>
 
 </html>

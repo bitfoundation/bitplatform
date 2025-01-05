@@ -32,6 +32,6 @@ public static partial class ClaimsPrincipalExtensions
     /// </summary>
     public static Guid GetSessionId(this ClaimsPrincipal claimsPrincipal)
     {
-        return Guid.Parse(claimsPrincipal.FindFirst("session-id")!.Value);
+        return Guid.Parse(claimsPrincipal.FindFirst(AppClaimTypes.SESSION_ID)!.Value);
     }
 }

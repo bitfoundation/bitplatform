@@ -4,7 +4,7 @@ namespace Bit.BlazorUI;
 
 internal static class CalloutsJsRuntimeExtensions
 {
-    internal static ValueTask<bool> ToggleCallout<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+    internal static ValueTask<bool> BitCalloutToggleCallout<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this IJSRuntime jsRuntime,
         DotNetObjectReference<T> dotnetObj,
         string componentId,
@@ -20,7 +20,7 @@ internal static class CalloutsJsRuntimeExtensions
         string headerId,
         string footerId,
         bool setCalloutWidth,
-        string rootCssClass) where T : class
+        int maxWidth = 0) where T : class
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.toggle",
                                       dotnetObj,
@@ -37,10 +37,10 @@ internal static class CalloutsJsRuntimeExtensions
                                       headerId,
                                       footerId,
                                       setCalloutWidth,
-                                      rootCssClass);
+                                      maxWidth);
     }
 
-    internal static ValueTask ClearCallout(this IJSRuntime jsRuntime, string calloutId)
+    internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.clear", calloutId);
     }

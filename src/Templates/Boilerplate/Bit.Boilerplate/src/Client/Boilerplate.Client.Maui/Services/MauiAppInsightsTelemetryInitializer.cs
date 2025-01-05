@@ -12,12 +12,11 @@ public partial class MauiAppInsightsTelemetryInitializer : ITelemetryInitializer
         {
             telemetry.Context.Session.Id = ITelemetryContext.Current.AppSessionId.ToString();
             telemetry.Context.Component.Version = ITelemetryContext.Current.AppVersion;
-            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.OS;
+            telemetry.Context.Device.OperatingSystem = ITelemetryContext.Current.Platform;
             telemetry.Context.User.AuthenticatedUserId = ITelemetryContext.Current.UserId?.ToString();
 
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserSessionId)] = ITelemetryContext.Current.UserSessionId?.ToString();
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.WebView)] = ITelemetryContext.Current.WebView;
-            telemetry.Context.GlobalProperties[nameof(ITelemetryContext.UserAgent)] = ITelemetryContext.Current.UserAgent;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.TimeZone)] = ITelemetryContext.Current.TimeZone;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.Culture)] = ITelemetryContext.Current.Culture;
             telemetry.Context.GlobalProperties[nameof(ITelemetryContext.IsOnline)] = ITelemetryContext.Current.IsOnline?.ToString().ToLowerInvariant();

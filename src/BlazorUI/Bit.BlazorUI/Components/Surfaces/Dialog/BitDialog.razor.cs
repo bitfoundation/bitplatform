@@ -164,7 +164,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
     {
         await InvokeAsync(async () =>
         {
-            _ = _js.ToggleOverflow(ScrollerSelector, true);
+            _ = _js.BitUtilsToggleOverflow(ScrollerSelector, true);
 
             Result = null;
 
@@ -233,7 +233,7 @@ public partial class BitDialog : BitComponentBase, IAsyncDisposable
 
         if (AutoToggleScroll is false) return;
 
-        _offsetTop = await _js.ToggleOverflow(ScrollerSelector, IsOpen);
+        _offsetTop = await _js.BitUtilsToggleOverflow(ScrollerSelector, IsOpen);
 
         if (AbsolutePosition is false) return;
 

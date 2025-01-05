@@ -7,12 +7,19 @@ section {
 ::deep {
     .session-persona {
         @include lt-sm {
-            max-width: calc(100% - 3.75rem);
+            max-width: 100%;
+        }
+    }
+
+    .other-session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 30px);
         }
     }
 
     .sessions-list {
         width: 100%;
+        padding: 2px;
         height: 20rem;
     }
 }

@@ -1,0 +1,21 @@
+﻿:root {
+    --bit-env-inset-top: env(safe-area-inset-top, 0px);
+    --bit-env-inset-left: env(safe-area-inset-left, 0px);
+    --bit-env-inset-right: env(safe-area-inset-right, 0px);
+    --bit-env-inset-bottom: env(safe-area-inset-bottom, 0px);
+    //--
+    --bit-env-width-vw: calc(100vw - var(--bit-env-inset-left) - var(--bit-env-inset-right));
+    --bit-env-height-vh: calc(100vh - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
+    --bit-env-width-per: calc(100% - var(--bit-env-inset-left) - var(--bit-env-inset-right));
+    --bit-env-height-per: calc(100% - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
+    --bit-env-width-avl: calc(var(--bit-env-win-width) - var(--bit-env-inset-left) - var(--bit-env-inset-right));
+    --bit-env-height-avl: calc(var(--bit-env-win-height) - var(--bit-env-inset-top) - var(--bit-env-inset-bottom));
+    //--
+    --bit-env-inset-inline-start: var(--bit-env-inset-left);
+    --bit-env-inset-inline-end: var(--bit-env-inset-right);
+
+    [dir="rtl"] {
+        --bit-env-inset-inline-start: var(--bit-env-inset-right);
+        --bit-env-inset-inline-end: var(--bit-env-inset-left);
+    }
+}

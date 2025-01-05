@@ -3,7 +3,7 @@ using Boilerplate.Shared.Controllers.Todo;
 
 namespace Boilerplate.Server.Api.Controllers.Todo;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class TodoItemController : AppControllerBase, ITodoItemController
 {
     [HttpGet, EnableQuery]
@@ -23,8 +23,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip!.Value)
-                     .TakeIf(odataQuery.Top is not null, odataQuery.Top!.Value);
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResult<TodoItemDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
@@ -32,10 +32,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpGet("{id}")]
     public async Task<TodoItemDto> Get(Guid id, CancellationToken cancellationToken)
     {
-        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (dto is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         return dto;
     }
@@ -59,10 +57,8 @@ public partial class TodoItemController : AppControllerBase, ITodoItemController
     [HttpPut]
     public async Task<TodoItemDto> Update(TodoItemDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken);
-
-        if (entityToUpdate is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
+        var entityToUpdate = await DbContext.TodoItems.FirstOrDefaultAsync(t => t.Id == dto.Id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ToDoItemCouldNotBeFound)]);
 
         dto.Patch(entityToUpdate);
 

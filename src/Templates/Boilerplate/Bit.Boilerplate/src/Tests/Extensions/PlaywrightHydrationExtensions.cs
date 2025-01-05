@@ -13,6 +13,10 @@ public static partial class PlaywrightHydrationExtensions
 
     public static Task EnableHydrationCheck(this IPage page) => page.RouteAsync("**/*", ChangeTitleHandler);
 
+    public static Task DisableHydrationCheck(this IBrowserContext context) => context.UnrouteAsync("**/*", ChangeTitleHandler);
+
+    public static Task DisableHydrationCheck(this IPage page) => page.UnrouteAsync("**/*", ChangeTitleHandler);
+
     private static async Task ChangeTitleHandler(IRoute route)
     {
         var request = route.Request;

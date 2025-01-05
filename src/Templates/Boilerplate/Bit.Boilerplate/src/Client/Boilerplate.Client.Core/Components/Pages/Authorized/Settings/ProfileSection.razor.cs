@@ -1,7 +1,4 @@
 ﻿//+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
-//#endif
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Controllers.Identity;
 
@@ -12,29 +9,23 @@ public partial class ProfileSection
     [Parameter] public bool Loading { get; set; }
     [Parameter] public UserDto? User { get; set; }
 
-
-    //#if (signalR == true)
-    [AutoInject] HubConnection hub = default!;
-    //#endif
     [AutoInject] private IUserController userController = default!;
 
 
     private bool isSaving;
     private bool isUploading;
-    private string? profileImageUrl;
     private string? profileImageUploadUrl;
-    private string? removeProfileImageHttpUrl;
     private BitFileUpload fileUploadRef = default!;
     private readonly EditUserDto editUserDto = new();
+
+    
+    private string? ProfileImageUrl => User?.GetProfileImageUrl(AbsoluteServerAddress);
 
 
     protected override async Task OnInitAsync()
     {
         var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
 
-        removeProfileImageHttpUrl = $"api/Attachment/RemoveProfileImage?access_token={accessToken}";
-
-        profileImageUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProfileImage?access_token={accessToken}").ToString();
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 
         await base.OnInitAsync();
@@ -56,13 +47,6 @@ public partial class ProfileSection
 
         try
         {
-            //#if (signalR == true)
-            if (await hub.IsUserSessionUnique(CurrentCancellationToken))
-            {
-                throw new ForbiddenException(Localizer[nameof(AppStrings.ConcurrentUserSessionOnTheSameDevice)]);
-            }
-            //#endif
-
             editUserDto.Patch(User);
 
             (await userController.Update(editUserDto, CurrentCancellationToken)).Patch(User);
@@ -84,10 +68,11 @@ public partial class ProfileSection
     private async Task RemoveProfileImage()
     {
         if (isSaving || User is null) return;
+        isSaving = true;
 
         try
         {
-            await HttpClient.DeleteAsync(removeProfileImageHttpUrl, CurrentCancellationToken);
+            await HttpClient.DeleteAsync("api/Attachment/RemoveProfileImage", CurrentCancellationToken);
 
             User.ProfileImageName = null;
 
@@ -96,6 +81,10 @@ public partial class ProfileSection
         catch (KnownException e)
         {
             SnackBarService.Error(e.Message);
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 
@@ -107,7 +96,7 @@ public partial class ProfileSection
         {
             var updatedUser = await userController.GetCurrentUser(CurrentCancellationToken);
 
-            User.ProfileImageName = updatedUser.ProfileImageName;
+            updatedUser.Patch(User);
 
             PublishUserDataUpdated();
         }

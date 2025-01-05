@@ -2,43 +2,16 @@
 
 public partial class MessageBoxService
 {
-    private bool isRunning = false;
-    private readonly ConcurrentQueue<MessageBoxData> queue = new();
+    [AutoInject] private BitModalService modalService = default!;
 
-
-    [AutoInject] private readonly PubSubService pubSubService = default!;
-
-
-    public Task<bool> Show(string message, string title = "")
+    public void Show(string message, string title = "")
     {
-        TaskCompletionSource<bool> tcs = new();
-
-        queue.Enqueue(new(message, title, tcs));
-
-        if (isRunning is false)
+        Dictionary<string, object> parameters = new()
         {
-            isRunning = true;
-            _ = ProcessQueue();
-        }
+            { nameof(MessageBox.Title), title },
+            { nameof(MessageBox.Body), message }
+        };
 
-        return tcs.Task;
-    }
-
-    private async Task ProcessQueue()
-    {
-        if (queue.IsEmpty)
-        {
-            isRunning = false;
-            return;
-        }
-
-        if (queue.TryDequeue(out var data))
-        {
-            pubSubService.Publish(ClientPubSubMessages.SHOW_MESSAGE, data, persistent: true);
-
-            await data.TaskCompletionSource.Task;
-        }
-
-        _ = ProcessQueue();
+        _ = modalService.Show<MessageBox>(parameters);
     }
 }

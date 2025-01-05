@@ -21,10 +21,10 @@ public partial class LocalizationTests : BlazorServer.LocalizationTests
     [TestCategory("MultilingualDisabled")]
     public async Task MultilingualDisabled()
     {
-        if (CultureInfoManager.MultilingualEnabled is false)
+        if (CultureInfoManager.MultilingualEnabled)
         {
-            Assert.Inconclusive("Multilingual is disabled. " +
-                "You can enable it via <MultilingualEnabled>true</MultilingualEnabled> setting in Directiory.Build.props.");
+            Assert.Inconclusive("Multilingual is enabled. " +
+                "You can disable it via <MultilingualEnabled>false</MultilingualEnabled> setting in Directiory.Build.props.");
             return;
         }
 
@@ -32,7 +32,7 @@ public partial class LocalizationTests : BlazorServer.LocalizationTests
         await homePage.Open();
         await homePage.AssertOpen();
 
-        var contains = PlaywrightAssetCachingExtensions.ContainsAsset("icudt_hybrid.dat");
+        var contains = PlaywrightAssetCachingExtensions.ContainsAsset("icudt_hybrid");
         Assert.IsFalse(contains, "The 'icudt_hybrid.dat' file must not be loaded when Multilingual is disabled.");
     }
 }

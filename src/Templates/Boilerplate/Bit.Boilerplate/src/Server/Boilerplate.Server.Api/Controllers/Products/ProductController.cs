@@ -1,14 +1,14 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.SignalR;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
+using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]")]
+[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 public partial class ProductController : AppControllerBase, IProductController
 {
     //#if (signalR == true)
@@ -29,8 +29,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip!.Value)
-                     .TakeIf(odataQuery.Top is not null, odataQuery.Top!.Value);
+        query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
+                     .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResult<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
     }
@@ -38,10 +38,8 @@ public partial class ProductController : AppControllerBase, IProductController
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
-        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
-        if (dto is null)
-            throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
         return dto;
     }
@@ -93,8 +91,9 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true)
     private async Task PublishDashboardDataChanged(CancellationToken cancellationToken)
     {
-        // Checkout AppHubConnectionHandler's comments for more info.
-        await appHubContext.Clients.GroupExcept("AuthenticatedClients", excludedConnectionIds: [User.GetSessionId().ToString()]).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, cancellationToken);
+        // Checkout AppHub's comments for more info.
+        // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
+        await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
     }
     //#endif
 }

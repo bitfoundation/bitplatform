@@ -10,7 +10,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-TypeEntity" content="text/html; charset=UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>@EmailLocalizer[nameof(EmailStrings.ConfirmationEmailSubject), Model.Token!]</title>
 </head>
 <body dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)" style="font-family:Arial,sans-serif">
@@ -52,12 +52,12 @@
         <table style="width:100%;text-align:center;margin-top:30px;">
             <tr>
                 <td style="padding-bottom:10px;">
-                    <img alt="Company Logo" src="@(new Uri(HttpContext.Request.GetBaseUrl(), "images/icon.png"))" width="30" height="20" />
+                    <img alt="Company Logo" src="@(new Uri(HttpContext.Request.GetWebAppUrl(), "images/icon.png"))" width="30" height="20" />
                 </td>
             </tr>
             <tr>
                 <td>
-                    <a style="font-size:12px" href="@HttpContext.Request.GetBaseUrl()">
+                    <a style="font-size:12px" href="@HttpContext.Request.GetWebAppUrl()">
                         @EmailLocalizer[nameof(EmailStrings.AppName)]
                     </a>
                 </td>

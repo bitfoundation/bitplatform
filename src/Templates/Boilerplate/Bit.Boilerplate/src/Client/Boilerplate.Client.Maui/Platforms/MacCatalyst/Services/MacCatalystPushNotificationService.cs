@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 
 public partial class MacCatalystPushNotificationService : PushNotificationServiceBase
 {
-    public async override Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
+    public override async Task<bool> IsPushNotificationSupported(CancellationToken cancellationToken)
     {
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {

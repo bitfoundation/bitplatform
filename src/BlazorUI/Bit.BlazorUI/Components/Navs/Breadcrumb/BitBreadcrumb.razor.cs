@@ -25,9 +25,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// The content of the BitBreadcrumb, that are BitBreadOption components.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the breadcrumb.
@@ -47,9 +45,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// Collection of BreadLists to render.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public IList<TItem> Items { get; set; } = [];
+    [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// The custom template content to render each item.
@@ -75,9 +71,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     /// <summary>
     /// Alias of the ChildContent.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? Options { get; set; }
+    [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
     /// Aria label for the overflow button.
@@ -165,9 +159,32 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        OnSetParameters();
-
         return base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ChildContent is null && Options is null)
+        {
+            _items = Items is not null ? [.. Items] : [];
+        }
+
+        if (_items.Any() is false) return;
+
+        bool shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
+        _internalItems = [.. _items];
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
+        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+
+        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        if (shouldCallSetItemsToShow is false) return;
+
+        SetItemsToShow();
+
+        base.OnParametersSet();
     }
 
 
@@ -192,29 +209,6 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
         {
             NameSelectors.OnClick(item);
         }
-    }
-
-    private void OnSetParameters()
-    {
-        if (ChildContent is null && Options is null)
-        {
-            _items = [.. Items];
-        }
-
-        if (_items.Any() is false) return;
-
-        bool shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
-        _internalItems = [.. _items];
-
-        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
-        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
-
-        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
-        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
-
-        if (shouldCallSetItemsToShow is false) return;
-
-        SetItemsToShow();
     }
 
     private void SetItemsToShow()
@@ -603,7 +597,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
     {
         if (IsEnabled is false) return;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 _overflowAnchorId,
                                 null,
                                 _calloutId,
@@ -616,8 +610,12 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
                                 0,
                                 "",
                                 "",
-                                false,
-                                RootElementClass);
+                                false);
+    }
+
+    private string GetItemKey(TItem item, string defaultKey)
+    {
+        return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
     }
 
 
@@ -638,7 +636,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase, IAsyncDisposable w
 
             try
             {
-                await _js.ClearCallout(_calloutId);
+                await _js.BitCalloutClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

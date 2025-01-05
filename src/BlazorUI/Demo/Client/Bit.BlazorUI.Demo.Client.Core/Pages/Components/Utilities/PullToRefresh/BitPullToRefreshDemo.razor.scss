@@ -1,0 +1,55 @@
+﻿.example-content {
+    gap: 1rem;
+    display: flex;
+}
+
+.anchor {
+    width: 150px;
+    padding: 4px;
+    cursor: grab;
+    height: 300px;
+    overflow: auto;
+    user-select: none;
+    border: 1px gray solid;
+}
+
+.mobile-frame {
+    width: 300px;
+    height: 600px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 36px;
+    border: 16px solid #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--bit-clr-fg-sec);
+
+    .screen {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.advanced-anchor {
+    cursor: grab;
+    height: 490px;
+    overflow: auto;
+    user-select: none;
+}
+
+::deep {
+    .custom-loading {
+        background-color: rgb(255, 106, 0, 0.1);
+    }
+
+    .custom-spinner {
+        padding: 5px;
+        border-radius: 50%;
+        background-color: #ff6a00;
+    }
+
+    .row {
+        color: black;
+        padding: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+}

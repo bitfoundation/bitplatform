@@ -110,20 +110,6 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "IsResponsive",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
-        },
-        new()
-        {
-            Name = "IsUnderlined",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not the Text field of the TimePicker is underlined.",
-        },
-        new()
-        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -175,6 +161,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables the responsive mode in small screens.",
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
@@ -214,16 +207,10 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "Value",
-            Type = "TimeSpan?",
-            DefaultValue = "null",
-            Description = "The value of TimePicker.",
-        },
-        new()
-        {
-            Name = "ValueChanged",
-            Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the on time value changed.",
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not the Text field of the TimePicker is underlined.",
         },
         new()
         {
@@ -771,8 +758,8 @@ private async Task OpenCallout()
 
     private readonly string example8RazorCode = @"
 <BitCircularTimePicker Label=""Response CircularTimePicker""
-                       IsResponsive=""true""
-                       Placeholder=""Select a time"" />";
+                       Placeholder=""Select a time"" 
+                       Responsive />";
 
     private readonly string example9RazorCode = @"
 <EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">

@@ -19,6 +19,7 @@
     border-radius: $shp-border-radius;
     --bit-btn-clr-bg-dis: #{$clr-bg-dis};
     --bit-btn-clr-brd-dis: #{$clr-brd-dis};
+    --bit-btn-float-offset: #{spacing(2)};
 
     &.bit-dis {
         cursor: default;
@@ -88,6 +89,21 @@
     font-size: var(--bit-btn-lbl-fontsize);
 }
 
+.bit-btn-flw {
+    width: 100%;
+    z-index: $zindex-base;
+}
+
+.bit-btn-fab {
+    position: absolute;
+    z-index: $zindex-base;
+}
+
+.bit-btn-ffx {
+    position: fixed;
+    z-index: $zindex-base;
+}
+
 
 .bit-btn-fil {
     border-color: var(--bit-btn-clr);
@@ -151,13 +167,6 @@
     }
 }
 
-.bit-btn-ftc {
-    color: var(--bit-btn-clr-txt);
-}
-
-.bit-btn-flw {
-    width: 100%;
-}
 
 .bit-btn-pri {
     --bit-btn-clr: #{$clr-pri};
@@ -342,6 +351,63 @@
     flex-direction: column;
 }
 
+
+.bit-btn-trg {
+    top: var(--bit-btn-float-offset);
+    right: var(--bit-btn-float-offset);
+}
+
+.bit-btn-tlf {
+    top: var(--bit-btn-float-offset);
+    left: var(--bit-btn-float-offset);
+}
+
+.bit-btn-tcr {
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--bit-btn-float-offset);
+}
+
+.bit-btn-clf {
+    top: 50%;
+    transform: translateY(-50%);
+    left: var(--bit-btn-float-offset);
+}
+
+.bit-btn-crg {
+    top: 50%;
+    transform: translateY(-50%);
+    right: var(--bit-btn-float-offset);
+}
+
+.bit-btn-ctr {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.bit-btn-blf {
+    left: var(--bit-btn-float-offset);
+    bottom: var(--bit-btn-float-offset);
+}
+
+.bit-btn-brg {
+    right: var(--bit-btn-float-offset);
+    bottom: var(--bit-btn-float-offset);
+}
+
+.bit-btn-bcr {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: var(--bit-btn-float-offset);
+}
+
+
+// important: these need to be here at the end!
+
+.bit-btn-fxc {
+    color: var(--bit-btn-clr-txt);
+}
 
 .bit-btn-ntx {
     padding: var(--bit-btn-pad-ntx);

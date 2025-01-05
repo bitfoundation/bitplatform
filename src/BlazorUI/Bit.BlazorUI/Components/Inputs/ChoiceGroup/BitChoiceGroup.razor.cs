@@ -19,9 +19,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// The content of the ChoiceGroup, a list of BitChoiceGroupOption components.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitChoiceGroup.
@@ -31,9 +29,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Default selected item for ChoiceGroup.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public TValue? DefaultValue { get; set; }
+    [Parameter] public TValue? DefaultValue { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
@@ -48,9 +44,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Sets the data source that populates the items of the list.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public IEnumerable<TItem> Items { get; set; } = [];
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize the label for the Item Label content.
@@ -132,6 +126,20 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         await base.OnInitializedAsync();
     }
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (ChildContent is not null || Items is null || Items.Any() is false) return;
+
+        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
+
+        _oldItems = Items;
+        _items = Items.ToList();
+
+        InitDefaultValue();
+    }
+
     protected override string RootElementClass => "bit-chg";
 
     protected override void RegisterCssClasses()
@@ -154,17 +162,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
-
-    private void OnSetParameters()
-    {
-        if (ChildContent is not null) return;
-        if (Items.Any() is false || Items == _oldItems) return;
-
-        _oldItems = Items;
-        _items = Items.ToList();
-
-        InitDefaultValue();
-    }
 
     private void InitDefaultValue()
     {
@@ -196,15 +193,6 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
     }
 
-    private bool ItemValueEqualityComparer(TItem item, TValue? value)
-    {
-        var itemValue = GetValue(item);
-
-        if (itemValue is null) return false;
-
-        return EqualityComparer<TValue>.Default.Equals(itemValue, value);
-    }
-
     private async Task HandleClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
@@ -227,7 +215,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         StringBuilder cssStyle = new();
 
-        if (string.IsNullOrEmpty(GetStyle(item)) is false)
+        if (GetStyle(item).HasValue())
         {
             cssStyle.Append(GetStyle(item));
         }
@@ -249,7 +237,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         StringBuilder cssClass = new("bit-chg-icn");
 
-        if (string.IsNullOrEmpty(GetClass(item)) is false)
+        if (GetClass(item).HasValue())
         {
             cssClass.Append(' ').Append(GetClass(item));
         }

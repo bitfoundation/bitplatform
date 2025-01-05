@@ -1,4 +1,4 @@
-{
+﻿{
     "$schema": "http://json.schemastore.org/vs-2017.3.host",
     "requiredComponents": [
         {
@@ -45,13 +45,17 @@
             "id": "appInsights"
         },
         {
-            "id": "appCenter"
+            "id": "sentry"
         },
         {
             "id": "notification"
         },
         {
-            "id": "serverUrl",
+            "id": "apiServerUrl",
+            "isVisible": false
+        },
+        {
+            "id": "webAppUrl",
             "isVisible": false
         },
         {

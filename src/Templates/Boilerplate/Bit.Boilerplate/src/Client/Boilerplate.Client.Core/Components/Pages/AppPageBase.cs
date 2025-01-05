@@ -20,14 +20,11 @@ public abstract partial class AppPageBase : AppComponentBase
                 {
                     // Because Blazor router doesn't support regex, the '/{culture?}/' captures some irrelevant routes
                     // such as non existing routes like /some-invalid-url, we need to make sure that the first segment of the route is a valid culture name.
-                    NavigationManager.NavigateTo($"{Urls.NotFoundPage}?url={NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}", replace: true);
+                    NavigationManager.NavigateTo($"{Urls.NotFoundPage}?url={NavigationManager.GetRelativePath()}", replace: true);
                 }
             }
 
-            if (string.IsNullOrEmpty(Title) is false)
-            {
-                PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
-            }
+            PubSubService.Publish(ClientPubSubMessages.PAGE_TITLE_CHANGED, (Title, Subtitle), persistent: true);
         }
     }
 }

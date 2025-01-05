@@ -16,7 +16,7 @@
                     "NOT /healthchecks-ui/*",
                     "NOT /healthz/*",
                     "NOT /swagger/*",
-                    "NOT /signin/*",
+                    "NOT /signin-*",
                     "NOT /.well-known/*",
                     "NOT /sitemap.xml",
                     "*"
@@ -33,7 +33,7 @@
                     "NOT /healthchecks-ui/*",
                     "NOT /healthz/*",
                     "NOT /swagger/*",
-                    "NOT /signin/*",
+                    "NOT /signin-*",
                     "NOT /.well-known/*",
                     "NOT /sitemap.xml",
                     "*"

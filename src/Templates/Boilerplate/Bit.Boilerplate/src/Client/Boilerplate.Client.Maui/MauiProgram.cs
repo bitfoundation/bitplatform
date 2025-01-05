@@ -1,13 +1,17 @@
-﻿//-:cnd:noEmit
+﻿//+:cnd:noEmit
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.LifecycleEvents;
-//+:cnd:noEmit
 //#if (notification == true)
 using Plugin.LocalNotification;
 //#endif
-//-:cnd:noEmit
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Services;
+//#if (framework == 'net9.0')
+using Maui.AppStores;
+using Maui.InAppReviews;
+using Maui.Android.InAppUpdates;
+//#endif
+//-:cnd:noEmit
 #if iOS || Mac
 using UIKit;
 using WebKit;
@@ -20,15 +24,12 @@ public static partial class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        //+:cnd:noEmit
-        //#if (appCenter == true)
-        string? appCenterSecret = null;
-        if (appCenterSecret is not null)
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException));
+        TaskScheduler.UnobservedTaskException += (_, e) =>
         {
-            Microsoft.AppCenter.AppCenter.Start(appCenterSecret, typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Analytics.Analytics));
-        }
-        //#endif
-        //-:cnd:noEmit
+            LogException(e.Exception, nameof(TaskScheduler.UnobservedTaskException));
+            e.SetObserved();
+        };
 
         AppPlatform.IsBlazorHybrid = true;
 #if iOS
@@ -38,11 +39,23 @@ public static partial class MauiProgram
 
         var builder = MauiApp.CreateBuilder();
 
+        //+:cnd:noEmit
         builder
             .UseMauiApp<App>()
+            //#if (framework == 'net9.0')
+            .UseInAppReviews()
+            .UseAppStoreInfo()
+            .UseAndroidInAppUpdates()
+            //#endif
+            //#if (sentry == true)
+            .UseSentry(options =>
+            {
+                var configuration = new ConfigurationBuilder().AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui").Build();
+                configuration.GetRequiredSection("Logging:Sentry").Bind(options);
+            })
+            //#endif
             .Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
 
-        //+:cnd:noEmit
         //#if (notification == true)
         if (AppPlatform.IsWindows is false)
         {
@@ -189,4 +202,19 @@ public static partial class MauiProgram
         }
     }
 #endif
+
+    private static void LogException(object? error, string reportedBy)
+    {
+        if (IPlatformApplication.Current?.Services is IServiceProvider services && error is Exception exp)
+        {
+            services.GetRequiredService<IExceptionHandler>().Handle(exp, parameters: new()
+            {
+                { nameof(reportedBy), reportedBy }
+            }, displayKind: AppEnvironment.IsDev() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+        }
+        else
+        {
+            _ = Console.Error.WriteLineAsync(error?.ToString() ?? "Unknown error");
+        }
+    }
 }

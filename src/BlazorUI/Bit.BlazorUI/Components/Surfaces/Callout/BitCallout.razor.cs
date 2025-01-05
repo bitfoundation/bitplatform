@@ -145,7 +145,7 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
 
         var id = Anchor is not null ? _anchorId : AnchorId ?? _Id;
 
-        await _js.ToggleCallout(_dotnetObj,
+        await _js.BitCalloutToggleCallout(_dotnetObj,
                                 id,
                                 AnchorEl is null ? null : AnchorEl(),
                                 _contentId,
@@ -158,8 +158,7 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
                                 0,
                                 "",
                                 "",
-                                false,
-                                RootElementClass);
+                                false);
 
         await OnToggle.InvokeAsync(IsOpen);
     }
@@ -182,7 +181,7 @@ public partial class BitCallout : BitComponentBase, IAsyncDisposable
 
             try
             {
-                await _js.ClearCallout(_contentId);
+                await _js.BitCalloutClearCallout(_contentId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

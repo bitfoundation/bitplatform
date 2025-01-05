@@ -2,63 +2,19 @@
 
 public partial class MessageBox
 {
-    private bool isOpen;
-    private string? body;
-    private string? title;
-    private Action? unsubscribe;
-    private bool disposed = false;
+    [CascadingParameter] private BitModalReference? modalReference { get; set; }
 
-    private TaskCompletionSource<bool>? tcs;
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Body { get; set; }
 
-    protected override Task OnInitAsync()
+
+    private void CloseModal()
     {
-        unsubscribe = PubSubService.Subscribe(ClientPubSubMessages.SHOW_MESSAGE, async args =>
-        {
-            var data = (MessageBoxData)args!;
-
-            tcs = data.TaskCompletionSource;
-
-            await ShowMessageBox(data.Message, data.Title);
-        });
-
-        return base.OnInitAsync();
+        modalReference?.Close();
     }
 
-    private async Task ShowMessageBox(string message, string title = "")
+    private void OnOkClick()
     {
-        await InvokeAsync(() =>
-        {
-            isOpen = true;
-            this.title = title;
-            body = message;
-
-            StateHasChanged();
-        });
-    }
-
-    private async Task OnCloseClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(false);
-    }
-
-    private async Task OnOkClick()
-    {
-        isOpen = false;
-        tcs?.SetResult(true);
-    }
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        await base.DisposeAsync(true);
-
-        if (disposed || disposing is false) return;
-
-        tcs?.TrySetResult(false);
-        tcs = null;
-
-        unsubscribe?.Invoke();
-
-        disposed = true;
+        modalReference?.Close();
     }
 }

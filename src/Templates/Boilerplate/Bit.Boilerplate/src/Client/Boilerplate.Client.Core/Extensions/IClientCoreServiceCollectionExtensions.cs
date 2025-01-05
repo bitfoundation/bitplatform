@@ -40,17 +40,18 @@ public static partial class IClientCoreServiceCollectionExtensions
         // To address this, we use the AddSessioned extension method.
         // AddSessioned applies AddSingleton in BlazorHybrid and AddScoped in Blazor WebAssembly and Blazor Server, ensuring correct service lifetimes for each environment.
         services.AddSessioned<PubSubService>();
+        services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
         services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>
         {
-            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthenticationManager>(sp);
+            var authenticationStateProvider = ActivatorUtilities.CreateInstance<AuthManager>(sp);
             authenticationStateProvider.OnInit();
             return authenticationStateProvider;
         });
-        services.AddSessioned(sp => (AuthenticationManager)sp.GetRequiredService<AuthenticationStateProvider>());
+        services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
         services.AddSingleton(sp =>
         {
@@ -66,6 +67,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         services.AddBitButilServices();
         services.AddBitBlazorUIServices();
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
 
         // This code constructs a chain of HTTP message handlers. By default, it uses `HttpClientHandler` 
         // to send requests to the server. However, you can replace `HttpClientHandler` with other HTTP message 
@@ -112,7 +114,7 @@ public static partial class IClientCoreServiceCollectionExtensions
                 .UseSqlite($"Data Source={dbPath}");
 
             //#if (framework == 'net9.0')
-            if (AppEnvironment.IsProd())
+            if (AppEnvironment.IsDev() is false)
             {
                 optionsBuilder.UseModel(OfflineDbContextModel.Instance);
             }
@@ -125,39 +127,40 @@ public static partial class IClientCoreServiceCollectionExtensions
 
         //#if (appInsights == true)
         services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
-        services.AddBlazorApplicationInsights(x =>
+        services.AddBlazorApplicationInsights(options =>
         {
-            ClientCoreSettings settings = new();
-            configuration.Bind(settings);
-            x.ConnectionString = settings.ApplicationInsights?.ConnectionString;
-        });
+            configuration.GetRequiredSection("ApplicationInsights").Bind(options);
+        }, loggingOptions: options => configuration.GetRequiredSection("Logging:ApplicationInsightsLoggerProvider").Bind(options));
         //#endif
 
         services.AddTypedHttpClients();
 
         //#if (signalR == true)
-        services.AddSingleton<SignalRInfinitiesRetryPolicy>();
+        services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();
         services.AddSessioned(sp =>
         {
-            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+            var authManager = sp.GetRequiredService<AuthManager>();
             var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
-            var authenticationManager = sp.GetRequiredService<AuthenticationManager>();
+            var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
+
             var hubConnection = new HubConnectionBuilder()
-                .WithAutomaticReconnect(sp.GetRequiredService<SignalRInfinitiesRetryPolicy>())
+                .WithStatefulReconnect()
+                .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                 .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub"), options =>
                 {
-                    options.SkipNegotiation = true;
+                    options.SkipNegotiation = false; // Required for Azure SignalR.
                     options.Transports = HttpTransportType.WebSockets;
                     // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                     // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
+                    options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
                     options.AccessTokenProvider = async () =>
                     {
                         var accessToken = await authTokenProvider.GetAccessToken();
 
                         if (string.IsNullOrEmpty(accessToken) is false &&
-                            authTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
+                            IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                         {
-                            return await authenticationManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                            return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
                         }
 
                         return accessToken;

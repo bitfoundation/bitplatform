@@ -2,6 +2,8 @@
 
 /// <summary>
 /// Service for Publish/Subscribe pattern.
+/// You could publish messages within blazor components, pages outside blazor components (Like MAUI Xaml pages), JavaScript
+/// codes using window.postMessage or even from server side using SignalR (<see cref="SharedPubSubMessages.SESSION_REVOKED"/> as example.
 /// </summary>
 public partial class PubSubService
 {

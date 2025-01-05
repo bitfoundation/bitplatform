@@ -11,15 +11,13 @@ public class AppTelemetryContext : ITelemetryContext
 
     public Guid AppSessionId { get; set; } = Guid.NewGuid();
 
-    public virtual string? OS { get; set; } = RuntimeInformation.OSDescription;
+    public virtual string? Platform { get; set; } = RuntimeInformation.OSDescription;
 
     public virtual string? AppVersion { get; set; } = typeof(AppTelemetryContext).Assembly.GetName().Version?.ToString();
 
     public virtual string? WebView { get; set; }
 
     public virtual string? PageUrl { get; set; }
-
-    public virtual string? UserAgent { get; set; }
 
     public string? TimeZone { get; set; }
 

@@ -33,7 +33,16 @@ public partial class UserDto : IValidatableObject
 
     public string? ProfileImageName { get; set; }
 
+    public string? ConcurrencyStamp { get; set; }
+
     public string? DisplayName => FullName ?? Email ?? PhoneNumber ?? UserName;
+
+    public string? GetProfileImageUrl(Uri absoluteServerAddress)
+    {
+        return ProfileImageName is null
+            ? null
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProfileImage/{Id}?v={ConcurrencyStamp}").ToString();
+    }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

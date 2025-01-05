@@ -236,25 +236,28 @@
     <value>توکن برای شما ارسال شد</value>
   </data>
     <data name="SessionsTitle" xml:space="preserve">
-    <value>جلسه ها</value>
+    <value>جلسات - سشن‌ها</value>
   </data>
     <data name="SessionsSubtitle" xml:space="preserve">
-    <value>جلسه های فعال شما در دستگاههای مختلف</value>
+    <value>جلسه (سشن) های فعال شما در دستگاههای مختلف</value>
   </data>
     <data name="UserSessionsTitle" xml:space="preserve">
-    <value>سشن‌های شما</value>
+    <value>جلسه (سشن) های شما</value>
   </data>
     <data name="CurrentSession" xml:space="preserve">
-    <value>سشن جاری</value>
+    <value>جلسه - سشن جاری</value>
   </data>
     <data name="OtherSessions" xml:space="preserve">
-    <value>سایر سشن‌ها</value>
+    <value>سایر جلسات (سشن‌ها)</value>
   </data>
     <data name="RemoveSession" xml:space="preserve">
-    <value>حذف سشن</value>
+    <value>حذف جلسه - سشن</value>
+  </data>
+    <data name="TryRemovingOtherSessions" xml:space="preserve">
+    <value>حذف سایر جلسات (سشن)</value>
   </data>
     <data name="RemoveSessionSuccessMessage" xml:space="preserve">
-    <value>حذف سشن با موفقیت انجام شد</value>
+    <value>حذف جلسه - سشن با موفقیت انجام شد</value>
   </data>
     <data name="NotFoundPageTitle" xml:space="preserve">
     <value>404</value>
@@ -270,6 +273,9 @@
   </data>
     <data name="Ok" xml:space="preserve">
     <value>باشه</value>
+  </data>
+    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
+    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست.</value>
   </data>
     <!--#if (offlineDb == true) -->
     <data name="OfflineEditProfileTitle" xml:space="preserve">
@@ -684,14 +690,8 @@
     <data name="TwitterSignInButtonText" xml:space="preserve">
     <value>ورود با توییتر (X)</value>
   </data>
-    <data name="GoogleSignUpButtonText" xml:space="preserve">
-    <value>ثبت‌نام با گوگل</value>
-  </data>
-    <data name="GitHubSignUpButtonText" xml:space="preserve">
-    <value>ثبت‌نام با گیتهاب</value>
-  </data>
-    <data name="TwitterSignUpButtonText" xml:space="preserve">
-    <value>ثبت‌نام با توییتر (X)</value>
+    <data name="AppleSignInButtonText" xml:space="preserve">
+    <value>ورود با اپل</value>
   </data>
     <data name="SignOut" xml:space="preserve">
     <value>خروج از سیستم</value>
@@ -759,8 +759,8 @@
     <data name="SignInAsDifferentUser" xml:space="preserve">
     <value>ورود به سیستم به عنوان کاربر متفاوت</value>
   </data>
-    <data name="YouAreSignInAs" xml:space="preserve">
-    <value>شما در حال ورود به سیستم به عنوان</value>
+    <data name="YouAreSignedInAs" xml:space="preserve">
+    <value>شما به سیستم وارد شده اید با</value>
   </data>
     <data name="ForgotPasswordLink" xml:space="preserve">
     <value>رمز عبور را فراموش کرده اید؟</value>
@@ -843,6 +843,12 @@
     <data name="TfaConfigureAutAppStep3" xml:space="preserve">
     <value>هنگامی که کد QR را اسکن کردید یا کلید بالا را وارد کردید، برنامه احراز هویت دو عاملی شما یک کد منحصر به فرد را در اختیار شما قرار می دهد. کد را در کادر تایید زیر وارد کنید.</value>
   </data>
+    <data name="TwoFactorAuthenticationEnabled" xml:space="preserve">
+    <value>احراز هویت دو مرحله‌ای فعال شد.</value>
+  </data>
+    <data name="TwoFactorAuthenticationDisabled" xml:space="preserve">
+    <value>احراز هویت دو مرحله‌ای غیرفعال شد.</value>
+  </data>
     <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>کد تایید:</value>
   </data>
@@ -924,6 +930,12 @@
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
   </data>
+    <data name="EnterElevatedAccessToken" xml:space="preserve">
+    <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
+  </data>
+    <data name="ElevatedAccessTokenShortText" xml:space="preserve">
+    <value>{0} کد شماست در Boilerplate</value>
+  </data>
     <data name="WaitForEmailTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا ایمیل تایید را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
@@ -935,6 +947,9 @@
   </data>
     <data name="WaitForOtpRequestResendDelay" xml:space="preserve">
     <value>شما قبلا رمز عبور یک‌بار مصرف را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
+  </data>
+    <data name="WaitForElevatedAccessTokenRequestResendDelay" xml:space="preserve">
+    <value>شما قبلا توکن دسترسی ویژه را درخواست کرده اید. دوباره امتحان کنید در {0}</value>
   </data>
     <data name="Otp" xml:space="preserve">
     <value>رمز یک‌بار مصرف</value>
@@ -972,20 +987,20 @@
     <data name="WaitForTwoFactorTokenRequestResendDelay" xml:space="preserve">
     <value>شما قبلا درخواست ایمیل توکن 2FA را دارید. دوباره امتحان کنید در {0}</value>
   </data>
-    <data name="ChangePhoneNumberTokenSmsText" xml:space="preserve">
-    <value>{0} توکن تغییر شماره تلفن شما است در Boilerplate.</value>
+    <data name="ChangePhoneNumberTokenShortText" xml:space="preserve">
+    <value>{0} کد شماست در Boilerplate</value>
   </data>
-    <data name="ConfirmPhoneTokenSmsText" xml:space="preserve">
-    <value>{0} توکن تایید شماره تلفن شما است در Boilerplate.</value>
+    <data name="ConfirmPhoneTokenShortText" xml:space="preserve">
+    <value>{0} کد شماست در Boilerplate</value>
   </data>
     <data name="TwoFactorTokenShortText" xml:space="preserve">
-    <value>{0} توکن احراز هویت مرحله دو شما است در Boilerplate.</value>
+    <value>{0} کد شماست در Boilerplate</value>
   </data>
     <data name="OtpShortText" xml:space="preserve">
-    <value>{0} پسورد یک‌بار مصرف شما است در Boilerplate.</value>
+    <value>{0} کد شماست در Boilerplate</value>
   </data>
     <data name="ResetPasswordTokenShortText" xml:space="preserve">
-    <value>{0} توکن تغییر رمز عبور شما است در Boilerplate.</value>
+    <value>{0} کد شماست در Boilerplate</value>
   </data>
     <data name="Online" xml:space="preserve">
     <value>آنلاین</value>
@@ -997,10 +1012,10 @@
     <value>بروز رسانی</value>
   </data>
     <data name="NewVersionIsAvailable" xml:space="preserve">
-    <value>نسخه جدید در دسترس است</value>
+    <value>نسخه جدید {0} در دسترس است</value>
   </data>
     <data name="UpdateToNewVersion" xml:space="preserve">
-    <value>آیا می خواهید به نسخه جدید بروید؟</value>
+    <value>آیا می خواهید به نسخه جدید بروید؟ {0}</value>
   </data>
     <data name="AboutTitle" xml:space="preserve">
     <value>درباره</value>
@@ -1170,11 +1185,6 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
-  </data>
-    <!--#endif -->
-    <!--#if (signalR == true) -->
-    <data name="ConcurrentUserSessionOnTheSameDevice" xml:space="preserve">
-    <value>لطفاً اطمینان حاصل کنید که این اپلیکیشن بیش از یک‌بار، به طور هم‌زمان روی یک دستگاه یا مرورگر باز نیست، و دوباره تلاش کنید.</value>
   </data>
     <!--#endif -->
 </root>

@@ -11,7 +11,7 @@ let accessTokenExpiresIn = 0;
 const initSignInForm = () => {
     const swagger = window.ui;
     if (!swagger) {
-        console.error('Swagger wasn\'t found');
+        alert('Swagger wasn\'t found');
         return;
     }
 
@@ -204,6 +204,10 @@ const signIn = async (swagger, userName, email, phone, password) => {
     })
     if (response.ok) {
         const result = await response.json();
+        if (result.requiresTwoFactor == true) {
+            alert("Two factor enabled user is not supported.");
+            return;
+        }
         const accessToken = result.accessToken;
         accessTokenExpiresIn = result.expiresIn;
 

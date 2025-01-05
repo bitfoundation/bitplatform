@@ -13,7 +13,10 @@ public partial class UserSessionDto
 
     public string? Address { get; set; }
 
-    public DateTimeOffset RenewedOn { get; set; }
+    /// <summary>
+    /// <inheritdoc cref="AuthPolicies.PRIVILEGED_ACCESS"/>
+    /// </summary>
+    public bool Privileged { get; set; }
 
-    public bool IsValid { get; set; }
+    public DateTimeOffset RenewedOn { get; set; }
 }

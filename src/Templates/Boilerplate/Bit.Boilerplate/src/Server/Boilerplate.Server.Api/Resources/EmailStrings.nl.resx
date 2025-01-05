@@ -184,8 +184,17 @@
   <data name="TfaTokenMessage" xml:space="preserve">
     <value>Hier is uw nieuwe 2FA-token om in te loggen:</value>
   </data>
+    <data name="ElevatedAccessTokenEmailSubject" xml:space="preserve">
+    <value>Boilerplate {0} - Elevated access token</value>
+  </data>
+    <data name="ElevatedAccessTokenHello" xml:space="preserve">
+    <value>Hallo lieve {0}</value>
+  </data>
+    <data name="ElevatedAccessTokenMessage" xml:space="preserve">
+    <value>Hier is uw nieuwe bevoorrechte toegangstoken:</value>
+  </data>
   <data name="CopyTokenNote" xml:space="preserve">
-    <value>Kopieer deze code en gebruik deze in de inlogpagina.</value>
+    <value>Kopieer deze code en gebruik deze in de app.</value>
   </data>
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate-app</value>

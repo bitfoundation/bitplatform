@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The original loading css came from https://loading.io/css/
+/// </summary>
 public abstract class BitLoadingBase : BitComponentBase
 {
     /// <summary>
@@ -105,6 +108,12 @@ public abstract class BitLoadingBase : BitComponentBase
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
     }
+
+
+
+    internal new ElementClassBuilder ClassBuilder => base.ClassBuilder;
+
+    internal new ElementStyleBuilder StyleBuilder => base.StyleBuilder;
 
 
 

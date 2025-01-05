@@ -15,7 +15,7 @@ public partial class DashboardPage
     private Action? unsubscribe;
     //#endif
 
-    protected async override Task OnInitAsync()
+    protected override async Task OnInitAsync()
     {
         //#if (signalR == true)
         unsubscribe = PubSubService.Subscribe(SharedPubSubMessages.DASHBOARD_DATA_CHANGED, async _ =>

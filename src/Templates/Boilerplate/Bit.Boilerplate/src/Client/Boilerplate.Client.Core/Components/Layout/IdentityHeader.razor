@@ -1,13 +1,13 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
         @if (isCrossLayoutPage is true)
         {
-            <BitButton Href="@Urls.SignUpPage">
+            <BitButton Href="@($"{Urls.SignUpPage}?return-url={NavigationManager.GetRelativePath()}")">
                 @Localizer[nameof(AppStrings.SignUp)]
             </BitButton>
-            <BitButton Href="@Urls.SignInPage" Variant="BitVariant.Text" Color="BitColor.Tertiary">
+            <BitButton Href="@($"{Urls.SignInPage}?return-url={NavigationManager.GetRelativePath()}")" Variant="BitVariant.Text" Color="BitColor.Tertiary">
                 @Localizer[nameof(AppStrings.SignIn)]
             </BitButton>
         }

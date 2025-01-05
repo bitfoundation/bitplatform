@@ -1,24 +1,55 @@
-﻿[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+﻿//+:cnd:noEmit
+//#if (framework == 'net9.0')
+using Maui.AppStores;
+using Maui.InAppReviews;
+using System.Runtime.InteropServices;
+//#endif
+
+[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace Boilerplate.Client.Maui;
 
 public partial class App
 {
     private readonly Page mainPage;
+    //#if (framework == 'net9.0')
+    private readonly IStorageService storageService;
+    //#endif
     private readonly IExceptionHandler exceptionHandler;
     private readonly IBitDeviceCoordinator deviceCoordinator;
     private readonly IStringLocalizer<AppStrings> localizer;
 
     public App(MainPage mainPage,
+        //#if (framework == 'net9.0')
+        PubSubService pubSubService,
+        IStorageService storageService,
+        //#endif
         IExceptionHandler exceptionHandler,
         IBitDeviceCoordinator deviceCoordinator,
-        IStorageService storageService,
         IStringLocalizer<AppStrings> localizer)
     {
+        this.localizer = localizer;
+        //#if (framework == 'net9.0')
+        this.storageService = storageService;
+        //#endif
         this.exceptionHandler = exceptionHandler;
         this.deviceCoordinator = deviceCoordinator;
         this.mainPage = new NavigationPage(mainPage);
-        this.localizer = localizer;
+
+        //#if (framework == 'net9.0')
+        pubSubService.Subscribe(ClientPubSubMessages.PROFILE_UPDATED, async _ =>
+        {
+            // It's an opportune moment to request a store review. (:
+            await Dispatcher.DispatchAsync(async () =>
+            {
+                if ((await storageService.GetItem("StoreReviewRequested")) is not "true")
+                {
+                    await storageService.SetItem("StoreReviewRequested", "true");
+                    ReviewStatus status = await InAppReview.Current.RequestAsync();
+                }
+            });
+        });
+        //#endif
 
         InitializeComponent();
     }
@@ -28,7 +59,7 @@ public partial class App
         return new Window(mainPage) { };
     }
 
-    protected async override void OnStart()
+    protected override async void OnStart()
     {
         try
         {
@@ -36,9 +67,8 @@ public partial class App
 
             await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
 
-//-:cnd:noEmit
+            //-:cnd:noEmit
 #if Android
-
             //+:cnd:noEmit
             //#if (framework == 'net9.0')
             const int minimumSupportedWebViewVersion = 94;
@@ -51,20 +81,55 @@ public partial class App
             */
             //#endif
             //#endif
-            //-:cnd:noEmit
 
             if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
-        webViewVersion.Major < minimumSupportedWebViewVersion)
+                webViewVersion.Major < minimumSupportedWebViewVersion)
             {
-                await App.Current!.Windows.First().Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
+                await App.Current!.Windows[0].Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
                 await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={Android.Webkit.WebView.CurrentWebViewPackage.PackageName}");
             }
-//-:cnd:noEmit
+            //-:cnd:noEmit
 #endif
+            //+:cnd:noEmit
+
+            //#if (framework == 'net9.0')
+            await CheckForUpdates();
+            //#endif
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp);
         }
     }
+
+    //#if (framework == 'net9.0')
+    private async Task CheckForUpdates()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3)); // No rush to check for updates.
+
+        try
+        {
+            if (await AppStoreInfo.Current.IsUsingLatestVersionAsync() is false)
+            {
+                var newVersion = await AppStoreInfo.Current.GetLatestVersionAsync();
+                var releaseNotes = (await AppStoreInfo.Current.GetInformationAsync()).ReleaseNotes;
+
+                if (await storageService.GetItem($"{newVersion}_UpdateFromVersionIsRequested") is not "true")
+                {
+                    await storageService.SetItem($"{newVersion}_UpdateFromVersionIsRequested", "true");
+
+                    // It's an opportune moment to request an update. (:
+                    // https://github.com/oscoreio/Maui.AppStoreInfo
+                    if (await App.Current!.Windows[0].Page!.DisplayAlert(localizer[nameof(AppStrings.NewVersionIsAvailable), newVersion], localizer[nameof(AppStrings.UpdateToNewVersion), releaseNotes], localizer[nameof(AppStrings.Yes)], localizer[nameof(AppStrings.No)]) is true)
+                    {
+                        await AppStoreInfo.Current.OpenApplicationInStoreAsync();
+                    }
+                }
+            }
+        }
+        catch (InvalidOperationException) when ((AppPlatform.IsIOS || AppPlatform.IsMacOS) && AppEnvironment.IsDev()) { }
+        catch (FileNotFoundException) { }
+        catch (COMException) { }
+    }
+    //#endif
 }

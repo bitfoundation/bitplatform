@@ -239,19 +239,19 @@
             <div>To set the modal position on the page you can use the Position parameter.</div><br />
             <div class="position-btn-container">
                 <div>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.TopLeft)">Top Left</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.TopCenter)">Top Center</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.TopRight)">Top Right</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopLeft)">Top Left</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopCenter)">Top Center</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.TopRight)">Top Right</BitButton>
                 </div>
                 <div>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.CenterLeft)">Center Left</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.Center)">Center</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.CenterRight)">Center Right</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterLeft)">Center Left</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.Center)">Center</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.CenterRight)">Center Right</BitButton>
                 </div>
                 <div>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.BottomLeft)">Bottom Left</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.BottomCenter)">Bottom Center</BitButton>
-                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitModalPosition.BottomRight)">Bottom Right</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomLeft)">Bottom Left</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomCenter)">Bottom Center</BitButton>
+                    <BitButton Class="position-button" OnClick="() => OpenModalInPosition(BitPosition.BottomRight)">Bottom Right</BitButton>
                 </div>
             </div>
             <BitModal @bind-IsOpen="isOpenPosition" Position="position">

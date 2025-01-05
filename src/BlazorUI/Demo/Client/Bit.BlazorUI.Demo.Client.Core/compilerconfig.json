@@ -48,6 +48,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/AppShell/BitAppShellDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/AppShell/BitAppShellDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/Chart/BitChartDemo.razor.css",
         "inputFile": "Pages/Components/Extras/Chart/BitChartDemo.razor.scss",
         "minify": { "enabled": false },
@@ -56,6 +62,24 @@
     {
         "outputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.css",
         "inputFile": "Pages/Components/Extras/DataGrid/BitDataGridDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/PdfReader/BitPdfReaderDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ProPanel/BitProPanelDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -294,8 +318,8 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.css",
-        "inputFile": "Pages/Components/Progress/ProgressBar/BitProgressDemo.razor.scss",
+        "outputFile": "Pages/Components/Progress/Progress/BitProgressDemo.razor.css",
+        "inputFile": "Pages/Components/Progress/Progress/BitProgressDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -390,6 +414,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/PullToRefresh/BitPullToRefreshDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Separator/BitSeparatorDemo.razor.scss",
         "minify": { "enabled": false },
@@ -398,6 +428,12 @@
     {
         "outputFile": "Pages/Components/Utilities/Sticky/BitStickyDemo.razor.css",
         "inputFile": "Pages/Components/Utilities/Sticky/BitStickyDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Utilities/SwipeTrap/BitSwipeTrapDemo.razor.css",
+        "inputFile": "Pages/Components/Utilities/SwipeTrap/BitSwipeTrapDemo.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
@@ -468,38 +504,32 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Shared/AppErrorBoundary.razor.css",
+        "inputFile": "Shared/AppErrorBoundary.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppFooter.razor.css",
+        "inputFile": "Shared/AppFooter.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Shared/AppHeader.razor.css",
+        "inputFile": "Shared/AppHeader.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Shared/MainLayout.razor.css",
         "inputFile": "Shared/MainLayout.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/Footer.razor.css",
-        "inputFile": "Shared/Footer.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/NavMenu.razor.css",
-        "inputFile": "Shared/NavMenu.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/Header.razor.css",
-        "inputFile": "Shared/Header.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/NotFoundComponent.razor.css",
         "inputFile": "Shared/NotFoundComponent.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

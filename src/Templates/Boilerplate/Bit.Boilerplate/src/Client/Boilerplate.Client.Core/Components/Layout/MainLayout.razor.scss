@@ -1,0 +1,116 @@
+﻿@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+main {
+    width: 100%;
+    min-height: 100%;
+
+    @include lt-md {
+        height: unset;
+        min-height: $bit-env-height-available;
+    }
+
+    &.unauthenticated {
+        .root {
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        &.cross-layout {
+            .body {
+                width: 100%;
+                padding: 2rem;
+                padding-top: 5rem;
+                background-color: unset;
+            }
+        }
+
+        .stack {
+            width: auto;
+            flex-grow: 1;
+            flex-direction: row;
+        }
+
+        .panel {
+            width: 70%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            @include lt-md {
+                display: none;
+            }
+        }
+
+        .body {
+            width: 30%;
+            padding: 4rem;
+            min-width: 35rem;
+            padding-top: 5rem;
+            background-color: $bit-color-background-secondary;
+            border-inline-end: 1px solid $bit-color-border-secondary;
+
+            @include lt-md {
+                width: 100%;
+                border: none;
+                min-width: unset;
+                padding-inline: 1rem;
+                background-color: $bit-color-background-primary;
+            }
+        }
+    }
+
+    &.authenticated {
+        .root {
+            width: auto;
+            height: auto;
+            flex-direction: row;
+        }
+
+        .body {
+            width: 100%;
+            height: 100%;
+            background-color: $bit-color-background-primary;
+
+            @include lt-md {
+                height: unset;
+                padding-bottom: 3.5rem;
+            }
+        }
+
+        .stack {
+            gap: 2rem;
+            flex-grow: 1;
+            padding: 1rem;
+            flex-direction: column;
+
+            @include lt-md {
+                gap: 1rem;
+            }
+
+            @include lt-sm {
+                gap: 0;
+            }
+        }
+    }
+
+    .root {
+        display: flex;
+    }
+
+    .stack {
+        width: 100%;
+        display: flex;
+    }
+}
+
+::deep {
+    .validation-message {
+        font-size: 12px;
+        text-align: start;
+        line-height: 16px;
+        color: $bit-color-error;
+    }
+}

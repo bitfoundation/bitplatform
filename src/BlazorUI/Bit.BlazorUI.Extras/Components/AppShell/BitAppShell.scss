@@ -1,0 +1,54 @@
+﻿@import '../../Styles/extra-variables.scss';
+@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-ash {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: $clr-bg-pri;
+}
+
+.bit-ash-top {
+    width: 100%;
+    z-index: 999999;
+    height: $bit-env-inset-top;
+    background-color: $clr-bg-pri;
+}
+
+.bit-ash-bottom {
+    width: 100%;
+    z-index: 999999;
+    height: $bit-env-inset-bottom;
+    background-color: $clr-bg-pri;
+}
+
+.bit-ash-center {
+    width: 100%;
+    display: flex;
+    height: calc(100% - $bit-env-inset-top - $bit-env-inset-bottom);
+}
+
+.bit-ash-main {
+    height: 100%;
+    display: flex;
+    overflow: auto;
+    position: relative;
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    width: calc(100% - $bit-env-inset-left - $bit-env-inset-right);
+}
+
+.bit-ash-left {
+    height: 100%;
+    z-index: 999999;
+    width: $bit-env-inset-left;
+    background-color: $clr-bg-pri;
+}
+
+.bit-ash-right {
+    height: 100%;
+    z-index: 999999;
+    width: $bit-env-inset-right;
+    background-color: $clr-bg-pri;
+}
