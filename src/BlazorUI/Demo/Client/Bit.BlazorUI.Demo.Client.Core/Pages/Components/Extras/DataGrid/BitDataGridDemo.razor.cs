@@ -1,8 +1,9 @@
-﻿using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
+﻿using Bit.BlazorUI.Demo.Client.Core.Components;
+using Bit.BlazorUI.Demo.Shared.Dtos.DataGridDemo;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
-public partial class BitDataGridDemo
+public partial class BitDataGridDemo : AppComponentBase
 {
     private readonly List<ComponentParameter> componentParameters =
     [
