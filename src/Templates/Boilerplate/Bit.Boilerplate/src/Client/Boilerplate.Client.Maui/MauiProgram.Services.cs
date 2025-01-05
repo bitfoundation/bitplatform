@@ -39,12 +39,7 @@ public static partial class MauiProgram
             return settings;
         });
         services.AddSingleton(ITelemetryContext.Current!);
-        if (AppPlatform.IsAndroid is false)
-        {
-            // Handle social sign-in callback on local HTTP server.
-            // But in Android, leverage Universal Links for smoother sign-in flows.
-            services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
-        }
+        services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
 
         services.AddMauiBlazorWebView();
         services.AddBlazorWebViewDeveloperTools();

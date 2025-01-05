@@ -4,6 +4,7 @@ using Maui.AppStores;
 using Maui.InAppReviews;
 using System.Runtime.InteropServices;
 //#endif
+using Microsoft.Extensions.Logging;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -15,6 +16,7 @@ public partial class App
     //#if (framework == 'net9.0')
     private readonly IStorageService storageService;
     //#endif
+    private readonly ILogger<App> logger;
     private readonly IExceptionHandler exceptionHandler;
     private readonly IBitDeviceCoordinator deviceCoordinator;
     private readonly IStringLocalizer<AppStrings> localizer;
@@ -24,10 +26,12 @@ public partial class App
         PubSubService pubSubService,
         IStorageService storageService,
         //#endif
+        ILogger<App> logger,
         IExceptionHandler exceptionHandler,
         IBitDeviceCoordinator deviceCoordinator,
         IStringLocalizer<AppStrings> localizer)
     {
+        this.logger = logger;
         this.localizer = localizer;
         //#if (framework == 'net9.0')
         this.storageService = storageService;
@@ -72,11 +76,17 @@ public partial class App
             //+:cnd:noEmit
             //#if (framework == 'net9.0')
             const int minimumSupportedWebViewVersion = 94;
+            // Download link for Android emulator (x86 or x86_64)
+            // https://www.apkmirror.com/apk/google-inc/chrome/chrome-94-0-4606-50-release/
+            // https://www.apkmirror.com/apk/google-inc/android-system-webview/android-system-webview-94-0-4606-85-release/
             //#elif (framework == 'net8.0')
             //#if (IsInsideProjectTemplate)
             /*
             //#endif
             const int minimumSupportedWebViewVersion = 84;
+            // Download link for Android emulator (x86 or x86_64)
+            // https://www.apkmirror.com/apk/google-inc/chrome/chrome-84-0-4147-89-release/
+            // https://www.apkmirror.com/apk/google-inc/android-system-webview/android-system-webview-84-0-4147-111-release/
             //#if (IsInsideProjectTemplate)
             */
             //#endif
@@ -85,8 +95,10 @@ public partial class App
             if (Version.TryParse(Android.Webkit.WebView.CurrentWebViewPackage?.VersionName, out var webViewVersion) &&
                 webViewVersion.Major < minimumSupportedWebViewVersion)
             {
+                var webViewName = Android.Webkit.WebView.CurrentWebViewPackage.PackageName;
+                logger.LogWarning("{webViewName} version {version} is not supported.", webViewName, webViewVersion);
                 await App.Current!.Windows[0].Page!.DisplayAlert("Boilerplate", localizer[nameof(AppStrings.UpdateWebViewThroughGooglePlay)], localizer[nameof(AppStrings.Ok)]);
-                await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={Android.Webkit.WebView.CurrentWebViewPackage.PackageName}");
+                await Launcher.OpenAsync($"https://play.google.com/store/apps/details?id={webViewName}");
             }
             //-:cnd:noEmit
 #endif
