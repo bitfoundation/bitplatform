@@ -75,7 +75,7 @@ public partial class BitChartDemo
 
     private bool isLoadingAssemblies = true;
 
-    protected async override Task OnInitAsync()
+    protected async override Task OnInitializedAsync()
     {
         try
         {
@@ -89,6 +89,6 @@ public partial class BitChartDemo
             isLoadingAssemblies = false;
         }
 
-        await base.OnInitAsync();
+        await base.OnInitializedAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿<AppErrorBoundary>
+﻿<BitErrorBoundary ShowException="_showException" OnError="HandleOnError">
     <PageTitle>bit BlazorUI</PageTitle>
     <LayoutView Layout="@typeof(MainLayout)">
         <Router AppAssembly="@GetType().Assembly"
@@ -14,4 +14,4 @@
             </Navigating>
         </Router>
     </LayoutView>
-</AppErrorBoundary>
+</BitErrorBoundary>
