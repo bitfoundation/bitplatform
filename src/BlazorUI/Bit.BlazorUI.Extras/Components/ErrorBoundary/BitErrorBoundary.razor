@@ -3,7 +3,7 @@
 
 @if (CurrentException is null)
 {
-    @ChildContent
+    @(Body ?? ChildContent)
 }
 else if (ErrorContent is not null)
 {

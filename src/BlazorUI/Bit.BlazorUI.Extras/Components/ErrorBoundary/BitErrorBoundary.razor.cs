@@ -12,6 +12,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
     [Parameter] public RenderFragment? AdditionalButtons { get; set; }
 
     /// <summary>
+    /// Alias of the ChildContent.
+    /// </summary>
+    [Parameter] public RenderFragment? Body { get; set; }
+
+    /// <summary>
     /// The footer content of the boundary.
     /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }

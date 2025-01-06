@@ -13,6 +13,13 @@ public partial class BitErrorBoundaryDemo
          },
          new()
          {
+            Name = "Body",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of the ChildContent.",
+         },
+         new()
+         {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
