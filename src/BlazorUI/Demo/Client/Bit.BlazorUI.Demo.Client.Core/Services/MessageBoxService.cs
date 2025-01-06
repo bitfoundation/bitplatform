@@ -1,12 +1,18 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Services;
+
 public partial class MessageBoxService
 {
-    [AutoInject] private IPubSubService pubSubService = default!;
+    [AutoInject] private BitModalService modalService { get; set; } = default!;
 
     public async Task Show(string message, string title = "")
     {
-        TaskCompletionSource<object?> tcs = new();
-        pubSubService.Publish(PubSubMessages.SHOW_MESSAGE, (message, title, tcs));
-        await tcs.Task;
+        BitModalReference modalRef = default!;
+        Dictionary<string, object> parameters = new()
+        {
+            { nameof(BitMessageBox.Title), title },
+            { nameof(BitMessageBox.Body), message },
+            { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
+        };
+        modalRef = await modalService.Show<BitMessageBox>(parameters);
     }
 }
