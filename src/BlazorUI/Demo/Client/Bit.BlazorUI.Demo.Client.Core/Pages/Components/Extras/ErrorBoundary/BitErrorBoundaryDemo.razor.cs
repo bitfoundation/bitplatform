@@ -6,10 +6,31 @@ public partial class BitErrorBoundaryDemo
     [
          new()
          {
-            Name = "CanvasClass",
+            Name = "Footer",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The footer content of the boundary.",
+         },
+         new()
+         {
+            Name = "OnError",
+            Type = "EventCallback<Exception>",
+            DefaultValue = "",
+            Description = "The callback for when an error get caught by the boundary.",
+         },
+         new()
+         {
+            Name = "ShowException",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the actual exception information should be shown or not.",
+         },
+         new()
+         {
+            Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The CSS class of the canvas element(s).",
+            Description = "The header title of the boundary.",
          },
     ];
 
@@ -22,7 +43,12 @@ public partial class BitErrorBoundaryDemo
 
 
     private readonly string example1RazorCode = @"
-<BitPdfReader Config=""basicConfig"" />";
+<BitErrorBoundary>
+    <BitButton OnClick=""ThrowException"">Throw an exception</BitButton>
+</BitErrorBoundary>";
     private readonly string example1CsharpCode = @"
-private readonly BitPdfReaderConfig basicConfig = new() { Url = ""url-to-the-pdf-file.pdf"" };";
+private void ThrowException()
+{
+    throw new Exception(""This is an exception!"");
+}";
 }

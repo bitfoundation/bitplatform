@@ -510,12 +510,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Shared/AppFooter.razor.css",
         "inputFile": "Shared/AppFooter.razor.scss",
         "minify": { "enabled": false },

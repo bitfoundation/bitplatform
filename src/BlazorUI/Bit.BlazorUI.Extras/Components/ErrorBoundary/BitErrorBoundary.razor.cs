@@ -7,24 +7,24 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
 
 
     /// <summary>
+    /// The footer content of the boundary.
+    /// </summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
     /// The callback for when an error get caught by the boundary.
     /// </summary>
     [Parameter] public EventCallback<Exception> OnError { get; set; }
 
     /// <summary>
-    /// 
+    /// Whether the actual exception information should be shown or not.
     /// </summary>
     [Parameter] public bool ShowException { get; set; }
 
     /// <summary>
-    /// 
+    /// The header title of the boundary.
     /// </summary>
     [Parameter] public string? Title { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Parameter] public RenderFragment? Footer { get; set; }
 
 
 
