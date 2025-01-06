@@ -1,0 +1,34 @@
+@page "/components/messagebox"
+
+<PageOutlet Url="components/messagebox"
+            Title="MessageBox"
+            Description="messagebox component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="MessageBox"
+               ComponentDescription="BitMessageBox is a pre-implemented box for showing messages with title and body."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitCard Style="padding:0">
+                <BitMessageBox Title="It's a title" Body="It's a body." />
+            </BitCard>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
+            <BitModal @bind-IsOpen="isModalOpen">
+                <BitMessageBox OnClose="CloseModal" Title="This is the Title" Body="This is the Body!" />
+            </BitModal>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
+            <BitModalContainer />
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

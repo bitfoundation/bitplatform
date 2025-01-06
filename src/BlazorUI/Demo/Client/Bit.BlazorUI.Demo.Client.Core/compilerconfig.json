@@ -72,6 +72,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.css",
         "inputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.scss",
         "minify": { "enabled": false },

@@ -153,6 +153,7 @@ public partial class MainLayout
                 new() { Text = "Chart", Url = "/components/chart" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"] },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
+                new() { Text = "MessageBox", Url = "/components/messagebox" },
                 new() { Text = "NavPanel", Url = "/components/navpanel" },
                 new() { Text = "PdfReader", Url = "/components/pdfreader" },
                 new() { Text = "ProPanel", Url = "/components/propanel" },
