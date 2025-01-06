@@ -36,20 +36,16 @@ public partial class BitMessageBoxDemo
 
 
     private bool isModalOpen;
-    private void CloseModal()
-    {
-        isModalOpen = false; StateHasChanged();
-    }
 
     [AutoInject] private BitModalService modalService { get; set; } = default!;
     private async Task ShowMessageBox()
     {
-        BitModalReference? modalRef = null;
+        BitModalReference modalRef = default!;
         Dictionary<string, object> parameters = new()
         {
             { nameof(BitMessageBox.Title), "This is a title" },
             { nameof(BitMessageBox.Body), "This is a body." },
-            { nameof(BitMessageBox.OnClose), () => modalRef?.Close() },
+            { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
         };
         modalRef = await modalService.Show<BitMessageBox>(parameters);
     }
@@ -64,14 +60,10 @@ public partial class BitMessageBoxDemo
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => isModalOpen = true"">Show</BitButton>
 <BitModal @bind-IsOpen=""isModalOpen"">
-    <BitMessageBox OnClose=""CloseModal"" Title=""This is the Title"" Body=""This is the Body!"" />
+    <BitMessageBox OnClose=""() => isModalOpen = false"" Title=""This is the Title"" Body=""This is the Body!"" />
 </BitModal>";
     private readonly string example2CsharpCode = @"
-private bool isModalOpen;
-private void CloseModal()
-{
-    isModalOpen = false; StateHasChanged();
-}";
+private bool isModalOpen;";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""ShowMessageBox"">Show MessageBox</BitButton>
@@ -80,12 +72,12 @@ private void CloseModal()
 [AutoInject] private BitModalService modalService { get; set; } = default!;
 private async Task ShowMessageBox()
 {
-    BitModalReference? modalRef = null;
+    BitModalReference modalRef = default!;
     Dictionary<string, object> parameters = new()
     {
         { nameof(BitMessageBox.Title), ""This is a title"" },
         { nameof(BitMessageBox.Body), ""This is a body."" },
-        { nameof(BitMessageBox.OnClose), () => modalRef?.Close() },
+        { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
     };
     modalRef = await modalService.Show<BitMessageBox>(parameters);
 }";

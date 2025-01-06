@@ -20,7 +20,7 @@
         <ExamplePreview>
             <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
             <BitModal @bind-IsOpen="isModalOpen">
-                <BitMessageBox OnClose="CloseModal" Title="This is the Title" Body="This is the Body!" />
+                <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
             </BitModal>
         </ExamplePreview>
     </ComponentExampleBox>

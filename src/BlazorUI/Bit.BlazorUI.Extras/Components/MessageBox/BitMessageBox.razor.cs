@@ -17,7 +17,7 @@ public partial class BitMessageBox
     /// <summary>
     /// The event callback for closing the message box.
     /// </summary>
-    [Parameter] public Action? OnClose { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
 
     /// <summary>
     /// The title of the message box.
@@ -26,13 +26,13 @@ public partial class BitMessageBox
 
 
 
-    private void CloseModal()
+    private async Task CloseModal()
     {
-        OnClose?.Invoke();
+        await OnClose.InvokeAsync();
     }
 
-    private void OnOkClick()
+    private async Task OnOkClick()
     {
-        OnClose?.Invoke();
+        await OnClose.InvokeAsync();
     }
 }
