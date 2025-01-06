@@ -1,6 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-snb {
+    width: 100%;
     display: flex;
     position: fixed;
     gap: spacing(1.25);
@@ -171,6 +172,7 @@
 .bit-snb-tcn {
     left: 50%;
     top: spacing(1);
+    align-items: center;
     transform: translateX(-50%);
 }
 
@@ -188,6 +190,7 @@
 .bit-snb-bcn {
     left: 50%;
     bottom: spacing(1);
+    align-items: center;
     transform: translateX(-50%);
 }
 
