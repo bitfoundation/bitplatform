@@ -50,6 +50,12 @@ public partial class BitMessageBoxDemo
         modalRef = await modalService.Show<BitMessageBox>(parameters);
     }
 
+    [AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
+    private async Task ShowMessageBoxService()
+    {
+        await messageBoxService.Show("TITLE", "BODY");
+    }
+
 
 
     private readonly string example1RazorCode = @"
@@ -67,6 +73,7 @@ private bool isModalOpen;";
 
     private readonly string example3RazorCode = @"
 <BitButton OnClick=""ShowMessageBox"">Show MessageBox</BitButton>
+
 <BitModalContainer />";
     private readonly string example3CsharpCode = @"
 [AutoInject] private BitModalService modalService { get; set; } = default!;
@@ -80,5 +87,14 @@ private async Task ShowMessageBox()
         { nameof(BitMessageBox.OnClose), EventCallback.Factory.Create(this, () => modalRef.Close()) }
     };
     modalRef = await modalService.Show<BitMessageBox>(parameters);
+}";
+
+    private readonly string example4RazorCode = @"
+<BitButton OnClick=""ShowMessageBoxService"">Show MessageBox</BitButton>";
+    private readonly string example4CsharpCode = @"
+[AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
+private async Task ShowMessageBoxService()
+{
+    await messageBoxService.Show(""TITLE"", ""BODY"");
 }";
 }
