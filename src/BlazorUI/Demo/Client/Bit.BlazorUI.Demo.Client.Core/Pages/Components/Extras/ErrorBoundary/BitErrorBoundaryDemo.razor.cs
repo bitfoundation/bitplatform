@@ -27,6 +27,13 @@ public partial class BitErrorBoundaryDemo
          },
          new()
          {
+            Name = "HomeUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of the home page for the Home button.",
+         },
+         new()
+         {
             Name = "OnError",
             Type = "EventCallback<Exception>",
             DefaultValue = "",

@@ -22,6 +22,11 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
     [Parameter] public string? HomeText { get; set; }
 
     /// <summary>
+    /// The url of the home page for the Home button.
+    /// </summary>
+    [Parameter] public string? HomeUrl { get; set; }
+
+    /// <summary>
     /// The callback for when an error get caught by the boundary.
     /// </summary>
     [Parameter] public EventCallback<Exception> OnError { get; set; }
@@ -62,6 +67,6 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
 
     private void GoHome()
     {
-        _navigationManager.NavigateTo("/", forceLoad: true);
+        _navigationManager.NavigateTo(HomeUrl ?? "/", forceLoad: true);
     }
 }
