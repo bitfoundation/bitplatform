@@ -6,6 +6,13 @@ public partial class BitErrorBoundaryDemo
     [
          new()
          {
+            Name = "AdditionalButtons",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The footer content of the boundary.",
+         },
+         new()
+         {
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -13,10 +20,31 @@ public partial class BitErrorBoundaryDemo
          },
          new()
          {
+            Name = "HomeText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the Home button.",
+         },
+         new()
+         {
             Name = "OnError",
             Type = "EventCallback<Exception>",
             DefaultValue = "",
             Description = "The callback for when an error get caught by the boundary.",
+         },
+         new()
+         {
+            Name = "RecoverText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the Recover button.",
+         },
+         new()
+         {
+            Name = "RefreshText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the Refresh button.",
          },
          new()
          {

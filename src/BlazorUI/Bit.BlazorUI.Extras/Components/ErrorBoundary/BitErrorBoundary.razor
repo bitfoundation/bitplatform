@@ -35,9 +35,13 @@ else
         else
         {
             <div class="bit-erb-ftr">
-                <BitButton OnClick="Refresh">Refresh</BitButton>
-                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
-                <BitButton OnClick="Recover" Variant="BitVariant.Outline">Recover</BitButton>
+                <BitButton OnClick="Refresh">@(RefreshText ?? "Refresh")</BitButton>
+                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@(HomeText ?? "Home")</BitButton>
+                <BitButton OnClick="Recover" Variant="BitVariant.Outline">@(RecoverText ?? "Recover")</BitButton>
+                @if (AdditionalButtons is not null)
+                {
+                    @AdditionalButtons
+                }
             </div>
         }
     </div>

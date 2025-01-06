@@ -9,12 +9,32 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
     /// <summary>
     /// The footer content of the boundary.
     /// </summary>
+    [Parameter] public RenderFragment? AdditionalButtons { get; set; }
+
+    /// <summary>
+    /// The footer content of the boundary.
+    /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// The text of the Home button.
+    /// </summary>
+    [Parameter] public string? HomeText { get; set; }
 
     /// <summary>
     /// The callback for when an error get caught by the boundary.
     /// </summary>
     [Parameter] public EventCallback<Exception> OnError { get; set; }
+
+    /// <summary>
+    /// The text of the Recover button.
+    /// </summary>
+    [Parameter] public string? RecoverText { get; set; }
+
+    /// <summary>
+    /// The text of the Refresh button.
+    /// </summary>
+    [Parameter] public string? RefreshText { get; set; }
 
     /// <summary>
     /// Whether the actual exception information should be shown or not.
@@ -32,6 +52,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase
     {
         await OnError.InvokeAsync(exception);
     }
+
 
 
     private void Refresh()
