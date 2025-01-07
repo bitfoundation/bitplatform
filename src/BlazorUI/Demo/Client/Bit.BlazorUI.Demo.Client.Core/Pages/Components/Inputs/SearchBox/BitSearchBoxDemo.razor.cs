@@ -453,19 +453,29 @@ public partial class BitSearchBoxDemo
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" Underlined />";
 
     private readonly string example3RazorCode = @"
+<BitSearchBox Placeholder=""Search"" NoBorder/>
+<BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" NoBorder/>";
+
+    private readonly string example4RazorCode = @"
+<BitSearchBox Placeholder=""Primary"" Accent=""BitColorKind.Primary"" NoBorder/>
+<BitSearchBox Placeholder=""Secondary"" Accent=""BitColorKind.Secondary"" NoBorder/>
+<BitSearchBox Placeholder=""Tertiary"" Accent=""BitColorKind.Tertiary"" NoBorder/>
+<BitSearchBox Placeholder=""Transparent"" Accent=""BitColorKind.Transparent"" NoBorder/>";
+
+    private readonly string example5RazorCode = @"
 <BitSearchBox Placeholder=""FixedIcon"" FixedIcon />
 <BitSearchBox Placeholder=""DisableAnimation"" DisableAnimation />
 <BitSearchBox Placeholder=""Custom icon"" IconName=""@BitIconName.Filter"" />
 <BitSearchBox Placeholder=""HideIcon"" HideIcon />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitSearchBox Placeholder=""Search"" ShowSearchButton />
 <BitSearchBox Placeholder=""SearchButtonIconName"" ShowSearchButton SearchButtonIconName=""PageListFilter"" />
 <BitSearchBox Placeholder=""Underlined"" Underlined ShowSearchButton />
 <BitSearchBox Placeholder=""Disabled"" IsEnabled=""false"" ShowSearchButton />
 <BitSearchBox Placeholder=""Disabled Underlined"" IsEnabled=""false"" Underlined ShowSearchButton />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -534,7 +544,7 @@ public partial class BitSearchBoxDemo
                                  IconWrapper = ""custom-icon-wrapper"",
                                  InputContainer = ""custom-input-container"" })"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitSearchBox Placeholder=""Search"" @bind-Value=""twoWaySearchValue"" />
 <BitTextField Placeholder=""Search Value"" @bind-Value=""twoWaySearchValue"" />
 
@@ -553,12 +563,12 @@ public partial class BitSearchBoxDemo
               OnSearch=""s => onSearchValue = s""
               OnClear=""() => onSearchValue = string.Empty"" />
 <div>Search Value: @onSearchValue</div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private string twoWaySearchValue;
 private string onChangeSearchValue;
 private string onSearchValue;";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <EditForm Model=""validationBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" Immediate
@@ -566,7 +576,7 @@ private string onSearchValue;";
                   @bind-Value=""validationBoxModel.Text"" />
     <ValidationMessage For=""() => validationBoxModel.Text"" />
 </EditForm>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
@@ -575,7 +585,7 @@ public class ValidationSearchBoxModel
 
 private ValidationSearchBoxModel validationBoxModel = new();";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSearchBox @bind-Value=""@searchValue""
               Immediate
               Placeholder=""e.g. Apple""
@@ -615,7 +625,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
               Placeholder=""e.g. Pro""
               SuggestItemProvider=""LoadItems"" />
 <div>SearchValue: @searchValueWithItemsProvider</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string searchValue;
 private string searchValueWithSuggestFilterFunction;
 private string searchValueWithSearchDelay;
@@ -670,7 +680,7 @@ private async Task<ICollection<string>> LoadItems(string? search, int count)
     }
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />";

@@ -335,16 +335,7 @@
             }
         }
     }
-}
 
-.bit-srb-nbr {
-    .bit-srb-cnt {
-        border: none;
-    }
-}
-
-.bit-srb-und,
-.bit-srb-nbr {
     &.bit-srb-foc {
         .bit-srb-cnt,
         .bit-srb-sbn {
@@ -365,6 +356,44 @@
         border-left-width: 0;
         border-right-width: 0;
         border-radius: 0;
+
+        i {
+            color: $clr-sec-text;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $clr-bg-pri-hover;
+
+                i {
+                    color: $clr-fg-pri-hover;
+                }
+            }
+        }
+    }
+}
+
+.bit-srb-nbr {
+    .bit-srb-cnt {
+        border: none;
+    }
+
+    &.bit-srb-foc {
+        .bit-srb-cnt,
+        .bit-srb-sbn {
+            border: none;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                border: none;
+            }
+        }
+    }
+
+    .bit-srb-sbn {
+        border: none;
+        background-color: transparent;
 
         i {
             color: $clr-sec-text;
