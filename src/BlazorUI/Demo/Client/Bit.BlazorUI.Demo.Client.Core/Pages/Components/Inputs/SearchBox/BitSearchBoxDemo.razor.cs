@@ -8,10 +8,12 @@ public partial class BitSearchBoxDemo
     [
         new()
         {
-            Name = "Autocomplete",
-            Type = "string?",
+            Name = "Accent",
+            Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "Specifies the value of the autocomplete attribute of the input component.",
+            Description = "The accent color kind of the search box.",
+            LinkType = LinkType.Link,
+            Href = "#color-kind-enum",
         },
         new()
         {
@@ -86,6 +88,13 @@ public partial class BitSearchBoxDemo
             Type = "int",
             DefaultValue = "3",
             Description = "The minimum character requirement for doing a search in suggested items.",
+        },
+        new()
+        {
+            Name = "NoBorder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the default border of the search box.",
         },
         new()
         {
@@ -257,6 +266,39 @@ public partial class BitSearchBoxDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "color-kind-enum",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Primary",
+                    Description = "The primary color kind.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Secondary",
+                    Description = "The secondary color kind.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Tertiary",
+                    Description = "The tertiary color kind.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Transparent",
+                    Description = "The transparent color kind.",
+                    Value = "3",
+                },
+            ]
+        },
         new()
         {
             Id = "input-mode",
