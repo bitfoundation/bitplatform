@@ -15,13 +15,17 @@ public enum ExceptionDisplayKind
     /// <summary>
     /// Shows an auto-dismissed message (e.g., a toast notification)
     /// </summary>
-    NonInterrupting
+    NonInterrupting,
+    /// <summary>
+    /// Exception display kind gets chosen by exception type automatically.
+    /// </summary>
+    Default
 }
 
 public interface IExceptionHandler
 {
     void Handle(Exception exception,
-        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Interrupting,
+        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Default,
         Dictionary<string, object?>? parameters = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",

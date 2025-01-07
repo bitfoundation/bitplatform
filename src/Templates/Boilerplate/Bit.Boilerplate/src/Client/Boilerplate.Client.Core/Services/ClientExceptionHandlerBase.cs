@@ -12,7 +12,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
     [AutoInject] protected readonly ILogger<ClientExceptionHandlerBase> Logger = default!;
 
     public void Handle(Exception exception,
-        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Interrupting,
+        ExceptionDisplayKind displayKind = ExceptionDisplayKind.Default,
         Dictionary<string, object?>? parameters = null,
         [CallerLineNumber] int lineNumber = 0,
         [CallerMemberName] string memberName = "",
@@ -50,6 +50,11 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 
         string exceptionMessageToShow = GetExceptionMessageToShow(exception);
 
+        if (displayKind is ExceptionDisplayKind.Default)
+        {
+            displayKind = GetDisplayKind(exception);
+        }
+
         if (displayKind is ExceptionDisplayKind.NonInterrupting)
         {
             SnackBarService.Error("Boilerplate", exceptionMessageToShow);
@@ -62,5 +67,13 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         {
             Debugger.Break();
         }
+    }
+
+    private ExceptionDisplayKind GetDisplayKind(Exception exception)
+    {
+        if (exception is ServerConnectionException or ReusedRefreshTokenException)
+            return ExceptionDisplayKind.NonInterrupting;
+
+        return ExceptionDisplayKind.Interrupting;
     }
 }
