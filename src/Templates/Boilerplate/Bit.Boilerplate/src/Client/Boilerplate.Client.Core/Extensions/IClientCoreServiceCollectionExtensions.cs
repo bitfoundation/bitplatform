@@ -164,7 +164,8 @@ public static partial class IClientCoreServiceCollectionExtensions
                             {
                                 return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
                             }
-                            catch (ServerConnectionException) { /* If client gets disconnected and access token become expired, then this code will be called every few seconds and will show annoying error to the user.  */ }
+                            catch (ServerConnectionException)
+                            { } // If the client disconnects and the access token expires, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
                         }
 
                         return accessToken;

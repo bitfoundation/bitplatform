@@ -17,7 +17,7 @@ public enum ExceptionDisplayKind
     /// </summary>
     NonInterrupting,
     /// <summary>
-    /// Exception display kind gets chosen by exception type automatically.
+    /// Automatically selects the exception display type based on the exception category.
     /// </summary>
     Default
 }
