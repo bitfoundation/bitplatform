@@ -41,9 +41,8 @@
 
         @if (CultureInfoManager.MultilingualEnabled)
         {
-            <BitDropdown Items="cultures" Responsive
+            <BitDropdown Items="cultures"
                          FitWidth NoBorder Transparent
-                         Classes="@(new() { Callout="language-callout" })"
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">

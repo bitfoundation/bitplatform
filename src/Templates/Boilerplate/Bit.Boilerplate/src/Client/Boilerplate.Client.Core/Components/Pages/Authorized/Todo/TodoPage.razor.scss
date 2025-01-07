@@ -38,15 +38,6 @@ section {
         }
     }
 
-    .todo-sort-callout {
-        @include lt-sm {
-            height: unset;
-            box-shadow: none;
-            bottom: $bit-env-inset-bottom;
-            top: $bit-env-inset-top !important;
-        }
-    }
-
     .todo-list {
         width: 100%;
         background-color: var(--bit-clr-bg-sec);
