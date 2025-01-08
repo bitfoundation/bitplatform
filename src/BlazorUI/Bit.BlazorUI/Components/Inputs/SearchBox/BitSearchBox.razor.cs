@@ -23,6 +23,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
 
     /// <summary>
+    /// The accent color kind of the search box.
+    /// </summary>
+    [Parameter] public BitColorKind? Accent { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitSearchBox.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
@@ -76,6 +81,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
     /// The minimum character requirement for doing a search in suggest items.
     /// </summary>
     [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
+
+    /// <summary>
+    /// Removes the default border of the search box.
+    /// </summary>
+    [Parameter] public bool NoBorder { get; set; }
 
     /// <summary>
     /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
@@ -180,6 +190,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
         ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 
         ClassBuilder.Register(() => HideIcon ? "bit-srb-hic" : string.Empty);
+
+        ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColorKind.Primary => "bit-srb-apri",
+            BitColorKind.Secondary => "bit-srb-asec",
+            BitColorKind.Tertiary => "bit-srb-ater",
+            BitColorKind.Transparent => "bit-srb-atra",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
