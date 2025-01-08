@@ -19,7 +19,6 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ExceptionDelegatingHandler>();
         services.TryAddTransient<HttpClientHandler>();
 
-        services.TryAddTransient<MessageBoxService>();
         services.TryAddTransient<LazyAssemblyLoader>();
 
         services.AddBitBlazorUIServices();

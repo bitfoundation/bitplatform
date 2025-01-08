@@ -1,0 +1,26 @@
+﻿@namespace Bit.BlazorUI
+
+<div class="bit-msb">
+    <div class="bit-msb-con">
+        <div class="bit-msb-hdr">
+            <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">@Title</BitText>
+
+            <BitSpacer />
+
+            <BitButton OnClick="CloseModal"
+                       IconName="ChromeClose" 
+                       Color="BitColor.Tertiary"
+                       Variant="BitVariant.Text" />
+        </div>
+
+        <div class="bit-msb-bdy">
+            @Body
+        </div>
+
+        <div class="bit-msb-ftr">
+            <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+                @(OkText ?? "Ok")
+            </BitButton>
+        </div>
+    </div>
+</div>
