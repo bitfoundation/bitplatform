@@ -191,7 +191,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>, IAsyncDisposable
 
         ClassBuilder.Register(() => HideIcon ? "bit-srb-hic" : string.Empty);
 
-        ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : "");
+        ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : string.Empty);
 
         ClassBuilder.Register(() => Accent switch
         {
