@@ -160,7 +160,12 @@ public static partial class IClientCoreServiceCollectionExtensions
                         if (string.IsNullOrEmpty(accessToken) is false &&
                             IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                         {
-                            return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                            try
+                            {
+                                return await authManager.RefreshToken(requestedBy: nameof(HubConnectionBuilder));
+                            }
+                            catch (ServerConnectionException)
+                            { } // If the client disconnects and the access token expires, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
                         }
 
                         return accessToken;

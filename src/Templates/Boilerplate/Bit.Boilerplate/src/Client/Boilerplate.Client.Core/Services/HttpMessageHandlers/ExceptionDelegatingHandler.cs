@@ -62,9 +62,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
             return response;
         }
-        catch (Exception exp) when ((exp is HttpRequestException && serverCommunicationSuccess is false)
-            || exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException
-            || exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable })
+        catch (Exception exp) when (
+               (exp is HttpRequestException && serverCommunicationSuccess is false)
+            || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
+            || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable }))
         {
             serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
             throw new ServerConnectionException(localizer[nameof(AppStrings.ServerConnectionException)], exp);
