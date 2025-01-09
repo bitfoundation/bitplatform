@@ -1169,6 +1169,12 @@
     <data name="EditProduct" xml:space="preserve">
     <value>Product bewerken</value>
   </data>
+    <data name="DuplicateProductName" xml:space="preserve">
+    <value>Dubbele productnaam</value>
+  </data>
+    <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>Dubbele categorienaam</value>
+  </data>
     <data name="DashboardPageTitle" xml:space="preserve">
     <value>Dashboard</value>
   </data>

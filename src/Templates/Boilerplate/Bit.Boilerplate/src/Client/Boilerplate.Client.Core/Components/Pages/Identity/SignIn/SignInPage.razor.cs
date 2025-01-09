@@ -35,6 +35,7 @@ public partial class SignInPage : IDisposable
     private bool isOtpSent;
     private bool requiresTwoFactor;
     private SignInPanelTab currentSignInPanelTab;
+    private AppDataAnnotationsValidator validator;
     private readonly SignInRequestDto model = new();
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
@@ -120,6 +121,9 @@ public partial class SignInPage : IDisposable
             if (requiresTwoFactor && string.IsNullOrWhiteSpace(model.TwoFactorCode)) return;
 
             CleanModel();
+
+            if (validator.EditContext.Validate() is false)
+                return;
 
             model.DeviceInfo = telemetryContext.Platform;
 
@@ -209,11 +213,13 @@ public partial class SignInPage : IDisposable
         if (currentSignInPanelTab is SignInPanelTab.Email)
         {
             model.PhoneNumber = null;
+            validator.EditContext.NotifyFieldChanged(validator.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
         }
 
         if (currentSignInPanelTab is SignInPanelTab.Phone)
         {
             model.Email = null;
+            validator.EditContext.NotifyFieldChanged(validator.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
     }
 

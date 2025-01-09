@@ -37,12 +37,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
 
-                if (exceptionType == typeof(ResourceValidationException))
-                {
-                    args.Add(restError.Payload);
-                }
-
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+                Exception exp = exceptionType == typeof(ResourceValidationException) ? new ResourceValidationException(restError.Message!, restError.Payload!) : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;
             }

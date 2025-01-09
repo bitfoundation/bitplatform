@@ -16,6 +16,7 @@ public partial class AddOrEditCategoryPage
     private bool isSaving;
     private bool isColorPickerOpen;
     private CategoryDto category = new();
+    private AppDataAnnotationsValidator validator;
 
     protected override async Task OnInitAsync()
     {
@@ -43,11 +44,6 @@ public partial class AddOrEditCategoryPage
         category.Color = color;
     }
 
-    private void ToggleColorPicker()
-    {
-        isColorPickerOpen = !isColorPickerOpen;
-    }
-
     private async Task Save()
     {
         if (isSaving) return;
@@ -69,7 +65,7 @@ public partial class AddOrEditCategoryPage
         }
         catch (ResourceValidationException e)
         {
-            SnackBarService.Error(string.Join(Environment.NewLine, e.Payload.Details.SelectMany(d => d.Errors).Select(e => e.Message)));
+            validator.DisplayErrors(e);
         }
         catch (KnownException e)
         {
