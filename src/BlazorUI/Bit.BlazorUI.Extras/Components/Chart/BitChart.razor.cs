@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Represents a Chart.js chart.
+/// Simple and flexible charting component for data visualization, which supports eight chart types: bar, line, area, pie, bubble, radar, polar, and scatter.
 /// </summary>
 public partial class BitChart : IAsyncDisposable
 {

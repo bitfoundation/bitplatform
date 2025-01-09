@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A SwipeTrap is a component that traps swipe actions and triggers corresponding events.
+/// </summary>
 public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;

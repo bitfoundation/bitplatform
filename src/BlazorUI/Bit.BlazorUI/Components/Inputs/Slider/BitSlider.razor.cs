@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A slider provides a visual indication of adjustable content, as well as the current setting in the total range of content.
+/// </summary>
 public partial class BitSlider : BitComponentBase
 {
     private int _inputHeight;

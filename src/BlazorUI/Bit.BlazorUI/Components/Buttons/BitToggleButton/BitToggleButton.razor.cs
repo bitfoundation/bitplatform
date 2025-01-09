@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// ToggleButton is a type of button that stores and shows a status representing the toggle state of the component.
+/// </summary>
 public partial class BitToggleButton : BitComponentBase
 {
     private int? _tabIndex;

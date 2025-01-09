@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// BitProgress is used to show the completion status of an operation lasting more than 2 seconds.
+/// </summary>
 public partial class BitProgress : BitComponentBase
 {
     private string _labelId = string.Empty;

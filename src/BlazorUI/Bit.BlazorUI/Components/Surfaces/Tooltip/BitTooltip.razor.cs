@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Tooltip component briefly describes unlabeled controls or provides a bit of additional information about labeled controls.
+/// </summary>
 public partial class BitTooltip : BitComponentBase
 {
     private CancellationTokenSource? _showDelayTokenSource = new();

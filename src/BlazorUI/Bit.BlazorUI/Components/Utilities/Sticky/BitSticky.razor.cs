@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Sticky is a component that enables elements to stick during scrolling.
+/// </summary>
 public partial class BitSticky : BitComponentBase
 {
     /// <summary>

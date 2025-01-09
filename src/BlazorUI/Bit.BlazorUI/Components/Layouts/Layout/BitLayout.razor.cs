@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Layout can be used to create a base UI structure for an application.
+/// </summary>
 public partial class BitLayout : BitComponentBase
 {
     /// <summary>

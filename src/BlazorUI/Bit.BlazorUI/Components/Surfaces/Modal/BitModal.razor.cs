@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Modals are temporary pop-ups that take focus from the page or app and require people to interact with them.
+/// </summary>
 public partial class BitModal : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;

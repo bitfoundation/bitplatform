@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Badge component is a small visual element used to highlight or indicate specific information within a user interface.
+/// </summary>
 public partial class BitBadge : BitComponentBase
 {
     private string? _content;

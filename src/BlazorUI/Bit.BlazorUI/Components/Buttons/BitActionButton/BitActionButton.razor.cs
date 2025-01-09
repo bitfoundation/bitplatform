@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// ActionButton is a special type of button with a specific set of visual styles and properties.
+/// </summary>
 public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;

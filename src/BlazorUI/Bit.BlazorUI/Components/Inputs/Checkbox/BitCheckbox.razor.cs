@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options.
+/// </summary>
 public partial class BitCheckbox : BitInputBase<bool>, IDisposable
 {
     private string _inputId = string.Empty;

@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// BitErrorBoundary is a simple error boundary to handle exceptions happening in its children.
+/// </summary>
 public partial class BitErrorBoundary : ErrorBoundaryBase
 {
     [Inject] private NavigationManager _navigationManager { get; set; } = default!;

@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A BitDatePicker offers a drop-down control that’s optimized for picking a single date from a calendar view where contextual information like the day of the week or fullness of the calendar is important.
+/// </summary>
 public partial class BitDatePicker : BitInputBase<DateTimeOffset?>, IAsyncDisposable
 {
     private const int MAX_WIDTH = 470;

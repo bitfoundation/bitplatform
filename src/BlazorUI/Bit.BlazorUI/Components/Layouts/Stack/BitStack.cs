@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Stack is a container-type component that abstracts the implementation of a flexbox in order to define the layout of its children components.
+/// </summary>
 public partial class BitStack : BitComponentBase
 {
     /// <summary>

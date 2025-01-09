@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The Pivot control and related tabs pattern are used for navigating frequently accessed, distinct content categories. Pivots allow for navigation between two or more contentviews and relies on text headers to articulate the different sections of content.
+/// </summary>
 public partial class BitPivot : BitComponentBase
 {
     private BitPivotItem? _selectedItem;

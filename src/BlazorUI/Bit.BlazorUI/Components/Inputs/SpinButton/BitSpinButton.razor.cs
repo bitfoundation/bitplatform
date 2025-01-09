@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A spin button (SpinButton) allows someone to incrementally adjust a value in small steps. It’s mainly used for numeric values, but other values are supported too.
+/// </summary>
 public partial class BitSpinButton : BitInputBase<double>
 {
     private double _min;
