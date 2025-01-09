@@ -8,9 +8,9 @@ public class BitMessageBoxClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content of the BitMessageBox.
+    /// Custom CSS classes/styles for the container of the BitMessageBox.
     /// </summary>
-    public string? Content { get; set; }
+    public string? Container { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the header of the BitMessageBox.

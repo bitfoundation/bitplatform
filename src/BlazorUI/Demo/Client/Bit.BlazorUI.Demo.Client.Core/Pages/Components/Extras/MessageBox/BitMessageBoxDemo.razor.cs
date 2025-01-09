@@ -69,10 +69,10 @@ public partial class BitMessageBoxDemo
                 },
                 new()
                 {
-                    Name = "Content",
+                    Name = "Container",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the content of the BitMessageBox."
+                    Description = "Custom CSS classes/styles for the container of the BitMessageBox."
                 },
                 new()
                 {
