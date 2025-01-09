@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// An image is a graphic representation of something (e.g photo or illustration). The backgrounds have been added to some of examples in order to help visualize empty space in the image frame.
+/// </summary>
 public partial class BitImage : BitComponentBase
 {
     private BitImageLoadingState _loadingState;

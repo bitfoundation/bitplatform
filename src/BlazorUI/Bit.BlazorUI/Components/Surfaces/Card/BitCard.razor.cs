@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Card provides a container to wrap around a specific content. Keeping a card to a single subject keeps the design clean.
+/// </summary>
 public partial class BitCard : BitComponentBase
 {
     /// <summary>

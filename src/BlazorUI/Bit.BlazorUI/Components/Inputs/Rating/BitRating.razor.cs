@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Ratings show people’s opinions of a product, helping others make more informed purchasing decisions.
+/// </summary>
 public partial class BitRating : BitInputBase<double>
 {
     /// <summary>

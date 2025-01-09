@@ -3,6 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.  For example, “On/Off”, “Show/Hide”.
+/// </summary>
 public partial class BitToggle : BitInputBase<bool>
 {
     private string? _labelId;

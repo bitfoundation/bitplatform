@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Use text to present your design and content as clearly and efficiently as possible.
+/// </summary>
 public partial class BitText : BitComponentBase
 {
     /// <summary>

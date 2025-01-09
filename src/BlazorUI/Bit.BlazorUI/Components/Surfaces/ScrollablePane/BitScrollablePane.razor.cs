@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A ScrollablePane is a component for scrolling through content that doesn't fit entirely on the screen.
+/// </summary>
 public partial class BitScrollablePane : BitComponentBase
 {
     /// <summary>

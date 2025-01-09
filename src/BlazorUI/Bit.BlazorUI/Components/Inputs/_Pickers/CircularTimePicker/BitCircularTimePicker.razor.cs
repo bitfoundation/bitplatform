@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A BitCircularTimePicker offers a drop-down control that’s optimized for picking a single time from a clock view where contextual information like the day of the week or fullness of the calendar is important.
+/// </summary>
 public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
 {
     private int? _hour;

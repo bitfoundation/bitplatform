@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The Accordion component allows the user to show and hide sections of related content on a page.
+/// </summary>
 public partial class BitAccordion : BitComponentBase
 {
     /// <summary>

@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required.
+/// </summary>
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private bool _hasFocus;

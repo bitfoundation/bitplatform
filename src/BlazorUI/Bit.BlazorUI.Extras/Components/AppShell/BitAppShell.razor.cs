@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// BitAppShell is an advanced container to handle the nuances of a cross-platform layout.
+/// </summary>
 public partial class BitAppShell : BitComponentBase
 {
     private ElementReference _containerRef = default!;

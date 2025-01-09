@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Carousel (Carousel slide-show) let people show their items in seperate slides from two or more items.
+/// </summary>
 public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 {
     private bool _disposed;

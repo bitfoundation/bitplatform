@@ -3,6 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The OTP input is used for MFA procedure of authenticating users by a one-time password.
+/// </summary>
 public partial class BitOtpInput : BitInputBase<string?>
 {
     private string _labelId = default!;

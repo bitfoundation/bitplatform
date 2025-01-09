@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// An icon represents concept or meaning for the user. It's used to make better user experience (UX) and user-friendly applications.
+/// </summary>
 public partial class BitIcon : BitComponentBase
 {
     /// <summary>
