@@ -1,24 +1,34 @@
 ﻿@namespace Bit.BlazorUI
 
-<div class="bit-msb">
-    <div class="bit-msb-con">
-        <div class="bit-msb-hdr">
-            <BitText Typography="BitTypography.H5" Color="BitColor.Tertiary">@Title</BitText>
+<div style="@Styles?.Root" class="bit-msb @Classes?.Root">
+    <div style="@Styles?.Container" class="bit-msb-con @Classes?.Container">
+        <div style="@Styles?.Header" class="bit-msb-hdr @Classes?.Header">
+            <BitText Typography="BitTypography.H5" 
+                     Color="BitColor.Tertiary"
+                     Style="@(Styles?.Title)"
+                     Class="@(Classes?.Title)">
+                @Title
+            </BitText>
 
-            <BitSpacer />
+            <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />
 
             <BitButton OnClick="CloseModal"
                        IconName="ChromeClose" 
                        Color="BitColor.Tertiary"
-                       Variant="BitVariant.Text" />
+                       Variant="BitVariant.Text"
+                       Styles="@Styles?.CloseButton"
+                       Classes="@Classes?.CloseButton" />
         </div>
 
-        <div class="bit-msb-bdy">
+        <div style="@Styles?.Body" class="bit-msb-bdy @Classes?.Body">
             @Body
         </div>
 
-        <div class="bit-msb-ftr">
-            <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+        <div style="@Styles?.Footer" class="bit-msb-ftr @Classes?.Footer">
+            <BitButton OnClick="OnOkClick" 
+                       Color="BitColor.Tertiary"
+                       Styles="@Styles?.OkButton"
+                       Classes="@Classes?.OkButton">
                 @(OkText ?? "Ok")
             </BitButton>
         </div>

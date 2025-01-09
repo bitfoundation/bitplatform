@@ -10,6 +10,11 @@ public partial class BitMessageBox
     [Parameter] public string? Body { get; set; }
 
     /// <summary>
+    /// Custom CSS classes for different parts of the message box.
+    /// </summary>
+    [Parameter] public BitMessageBoxClassStyles? Classes { get; set; }
+
+    /// <summary>
     /// The text of the Ok button.
     /// </summary>
     [Parameter] public string? OkText { get; set; }
@@ -18,6 +23,11 @@ public partial class BitMessageBox
     /// The event callback for closing the message box.
     /// </summary>
     [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the message box.
+    /// </summary>
+    [Parameter] public BitMessageBoxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The title of the message box.
