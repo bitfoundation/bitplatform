@@ -49,6 +49,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            PropagateConcurrencyStampValue();
+
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -61,11 +63,30 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            PropagateConcurrencyStampValue();
+
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception)
         {
             throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
+        }
+    }
+
+    /// <summary>
+    /// https://github.com/dotnet/efcore/issues/35443
+    /// </summary>
+    private void PropagateConcurrencyStampValue()
+    {
+        ChangeTracker.DetectChanges();
+
+        foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified))
+        {
+            if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
+                || currentConcurrencyStamp is not byte[])
+                continue;
+
+            entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
         }
     }
 

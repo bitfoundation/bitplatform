@@ -71,9 +71,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         var entityToUpdate = await DbContext.Categories.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        if (entityToUpdate.ConcurrencyStamp.SequenceEqual(dto.ConcurrencyStamp) is false)
-            throw new ConflictException(); // https://github.com/dotnet/efcore/issues/35443
-
         dto.Patch(entityToUpdate);
 
         await Validate(entityToUpdate, cancellationToken);

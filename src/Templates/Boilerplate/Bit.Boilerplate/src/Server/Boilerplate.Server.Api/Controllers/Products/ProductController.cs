@@ -69,9 +69,6 @@ public partial class ProductController : AppControllerBase, IProductController
         var entityToUpdate = await DbContext.Products.FindAsync([dto.Id], cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        if (entityToUpdate.ConcurrencyStamp.SequenceEqual(dto.ConcurrencyStamp) is false)
-            throw new ConflictException(); // https://github.com/dotnet/efcore/issues/35443
-
         dto.Patch(entityToUpdate);
 
         await Validate(entityToUpdate, cancellationToken);
