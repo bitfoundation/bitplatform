@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status.
+/// </summary>
 public partial class BitPersona : BitComponentBase
 {
     private bool _isLoaded;

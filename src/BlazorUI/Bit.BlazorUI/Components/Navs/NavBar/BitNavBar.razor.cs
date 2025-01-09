@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A tab panel that provides navigation links to the main areas of an app.
+/// </summary>
 public partial class BitNavBar<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;

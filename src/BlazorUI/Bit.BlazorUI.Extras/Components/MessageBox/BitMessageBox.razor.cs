@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// BitMessageBox is a pre-implemented box for showing messages with title and body.
+/// </summary>
 public partial class BitMessageBox
 {
     /// <summary>

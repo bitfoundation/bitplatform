@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The BitFooter component is used to display a colored bar (with text and possibly other components) at the bottom of a site or application.
+/// </summary>
 public partial class BitFooter : BitComponentBase
 {
     /// <summary>

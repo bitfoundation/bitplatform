@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Separator is a component that visually separates content into groups.
+/// </summary>
 public partial class BitSeparator : BitComponentBase
 {
     /// <summary>

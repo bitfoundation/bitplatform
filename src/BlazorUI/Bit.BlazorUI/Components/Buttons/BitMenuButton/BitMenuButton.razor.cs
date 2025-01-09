@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A menu button is a menu item that displays a word or phrase that the user can click to initiate an operation.
+/// </summary>
 public partial class BitMenuButton<TItem> : BitComponentBase, IAsyncDisposable where TItem : class
 {
     private bool _disposed;

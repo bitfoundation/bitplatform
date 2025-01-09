@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A Message displays errors, warnings, or important information. For example, if a file failed to upload an error message should appear.
+/// </summary>
 public partial class BitMessage : BitComponentBase
 {
     private bool _isExpanded;

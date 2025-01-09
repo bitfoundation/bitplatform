@@ -1,8 +1,12 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Components.Forms;
 
+
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The Timeline component organizes and displays events or data chronologically in a linear fashion, often featuring points or segments representing individual items with associated details or actions.
+/// </summary>
 public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 {
     private List<TItem> _items = [];

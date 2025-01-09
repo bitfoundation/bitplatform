@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// A component that displays a grid.
+/// BitDataGrid is a robust way to display an information-rich collection of items, and allow people to sort, and filter the content.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 [CascadingTypeParameter(nameof(TGridItem))]

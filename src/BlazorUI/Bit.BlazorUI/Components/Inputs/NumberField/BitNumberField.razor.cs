@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A NumberField allows you to enter any number type and format you want. It could be a decimal number or integer number with a suffix and so on.
+/// </summary>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
     private bool _hasFocus;
