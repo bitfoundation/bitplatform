@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Components.Forms;
 
-
 namespace Bit.BlazorUI;
 
 /// <summary>
