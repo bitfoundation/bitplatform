@@ -13,8 +13,8 @@ public partial class AddOrEditProductModal
     private bool isSaving;
     private bool isLoading;
     private ProductDto product = new();
-    private AppDataAnnotationsValidator validator;
     private string selectedCategoryId = string.Empty;
+    private AppDataAnnotationsValidator validator = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
 
     [Parameter] public EventCallback OnSave { get; set; }

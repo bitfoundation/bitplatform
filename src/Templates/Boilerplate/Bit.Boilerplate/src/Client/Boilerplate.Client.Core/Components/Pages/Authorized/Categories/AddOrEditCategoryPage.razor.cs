@@ -16,7 +16,7 @@ public partial class AddOrEditCategoryPage
     private bool isSaving;
     private bool isColorPickerOpen;
     private CategoryDto category = new();
-    private AppDataAnnotationsValidator validator;
+    private AppDataAnnotationsValidator validator = default!;
 
     protected override async Task OnInitAsync()
     {

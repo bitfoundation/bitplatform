@@ -35,8 +35,8 @@ public partial class SignInPage : IDisposable
     private bool isOtpSent;
     private bool requiresTwoFactor;
     private SignInPanelTab currentSignInPanelTab;
-    private AppDataAnnotationsValidator validator;
     private readonly SignInRequestDto model = new();
+    private AppDataAnnotationsValidator validator = default!;
     private Action unsubscribeIdentityHeaderBackLinkClicked = default!;
 
 
@@ -122,8 +122,7 @@ public partial class SignInPage : IDisposable
 
             CleanModel();
 
-            if (validator.EditContext.Validate() is false)
-                return;
+            if (validator.EditContext.Validate() is false) return;
 
             model.DeviceInfo = telemetryContext.Platform;
 

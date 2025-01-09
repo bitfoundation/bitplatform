@@ -61,8 +61,7 @@
 
                         <BitStack Horizontal>
                             <div class="color-square selected" style="background-color: @category.Color"></div>
-                            <BitToggleButton Variant="BitVariant.Outline"
-                                @bind-IsChecked="isColorPickerOpen">
+                            <BitToggleButton @bind-IsChecked="isColorPickerOpen" Variant="BitVariant.Outline">
                                 @Localizer[(nameof(AppStrings.CustomColor))]
                             </BitToggleButton>
                         </BitStack>
