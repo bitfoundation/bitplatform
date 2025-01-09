@@ -14,8 +14,8 @@ public partial class AddOrEditProductModal
     private bool isLoading;
     private ProductDto product = new();
     private string selectedCategoryId = string.Empty;
-    private AppDataAnnotationsValidator validator = default!;
     private List<BitDropdownItem<string>> allCategoryList = [];
+    private AppDataAnnotationsValidator validatorRef = default!;
 
     [Parameter] public EventCallback OnSave { get; set; }
 
@@ -78,7 +78,7 @@ public partial class AddOrEditProductModal
         }
         catch (ResourceValidationException exp)
         {
-            validator.DisplayErrors(exp);
+            validatorRef.DisplayErrors(exp);
         }
         finally
         {

@@ -34,7 +34,7 @@
         </BitStack>
         <BitCard FullSize>
             <EditForm Model="category" OnValidSubmit="WrapHandled(Save)" novalidate>
-                <AppDataAnnotationsValidator @ref=validator />
+                <AppDataAnnotationsValidator @ref="validatorRef" />
 
                 <BitStack Gap="0.25rem">
                     @if (isLoading)

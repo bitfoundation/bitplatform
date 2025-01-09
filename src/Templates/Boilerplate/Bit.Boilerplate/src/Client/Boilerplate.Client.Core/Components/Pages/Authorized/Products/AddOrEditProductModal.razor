@@ -26,7 +26,7 @@
             </BitStack>
 
             <EditForm Model="product" OnValidSubmit="WrapHandled(Save)" novalidate>
-                <AppDataAnnotationsValidator @ref=validator />
+                <AppDataAnnotationsValidator @ref="validatorRef" />
 
                 <BitStack FillContent Class="stack">
                     <BitTextField @bind-Value="product.Name"
