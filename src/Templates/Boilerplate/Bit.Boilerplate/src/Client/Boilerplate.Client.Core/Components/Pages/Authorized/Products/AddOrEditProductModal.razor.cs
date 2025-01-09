@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Boilerplate.Shared.Controllers.Categories;
+﻿using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Controllers.Products;
-using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Client.Core.Components.Pages.Authorized.Products;
 
