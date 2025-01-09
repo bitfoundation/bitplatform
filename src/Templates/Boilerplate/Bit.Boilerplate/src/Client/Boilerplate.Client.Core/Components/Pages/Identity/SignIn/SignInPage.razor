@@ -8,7 +8,7 @@
 <section>
     <BitStack HorizontalAlign="BitAlignment.Center" FillContent>
         <EditForm Model="model" OnSubmit="WrapHandled(DoSignIn)" novalidate>
-            <AppDataAnnotationsValidator @ref=validator />
+            <AppDataAnnotationsValidator @ref="validatorRef" />
 
             <BitStack HorizontalAlign="BitAlignment.Center">
                 @if (requiresTwoFactor is false)
