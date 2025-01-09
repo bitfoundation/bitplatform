@@ -1,0 +1,21 @@
+::deep {
+    .custom-msg {
+        background: linear-gradient(180deg, #3e0f0f, transparent) #000;
+    }
+
+    .custom-msg-btn {
+        color: #fff;
+        font-weight: bold;
+        border-radius: 1rem;
+        border-color: #8f0101;
+        transition: background-color 1s;
+        background: linear-gradient(90deg, #d10000, transparent) #8f0101;
+    }
+
+    .custom-msg-btn:hover {
+        color: #fff;
+        font-weight: bold;
+        border-color: #8f0101;
+        background-color: #8f0101;
+    }
+}
