@@ -2,7 +2,7 @@
 
 public static class ByteArrayExtensions
 {
-    public static string ToHexString(this byte[]? source)
+    public static string ToStampString(this byte[]? source)
     {
         if (source is null or { Length: 0 })
         {
