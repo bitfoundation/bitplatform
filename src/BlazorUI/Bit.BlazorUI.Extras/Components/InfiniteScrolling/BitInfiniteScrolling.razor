@@ -7,7 +7,6 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-
     @foreach (var item in _currentItems)
     {
         @if (ItemTemplate is not null)
@@ -16,10 +15,12 @@
         }
     }
 
+    <div @ref="_lastElementRef" 
+        style="@(_isLoading ? "height:0;width:0" : $"height:{(LastElementHeight is null ? "1px" : LastElementHeight)};width:100%")">
+    </div>
+
     @if (_isLoading)
     {
         @LoadingTemplate
     }
-
-    <div @ref="_lastElementRef" style="@(_isLoading ? "height:0;width:0" : "height:1.5rem;width:1.5rem")"></div>
 </div>

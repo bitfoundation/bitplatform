@@ -4,10 +4,11 @@
 }
 
 .loading {
+    width: 100%;
     padding: 1rem;
     display: flex;
-    font-weight: bold;
     align-items: center;
+    justify-content: center;
 }
 
 ::deep {
@@ -19,7 +20,7 @@
         gap: 1rem;
         display: flex;
         flex-wrap: wrap;
-        max-width: 24rem;
         max-height: 20rem;
+        position: relative;
     }
 }

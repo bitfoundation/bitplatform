@@ -30,9 +30,20 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The height of the last element that triggers the loading.
+    /// </summary>
+    [Parameter] public string? LastElementHeight { get; set; }
+
+    /// <summary>
     /// The custom template to render while loading the new items.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.
+    /// </summary>
+    [Parameter] public string? ScrollerSelector { get; set; }
+
 
 
 
@@ -75,7 +86,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitInfiniteScrollingSetup(_Id, RootElement, _lastElementRef, _dotnetObj);
+            await _js.BitInfiniteScrollingSetup(_Id, ScrollerSelector, RootElement, _lastElementRef, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);

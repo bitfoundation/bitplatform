@@ -20,10 +20,24 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "LastElementHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The height of the last element that triggers the loading.",
+         },
+         new()
+         {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template to render while loading the new items.",
+         },
+         new()
+         {
+            Name = "ScrollerSelector",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.",
          },
     ];
 
@@ -39,42 +53,79 @@ public partial class BitInfiniteScrollingDemo
     ];
 
 
-    private async ValueTask<IEnumerable<int>> LoadItems(BitInfiniteScrollingItemsProviderRequest request)
+    private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
     {
         await Task.Delay(1000);
         return Enumerable.Range(request.Skip, 20);
     }
 
+    private async ValueTask<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        await Task.Delay(1000);
+        return Enumerable.Range(request.Skip, 50);
+    }
+
 
     private readonly string example1RazorCode = @"
-<BitInfiniteScrolling ItemsProvider=""GetItems"" Class=""container"">
+<style>
+    .basic {
+        max-height: 300px;
+    }
+</style>
+
+<BitInfiniteScrolling ItemsProvider=""LoadBasicItems"" Class=""basic"">
     <ItemTemplate Context=""item"">
         <div>Item @item</div>
     </ItemTemplate>
     <LoadingTemplate>
-        <div>Loading...</div>
+        <b>Loading...</b>
     </LoadingTemplate>
 </BitInfiniteScrolling>";
     private readonly string example1CsharpCode = @"
-private async Task<IEnumerable<int>> GetItems(BitInfiniteScrollingItemsProviderRequest request)
+private async Task<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 20);
 }";
 
     private readonly string example2RazorCode = @"
-<BitInfiniteScrolling ItemsProvider=""LoadItems"" Class=""advanced"">
+<style>
+    .advanced {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 20rem;
+        position: relative;
+    }
+
+    .item {
+        padding: 1rem;
+        border: 1px solid gray;
+    }
+
+    .loading {
+        width: 100%;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<BitInfiniteScrolling ItemsProvider=""LoadAdvancedItems"" Class=""advanced"" LastElementHeight=""96px"">
     <ItemTemplate Context=""item"">
         <div class=""item"">Item @item</div>
     </ItemTemplate>
     <LoadingTemplate>
-        <div class=""loading"">Loading...</div>
+        <div class=""loading"">
+            <BitEllipsisLoading />
+        </div>
     </LoadingTemplate>
 </BitInfiniteScrolling>";
     private readonly string example2CsharpCode = @"
-private async Task<IEnumerable<int>> GetItems(BitInfiniteScrollingItemsProviderRequest request)
+private async Task<IEnumerable<int>> LoadAdvancedItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(1000);
-    return Enumerable.Range(request.Skip, 20);
+    return Enumerable.Range(request.Skip, 50);
 }";
 }

@@ -12,12 +12,12 @@
                    ComponentPublicMembers="componentPublicMembers">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitInfiniteScrolling ItemsProvider="LoadItems" Class="basic">
+                <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic">
                     <ItemTemplate Context="item">
                         <div>Item @item</div>
                     </ItemTemplate>
                     <LoadingTemplate>
-                        <div>Loading...</div>
+                        <b>Loading...</b>
                     </LoadingTemplate>
                 </BitInfiniteScrolling>
             </ExamplePreview>
@@ -25,12 +25,14 @@
 
         <ComponentExampleBox Title="Advanced" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <ExamplePreview>
-                <BitInfiniteScrolling ItemsProvider="LoadItems" Class="advanced">
+                <BitInfiniteScrolling ItemsProvider="LoadAdvancedItems" Class="advanced" LastElementHeight="96px">
                     <ItemTemplate Context="item">
                         <div class="item">Item @item</div>
                     </ItemTemplate>
                     <LoadingTemplate>
-                        <div class="loading">Loading...</div>
+                        <div class="loading">
+                            <BitEllipsisLoading />
+                        </div>
                     </LoadingTemplate>
                 </BitInfiniteScrolling>
             </ExamplePreview>

@@ -4,9 +4,19 @@ namespace BitBlazorUI {
 
         public static setup(
             id: string,
+            scrollerSelector: string | undefined,
             rootElement: HTMLElement,
             lastElement: HTMLElement,
             dotnetObj: DotNetObject) {
+
+            let element = rootElement;
+
+            if (scrollerSelector) {
+                const scrollerElement = document.querySelector(scrollerSelector);
+                if (scrollerElement) {
+                    element = scrollerElement as HTMLElement;
+                }
+            }
 
             const observer = new IntersectionObserver(async (entries) => {
                 for (const entry of entries) {
@@ -16,7 +26,7 @@ namespace BitBlazorUI {
                     }
                 }
             }, {
-                root: rootElement,
+                root: element,
                 threshold: 0.69,
             });
 
