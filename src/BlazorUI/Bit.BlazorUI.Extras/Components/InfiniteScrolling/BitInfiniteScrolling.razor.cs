@@ -11,7 +11,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
     private BitInfiniteScrollingItemsProvider<TItem>? _itemsProvider;
     private DotNetObjectReference<BitInfiniteScrolling<TItem>>? _dotnetObj;
 
-    private bool _isLoading => _globalCts != null;
+    private bool _isLoading => _globalCts is not null;
 
 
 

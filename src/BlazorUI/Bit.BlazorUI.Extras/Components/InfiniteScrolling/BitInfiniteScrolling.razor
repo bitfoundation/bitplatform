@@ -10,7 +10,7 @@
 
     @foreach (var item in _currentItems)
     {
-        @if (ItemTemplate != null)
+        @if (ItemTemplate is not null)
         {
             @ItemTemplate(item)
         }
