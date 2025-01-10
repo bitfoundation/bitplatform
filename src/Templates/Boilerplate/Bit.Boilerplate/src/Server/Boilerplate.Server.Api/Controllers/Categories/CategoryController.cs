@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
 using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Shared.Controllers.Categories;
 
 namespace Boilerplate.Server.Api.Controllers.Categories;
@@ -53,6 +54,8 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.Categories.AddAsync(entityToAdd, cancellationToken);
 
+        await Validate(entityToAdd, cancellationToken);
+
         await DbContext.SaveChangesAsync(cancellationToken);
 
         //#if (signalR == true)
@@ -65,9 +68,12 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     [HttpPut]
     public async Task<CategoryDto> Update(CategoryDto dto, CancellationToken cancellationToken)
     {
-        var entityToUpdate = dto.Map();
+        var entityToUpdate = await DbContext.Categories.FindAsync([dto.Id], cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        DbContext.Update(entityToUpdate);
+        dto.Patch(entityToUpdate);
+
+        await Validate(entityToUpdate, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -86,7 +92,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
             throw new BadRequestException(Localizer[nameof(AppStrings.CategoryNotEmpty)]);
         }
 
-        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromBase64String(Uri.UnescapeDataString(concurrencyStamp)) });
+        DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
@@ -103,5 +109,12 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         await appHubContext.Clients.Group("AuthenticatedClients").SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
     }
     //#endif
+
+    private async Task Validate(Category category, CancellationToken cancellationToken)
+    {
+        // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
+        if (DbContext.Entry(category).Property(c => c.Name).IsModified && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken: cancellationToken))
+            throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName)]]));
+    }
 }
 

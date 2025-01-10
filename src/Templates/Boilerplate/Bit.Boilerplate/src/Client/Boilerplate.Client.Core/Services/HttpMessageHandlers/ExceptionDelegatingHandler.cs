@@ -31,18 +31,15 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 response.IsSuccessStatusCode is false &&
                 response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
-                RestErrorInfo restError = (await response!.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
+                RestErrorInfo restError = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
 
                 Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
 
                 var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
 
-                if (exceptionType == typeof(ResourceValidationException))
-                {
-                    args.Add(restError.Payload);
-                }
-
-                Exception exp = (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
+                Exception exp = exceptionType == typeof(ResourceValidationException) 
+                                    ? new ResourceValidationException(restError.Message!, restError.Payload!) 
+                                    : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;
             }

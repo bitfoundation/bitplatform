@@ -6,6 +6,8 @@ public partial class CategoryConfiguration : IEntityTypeConfiguration<Category>
 {
     public void Configure(EntityTypeBuilder<Category> builder)
     {
+        builder.HasIndex(p => p.Name).IsUnique();
+
         var defaultConcurrencyStamp = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         builder.HasData(
             new() { Id = Guid.Parse("31d78bd0-0b4f-4e87-b02f-8f66d4ab2845"), Name = "Ford", Color = "#FFCD56", ConcurrencyStamp = defaultConcurrencyStamp },

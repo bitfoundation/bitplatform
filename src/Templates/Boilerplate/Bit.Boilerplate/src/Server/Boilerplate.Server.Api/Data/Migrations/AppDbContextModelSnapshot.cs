@@ -33,6 +33,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("Name")
+                    .IsUnique();
+
                 b.ToTable("Categories");
 
                 b.HasData(
@@ -294,6 +297,9 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasKey("Id");
 
                 b.HasIndex("CategoryId");
+
+                b.HasIndex("Name")
+                    .IsUnique();
 
                 b.ToTable("Products");
 

@@ -10,19 +10,19 @@ public partial class ResourceValidationException : RestException
 
     }
 
-    public ResourceValidationException((string propName, LocalizedString[] errorMessages)[] details)
+    public ResourceValidationException(params (string propName, LocalizedString[] errorMessages)[] details)
         : this("*", details)
     {
 
     }
 
-    public ResourceValidationException(Type resourceType, (string propName, LocalizedString[] errorMessages)[] details)
+    public ResourceValidationException(Type resourceType, params (string propName, LocalizedString[] errorMessages)[] details)
         : this(resourceType.FullName!, details)
     {
 
     }
 
-    public ResourceValidationException(string resourceTypeName, (string propName, LocalizedString[] errorMessages)[] details)
+    public ResourceValidationException(string resourceTypeName, params (string propName, LocalizedString[] errorMessages)[] details)
         : this(new ErrorResourcePayload()
         {
             ResourceTypeName = resourceTypeName,

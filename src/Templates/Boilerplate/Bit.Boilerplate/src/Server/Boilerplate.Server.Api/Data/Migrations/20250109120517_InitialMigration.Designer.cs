@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Boilerplate.Server.Api.Data.Migrations;
 
 [DbContext(typeof(AppDbContext))]
-[Migration("20241201163409_InitialMigration")]
+[Migration("20250109120517_InitialMigration")]
 partial class InitialMigration
 {
     /// <inheritdoc />
@@ -34,6 +34,9 @@ partial class InitialMigration
                     .HasColumnType("TEXT");
 
                 b.HasKey("Id");
+
+                b.HasIndex("Name")
+                    .IsUnique();
 
                 b.ToTable("Categories");
 
@@ -296,6 +299,9 @@ partial class InitialMigration
                 b.HasKey("Id");
 
                 b.HasIndex("CategoryId");
+
+                b.HasIndex("Name")
+                    .IsUnique();
 
                 b.ToTable("Products");
 
