@@ -61,4 +61,20 @@ private async Task<IEnumerable<int>> GetItems(BitInfiniteScrollingItemsProviderR
     await Task.Delay(1000);
     return Enumerable.Range(request.Skip, 20);
 }";
+
+    private readonly string example2RazorCode = @"
+<BitInfiniteScrolling ItemsProvider=""LoadItems"" Class=""advanced"">
+    <ItemTemplate Context=""item"">
+        <div class=""item"">Item @item</div>
+    </ItemTemplate>
+    <LoadingTemplate>
+        <div class=""loading"">Loading...</div>
+    </LoadingTemplate>
+</BitInfiniteScrolling>";
+    private readonly string example2CsharpCode = @"
+private async Task<IEnumerable<int>> GetItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+    return Enumerable.Range(request.Skip, 20);
+}";
 }
