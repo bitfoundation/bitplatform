@@ -18,7 +18,7 @@ internal static class BitInfiniteScrollingJsRuntimeExtensions
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.InfiniteScrolling.reobserve", id, lastElement);
     }
 
-    public static ValueTask BitInfiniteScrollingDispose<T>(this IJSRuntime jsRuntime, string id)
+    public static ValueTask BitInfiniteScrollingDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoidAsync("BitBlazorUI.InfiniteScrolling.dispose", id);
     }

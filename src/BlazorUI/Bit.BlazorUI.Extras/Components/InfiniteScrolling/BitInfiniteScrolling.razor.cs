@@ -130,8 +130,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
     public async ValueTask DisposeAsync()
     {
-        _dotnetObj?.Dispose();
-
         if (_globalCts is not null)
         {
             _globalCts.Dispose();
@@ -139,5 +137,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
         }
 
         _dotnetObj?.Dispose();
+        await _js.BitInfiniteScrollingDispose(_Id);
     }
 }
