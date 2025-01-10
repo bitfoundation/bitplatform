@@ -207,7 +207,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
         else
         {
             var diff = args.DiffY - _oldDiffY;
-            _js.BitExtrasScrollBy(RootElement, 0, diff > 0 ? -10 : 10);
+            _js.BitExtrasScrollBy(RootElement, 0, diff > 0 ? -20 : 20);
             _oldDiffY = args.DiffY;
         }
 
