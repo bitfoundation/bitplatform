@@ -38,6 +38,7 @@ namespace BitBlazorUI {
             if (!observer) return;
 
             observer.disconnect();
+            delete InfiniteScrolling._observers[id];
         }
     }
 }
