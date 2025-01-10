@@ -5,14 +5,13 @@
 /// </summary>
 public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDisposable
 {
-    private List<TItem> _items = [];
-    private bool _enumerationCompleted;
-    private CancellationTokenSource? _loadItemsCts;
+    private List<TItem> _currentItems = [];
+    private CancellationTokenSource? _globalCts;
     private ElementReference _lastElementRef = default!;
+    private BitInfiniteScrollingItemsProvider<TItem>? _itemsProvider;
     private DotNetObjectReference<BitInfiniteScrolling<TItem>>? _dotnetObj;
-    private BitInfiniteScrollingItemsProviderRequestDelegate<TItem>? _itemsProvider;
 
-    private bool IsLoading => _loadItemsCts != null;
+    private bool _isLoading => _globalCts != null;
 
 
 
@@ -20,21 +19,32 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
 
 
-    [Parameter] public BitInfiniteScrollingItemsProviderRequestDelegate<TItem>? ItemsProvider { get; set; }
+    /// <summary>
+    /// The item provider function that will be called when scrolling ends.
+    /// </summary>
+    [Parameter] public BitInfiniteScrollingItemsProvider<TItem>? ItemsProvider { get; set; }
 
+    /// <summary>
+    /// The custom template to render each item.
+    /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
+    /// <summary>
+    /// The custom template to render while loading the new items.
+    /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
 
 
+    /// <summary>
+    /// Refreshes the items and re-renders them from scratch.
+    /// </summary>
     public async Task RefreshDataAsync()
     {
-        _loadItemsCts?.Cancel();
-        _loadItemsCts = null;
+        _globalCts?.Cancel();
+        _globalCts = null;
 
-        _items = [];
-        _enumerationCompleted = false;
+        _currentItems = [];
         await LoadMoreItems();
     }
 
@@ -54,8 +64,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
         if (ItemsProvider != _itemsProvider)
         {
-            _items = [];
-            _enumerationCompleted = false;
+            _currentItems = [];
         }
 
         _itemsProvider = ItemsProvider;
@@ -76,55 +85,45 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
     protected override string RootElementClass => "bit-isc";
 
-    protected override void RegisterCssClasses()
-    {
-
-    }
 
 
     private async Task LoadMoreItems()
     {
-        if (_loadItemsCts != null) return;
+        if (ItemsProvider is null || _globalCts is not null) return;
 
-        if (ItemsProvider == null) return;
+        var items = _currentItems;
+        var localCts = new CancellationTokenSource();
 
-        var items = _items;
-        var cts = new CancellationTokenSource();
-        _loadItemsCts = cts;
+        _globalCts = localCts;
 
         try
         {
-            StateHasChanged(); // Allow the UI to display the loading indicator
+            StateHasChanged();
+
             try
             {
-                var newItems = await ItemsProvider(new(items.Count, cts.Token));
-                if (cts.IsCancellationRequested is false)
+                var newItems = await ItemsProvider(new(items.Count, localCts.Token));
+
+                if (localCts.IsCancellationRequested is false)
                 {
                     var length = items.Count;
                     items.AddRange(newItems);
 
-                    if (items.Count == length)
-                    {
-                        _enumerationCompleted = true;
-                    }
-                    else
+                    if (items.Count != length)
                     {
                         await _js.BitInfiniteScrollingReobserve(_Id, _lastElementRef);
                     }
                 }
             }
-            catch (OperationCanceledException oce) when (oce.CancellationToken == cts.Token)
-            {
-                // No-op; we canceled the operation, so it's fine to suppress this exception.
-            }
+            catch (OperationCanceledException oce) when (oce.CancellationToken == localCts.Token) { }
         }
         finally
         {
-            _loadItemsCts = null;
-            cts.Dispose();
+            _globalCts = null;
+            localCts.Dispose();
         }
 
-        StateHasChanged(); // Display the new items and hide the loading indicator
+        StateHasChanged();
     }
 
 
@@ -133,12 +132,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
     {
         _dotnetObj?.Dispose();
 
-        if (_loadItemsCts is not null)
+        if (_globalCts is not null)
         {
-            _loadItemsCts.Dispose();
-            _loadItemsCts = null;
+            _globalCts.Dispose();
+            _globalCts = null;
         }
-
 
         _dotnetObj?.Dispose();
     }

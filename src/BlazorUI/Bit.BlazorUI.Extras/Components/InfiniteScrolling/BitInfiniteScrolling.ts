@@ -1,6 +1,6 @@
 namespace BitBlazorUI {
     export class InfiniteScrolling {
-        private static _observers: { [key: string]: IntersectionObserver };
+        private static _observers: { [key: string]: IntersectionObserver } = {};
 
         public static setup(
             id: string,
@@ -17,8 +17,7 @@ namespace BitBlazorUI {
                 }
             }, {
                 root: rootElement,
-                rootMargin: '0px',
-                threshold: 0,
+                threshold: 0.69,
             });
 
             observer.observe(lastElement);

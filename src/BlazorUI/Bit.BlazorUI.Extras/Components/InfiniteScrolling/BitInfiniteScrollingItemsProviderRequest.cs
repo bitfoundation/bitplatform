@@ -2,13 +2,13 @@
 
 public sealed class BitInfiniteScrollingItemsProviderRequest
 {
-    public BitInfiniteScrollingItemsProviderRequest(int startIndex, CancellationToken cancellationToken)
+    public BitInfiniteScrollingItemsProviderRequest(int skip, CancellationToken cancellationToken)
     {
-        StartIndex = startIndex;
+        Skip = skip;
         CancellationToken = cancellationToken;
     }
 
-    public int StartIndex { get; }
+    public int Skip { get; }
 
     public CancellationToken CancellationToken { get; }
 }

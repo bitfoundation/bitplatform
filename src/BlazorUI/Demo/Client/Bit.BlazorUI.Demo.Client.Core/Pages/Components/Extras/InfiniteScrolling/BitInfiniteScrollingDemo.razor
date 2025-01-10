@@ -4,14 +4,23 @@
             Title="InfiniteScrolling"
             Description="infinitescrolling component of the bit BlazorUI components" />
 
-<ComponentDemo ComponentName="InfiniteScrolling"
-               ComponentDescription="BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as there are items to fetch and render."
-               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
-               ComponentParameters="componentParameters"
-               ComponentSubClasses="componentSubClasses">
-    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <ExamplePreview>
-            @* <BitInfiniteScrolling /> *@
-        </ExamplePreview>
-    </ComponentExampleBox>
-</ComponentDemo>
+<div>
+    <ComponentDemo ComponentName="InfiniteScrolling"
+                   ComponentDescription="BitInfiniteScrolling is a container that enables scrolling through a list of items infinitely as long as there are items to fetch and render."
+                   Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+                   ComponentParameters="componentParameters"
+                   ComponentPublicMembers="componentPublicMembers">
+        <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <ExamplePreview>
+                <BitInfiniteScrolling ItemsProvider="LoadItems" Class="container">
+                    <ItemTemplate Context="item">
+                        <div>Item @item</div>
+                    </ItemTemplate>
+                    <LoadingTemplate>
+                        <div>Loading...</div>
+                    </LoadingTemplate>
+                </BitInfiniteScrolling>
+            </ExamplePreview>
+        </ComponentExampleBox>
+    </ComponentDemo>
+</div>

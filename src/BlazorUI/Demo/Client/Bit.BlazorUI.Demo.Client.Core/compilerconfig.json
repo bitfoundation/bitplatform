@@ -546,12 +546,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Shared/MessageBox.razor.css",
-        "inputFile": "Shared/MessageBox.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "wwwroot/styles/app.css",
         "inputFile": "Styles/app.scss",
         "minify": { "enabled": false },
