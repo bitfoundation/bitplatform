@@ -1,0 +1,23 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @foreach (var item in _items)
+    {
+        @if (ItemTemplate != null)
+        {
+            @ItemTemplate(item)
+        }
+    }
+    @if (IsLoading)
+    {
+        @LoadingTemplate
+    }
+
+    <div @ref="_lastElementRef" style="@(_enumerationCompleted ? "height:0;width:0" : "height:1px;width:1px;flex-shrink:0")"></div>
+</div>
