@@ -1,14 +1,14 @@
 ﻿<Project>
     <ItemGroup>
         <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
-        <PackageVersion Include="Bit.Butil" Version="9.2.1" />
-        <PackageVersion Include="Bit.BlazorUI" Version="9.2.1" />
-        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.2.1" />
-        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.2.1" />
-        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.2.1" />
-        <PackageVersion Include="Bit.Bswup" Version="9.2.1" />
-        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.2.1" />
-        <PackageVersion Include="Bit.SourceGenerators" Version="9.2.1" />
+        <PackageVersion Include="Bit.Butil" Version="9.3.0" />
+        <PackageVersion Include="Bit.BlazorUI" Version="9.3.0" />
+        <PackageVersion Include="Bit.BlazorUI.Icons" Version="9.3.0" />
+        <PackageVersion Include="Bit.BlazorUI.Assets" Version="9.3.0" />
+        <PackageVersion Include="Bit.BlazorUI.Extras" Version="9.3.0" />
+        <PackageVersion Include="Bit.Bswup" Version="9.3.0" />
+        <PackageVersion Include="Bit.CodeAnalyzers" Version="9.3.0" />
+        <PackageVersion Include="Bit.SourceGenerators" Version="9.3.0" />
         <PackageVersion Include="libphonenumber-csharp" Version="8.13.52" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
@@ -29,9 +29,9 @@
         <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.1" />
         <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="8.0.1" />
         <!--/+:msbuild-conditional:noEmit -->
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.0.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.0.0" />
-        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.0.0" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.0.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.0.1" />
+        <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.3.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" Version="1.4.5.1" />
@@ -46,7 +46,7 @@
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.0" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
-        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.2.1" />
+        <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.3.0" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.11" />
         <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.29.0" />
         <PackageVersion Condition="'$(sample)' == 'Admin' OR '$(sample)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
@@ -64,7 +64,7 @@
         <!--/-:msbuild-conditional:noEmit -->
         <PackageVersion Include="Humanizer" Version="2.14.1" />
         <PackageVersion Include="QRCoder" Version="1.6.0" />
-        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.2.0" />
+        <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="14.4.0" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="5.6.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
@@ -80,7 +80,7 @@
 		<PackageVersion Include="AspNet.Security.OAuth.Apple" Version="8.3.0" />
         <PackageVersion Include="AspNet.Security.OAuth.GitHub" Version="8.3.0" />
         <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
-        <PackageVersion Include="Twilio" Version="7.8.0" />
+        <PackageVersion Include="Twilio" Version="7.8.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.11" />
         <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.11" />
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />

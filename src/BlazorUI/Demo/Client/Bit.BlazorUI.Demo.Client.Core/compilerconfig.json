@@ -66,6 +66,18 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/ErrorBoundary/BitErrorBoundaryDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/ErrorBoundary/BitErrorBoundaryDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/MessageBox/BitMessageBoxDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.css",
         "inputFile": "Pages/Components/Extras/ModalService/BitModalServiceDemo.razor.scss",
         "minify": { "enabled": false },
@@ -500,12 +512,6 @@
     {
         "outputFile": "Pages/ThemingPage.razor.css",
         "inputFile": "Pages/ThemingPage.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
-        "outputFile": "Shared/AppErrorBoundary.razor.css",
-        "inputFile": "Shared/AppErrorBoundary.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

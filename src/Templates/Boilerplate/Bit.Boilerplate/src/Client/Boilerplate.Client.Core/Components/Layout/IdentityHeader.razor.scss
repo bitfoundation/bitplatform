@@ -8,15 +8,3 @@ header {
     position: absolute;
     z-index: $bit-zindex-base;
 }
-
-::deep {
-    .language-callout {
-        @include lt-sm {
-            height: unset;
-            max-width: 225px;
-            box-shadow: none;
-            bottom: $bit-env-inset-bottom;
-            top: $bit-env-inset-top !important;
-        }
-    }
-}

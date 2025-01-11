@@ -1169,6 +1169,12 @@
     <data name="EditProduct" xml:space="preserve">
     <value>ویرایش محصول</value>
   </data>
+    <data name="DuplicateProductName" xml:space="preserve">
+    <value>نام محصول تکراری است</value>
+  </data>
+    <data name="DuplicateCategoryName" xml:space="preserve">
+    <value>نام دسته تکراری است</value>
+  </data>
     <data name="DashboardPageTitle" xml:space="preserve">
     <value>داشبورد</value>
   </data>

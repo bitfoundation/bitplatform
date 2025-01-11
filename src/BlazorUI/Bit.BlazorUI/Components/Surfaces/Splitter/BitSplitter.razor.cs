@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The BitSplitter component divides a container into two adjustable sections, either horizontally or vertically. Users can resize these sections by dragging the divider.
+/// </summary>
 public partial class BitSplitter : BitComponentBase
 {
     private bool _isDragging;

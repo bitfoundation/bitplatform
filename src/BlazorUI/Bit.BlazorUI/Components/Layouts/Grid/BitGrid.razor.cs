@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The BitGrid component is a flexible and customizable grid layout, offering responsive columns and alignment flexibility for structured content presentation.
+/// </summary>
 public partial class BitGrid : BitComponentBase
 {
     /// <summary>

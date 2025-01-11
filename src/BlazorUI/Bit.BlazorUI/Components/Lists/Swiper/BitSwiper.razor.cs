@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// Swipers (touch slider) let people show their slides in a swiping row.
+/// </summary>
 public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 {
     private double _lastX;

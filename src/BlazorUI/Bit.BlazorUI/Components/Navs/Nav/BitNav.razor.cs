@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// A navigation pane (Nav) provides links to the main areas of an app or site.
+/// </summary>
 public partial class BitNav<TItem> : BitComponentBase, IDisposable where TItem : class
 {
     private bool _disposed;

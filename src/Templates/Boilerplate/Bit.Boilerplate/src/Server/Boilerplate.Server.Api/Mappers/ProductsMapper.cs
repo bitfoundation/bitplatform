@@ -20,4 +20,5 @@ public static partial class ProductsMapper
     [MapProperty(nameof(@Product.Category.Name), nameof(@ProductDto.CategoryName))]
     public static partial ProductDto Map(this Product source);
     public static partial Product Map(this ProductDto source);
+    public static partial void Patch(this ProductDto source, Product dest);
 }

@@ -125,7 +125,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 {
                     { "AdditionalData", "Refreshing access token failed." },
                     { "RefreshTokenRequestedBy", requestedBy }
-                }, displayKind: exp is ReusedRefreshTokenException ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.Interrupting);
+                });
 
                 if (exp is UnauthorizedException // refresh token is also invalid.
                     || exp is ReusedRefreshTokenException && refreshToken == await storageService.GetItem("refresh_token"))

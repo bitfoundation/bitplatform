@@ -49,6 +49,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            //#if (database != "Sqlite")
+            ReplaceOriginalConcurrencyStamp();
+            //#endif
+
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -61,6 +65,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         try
         {
+            //#if (database != "Sqlite")
+            ReplaceOriginalConcurrencyStamp();
+            //#endif
+
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -68,6 +76,29 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             throw new ConflictException(nameof(AppStrings.UpdateConcurrencyException), exception);
         }
     }
+
+    //#if (database != "Sqlite")
+    /// <summary>
+    /// https://github.com/dotnet/efcore/issues/35443
+    /// </summary>
+    private void ReplaceOriginalConcurrencyStamp()
+    {
+        //#if (IsInsideProjectTemplate == true)
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+            return;
+        //#endif
+        ChangeTracker.DetectChanges();
+
+        foreach (var entityEntry in ChangeTracker.Entries().Where(e => e.State is EntityState.Modified))
+        {
+            if (entityEntry.CurrentValues.TryGetValue<object>("ConcurrencyStamp", out var currentConcurrencyStamp) is false
+                || currentConcurrencyStamp is not byte[])
+                continue;
+
+            entityEntry.OriginalValues.SetValues(new Dictionary<string, object> { { "ConcurrencyStamp", currentConcurrencyStamp } });
+        }
+    }
+    //#endif
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

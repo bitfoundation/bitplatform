@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 public abstract partial class ExceptionHandlerBase : IExceptionHandler
 {
-    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly BitMessageBoxService MessageBoxService = default!;
 
     public virtual void Handle(Exception exception, IDictionary<string, object?>? parameters = null)
     {
@@ -20,6 +20,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         _ = Console.Out.WriteLineAsync(exception.ToString());
 
-        _ = MessageBoxService.Show(exceptionMessage, "Error");
+        _ = MessageBoxService.Show("Error", exceptionMessage);
     }
 }

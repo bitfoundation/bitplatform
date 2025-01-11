@@ -1,0 +1,60 @@
+@page "/components/messagebox"
+
+<PageOutlet Url="components/messagebox"
+            Title="MessageBox"
+            Description="messagebox component of the bit BlazorUI components" />
+
+<ComponentDemo ComponentName="MessageBox"
+               ComponentDescription="BitMessageBox is a pre-implemented box for showing messages with title and body."
+               Notes="To use this component, you need to install the `Bit.BlazorUI.Extras` nuget package, as described in the Optional steps of the Getting started page."
+               ComponentParameters="componentParameters"
+               ComponentSubClasses="componentSubClasses">
+    <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <ExamplePreview>
+            <BitCard Style="padding:0">
+                <BitMessageBox Title="It's a title" Body="It's a body." />
+            </BitCard>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitModal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <ExamplePreview>
+            <BitButton OnClick="() => isModalOpen = true">Show</BitButton>
+            <BitModal @bind-IsOpen="isModalOpen">
+                <BitMessageBox OnClose="() => isModalOpen = false" Title="This is the Title" Body="This is the Body!" />
+            </BitModal>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitModalService" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <ExamplePreview>
+            <BitButton OnClick="ShowMessageBox">Show MessageBox</BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="BitMessageBoxService" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <ExamplePreview>
+            <BitButton OnClick="ShowMessageBoxService">Show MessageBox</BitButton>
+        </ExamplePreview>
+    </ComponentExampleBox>
+
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <ExamplePreview>
+            <div>Customize the appearance of BitActionButton using styles and CSS classes.</div>
+            <br />
+            <div>
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="It's a title"
+                                   Body="It's a body."
+                                   Styles="@(new() { Root = "background: linear-gradient(180deg, #222444, transparent) #000", OkButton = new() { Root = "border-radius:1rem" } })" />
+                </BitCard>
+                <br />
+                <BitCard Style="padding:0">
+                    <BitMessageBox Title="It's a title"
+                                   Body="It's a body."
+                                   Classes="@(new() { Root = "custom-msg", OkButton = new() { Root = "custom-msg-btn" } })" />
+                </BitCard>
+            </div>
+        </ExamplePreview>
+    </ComponentExampleBox>
+</ComponentDemo>

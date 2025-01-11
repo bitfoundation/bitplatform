@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The BitHeader component is used to display a title (and possibly other components) in a colored bar at the top of a site or application.
+/// </summary>
 public partial class BitHeader : BitComponentBase
 {
     /// <summary>

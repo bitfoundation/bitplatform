@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// A reference to the <see cref="BitModal"/> instance that is shown using the <see cref="BitModalService"/>.
+/// </summary>
 public class BitModalReference
 {
     private readonly BitModalService _modalService;

@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// SnackBars provide brief notifications. The component is also known as a toast.
+/// </summary>
 public partial class BitSnackBar : BitComponentBase
 {
     private List<BitSnackBarItem> _items = [];

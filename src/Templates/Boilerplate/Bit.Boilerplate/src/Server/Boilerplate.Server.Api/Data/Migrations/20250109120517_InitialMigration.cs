@@ -336,9 +336,21 @@ public partial class InitialMigration : Migration
             });
 
         migrationBuilder.CreateIndex(
+            name: "IX_Categories_Name",
+            table: "Categories",
+            column: "Name",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
             name: "IX_Products_CategoryId",
             table: "Products",
             column: "CategoryId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Products_Name",
+            table: "Products",
+            column: "Name",
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_PushNotificationSubscriptions_UserSessionId",

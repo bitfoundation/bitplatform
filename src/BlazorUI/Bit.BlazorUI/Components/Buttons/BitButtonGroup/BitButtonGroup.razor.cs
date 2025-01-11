@@ -2,6 +2,9 @@
 
 namespace Bit.BlazorUI;
 
+/// <summary>
+/// The ButtonGroup component can be used to group related buttons.
+/// </summary>
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
     private TItem? _toggleItem;

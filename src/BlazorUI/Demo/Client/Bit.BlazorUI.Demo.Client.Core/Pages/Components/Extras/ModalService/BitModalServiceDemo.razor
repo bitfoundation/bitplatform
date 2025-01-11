@@ -1,7 +1,5 @@
 @page "/components/modalservice"
 
-@inherits AppComponentBase
-
 <PageOutlet Url="components/modalservice"
             Title="ModalService"
             Description="modalservice component of the bit BlazorUI components" />
@@ -14,7 +12,7 @@
         <ExamplePreview>
             <BitButton OnClick="ShowModal">Show</BitButton>
 
-            <BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true, Blocking = true })" />
+            @* <BitModalContainer ModalParameters="@(new() { AutoToggleScroll = true, Blocking = true })" /> *@
         </ExamplePreview>
     </ComponentExampleBox>
 </ComponentDemo>

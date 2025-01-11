@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences.
+/// </summary>
 public partial class BitPanel : BitComponentBase, IAsyncDisposable
 {
     private int _offsetTop;

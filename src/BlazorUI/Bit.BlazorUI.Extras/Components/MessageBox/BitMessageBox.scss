@@ -1,0 +1,58 @@
+﻿@import "../../Styles/extra-variables.scss";
+@import "../../../Bit.BlazorUI/Styles/functions.scss";
+@import "../../../Bit.BlazorUI/Styles/media-queries.scss";
+
+.bit-msb {
+    padding: spacing(2);
+    min-width: spacing(40);
+    max-height: $bit-env-height-available;
+
+    @include lt-md {
+        min-width: unset;
+    }
+}
+
+.bit-msb-con {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: spacing(2);
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    max-height: calc(#{$bit-env-height-available} - #{spacing(6)});
+}
+
+.bit-msb-hdr {
+    width: 100%;
+    display: flex;
+    gap: spacing(2);
+    flex-direction: row;
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.bit-msb-bdy {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    overflow: auto;
+    color: $clr-ter;
+    line-height: 1.5;
+    white-space: pre;
+    font-weight: 400;
+    font-size: spacing(2);
+    letter-spacing: 0.01em;
+}
+
+.bit-msb-ftr {
+    width: 100%;
+    display: flex;
+    gap: spacing(2);
+    align-items: center;
+    box-sizing: border-box;
+    flex-direction: column;
+    justify-content: center;
+}

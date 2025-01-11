@@ -1,5 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The purpose of the BitSpacer is to generate space between other components. You can either create a space with a set width (in number of pixels) or create a space with a flexible width.
+/// </summary>
 public partial class BitSpacer : BitComponentBase
 {
     /// <summary>

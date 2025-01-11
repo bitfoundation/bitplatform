@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// A component that wraps the HTML file input element and uploads them.
+/// BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by specifying the URL they have been uploaded.
 /// </summary>
 public partial class BitFileUpload : BitComponentBase, IAsyncDisposable
 {
