@@ -1,17 +1,3 @@
-declare type PdfJsLib = {
-    getDocument: (src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters) => PDFDocumentLoadingTask;
-    GlobalWorkerOptions: GlobalWorkerOptions
-}
-
-declare type BitPdfReaderConfig = {
-    id: string;
-    url: string;
-    scale: number;
-    autoScale: boolean;
-    pdfDoc?: PDFDocumentProxy;
-    isRendering: boolean[];
-}
-
 namespace BitBlazorUI {
     export class PdfReader {
         private static _initPromise?: Promise<unknown>;
@@ -116,5 +102,27 @@ namespace BitBlazorUI {
                 config.isRendering[pageNumber] = false;
             }
         }
+
+        public static dispose(id: string) {
+            const config = PdfReader._bitPdfReaders.get(id);
+            if (!config) return;
+
+            config.pdfDoc?.destroy();
+            PdfReader._bitPdfReaders.delete(id);
+        }
     }
+}
+
+declare type PdfJsLib = {
+    getDocument: (src?: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters) => PDFDocumentLoadingTask;
+    GlobalWorkerOptions: GlobalWorkerOptions
+}
+
+declare type BitPdfReaderConfig = {
+    id: string;
+    url: string;
+    scale: number;
+    autoScale: boolean;
+    pdfDoc?: PDFDocumentProxy;
+    isRendering: boolean[];
 }

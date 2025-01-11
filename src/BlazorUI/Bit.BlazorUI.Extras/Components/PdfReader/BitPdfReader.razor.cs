@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world.
 /// </summary>
-public partial class BitPdfReader
+public partial class BitPdfReader : IAsyncDisposable
 {
     private bool _allPageRendered;
     private int _numberOfPages = 1;
@@ -36,7 +36,7 @@ public partial class BitPdfReader
     /// <summary>
     /// The configuration of the pdf reader (<see cref="BitPdfReaderConfig"/>).
     /// </summary>
-    [Parameter] public BitPdfReaderConfig Config { get; set; }
+    [Parameter] public BitPdfReaderConfig Config { get; set; } = new();
 
     /// <summary>
     /// Renders the pages horizontally.
@@ -67,6 +67,7 @@ public partial class BitPdfReader
     /// The CSS style of the root element.
     /// </summary>
     [Parameter] public string? Style { get; set; }
+
 
 
     /// <summary>
@@ -174,9 +175,9 @@ public partial class BitPdfReader
                 "_content/Bit.BlazorUI.Extras/pdf.js/pdfjs-4.7.76-worker.js"
             ];
 
-            await _js.BitPdfReaderInitPdfJs(scripts);
+            await _js.BitPdfReaderInit(scripts);
 
-            _numberOfPages = await _js.BitPdfReaderSetupPdfDoc(Config);
+            _numberOfPages = await _js.BitPdfReaderSetup(Config);
 
             await OnPdfLoaded.InvokeAsync();
 
@@ -242,5 +243,12 @@ public partial class BitPdfReader
         await Task.WhenAll(tasks);
 
         await OnPdfPageRendered.InvokeAsync();
+    }
+
+
+
+    public async ValueTask DisposeAsync()
+    {
+        await _js.BitPdfReaderDispose(Config.Id);
     }
 }
