@@ -36,17 +36,17 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                if (orientation === BitSwipeOrientation.None) {
-                    if (diffX !== 0 && diffY === 0) {
-                        orientation = BitSwipeOrientation.Horizontal;
-                    }
-
-                    if (diffX === 0 && diffY !== 0) {
-                        orientation = BitSwipeOrientation.Vertical;
-                    }
-                }
-
                 if (e.cancelable) {
+                    if (orientation === BitSwipeOrientation.None) {
+                        if (diffX !== 0 && diffY === 0) {
+                            orientation = BitSwipeOrientation.Horizontal;
+                        }
+
+                        if (diffX === 0 && diffY !== 0) {
+                            orientation = BitSwipeOrientation.Vertical;
+                        }
+                    }
+
                     if (lockOrientation === BitSwipeOrientation.Horizontal) {
                         if (orientation === BitSwipeOrientation.Horizontal && Math.abs(diffX) > threshold) {
                             e.preventDefault();
@@ -94,6 +94,7 @@
                 dotnetObj.invokeMethodAsync('OnEnd', startX, startY, diffX, diffY);
                 startX = startY = -1;
                 diffX = diffY = 0;
+                orientation = BitSwipeOrientation.None;
             }
 
             if (isTouchDevice) {
