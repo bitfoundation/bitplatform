@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The lock orientation of the swipte trap component.
+/// The lock orientation of the swipe trap component.
 /// </summary>
 public enum BitSwipeOrientation
 {
@@ -11,12 +11,12 @@ public enum BitSwipeOrientation
     None,
 
     /// <summary>
-    /// Horizontal orientation lock of traping the swipe action.
+    /// Horizontal orientation lock of trapping the swipe action.
     /// </summary>
     Horizontal,
 
     /// <summary>
-    /// Vertical orientation lock of traping the swipe action.
+    /// Vertical orientation lock of trapping the swipe action.
     /// </summary>
     Vertical
 }
