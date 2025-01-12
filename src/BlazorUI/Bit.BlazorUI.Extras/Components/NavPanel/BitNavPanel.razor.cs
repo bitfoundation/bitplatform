@@ -194,22 +194,12 @@ public partial class BitNavPanel<TItem> : BitComponentBase, IDisposable where TI
         _filteredNavItems = [.. mainItems, .. subItems];
     }
 
-    private decimal _oldDiffY = 0;
     private void HandleOnSwipeMove(BitSwipeTrapEventArgs args)
     {
         if (IsOpen is false) return;
 
-        if (Math.Abs(args.DiffX) > Math.Abs(args.DiffY))
-        {
-            diffXPanel = args.DiffX;
-            StateHasChanged();
-        }
-        else
-        {
-            var diff = args.DiffY - _oldDiffY;
-            //_js.BitExtrasScrollBy(RootElement, 0, diff > 0 ? -20 : 20);
-            _oldDiffY = args.DiffY;
-        }
+        diffXPanel = args.DiffX;
+        StateHasChanged();
 
     }
     private void HandleOnSwipeEnd(BitSwipeTrapEventArgs args)
