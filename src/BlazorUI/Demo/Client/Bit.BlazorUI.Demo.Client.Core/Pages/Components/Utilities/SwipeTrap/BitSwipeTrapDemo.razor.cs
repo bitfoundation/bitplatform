@@ -16,7 +16,7 @@ public partial class BitSwipeTrapDemo
             Name = "LockOrientation",
             Type = "BitSwipeOrientation?",
             DefaultValue = "null",
-            Description = "Specifies the lock direction in which the swipe trap allows to trap the swipe actions."
+            Description = "Specifies the lock direction in which the swipe trap allows to trap the swipe actions.",
             LinkType = LinkType.Link,
             Href = "#swipe-orientation",
         },
