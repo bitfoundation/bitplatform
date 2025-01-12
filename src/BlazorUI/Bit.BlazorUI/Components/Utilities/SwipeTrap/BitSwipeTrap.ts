@@ -8,6 +8,7 @@
             trigger: number,
             threshold: number,
             throttle: number,
+            lockOrientation: BitSwipeOrientation,
             dotnetObj: DotNetObject) {
             const bcr = element.getBoundingClientRect();
 
@@ -15,6 +16,7 @@
             let diffY = 0;
             let startX = -1;
             let startY = -1;
+            let orientation = BitSwipeOrientation.None;
             const isTouchDevice = Utils.isTouchDevice();
             const throttledMove = Utils.throttle((sx: number, sy: number, dx: number, dy: number) => dotnetObj.invokeMethodAsync('OnMove', sx, sy, dx, dy), throttle);
 
@@ -34,9 +36,33 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                if ((Math.abs(diffX) > threshold || Math.abs(diffY) > threshold) && e.cancelable) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                if (orientation === BitSwipeOrientation.None) {
+                    if (diffX !== 0 && diffY === 0) {
+                        orientation = BitSwipeOrientation.Horizontal;
+                    }
+
+                    if (diffX === 0 && diffY !== 0) {
+                        orientation = BitSwipeOrientation.Vertical;
+                    }
+                }
+
+                if (e.cancelable) {
+                    if (lockOrientation === BitSwipeOrientation.Horizontal) {
+                        if (orientation === BitSwipeOrientation.Horizontal && Math.abs(diffX) > threshold) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }
+                    else if (lockOrientation === BitSwipeOrientation.Vertical) {
+                        if (orientation === BitSwipeOrientation.Vertical && Math.abs(diffY) > threshold) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }
+                    else if ((Math.abs(diffX) > threshold || Math.abs(diffY) > threshold)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
                 }
 
                 throttledMove(startX, startY, diffX, diffY);
@@ -59,6 +85,7 @@
                 } finally {
                     await dotnetObj.invokeMethodAsync('OnEnd', sX, sY, diffX, diffY);
                     diffX = diffY = 0;
+                    orientation = BitSwipeOrientation.None;
                 }
             };
 
@@ -130,4 +157,11 @@
             this.dotnetObj.dispose();
         }
     }
+
+    enum BitSwipeOrientation {
+        None,
+        Horizontal,
+        Vertical
+    }
+
 }

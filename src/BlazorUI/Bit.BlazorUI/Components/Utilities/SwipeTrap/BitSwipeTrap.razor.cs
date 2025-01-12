@@ -21,6 +21,11 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Specifies the lock direction in which the swipe trap allows to trap the swipe actions.
+    /// </summary>
+    [Parameter] public BitSwipeOrientation? LockOrientation { get; set; }
+
+    /// <summary>
     /// The event callback for when the swipe action starts on the container of the swipe trap.
     /// </summary>
     [Parameter] public EventCallback<BitSwipeTrapEventArgs> OnStart { get; set; }
@@ -96,7 +101,14 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(
+                UniqueId, 
+                RootElement, 
+                Trigger ?? 0.25m, 
+                Threshold ?? 0, 
+                Throttle ?? 0, 
+                LockOrientation ?? BitSwipeOrientation.None, 
+                dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
