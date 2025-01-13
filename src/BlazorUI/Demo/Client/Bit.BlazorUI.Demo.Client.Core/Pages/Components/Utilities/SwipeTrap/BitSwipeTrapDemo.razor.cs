@@ -13,15 +13,6 @@ public partial class BitSwipeTrapDemo
         },
         new()
         {
-            Name = "LockOrientation",
-            Type = "BitSwipeOrientation?",
-            DefaultValue = "null",
-            Description = "Specifies the lock direction in which the swipe trap allows to trap the swipe actions.",
-            LinkType = LinkType.Link,
-            Href = "#swipe-orientation",
-        },
-        new()
-        {
             Name = "OnStart",
             Type = "EventCallback<BitSwipeTrapEventArgs>",
             DefaultValue = "",
@@ -55,6 +46,15 @@ public partial class BitSwipeTrapDemo
             Description = "The event callback for when the swipe action triggers based on the Trigger constraint.",
             LinkType = LinkType.Link,
             Href = "#swipetrap-trigger-args",
+        },
+        new()
+        {
+            Name = "OrientationLock",
+            Type = "BitSwipeOrientation?",
+            DefaultValue = "null",
+            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.",
+            LinkType = LinkType.Link,
+            Href = "#swipe-orientation",
         },
         new()
         {
