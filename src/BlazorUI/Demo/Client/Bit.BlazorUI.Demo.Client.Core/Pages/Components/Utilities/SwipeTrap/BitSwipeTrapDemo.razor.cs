@@ -49,6 +49,15 @@ public partial class BitSwipeTrapDemo
         },
         new()
         {
+            Name = "OrientationLock",
+            Type = "BitSwipeOrientation?",
+            DefaultValue = "null",
+            Description = "Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.",
+            LinkType = LinkType.Link,
+            Href = "#swipe-orientation",
+        },
+        new()
+        {
             Name = "Threshold",
             Type = "decimal?",
             DefaultValue = "null",
@@ -146,6 +155,33 @@ public partial class BitSwipeTrapDemo
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
+        new()
+        {
+            Id = "swipe-orientation",
+            Name = "BitSwipeOrientation",
+            Description = "The lock orientation of the swipe trap component.",
+            Items =
+            [
+                new()
+                {
+                    Name = "None",
+                    Value = "0",
+                    Description = "Not orientation lock for swipe trap."
+                },
+                new()
+                {
+                    Name = "Horizontal",
+                    Value = "1",
+                    Description = "Horizontal orientation lock of trapping the swipe action."
+                },
+                new()
+                {
+                    Name = "Vertical",
+                    Value = "2",
+                    Description = "Vertical orientation lock of trapping the swipe action."
+                },
+            ]
+        },
         new()
         {
             Id = "swipe-direction-enum",

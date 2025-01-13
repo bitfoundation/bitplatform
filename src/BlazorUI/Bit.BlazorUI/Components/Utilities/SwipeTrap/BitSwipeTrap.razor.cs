@@ -41,6 +41,11 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<BitSwipeTrapTriggerArgs> OnTrigger { get; set; }
 
     /// <summary>
+    /// Specifies the orientation lock in which the swipe trap allows to trap the swipe actions.
+    /// </summary>
+    [Parameter] public BitSwipeOrientation? OrientationLock { get; set; }
+
+    /// <summary>
     /// The threshold in pixel for swiping distance that starts the swipe process process which stops the default behavior.
     /// </summary>
     [Parameter] public decimal? Threshold { get; set; }
@@ -96,7 +101,14 @@ public partial class BitSwipeTrap : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipeTrapSetup(UniqueId, RootElement, Trigger ?? 0.25m, Threshold ?? 0, Throttle ?? 0, dotnetObj);
+            await _js.BitSwipeTrapSetup(
+                UniqueId, 
+                RootElement, 
+                Trigger ?? 0.25m, 
+                Threshold ?? 0, 
+                Throttle ?? 0, 
+                OrientationLock ?? BitSwipeOrientation.None, 
+                dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
