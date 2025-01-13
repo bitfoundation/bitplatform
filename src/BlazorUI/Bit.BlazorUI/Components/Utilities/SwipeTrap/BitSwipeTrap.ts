@@ -8,7 +8,7 @@
             trigger: number,
             threshold: number,
             throttle: number,
-            lockOrientation: BitSwipeOrientation,
+            orientationLock: BitSwipeOrientation,
             dotnetObj: DotNetObject) {
             const bcr = element.getBoundingClientRect();
 
@@ -50,14 +50,14 @@
                     }
                 }
 
-                if (lockOrientation === BitSwipeOrientation.Horizontal) {
+                if (orientationLock === BitSwipeOrientation.Horizontal) {
                     if (orientation === BitSwipeOrientation.Horizontal) {
                         cancel();
                         diffY = 0;
                     } else {
                         diffX = 0;
                     }
-                } else if (lockOrientation === BitSwipeOrientation.Vertical) {
+                } else if (orientationLock === BitSwipeOrientation.Vertical) {
                     if (orientation === BitSwipeOrientation.Vertical && absY > threshold) {
                         cancel();
                         diffX = 0;

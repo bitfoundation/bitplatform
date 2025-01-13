@@ -8,10 +8,10 @@ internal static class BitSwipeTrapJsRuntimeExtensions
                                                      decimal trigger,
                                                      decimal threshold,
                                                      int throttle,
-                                                     BitSwipeOrientation lockOrientation,
+                                                     BitSwipeOrientation orientationLock,
                                                      DotNetObjectReference<BitSwipeTrap>? dotnetObjectReference)
     {
-        return js.InvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, threshold, throttle, lockOrientation, dotnetObjectReference);
+        return js.InvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, threshold, throttle, orientationLock, dotnetObjectReference);
     }
 
     internal static ValueTask BitSwipeTrapDispose(this IJSRuntime jsRuntime, string id)
