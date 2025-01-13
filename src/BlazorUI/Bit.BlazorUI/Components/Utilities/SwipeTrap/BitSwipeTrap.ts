@@ -36,36 +36,46 @@
                 diffX = getX(e) - startX;
                 diffY = getY(e) - startY;
 
-                if (e.cancelable) {
-                    if (orientation === BitSwipeOrientation.None) {
-                        if (diffX !== 0 && diffY === 0) {
-                            orientation = BitSwipeOrientation.Horizontal;
-                        }
+                const absX = Math.abs(diffX);
+                const absY = Math.abs(diffY);
+                const thresX = absX > threshold;
+                const thresY = absY > threshold;
 
-                        if (diffX === 0 && diffY !== 0) {
-                            orientation = BitSwipeOrientation.Vertical;
-                        }
-                    }
 
-                    if (lockOrientation === BitSwipeOrientation.Horizontal) {
-                        if (orientation === BitSwipeOrientation.Horizontal && Math.abs(diffX) > threshold) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }
+                if (orientation === BitSwipeOrientation.None) {
+                    if (thresX && !thresY) {
+                        orientation = BitSwipeOrientation.Horizontal;
+                    } else if (!thresX && thresY) {
+                        orientation = BitSwipeOrientation.Vertical;
                     }
-                    else if (lockOrientation === BitSwipeOrientation.Vertical) {
-                        if (orientation === BitSwipeOrientation.Vertical && Math.abs(diffY) > threshold) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }
+                }
+
+                if (lockOrientation === BitSwipeOrientation.Horizontal) {
+                    if (orientation === BitSwipeOrientation.Horizontal) {
+                        cancel();
+                        diffY = 0;
+                    } else {
+                        diffX = 0;
                     }
-                    else if ((Math.abs(diffX) > threshold || Math.abs(diffY) > threshold)) {
+                } else if (lockOrientation === BitSwipeOrientation.Vertical) {
+                    if (orientation === BitSwipeOrientation.Vertical && absY > threshold) {
+                        cancel();
+                        diffX = 0;
+                    } else {
+                        diffY = 0;
+                    }
+                } else if ((thresX || thresY)) {
+                    cancel();
+                }
+
+                throttledMove(startX, startY, diffX, diffY);
+
+                function cancel() {
+                    if (e.cancelable) {
                         e.preventDefault();
                         e.stopPropagation();
                     }
                 }
-
-                throttledMove(startX, startY, diffX, diffY);
             };
 
             const onEnd = async (e: TouchEvent | PointerEvent): Promise<void> => {
