@@ -122,7 +122,7 @@ public partial class SignInPage : IDisposable
 
             CleanModel();
 
-            if ((validatorRef?.EditContext.Validate() ?? false) is false) return;
+            if (validatorRef?.EditContext.Validate() is false) return;
 
             model.DeviceInfo = telemetryContext.Platform;
 
