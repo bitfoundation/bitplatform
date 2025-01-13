@@ -212,13 +212,16 @@ public partial class SignInPage : IDisposable
         if (currentSignInPanelTab is SignInPanelTab.Email)
         {
             model.PhoneNumber = null;
-            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
-        }
+            if (validatorRef is null) return;
 
-        if (currentSignInPanelTab is SignInPanelTab.Phone)
+            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.PhoneNumber)));
+        }
+        else
         {
             model.Email = null;
-            validatorRef?.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
+            if (validatorRef is null) return;
+
+            validatorRef.EditContext.NotifyFieldChanged(validatorRef.EditContext.Field(nameof(SignInRequestDto.Email)));
         }
     }
 
