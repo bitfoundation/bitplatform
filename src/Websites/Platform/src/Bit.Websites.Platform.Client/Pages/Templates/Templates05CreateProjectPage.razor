@@ -111,14 +111,27 @@
         <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
-                <BitDropdown Placeholder="Choose sample" Items="@sample.Items" @bind-Value="@sample.Value" />
+                <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
             </div>
             <br />
             <CodeBox>
                 @GetSampleCommand()
             </CodeBox>
             Use this parameter to initialize the project with a sample pages.
-            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://todo.bitplatform.dev/" target="_blank">Todo</a>."
+            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank">Todo</a>.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Module</BitText>
+                <BitDropdown Placeholder="Choose module" Items="@module.Items" @bind-Value="@module.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetModuleCommand()
+            </CodeBox>
+            Use this parameter to initialize the project with a module.
+            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank">Sales</a>.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
