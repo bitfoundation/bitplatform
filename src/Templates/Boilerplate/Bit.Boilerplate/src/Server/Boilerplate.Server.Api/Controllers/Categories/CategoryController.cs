@@ -10,7 +10,7 @@ using Boilerplate.Shared.Controllers.Categories;
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
 [ApiController, Route("api/[controller]/[action]")]
-//#if(module == "Admin)
+//#if(module == "Admin")
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 //#endif
 public partial class CategoryController : AppControllerBase, ICategoryController
@@ -50,7 +50,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         return dto;
     }
 
-    //#if(module == "Admin)
+    //#if(module == "Admin")
     [HttpPost]
     public async Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
     {

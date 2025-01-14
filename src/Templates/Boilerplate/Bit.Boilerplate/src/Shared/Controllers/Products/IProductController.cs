@@ -4,7 +4,7 @@ using Boilerplate.Shared.Dtos.Products;
 namespace Boilerplate.Shared.Controllers.Products;
 
 [Route("api/[controller]/[action]/")]
-//#if(module == "Admin)
+//#if(module == "Admin")
 [AuthorizedApi]
 //#endif
 public interface IProductController : IAppController
@@ -18,7 +18,7 @@ public interface IProductController : IAppController
     [HttpGet]
     Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 
-    //#if(module == "Admin)
+    //#if(module == "Admin")
     [HttpPost]
     Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken);
 

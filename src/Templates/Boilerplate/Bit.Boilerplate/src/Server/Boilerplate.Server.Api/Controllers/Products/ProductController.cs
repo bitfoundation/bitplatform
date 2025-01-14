@@ -10,7 +10,7 @@ using Boilerplate.Shared.Controllers.Products;
 namespace Boilerplate.Server.Api.Controllers.Products;
 
 [ApiController, Route("api/[controller]/[action]")]
-//#if(module == "Admin)
+//#if(module == "Admin")
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
 //endif
 public partial class ProductController : AppControllerBase, IProductController
@@ -48,7 +48,7 @@ public partial class ProductController : AppControllerBase, IProductController
         return dto;
     }
 
-    //#if(module == "Admin)
+    //#if(module == "Admin")
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {

@@ -4,7 +4,7 @@ using Boilerplate.Shared.Dtos.Categories;
 namespace Boilerplate.Shared.Controllers.Categories;
 
 [Route("api/[controller]/[action]/")]
-//#if(module == "Admin)
+//#if(module == "Admin")
 [AuthorizedApi]
 //#endif
 public interface ICategoryController : IAppController
@@ -18,7 +18,7 @@ public interface ICategoryController : IAppController
     [HttpGet]
     Task<List<CategoryDto>> Get(CancellationToken cancellationToken) => default!;
 
-    //#if(module == "Admin)
+    //#if(module == "Admin")
     [HttpPost]
     Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken);
 

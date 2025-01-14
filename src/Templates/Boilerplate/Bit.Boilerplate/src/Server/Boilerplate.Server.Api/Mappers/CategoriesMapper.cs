@@ -20,7 +20,7 @@ public static partial class CategoriesMapper
     // Nevertheless, we employ MapProperty in this instance to illustrate its usage
     [MapProperty(nameof(@Category.Products.Count), nameof(@CategoryDto.ProductsCount))]
     public static partial CategoryDto Map(this Category source);
-    //#if(module == "Admin)
+    //#if(module == "Admin")
     public static partial Category Map(this CategoryDto source);
     public static partial void Patch(this CategoryDto source, Category dest);
     //#endif

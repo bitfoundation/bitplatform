@@ -145,7 +145,7 @@ jobs:
     - name: Test PostgreSQL, MySql, Other database options
       continue-on-error: true
       run: |
-        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0 --signalR
+        dotnet new bit-bp --name TestPostgreSQL --database PostgreSQL --framework net8.0 --module Sales --signalR
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Web/
         dotnet build
         cd ../../../../
