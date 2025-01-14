@@ -1,6 +1,12 @@
 ﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
 
-<div style="@Styles?.Root" class="bit-msb @Classes?.Root">
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.Container" class="bit-msb-con @Classes?.Container">
         <div style="@Styles?.Header" class="bit-msb-hdr @Classes?.Header">
             <BitText Typography="BitTypography.H5" 
