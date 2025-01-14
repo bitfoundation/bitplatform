@@ -3,9 +3,11 @@
 using Boilerplate.Shared.Dtos.Todo;
 //#endif
 //#if (module == "Admin")
-using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Dtos.Dashboard;
+//#endif
+//#if (module == "Admin" || module == "Sales")
 using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Dtos.Categories;
 //#endif
 //#if (notification == true)
 using Boilerplate.Shared.Dtos.PushNotification;
@@ -32,16 +34,18 @@ namespace Boilerplate.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
 //#endif
+//#if (module == "Admin" || module == "Sales")
+[JsonSerializable(typeof(CategoryDto))]
+[JsonSerializable(typeof(List<CategoryDto>))]
+[JsonSerializable(typeof(PagedResult<CategoryDto>))]
+[JsonSerializable(typeof(ProductDto))]
+[JsonSerializable(typeof(List<ProductDto>))]
+[JsonSerializable(typeof(PagedResult<ProductDto>))]
+//#endif
 //#if (module == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
-[JsonSerializable(typeof(ProductDto))]
-[JsonSerializable(typeof(PagedResult<ProductDto>))]
-[JsonSerializable(typeof(List<ProductDto>))]
-[JsonSerializable(typeof(CategoryDto))]
-[JsonSerializable(typeof(PagedResult<CategoryDto>))]
-[JsonSerializable(typeof(List<CategoryDto>))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {
