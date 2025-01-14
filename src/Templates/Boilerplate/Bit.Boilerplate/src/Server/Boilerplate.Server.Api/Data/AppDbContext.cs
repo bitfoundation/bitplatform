@@ -1,8 +1,9 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Admin")
+//#if (module == "Admin")
 using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Server.Api.Models.Products;
-//#elif (sample == "Todo")
+//#endif
+//#if (sample == true)
 using Boilerplate.Server.Api.Models.Todo;
 //#endif
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -22,9 +23,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<UserSession> UserSessions { get; set; } = default!;
 
-    //#if (sample == "Todo")
+    //#if (sample == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin")
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
     //#endif

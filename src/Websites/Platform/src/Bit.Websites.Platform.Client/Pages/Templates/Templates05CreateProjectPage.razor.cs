@@ -7,6 +7,7 @@ public partial class Templates05CreateProjectPage
     private string name = "MyFirstProject";
 
     private Parameter<bool> windows = new() { Value = true, Default = true };
+    private Parameter<bool> sample = new() { Value = false, Default = false };
     private Parameter<bool> sentry = new() { Value = false, Default = false };
     private Parameter<bool> offlineDb = new() { Value = false, Default = false };
     private Parameter<bool> notification = new() { Value = false, Default = false };
@@ -47,7 +48,7 @@ public partial class Templates05CreateProjectPage
         ]
     };
 
-    private Parameter<string> sample = new()
+    private Parameter<string> module = new()
     {
         Value = "None",
         Default = "None",
@@ -55,7 +56,7 @@ public partial class Templates05CreateProjectPage
         [
             new() { Text = "None", Value = "None" },
             new() { Text = "Admin", Value = "Admin" },
-            new() { Text = "Todo", Value = "Todo" },
+            new() { Text = "Sales", Value = "Sales" },
         ]
     };
 
@@ -115,14 +116,19 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetPipelineCommand());
         }
 
-        if (sample.IsModified)
+        if (module.IsModified)
         {
-            finalCommand.Append(GetSampleCommand());
+            finalCommand.Append(GetModuleCommand());
         }
 
         if (windows.IsModified)
         {
             finalCommand.Append(GetWindowsCommand());
+        }
+
+        if (sample.IsModified)
+        {
+            finalCommand.Append(GetSampleCommand());
         }
 
         if (sentry.IsModified)
@@ -188,14 +194,19 @@ public partial class Templates05CreateProjectPage
         return $"--pipeline {pipeline.Value} ";
     }
 
-    private string GetSampleCommand()
+    private string GetModuleCommand()
     {
-        return $"--sample {sample.Value} ";
+        return $"--module {module.Value} ";
     }
 
     private string GetWindowsCommand()
     {
         return $"--windows {windows.Value.ToString().ToLowerInvariant()} ";
+    }
+
+    private string GetSampleCommand()
+    {
+        return $"--sample {sample.Value.ToString().ToLowerInvariant()} ";
     }
 
     private string GetSentryCommand()

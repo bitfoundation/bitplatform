@@ -1023,7 +1023,7 @@
     <data name="NothingFound" xml:space="preserve">
     <value>Nothing found!</value>
   </data>
-    <!--#if (sample == "Todo") -->
+    <!--#if (sample == true) -->
     <data name="TodoAddPlaceholder" xml:space="preserve">
     <value>Add a todo</value>
   </data>
@@ -1045,7 +1045,8 @@
     <data name="DeleteTodoItem" xml:space="preserve">
     <value>Delete todo item</value>
   </data>
-    <!--#elif (sample == "Admin") -->
+    <!--#endif -->
+    <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Admin panel</value>
   </data>

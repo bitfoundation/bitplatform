@@ -208,14 +208,15 @@
         "options": { "sourceMap": false }
     },
     //#endif
-    //#if (sample == "Todo")
+    //#if (sample == true)
     {
         "outputFile": "Components/Pages/Authorized/Todo/TodoPage.razor.css",
         "inputFile": "Components/Pages/Authorized/Todo/TodoPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
-    //#elif (sample == "Admin")
+    //#endif
+    //#if (module == "Admin")
     {
         "outputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.css",
         "inputFile": "Components/Pages/Authorized/Categories/AddOrEditCategoryPage.razor.scss",

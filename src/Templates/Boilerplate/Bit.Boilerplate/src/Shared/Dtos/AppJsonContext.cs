@@ -1,7 +1,8 @@
 ﻿//+:cnd:noEmit
-//#if (sample == "Todo")
+//#if (sample == true)
 using Boilerplate.Shared.Dtos.Todo;
-//#elif (sample == "Admin")
+//#endif
+//#if (module == "Admin")
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Shared.Dtos.Dashboard;
 using Boilerplate.Shared.Dtos.Products;
@@ -26,11 +27,12 @@ namespace Boilerplate.Shared.Dtos;
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
-//#if (sample == "Todo")
+//#if (sample == true)
 [JsonSerializable(typeof(TodoItemDto))]
 [JsonSerializable(typeof(PagedResult<TodoItemDto>))]
 [JsonSerializable(typeof(List<TodoItemDto>))]
-//#elif (sample == "Admin")
+//#endif
+//#if (module == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
 [JsonSerializable(typeof(List<ProductPercentagePerCategoryResponseDto>))]
