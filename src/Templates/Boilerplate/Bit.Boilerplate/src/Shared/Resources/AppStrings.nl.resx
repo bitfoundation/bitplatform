@@ -1046,6 +1046,14 @@
     <value>Takenitem verwijderen</value>
   </data>
     <!--#endif -->
+    <!--#if (module == "Admin" || module == "Sales") -->
+    <data name="CategoryCouldNotBeFound" xml:space="preserve">
+    <value>Categorie-entiteit kan niet worden gevonden</value>
+  </data>
+    <data name="ProductCouldNotBeFound" xml:space="preserve">
+    <value>Productentiteit kan niet worden gevonden</value>
+  </data>
+    <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
     <value>Beheerderspaneel</value>
@@ -1140,9 +1148,6 @@
     <data name="Products" xml:space="preserve">
     <value>Producten</value>
   </data>
-    <data name="ProductCouldNotBeFound" xml:space="preserve">
-    <value>Productentiteit kan niet worden gevonden</value>
-  </data>
     <data name="CategoryNotEmpty" xml:space="preserve">
     <value>Deze categorie bevat enkele producten, dus u kunt deze niet verwijderen</value>
   </data>
@@ -1157,9 +1162,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>Product verwijderen</value>
-  </data>
-    <data name="CategoryCouldNotBeFound" xml:space="preserve">
-    <value>Categorie-entiteit kan niet worden gevonden</value>
   </data>
     <data name="Category" xml:space="preserve">
     <value>Categorie</value>

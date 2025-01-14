@@ -26,7 +26,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#if (sample == true)
     public DbSet<TodoItem> TodoItems { get; set; } = default!;
     //#endif
-    //#if (module == "Admin")
+    //#if (module == "Admin" || module == "Sales)
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<Product> Products { get; set; } = default!;
     //#endif

@@ -12,7 +12,7 @@ namespace Boilerplate.Server.Api.Controllers.Products;
 [ApiController, Route("api/[controller]/[action]")]
 //#if(module == "Admin")
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-//endif
+//#endif
 public partial class ProductController : AppControllerBase, IProductController
 {
     //#if (signalR == true && module == "Admin")

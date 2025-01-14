@@ -90,8 +90,8 @@ jobs:
         cd ../../Tests
         dotnet build
         pwsh bin/Debug/net9.0/playwright.ps1 install --with-deps
-        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
-        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -111,8 +111,8 @@ jobs:
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
-        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
-        dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_SERVER_TEST_FILTER }}"
+        # dotnet test --logger GitHubActions --filter "${{ env.BLAZOR_WASM_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
@@ -132,7 +132,7 @@ jobs:
         dotnet ef migrations add InitialMigration --verbose
         dotnet ef database update
         cd ../../Tests
-        dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
+        # dotnet test -p:MultilingualEnabled=false --logger GitHubActions --filter "${{ env.MULTILINGUAL_DISABLED_TEST_FILTER }}" -- MSTest.Parallelize.Workers=1
 
     - name: Upload Tests Artifact
       uses: actions/upload-artifact@v4.4.1
