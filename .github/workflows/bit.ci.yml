@@ -28,7 +28,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
       
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8
@@ -66,7 +66,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
 
     - name: Install wasm and maui
       run:  cd src && dotnet workload install maui-android wasm-tools wasm-tools-net8

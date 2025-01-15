@@ -33,7 +33,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -142,7 +142,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
@@ -185,7 +185,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -241,7 +241,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 

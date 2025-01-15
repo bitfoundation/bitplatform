@@ -37,7 +37,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
         
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
@@ -104,7 +104,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
@@ -146,7 +146,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@v1.2
@@ -200,7 +200,7 @@ jobs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 23
   
     - name: Update appsettings.json api server address
       uses: devops-actions/variable-substitution@v1.2 
