@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Models.Products;
-using Boilerplate.Shared.Dtos.Products;
 using Riok.Mapperly.Abstractions;
+using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Server.Api.Models.Products;
 
 namespace Boilerplate.Server.Api.Mappers;
 
