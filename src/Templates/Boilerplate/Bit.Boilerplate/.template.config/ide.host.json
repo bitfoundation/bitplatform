@@ -30,10 +30,10 @@
             "id": "pipeline"
         },
         {
-            "id": "sample"
+            "id": "module"
         },
         {
-            "id": "module"
+            "id": "sample"
         },
         {
             "id": "signalR"
