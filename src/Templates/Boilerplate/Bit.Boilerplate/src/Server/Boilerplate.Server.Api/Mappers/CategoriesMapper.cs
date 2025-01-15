@@ -1,7 +1,7 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Server.Api.Models.Categories;
-using Boilerplate.Shared.Dtos.Categories;
 using Riok.Mapperly.Abstractions;
+using Boilerplate.Shared.Dtos.Categories;
+using Boilerplate.Server.Api.Models.Categories;
 
 namespace Boilerplate.Server.Api.Mappers;
 
