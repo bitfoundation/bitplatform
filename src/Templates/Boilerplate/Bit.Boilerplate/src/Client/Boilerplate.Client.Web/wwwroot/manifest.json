@@ -34,12 +34,13 @@
             "name": "Terms",
             "url": "/terms"
         },
-        //#if (sample == "Todo")
+        //#if (sample == true)
         {
             "name": "Todo",
             "url": "/todo"
         },
-        //#elif (sample == "Admin")
+        //#endif
+        //#if (module == "Admin")
         {
             "name": "Categories",
             "url": "/categories"

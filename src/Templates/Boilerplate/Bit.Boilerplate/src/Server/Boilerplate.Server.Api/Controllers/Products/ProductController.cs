@@ -9,10 +9,13 @@ using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
-[ApiController, Route("api/[controller]/[action]"), Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+[ApiController, Route("api/[controller]/[action]")]
+//#if(module == "Admin")
+[Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+//#endif
 public partial class ProductController : AppControllerBase, IProductController
 {
-    //#if (signalR == true)
+    //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
@@ -45,6 +48,7 @@ public partial class ProductController : AppControllerBase, IProductController
         return dto;
     }
 
+    //#if(module == "Admin")
     [HttpPost]
     public async Task<ProductDto> Create(ProductDto dto, CancellationToken cancellationToken)
     {
@@ -110,5 +114,6 @@ public partial class ProductController : AppControllerBase, IProductController
             && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken: cancellationToken))
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }
+    //#endif
 }
 

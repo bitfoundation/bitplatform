@@ -11,7 +11,7 @@ public class AuthPolicies
     /// By default, each user is limited to 3 active sessions.
     /// This policy can be disabled or configured to adjust the session limit dynamically, 
     /// such as by reading from application settings, the user's subscription plan, or other criteria.
-    /// Currently, this policy applies only to the Todo and AdminPanel related sample pages. 
+    /// Currently, this policy applies only to the Todo and AdminPanel related pages. 
     /// However, it can be extended to cover additional pages as needed. 
     /// 
     /// Important: Do not apply this policy to the settings page, as users need access to manage and revoke their sessions there.
