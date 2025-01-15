@@ -153,7 +153,7 @@ jobs:
         cd TestMySql/src/Server/TestMySql.Server.Web/
         dotnet build
         cd ../../../../
-        dotnet new bit-bp --name TestOther --database Other --framework net9.0 --sample true --sentry
+        dotnet new bit-bp --name TestOther --database Other --framework net9.0 --sample --sentry
         cd TestOther/src/Server/TestOther.Server.Web/
         dotnet build
 
