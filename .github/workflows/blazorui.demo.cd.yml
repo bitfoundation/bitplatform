@@ -58,6 +58,45 @@ jobs:
         path: ${{env.DOTNET_ROOT}}/server
         include-hidden-files: true # Required for wwwroot/.well-known folder
 
+  deploy_blazor_wasm_standalone:
+    name: build blazor wasm standalone
+    runs-on: ubuntu-24.04
+
+    steps:
+    
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: src/global.json
+
+    - name: Update appsettings.json api server address
+      uses: devops-actions/variable-substitution@v1.2 
+      with:
+        files: 'src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/appsettings.json'
+      env:
+        ApiServerAddress: ${{ env.SERVER_ADDRESS }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 23
+        
+    - name: Install wasm
+      run:  cd src && dotnet workload install wasm-tools
+      
+    - name: Generate CSS/JS files
+      run: dotnet build src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -c Release
+
+    - name: Publish
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Web/Bit.BlazorUI.Demo.Client.Web.csproj -c Release -p:PwaEnabled=true -o ${{env.DOTNET_ROOT}}/client -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"
+
+    - name: Upload to asw
+      run: |
+          npm install -g @azure/static-web-apps-cli
+          swa deploy --deployment-token ${{ secrets.BLAZORUI_ASW_TOKEN }} --env production --app-location ${{env.DOTNET_ROOT}}/client/wwwroot
+
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
