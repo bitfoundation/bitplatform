@@ -1,6 +1,7 @@
-﻿using Boilerplate.Server.Api.Models.Products;
-using Boilerplate.Shared.Dtos.Products;
+﻿//+:cnd:noEmit
 using Riok.Mapperly.Abstractions;
+using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Server.Api.Models.Products;
 
 namespace Boilerplate.Server.Api.Mappers;
 
@@ -19,6 +20,8 @@ public static partial class ProductsMapper
     // Nevertheless, we employ MapProperty in this instance to illustrate its usage
     [MapProperty(nameof(@Product.Category.Name), nameof(@ProductDto.CategoryName))]
     public static partial ProductDto Map(this Product source);
+    //#if(module == "Admin")
     public static partial Product Map(this ProductDto source);
     public static partial void Patch(this ProductDto source, Product dest);
+    //#endif
 }

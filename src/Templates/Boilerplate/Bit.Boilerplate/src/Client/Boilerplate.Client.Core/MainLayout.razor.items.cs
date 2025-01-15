@@ -14,7 +14,7 @@ public partial class MainLayout
                 IconName = BitIconName.Home,
                 Url = Urls.HomePage,
             },
-            //#if (sample == "Admin")
+            //#if (module == "Admin")
             new()
             {
                 Text = localizer[nameof(AppStrings.AdminPanel)],
@@ -38,7 +38,8 @@ public partial class MainLayout
                     }
                 ]
             },
-            //#elif (sample == "Todo")
+            //#endif
+            //#if (sample == true)
             new()
             {
                 Text = localizer[nameof(AppStrings.Todo)],
