@@ -123,22 +123,6 @@
                 }
             ]
         },
-        "captcha": {
-            "displayName": "Captcha",
-            "type": "parameter",
-            "datatype": "choice",
-            "defaultValue": "None",
-            "choices": [
-                {
-                    "choice": "reCaptcha",
-                    "description": "Google reCaptcha"
-                },
-                {
-                    "choice": "None",
-                    "description": "None"
-                }
-            ]
-        },
         "pipeline": {
             "displayName": "CI-CD pipeline",
             "type": "parameter",
@@ -158,13 +142,6 @@
                     "description": "None"
                 }
             ]
-        },
-        "sample": {
-            "displayName": "Sample",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "false",
-            "description": "Add todo page sample."
         },
         "module": {
             "displayName": "Module",
@@ -186,12 +163,21 @@
                 }
             ]
         },
-        "signalR": {
-            "displayName": "Add SignalR?",
+        "captcha": {
+            "displayName": "Captcha",
             "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "false",
-            "description": "Add SignalR sample."
+            "datatype": "choice",
+            "defaultValue": "None",
+            "choices": [
+                {
+                    "choice": "reCaptcha",
+                    "description": "Google reCaptcha"
+                },
+                {
+                    "choice": "None",
+                    "description": "None"
+                }
+            ]
         },
         "notification": {
             "displayName": "Add push notification?",
@@ -200,12 +186,12 @@
             "defaultValue": "false",
             "description": "Add push notification."
         },
-        "offlineDb": {
-            "displayName": "Add Offline db?",
+        "sample": {
+            "displayName": "Sample",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false",
-            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+            "description": "Add todo page sample."
         },
         "windows": {
             "displayName": "Add Windows project?",
@@ -214,17 +200,31 @@
             "defaultValue": "true",
             "description": ".NET desktop app project supporting Windows 7 SP1 and above."
         },
+        "sentry": {
+            "displayName": "Add Sentry logging to project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false"
+        },
         "appInsights": {
             "displayName": "Add Azure application insights to project?",
             "type": "parameter",
             "datatype": "bool",
             "defaultValue": "false"
         },
-        "sentry": {
-            "displayName": "Add Sentry logging to project?",
+        "signalR": {
+            "displayName": "Add SignalR?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "false"
+            "defaultValue": "false",
+            "description": "Add SignalR sample."
+        },
+        "offlineDb": {
+            "displayName": "Add Offline db?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
         },
         "nameToLower": {
             "type": "generated",

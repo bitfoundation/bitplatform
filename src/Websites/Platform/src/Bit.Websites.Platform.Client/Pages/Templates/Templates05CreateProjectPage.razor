@@ -24,7 +24,7 @@
     <BitGrid Columns="2"
              VerticalSpacing="1rem"
              HorizontalSpacing="1rem">
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
                 <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
@@ -37,7 +37,7 @@
             It is required to specify a name for your project.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item">
+        <BitGridItem Class="grid-item md">
             <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>.NET</BitText>
                 <BitDropdown Placeholder="Choose .NET version" Items="@dotnetVersion.Items" @bind-Value="@dotnetVersion.Value" />
@@ -52,29 +52,125 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
-                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
+                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
+                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
             </div>
             <br />
             <CodeBox>
-                @GetCaptchaCommand()
+                @GetDatabaseCommand()
             </CodeBox>
-            <br />
-            <div>
-                @if (captcha.Value == "None")
-                {
+            @switch (database.Value)
+            {
+                case "Sqlite":
                     <div>
-                        By setting this parameter to None, CAPTCHA won't be added to the project.
+                        The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
+                        <br />
+                        <br />
+                        Supported options include SqlServer, PostgreSQL, MySQL and Other.
+                        <br />
+                        <br />
+                        For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
                     </div>
-                }
-                else
-                {
+                    break;
+                case "SqlServer":
                     <div>
-                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
-                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank">Live demo</a>
+                        You can use Sql Server LocalDb 2022 for development purposes.
+                        <br />
+                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
+                        <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
                     </div>
-                }
+                    break;
+                case "PostgreSQL":
+                    <div>
+                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
+                        Alternatively, use the following command:
+                        <br />
+                        <CodeBox>winget install --id=PostgreSQL.PostgreSQL.14</CodeBox>
+                    </div>
+                    break;
+                case "MySQL":
+                    <div>
+                        Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
+                    </div>
+                    break;
+                case "Other":
+                    <div>
+                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
+                    </div>
+                    break;
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
+                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
             </div>
+            <CodeBox>
+                @GetFileStorageCommand()
+            </CodeBox>
+
+            @if (fileStorage.Value == "Local")
+            {
+                <div>
+                    The API project includes an Attachment Controller responsible for handling user images,
+                    including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
+                    <br />
+                    <br />
+                    Local option stores files on local hard drive.
+                </div>
+            }
+            @if (fileStorage.Value == "AzureBlobStorage")
+            {
+                <div>
+                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
+                </div>
+            }
+            @if (fileStorage.Value == "Other")
+            {
+                <div>
+                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+                    <br />
+                    <br />
+                    One noteable implementation is <a href="https://nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
+                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
+                </div>
+            }
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
+                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetApiCommand()
+            </CodeBox>
+            Select the API mode that best aligns with your specific requirements.
+            <br />
+            <br />
+            @if (api.Value == "Integrated")
+            {
+                <div>
+                    Easily debug and deploy Server.Web projects that serves restful API services, SSR, Blazor Server, Blazor Auto and pre-rendering.
+                </div>
+                <br />
+                <div class="api-image-container">
+                    <img class="image" src="images/templates/api-integrated.webp" />
+                </div>
+            }
+            else
+            {
+                <div>
+                    Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
+                </div>
+                <br />
+                <div class="api-image-container">
+                    <img class="image" src="images/templates/api-standalone.webp" />
+                </div>
+            }
+
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -110,19 +206,6 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
-                <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetSampleCommand()
-            </CodeBox>
-            Use this parameter to initialize the project with a sample pages.
-            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank">Todo</a>.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item md">
-            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Module</BitText>
                 <BitDropdown Placeholder="Choose module" Items="@module.Items" @bind-Value="@module.Value" />
             </div>
@@ -132,6 +215,58 @@
             </CodeBox>
             Use this parameter to initialize the project with a module.
             The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank">Sales</a>.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
+                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetCaptchaCommand()
+            </CodeBox>
+            <br />
+            <div>
+                @if (captcha.Value == "None")
+                {
+                    <div>
+                        By setting this parameter to None, CAPTCHA won't be added to the project.
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
+                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank">Live demo</a>
+                    </div>
+                }
+            </div>
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
+                <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetNotificationCommand()
+            </CodeBox>
+            Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
+                <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetSampleCommand()
+            </CodeBox>
+            Use this parameter to initialize the project with a sample pages.
+            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank">Todo</a>.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -193,43 +328,6 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
-                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
-            </div>
-            <CodeBox>
-                @GetFileStorageCommand()
-            </CodeBox>
-
-            @if (fileStorage.Value == "Local")
-            {
-                <div>
-                    The API project includes an Attachment Controller responsible for handling user images,
-                    including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
-                    <br />
-                    <br />
-                    Local option stores files on local hard drive.
-                </div>
-            }
-            @if (fileStorage.Value == "AzureBlobStorage")
-            {
-                <div>
-                    Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
-                </div>
-            }
-            @if (fileStorage.Value == "Other")
-            {
-                <div>
-                    Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
-                    <br />
-                    <br />
-                    One noteable implementation is <a href="https://nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
-                    This allows you to use any file storage solution compatible with S3, such as DigitalOcean Spaces or MinIO.
-                </div>
-            }
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item lg">
-            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
                 <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
             </div>
@@ -244,103 +342,6 @@
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
         </BitGridItem>
 
-        <BitGridItem Class="grid-item lg">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
-                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetDatabaseCommand()
-            </CodeBox>
-            @switch (database.Value)
-            {
-                case "Sqlite":
-                    <div>
-                        The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
-                        <br />
-                        <br />
-                        Supported options include SqlServer, PostgreSQL, MySQL and Other.
-                        <br />
-                        <br />
-                        For the default Sqlite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
-                    </div>
-                    break;
-                case "SqlServer":
-                    <div>
-                        You can use Sql Server LocalDb 2022 for development purposes.
-                        <br />
-                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
-                        <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
-                    </div>
-                    break;
-                case "PostgreSQL":
-                    <div>
-                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
-                        Alternatively, use the following command:
-                        <br />
-                        <CodeBox>winget install --id=PostgreSQL.PostgreSQL.14</CodeBox>
-                    </div>
-                    break;
-                case "MySQL":
-                    <div>
-                        Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
-                    </div>
-                    break;
-                case "Other":
-                    <div>
-                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
-                    </div>
-                    break;
-            }
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item md">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
-                <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetNotificationCommand()
-            </CodeBox>
-            Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
-                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetApiCommand()
-            </CodeBox>
-            Select the API mode that best aligns with your specific requirements.
-            <br />
-            <br />
-            @if (api.Value == "Integrated")
-            {
-                <div>
-                    Easily debug and deploy Server.Web projects that serves restful API services, SSR, Blazor Server, Blazor Auto and pre-rendering.
-                </div>
-                <br />
-                <div class="api-image-container">
-                    <img class="image" src="images/templates/api-integrated.webp" />
-                </div>
-            }
-            else
-            {
-                <div>
-                    Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
-                </div>
-                <br />
-                <div class="api-image-container">
-                    <img class="image" src="images/templates/api-standalone.webp" />
-                </div>
-            }
-
-        </BitGridItem>
     </BitGrid>
     <br />
     <br />
