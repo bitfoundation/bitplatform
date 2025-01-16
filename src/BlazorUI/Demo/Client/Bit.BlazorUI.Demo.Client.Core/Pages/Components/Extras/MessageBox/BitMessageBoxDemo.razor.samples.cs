@@ -76,4 +76,9 @@ private async Task ShowMessageBoxService()
                     Body=""It's a body.""
                     Classes=""@(new() { Root = ""custom-msg"", OkButton = new() { Root = ""custom-msg-btn"" } })"" />
 </BitCard>";
+
+    private readonly string example6RazorCode = @"
+<BitCard Style=""padding:0"">
+    <BitMessageBox Dir=""BitDir.Rtl"" Title=""عنوان پیام"" Body=""متن تست پیام..."" OkText=""تایید"" />
+</BitCard>";
 }
