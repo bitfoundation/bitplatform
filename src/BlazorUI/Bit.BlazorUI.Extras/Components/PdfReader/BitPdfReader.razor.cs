@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// BitPdfReader is a simple pdf renderer utilizing the pdfjs library to bring pdf reading feature into Blazor world.
 /// </summary>
-public partial class BitPdfReader : IAsyncDisposable
+public partial class BitPdfReader : BitComponentBase, IAsyncDisposable
 {
     private bool _allPageRendered;
     private int _numberOfPages = 1;
@@ -27,11 +27,6 @@ public partial class BitPdfReader : IAsyncDisposable
     /// The CSS style of the canvas element(s).
     /// </summary>
     [Parameter] public string? CanvasStyle { get; set; }
-
-    /// <summary>
-    /// The CSS class of the root element.
-    /// </summary>
-    [Parameter] public string? Class { get; set; }
 
     /// <summary>
     /// The configuration of the pdf reader (<see cref="BitPdfReaderConfig"/>).
@@ -63,10 +58,13 @@ public partial class BitPdfReader : IAsyncDisposable
     /// </summary>
     [Parameter] public bool RenderAllPages { get; set; }
 
-    /// <summary>
-    /// The CSS style of the root element.
-    /// </summary>
-    [Parameter] public string? Style { get; set; }
+
+    protected override string RootElementClass => "bit-pdr";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Horizontal ? "bit-pdr-hor" : string.Empty);
+    }
 
 
 

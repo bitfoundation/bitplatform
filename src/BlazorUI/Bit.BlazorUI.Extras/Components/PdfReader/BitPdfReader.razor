@@ -1,6 +1,12 @@
 @namespace Bit.BlazorUI
+@inherits BitComponentBase
 
-<div style="@Style" class="bit-pdr @(Horizontal ? "bit-pdr-hor" : "") @Class">
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
     @if (RenderAllPages)
     {
         for (int i = 0; i < _numberOfPages; i++)
