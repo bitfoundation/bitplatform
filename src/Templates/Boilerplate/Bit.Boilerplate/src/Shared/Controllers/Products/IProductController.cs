@@ -28,4 +28,12 @@ public interface IProductController : IAppController
     [HttpDelete("{id}/{concurrencyStamp}")]
     Task Delete(Guid id, string concurrencyStamp, CancellationToken cancellationToken);
     //#endif
+
+    //#if(module == "Sales")
+    [HttpGet]
+    Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken) => default!;
+
+    [HttpGet("{skip}/{take}")]
+    Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken);
+    //#endif
 }

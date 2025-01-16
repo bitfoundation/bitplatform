@@ -1,4 +1,7 @@
-﻿using Boilerplate.Shared.Controllers.Statistics;
+﻿using Boilerplate.Shared.Controllers.Products;
+using Boilerplate.Shared.Controllers.Statistics;
+using Boilerplate.Shared.Dtos.Identity;
+using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Dtos.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages;
@@ -10,17 +13,24 @@ public partial class HomePage
 
     [CascadingParameter] private BitDir? currentDir { get; set; }
 
+    //#if(module == "Admin")
     [AutoInject] private IStatisticsController statisticsController = default!;
-
     private bool isLoadingGitHub = true;
     private bool isLoadingNuget = true;
     private GitHubStats? gitHubStats;
     private NugetStatsDto? nugetStats;
+    //#endif
+
+    //#if(module == "Sales")
+    [AutoInject] private IProductController productController = default!;
+    private IEnumerable<ProductDto>? products;
+    //#endif
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
+        //#if(module == "Admin")
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
         // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
 
@@ -31,8 +41,16 @@ public partial class HomePage
         // effectively addresses most scenarios.
 
         await Task.WhenAll(LoadNuget(), LoadGitHub());
+        //#endif
+
+        //#if(module == "Sales")
+        products = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/Product/GetHomeCarouselProducts",
+                                                         JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
+                                                         CurrentCancellationToken)))!;
+        //#endif
     }
 
+    //#if(module == "Admin")
     private async Task LoadNuget()
     {
         try
@@ -68,4 +86,12 @@ public partial class HomePage
             await InvokeAsync(StateHasChanged);
         }
     }
+    //#endif
+
+    //#if(module == "Sales")
+    private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        return await productController.GetHomeProducts(request.Skip, 20, CurrentCancellationToken);
+    }
+    //#endif
 }

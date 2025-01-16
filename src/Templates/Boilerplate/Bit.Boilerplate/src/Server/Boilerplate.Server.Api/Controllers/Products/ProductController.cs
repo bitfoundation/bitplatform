@@ -115,5 +115,19 @@ public partial class ProductController : AppControllerBase, IProductController
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }
     //#endif
+
+    //#if(module == "Sales")
+    [AllowAnonymous, HttpGet]
+    public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
+    {
+        return await Get().Take(10).ToListAsync(cancellationToken);
+    }
+
+    [AllowAnonymous, HttpGet("{skip}/{take}")]
+    public async Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken)
+    {
+        return await Get().Skip(skip).Take(take).ToListAsync(cancellationToken);
+    }
+    //#endif
 }
 

@@ -45,6 +45,9 @@ public partial class ServerApiSettings : SharedSettings
     /// </summary>
     public Uri[] AllowedOrigins { get; set; } = [];
 
+    [Required]
+    public string ProductImagesDir { get; set; } = default!;
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();

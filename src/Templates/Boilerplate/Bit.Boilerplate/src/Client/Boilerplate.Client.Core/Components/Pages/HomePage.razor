@@ -1,4 +1,5 @@
-﻿@attribute [Route(Urls.HomePage)]
+﻿@*+:cnd:noEmit*@
+@attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
 @inherits AppPageBase
 
@@ -18,6 +19,34 @@
 
         <br />
 
+        @*#if (module == "Sales")*@
+        @if (products is not null)
+        {
+            <BitCard>
+                <BitCarousel>
+                    @foreach (var product in products)
+                    {
+                        <BitCarouselItem>@product.Name</BitCarouselItem>
+                    }
+                </BitCarousel>
+            </BitCard>
+        }
+
+        <br />
+
+        <BitCard>
+            <BitInfiniteScrolling ItemsProvider="LoadProducts" Style="max-height: 300px">
+                <ItemTemplate Context="product">
+                    <div>@product.Name</div>
+                </ItemTemplate>
+                <LoadingTemplate>
+                    <b>Loading...</b>
+                </LoadingTemplate>
+            </BitInfiniteScrolling>
+        </BitCard>
+        @*#endif*@
+
+        @*#if (module == "Admin")*@
         <CascadingValue Value="BitDir.Ltr">
             <BitCard FullWidth Style="padding:2rem">
                 <BitStack>
@@ -149,5 +178,6 @@
                 </BitStack>
             </BitCard>
         </BitStack>
+        @*#endif*@
     </BitStack>
 </section>
