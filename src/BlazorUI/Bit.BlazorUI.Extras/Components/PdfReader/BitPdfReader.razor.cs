@@ -36,7 +36,8 @@ public partial class BitPdfReader : BitComponentBase, IAsyncDisposable
     /// <summary>
     /// Renders the pages horizontally.
     /// </summary>
-    [Parameter] public bool Horizontal { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Horizontal { get; set; }
 
     /// <summary>
     /// The page number to render initially.
