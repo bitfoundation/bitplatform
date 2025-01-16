@@ -44,7 +44,7 @@
                 <ComponentParametersTable Name="BitInputBase" NameSuffix="public members" Parameters="_inputBasePublicMembers" />
             }
 
-            @if (_extraComponents.Contains(ComponentName) is false)
+            @if (_notInheritedComponents.Contains(ComponentName) is false)
             {
                 <ComponentParametersTable Name="BitComponentBase" Parameters="_componentBaseParameters" />
 
@@ -55,7 +55,7 @@
 
             <ComponentEnumsTable Enums="ComponentSubEnums" />
 
-            @if (_extraComponents.Contains(ComponentName) is false)
+            @if (_notInheritedComponents.Contains(ComponentName) is false)
             {
                 <ComponentEnumsTable Enums="_componentBaseSubEnums" />
             }
