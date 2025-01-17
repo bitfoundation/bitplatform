@@ -32,12 +32,13 @@
                 </BitPivot>
                 <BitSpacer />
                 <BitSearchBox @ref="searchBox"
+                              NoBorder
                               Class="todo-search"
                               OnChange="SearchTodoItems"
                               Immediate DebounceTime="300"
+                              Accent="BitColorKind.Secondary"
                               OnClear="@(() => SearchTodoItems(""))"
-                              Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]"
-                              Styles="@(new() { InputContainer="border:none;background-color:var(--bit-clr-bg-sec)" })" />
+                              Placeholder="@Localizer[nameof(AppStrings.TodoSearchPlaceholder)]" />
                 <BitStack Class="todo-sort" Gap="2px" Horizontal AutoSize>
                     <BitDropdown NoBorder FitWidth
                                  DefaultValue="nameof(AppStrings.Alphabetical)"
