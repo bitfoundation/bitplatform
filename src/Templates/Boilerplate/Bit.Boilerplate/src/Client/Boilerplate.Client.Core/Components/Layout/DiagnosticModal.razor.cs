@@ -28,7 +28,7 @@ public partial class DiagnosticModal : IDisposable
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private ITelemetryContext telemetryContext = default!;
-    [AutoInject] private MessageBoxService messageBoxService = default!;
+    [AutoInject] private BitMessageBoxService messageBoxService = default!;
     [AutoInject] private IDiagnosticsController diagnosticsController = default!;
 
 
@@ -142,7 +142,7 @@ public partial class DiagnosticModal : IDisposable
     private async Task CallDiagnosticsApi()
     {
         var result = await diagnosticsController.PerformDiagnostics(CurrentCancellationToken);
-        messageBoxService.Show(result, "Diagnostics Result");
+        await messageBoxService.Show("Diagnostics Result", result);
     }
 
     private void ResetLogs()

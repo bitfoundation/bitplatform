@@ -37,12 +37,6 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Components/Layout/MessageBox.razor.css",
-        "inputFile": "Components/Layout/MessageBox.razor.scss",
-        "minify": { "enabled": false },
-        "options": { "sourceMap": false }
-    },
-    {
         "outputFile": "Components/Layout/Modal.razor.css",
         "inputFile": "Components/Layout/Modal.razor.scss",
         "minify": { "enabled": false },

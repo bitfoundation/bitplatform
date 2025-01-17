@@ -8,7 +8,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
 {
     [AutoInject] protected readonly SnackBarService SnackBarService = default!;
     [AutoInject] protected readonly ITelemetryContext TelemetryContext = default!;
-    [AutoInject] protected readonly MessageBoxService MessageBoxService = default!;
+    [AutoInject] protected readonly BitMessageBoxService MessageBoxService = default!;
     [AutoInject] protected readonly ILogger<ClientExceptionHandlerBase> Logger = default!;
 
     public void Handle(Exception exception,
@@ -61,7 +61,7 @@ public abstract partial class ClientExceptionHandlerBase : SharedExceptionHandle
         }
         else if (displayKind is ExceptionDisplayKind.Interrupting)
         {
-            MessageBoxService.Show(exceptionMessageToShow, Localizer[nameof(AppStrings.Error)]);
+            _ = MessageBoxService.Show(Localizer[nameof(AppStrings.Error)], exceptionMessageToShow);
         }
         else if (displayKind is ExceptionDisplayKind.None && isDevEnv)
         {
