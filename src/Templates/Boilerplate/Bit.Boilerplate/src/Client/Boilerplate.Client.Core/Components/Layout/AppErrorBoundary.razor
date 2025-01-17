@@ -1,5 +1,17 @@
 ﻿@inherits AppComponentBase
 
-<BitErrorBoundary>
-    <BitButton OnClick="ShowDiagnostic" Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Diagnostic" />
+<BitErrorBoundary @ref="boundaryRef"
+                  HomeUrl="@Urls.HomePage"
+                  ShowException="AppEnvironment.IsDev()"
+                  OnError="e => exceptionHandler.Handle(e)"
+                  HomeText="@localizer[nameof(AppStrings.Home)]"
+                  RefreshText="@localizer[nameof(AppStrings.Refresh)]"
+                  RecoverText="@localizer[nameof(AppStrings.Recover)]"
+                  Title="@localizer[nameof(AppStrings.SomethingWentWrong)]">
+    <AdditionalButtons>
+        <BitButton OnClick="ShowDiagnostic" Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Diagnostic" />
+    </AdditionalButtons>
+    <Body>
+        @ChildContent
+    </Body>
 </BitErrorBoundary>
