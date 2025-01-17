@@ -14,29 +14,19 @@ public partial class AppErrorBoundary
     [AutoInject] private NavigationManager navigationManager = default!;
     [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
-    protected override void OnInitialized()
+    protected override void OnInit()
     {
         showException = AppEnvironment.IsDev();
     }
 
-    protected override async Task OnErrorAsync(Exception exception)
+    private async Task OnErrorAsync(Exception exception)
     {
         exceptionHandler.Handle(exception);
     }
 
-    private void Refresh()
-    {
-        navigationManager.Refresh(forceReload: true);
-    }
-
-    private void GoHome()
-    {
-        navigationManager.NavigateTo(Urls.HomePage, forceLoad: true);
-    }
-
     private async Task ShowDiagnostic()
     {
-        Recover();
+        //Recover();
         await Task.Yield();
         pubSubService.Publish(ClientPubSubMessages.SHOW_DIAGNOSTIC_MODAL);
     }

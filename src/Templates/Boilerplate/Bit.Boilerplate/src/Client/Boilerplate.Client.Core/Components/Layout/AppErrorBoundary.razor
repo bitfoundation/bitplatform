@@ -1,36 +1,5 @@
-﻿@inherits ErrorBoundaryBase
+﻿@inherits AppComponentBase
 
-@if (CurrentException is null)
-{
-    @ChildContent
-}
-else if (ErrorContent is not null)
-{
-    @ErrorContent(CurrentException)
-}
-else
-{
-    <main>
-        <BitStack Alignment="BitAlignment.Center">
-            <BitImage Src="_content/Boilerplate.Client.Core/images/icons/error-triangle.svg" />
-
-            <BitText Color="BitColor.Error" Typography="BitTypography.H3">
-                @localizer[nameof(AppStrings.SomethingWentWrong)]
-            </BitText>
-
-            @if (showException)
-            {
-                <div class="exception">
-                    @CurrentException?.ToString()
-                </div>
-            }
-
-            <BitStack Horizontal Alignment="BitAlignment.Center" AutoHeight>
-                <BitButton OnClick="Refresh">@localizer[nameof(AppStrings.Refresh)]</BitButton>
-                <BitButton OnClick="GoHome" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Home)]</BitButton>
-                <BitButton OnClick="Recover" Variant="BitVariant.Outline">@localizer[nameof(AppStrings.Recover)]</BitButton>
-                <BitButton OnClick="ShowDiagnostic" Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Diagnostic" />
-            </BitStack>
-        </BitStack>
-    </main>
-}
+<BitErrorBoundary>
+    <BitButton OnClick="ShowDiagnostic" Variant="BitVariant.Text" IconOnly IconName="@BitIconName.Diagnostic" />
+</BitErrorBoundary>
