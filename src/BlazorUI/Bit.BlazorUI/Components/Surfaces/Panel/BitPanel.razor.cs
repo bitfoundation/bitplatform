@@ -168,7 +168,11 @@ public partial class BitPanel : BitComponentBase, IAsyncDisposable
         if (firstRender)
         {
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, Position ?? BitPanelPosition.End, Dir == BitDir.Rtl, dotnetObj, false);
+            var position = Position ?? BitPanelPosition.End;
+            var orientationLock = position == BitPanelPosition.Start || position == BitPanelPosition.End
+                                    ? BitSwipeOrientation.Horizontal 
+                                    : BitSwipeOrientation.Vertical;
+            await _js.BitSwipesSetup(_containerId, SwipeTrigger ?? 0.25m, position, Dir == BitDir.Rtl, orientationLock, dotnetObj, false);
         }
 
         if (_internalIsOpen == IsOpen) return;

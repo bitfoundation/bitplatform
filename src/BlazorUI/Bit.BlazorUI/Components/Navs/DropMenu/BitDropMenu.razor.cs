@@ -153,7 +153,7 @@ public partial class BitDropMenu : BitComponentBase, IAsyncDisposable
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
     }
 
 
