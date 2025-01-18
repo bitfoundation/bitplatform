@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Diagnostics;
 
 namespace Bit.BlazorUI.SourceGenerators.Component;
 
