@@ -14,10 +14,7 @@
 }
 
 .bit-ppl-hcn {
-    top: 0;
-    z-index: 1;
     display: flex;
-    position: sticky;
     font-weight: 600;
     color: $clr-fg-pri;
     overflow-wrap: anywhere;
@@ -63,9 +60,6 @@
 }
 
 .bit-ppl-fcn {
-    bottom: 0;
-    z-index: 1;
-    position: sticky;
     background-color: $clr-bg-pri;
     padding: 0 spacing(2) spacing(2) spacing(2);
 }
