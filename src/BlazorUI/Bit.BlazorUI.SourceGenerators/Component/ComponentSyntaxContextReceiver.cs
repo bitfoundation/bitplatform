@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Diagnostics;
 
 namespace Bit.BlazorUI.SourceGenerators.Component;
 
@@ -18,9 +20,17 @@ public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
 
         if (parent is null || parent.IsKind(SyntaxKind.ClassDeclaration) is false) return;
 
-        var classDeclarationSyntax = (ClassDeclarationSyntax?)parent;
+        var classDeclarationSyntax = (ClassDeclarationSyntax)parent;
 
-        if (classDeclarationSyntax?.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
+        if (classDeclarationSyntax.Modifiers.Any(k => k.IsKind(SyntaxKind.PartialKeyword)) is false) return;
+
+        var namespaceParent = classDeclarationSyntax.Parent;
+
+        if (namespaceParent is null) return;
+
+        var namespaceDeclarationSyntax = (BaseNamespaceDeclarationSyntax)namespaceParent;
+
+        if (namespaceDeclarationSyntax.Name.ToString().StartsWith("Bit.BlazorUI") is false) return;
 
         var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax);
 
