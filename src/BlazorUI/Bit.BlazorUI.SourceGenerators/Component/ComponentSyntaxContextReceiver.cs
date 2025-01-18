@@ -12,7 +12,8 @@ public class ComponentSyntaxContextReceiver : ISyntaxContextReceiver
 
     public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
     {
-        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || !propertyDeclarationSyntax.AttributeLists.Any()) return;
+        if (context.Node is not PropertyDeclarationSyntax propertyDeclarationSyntax || 
+            propertyDeclarationSyntax.AttributeLists.Any() is false) return;
 
         var parent = propertyDeclarationSyntax.Parent;
 
