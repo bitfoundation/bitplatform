@@ -1,6 +1,6 @@
-﻿using Boilerplate.Shared.Controllers.Products;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Statistics;
-using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Dtos.Statistics;
 
@@ -91,7 +91,15 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        return await productController.GetHomeProducts(request.Skip, 20, CurrentCancellationToken);
+        await Task.Delay(2000);
+        return await productController.GetHomeProducts(request.Skip, 10, CurrentCancellationToken);
+    }
+
+    private string GetProductImageUrl(ProductDto product)
+    {
+        return product.ImageFileName is null
+            ? "_content/Boilerplate.Client.Core/images/product-placeholder.png"
+            : new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProductImage/{product.Id}?v={product.ConcurrencyStamp}").ToString();
     }
     //#endif
 }

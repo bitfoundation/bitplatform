@@ -6,7 +6,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="stack">
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomePanelTitle)]
             <br />
@@ -22,11 +22,19 @@
         @*#if (module == "Sales")*@
         @if (products is not null)
         {
-            <BitCard>
-                <BitCarousel>
+            <BitCard FullWidth>
+                <BitCarousel Style="height:350px" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
                     @foreach (var product in products)
                     {
-                        <BitCarouselItem>@product.Name</BitCarouselItem>
+                        <BitCarouselItem>
+                            <BitStack Horizontal Class="carousel-stack">
+                                <BitImage Src="@GetProductImageUrl(product)" Width="50%" />
+                                <BitStack AutoHeight>
+                                    <BitText Typography="BitTypography.H1">@product.Name</BitText>
+                                    <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
+                                </BitStack>
+                            </BitStack>
+                        </BitCarouselItem>
                     }
                 </BitCarousel>
             </BitCard>
@@ -34,16 +42,24 @@
 
         <br />
 
-        <BitCard>
-            <BitInfiniteScrolling ItemsProvider="LoadProducts" Style="max-height: 300px">
-                <ItemTemplate Context="product">
-                    <div>@product.Name</div>
-                </ItemTemplate>
-                <LoadingTemplate>
-                    <b>Loading...</b>
-                </LoadingTemplate>
-            </BitInfiniteScrolling>
-        </BitCard>
+        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body">
+            <ItemTemplate Context="product">
+                <BitCard Background="BitColorKind.Tertiary" Class="product-item">
+                    <BitStack Horizontal Class="product-stack">
+                        <BitImage Src="@GetProductImageUrl(product)" Width="75px" />
+                        <BitStack AutoHeight>
+                            <BitText>@product.Name</BitText>
+                            <BitText Typography="BitTypography.Body2" Class="product-desc">@product.Description</BitText>
+                        </BitStack>
+                    </BitStack>
+                </BitCard>
+            </ItemTemplate>
+            <LoadingTemplate>
+                <BitStack Alignment="BitAlignment.Center">
+                    <BitEllipsisLoading />
+                </BitStack>
+            </LoadingTemplate>
+        </BitInfiniteScrolling>
         @*#endif*@
 
         @*#if (module == "Admin")*@
@@ -141,7 +157,7 @@
             </BitStack>
         </BitCard>
 
-        <BitStack Horizontal Gap="2rem" Class="products-stack">
+        <BitStack Horizontal Gap="2rem" Class="bit-products-stack">
             <BitCard Style="padding:3rem" FullWidth>
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>

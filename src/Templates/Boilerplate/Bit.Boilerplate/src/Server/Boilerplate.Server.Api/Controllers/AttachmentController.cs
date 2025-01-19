@@ -133,6 +133,7 @@ public partial class AttachmentController : AppControllerBase
     }
     //#endif
 
+    //#if (module == "Sales")
     [AllowAnonymous]
     [HttpGet("{productId}")]
     [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
@@ -150,4 +151,5 @@ public partial class AttachmentController : AppControllerBase
 
         return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
     }
+    //#endif
 }

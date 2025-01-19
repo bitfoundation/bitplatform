@@ -27,4 +27,6 @@ public partial class ProductDto
     public string? CategoryName { get; set; }
 
     public byte[] ConcurrencyStamp { get; set; } = [];
+
+    public string? ImageFileName { get; set; }
 }
