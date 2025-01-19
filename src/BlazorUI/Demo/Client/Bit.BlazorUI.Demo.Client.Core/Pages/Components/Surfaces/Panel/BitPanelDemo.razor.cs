@@ -191,7 +191,7 @@ public partial class BitPanelDemo
     private readonly string example1RazorCode = @"
 <BitButton OnClick=""() => isBasicPanelOpen = true"">Open Panel</BitButton>
 <BitPanel @bind-IsOpen=""isBasicPanelOpen"">
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
         sagittis nunc, ut interdum ipsum vestibulum non. Proin dolor elit, aliquam eget tincidunt non, vestibulum ut
@@ -204,7 +204,7 @@ private bool isBasicPanelOpen;";
     private readonly string example2RazorCode = @"
 <BitButton OnClick=""() => isBlockingPanelOpen = true"">Open Panel</BitButton>
 <BitPanel @bind-IsOpen=""isBlockingPanelOpen"" Blocking>
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         <h3>Blocking</h3>
         <div>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -217,7 +217,7 @@ private bool isBasicPanelOpen;";
 
 <BitButton OnClick=""() => isModelessPanelOpen = true"">Open Panel</BitButton>
 <BitPanel @bind-IsOpen=""isModelessPanelOpen"" @ref=""modelessPanelRef"" Modeless>
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         <h3>Modeless</h3>
         <div>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
@@ -230,7 +230,7 @@ private bool isBasicPanelOpen;";
 
 <BitButton OnClick=""() => isAutoToggleScrollPanelOpen = true"">Open Panel</BitButton>
 <BitPanel @bind-IsOpen=""isAutoToggleScrollPanelOpen"" AutoToggleScroll>
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         <h3>AutoToggleScroll</h3>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lorem nulla, malesuada ut sagittis sit
         amet, vulputate in leo. Maecenas vulputate congue sapien eu tincidunt. Etiam eu sem turpis. Fusce tempor
@@ -335,7 +335,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenStart""
           Dir=""BitDir.Rtl""
           Position=""BitPanelPosition.Start"">
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
         کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
@@ -345,7 +345,7 @@ private bool isPanelClassesOpen;";
 <BitPanel @bind-IsOpen=""isRtlPanelOpenEnd""
           Dir=""BitDir.Rtl""
           Position=""BitPanelPosition.End"">
-    <div style=""width:300px;padding:1rem"">
+    <div style=""max-width:300px;padding:1rem"">
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
         کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.

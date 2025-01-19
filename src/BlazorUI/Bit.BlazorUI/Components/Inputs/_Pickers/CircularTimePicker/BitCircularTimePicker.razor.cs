@@ -310,7 +310,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>, IAsyncDisp
 
         if (firstRender is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+
         _pointerUpAbortControllerId = await _js.BitCircularTimePickerRegisterPointerUp(_dotnetObj, nameof(_HandlePointerUp));
         _pointerMoveAbortControllerId = await _js.BitCircularTimePickerRegisterPointerMove(_dotnetObj, nameof(_HandlePointerMove));
     }
