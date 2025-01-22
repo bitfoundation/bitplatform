@@ -20,6 +20,6 @@ internal static class ObserversJsRuntimeExtensions
         ElementReference element, 
         DotNetObjectReference<T> obj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterResize", id, element, id, obj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterResize", id, element, obj);
     }
 }
