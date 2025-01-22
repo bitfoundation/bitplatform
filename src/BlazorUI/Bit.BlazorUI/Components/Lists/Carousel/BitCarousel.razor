@@ -7,7 +7,7 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    <div @ref="_carousel"
+    <div @ref="_carouselContainer"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
@@ -23,11 +23,11 @@
         @if (HideNextPrev is false)
         {
             <div class="bit-csl-lbt" @onclick="GoLeft" style="@_goLeftButtonStyle">
-                <i class="bit-icon bit-icon--ChevronRight" />
+                <i class="bit-icon bit-icon--@(GoLeftIcon ?? "ChevronRight")" />
             </div>
 
             <div class="bit-csl-rbt" @onclick="GoRight" style="@_goRightButtonStyle">
-                <i class="bit-csl-rbi bit-icon bit-icon--ChevronRight" />
+                <i class="bit-csl-rbi bit-icon bit-icon--@(GoRightIcon ?? "ChevronRight")" />
             </div>
         }
     </div>

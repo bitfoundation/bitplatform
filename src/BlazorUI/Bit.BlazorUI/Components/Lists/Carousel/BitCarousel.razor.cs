@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Carousel (Carousel slide-show) let people show their items in seperate slides from two or more items.
+/// Carousel (slide-show) let people show their items in separate slides from two or more items.
 /// </summary>
 public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 {
@@ -14,13 +14,12 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     private int[] _currentIndices = [];
     private int _internalScrollItemsCount = 1;
     private string _directionStyle = string.Empty;
-    private ElementReference _carousel = default!;
-    private string _resizeObserverId = string.Empty;
     private string _goLeftButtonStyle = string.Empty;
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitCarousel> _dotnetObjRef = default!;
+    private ElementReference _carouselContainer = default!;
+    private DotNetObjectReference<BitCarousel> _dotnetObj = default!;
 
 
 
@@ -47,6 +46,16 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     /// Items of the carousel.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The custom icon name for the go button at the left side of the carousel.
+    /// </summary>
+    [Parameter] public string? GoLeftIcon { get; set; }
+
+    /// <summary>
+    /// The custom icon name for the go button at the right side of the carousel.
+    /// </summary>
+    [Parameter] public string? GoRightIcon { get; set; }
 
     /// <summary>
     /// Hides the Dots indicator at the bottom of the BitCarousel.
@@ -106,8 +115,8 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
 
-    [JSInvokable("OnRootResize")]
-    public async Task OnRootResize(ContentRect rect)
+    [JSInvokable("OnResize")]
+    public async Task _OnResize(ContentRect rect)
     {
         await ResetDimensionsAsync();
     }
@@ -134,7 +143,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        _dotnetObjRef = DotNetObjectReference.Create(this);
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         base.OnInitialized();
     }
@@ -148,13 +157,13 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender is false) return;
 
-        _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
+        await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
 
         if (AutoPlay)
         {
@@ -179,7 +188,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).ToArray();
 
         var itemsCount = _allItems.Count;
-        var rect = await _js.BitUtilsGetBoundingClientRect(_carousel);
+        var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
         if (rect is null) return;
         var sign = Dir == BitDir.Rtl ? -1 : 1;
         for (int i = 0; i < itemsCount; i++)
@@ -212,7 +221,10 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[0] - (i + 1);
-            if (InfiniteScrolling && idx < 0) idx += _allItems.Count;
+            if (InfiniteScrolling && idx < 0)
+            {
+                idx += _allItems.Count;
+            }
             return idx;
         }).Where(i => i >= 0).Reverse().ToArray();
 
@@ -225,7 +237,10 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
         {
             var idx = _currentIndices[_currentIndices.Length - 1] + (i + 1);
-            if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
+            if (InfiniteScrolling && idx > itemsCount - 1)
+            {
+                idx -= itemsCount;
+            }
             return idx;
         }).Where(i => i < itemsCount).ToArray();
 
@@ -261,9 +276,12 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
         }
 
+
         StateHasChanged();
 
+        if (AutoPlay) _autoPlayTimer.Stop();
         await Task.Delay(50);
+        if (AutoPlay) _autoPlayTimer.Start();
 
         offset = isNext ? VisibleItemsCount - scrollCount : 0;
 
@@ -335,7 +353,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         if (Math.Abs(delta) <= 20) return;
 
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_carousel, "cursor", "");
+        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "");
 
         if (delta < 0)
         {
@@ -351,14 +369,14 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     {
         _isPointerDown = true;
         _pointerX = e.ClientX;
-        await _js.BitUtilsSetStyle(_carousel, "cursor", "grabbing");
+        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "grabbing");
         StateHasChanged();
     }
 
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_carousel, "cursor", "");
+        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "");
         StateHasChanged();
     }
 
@@ -385,12 +403,12 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
             _autoPlayTimer.Dispose();
         }
 
-        if (_dotnetObjRef is not null)
+        if (_dotnetObj is not null)
         {
             //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
