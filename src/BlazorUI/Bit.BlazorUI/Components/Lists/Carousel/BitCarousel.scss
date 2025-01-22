@@ -41,13 +41,13 @@
     display: flex;
     cursor: pointer;
     background: 0 0;
+    color: $clr-fg-pri;
     position: absolute;
     text-align: center;
     align-items: center;
     font-size: spacing(3);
     justify-content: center;
     transition: opacity 150ms ease;
-    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
@@ -71,33 +71,72 @@
     transform: scaleX(-1);
 }
 
-.bit-csl-dot {
+.bit-csl-dcn {
     text-align: center;
     margin-top: spacing(1.25);
+}
 
-    > div {
-        cursor: pointer;
-        border-radius: 50%;
-        width: spacing(1.25);
-        height: spacing(1.25);
-        display: inline-block;
-        margin: 0 spacing(0.5);
-        transition: background-color 600ms ease;
-        background-color: $clr-bg-sec;
+.bit-csl-dot {
+    cursor: pointer;
+    border-radius: 50%;
+    width: spacing(1.25);
+    height: spacing(1.25);
+    display: inline-block;
+    margin: 0 spacing(0.5);
+    background-color: $clr-bg-ter;
+    transition: background-color 600ms ease;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-ter-hover;
+        }
+    }
+}
+
+
+.bit-csl-apri {
+    .bit-csl-cud {
+        background-color: $clr-pri;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $clr-bg-sec-hover;
+                background-color: $clr-pri-hover;
             }
         }
+    }
+}
 
-        &.current {
-            background-color: $clr-pri;
+.bit-csl-asec {
+    .bit-csl-cud {
+        background-color: $clr-sec;
 
-            @media (hover: hover) {
-                &:hover {
-                    background-color: $clr-pri-hover;
-                }
+        @media (hover: hover) {
+            &:hover {
+                background-color: $clr-sec-hover;
+            }
+        }
+    }
+}
+
+.bit-csl-ater {
+    .bit-csl-cud {
+        background-color: $clr-ter;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $clr-ter-hover;
+            }
+        }
+    }
+}
+
+.bit-csl-atra {
+    .bit-csl-cud {
+        background-color: transparent;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: transparent;
             }
         }
     }

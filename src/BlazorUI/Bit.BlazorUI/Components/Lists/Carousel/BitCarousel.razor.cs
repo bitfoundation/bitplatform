@@ -28,6 +28,12 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
     /// <summary>
+    /// Specifies the accent color kind of the component.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Accent { get; set; }
+
+    /// <summary>
     /// Sets the duration of the scrolling animation in seconds (the default value is 0.5).
     /// </summary>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
@@ -48,12 +54,17 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// The custom icon name for the go button at the left side of the carousel.
+    /// The custom CSS classes for the different parts of the carousel.
+    /// </summary>
+    [Parameter] public BitCarouselClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The custom icon name for the go to left button at the right side of the carousel.
     /// </summary>
     [Parameter] public string? GoLeftIcon { get; set; }
 
     /// <summary>
-    /// The custom icon name for the go button at the right side of the carousel.
+    /// The custom icon name for the go to right button at the left side of the carousel.
     /// </summary>
     [Parameter] public string? GoRightIcon { get; set; }
 
@@ -81,6 +92,11 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     /// Number of items that is going to be changed on navigation.
     /// </summary>
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// The custom CSS styles for the different parts of the carousel.
+    /// </summary>
+    [Parameter] public BitCarouselClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Number of items that is visible in the carousel.
@@ -140,6 +156,25 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
 
     protected override string RootElementClass => "bit-csl";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColorKind.Primary => "bit-csl-apri",
+            BitColorKind.Secondary => "bit-csl-asec",
+            BitColorKind.Tertiary => "bit-csl-ater",
+            BitColorKind.Transparent => "bit-csl-atra",
+            _ => "bit-csl-apri"
+        });
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
 
     protected override void OnInitialized()
     {
