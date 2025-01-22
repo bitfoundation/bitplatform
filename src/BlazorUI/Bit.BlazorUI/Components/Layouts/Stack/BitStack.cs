@@ -124,6 +124,8 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
+        StyleBuilder.Register(() => "display:flex");
+
         StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
 
         StyleBuilder.Register(() => $"gap:{Gap ?? "1rem"}");
