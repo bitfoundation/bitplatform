@@ -124,7 +124,7 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssStyles()
     {
-        StyleBuilder.Register(() => "display:flex");
+        StyleBuilder.Register(() => "display:flex"); // to preserve display so it can't be overridden easily.
 
         StyleBuilder.Register(() => $"flex-direction:{(Horizontal ? "row" : "column")}{(Reversed ? "-reverse" : string.Empty)}");
 
