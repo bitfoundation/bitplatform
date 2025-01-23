@@ -3,20 +3,17 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <PackageTags>$(PackageTags) Test</PackageTags>
         <AssetTargetFallback>net45</AssetTargetFallback>
         <RootNamespace>Bit.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FakeItEasy" Version="8.2.0" />
+        <PackageReference Include="FakeItEasy" Version="8.3.0" />
         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
-        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.6" />
-        <PackageReference Include="Refit" Version="7.0.0" />
-        <PackageReference Include="Selenium.Support" Version="4.21.0" />
-        <PackageReference Include="Selenium.WebDriver" Version="4.21.0" />
-        <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="125.0.2535.79" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.1" />
+        <PackageReference Include="Refit" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>

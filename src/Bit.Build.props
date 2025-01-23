@@ -26,7 +26,7 @@
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 
 
-        <ReleaseVersion>17.0.0</ReleaseVersion>
+        <ReleaseVersion>18.0.0</ReleaseVersion>
 
         <PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
         <PackageVersion>$(ReleaseVersion)</PackageVersion>
@@ -43,7 +43,7 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
 		<DebugType>portable</DebugType>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'net8.0' ">$(DefineConstants);DotNet</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'net9.0' ">$(DefineConstants);DotNet</DefineConstants>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 
 		<AnalysisLevel>latest</AnalysisLevel>

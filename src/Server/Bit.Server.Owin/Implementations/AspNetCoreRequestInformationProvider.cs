@@ -25,7 +25,7 @@ namespace Bit.Owin.Implementations
             if (httpContext.Request?.Headers == null)
                 return null;
             if (httpContext.Request.Headers.TryGetValue(key, out StringValues values) == true)
-                return string.Join(",", values);
+                return string.Join<string>(",", values);
             return null;
         }
 

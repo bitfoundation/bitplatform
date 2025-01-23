@@ -1,6 +1,0 @@
-﻿<bitUWP:BitApplication
-    x:Class="Bit.CSharpClientSample.UWP.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:bitUWP="using:Bit.UWP"
-    RequestedTheme="Light" />

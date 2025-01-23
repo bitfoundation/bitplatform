@@ -1,7 +1,5 @@
 ﻿using Bit.Http.Contracts;
 using Microsoft.AspNet.SignalR.Client;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
@@ -21,8 +19,6 @@ namespace Bit.Test.Server
 
     public interface ITestServer : IDisposable
     {
-        WebDriver BuildWebDriver(WebDriverOptions? options = null);
-
         Task<Token> LoginWithCredentials(string userName, string password, string clientId, string secret = "secret", string[]? scopes = null, IDictionary<string, string?>? acr_values = null);
 
         string GetLoginUrl(string? client_id = null, Uri? redirect_uri = null, object? state = null, IDictionary<string, string?>? acr_values = null);

@@ -10,8 +10,6 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -100,11 +98,6 @@ namespace Bit.Test.Server
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
             return new TestHttpClientHandler(_server!.CreateHandler(), _args);
-        }
-
-        public override WebDriver BuildWebDriver(WebDriverOptions? options = null)
-        {
-            throw new NotSupportedException();
         }
     }
 }

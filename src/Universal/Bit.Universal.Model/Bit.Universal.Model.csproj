@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <PackageTags>$(PackageTags) Model Dto Entity</PackageTags>
         <RootNamespace>Bit.Model</RootNamespace>
     </PropertyGroup>

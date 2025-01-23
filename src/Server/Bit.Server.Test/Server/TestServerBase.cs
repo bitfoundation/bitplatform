@@ -8,8 +8,6 @@ using Bit.Signalr.Implementations;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Edge;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -105,57 +103,6 @@ namespace Bit.Test.Server
         }
 
         protected abstract void Dispose(bool disposing);
-
-        public virtual WebDriver BuildWebDriver(WebDriverOptions? options = null)
-        {
-            if (options == null)
-                options = new WebDriverOptions();
-
-            //FirefoxDriver driver = new FirefoxDriver();
-
-            EdgeOptions edgeOptions = new EdgeOptions
-            {
-
-            };
-
-            //chromeOptions.AddArguments("--lang=fa");
-            edgeOptions.AddArgument("--no-sandbox");
-
-            EdgeDriver driver = new EdgeDriver(edgeOptions);
-
-            //InternetExplorerDriver driver = new InternetExplorerDriver();
-
-            //DesiredCapabilities capabilities = new DesiredCapabilities();
-
-            //capabilities.SetCapability("deviceName", "donatello");
-            //capabilities.SetCapability("platformVersion", "4.2.2");
-            //capabilities.SetCapability("uid", "192.168.21.80:5555");
-            //capabilities.SetCapability("fullReset", "True");
-            //capabilities.SetCapability(MobileCapabilityType.App, "Browser");
-            //capabilities.SetCapability("platformName", "Android");
-
-            //AndroidDriver<AndroidElement> driver = new AndroidDriver<AndroidElement>(new Uri("http://localhost:4723/wd/hub"), capabilities);
-
-            try
-            {
-                if (options.Uri != null)
-                    driver.Navigate().GoToUrl($@"{Uri}{options.Uri}");
-                else if (options.Token != null)
-                    driver.Navigate().GoToUrl($@"{Uri}SignIn#id_token=0&access_token={options.Token.AccessToken}&token_type={options.Token.TokenType}&expires_in=86400&scope=openid profile user_info&state={{""pathname"":""/""}}&session_state=0");
-                else
-                    driver.Navigate().GoToUrl(Uri);
-
-                if (options.ClientSideTest == true)
-                    driver.GetElementById("testsConsole");
-            }
-            catch
-            {
-                driver.Dispose();
-                throw;
-            }
-
-            return driver;
-        }
 
         public virtual void Initialize(string uri)
         {

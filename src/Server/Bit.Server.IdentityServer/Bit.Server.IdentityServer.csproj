@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <PackageTags>$(PackageTags) OAuth2 OAuth OpenID Security Connect Identity IdentityServer</PackageTags>
         <RootNamespace>Bit.IdentityServer</RootNamespace>
     </PropertyGroup>
@@ -18,11 +18,11 @@
         <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.2.2" />
         <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.2.2" />
         <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
-        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
+        <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.1" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.9" />
         <PackageReference Include="Microsoft.Owin.Cors" Version="4.2.2" />
         <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.2.2" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.36.0" />
     </ItemGroup>
 
     <ItemGroup>

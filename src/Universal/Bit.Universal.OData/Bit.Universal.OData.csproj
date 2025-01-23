@@ -3,13 +3,13 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <PackageTags>$(PackageTags) OData</PackageTags>
         <RootNamespace>Bit.OData</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.OData.Core" Version="7.21.3" />
+        <PackageReference Include="Microsoft.OData.Core" Version="7.21.6" />
         <PackageReference Include="Simple.OData.V4.Client" Version="6.0.1" />
     </ItemGroup>
 

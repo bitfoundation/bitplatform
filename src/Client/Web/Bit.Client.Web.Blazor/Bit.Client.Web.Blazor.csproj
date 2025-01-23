@@ -3,12 +3,12 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.6" />
-        <PackageReference Include="Microsoft.JSInterop" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.1" />
+        <PackageReference Include="Microsoft.JSInterop" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>

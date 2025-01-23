@@ -1,7 +1,7 @@
 ﻿using Bit.Test;
 using System;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.OSPlatform;
+using OSPlatform = System.Runtime.InteropServices.OSPlatform;
 using static System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Bit.Tests
@@ -21,8 +21,8 @@ namespace Bit.Tests
             {
                 const string url = "http://localhost/";
 
-                var browser = IsOSPlatform(Windows) ? new ProcessStartInfo("cmd", $"/c start {url}") :
-                              IsOSPlatform(OSX) ? new ProcessStartInfo("open", url) :
+                var browser = IsOSPlatform(OSPlatform.Windows) ? new ProcessStartInfo("cmd", $"/c start {url}") :
+                              IsOSPlatform(OSPlatform.OSX) ? new ProcessStartInfo("open", url) :
                                                         new ProcessStartInfo("xdg-open", url); //linux, unix-like
 
                 Process.Start(browser);

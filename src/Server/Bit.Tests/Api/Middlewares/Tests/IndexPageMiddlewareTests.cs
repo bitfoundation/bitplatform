@@ -3,8 +3,6 @@ using Bit.Test;
 using Bit.Test.Server;
 using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -104,21 +102,6 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 Assert.AreEqual(true, getIndexPageResponse.Headers.Contains("X-Download-Options"));
                 Assert.AreEqual(true, getIndexPageResponse.Headers.Contains("X-XSS-Protection"));
                 Assert.AreEqual(true, getIndexPageResponse.Headers.Contains("Strict-Transport-Security"));
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("HtmlClient"), TestCategory("IndexPage")]
-        public virtual async Task TestDesiredEnvironmentsConfigsArePresentInClientSide()
-        {
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
-            {
-                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
-
-                using (WebDriver driver = testEnvironment.Server.BuildWebDriver(new WebDriverOptions { Token = token }))
-                {
-                    await driver.ExecuteTest("testDesiredEnvironmentsConfigsArePresentInClientSide");
-                }
             }
         }
     }

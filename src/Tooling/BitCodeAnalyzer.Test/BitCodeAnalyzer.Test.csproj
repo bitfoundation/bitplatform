@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0</TargetFrameworks>
+		<TargetFrameworks>net9.0</TargetFrameworks>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<IsPackable>false</IsPackable>
 		<Nullable>disable</Nullable>
@@ -18,15 +18,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="EntityFramework" Version="6.4.4" />
+		<PackageReference Include="EntityFramework" Version="6.5.1" />
 		<PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
 		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.3.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.3.1" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-		<PackageReference Include="MSTest.TestAdapter" Version="3.4.3" />
-		<PackageReference Include="MSTest.TestFramework" Version="3.4.3" />
-        <PackageReference Include="NuGet.Frameworks" Version="6.5.0" ExcludeAssets="All">
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="MSTest.TestAdapter" Version="3.7.2" />
+		<PackageReference Include="MSTest.TestFramework" Version="3.7.2" />
+        <PackageReference Include="NuGet.Frameworks" Version="6.12.1" ExcludeAssets="All">
             <IncludeAssets>none</IncludeAssets>
         </PackageReference>
         <Reference Include="NuGet.Frameworks">

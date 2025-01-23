@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="17.0.0" />
-    <PackageReference Include="Bit.Server.WebApi" Version="17.0.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="17.0.0" />
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="18.0.0" />
+    <PackageReference Include="Bit.Server.WebApi" Version="18.0.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="18.0.0" />
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">
