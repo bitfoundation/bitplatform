@@ -22,7 +22,8 @@
                                                Align="BitDataGridAlign.Left"
                                                Property="c => c!.Name"
                                                Class="name-col"
-                                               Sortable="true">
+                                               Sortable="true"
+                                               IsDefaultSort="BitDataGridSortDirection.Ascending">
                         <ColumnOptions>
                             <BitStack Horizontal>
                                 <BitSearchBox @bind-Value="CategoryNameFilter"

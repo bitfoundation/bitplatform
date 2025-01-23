@@ -58,7 +58,7 @@
                         diffX = 0;
                     }
                 } else if (orientationLock === BitSwipeOrientation.Vertical) {
-                    if (orientation === BitSwipeOrientation.Vertical && absY > threshold) {
+                    if (orientation === BitSwipeOrientation.Vertical) {
                         cancel();
                         diffX = 0;
                     } else {

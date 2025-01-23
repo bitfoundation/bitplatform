@@ -348,7 +348,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>, IAsyncDisposable
         if (firstRender is false) return;
         if (Responsive is false) return;
 
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, _dotnetObj);
+        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TimeSpan? result, [NotNullWhen(false)] out string? validationErrorMessage)

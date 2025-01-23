@@ -20,13 +20,6 @@ public partial class BitPdfReaderDemo
          },
          new()
          {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The CSS class of the root element.",
-         },
-         new()
-         {
             Name = "Config",
             Type = "BitPdfReaderConfig",
             DefaultValue = "",
@@ -68,14 +61,7 @@ public partial class BitPdfReaderDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether render all pages at start.",
-         },
-         new()
-         {
-            Name = "Style",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The CSS style of the root element.",
-         },
+         }
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

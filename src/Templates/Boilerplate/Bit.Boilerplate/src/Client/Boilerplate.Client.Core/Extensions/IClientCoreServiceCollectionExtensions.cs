@@ -42,7 +42,6 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
-        services.AddSessioned<MessageBoxService>();
         services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>

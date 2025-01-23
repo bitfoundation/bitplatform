@@ -21,7 +21,8 @@
                     <BitDataGridPropertyColumn Title="@Localizer[nameof(AppStrings.Name)]"
                                                Property="p => p!.Name"
                                                Class="name-col"
-                                               Sortable="true">
+                                               Sortable="true"
+                                               IsDefaultSort="BitDataGridSortDirection.Ascending">
                         <ColumnOptions>
                             <BitStack Horizontal>
                                 <BitSearchBox @bind-Value="ProductNameFilter"

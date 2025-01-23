@@ -280,10 +280,12 @@ public static partial class Program
         var certificatePath = Path.Combine(AppContext.BaseDirectory, "DataProtectionCertificate.pfx");
         var certificate = new X509Certificate2(certificatePath, appSettings.DataProtectionCertificatePassword, AppPlatform.IsWindows ? X509KeyStorageFlags.EphemeralKeySet : X509KeyStorageFlags.DefaultKeySet);
 
+        if (env.IsDevelopment() is false && (DateTimeOffset.UtcNow < certificate.NotBefore || DateTimeOffset.UtcNow > certificate.NotAfter))
+            throw new InvalidOperationException($"The Data Protection certificate is invalid. Current UTC time: {DateTimeOffset.UtcNow}, Certificate valid from: {certificate.NotBefore.ToUniversalTime()}, Certificate valid until: {certificate.NotAfter.ToUniversalTime()}.");
+
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
             .ProtectKeysWithCertificate(certificate);
-
 
         services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -310,7 +312,7 @@ public static partial class Program
                 ClockSkew = TimeSpan.Zero,
                 RequireSignedTokens = true,
 
-                ValidateIssuerSigningKey = true,
+                ValidateIssuerSigningKey = env.IsDevelopment() is false,
                 IssuerSigningKey = new X509SecurityKey(certificate),
 
                 RequireExpirationTime = true,

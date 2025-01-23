@@ -5,13 +5,21 @@ namespace Bit.BlazorUI;
 internal static class ObserversJsRuntimeExtensions
 {
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ContentRect))]
-    internal static ValueTask<string> BitObserversRegisterResize<T>(this IJSRuntime jsRuntime, ElementReference element, DotNetObjectReference<T> obj, string method) where T : class
+    internal static ValueTask<string> BitObserversRegisterResize<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, 
+        string id, 
+        ElementReference element, 
+        DotNetObjectReference<T> obj) where T : class
     {
-        return jsRuntime.Invoke<string>("BitBlazorUI.Observers.registerResize", element, obj, method);
+        return jsRuntime.Invoke<string>("BitBlazorUI.Observers.registerResize", id, element, obj);
     }
 
-    internal static ValueTask BitObserversUnregisterResize<T>(this IJSRuntime jsRuntime, ElementReference element, string id, DotNetObjectReference<T> obj) where T : class
+    internal static ValueTask BitObserversUnregisterResize<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, 
+        string id, 
+        ElementReference element, 
+        DotNetObjectReference<T> obj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterResize", element, id, obj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterResize", id, element, obj);
     }
 }
