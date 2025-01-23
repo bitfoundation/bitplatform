@@ -1,0 +1,9 @@
+﻿@import '../../../../Styles/abstracts/_functions.scss';
+
+::deep {
+    .custom-expanded {
+        padding: 10px;
+        background-color: #808080;
+        border: 1px solid #0054C6;
+    }
+}
