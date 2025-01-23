@@ -15,7 +15,7 @@ public class BesqlPooledDbContextFactory<TDbContext> : PooledDbContextFactoryBas
     public BesqlPooledDbContextFactory(
         IBesqlStorage storage,
         DbContextOptions<TDbContext> options,
-        Func<TDbContext, Task>? dbContextInitializer)
+        Func<IServiceProvider, TDbContext, Task> dbContextInitializer)
         : base(options, dbContextInitializer)
     {
         _connectionString = options.Extensions

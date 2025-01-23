@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Bit.Besql;
 
 public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext> options,
-        Func<TDbContext, Task>? dbContextInitializer) : PooledDbContextFactory<TDbContext>(options)
+        Func<IServiceProvider, TDbContext, Task> dbContextInitializer) : PooledDbContextFactory<TDbContext>(options)
     where TDbContext : DbContext
 {
     private TaskCompletionSource? dbContextInitializerTcs;
@@ -44,7 +44,7 @@ public class PooledDbContextFactoryBase<TDbContext>(DbContextOptions<TDbContext>
         if (dbContextInitializer is not null)
         {
             await using var dbContext = await base.CreateDbContextAsync().ConfigureAwait(false);
-            await dbContextInitializer(dbContext).ConfigureAwait(false);
+            await dbContextInitializer(dbContext.GetService<IServiceProvider>(), dbContext).ConfigureAwait(false);
         }
     }
 }
