@@ -19,7 +19,7 @@
 
         public static registerPointerLeave(root: HTMLDivElement, dotnetObj: DotNetObject) {
             root.addEventListener('pointerleave', async e => {
-                await dotnetObj.invokeMethodAsync("HandlePointerLeave", e.clientX);
+                await dotnetObj.invokeMethodAsync("OnPointerLeave", e.clientX);
             });
         }
     }

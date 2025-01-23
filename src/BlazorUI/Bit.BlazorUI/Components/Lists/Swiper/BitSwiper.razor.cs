@@ -24,10 +24,9 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     private string _directionStyle = string.Empty;
     private string _leftButtonStyle = string.Empty;
     private string _rightButtonStyle = string.Empty;
-    private string _resizeObserverId = string.Empty;
     private readonly List<BitSwiperItem> _allItems = [];
     private System.Timers.Timer _autoPlayTimer = default!;
-    private DotNetObjectReference<BitSwiper> _dotnetObjRef = default!;
+    private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
 
 
 
@@ -94,33 +93,17 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
 
 
-    [JSInvokable("OnRootResize")]
-    public async Task OnRootResize(ContentRect rect)
+    [JSInvokable("OnResize")]
+    public async Task _OnResize(ContentRect rect)
     {
         await GetDimensions();
         await Swipe(0);
     }
 
-    [JSInvokable("HandlePointerLeave")]
-    public async Task HandlePointerLeave(double clientX)
+    [JSInvokable("OnPointerLeave")]
+    public async Task _OnPointerLeave(double clientX)
     {
-        if (_isPointerDown is false) return;
-
-        _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_swiper, "cursor", "");
-
-        var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
-        var distance = Math.Abs(clientX - _pointerDownX);
-
-        await GetDimensions();
-
-        var swipeSpeed = distance / time;
-
-        var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
-
-        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
-        await Swipe(x);
+        await HandlePointerLeave(clientX);
     }
 
 
@@ -140,14 +123,14 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        _dotnetObjRef = DotNetObjectReference.Create(this);
+        _dotnetObj = DotNetObjectReference.Create(this);
 
         base.OnInitialized();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         await base.OnParametersSetAsync();
     }
@@ -170,9 +153,9 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
             //    _autoPlayTimer.Start();
             //}
 
-            _resizeObserverId = await _js.BitObserversRegisterResize(RootElement, _dotnetObjRef, "OnRootResize");
+            await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
 
-            await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObjRef);
+            await _js.BitSwiperRegisterPointerLeave(RootElement, _dotnetObj);
 
             SetNavigationButtonsVisibility(_translateX);
         }
@@ -186,8 +169,8 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : "";
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : string.Empty;
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : string.Empty;
 
         StateHasChanged();
     }
@@ -195,7 +178,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     private async Task Go(bool isNext)
     {
         await GetDimensions();
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
 
         var sign = isNext ? -1 : 1;
         var scrollX = _swiperWidth / _allItems.Count * _internalScrollItemsCount;
@@ -239,10 +222,31 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         await GetDimensions();
 
         await _js.BitUtilsSetStyle(_swiper, "cursor", "grabbing");
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
     }
 
     private async Task HandlePointerUp(MouseEventArgs e) => await HandlePointerLeave(e.ClientX);
+
+    public async Task HandlePointerLeave(double clientX)
+    {
+        if (_isPointerDown is false) return;
+
+        _isPointerDown = false;
+        await _js.BitUtilsSetStyle(_swiper, "cursor", string.Empty);
+
+        var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
+        var distance = Math.Abs(clientX - _pointerDownX);
+
+        await GetDimensions();
+
+        var swipeSpeed = distance / time;
+
+        var transitionTime = swipeSpeed > 2 ? 300 : swipeSpeed > 1 ? 600 : 1000;
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", FormattableString.Invariant($"{transitionTime}ms"));
+
+        var x = -(_lastDiffX / Math.Abs(_lastDiffX)) * (_swiperEffectiveWidth * swipeSpeed / 10) + _translateX;
+        await Swipe(x);
+    }
 
     private async Task Swipe(double x)
     {
@@ -291,12 +295,12 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
             _autoPlayTimer.Dispose();
         }
 
-        if (_dotnetObjRef is not null)
+        if (_dotnetObj is not null)
         {
             //_dotnetObjRef.Dispose(); // it is getting disposed in the following js call:
             try
             {
-               await _js.BitObserversUnregisterResize(RootElement, _resizeObserverId, _dotnetObjRef);
+               await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
