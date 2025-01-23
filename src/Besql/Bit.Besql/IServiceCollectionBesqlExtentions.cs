@@ -9,9 +9,16 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionBesqlExtentions
 {
-    public static IServiceCollection AddBesqlDbContextFactory<TContext>(this IServiceCollection services, Action<IServiceProvider, DbContextOptionsBuilder> optionsAction)
-        where TContext : DbContext
+    public static IServiceCollection AddBesqlDbContextFactory<TDbContext>(this IServiceCollection services,
+        Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction = null,
+        Func<IServiceProvider, TDbContext, Task>? dbContextInitializer = null)
+        where TDbContext : DbContext
     {
+        optionsAction ??= (_, _) => { };
+        dbContextInitializer ??= async (_, _) => { };
+
+        services.AddSingleton(dbContextInitializer);
+
         if (OperatingSystem.IsBrowser())
         {
             services.AddSingleton<BesqlDbContextInterceptor>();
@@ -19,7 +26,7 @@ public static class IServiceCollectionBesqlExtentions
             // To make optimized db context work in blazor wasm: https://github.com/dotnet/efcore/issues/31751
             // https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models
             AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
-            services.AddDbContextFactory<TContext, BesqlPooledDbContextFactory<TContext>>((serviceProvider, options) =>
+            services.AddDbContextFactory<TDbContext, BesqlPooledDbContextFactory<TDbContext>>((serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetRequiredService<BesqlDbContextInterceptor>());
 #if NET9_0_OR_GREATER
@@ -31,15 +38,20 @@ public static class IServiceCollectionBesqlExtentions
         else
         {
             services.TryAddSingleton<IBesqlStorage, NoopBesqlStorage>();
-            services.AddPooledDbContextFactory<TContext>(optionsAction);
+            services.AddDbContextFactory<TDbContext, PooledDbContextFactoryBase<TDbContext>>(optionsAction);
         }
 
         return services;
     }
 
-    public static IServiceCollection AddBesqlDbContextFactory<TContext>(this IServiceCollection services, Action<DbContextOptionsBuilder>? optionsAction)
-        where TContext : DbContext
+    public static IServiceCollection AddBesqlDbContextFactory<TDbContext>(this IServiceCollection services,
+        Action<DbContextOptionsBuilder>? optionsAction = null,
+        Func<TDbContext, Task>? dbContextInitializer = null)
+        where TDbContext : DbContext
     {
-        return services.AddBesqlDbContextFactory<TContext>((serviceProvider, options) => optionsAction?.Invoke(options));
+        optionsAction ??= _ => { };
+        dbContextInitializer ??= async _ => { };
+
+        return services.AddBesqlDbContextFactory<TDbContext>((serviceProvider, options) => optionsAction.Invoke(options), (serviceProvider, dbContext) => dbContextInitializer.Invoke(dbContext));
     }
 }
