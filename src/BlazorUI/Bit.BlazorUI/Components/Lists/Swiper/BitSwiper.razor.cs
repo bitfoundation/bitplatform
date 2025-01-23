@@ -130,7 +130,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
     protected override async Task OnParametersSetAsync()
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : "";
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
         await base.OnParametersSetAsync();
     }
@@ -169,8 +169,8 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
 
     private void SetNavigationButtonsVisibility(double translateX)
     {
-        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : "";
-        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : "";
+        _rightButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? 0 : -_swiperEffectiveWidth)) ? "display:none" : string.Empty;
+        _leftButtonStyle = (/*InfiniteScrolling is false && */translateX == (Dir == BitDir.Rtl ? _swiperEffectiveWidth : 0)) ? "display:none" : string.Empty;
 
         StateHasChanged();
     }
@@ -178,7 +178,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
     private async Task Go(bool isNext)
     {
         await GetDimensions();
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
 
         var sign = isNext ? -1 : 1;
         var scrollX = _swiperWidth / _allItems.Count * _internalScrollItemsCount;
@@ -222,7 +222,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         await GetDimensions();
 
         await _js.BitUtilsSetStyle(_swiper, "cursor", "grabbing");
-        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", "");
+        await _js.BitUtilsSetStyle(_swiper, "transitionDuration", string.Empty);
     }
 
     private async Task HandlePointerUp(MouseEventArgs e) => await HandlePointerLeave(e.ClientX);
@@ -232,7 +232,7 @@ public partial class BitSwiper : BitComponentBase, IAsyncDisposable
         if (_isPointerDown is false) return;
 
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_swiper, "cursor", "");
+        await _js.BitUtilsSetStyle(_swiper, "cursor", string.Empty);
 
         var time = (DateTime.Now.Ticks - _pointerDownTime) / 10_000;
         var distance = Math.Abs(clientX - _pointerDownX);

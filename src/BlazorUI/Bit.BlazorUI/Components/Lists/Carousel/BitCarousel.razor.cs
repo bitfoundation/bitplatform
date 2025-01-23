@@ -242,9 +242,9 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
 
     private void SetNavigationButtonsVisibility()
     {
-        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == _allItems.Count - 1) ? "display:none" : "";
+        _goLeftButtonStyle = (InfiniteScrolling is false && _currentIndices[_currentIndices.Length - 1] == _allItems.Count - 1) ? "display:none" : string.Empty;
 
-        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : "";
+        _goRightButtonStyle = (InfiniteScrolling is false && _currentIndices[0] == 0) ? "display:none" : string.Empty;
     }
 
     private async Task GoLeft() => await (Dir == BitDir.Rtl ? Prev() : Next());
@@ -305,7 +305,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         for (int i = 0; i < others.Length; i++)
         {
             var o = others[i];
-            o.InternalTransitionStyle = "";
+            o.InternalTransitionStyle = string.Empty;
             var x = sign * 100 * (offset + (sign * i));
             x = Dir == BitDir.Rtl ? -x : x;
             o.InternalTransformStyle = FormattableString.Invariant($"transform:translateX({x}%)");
@@ -388,7 +388,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
         if (Math.Abs(delta) <= 20) return;
 
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "");
+        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", string.Empty);
 
         if (delta < 0)
         {
@@ -411,7 +411,7 @@ public partial class BitCarousel : BitComponentBase, IAsyncDisposable
     private async Task HandlePointerUp(MouseEventArgs e)
     {
         _isPointerDown = false;
-        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "");
+        await _js.BitUtilsSetStyle(_carouselContainer, "cursor", string.Empty);
         StateHasChanged();
     }
 
