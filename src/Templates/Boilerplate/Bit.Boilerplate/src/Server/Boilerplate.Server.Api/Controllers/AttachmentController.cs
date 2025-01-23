@@ -104,7 +104,7 @@ public partial class AttachmentController : AppControllerBase
 
     [AllowAnonymous]
     [HttpGet("{userId}")]
-    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
+    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "*" })]
     public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
@@ -136,7 +136,7 @@ public partial class AttachmentController : AppControllerBase
     //#if (module == "Sales")
     [AllowAnonymous]
     [HttpGet("{productId}")]
-    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "*" })]
+    [ResponseCache(Duration = 7 * 24 * 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "*" })]
     public async Task<IActionResult> GetProductImage(Guid productId, CancellationToken cancellationToken)
     {
         var product = await DbContext.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
