@@ -9,7 +9,7 @@
         <PackageVersion Include="Bit.Bswup" Version="9.3.1-pre-03" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="9.3.1-pre-03" />
         <PackageVersion Include="Bit.SourceGenerators" Version="9.3.1-pre-03" />
-        <PackageVersion Include="libphonenumber-csharp" Version="8.13.52" />
+        <PackageVersion Include="libphonenumber-csharp" Version="8.13.53" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.1" />
@@ -20,7 +20,7 @@
         <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.30" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="9.0.30" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="9.0.30" />
-        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+        <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2957.106" />
         <PackageVersion Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageVersion Include="Velopack" Version="0.0.1053" />
         <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.1" />
@@ -35,29 +35,30 @@
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.AspNetCore" Version="5.0.1" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" Version="5.0.1" />
         <PackageVersion Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Maui" Version="5.0.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.3.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" Version="1.4.5.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.5.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.7.1" />
-        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.0" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity" Version="1.9.3.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection" Version="1.4.5.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.5.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.7.2" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.GooglePlayServices.Basement" Version="118.5.0.1" />
+        <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" Version="124.1.0.1" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Plugin.LocalNotification" Version="11.1.4" />
         <PackageVersion Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="AdsPush" Version="2.0.0" />
         <PackageVersion Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" Version="9.3.1-pre-03" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.1" />
-        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.29.0" />
+        <PackageVersion Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" Version="1.30.0" />
         <PackageVersion Condition="'$(module)' == 'Admin' OR '$(module)' == ''" Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.1.0" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.1" />
         <PackageVersion Condition=" ('$(offlineDb)' == 'true' OR '$(offlineDb)' == '') OR ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.1" />
-        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
+        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.2.efcore.9.0.0" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="5.3.0" />
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
@@ -73,7 +74,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="9.0.1" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
-        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.1.1" />
+        <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.1.3" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
         <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1" />
