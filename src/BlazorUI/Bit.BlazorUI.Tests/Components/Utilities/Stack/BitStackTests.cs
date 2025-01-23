@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Utilities.Stack;
 [TestClass]
 public class BitStackTests : BunitTestContext
 {
-    private const string STYLE = "flex-direction:column;gap:1rem;";
+    private const string STYLE = "display:flex;flex-direction:column;gap:1rem;";
 
     private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()
     {
@@ -305,7 +305,7 @@ public class BitStackTests : BunitTestContext
 
         var style = gap.HasValue() ? $"gap:{gap}" : $"gap:1rem";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;{style}"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -321,7 +321,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Gap, gap);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:{gap};"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:{gap};"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -402,7 +402,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = horizontal ? "row" : "column";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -417,7 +417,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Horizontal, true);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:row;gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:row;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -443,7 +443,7 @@ public class BitStackTests : BunitTestContext
             var jc = _AlignmentMap[alignment.Value];
             var ai = _AlignmentMap[alignment.Value];
 
-            component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:{ai};justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
+            component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:{ai};justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
         }
         else
         {
@@ -463,7 +463,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Alignment, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:space-between;justify-content:space-between"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between;justify-content:space-between"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -485,7 +485,7 @@ public class BitStackTests : BunitTestContext
 
         var ai = _AlignmentMap[horizontalAlign];
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:{ai}"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:{ai}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -500,7 +500,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.HorizontalAlign, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;align-items:space-between"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -516,7 +516,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = reversed ? "column-reverse" : "column";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -531,7 +531,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Reversed, true);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column-reverse;gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column-reverse;gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -553,7 +553,7 @@ public class BitStackTests : BunitTestContext
 
         var jc = _AlignmentMap[verticalAlign];
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod]
@@ -568,7 +568,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""flex-direction:column;gap:1rem;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -637,7 +637,7 @@ public class BitStackTests : BunitTestContext
 
         var fd = $"{(horizontal ? "row" : "column")}{(reversed ? "-reverse" : null)}";
 
-        component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem"" class=""bit-stc"" id:ignore></div>");
     }
 
     [DataTestMethod,
@@ -663,7 +663,7 @@ public class BitStackTests : BunitTestContext
                 var ai = _AlignmentMap[horizontal ? verticalAlign : horizontalAlign];
                 var jc = _AlignmentMap[horizontal ? horizontalAlign : verticalAlign];
 
-                component.MarkupMatches(@$"<div style=""flex-direction:{fd};gap:1rem;align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
+                component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem;align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
             }
         }
     }
