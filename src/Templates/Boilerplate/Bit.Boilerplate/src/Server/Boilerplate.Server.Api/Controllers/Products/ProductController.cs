@@ -70,6 +70,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
+        entityToAdd.Description = string.Join(',', cloudflareCacheService.GetDashboardPurgeUrls()); // Test
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
