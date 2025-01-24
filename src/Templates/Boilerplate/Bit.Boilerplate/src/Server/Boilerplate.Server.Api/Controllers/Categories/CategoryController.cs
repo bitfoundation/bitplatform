@@ -49,12 +49,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
-
         return dto;
     }
 
@@ -91,7 +85,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
+        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -112,7 +106,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
+        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

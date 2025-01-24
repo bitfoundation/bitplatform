@@ -35,6 +35,8 @@ namespace Boilerplate.Server.Api.Services;
 ///    - Set `SharedMaxAge` instead of `MaxAge`
 ///     This ensures caching only on edge servers(e.g., Cloudflare), without storing the response in browser caches.
 ///     You can later programmatically purge this cache entry using <see cref = "PurgeCache(string[])" /> or manually from Cloudflare dashboard or by jakejarvis/cloudflare-purge-action task in CI/CD pipeline.
+///     
+/// Note: The URL of the client's request must exactly match the URL provided to the Cloudflare purge cache API.
 /// </summary>
 public partial class CloudflareCacheService
 {
