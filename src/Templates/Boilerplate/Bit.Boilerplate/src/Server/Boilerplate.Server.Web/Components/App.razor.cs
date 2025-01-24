@@ -20,11 +20,11 @@ public partial class App
     {
         base.OnInitialized();
 
-        if (CultureInfoManager.MultilingualEnabled)
+        /*if (CultureInfoManager.MultilingualEnabled)
         {
             HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
             CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
-        }
+        }*/
     }
 }
 
