@@ -49,8 +49,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         Response.GetTypedHeaders().CacheControl = new()
         {
-            SharedMaxAge = TimeSpan.FromDays(7),
-            Public = true
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
         };
 
         return dto;

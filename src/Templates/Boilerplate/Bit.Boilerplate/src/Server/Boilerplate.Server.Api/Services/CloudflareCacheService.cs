@@ -12,13 +12,14 @@ namespace Boilerplate.Server.Api.Services;
 /// **In API Controllers**:
 /// Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
 /// {
-///     MaxAge = TimeSpan.FromDays(7),
-///     Public = true
+///     Public = true,
+///     MaxAge = TimeSpan.FromDays(1),
+///     SharedMaxAge = TimeSpan.FromDays(7)
 /// };
 /// Sample: StatisticsController.cs
 ///
 /// **In Razor Components**:
-/// «ResponseCache MaxAge="TimeSpan.FromDays(7)" Public="true" /»
+/// «ResponseCache MaxAge="TimeSpan.FromDays(1)" SharedMaxAge="TimeSpan.FromDays(7)" Public="true" /»
 /// Sample: TermsPage.razor
 ///
 /// ### Caching Options
@@ -33,7 +34,7 @@ namespace Boilerplate.Server.Api.Services;
 /// 2. **Cache Only on Cloudflare Edge**:
 ///    - Set `SharedMaxAge` instead of `MaxAge`
 ///     This ensures caching only on edge servers(e.g., Cloudflare), without storing the response in browser caches.
-///     You can later programmatically purge this cache entry using <see cref = "PurgeCache(string[])" />.
+///     You can later programmatically purge this cache entry using <see cref = "PurgeCache(string[])" /> or manually from Cloudflare dashboard.
 /// </summary>
 public partial class CloudflareCacheService
 {

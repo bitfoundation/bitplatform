@@ -21,8 +21,8 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
 
         Response.GetTypedHeaders().CacheControl = new()
         {
-            SharedMaxAge = TimeSpan.FromDays(7),
-            Public = true
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
         };
 
         return result;
@@ -33,8 +33,8 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     {
         Response.GetTypedHeaders().CacheControl = new()
         {
-            SharedMaxAge = TimeSpan.FromDays(7),
-            Public = true
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
         };
 
         return await DbContext.Categories
@@ -53,8 +53,8 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     {
         Response.GetTypedHeaders().CacheControl = new()
         {
-            SharedMaxAge = TimeSpan.FromDays(7),
-            Public = true
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
         };
 
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
