@@ -257,10 +257,11 @@ public static partial class Program
             }
         }
 
-        services.AddScoped<IUrlHelper>(sp =>
+        services.AddScoped(sp =>
         {
             var actionContext = sp.GetRequiredService<IActionContextAccessor>().ActionContext!;
-            return new UrlHelper(actionContext);
+            var urlHelperFactory = sp.GetRequiredService<IUrlHelperFactory>();
+            return urlHelperFactory.GetUrlHelper(actionContext);
         });
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 

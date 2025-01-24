@@ -1,5 +1,8 @@
-﻿using Boilerplate.Server.Api.Controllers;
+﻿//+:cnd:noEmit
+using Boilerplate.Server.Api.Controllers;
+//#if (module == "Admin")
 using Boilerplate.Server.Api.Controllers.Dashboard;
+//#endif
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -12,9 +15,11 @@ namespace Boilerplate.Server.Api.Services;
 ///     MaxAge = TimeSpan.FromDays(7),
 ///     Public = true
 /// };
+/// Sample: StatisticsController.cs
 ///
 /// **In Razor Components**:
 /// «ResponseCache MaxAge="TimeSpan.FromDays(7)" Public="true" /»
+/// Sample: TermsPage.razor
 ///
 /// ### Caching Options
 ///
@@ -32,7 +37,9 @@ namespace Boilerplate.Server.Api.Services;
 /// </summary>
 public partial class CloudflareCacheService
 {
+    //#if (module == "Admin")
     [AutoInject] private IUrlHelper urlHelper = default!;
+    //#endif
     [AutoInject] private HttpClient httpClient = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
@@ -59,6 +66,7 @@ public partial class CloudflareCacheService
         response.EnsureSuccessStatusCode();
     }
 
+    //#if (module == "Admin")
     public string[] GetDashboardPurgeUrls()
     {
         var dashboardController = nameof(DashboardController).Replace("Controller", "");
@@ -66,4 +74,5 @@ public partial class CloudflareCacheService
                 urlHelper.Action(nameof(DashboardController.GetProductsCountPerCategoryStats), dashboardController)!,
                 urlHelper.Action(nameof(DashboardController.GetProductsPercentagePerCategoryStats), dashboardController)!];
     }
+    //#endif
 }
