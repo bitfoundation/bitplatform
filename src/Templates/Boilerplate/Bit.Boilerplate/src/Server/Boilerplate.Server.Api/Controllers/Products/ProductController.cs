@@ -48,11 +48,7 @@ public partial class ProductController : AppControllerBase, IProductController
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
+        SetCloudflareCache($"Product_{id}");
 
         return dto;
     }
