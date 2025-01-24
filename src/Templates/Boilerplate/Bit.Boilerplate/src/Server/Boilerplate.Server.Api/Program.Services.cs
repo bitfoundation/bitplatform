@@ -264,10 +264,6 @@ public static partial class Program
             return urlHelperFactory.GetUrlHelper(actionContext);
         });
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-        services.Configure<RouteOptions>(options =>
-        {
-            options.AppendTrailingSlash = true;
-        });
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>

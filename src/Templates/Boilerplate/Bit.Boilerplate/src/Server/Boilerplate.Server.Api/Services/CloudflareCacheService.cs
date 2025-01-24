@@ -7,9 +7,8 @@ using Boilerplate.Server.Api.Controllers.Dashboard;
 namespace Boilerplate.Server.Api.Services;
 
 /// <summary>
-/// To control HTTP response caching, you can use the following approaches within your application:
+/// To control HTTP response caching, you can use the following approaches within your API Controllers:
 ///
-/// **In API Controllers**:
 /// Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
 /// {
 ///     Public = true,
@@ -17,10 +16,6 @@ namespace Boilerplate.Server.Api.Services;
 ///     SharedMaxAge = TimeSpan.FromDays(7)
 /// };
 /// Sample: StatisticsController.cs
-///
-/// **In Razor Components**:
-/// «ResponseCache MaxAge="TimeSpan.FromDays(1)" SharedMaxAge="TimeSpan.FromDays(7)" Public="true" /»
-/// Sample: TermsPage.razor
 ///
 /// ### Caching Options
 ///

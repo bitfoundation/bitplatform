@@ -47,6 +47,12 @@ public partial class ProductController : AppControllerBase, IProductController
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
+        };
+
         return dto;
     }
 
@@ -83,7 +89,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -99,7 +105,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
