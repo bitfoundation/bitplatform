@@ -98,7 +98,7 @@ public static partial class Program
                     context.Response.Headers.Remove("Pragma");
                     if (CultureInfoManager.MultilingualEnabled)
                     {
-                        context.Response.Headers.Vary = new(".AspNetCore.Culture");
+                        context.Response.Headers.Vary = new("Cookie");
                     }
                 }
             });
