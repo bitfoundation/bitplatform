@@ -50,7 +50,11 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        SetCloudflareCache($"Category_{id}");
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            Public = true,
+            SharedMaxAge = TimeSpan.FromDays(7)
+        };
 
         return dto;
     }

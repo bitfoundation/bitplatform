@@ -27,10 +27,6 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
             }
-            if (response.Headers.TryGetValues("Cache-Tag", out var cfCacheTag)) // Cloudflare cache tag
-            {
-                logScopeData["Cache-Tag"] = cfCacheTag.First();
-            }
             logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;
