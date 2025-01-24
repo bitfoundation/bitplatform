@@ -20,11 +20,11 @@ public partial class CloudflareCache : AppComponentBase
 
     private static readonly PropertyInfo? HttpContextProperty = IHttpContextAccessorType?.GetProperty("HttpContext");
 
-    private static readonly PropertyInfo? ItemsProperty = HttpContextProperty?.DeclaringType?.GetProperty("Items");
+    private static readonly PropertyInfo? ItemsProperty = HttpContextProperty?.PropertyType?.GetProperty("Items");
 
-    private static readonly PropertyInfo? ResponseProperty = HttpContextProperty?.DeclaringType?.GetProperty("Response");
+    private static readonly PropertyInfo? ResponseProperty = HttpContextProperty?.PropertyType?.GetProperty("Response");
 
-    private static readonly PropertyInfo? HeadersProperty = ResponseProperty?.DeclaringType?.GetProperty("Headers");
+    private static readonly PropertyInfo? HeadersProperty = ResponseProperty?.PropertyType?.GetProperty("Headers");
 
     protected async override Task OnInitAsync()
     {
