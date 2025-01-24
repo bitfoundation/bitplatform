@@ -87,8 +87,7 @@ public static partial class Program
                     {
                         Public = true,
                         NoTransform = true,
-                        MaxAge = TimeSpan.FromDays(1),
-                        SharedMaxAge = TimeSpan.FromDays(7)
+                        MaxAge = TimeSpan.FromDays(7)
                     };
                 }
 

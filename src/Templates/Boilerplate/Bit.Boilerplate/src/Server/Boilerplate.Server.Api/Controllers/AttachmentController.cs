@@ -116,8 +116,7 @@ public partial class AttachmentController : AppControllerBase
         Response.GetTypedHeaders().CacheControl = new()
         {
             Public = true,
-            MaxAge = TimeSpan.FromDays(1),
-            SharedMaxAge = TimeSpan.FromDays(7)
+            MaxAge = TimeSpan.FromDays(7)
         };
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)

@@ -7,9 +7,9 @@ namespace Boilerplate.Client.Core.Components;
 /// </summary>
 public partial class ResponseCache : AppComponentBase
 {
-    [Parameter] public TimeSpan MaxAge { get; set; } = TimeSpan.Zero;
+    [Parameter] public TimeSpan? MaxAge { get; set; }
 
-    [Parameter] public TimeSpan SharedMaxAge { get; set; } = TimeSpan.Zero;
+    [Parameter] public TimeSpan? SharedMaxAge { get; set; }
 
     [AutoInject] IServiceProvider serviceProvider = default!;
 
@@ -32,7 +32,18 @@ public partial class ResponseCache : AppComponentBase
 
         var items = (IDictionary<object, object?>)ItemsProperty!.GetValue(httpContext)!;
 
-        items["Cache-Control-Override"] = $"public, s-maxage={SharedMaxAge.TotalSeconds}, max-age={MaxAge.TotalSeconds}";
+        var cacheControl = $"public";
+
+        if (MaxAge is not null)
+        {
+            cacheControl += $", max-age={MaxAge.Value.TotalSeconds}";
+        }
+        if (SharedMaxAge is not null)
+        {
+            cacheControl += $", s-maxage={SharedMaxAge.Value.TotalSeconds}";
+        }
+
+        items["Cache-Control-Override"] = cacheControl;
         // See Server.Web's Program.Middlewares.cs
 
         await base.OnInitAsync();
