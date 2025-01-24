@@ -91,7 +91,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{dto.Id}");
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
