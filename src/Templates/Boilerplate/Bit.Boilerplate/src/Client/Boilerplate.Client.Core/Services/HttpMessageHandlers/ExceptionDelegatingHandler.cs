@@ -23,7 +23,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["RequestId"] = requestId.First();
             }
-            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus))
+            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
             {
                 logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
             }
