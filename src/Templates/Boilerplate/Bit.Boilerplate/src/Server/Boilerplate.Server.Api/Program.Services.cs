@@ -7,7 +7,9 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.ResponseCompression;
 using Twilio;
 using PhoneNumbers;
@@ -255,6 +257,13 @@ public static partial class Program
             }
         }
 
+        services.AddScoped<IUrlHelper>(sp =>
+        {
+            var actionContext = sp.GetRequiredService<IActionContextAccessor>().ActionContext!;
+            return new UrlHelper(actionContext);
+        });
+        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {
@@ -265,6 +274,11 @@ public static partial class Program
         services.AddHttpClient<NugetStatisticsHttpClient>(c =>
         {
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
+
+        services.AddHttpClient<CloudflareCacheService>(c =>
+        {
+            c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
     }
 

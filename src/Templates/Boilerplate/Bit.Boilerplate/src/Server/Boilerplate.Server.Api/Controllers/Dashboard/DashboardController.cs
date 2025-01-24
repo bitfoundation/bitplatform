@@ -19,25 +19,44 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         result.TotalCategories = await DbContext.Categories.CountAsync(cancellationToken);
         result.CategoriesWithProductCount = await DbContext.Categories.CountAsync(c => c.Products.Count > 0, cancellationToken);
 
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            SharedMaxAge = TimeSpan.FromDays(7),
+            Public = true
+        };
+
         return result;
     }
 
-    [HttpGet, EnableQuery]
-    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
+    [HttpGet]
+    public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
     {
-        return DbContext.Categories
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            SharedMaxAge = TimeSpan.FromDays(7),
+            Public = true
+        };
+
+        return await DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
                         {
                             CategoryName = c.Name,
                             CategoryColor = c.Color,
                             ProductCount = c.Products!.Count()
-                        });
+                        })
+                        .ToListAsync(cancellationToken);
     }
 
 
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            SharedMaxAge = TimeSpan.FromDays(7),
+            Public = true
+        };
+
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
         if (productsTotalCount == 0) return [];

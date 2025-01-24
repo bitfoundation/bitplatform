@@ -24,7 +24,7 @@ public partial class ProfileSection
 
     protected override async Task OnInitAsync()
     {
-        var accessToken = await PrerenderStateService.GetValue(AuthTokenProvider.GetAccessToken);
+        var accessToken = AuthTokenProvider.GetAccessToken();
 
         profileImageUploadUrl = new Uri(AbsoluteServerAddress, $"/api/Attachment/UploadProfileImage?access_token={accessToken}").ToString();
 

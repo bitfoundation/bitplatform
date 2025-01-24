@@ -3,6 +3,7 @@
 using AdsPush.Abstraction.Settings;
 //#endif
 using System.Text.RegularExpressions;
+using Boilerplate.Server.Api.Services;
 
 namespace Boilerplate.Server.Api;
 
@@ -39,6 +40,8 @@ public partial class ServerApiSettings : SharedSettings
     //#endif
 
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
+
+    public CloudflareOptions? Cloudflare { get; set; }
 
     /// <summary>
     /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
@@ -180,4 +183,21 @@ public partial class SmsOptions
     public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
                               string.IsNullOrEmpty(TwilioAccountSid) is false &&
                               string.IsNullOrEmpty(TwilioAutoToken) is false;
+}
+
+public class CloudflareOptions
+{
+    public string? ApiToken { get; set; }
+
+    public string? ZoneId { get; set; }
+
+    /// <summary>
+    /// The <see cref="CloudflareCacheService"/> clears the cache for the current domain by default.
+    /// If multiple Cloudflare-hosted domains point to your backend, you will need to
+    /// purge the cache for each of them individually.
+    /// </summary>
+    public Uri[] AdditionalDomains { get; set; } = [];
+
+    public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
+        string.IsNullOrEmpty(ZoneId) is false;
 }

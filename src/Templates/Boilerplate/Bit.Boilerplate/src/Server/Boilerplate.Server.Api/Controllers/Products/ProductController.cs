@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
@@ -18,6 +19,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private CloudflareCacheService cloudflareCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
@@ -45,6 +47,12 @@ public partial class ProductController : AppControllerBase, IProductController
         var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
             ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
 
+        Response.GetTypedHeaders().CacheControl = new()
+        {
+            SharedMaxAge = TimeSpan.FromDays(7),
+            Public = true
+        };
+
         return dto;
     }
 
@@ -59,6 +67,8 @@ public partial class ProductController : AppControllerBase, IProductController
         await Validate(entityToAdd, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -79,6 +89,10 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), 
+            Url.Action(nameof(Get), new { id = dto.Id })!,
+            $"product/{dto.Id}" /* Sample for purging pre-rendered page */]);
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -92,6 +106,10 @@ public partial class ProductController : AppControllerBase, IProductController
         DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(),
+            Url.Action(nameof(Get), new { id })!,
+            $"product/{id}" /* Sample for purging pre-rendered page */]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
