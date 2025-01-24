@@ -68,7 +68,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{dto.Id}");
+        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -89,7 +89,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{dto.Id}");
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -105,7 +105,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{id}");
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

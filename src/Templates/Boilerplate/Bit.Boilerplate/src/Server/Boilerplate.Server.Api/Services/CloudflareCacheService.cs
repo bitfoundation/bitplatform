@@ -38,11 +38,14 @@ namespace Boilerplate.Server.Api.Services;
 /// </summary>
 public partial class CloudflareCacheService
 {
+    //#if (module == "Admin")
+    [AutoInject] private IUrlHelper urlHelper = default!;
+    //#endif
     [AutoInject] private HttpClient httpClient = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
-    public async Task PurgeCache(params string[] tags)
+    public async Task PurgeCache(params string[] relativePaths)
     {
         if (serverApiSettings?.Cloudflare?.Configured is not true)
             return;
@@ -52,15 +55,25 @@ public partial class CloudflareCacheService
 
         var files = serverApiSettings.Cloudflare.AdditionalDomains
             .Union([httpContextAccessor.HttpContext!.Request.GetBaseUrl()])
-            .SelectMany(baseUri => tags.Select(path => new Uri(baseUri, path)))
+            .SelectMany(baseUri => relativePaths.Select(path => new Uri(baseUri, path)))
             .ToArray();
 
         using HttpRequestMessage request = new(HttpMethod.Post, $"{zoneId}/purge_cache");
         request.Headers.Add("Authorization", $"Bearer {apiToken}");
-        request.Content = JsonContent.Create(new { tags });
+        request.Content = JsonContent.Create(new { files });
 
         using HttpResponseMessage response = await httpClient.SendAsync(request);
 
         response.EnsureSuccessStatusCode();
     }
+
+    //#if (module == "Admin")
+    public string[] GetDashboardPurgeUrls()
+    {
+        var dashboardController = nameof(DashboardController).Replace("Controller", "");
+        return [urlHelper.Action(nameof(DashboardController.GetOverallAnalyticsStatsData), dashboardController)!,
+                urlHelper.Action(nameof(DashboardController.GetProductsCountPerCategoryStats), dashboardController)!,
+                urlHelper.Action(nameof(DashboardController.GetProductsPercentagePerCategoryStats), dashboardController)!];
+    }
+    //#endif
 }

@@ -257,6 +257,14 @@ public static partial class Program
             }
         }
 
+        services.AddScoped(sp =>
+        {
+            var actionContext = sp.GetRequiredService<IActionContextAccessor>().ActionContext!;
+            var urlHelperFactory = sp.GetRequiredService<IUrlHelperFactory>();
+            return urlHelperFactory.GetUrlHelper(actionContext);
+        });
+        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
         {

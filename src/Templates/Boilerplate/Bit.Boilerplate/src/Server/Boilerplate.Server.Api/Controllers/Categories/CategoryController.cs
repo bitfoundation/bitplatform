@@ -70,7 +70,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{dto.Id}");
+        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -112,7 +112,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{id}");
+        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
