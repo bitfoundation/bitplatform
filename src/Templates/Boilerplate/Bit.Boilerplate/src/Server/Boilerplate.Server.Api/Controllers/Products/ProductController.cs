@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
-using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
