@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Shared.Controllers.Categories;
-using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
