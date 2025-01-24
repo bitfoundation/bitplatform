@@ -75,37 +75,26 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        app.Use(async (context, next) =>
+        if (env.IsDevelopment() is false)
         {
-            context.Response.OnStarting(async () =>
+            app.Use(async (context, next) =>
             {
-                if (env.IsDevelopment() is false &&
-                    context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                     env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                 {
-                    context.Response.GetTypedHeaders().CacheControl = new()
+                    context.Response.OnStarting(async () =>
                     {
-                        Public = true,
-                        NoTransform = true,
-                        MaxAge = TimeSpan.FromDays(7)
-                    };
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            Public = true,
+                            NoTransform = true,
+                            MaxAge = TimeSpan.FromDays(7)
+                        };
+                    });
                 }
-
-                // See Client/Core/ResponseCache component
-                if (context.Items.TryGetValue("Cache-Control-Override", out var cacheControlOverride))
-                {
-                    context.Response.Headers.CacheControl = cacheControlOverride!.ToString();
-                    context.Response.Headers.Remove("Pragma");
-                    if (CultureInfoManager.MultilingualEnabled)
-                    {
-                        context.Response.Headers.Vary = new(".AspNetCore.Culture");
-                    }
-                }
+                await next.Invoke();
             });
-
-            await next.Invoke();
-        });
-
+        }
         app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
