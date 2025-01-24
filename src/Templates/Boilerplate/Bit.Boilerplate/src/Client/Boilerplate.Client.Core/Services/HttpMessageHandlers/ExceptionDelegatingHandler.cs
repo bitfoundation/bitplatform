@@ -23,6 +23,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["RequestId"] = requestId.First();
             }
+            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus))
+            {
+                logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
+            }
             logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;
