@@ -7,6 +7,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Shared.Controllers.Categories;
+using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
@@ -49,11 +50,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         if (dto is null)
             throw new ResourceNotFoundException(Localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
+        SetCloudflareCache($"Category_{id}");
 
         return dto;
     }
@@ -70,7 +67,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{dto.Id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -91,7 +88,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{dto.Id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -112,7 +109,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Category_{id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

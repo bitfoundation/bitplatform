@@ -7,6 +7,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
+using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -68,7 +69,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{dto.Id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -89,9 +90,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), 
-            Url.Action(nameof(Get), new { id = dto.Id })!,
-            $"product/{dto.Id}" /* Sample for purging pre-rendered page */]);
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{dto.Id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -107,9 +106,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(),
-            Url.Action(nameof(Get), new { id })!,
-            $"product/{id}" /* Sample for purging pre-rendered page */]);
+        await cloudflareCacheService.PurgeCache("Dashboard", $"Product_{id}");
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

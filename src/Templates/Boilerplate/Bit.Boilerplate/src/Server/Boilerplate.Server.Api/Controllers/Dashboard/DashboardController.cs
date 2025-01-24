@@ -19,11 +19,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         result.TotalCategories = await DbContext.Categories.CountAsync(cancellationToken);
         result.CategoriesWithProductCount = await DbContext.Categories.CountAsync(c => c.Products.Count > 0, cancellationToken);
 
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
+        SetCloudflareCache("Dashboard");
 
         return result;
     }
@@ -31,11 +27,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
     {
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
+        SetCloudflareCache("Dashboard");
 
         return await DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
@@ -51,11 +43,7 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)
     {
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            SharedMaxAge = TimeSpan.FromDays(7)
-        };
+        SetCloudflareCache("Dashboard");
 
         var productsTotalCount = await DbContext.Products.CountAsync(cancellationToken);
 
