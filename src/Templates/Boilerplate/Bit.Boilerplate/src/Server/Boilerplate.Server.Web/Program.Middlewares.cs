@@ -95,6 +95,7 @@ public static partial class Program
                 if (context.Items.TryGetValue("Cache-Control-Override", out var cacheControlOverride))
                 {
                     context.Response.Headers.CacheControl = cacheControlOverride!.ToString();
+                    context.Response.Headers.Remove("Pragma");
                     if (CultureInfoManager.MultilingualEnabled)
                     {
                         context.Response.Headers.Vary = new(".AspNetCore.Culture");

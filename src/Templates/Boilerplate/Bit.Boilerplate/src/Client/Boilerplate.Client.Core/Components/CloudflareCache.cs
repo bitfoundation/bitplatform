@@ -55,7 +55,7 @@ public partial class CloudflareCache : AppComponentBase
 
         var headers = (IDictionary<string, StringValues>)HeadersProperty!.GetValue(response)!;
 
-        headers["Cache-Tag"] = CacheTag ?? GetType().Name;
+        headers["Cache-Tag"] = CacheTag;
 
         await base.OnInitAsync();
     }
