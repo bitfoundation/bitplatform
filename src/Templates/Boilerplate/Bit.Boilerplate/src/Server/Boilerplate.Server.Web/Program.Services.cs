@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 //#endif
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
+using Microsoft.AspNetCore.Antiforgery;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server.Web;
@@ -97,6 +98,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
+        services.AddTransient<IAntiforgery, NoopAntiforgery>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped(sp =>
         {
