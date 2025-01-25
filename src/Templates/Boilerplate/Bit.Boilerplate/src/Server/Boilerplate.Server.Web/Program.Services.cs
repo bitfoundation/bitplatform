@@ -98,7 +98,6 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddTransient<IAntiforgery, NoOpAntiforgery>();
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
         services.AddScoped(sp =>
         {
