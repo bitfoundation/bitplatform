@@ -7,4 +7,4 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see cref="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage</see>
 /// </summary>
-public class LocalStorage(IJSRuntime js) : ButilStorage(js, "localStorage") { }
+public class LocalStorage(ButilJSRuntime js) : ButilStorage(js, "localStorage") { }

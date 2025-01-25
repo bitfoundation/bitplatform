@@ -24,6 +24,8 @@ public static class BitButil
         services.AddTransient<VisualViewport>();
         services.AddTransient<Window>();
 
+        services.AddScoped<ButilJSRuntime>();
+
         return services;
     }
 }

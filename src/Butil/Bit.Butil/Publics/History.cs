@@ -12,7 +12,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/History">https://developer.mozilla.org/en-US/docs/Web/API/History</see>
 /// </summary>
-public class History(IJSRuntime js) : IAsyncDisposable
+public class History(ButilJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action<object>> _handlers = new();
 

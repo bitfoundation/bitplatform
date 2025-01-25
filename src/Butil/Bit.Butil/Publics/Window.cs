@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window">https://developer.mozilla.org/en-US/docs/Web/API/Window</see>
 /// </summary>
-public class Window(IJSRuntime js)
+public class Window(ButilJSRuntime js)
 {
     private const string ElementName = "window";
 

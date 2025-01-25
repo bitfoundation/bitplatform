@@ -15,7 +15,7 @@ internal static class DomEventDispatcher
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DomEventListenersManager))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DomMouseEventListenersManager))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DomKeyboardEventListenersManager))]
-    internal static async Task AddEventListener<T>(IJSRuntime js,
+    internal static async Task AddEventListener<T>(ButilJSRuntime js,
         string elementName,
         string domEvent,
         Action<T> listener,
@@ -58,7 +58,7 @@ internal static class DomEventDispatcher
         await js.AddEventListener(elementName, domEvent, methodName, id, args, options, preventDefault, stopPropagation);
     }
 
-    internal static async Task RemoveEventListener<T>(IJSRuntime js,
+    internal static async Task RemoveEventListener<T>(ButilJSRuntime js,
         string elementName,
         string domEvent,
         Action<T> listener,

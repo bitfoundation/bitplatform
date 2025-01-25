@@ -16,7 +16,7 @@ namespace Bit.Butil;
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport</see>
 /// </summary>
 /// <param name="js"></param>
-public class VisualViewport(IJSRuntime js) : IAsyncDisposable
+public class VisualViewport(ButilJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 

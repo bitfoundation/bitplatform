@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Clipboard(IJSRuntime js)
+public class Clipboard(ButilJSRuntime js)
 {
     /// <summary>
     /// Requests text from the system clipboard, returning a Promise that 

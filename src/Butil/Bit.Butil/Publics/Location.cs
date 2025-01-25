@@ -11,7 +11,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location">https://developer.mozilla.org/en-US/docs/Web/API/Location</see>
 /// </summary>
-public class Location(IJSRuntime js)
+public class Location(ButilJSRuntime js)
 {
     /// <summary>
     /// returns a string containing the entire URL.

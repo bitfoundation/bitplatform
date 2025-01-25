@@ -3,7 +3,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Console(IJSRuntime js)
+public class Console(ButilJSRuntime js)
 {
     /// <summary>
     /// Log a message and stack trace to console if the first argument is false.

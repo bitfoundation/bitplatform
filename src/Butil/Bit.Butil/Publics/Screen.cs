@@ -13,7 +13,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Screen">https://developer.mozilla.org/en-US/docs/Web/API/Screen</see>
 /// </summary>
-public class Screen(IJSRuntime js) : IAsyncDisposable
+public class Screen(ButilJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 

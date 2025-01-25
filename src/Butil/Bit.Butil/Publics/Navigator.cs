@@ -8,7 +8,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator">https://developer.mozilla.org/en-US/docs/Web/API/Navigator</see>
 /// </summary>
-public class Navigator(IJSRuntime js)
+public class Navigator(ButilJSRuntime js)
 {
     /// <summary>
     /// Returns the amount of device memory in gigabytes. 

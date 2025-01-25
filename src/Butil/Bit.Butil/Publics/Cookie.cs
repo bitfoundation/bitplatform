@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie">https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie</see>
 /// </summary>
-public class Cookie(IJSRuntime js)
+public class Cookie(ButilJSRuntime js)
 {
     /// <summary>
     /// Gets all cookies registered on the current document.

@@ -6,7 +6,7 @@ namespace Bit.Butil;
 
 internal static class EventsJsInterop
 {
-    internal static async Task AddEventListener(this IJSRuntime js,
+    internal static async Task AddEventListener(this ButilJSRuntime js,
         string elementName,
         string eventName,
         string methodName,
@@ -25,7 +25,7 @@ internal static class EventsJsInterop
             preventDefault,
             stopPropagation);
 
-    internal static async Task RemoveEventListener(this IJSRuntime js,
+    internal static async Task RemoveEventListener(this ButilJSRuntime js,
         string elementName,
         string eventName,
         Guid[] listenerIds,

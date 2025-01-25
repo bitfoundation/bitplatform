@@ -9,7 +9,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Storage">https://developer.mozilla.org/en-US/docs/Web/API/Storage</see>
 /// </summary>
-public class ButilStorage(IJSRuntime js, string storageName)
+public class ButilStorage(ButilJSRuntime js, string storageName)
 {
     /// <summary>
     /// Returns an integer representing the number of data items stored in the Storage object.

@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Keyboard(IJSRuntime js) : IAsyncDisposable
+public class Keyboard(ButilJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, Action> _handlers = new();
 

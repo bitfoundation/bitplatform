@@ -9,7 +9,7 @@ namespace Bit.Butil;
 /// <br/>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification">https://developer.mozilla.org/en-US/docs/Web/API/Notification</see>
 /// </summary>
-public class Notification(IJSRuntime js)
+public class Notification(ButilJSRuntime js)
 {
     /// <summary>
     /// Checks if the runtime (browser or web-view) is supporting the Web Notification API.

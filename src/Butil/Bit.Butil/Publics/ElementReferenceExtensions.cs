@@ -28,7 +28,7 @@ public static class ElementReferenceExtensions
     {
         var context = (elementReference.Context as WebElementReferenceContext) ?? throw new InvalidOperationException("ElementReference has not been configured correctly.");
 
-        return JSRuntimeGetter(context);
+        return new ButilJSRuntime(JSRuntimeGetter(context));
     }
 
     /// <summary>

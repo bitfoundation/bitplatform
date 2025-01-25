@@ -10,7 +10,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Crypto">https://developer.mozilla.org/en-US/docs/Web/API/Crypto</see>
 /// </summary>
-public class Crypto(IJSRuntime js)
+public class Crypto(ButilJSRuntime js)
 {
     /// <summary>
     /// The Encrypt method of the Crypto interface that encrypts data.

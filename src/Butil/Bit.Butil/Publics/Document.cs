@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
-public class Document(IJSRuntime js)
+public class Document(ButilJSRuntime js)
 {
     private const string ElementName = "document";
 
