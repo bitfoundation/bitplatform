@@ -81,7 +81,8 @@ public static partial class Program
             context.Response.OnStarting(async () =>
             {
                 if (env.IsDevelopment() is false)
-                {// Caching static files on the Browser and CDNs' edge servers.
+                {   
+                    // Caching static files on the Browser and CDNs' edge servers.
                     if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                         env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
@@ -91,23 +92,6 @@ public static partial class Program
                             NoTransform = true,
                             MaxAge = TimeSpan.FromDays(7)
                         };
-                    }
-                }
-
-                if (context.User.IsAuthenticated() is false)
-                {
-                    // Cache responses on CDN edge servers.
-                    var responseCacheAtt = context.GetResponseCacheAttribute();
-                    if (responseCacheAtt is not null 
-                        && (responseCacheAtt.ResourceKind is ResourceKind.Api || CultureInfoManager.MultilingualEnabled is false)) // Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is set to `true`.
-                    {
-                        context.Response.GetTypedHeaders().CacheControl = new()
-                        {
-                            Public = true,
-                            MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
-                            SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
-                        };
-                        context.Response.Headers.Remove("Pragma");
                     }
                 }
             });

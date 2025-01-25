@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -28,6 +27,13 @@ internal class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseC
 
         context.ResponseExpirationTimeSpan = duration;
         context.Tags.Add(requestUrl);
+
+        context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
+        {
+            Public = true,
+            MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
+            SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
+        };
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)

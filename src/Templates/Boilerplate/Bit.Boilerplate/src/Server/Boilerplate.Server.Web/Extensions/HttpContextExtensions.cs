@@ -20,7 +20,7 @@ internal static class HttpContextExtensions
             }
         }
 
-        //#if (api == "Integrated")
+        //#if (IsInsideProjectTemplate)
         if (context.GetEndpoint()?.Metadata.OfType<ControllerActionDescriptor>().FirstOrDefault() is ControllerActionDescriptor action)
         {
             var att = action.MethodInfo.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true) ??
