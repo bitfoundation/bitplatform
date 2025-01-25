@@ -113,6 +113,8 @@ public static partial class Program
         app.UseCors();
         //#endif
 
+        app.UseOutputCache();
+
         app.UseAuthentication();
         app.UseAuthorization();
 

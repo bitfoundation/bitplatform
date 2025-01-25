@@ -9,7 +9,7 @@ namespace Boilerplate.Server.Api.Services;
 /// <summary>
 /// To control HTTP response caching, you can use the following approaches within your API Controllers:
 ///
-/// Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+/// Response.GetTypedHeaders().CacheControl = new()
 /// {
 ///     Public = true,
 ///     MaxAge = TimeSpan.FromDays(1),
