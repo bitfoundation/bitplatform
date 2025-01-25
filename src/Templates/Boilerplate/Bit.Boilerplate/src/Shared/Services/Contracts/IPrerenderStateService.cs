@@ -12,7 +12,7 @@ namespace Boilerplate.Shared.Services.Contracts;
 /// PersistentComponentState to persist data across renders, simplifies the process of managing application state in pre-rendering scenarios outlined in 
 /// the documentation: https://docs.microsoft.com/en-us/aspnet/core/blazor/components/prerendering-and-integration#persist-prerendered-state.
 /// 
-/// For cases where pre-rendering is unnecessary, such as in Blazor Hybrid, a `NoopPrerenderStateService` is provided. This implementation simply executes the provided 
+/// For cases where pre-rendering is unnecessary, such as in Blazor Hybrid, a `NoOpPrerenderStateService` is provided. This implementation simply executes the provided 
 /// function and returns its result without persisting any state.
 ///
 /// If pre-rendering is not required for your project, this service and its related dependencies can be safely removed.
