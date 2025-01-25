@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
 
-
 namespace Boilerplate.Server.Web;
 
 public static partial class Program

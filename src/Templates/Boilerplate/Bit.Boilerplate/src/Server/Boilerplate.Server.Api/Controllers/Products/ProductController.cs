@@ -7,7 +7,6 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
-using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -82,7 +81,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", "api/Home/Products" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", $"api/Home/Product/{dto.Id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -98,7 +97,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache("/", $"product/{id}", "api/Home/Products" /*You can also use Url.Action to build urls.*/);
+        await responseCacheService.PurgeCache("/", $"product/{id}", $"api/Home/Product/{id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
