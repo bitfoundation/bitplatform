@@ -16,6 +16,10 @@ namespace Boilerplate.Server.Api.Services;
 ///     SharedMaxAge = TimeSpan.FromDays(7)
 /// };
 /// Sample: StatisticsController.cs
+/// 
+/// **In Razor Components**:
+/// «CloudflareCache MaxAge="TimeSpan.FromDays(1)" SharedMaxAge="TimeSpan.FromDays(7)" Public="true" /»
+/// Sample: TermsPage.razor
 ///
 /// ### Caching Options
 ///
