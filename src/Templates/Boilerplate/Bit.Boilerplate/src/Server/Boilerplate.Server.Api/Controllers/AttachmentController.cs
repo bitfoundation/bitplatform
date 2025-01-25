@@ -104,6 +104,7 @@ public partial class AttachmentController : AppControllerBase
 
     [AllowAnonymous]
     [HttpGet("{userId}")]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7)]
     public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
@@ -112,12 +113,6 @@ public partial class AttachmentController : AppControllerBase
             throw new ResourceNotFoundException();
 
         var filePath = $"{AppSettings.UserProfileImagesDir}{user.ProfileImageName}";
-
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            MaxAge = TimeSpan.FromDays(7)
-        };
 
         if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
             return new EmptyResult();

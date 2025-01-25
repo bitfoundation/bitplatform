@@ -11,9 +11,9 @@ namespace Boilerplate.Server.Api.Services;
 /// The default Boilerplate project template includes:
 /// 1. `Static` file caching on browsers and CDN edge servers by setting `MaxAge` in `Server.Web\Program.Middlewares.cs`.
 /// 2. `Dynamic` file caching on browsers and CDN edge servers by setting `MaxAge` in `AttachmentController`.
-/// 3. Caching JSON responses on CDN edge servers by setting `SharedMaxAge` in controllers like `DashboardController`
-/// 4. ASP.NET Core Output Caching of pre-rendered HTML results for Blazor pages. See `BlazorOutputCachePolicy`
-/// 5. Caching pre-rendered HTML responses of blazor pages on CDN edge servers by setting `SharedMaxAge` in `Server.Web\Program.Middlewares.cs`.
+/// 3. Caching JSON responses on CDN edge servers by using `AppResponseCache` attribute in controllers like `StatisticsController`
+/// 4. ASP.NET Core Output Caching of pre-rendered HTML results for Blazor pages by using `AppResponseCache` attribute in pages like HomePage.razor
+/// 5. Caching pre-rendered HTML responses of blazor pages on CDN edge servers by using `AppResponseCache` attribute in pages like HomePage.razor.
 /// 
 /// ### Key Notes on `MaxAge` vs `SharedMaxAge` while setting `CacheControl`
 /// 

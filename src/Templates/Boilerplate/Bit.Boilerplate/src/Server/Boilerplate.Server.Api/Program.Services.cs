@@ -95,6 +95,8 @@ public static partial class Program
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddResponseCaching();
+        services.AddOutputCache();
+        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 

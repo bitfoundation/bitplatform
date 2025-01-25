@@ -11,14 +11,9 @@ public partial class StatisticsController : AppControllerBase, IStatisticsContro
 
     [AllowAnonymous]
     [HttpGet("{packageId}")]
+    [AppResponseCache(MaxAge = 3600 * 24)]
     public async Task<NugetStatsDto> GetNugetStats(string packageId, CancellationToken cancellationToken)
     {
-        Response.GetTypedHeaders().CacheControl = new()
-        {
-            Public = true,
-            MaxAge = TimeSpan.FromDays(1)
-        };
-
         return await nugetHttpClient.GetPackageStats(packageId, cancellationToken);
     }
 }

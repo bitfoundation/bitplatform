@@ -1,18 +1,36 @@
 ﻿using System.Reflection;
-using Boilerplate.Client.Core.Components;
+using Boilerplate.Shared.Attributes;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Microsoft.AspNetCore.Http;
 
-public static class HttpContextExtensions
+internal static class HttpContextExtensions
 {
-    public static BlazorOutputCacheAttribute? GetBlazorCache(this HttpContext context)
+    internal static AppResponseCacheAttribute? GetResponseCacheAttribute(this HttpContext context)
     {
-        var componentMetadata = context.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>();
+        if (context.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().FirstOrDefault() is ComponentTypeMetadata component)
+        {
+            var att = component.Type.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true);
+            if (att is not null)
+            {
+                att.ResourceKind = ResourceKind.Page;
+                return att;
+            }
+        }
 
-        if (componentMetadata?.FirstOrDefault() is not ComponentTypeMetadata component)
-            return null;
+        if (context.GetEndpoint()?.Metadata.OfType<ControllerActionDescriptor>().FirstOrDefault() is ControllerActionDescriptor action)
+        {
+            var att = action.MethodInfo.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true) ??
+                action.ControllerTypeInfo.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true);
 
-        return component.Type.GetCustomAttribute<BlazorOutputCacheAttribute>(inherit: true);
+            if (att is not null)
+            {
+                att.ResourceKind = ResourceKind.Api;
+                return att;
+            }
+        }
+
+        return null;
     }
 }

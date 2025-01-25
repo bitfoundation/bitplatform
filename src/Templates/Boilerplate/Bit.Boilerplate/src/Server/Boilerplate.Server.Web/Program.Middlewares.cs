@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
+using Boilerplate.Shared.Attributes;
 
 
 namespace Boilerplate.Server.Web;
@@ -94,18 +95,18 @@ public static partial class Program
                     }
                 }
 
-                if (CultureInfoManager.MultilingualEnabled is false
-                    && context.User.IsAuthenticated() is false)
+                if (context.User.IsAuthenticated() is false)
                 {
-                    // Cache pre-rendered HTML responses of Blazor pages on CDN edge servers.
-                    // Note: This is currently not supported when multilingual support is enabled, but ASP.NET Core's output caching will still function as expected.
-                    var blazorCache = context.GetBlazorCache();
-                    if (blazorCache is not null)
+                    // Cache responses on CDN edge servers.
+                    var responseCacheAtt = context.GetResponseCacheAttribute();
+                    if (responseCacheAtt is not null 
+                        && (responseCacheAtt.ResourceKind is ResourceKind.Api || CultureInfoManager.MultilingualEnabled is false)) // Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is set to `true`.
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
                             Public = true,
-                            SharedMaxAge = TimeSpan.FromSeconds(blazorCache.Duration)
+                            MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
+                            SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
                         };
                         context.Response.Headers.Remove("Pragma");
                     }
@@ -132,10 +133,10 @@ public static partial class Program
         app.UseCors();
         //#endif
 
-        app.UseOutputCache();
-
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseOutputCache();
 
         app.UseAntiforgery();
 
@@ -171,14 +172,16 @@ public static partial class Program
         app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
-        app.MapControllers().RequireAuthorization();
+        app.MapControllers()
+           .RequireAuthorization()
+           .CacheOutput("AppResponseCachePolicy");
         //#endif
 
         app.UseSiteMap();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
-            .CacheOutput("BlazorOutputCache")
+            .CacheOutput("AppResponseCachePolicy")
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
@@ -211,7 +214,7 @@ public static partial class Program
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
-        });
+        }).CacheOutput();
     }
 
     private static string? siteMap;

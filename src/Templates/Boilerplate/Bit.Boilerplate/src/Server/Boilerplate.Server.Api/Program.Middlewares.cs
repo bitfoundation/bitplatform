@@ -66,6 +66,8 @@ public static partial class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseOutputCache();
+
         app.UseAntiforgery();
 
         app.UseSwagger();

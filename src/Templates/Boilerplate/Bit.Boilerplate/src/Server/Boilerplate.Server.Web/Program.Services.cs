@@ -43,17 +43,16 @@ public static partial class Program
         services.AddResponseCaching();
         services.AddOutputCache(options =>
         {
-            options.AddPolicy("BlazorOutputCache", policy =>
+            options.AddPolicy("AppResponseCachePolicy", policy =>
             {
-                var builder = policy.AddPolicy<BlazorOutputCachePolicy>().SetVaryByHeader(HeaderNames.AcceptLanguage);
+                var builder = policy.AddPolicy<AppResponseCachePolicy>().SetVaryByHeader(HeaderNames.AcceptLanguage);
 
                 if (CultureInfoManager.MultilingualEnabled)
                 {
-                    builder.VaryByValue(context => new(CookieRequestCultureProvider.DefaultCookieName, CultureInfo.CurrentUICulture.Name));
+                    builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
                 }
             });
         });
-
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
