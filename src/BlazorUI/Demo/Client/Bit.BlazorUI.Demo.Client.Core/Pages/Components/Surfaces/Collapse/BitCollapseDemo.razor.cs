@@ -73,10 +73,22 @@ public partial class BitCollapseDemo
 
     private bool expanded = true;
     private bool expandedRtl = true;
+    private bool expandedClass = true;
+    private bool expandedStyle = true;
 
     private void OnExpandCollapseClick()
     {
         expanded = !expanded;
+    }
+
+    private void OnExpandCollapseStyleClick()
+    {
+        expandedStyle = !expandedStyle;
+    }
+
+    private void OnExpandCollapseClassClick()
+    {
+        expandedClass = !expandedClass;
     }
 
     private void OnExpandCollapseRtlClick()

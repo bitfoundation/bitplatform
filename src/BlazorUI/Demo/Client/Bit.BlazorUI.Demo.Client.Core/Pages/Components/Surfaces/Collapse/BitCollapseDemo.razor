@@ -11,7 +11,7 @@
     <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <ExamplePreview>
             <div>
-                <BitButton OnClick="OnExpandCollapseClick">@(expanded ? "Collapse" : "Expand")</BitButton>
+                <BitToggleButton OnText="Expand" OffText="Collapse" OnClick="OnExpandCollapseClick" />
                 <BitCollapse Expanded="expanded">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
                 </BitCollapse>
@@ -19,16 +19,20 @@
         </ExamplePreview>
     </ComponentExampleBox>
 
-    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" Id="example2">
+    <ComponentExampleBox Title="Style & Class" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <ExamplePreview>
             <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
             <br /><br />
             <div>
-                <BitCollapse Expanded Styles="@(new() { Expanded = "padding:10px;background-color:#333;border: 1px solid #ff0000;" })">
+                <BitToggleButton OnText="Expand" OffText="Collapse" OnClick="OnExpandCollapseStyleClick" />
+                <br /><br />
+                <BitCollapse Expanded="expandedStyle" Styles="@(new() { Expanded = "padding:10px;background-color:#333;border: 1px solid #ff0000;" })">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
                 </BitCollapse>
                 <br /><br />
-                <BitCollapse Expanded Classes="@(new() { Expanded = "custom-expanded" })">
+                <BitToggleButton OnText="Expand" OffText="Collapse" OnClick="OnExpandCollapseClassClick" />
+                <br /><br />
+                <BitCollapse Expanded="expandedClass" Classes="@(new() { Expanded = "custom-expanded" })">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis a elit vel lacus tincidunt dignissim. Phasellus mollis mauris orci, eget fermentum diam porta eu. Integer a consequat sapien, pellentesque aliquam velit. Nullam quis ligula vitae nisi accumsan auctor. Ut faucibus nulla a est commodo, vel sagittis neque tristique. In nec urna hendrerit, iaculis turpis sed, dictum elit. Sed id sagittis nunc, vitae ornare elit. Sed consequat condimentum massa, non euismod magna gravida vitae. Donec rhoncus suscipit blandit. Nunc ultrices vulputate nisl. Duis lobortis tristique nunc, id egestas ligula condimentum quis. Integer elementum tempor cursus. Phasellus vestibulum neque non laoreet faucibus. Nunc eu congue urna, in dapibus justo.
                 </BitCollapse>
             </div>
@@ -40,7 +44,7 @@
             <div>Use BitCollapse in right-to-left (RTL).</div><br />
             <br /><br />
             <div>
-                <BitButton OnClick="OnExpandCollapseRtlClick">@(expandedRtl ? "بستن" : "باز کردن")</BitButton>
+                <BitToggleButton OnText="باز کردن" OffText="بستن" OnClick="OnExpandCollapseRtlClick" />
                 <BitCollapse Expanded="expandedRtl" Dir="BitDir.Rtl">
                     لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
                 </BitCollapse>
