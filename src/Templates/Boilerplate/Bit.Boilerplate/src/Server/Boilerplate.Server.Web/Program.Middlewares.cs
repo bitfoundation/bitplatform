@@ -96,10 +96,6 @@ public static partial class Program
                 {
                     context.Response.Headers.CacheControl = cacheControlOverride!.ToString();
                     context.Response.Headers.Remove("Pragma");
-                    if (CultureInfoManager.MultilingualEnabled)
-                    {
-                        context.Response.Headers.Vary = new("Accept-Language");
-                    }
                 }
             });
 
