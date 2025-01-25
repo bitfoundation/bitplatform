@@ -19,7 +19,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
-    [AutoInject] private CloudflareCacheService cloudflareCacheService = default!;
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
@@ -70,7 +70,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await responseCacheService.PurgeCache(responseCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -91,7 +91,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
+        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -112,7 +112,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
+        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

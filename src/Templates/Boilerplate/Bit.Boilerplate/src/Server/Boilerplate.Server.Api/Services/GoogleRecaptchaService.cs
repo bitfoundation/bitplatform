@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Server.Api.Services;
 
-public partial class GoogleRecaptchaHttpClient
+public partial class GoogleRecaptchaService
 {
     [AutoInject] protected ServerApiSettings AppSettings = default!;
 

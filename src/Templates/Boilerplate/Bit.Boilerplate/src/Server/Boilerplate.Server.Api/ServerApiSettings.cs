@@ -192,7 +192,7 @@ public class CloudflareOptions
     public string? ZoneId { get; set; }
 
     /// <summary>
-    /// The <see cref="CloudflareCacheService"/> clears the cache for the current domain by default.
+    /// The <see cref="ResponseCacheService"/> clears the cache for the current domain by default.
     /// If multiple Cloudflare-hosted domains point to your backend, you will need to
     /// purge the cache for each of them individually.
     /// </summary>

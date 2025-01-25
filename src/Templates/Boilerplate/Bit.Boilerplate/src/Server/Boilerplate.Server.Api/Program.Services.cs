@@ -266,18 +266,18 @@ public static partial class Program
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         //#if (captcha == "reCaptcha")
-        services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
+        services.AddHttpClient<GoogleRecaptchaService>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
 
-        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        services.AddHttpClient<NugetStatisticsService>(c =>
         {
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
         });
 
-        services.AddHttpClient<CloudflareCacheService>(c =>
+        services.AddHttpClient<ResponseCacheService>(c =>
         {
             c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });

@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Core.Services;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Boilerplate.Server.Web.Components;
 
-[OutputCache]
 public partial class App
 {
     private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);

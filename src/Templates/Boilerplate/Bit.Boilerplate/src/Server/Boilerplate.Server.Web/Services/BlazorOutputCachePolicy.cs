@@ -1,20 +1,32 @@
 ﻿using Microsoft.AspNetCore.OutputCaching;
-using Boilerplate.Client.Core.Components.Pages;
-using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace Boilerplate.Server.Web.Services;
 
-public class BlazorOutputCachePolicy : IOutputCachePolicy
+public partial class BlazorOutputCachePolicy : IOutputCachePolicy
 {
+    [AutoInject] private ILogger<BlazorOutputCachePolicy> logger;
+    [AutoInject] private IHostEnvironment env;
+
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
-        var componentMetadata = context.HttpContext.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>();
+        var blazorCache = context.HttpContext.GetBlazorCache();
 
-        if (componentMetadata?.FirstOrDefault() is not ComponentTypeMetadata component)
+        if (blazorCache is null)
+        {
+            context.EnableOutputCaching = false;
             return;
+        }
 
-        context.Tags.Add(component.Type.Name);
-        context.EnableOutputCaching = component.Type == typeof(TermsPage);
+        if (env.IsDevelopment())
+        {
+            var requestUrl = context.HttpContext.Request.GetUri()?.PathAndQuery;
+            logger.LogInformation("In production, the HTML result of {Url} url would be cached.", requestUrl);
+            return; // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
+        }
+
+        context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(blazorCache.Duration);
+        context.Tags.Add(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).PathAndQuery);
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)

@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Controllers.Statistics;
 [ApiController, Route("api/[controller]/[action]")]
 public partial class StatisticsController : AppControllerBase, IStatisticsController
 {
-    [AutoInject] private NugetStatisticsHttpClient nugetHttpClient = default!;
+    [AutoInject] private NugetStatisticsService nugetHttpClient = default!;
 
     [AllowAnonymous]
     [HttpGet("{packageId}")]

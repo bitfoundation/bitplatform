@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Localization;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server.Web;
@@ -42,7 +43,15 @@ public static partial class Program
         services.AddResponseCaching();
         services.AddOutputCache(options =>
         {
-            options.AddBasePolicy(policy => policy.Cache().AddPolicy<BlazorOutputCachePolicy>());
+            options.AddPolicy("BlazorOutputCache", policy =>
+            {
+                var builder = policy.AddPolicy<BlazorOutputCachePolicy>().SetVaryByHeader(HeaderNames.AcceptLanguage);
+
+                if (CultureInfoManager.MultilingualEnabled)
+                {
+                    builder.VaryByValue(context => new(CookieRequestCultureProvider.DefaultCookieName, CultureInfo.CurrentUICulture.Name));
+                }
+            });
         });
 
         services.AddMemoryCache();

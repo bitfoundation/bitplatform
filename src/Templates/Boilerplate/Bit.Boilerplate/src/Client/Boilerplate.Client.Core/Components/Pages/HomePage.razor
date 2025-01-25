@@ -1,5 +1,6 @@
 ﻿@attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
+@attribute [BlazorOutputCache(Duration = 3600 * 24)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>

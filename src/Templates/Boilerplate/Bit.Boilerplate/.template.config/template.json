@@ -508,10 +508,10 @@
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaService.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs"
                     ]
                 },
                 {
@@ -549,7 +549,7 @@
                         "src/Tests/Services/EmailReaderService.cs",
                         "src/Tests/Services/UserService.cs",
                         "src/Tests/Services/FakePhoneService.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs",
                         "src/Tests/Extensions/PlaywrightAssetCachingExtensions.cs",
                         "src/Tests/Extensions/PlaywrightCacheStorageExtensions.cs",
                         "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",

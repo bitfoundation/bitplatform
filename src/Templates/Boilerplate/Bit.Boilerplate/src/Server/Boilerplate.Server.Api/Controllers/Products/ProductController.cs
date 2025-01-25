@@ -19,7 +19,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
-    [AutoInject] private CloudflareCacheService cloudflareCacheService = default!;
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
@@ -68,7 +68,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache(cloudflareCacheService.GetDashboardPurgeUrls());
+        await responseCacheService.PurgeCache(responseCacheService.GetDashboardPurgeUrls());
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -89,7 +89,9 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
+        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(),
+            Url.Action(nameof(Get), new { id = dto.Id })!,
+            $"product/{dto.Id}", "/" /* Optionally, clear the cache for your pre-rendered page (if applicable) */]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -105,7 +107,9 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await cloudflareCacheService.PurgeCache([.. cloudflareCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
+        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(),
+            Url.Action(nameof(Get), new { id })!,
+            $"product/{id}", "/" /* Optionally, clear the cache for your pre-rendered page (if applicable) */]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

@@ -75,14 +75,15 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        if (env.IsDevelopment() is false)
+
+        app.Use(async (context, next) =>
         {
-            app.Use(async (context, next) =>
+            context.Response.OnStarting(async () =>
             {
-                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
-                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
-                {
-                    context.Response.OnStarting(async () =>
+                if (env.IsDevelopment() is false)
+                {// Caching static files on the Browser and CDNs' edge servers.
+                    if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                        env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
@@ -90,11 +91,29 @@ public static partial class Program
                             NoTransform = true,
                             MaxAge = TimeSpan.FromDays(7)
                         };
-                    });
+                    }
                 }
-                await next.Invoke();
+
+                if (CultureInfoManager.MultilingualEnabled is false
+                    && context.User.IsAuthenticated() is false)
+                {
+                    // Cache pre-rendered HTML responses of Blazor pages on CDN edge servers.
+                    // Note: This is currently not supported when multilingual support is enabled, but ASP.NET Core's output caching will still function as expected.
+                    var blazorCache = context.GetBlazorCache();
+                    if (blazorCache is not null)
+                    {
+                        context.Response.GetTypedHeaders().CacheControl = new()
+                        {
+                            Public = true,
+                            SharedMaxAge = TimeSpan.FromSeconds(blazorCache.Duration)
+                        };
+                        context.Response.Headers.Remove("Pragma");
+                    }
+                }
             });
-        }
+
+            await next.Invoke();
+        });
         app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
@@ -159,6 +178,7 @@ public static partial class Program
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
+            .CacheOutput("BlazorOutputCache")
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
