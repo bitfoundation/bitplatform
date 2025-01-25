@@ -3,7 +3,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
-using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Categories;
 using Boilerplate.Server.Api.Models.Categories;
 using Boilerplate.Shared.Controllers.Categories;
@@ -19,7 +18,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
-    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<CategoryDto> Get()
@@ -64,8 +62,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache(responseCacheService.GetDashboardPurgeUrls());
-
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -85,8 +81,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id = dto.Id })!]);
-
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -105,8 +99,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         DbContext.Categories.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
-
-        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(), Url.Action(nameof(Get), new { id })!]);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);

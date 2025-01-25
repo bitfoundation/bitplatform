@@ -87,6 +87,8 @@ public static partial class Program
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
-        app.MapControllers().RequireAuthorization();
+        app.MapControllers()
+           .RequireAuthorization()
+           .CacheOutput("AppResponseCachePolicy");
     }
 }

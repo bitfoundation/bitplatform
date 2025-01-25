@@ -27,6 +27,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
             }
+            if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
+            {
+                logScopeData["Age"] = age.First();
+            }
             logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;

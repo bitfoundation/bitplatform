@@ -2,15 +2,13 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.ResponseCompression;
+using System.Security.Cryptography.X509Certificates;
 using Twilio;
 using PhoneNumbers;
 using FluentStorage;
@@ -95,7 +93,18 @@ public static partial class Program
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddResponseCaching();
-        services.AddOutputCache();
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy("AppResponseCachePolicy", policy =>
+            {
+                var builder = policy.AddPolicy<AppResponseCachePolicy>().SetVaryByHeader(HeaderNames.AcceptLanguage);
+
+                if (CultureInfoManager.MultilingualEnabled)
+                {
+                    builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
+                }
+            });
+        });
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
@@ -258,14 +267,6 @@ public static partial class Program
                 fluentEmailServiceBuilder.AddSmtpSender(emailSettings.Host, emailSettings.Port);
             }
         }
-
-        services.AddScoped(sp =>
-        {
-            var actionContext = sp.GetRequiredService<IActionContextAccessor>().ActionContext!;
-            var urlHelperFactory = sp.GetRequiredService<IUrlHelperFactory>();
-            return urlHelperFactory.GetUrlHelper(actionContext);
-        });
-        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         //#if (captcha == "reCaptcha")
         services.AddHttpClient<GoogleRecaptchaService>(c =>

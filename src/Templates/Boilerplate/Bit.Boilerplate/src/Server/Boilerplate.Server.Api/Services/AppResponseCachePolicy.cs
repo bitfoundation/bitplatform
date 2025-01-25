@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
-namespace Boilerplate.Server.Web.Services;
+namespace Boilerplate.Server.Api.Services;
 
-public class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCachePolicy> logger) : IOutputCachePolicy
+internal class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCachePolicy> logger) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {

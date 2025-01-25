@@ -7,6 +7,7 @@ using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
+using Humanizer;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -62,8 +63,6 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache(responseCacheService.GetDashboardPurgeUrls());
-
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -83,9 +82,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(),
-            Url.Action(nameof(Get), new { id = dto.Id })!,
-            $"product/{dto.Id}", "/" /* Optionally, clear the cache for your pre-rendered page (if applicable) */]);
+        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", "api/Home/Products" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -101,9 +98,7 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeCache([.. responseCacheService.GetDashboardPurgeUrls(),
-            Url.Action(nameof(Get), new { id })!,
-            $"product/{id}", "/" /* Optionally, clear the cache for your pre-rendered page (if applicable) */]);
+        await responseCacheService.PurgeCache("/", $"product/{id}", "api/Home/Products" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
