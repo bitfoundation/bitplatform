@@ -97,7 +97,7 @@ public static partial class Program
         {
             options.AddPolicy("AppResponseCachePolicy", policy =>
             {
-                var builder = policy.AddPolicy<AppResponseCachePolicy>().SetVaryByHeader(HeaderNames.AcceptLanguage);
+                var builder = policy.AddPolicy<AppResponseCachePolicy>();
 
                 if (CultureInfoManager.MultilingualEnabled)
                 {
