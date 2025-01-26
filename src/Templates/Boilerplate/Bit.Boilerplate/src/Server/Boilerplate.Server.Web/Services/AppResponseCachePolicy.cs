@@ -45,6 +45,11 @@ public class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCac
             //#endif
         };
         context.HttpContext.Response.Headers.Remove("Pragma");
+
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+        context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
+    }
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)

@@ -98,7 +98,6 @@ public static partial class Program
             options.AddPolicy("AppResponseCachePolicy", policy =>
             {
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
-
                 if (CultureInfoManager.MultilingualEnabled)
                 {
                     builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
