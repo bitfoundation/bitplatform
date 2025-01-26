@@ -23,6 +23,16 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["RequestId"] = requestId.First();
             }
+            //#if (cloudflare == true)
+            if (response.Headers.TryGetValues("Cf-Cache-Status", out var cfCacheStatus)) // Cloudflare cache status
+            {
+                logScopeData["Cf-Cache-Status"] = cfCacheStatus.First();
+            }
+            //#endif
+            if (response.Headers.TryGetValues("Age", out var age)) // ASP.NET Core Output Caching
+            {
+                logScopeData["Age"] = age.First();
+            }
             logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;

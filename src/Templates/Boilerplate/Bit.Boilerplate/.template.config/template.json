@@ -193,13 +193,6 @@
             "defaultValue": "false",
             "description": "Add todo page sample."
         },
-        "windows": {
-            "displayName": "Add Windows project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true",
-            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
-        },
         "sentry": {
             "displayName": "Add Sentry logging to project?",
             "type": "parameter",
@@ -225,6 +218,20 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+        },
+        "cloudflare": {
+            "displayName": "Add cloudflare CDN integration?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Add cloudflare CDN integration."
+        },
+        "windows": {
+            "displayName": "Add Windows project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
         },
         "nameToLower": {
             "type": "generated",
@@ -508,10 +515,10 @@
                 {
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaHttpClient.cs",
+                        "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaService.cs",
                         "src/Server/Boilerplate.Server.Api/Services/GoogleRecaptchaVerificationResponse.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs"
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs"
                     ]
                 },
                 {
@@ -538,7 +545,9 @@
                     "condition": "(api == Integrated)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Web/appsettings*.json",
-                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs"
+                        "src/Server/Boilerplate.Server.Web/Services/AppResponseCachePolicy.cs",
+                        "src/Server/Boilerplate.Server.Web/Services/SimpleJwtSecureDataFormat.cs",
+                        "src/Server/Boilerplate.Server.Web/Extensions/HttpContextExtensions.cs"
                     ]
                 },
                 {
@@ -549,7 +558,7 @@
                         "src/Tests/Services/EmailReaderService.cs",
                         "src/Tests/Services/UserService.cs",
                         "src/Tests/Services/FakePhoneService.cs",
-                        "src/Tests/Services/FakeGoogleRecaptchaHttpClient.cs",
+                        "src/Tests/Services/FakeGoogleRecaptchaService.cs",
                         "src/Tests/Extensions/PlaywrightAssetCachingExtensions.cs",
                         "src/Tests/Extensions/PlaywrightCacheStorageExtensions.cs",
                         "src/Tests/Extensions/PlaywrightNetworkExtensions.cs",

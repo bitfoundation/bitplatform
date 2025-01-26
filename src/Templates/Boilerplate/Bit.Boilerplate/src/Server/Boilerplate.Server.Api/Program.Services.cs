@@ -2,13 +2,13 @@
 using System.Net;
 using System.Net.Mail;
 using System.IO.Compression;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
+using System.Security.Cryptography.X509Certificates;
 using Twilio;
 using PhoneNumbers;
 using FluentStorage;
@@ -93,6 +93,18 @@ public static partial class Program
         services.AddExceptionHandler<ServerExceptionHandler>();
 
         services.AddResponseCaching();
+        services.AddOutputCache(options =>
+        {
+            options.AddPolicy("AppResponseCachePolicy", policy =>
+            {
+                var builder = policy.AddPolicy<AppResponseCachePolicy>();
+                if (CultureInfoManager.MultilingualEnabled)
+                {
+                    builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
+                }
+            });
+        });
+        services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
 
@@ -256,15 +268,20 @@ public static partial class Program
         }
 
         //#if (captcha == "reCaptcha")
-        services.AddHttpClient<GoogleRecaptchaHttpClient>(c =>
+        services.AddHttpClient<GoogleRecaptchaService>(c =>
         {
             c.BaseAddress = new Uri("https://www.google.com/recaptcha/");
         });
         //#endif
 
-        services.AddHttpClient<NugetStatisticsHttpClient>(c =>
+        services.AddHttpClient<NugetStatisticsService>(c =>
         {
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
+        });
+
+        services.AddHttpClient<ResponseCacheService>(c =>
+        {
+            c.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/zones/");
         });
     }
 

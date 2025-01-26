@@ -71,7 +71,7 @@ public class HttpClientProxySyntaxReceiver : ISyntaxContextReceiver
                         uriTemplate.WithParameter(parameter.Name, $"{{{parameter.Name}}}");
                     }
 
-                    string url = HttpUtility.UrlDecode(uriTemplate.ExpandToString());
+                    string url = HttpUtility.UrlDecode(uriTemplate.ExpandToString()).TrimEnd('/');
 
                     // if there is a parameter that is not a cancellation token and is not in the route template, then it is the body parameter
                     action.BodyParameter = action.Parameters.FirstOrDefault(p => p.Type.ToDisplayString() is not "System.Threading.CancellationToken" && url.Contains($"{{{p.Name}}}") is false);

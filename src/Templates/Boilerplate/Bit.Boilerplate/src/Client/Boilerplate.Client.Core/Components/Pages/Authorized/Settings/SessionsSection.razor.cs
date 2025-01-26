@@ -32,7 +32,7 @@ public partial class SessionsSection
 
         try
         {
-            currentSessionId = await PrerenderStateService.GetValue(async () => (await AuthenticationStateTask).User.GetSessionId());
+            currentSessionId = (await AuthenticationStateTask).User.GetSessionId();
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
