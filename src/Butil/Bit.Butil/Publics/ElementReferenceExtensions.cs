@@ -613,7 +613,7 @@ public static class ElementReferenceExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop</see>
     /// </summary>
     public static async ValueTask<float> GetOffsetTop(this ElementReference element)
-        => await GetJSRuntime(element).FastInvokeAsync<float>("BitButil.element.offsetLeft", element);
+        => await GetJSRuntime(element).FastInvokeAsync<float>("BitButil.element.offsetTop", element);
 
     /// <summary>
     /// The layout width of an element in px.
