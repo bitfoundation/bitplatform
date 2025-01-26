@@ -23,7 +23,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task<ScreenOrientationType> GetOrientationType()
     {
-        var type = await js.InvokeAsync<string>("BitButil.screenOrientation.type");
+        var type = await js.FastInvokeAsync<string>("BitButil.screenOrientation.type");
 
         return type switch
         {
@@ -41,7 +41,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/angle</see>
     /// </summary>
     public async Task<ushort> GetAngle()
-        => await js.InvokeAsync<ushort>("BitButil.screenOrientation.angle");
+        => await js.FastInvokeAsync<ushort>("BitButil.screenOrientation.angle");
 
     /// <summary>
     /// Locks the orientation of the containing document to the specified orientation.
@@ -64,7 +64,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
             _ => "any"
         };
 
-        await js.InvokeVoidAsync("BitButil.screenOrientation.lock", type);
+        await js.FastInvokeVoidAsync("BitButil.screenOrientation.lock", type);
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/unlock">https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/unlock</see>
     /// </summary>
     public async Task Unlock()
-        => await js.InvokeVoidAsync("BitButil.screenOrientation.unlock");
+        => await js.FastInvokeVoidAsync("BitButil.screenOrientation.unlock");
 
     /// <summary>
     /// The change event of the ScreenOrientation interface fires when the orientation of the 
@@ -87,7 +87,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
         var listenerId = ScreenOrientationListenersManager.AddListener(handler);
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoidAsync("BitButil.screenOrientation.addChange", ScreenOrientationListenersManager.InvokeMethodName, listenerId);
+        await js.FastInvokeVoidAsync("BitButil.screenOrientation.addChange", ScreenOrientationListenersManager.InvokeMethodName, listenerId);
 
         return listenerId;
     }
@@ -149,7 +149,7 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     {
         if (OperatingSystem.IsBrowser() is false) return;
 
-        await js.InvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
+        await js.FastInvokeVoidAsync("BitButil.screenOrientation.removeChange", ids);
     }
 
     public async ValueTask DisposeAsync()
