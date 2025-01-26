@@ -16,6 +16,6 @@ public class UserAgent(IJSRuntime js)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserAgentProperties))]
     public async ValueTask<UserAgentProperties> Extract()
     {
-        return await js.InvokeAsync<UserAgentProperties>("BitButil.userAgent.extract");
+        return await js.FastInvokeAsync<UserAgentProperties>("BitButil.userAgent.extract");
     }
 }

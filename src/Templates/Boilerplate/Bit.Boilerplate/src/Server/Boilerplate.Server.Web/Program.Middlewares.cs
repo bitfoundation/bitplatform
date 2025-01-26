@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
-
+using Boilerplate.Shared.Attributes;
 
 namespace Boilerplate.Server.Web;
 
@@ -75,14 +75,16 @@ public static partial class Program
             app.UseDirectoryBrowser();
         }
 
-        if (env.IsDevelopment() is false)
+
+        app.Use(async (context, next) =>
         {
-            app.Use(async (context, next) =>
+            context.Response.OnStarting(async () =>
             {
-                if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
-                    env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
+                if (env.IsDevelopment() is false)
                 {
-                    context.Response.OnStarting(async () =>
+                    // Caching static files on the Browser and CDNs' edge servers.
+                    if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
+                        env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
@@ -90,11 +92,12 @@ public static partial class Program
                             NoTransform = true,
                             MaxAge = TimeSpan.FromDays(7)
                         };
-                    });
+                    }
                 }
-                await next.Invoke();
             });
-        }
+
+            await next.Invoke();
+        });
         app.UseStaticFiles();
 
         if (string.IsNullOrEmpty(env.WebRootPath) is false && Path.Exists(Path.Combine(env.WebRootPath, @".well-known")))
@@ -116,6 +119,8 @@ public static partial class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseOutputCache();
+
         app.UseAntiforgery();
 
         //#if (api == "Integrated")
@@ -126,11 +131,11 @@ public static partial class Program
             options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
-        app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
+        app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
             QueryStringParameter = queryStringParameter
-        }).WithTags("Test");
+        }).WithTags("Test").CacheOutput("AppResponseCachePolicy");
 
         //#if (signalR == true)
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
@@ -150,13 +155,16 @@ public static partial class Program
         app.MapHub<Api.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
         //#endif
 
-        app.MapControllers().RequireAuthorization();
+        app.MapControllers()
+           .RequireAuthorization()
+           .CacheOutput("AppResponseCachePolicy");
         //#endif
 
         app.UseSiteMap();
 
         // Handle the rest of requests with blazor
         var blazorApp = app.MapRazorComponents<Components.App>()
+            .CacheOutput("AppResponseCachePolicy")
             .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
@@ -177,7 +185,7 @@ public static partial class Program
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
-        app.MapGet("/sitemap.xml", async context =>
+        app.MapGet("/sitemap.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
         {
             if (siteMap is null)
             {
@@ -189,7 +197,7 @@ public static partial class Program
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
-        });
+        }).CacheOutput("AppResponseCachePolicy");
     }
 
     private static string? siteMap;

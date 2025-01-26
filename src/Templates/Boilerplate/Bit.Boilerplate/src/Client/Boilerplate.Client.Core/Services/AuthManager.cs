@@ -155,7 +155,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         try
         {
-            var accessToken = await prerenderStateService.GetValue(() => tokenProvider.GetAccessToken());
+            var accessToken = await tokenProvider.GetAccessToken();
 
             return new AuthenticationState(IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false));
         }

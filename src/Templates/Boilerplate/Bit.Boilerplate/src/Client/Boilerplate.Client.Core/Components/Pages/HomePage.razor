@@ -1,6 +1,7 @@
 ﻿@*+:cnd:noEmit*@
 @attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
@@ -42,15 +43,17 @@
         <br />
         <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body">
             <ItemTemplate Context="product">
-                <BitCard Background="BitColorKind.Tertiary" Class="product-item">
-                    <BitStack Horizontal Class="product-stack">
-                        <BitImage Src="@GetProductImageUrl(product)" Width="75px" />
-                        <BitStack AutoHeight>
-                            <BitText>@product.Name</BitText>
-                            <BitText Typography="BitTypography.Body2" Class="product-desc">@product.Description</BitText>
+                <BitLink Href="@($"/product/{product.Id}")" Class="product-item">
+                    <BitCard Background="BitColorKind.Tertiary" FullSize>
+                        <BitStack Horizontal Class="product-stack">
+                            <BitImage Src="@GetProductImageUrl(product)" Width="75px" />
+                            <BitStack AutoHeight>
+                                <BitText>@product.Name</BitText>
+                                <BitText Typography="BitTypography.Body2" Class="product-desc">@product.Description</BitText>
+                            </BitStack>
                         </BitStack>
-                    </BitStack>
-                </BitCard>
+                    </BitCard>
+                </BitLink>
             </ItemTemplate>
             <LoadingTemplate>
                 <BitStack Alignment="BitAlignment.Center">

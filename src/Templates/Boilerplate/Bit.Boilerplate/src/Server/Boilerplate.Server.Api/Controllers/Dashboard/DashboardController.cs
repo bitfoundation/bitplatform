@@ -22,18 +22,18 @@ public partial class DashboardController : AppControllerBase, IDashboardControll
         return result;
     }
 
-    [HttpGet, EnableQuery]
-    public IQueryable<ProductsCountPerCategoryResponseDto> GetProductsCountPerCategoryStats()
+    [HttpGet]
+    public async Task<List<ProductsCountPerCategoryResponseDto>> GetProductsCountPerCategoryStats(CancellationToken cancellationToken)
     {
-        return DbContext.Categories
+        return await DbContext.Categories
                         .Select(c => new ProductsCountPerCategoryResponseDto()
                         {
                             CategoryName = c.Name,
                             CategoryColor = c.Color,
                             ProductCount = c.Products!.Count()
-                        });
+                        })
+                        .ToListAsync(cancellationToken);
     }
-
 
     [HttpGet]
     public async Task<List<ProductPercentagePerCategoryResponseDto>> GetProductsPercentagePerCategoryStats(CancellationToken cancellationToken)

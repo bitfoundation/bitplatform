@@ -25,7 +25,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         // Services being registered here can get injected in client side (Web, Android, iOS, Windows, macOS) and server side (during pre rendering)
         services.AddSharedProjectServices(configuration);
 
-        services.AddTransient<IPrerenderStateService, NoopPrerenderStateService>();
+        services.AddTransient<IPrerenderStateService, NoOpPrerenderStateService>();
 
         services.AddScoped<ThemeService>();
         services.AddScoped<CultureService>();
@@ -42,7 +42,7 @@ public static partial class IClientCoreServiceCollectionExtensions
         services.AddSessioned<PubSubService>();
         services.AddSessioned<PromptService>();
         services.AddSessioned<SnackBarService>();
-        services.AddSessioned<ILocalHttpServer, NoopLocalHttpServer>();
+        services.AddSessioned<ILocalHttpServer, NoOpLocalHttpServer>();
         services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
         services.AddSessioned<AuthenticationStateProvider>(sp =>
         {

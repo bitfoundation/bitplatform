@@ -21,6 +21,16 @@ public static partial class HttpRequestExtensions
         throw new BadRequestException($"Invalid origin {origin}");
     }
 
+    internal static Uri GetUri(this HttpRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Scheme))
+        {
+            throw new ArgumentException("Http request Scheme is not specified");
+        }
+
+        return new Uri($"{request.Scheme}://{((!request.Host.HasValue) ? "UNKNOWN-HOST" : ((request.Host.Value.IndexOf(',') > 0) ? "MULTIPLE-HOST" : request.Host.Value))}{(request.PathBase.HasValue ? request.PathBase.Value : string.Empty)}{(request.Path.HasValue ? request.Path.Value : string.Empty)}{(request.QueryString.HasValue ? request.QueryString.Value : string.Empty)}");
+    }
+
     /// <summary>
     /// https://blog.elmah.io/how-to-get-base-url-in-asp-net-core/
     /// </summary>

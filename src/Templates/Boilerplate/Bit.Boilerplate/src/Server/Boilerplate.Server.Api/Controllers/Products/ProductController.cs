@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Server.Api.Services;
 using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Server.Api.Models.Products;
 using Boilerplate.Shared.Controllers.Products;
@@ -18,6 +19,7 @@ public partial class ProductController : AppControllerBase, IProductController
     //#if (signalR == true && module == "Admin")
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
 
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
@@ -79,6 +81,8 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        await responseCacheService.PurgeCache("/", $"product/{dto.Id}", $"api/Home/Product/{dto.Id}" /*You can also use Url.Action to build urls.*/);
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
@@ -92,6 +96,8 @@ public partial class ProductController : AppControllerBase, IProductController
         DbContext.Products.Remove(new() { Id = id, ConcurrencyStamp = Convert.FromHexString(concurrencyStamp) });
 
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await responseCacheService.PurgeCache("/", $"product/{id}", $"api/Home/Product/{id}" /*You can also use Url.Action to build urls.*/);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -127,6 +133,15 @@ public partial class ProductController : AppControllerBase, IProductController
     public async Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken)
     {
         return await Get().Skip(skip).Take(take).ToListAsync(cancellationToken);
+    }
+
+    [AllowAnonymous, HttpGet("{id}")]
+    public async Task<ProductDto> GetForSales(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)
+            ?? throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ProductCouldNotBeFound)]);
+
+        return dto;
     }
     //#endif
 }

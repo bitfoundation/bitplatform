@@ -1,0 +1,13 @@
+﻿@attribute [Route(Urls.ProductPage + "/{Id:guid}")]
+@attribute [Route("{culture?}" + Urls.ProductPage + "/{Id:guid}")]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
+@inherits AppPageBase
+
+<PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
+
+<section>
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
+        <BitText Typography="BitTypography.H2">@product?.Name</BitText>
+        <BitText Typography="BitTypography.H6">@product?.Description</BitText>
+    </BitStack>
+</section>

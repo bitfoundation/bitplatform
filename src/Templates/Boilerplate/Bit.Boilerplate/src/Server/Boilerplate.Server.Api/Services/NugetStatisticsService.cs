@@ -2,7 +2,7 @@
 
 namespace Boilerplate.Server.Api.Services;
 
-public partial class NugetStatisticsHttpClient
+public partial class NugetStatisticsService
 {
     [AutoInject] protected HttpClient httpClient = default!;
 

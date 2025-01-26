@@ -35,5 +35,8 @@ public interface IProductController : IAppController
 
     [HttpGet("{skip}/{take}")]
     Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken);
+
+    [HttpGet("{id}")]
+    Task<ProductDto> GetForSales(Guid id, CancellationToken cancellationToken);
     //#endif
 }
