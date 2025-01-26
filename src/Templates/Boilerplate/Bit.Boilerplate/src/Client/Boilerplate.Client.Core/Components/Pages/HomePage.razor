@@ -15,6 +15,7 @@
 
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeMessage)]
+            @DateTimeOffset.UtcNow.ToLocalTime()
         </BitText>
         
         <br />

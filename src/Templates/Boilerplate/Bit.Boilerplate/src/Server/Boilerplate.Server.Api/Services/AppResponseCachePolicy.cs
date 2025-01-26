@@ -37,6 +37,8 @@ internal class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseC
             SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
             //#endif
         };
+
+        context.HttpContext.Response.Headers.Remove("Pragma");
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)
