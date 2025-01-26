@@ -41,7 +41,9 @@ public partial class ServerApiSettings : SharedSettings
 
     public ForwardedHeadersOptions? ForwardedHeaders { get; set; }
 
+    //#if (cloudflare == true)
     public CloudflareOptions? Cloudflare { get; set; }
+    //#endif
 
     /// <summary>
     /// Defines the list of origins permitted for CORS access to the API. These origins are also valid for use as return URLs after social sign-ins and for generating URLs in emails.
@@ -174,17 +176,7 @@ public partial class EmailOptions
     public bool HasCredential => (string.IsNullOrEmpty(UserName) is false) && (string.IsNullOrEmpty(Password) is false);
 }
 
-public partial class SmsOptions
-{
-    public string? FromPhoneNumber { get; set; }
-    public string? TwilioAccountSid { get; set; }
-    public string? TwilioAutoToken { get; set; }
-
-    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
-                              string.IsNullOrEmpty(TwilioAccountSid) is false &&
-                              string.IsNullOrEmpty(TwilioAutoToken) is false;
-}
-
+//#if (cloudflare == true)
 public class CloudflareOptions
 {
     public string? ApiToken { get; set; }
@@ -200,4 +192,16 @@ public class CloudflareOptions
 
     public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
         string.IsNullOrEmpty(ZoneId) is false;
+}
+//#endif
+
+public partial class SmsOptions
+{
+    public string? FromPhoneNumber { get; set; }
+    public string? TwilioAccountSid { get; set; }
+    public string? TwilioAutoToken { get; set; }
+
+    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
+                              string.IsNullOrEmpty(TwilioAccountSid) is false &&
+                              string.IsNullOrEmpty(TwilioAutoToken) is false;
 }

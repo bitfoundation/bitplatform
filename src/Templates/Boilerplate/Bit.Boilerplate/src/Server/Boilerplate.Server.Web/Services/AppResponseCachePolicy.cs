@@ -28,17 +28,21 @@ public class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCac
         context.ResponseExpirationTimeSpan = duration;
         context.Tags.Add(requestUrl);
 
+        //#if (cloudflare == true)
         if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page &&
             CultureInfoManager.MultilingualEnabled)
         {
             responseCacheAtt.SharedMaxAge = 0; // Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is set to `true`.
         }
+        //#endif
 
         context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
         {
             Public = true,
             MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
+            //#if (cloudflare == true)
             SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
+            //#endif
         };
     }
 

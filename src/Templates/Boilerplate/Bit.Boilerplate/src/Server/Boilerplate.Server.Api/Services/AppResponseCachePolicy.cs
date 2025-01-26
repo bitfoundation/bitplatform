@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.OutputCaching;
+﻿//+:cnd:noEmit
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Services;
 
@@ -32,7 +33,9 @@ internal class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseC
         {
             Public = true,
             MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
+            //#if (cloudflare == true)
             SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
+            //#endif
         };
     }
 

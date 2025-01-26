@@ -25,10 +25,12 @@ public partial class ResponseCacheService
         {
             await outputCacheStore.EvictByTagAsync(relativePath, default);
         }
-
+        //#if (cloudflare == true)
         await PurgeCloudflareCache(relativePaths);
+        //#endif
     }
 
+    //#if (cloudflare == true)
     private async Task PurgeCloudflareCache(string[] relativePaths)
     {
         if (serverApiSettings?.Cloudflare?.Configured is not true)
@@ -48,4 +50,5 @@ public partial class ResponseCacheService
         using var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
+    //#endif
 }
