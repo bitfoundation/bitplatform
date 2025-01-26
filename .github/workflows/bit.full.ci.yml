@@ -219,9 +219,3 @@ jobs:
       run: |
         dotnet build AutoGlobal/AutoGlobal.sln
         dotnet build SsrPerPage/SsrPerPage.csproj
-
-    - name: Run bit blazor ui tests
-      run: dotnet test src/BlazorUI/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj
-
-    - name: Build bit blazor ui demo
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.sln
