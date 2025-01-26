@@ -10,7 +10,16 @@ internal static class HttpContextExtensions
 {
     internal static AppResponseCacheAttribute? GetResponseCacheAttribute(this HttpContext context)
     {
-        if (context.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().FirstOrDefault() is ComponentTypeMetadata component)
+        if (context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().FirstOrDefault() is AppResponseCacheAttribute attr) // minimal api
+        {
+            if (attr is not null)
+            {
+                attr.ResourceKind = ResourceKind.Api;
+                return attr;
+            }
+        }
+
+        if (context.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().FirstOrDefault() is ComponentTypeMetadata component) // razor page
         {
             var att = component.Type.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true);
             if (att is not null)
@@ -21,7 +30,7 @@ internal static class HttpContextExtensions
         }
 
         //#if (IsInsideProjectTemplate)
-        if (context.GetEndpoint()?.Metadata.OfType<ControllerActionDescriptor>().FirstOrDefault() is ControllerActionDescriptor action)
+        if (context.GetEndpoint()?.Metadata.OfType<ControllerActionDescriptor>().FirstOrDefault() is ControllerActionDescriptor action) // web api mvc action
         {
             var att = action.MethodInfo.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true) ??
                 action.ControllerTypeInfo.GetCustomAttribute<AppResponseCacheAttribute>(inherit: true);

@@ -77,11 +77,11 @@ public static partial class Program
             options.InjectJavascript($"/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
-        app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
+        app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
             QueryStringParameter = queryStringParameter
-        }).WithTags("Test");
+        }).WithTags("Test").CacheOutput("AppResponseCachePolicy");
 
         //#if (signalR == true)
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);

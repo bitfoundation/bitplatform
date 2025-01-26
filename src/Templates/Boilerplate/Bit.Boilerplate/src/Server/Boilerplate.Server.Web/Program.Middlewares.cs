@@ -81,7 +81,7 @@ public static partial class Program
             context.Response.OnStarting(async () =>
             {
                 if (env.IsDevelopment() is false)
-                {   
+                {
                     // Caching static files on the Browser and CDNs' edge servers.
                     if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)) &&
                         env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
@@ -131,11 +131,11 @@ public static partial class Program
             options.InjectJavascript($"/_content/Boilerplate.Server.Api/scripts/swagger-utils.js?v={Environment.TickCount64}");
         });
 
-        app.MapGet("/api/minimal-api-sample/{routeParameter}", (string routeParameter, [FromQuery] string queryStringParameter) => new
+        app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
         {
             RouteParameter = routeParameter,
             QueryStringParameter = queryStringParameter
-        }).WithTags("Test");
+        }).WithTags("Test").CacheOutput("AppResponseCachePolicy");
 
         //#if (signalR == true)
         if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
@@ -185,7 +185,7 @@ public static partial class Program
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
-        app.MapGet("/sitemap.xml", async context =>
+        app.MapGet("/sitemap.xml", [AppResponseCache(MaxAge = 3600 * 24)] async (context) =>
         {
             if (siteMap is null)
             {
@@ -197,7 +197,7 @@ public static partial class Program
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
-        }).CacheOutput();
+        }).CacheOutput("AppResponseCachePolicy");
     }
 
     private static string? siteMap;

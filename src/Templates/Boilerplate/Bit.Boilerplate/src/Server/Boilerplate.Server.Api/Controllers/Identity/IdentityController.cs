@@ -388,6 +388,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     [HttpGet]
+    [AppResponseCache]
     public async Task<ActionResult> SocialSignedIn()
     {
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

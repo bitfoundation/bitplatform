@@ -9,6 +9,7 @@ public partial class IdentityController
     [AutoInject] private HtmlRenderer htmlRenderer = default!;
 
     [HttpGet]
+    [AppResponseCache]
     public async Task<string> GetSocialSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(SocialSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
