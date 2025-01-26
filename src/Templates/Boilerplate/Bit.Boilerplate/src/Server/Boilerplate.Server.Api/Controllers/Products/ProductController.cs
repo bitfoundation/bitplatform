@@ -126,13 +126,13 @@ public partial class ProductController : AppControllerBase, IProductController
     [AllowAnonymous, HttpGet]
     public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
     {
-        return await Get().Take(10).ToListAsync(cancellationToken);
+        return await Get().OrderByDescending(p => p.Name).Take(10).ToListAsync(cancellationToken);
     }
 
     [AllowAnonymous, HttpGet("{skip}/{take}")]
     public async Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken)
     {
-        return await Get().Skip(skip).Take(take).ToListAsync(cancellationToken);
+        return await Get().OrderByDescending(p => p.Name).Skip(skip).Take(take).ToListAsync(cancellationToken);
     }
 
     [AllowAnonymous, HttpGet("{id}")]
