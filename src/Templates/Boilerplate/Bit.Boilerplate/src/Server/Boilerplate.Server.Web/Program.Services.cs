@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 using Boilerplate.Client.Web;
 using Boilerplate.Server.Web.Services;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Localization;
 using Boilerplate.Client.Core.Services.Contracts;
 
 namespace Boilerplate.Server.Web;
