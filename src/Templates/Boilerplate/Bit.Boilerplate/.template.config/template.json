@@ -193,13 +193,6 @@
             "defaultValue": "false",
             "description": "Add todo page sample."
         },
-        "windows": {
-            "displayName": "Add Windows project?",
-            "type": "parameter",
-            "datatype": "bool",
-            "defaultValue": "true",
-            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
-        },
         "sentry": {
             "displayName": "Add Sentry logging to project?",
             "type": "parameter",
@@ -225,6 +218,20 @@
             "datatype": "bool",
             "defaultValue": "false",
             "description": "Add support for EF Core DbContext on the client side. If your app doesn't need offline data storage, we recommend not enabling this feature."
+        },
+        "cloudflare": {
+            "displayName": "Add cloudflare CDN integration?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": "Add cloudflare CDN integration."
+        },
+        "windows": {
+            "displayName": "Add Windows project?",
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "description": ".NET desktop app project supporting Windows 7 SP1 and above."
         },
         "nameToLower": {
             "type": "generated",
