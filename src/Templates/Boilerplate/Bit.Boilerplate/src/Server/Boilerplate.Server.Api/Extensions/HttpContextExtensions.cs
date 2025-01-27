@@ -1,5 +1,7 @@
 ﻿//+:cnd:noEmit
 
+using Microsoft.AspNetCore.Components.Endpoints;
+
 namespace Microsoft.AspNetCore.Http;
 
 internal static class HttpContextExtensions
@@ -10,7 +12,6 @@ internal static class HttpContextExtensions
         {
             if (attr is not null)
             {
-                attr.ResourceKind = ResourceKind.Api;
                 return attr;
             }
         }

@@ -7,7 +7,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
-        var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
+        var (responseCacheAtt, resourceKind) = context.HttpContext.GetResponseCacheAttribute();
 
         if (responseCacheAtt is null)
         {
@@ -35,9 +35,11 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             outputCacheTtl = -1;
         }
 
-        if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page && CultureInfoManager.MultilingualEnabled)
+        if (resourceKind is ResourceKind.Page && CultureInfoManager.MultilingualEnabled)
         {
-            // Note: Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is enabled.
+            // Note: Currently, we are not keeping the current culture in the URL. 
+            // The edge and browser caches do not support such variations, although the output cache does. 
+            // As a temporary solution, browser and edge caching are disabled for pre-rendered pages.
             edgeCacheTtl = -1;
             browserCacheTtl = -1;
         }

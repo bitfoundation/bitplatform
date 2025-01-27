@@ -9,7 +9,7 @@ internal class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
     {
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
-        if (responseCacheAtt is null)
+        if (responseCacheAtt == default)
         {
             context.EnableOutputCaching = false;
             return;

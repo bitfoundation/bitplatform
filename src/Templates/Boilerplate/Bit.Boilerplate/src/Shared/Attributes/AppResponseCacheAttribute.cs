@@ -32,11 +32,4 @@ public class AppResponseCacheAttribute : Attribute
     /// you can set this property to true to cache those responses and improve performance.
     /// </summary>
     public bool UserAgnostic { get; set; }
-
-    public ResourceKind ResourceKind { get; set; }
-}
-
-public enum ResourceKind
-{
-    Page, Api
 }
