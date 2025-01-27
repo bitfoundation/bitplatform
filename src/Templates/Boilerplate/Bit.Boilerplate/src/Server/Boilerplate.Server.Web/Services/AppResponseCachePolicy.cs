@@ -7,6 +7,9 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
+        context.EnableOutputCaching = false;
+        return;
+
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
         if (responseCacheAtt is null)
@@ -40,7 +43,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             edgeCacheTtl = -1;
         }
 
-        /*if (browserCacheTtl != -1 || edgeCacheTtl != -1)
+        if (browserCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
@@ -49,7 +52,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
             context.HttpContext.Response.Headers.Remove("Pragma");
-        }*/
+        }
 
         if (env.IsDevelopment() is false // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
             && outputCacheTtl != -1)
