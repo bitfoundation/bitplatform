@@ -41,16 +41,15 @@
             </BitCard>
         }
         <br />
-        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body">
+        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px">
             <ItemTemplate Context="product">
-                <BitLink Href="@($"/product/{product.Id}")" Class="product-item">
+                <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
                     <BitCard Background="BitColorKind.Tertiary" FullSize>
-                        <BitStack Horizontal Class="product-stack">
-                            <BitImage Src="@GetProductImageUrl(product)" Width="75px" />
-                            <BitStack AutoHeight>
-                                <BitText>@product.Name</BitText>
-                                <BitText Typography="BitTypography.Body2" Class="product-desc">@product.Description</BitText>
-                            </BitStack>
+                        <BitStack Class="product-stack">
+                            <BitImage Src="@GetProductImageUrl(product)" Width="100%" />
+                            <BitText>@product.Name</BitText>
+                            <BitText Typography="BitTypography.Body2">@product.Description</BitText>
+                            <BitText Typography="BitTypography.H6">@product.Price.ToString("C")</BitText>
                         </BitStack>
                     </BitCard>
                 </BitLink>

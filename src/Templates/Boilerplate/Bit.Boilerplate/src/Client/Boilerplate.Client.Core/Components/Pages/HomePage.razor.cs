@@ -94,6 +94,7 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
+        await Task.Delay(2000);
         return await productController.GetHomeProducts(request.Skip, 10, CurrentCancellationToken);
     }
 

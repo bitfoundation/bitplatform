@@ -19,7 +19,15 @@ public partial class ProductPage
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-
+        
         product = await productController.GetForSales(Id, CurrentCancellationToken);
+    }
+
+
+    private string GetProductImageUrl(ProductDto product)
+    {
+        return product.ImageFileName is null
+            ? "_content/Boilerplate.Client.Core/images/product-placeholder.png"
+            : new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProductImage/{product.Id}?v={product.ConcurrencyStamp}").ToString();
     }
 }

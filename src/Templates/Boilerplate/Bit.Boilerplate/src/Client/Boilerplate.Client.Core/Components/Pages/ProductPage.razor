@@ -6,8 +6,20 @@
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
-        <BitText Typography="BitTypography.H2">@product?.Name</BitText>
-        <BitText Typography="BitTypography.H6">@product?.Description</BitText>
-    </BitStack>
+    @if (product is null)
+    {
+        <BitEllipsisLoading Size="BitSize.Large" />
+    }
+    else
+    {
+        <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
+            <BitImage Src="@GetProductImageUrl(product)" Width="30%" />
+            <BitStack AutoWidth>
+                <BitText Typography="BitTypography.H2">@product.Name</BitText>
+                <BitText Color="BitColor.Info">@product.CategoryName</BitText>
+                <BitText Typography="BitTypography.H6">@product.Description</BitText>
+                <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+            </BitStack>
+        </BitStack>
+    }
 </section>

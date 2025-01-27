@@ -34,8 +34,6 @@ section {
     }
 
     .product-item {
-        height: 230px;
-        overflow: hidden;
         width: calc(25% - 0.75rem);
 
         @include lt-md {
@@ -44,15 +42,6 @@ section {
 
         @include lt-sm {
             width: calc(50% - 0.5rem);
-
-            .product-stack {
-                flex-flow: column !important;
-            }
-
-            .product-desc {
-                overflow: hidden;
-                max-height: 50px;
-            }
         }
     }
     //#endif

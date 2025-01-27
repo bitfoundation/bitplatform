@@ -8,58 +8,5 @@ section {
 }
 
 ::deep {
-    .root-stack {
-        max-width: 60rem;
-    }
-    //#if(module == "Sales")
-
-    .carousel-stack {
-        display: flex !important;
-
-        @include lt-sm {
-            flex-direction: column !important;
-
-            .carousel-desc {
-                overflow: hidden;
-                max-height: 60px;
-            }
-        }
-    }
-
-    .products-inf-scr {
-        gap: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        position: relative;
-    }
-
-    .product-item {
-        height: 230px;
-        overflow: hidden;
-        width: calc(25% - 0.75rem);
-
-        @include lt-md {
-            width: calc(33% - 0.67rem);
-        }
-
-        @include lt-sm {
-            width: calc(50% - 0.5rem);
-
-            .product-stack {
-                flex-flow: column !important;
-            }
-
-            .product-desc {
-                overflow: hidden;
-                max-height: 50px;
-            }
-        }
-    }
-    //#endif
-
-    .bit-products-stack {
-        @include lt-sm {
-            flex-wrap: wrap;
-        }
-    }
+    
 }
