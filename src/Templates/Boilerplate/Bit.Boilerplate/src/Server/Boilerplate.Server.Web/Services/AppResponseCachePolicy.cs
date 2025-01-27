@@ -7,9 +7,6 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
-        context.EnableOutputCaching = false;
-        return;
-
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
         if (responseCacheAtt is null)
