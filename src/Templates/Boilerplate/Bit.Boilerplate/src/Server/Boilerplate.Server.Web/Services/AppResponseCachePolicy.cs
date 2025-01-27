@@ -7,7 +7,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
-        var (responseCacheAtt, resourceKind) = context.HttpContext.GetResponseCacheAttribute();
+        var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
         if (responseCacheAtt is null)
         {
@@ -25,9 +25,9 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             responseCacheAtt.SharedMaxAge = responseCacheAtt.MaxAge;
         }
 
-        var browserCacheTtl = responseCacheAtt.MaxAge + 1;
-        var edgeCacheTtl = responseCacheAtt.SharedMaxAge + 2;
-        var outputCacheTtl = responseCacheAtt.SharedMaxAge + 3;
+        var browserCacheTtl = responseCacheAtt.MaxAge;
+        var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
+        var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
@@ -35,7 +35,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             outputCacheTtl = -1;
         }
 
-        if (resourceKind is ResourceKind.Page && CultureInfoManager.MultilingualEnabled)
+        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.MultilingualEnabled)
         {
             // Note: Currently, we are not keeping the current culture in the URL. 
             // The edge and browser caches do not support such variations, although the output cache does. 

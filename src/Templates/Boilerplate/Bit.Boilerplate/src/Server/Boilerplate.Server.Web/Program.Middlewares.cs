@@ -236,7 +236,7 @@ public static partial class Program
                 var httpContext = statusCodeContext.HttpContext;
 
                 if (httpContext.Response.StatusCode is 401 or 403 &&
-                    httpContext.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().Any() is true /* The generation of a 401 or 403 status code is attributed to Blazor. */)
+                    httpContext.IsBlazorPageContext() is true /* The generation of a 401 or 403 status code is attributed to Blazor. */)
                 {
                     bool is403 = httpContext.Response.StatusCode is 403;
 

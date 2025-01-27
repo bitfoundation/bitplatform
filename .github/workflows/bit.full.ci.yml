@@ -172,7 +172,7 @@ jobs:
       continue-on-error: true
       run: |
         dotnet new bit-bp --name TestStandalone --api Standalone --framework net8.0
-        cd TestStandalone/src/Server/TestStandalone.Server.Web/
+        cd TestStandalone/src/Server/TestStandalone.Server.Api/
         dotnet build
         cd ../
         cd TestStandalone.Server.Web/

@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Services;
 
-internal class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
+public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
-        if (responseCacheAtt == default)
+        if (responseCacheAtt is null)
         {
             context.EnableOutputCaching = false;
             return;
@@ -35,6 +35,17 @@ internal class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             outputCacheTtl = -1;
         }
 
+        //#if (api == "Integrated")
+        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.MultilingualEnabled)
+        {
+            // Note: Currently, we are not keeping the current culture in the URL. 
+            // The edge and browser caches do not support such variations, although the output cache does. 
+            // As a temporary solution, browser and edge caching are disabled for pre-rendered pages.
+            edgeCacheTtl = -1;
+            browserCacheTtl = -1;
+        }
+        //#endif
+
         if (browserCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
@@ -46,7 +57,7 @@ internal class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.HttpContext.Response.Headers.Remove("Pragma");
         }
 
-        if (env.IsDevelopment() is false // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
+        if (env.IsDevelopment() is false // To enhance the developer experience, return from here to make it easier for developers to debug cacheable pages.
             && outputCacheTtl != -1)
         {
             context.Tags.Add(requestUrl);
