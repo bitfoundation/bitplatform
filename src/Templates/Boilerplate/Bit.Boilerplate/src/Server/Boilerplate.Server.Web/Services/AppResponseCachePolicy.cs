@@ -34,13 +34,13 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             edgeCacheTtl = -1;
         }
 
-        if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page || CultureInfoManager.MultilingualEnabled)
+        if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page && CultureInfoManager.MultilingualEnabled)
         {
             // Note: Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is enabled.
             edgeCacheTtl = -1;
         }
 
-        if (browserCacheTtl != -1 || edgeCacheTtl != -1)
+        /*if (browserCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
             {
@@ -49,7 +49,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
             context.HttpContext.Response.Headers.Remove("Pragma");
-        }
+        }*/
 
         if (env.IsDevelopment() is false // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
             && outputCacheTtl != -1)
