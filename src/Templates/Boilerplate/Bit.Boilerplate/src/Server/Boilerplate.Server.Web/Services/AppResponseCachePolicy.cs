@@ -25,9 +25,9 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             responseCacheAtt.SharedMaxAge = responseCacheAtt.MaxAge;
         }
 
-        var browserCacheTtl = responseCacheAtt.MaxAge;
-        var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
-        var outputCacheTtl = responseCacheAtt.SharedMaxAge;
+        var browserCacheTtl = responseCacheAtt.MaxAge + 1;
+        var edgeCacheTtl = responseCacheAtt.SharedMaxAge + 2;
+        var outputCacheTtl = responseCacheAtt.SharedMaxAge + 3;
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
