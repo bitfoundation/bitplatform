@@ -1,6 +1,6 @@
 ﻿@attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
-@attribute [AppResponseCache(SharedMaxAge = (3600 * 24) + 1)]
+@attribute [AppResponseCache(SharedMaxAge = 3600 * 24 * 2)]
 @inherits AppPageBase
 
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
