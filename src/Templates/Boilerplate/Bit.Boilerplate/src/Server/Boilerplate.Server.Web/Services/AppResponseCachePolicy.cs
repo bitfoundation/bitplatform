@@ -51,20 +51,21 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.HttpContext.Response.Headers.Remove("Pragma");
         }
 
-        if (env.IsDevelopment() // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
-            || outputCacheTtl == -1)
+        if (env.IsDevelopment() is false // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
+            && outputCacheTtl != -1)
+        {
+            context.Tags.Add(requestUrl);
+            context.EnableOutputCaching = true;
+            context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
+
+            if (CultureInfoManager.MultilingualEnabled)
+            {
+                context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
+            }
+        }
+        else
         {
             context.EnableOutputCaching = false;
-            return;
-        }
-
-        context.Tags.Add(requestUrl);
-        context.EnableOutputCaching = true;
-        context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
-
-        if (CultureInfoManager.MultilingualEnabled)
-        {
-            context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
         }
     }
 
