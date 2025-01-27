@@ -31,6 +31,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
+            // See UserAgnostic comments.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
         }
@@ -46,6 +47,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         }
         //#endif
 
+        // Edge - Browser Cache
         if (browserCacheTtl != -1 || edgeCacheTtl != -1)
         {
             context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
@@ -57,6 +59,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.HttpContext.Response.Headers.Remove("Pragma");
         }
 
+        // ASP.NET Core Output Cache
         if (env.IsDevelopment() is false // To enhance the developer experience, return from here to make it easier for developers to debug cacheable pages.
             && outputCacheTtl != -1)
         {
