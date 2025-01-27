@@ -32,6 +32,7 @@ internal class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
             edgeCacheTtl = -1;
+            outputCacheTtl = -1;
         }
 
         if (browserCacheTtl != -1 || edgeCacheTtl != -1)

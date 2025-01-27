@@ -32,12 +32,14 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
             edgeCacheTtl = -1;
+            outputCacheTtl = -1;
         }
 
         if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page && CultureInfoManager.MultilingualEnabled)
         {
             // Note: Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is enabled.
             edgeCacheTtl = -1;
+            browserCacheTtl = -1;
         }
 
         if (browserCacheTtl != -1 || edgeCacheTtl != -1)
@@ -51,7 +53,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.HttpContext.Response.Headers.Remove("Pragma");
         }
 
-        if (env.IsDevelopment() is false // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
+        if (env.IsDevelopment() is false // To enhance the developer experience, return from here to make it easier for developers to debug cacheable pages.
             && outputCacheTtl != -1)
         {
             context.Tags.Add(requestUrl);
