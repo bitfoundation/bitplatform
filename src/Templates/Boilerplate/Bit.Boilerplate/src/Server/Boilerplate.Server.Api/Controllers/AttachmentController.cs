@@ -104,7 +104,7 @@ public partial class AttachmentController : AppControllerBase
 
     [AllowAnonymous]
     [HttpGet("{userId}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<IActionResult> GetProfileImage(Guid userId, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
