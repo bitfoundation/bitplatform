@@ -19,11 +19,9 @@ internal static class HttpContextExtensions
         return null;
     }
 
-    //#if (api == "Integrated")
     internal static bool IsBlazorPageContext(this HttpContext context)
     {
         return context.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().FirstOrDefault() is ComponentTypeMetadata;
     }
-    //#endif
 }
 
