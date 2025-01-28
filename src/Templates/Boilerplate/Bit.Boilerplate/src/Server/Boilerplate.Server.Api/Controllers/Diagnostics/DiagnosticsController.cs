@@ -26,11 +26,6 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
     {
         StringBuilder result = new();
 
-        foreach (var header in Request.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCulture)))
-        {
-            result.AppendLine($"{header.Key}: {header.Value}");
-        }
-
         result.AppendLine($"Client IP: {HttpContext.Connection.RemoteIpAddress}");
 
         result.AppendLine($"Trace => {Request.HttpContext.TraceIdentifier}");
@@ -68,6 +63,11 @@ public partial class DiagnosticsController : AppControllerBase, IDiagnosticsCont
         //#endif
 
         result.AppendLine($"Culture => C: {CultureInfo.CurrentCulture.Name}, UC: {CultureInfo.CurrentUICulture.Name}");
+
+        foreach (var header in Request.Headers)
+        {
+            result.AppendLine($"{header.Key}: {header.Value}");
+        }
 
         return result.ToString();
     }

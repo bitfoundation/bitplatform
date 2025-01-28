@@ -10,12 +10,10 @@ using Boilerplate.Shared.Controllers.Categories;
 namespace Boilerplate.Server.Api.Controllers.Categories;
 
 [ApiController, Route("api/[controller]/[action]")]
-//#if(module == "Admin")
 [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
-//#endif
 public partial class CategoryController : AppControllerBase, ICategoryController
 {
-    //#if (signalR == true && module == "Admin")
+    //#if (signalR == true)
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
@@ -50,7 +48,6 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         return dto;
     }
 
-    //#if(module == "Admin")
     [HttpPost]
     public async Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
     {
@@ -120,6 +117,5 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         if (DbContext.Entry(category).Property(c => c.Name).IsModified && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken: cancellationToken))
             throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName)]]));
     }
-    //#endif
 }
 

@@ -10,7 +10,7 @@ public class AppResponseCacheAttribute : Attribute
 {
     /// <summary>
     /// Specifies the cache duration in seconds. This setting caches the response in ASP.NET Core's output cache,
-    /// CDN edge servers, and the browser's cache. Note that this cache cannot be purged automatically, so use it with caution.
+    /// CDN edge servers, and the browser's cache. Note that browser's cache cannot be purged automatically, so use it with caution.
     /// </summary>
     public int MaxAge { get; set; } = -1;
 
