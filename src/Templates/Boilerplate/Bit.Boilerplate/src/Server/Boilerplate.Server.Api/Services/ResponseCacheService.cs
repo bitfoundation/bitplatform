@@ -31,6 +31,10 @@ public partial class ResponseCacheService
         // If you're using CDNs like GCore or others, make sure to purge the Edge Cache of your CDN.
         // The Cloudflare Cache API is already integrated into the Boilerplate, but for other CDNs, 
         // you'll need to implement the caching logic yourself.
+        if (httpContextAccessor.HttpContext!.Request.IsFromCDN())
+        {
+            throw new NotImplementedException();
+        }
         //#endif
     }
 

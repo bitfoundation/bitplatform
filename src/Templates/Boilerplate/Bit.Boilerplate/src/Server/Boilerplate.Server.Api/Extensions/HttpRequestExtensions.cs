@@ -44,4 +44,9 @@ public static partial class HttpRequestExtensions
 
         return uriBuilder.Uri;
     }
+
+    internal static bool IsFromCDN(this HttpRequest request)
+    {
+        return request.Headers.ContainsKey("CDN-Loop");
+    }
 }
