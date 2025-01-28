@@ -1196,4 +1196,12 @@
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
   </data>
     <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>محصولات مشابه</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>محصولات در همین دسته</value>
+  </data>
+    <!--#endif -->
 </root>

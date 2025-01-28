@@ -1196,4 +1196,12 @@
     <value>You need to pass the Google reCAPTCHA challenge.</value>
   </data>
     <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>Similar products</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>Products in the same category</value>
+  </data>
+    <!--#endif -->
 </root>

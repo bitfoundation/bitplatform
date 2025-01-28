@@ -24,8 +24,8 @@ public partial class HomePage
     //#endif
 
     //#if(module == "Sales")
-    [AutoInject] private IProductController productController = default!;
-    private IEnumerable<ProductDto>? products;
+    [AutoInject] private IProductViewController productViewController = default!;
+    private IEnumerable<ProductDto>? carouselProducts;
     //#endif
 
 
@@ -47,7 +47,7 @@ public partial class HomePage
         //#endif
 
         //#if(module == "Sales")
-        products = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/Product/GetHomeCarouselProducts",
+        carouselProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/ProductView/GetHomeCarouselProducts",
                                                          JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
                                                          CurrentCancellationToken)))!;
         //#endif
@@ -94,8 +94,7 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        await Task.Delay(2000);
-        return await productController.GetHomeProducts(request.Skip, 10, CurrentCancellationToken);
+        return await productViewController.GetHomeProducts(request.Skip, 10, CurrentCancellationToken);
     }
 
     private string GetProductImageUrl(ProductDto product)

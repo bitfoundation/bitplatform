@@ -3,7 +3,7 @@
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
 @inherits AppPageBase
 
-<PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
+<PageTitle>@product?.Name</PageTitle>
 
 <section>
     @if (product is null)
@@ -12,14 +12,70 @@
     }
     else
     {
-        <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-            <BitImage Src="@GetProductImageUrl(product)" Width="30%" />
-            <BitStack AutoWidth>
-                <BitText Typography="BitTypography.H2">@product.Name</BitText>
-                <BitText Color="BitColor.Info">@product.CategoryName</BitText>
-                <BitText Typography="BitTypography.H6">@product.Description</BitText>
-                <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
-            </BitStack>
+        <BitStack Gap="2rem" Class="root-stack">
+            <br />
+            <BitCard FullWidth Style="padding:3rem 1rem;">
+                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
+                    <BitImage Src="@GetProductImageUrl(product)" Width="30%" />
+                    <BitStack AutoWidth Grows>
+                        <BitText Typography="BitTypography.H2">@product.Name</BitText>
+                        <BitText Color="BitColor.Info">@product.CategoryName</BitText>
+                        <BitText Typography="BitTypography.H6">@product.Description</BitText>
+                        <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+                    </BitStack>
+                </BitStack>
+            </BitCard>
+
+            @if (similarProducts is not null)
+            {
+                <br />
+
+                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SimilarProducts)]</BitText>
+
+                <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
+                    <BitStack Horizontal FitWidth Style="align-items:unset">
+                        @foreach (var prd in similarProducts)
+                        {
+                            <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
+                                <BitCard FullSize>
+                                    <BitStack>
+                                        <BitImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                        <BitText>@prd.Name</BitText>
+                                        <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                    </BitStack>
+                                </BitCard>
+                            </BitLink>
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+            }
+
+            @if (siblingProducts is not null)
+            {
+                <br />
+
+                <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
+
+                <BitScrollablePane Width="100%" Style="padding:0.5rem">
+                    <BitStack Horizontal FitWidth Style="align-items:unset">
+                        @foreach (var prd in siblingProducts)
+                        {
+                            <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
+                                <BitCard FullSize>
+                                    <BitStack>
+                                        <BitImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                        <BitText>@prd.Name</BitText>
+                                        <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                    </BitStack>
+                                </BitCard>
+                            </BitLink>
+                        }
+                    </BitStack>
+                </BitScrollablePane>
+            }
+
         </BitStack>
     }
 </section>

@@ -5,22 +5,49 @@ namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class ProductPage
 {
-    protected override string? Title => Localizer[nameof(AppStrings.Home)];
+    protected override string? Title => string.Empty;
     protected override string? Subtitle => string.Empty;
 
 
     [Parameter] public Guid Id { get; set; }
 
 
-    [AutoInject] private IProductController productController = default!;
+    [AutoInject] private IProductViewController productViewController = default!;
+
+
     private ProductDto? product;
+    private List<ProductDto>? similarProducts;
+    private List<ProductDto>? siblingProducts;
 
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
-        
-        product = await productController.GetForSales(Id, CurrentCancellationToken);
+
+        await Task.WhenAll(LoadProduct(), LoadSimilarProducts());
+
+        await LoadSiblingProducts();
+    }
+
+    private async Task LoadProduct()
+    {
+        product = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/Get/{Id}",
+                                                         JsonSerializerOptions.GetTypeInfo<ProductDto>(),
+                                                         CurrentCancellationToken)))!;
+    }
+
+    private async Task LoadSimilarProducts()
+    {
+        similarProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/GetSimilar/{Id}",
+                                                                      JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
+                                                                      CurrentCancellationToken)))!;
+    }
+
+    private async Task LoadSiblingProducts()
+    {
+        siblingProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/GetSiblings/{product?.CategoryId}",
+                                                                      JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
+                                                                      CurrentCancellationToken)))!;
     }
 
 

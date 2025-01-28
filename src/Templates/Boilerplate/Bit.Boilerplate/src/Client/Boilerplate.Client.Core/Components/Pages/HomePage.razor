@@ -21,18 +21,22 @@
         <br />
 
         @*#if (module == "Sales")*@
-        @if (products is not null)
+        @if (carouselProducts is not null)
         {
             <BitCard FullWidth>
                 <BitCarousel Style="height:350px" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
-                    @foreach (var product in products)
+                    @foreach (var product in carouselProducts)
                     {
                         <BitCarouselItem>
                             <BitStack Horizontal Class="carousel-stack">
                                 <BitImage Src="@GetProductImageUrl(product)" Width="50%" />
                                 <BitStack AutoHeight>
-                                    <BitText Typography="BitTypography.H1">@product.Name</BitText>
+                                    <BitLink Href="@($"/product/{product.Id}")" NoUnderline>
+                                        <BitText Typography="BitTypography.H1">@product.Name</BitText>
+                                    </BitLink>
                                     <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
+                                    <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+
                                 </BitStack>
                             </BitStack>
                         </BitCarouselItem>
@@ -44,7 +48,7 @@
         <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px">
             <ItemTemplate Context="product">
                 <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
-                    <BitCard Background="BitColorKind.Tertiary" FullSize>
+                    <BitCard FullSize>
                         <BitStack Class="product-stack">
                             <BitImage Src="@GetProductImageUrl(product)" Width="100%" />
                             <BitText>@product.Name</BitText>
