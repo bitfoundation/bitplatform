@@ -45,6 +45,12 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             browserCacheTtl = -1;
         }
 
+        if (context.HttpContext.Request.Headers.ContainsKey("CDN-Loop") && edgeCacheTtl > 0)
+        {
+            // The origin backend is hosted behind a CDN, so there's no need to use both output caching and edge caching simultaneously.
+            outputCacheTtl = -1;
+        }
+
         // Edge - Browser Cache
         if (browserCacheTtl != -1 || edgeCacheTtl != -1)
         {
