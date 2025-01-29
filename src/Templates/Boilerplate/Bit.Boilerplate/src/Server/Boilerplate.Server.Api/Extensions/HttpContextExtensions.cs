@@ -16,9 +16,11 @@ internal static class HttpContextExtensions
         return att;
     }
 
+    //#if (api == "Integrated")
     internal static bool IsBlazorPageContext(this HttpContext context)
     {
         return context.GetEndpoint()?.Metadata?.OfType<ComponentTypeMetadata>()?.Any() is true;
     }
+    //#endif
 }
 
