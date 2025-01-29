@@ -1,4 +1,5 @@
 ﻿//+:cnd:noEmit
+using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Services;
@@ -10,13 +11,15 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
         if (responseCacheAtt is null)
-        {
-            context.EnableOutputCaching = false;
             return;
-        }
 
-        if (responseCacheAtt.MaxAge == -1 && responseCacheAtt.SharedMaxAge == -1)
-            throw new InvalidOperationException("Invalid configuration: Both MaxAge and SharedMaxAge are unset. At least one of them must be specified in the ResponseCache attribute.");
+        context.AllowLocking = true;
+        context.EnableOutputCaching = true;
+        context.CacheVaryByRules.QueryKeys = "*";
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
+        }
 
         var requestUrl = new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).PathAndQuery;
 
@@ -28,6 +31,13 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         var browserCacheTtl = responseCacheAtt.MaxAge;
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
+
+        if (env.IsDevelopment() is false)
+        {
+            // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
+            outputCacheTtl = -1;
+            browserCacheTtl = -1;
+        }
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
@@ -66,21 +76,12 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         }
 
         // ASP.NET Core Output Cache
-        if (env.IsDevelopment() is false // To enhance the developer experience, return from here to make it easier for developers to debug cacheable pages.
-            && outputCacheTtl != -1)
+        if (outputCacheTtl != -1)
         {
             context.Tags.Add(requestUrl);
-            context.EnableOutputCaching = true;
+            context.AllowCacheLookup = true;
+            context.AllowCacheStorage = true;
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
-
-            if (CultureInfoManager.MultilingualEnabled)
-            {
-                context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
-            }
-        }
-        else
-        {
-            context.EnableOutputCaching = false;
         }
     }
 
@@ -91,6 +92,12 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 
     public async ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation)
     {
+        var response = context.HttpContext.Response;
 
+        if (StringValues.IsNullOrEmpty(response.Headers.SetCookie) is false
+            || response.StatusCode is not StatusCodes.Status200OK)
+        {
+            context.AllowCacheStorage = false;
+        }
     }
 }
