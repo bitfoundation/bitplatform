@@ -132,7 +132,7 @@ public static partial class Program
                 policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .WithExposedHeaders(HeaderNames.RequestId);
+                      .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
             });
         });
 

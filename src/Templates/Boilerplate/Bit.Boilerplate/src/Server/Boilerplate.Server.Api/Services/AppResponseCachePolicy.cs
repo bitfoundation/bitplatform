@@ -32,7 +32,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
         var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
         var outputCacheTtl = responseCacheAtt.SharedMaxAge;
 
-        if (env.IsDevelopment() is false)
+        if (env.IsDevelopment())
         {
             // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
             outputCacheTtl = -1;
@@ -83,6 +83,8 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.AllowCacheStorage = true;
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
         }
+
+        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", $"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}");
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)

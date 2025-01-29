@@ -33,6 +33,10 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
             {
                 logScopeData["Age"] = age.First();
             }
+            if (response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse))
+            {
+                logScopeData["App-Cache-Response"] = appCacheResponse.First();
+            }
             logScopeData["HttpStatusCode"] = response.StatusCode;
 
             serverCommunicationSuccess = true;
