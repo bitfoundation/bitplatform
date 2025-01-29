@@ -6,10 +6,10 @@ namespace Boilerplate.Shared.Controllers.Products;
 public interface IProductViewController : IAppController
 {
     [HttpGet]
-    Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken) => default!;
+    Task<List<ProductDto>> Get(CancellationToken cancellationToken) => default!;
 
-    [HttpGet("{skip}/{take}")]
-    Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken);
+    [HttpGet]
+    Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken) => default!;

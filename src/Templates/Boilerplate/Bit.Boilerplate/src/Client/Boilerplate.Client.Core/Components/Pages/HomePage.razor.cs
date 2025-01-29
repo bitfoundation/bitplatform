@@ -94,7 +94,16 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        return await productViewController.GetHomeProducts(request.Skip, 10, CurrentCancellationToken);
+        var query = new ODataQuery
+        {
+            Top = 10,
+            Skip = request.Skip,
+            OrderBy = $"{nameof(ProductDto.Name)} desc"
+        };
+
+        productViewController.AddQueryString(query.ToString());
+
+        return await productViewController.Get(CurrentCancellationToken);
     }
 
     private string GetProductImageUrl(ProductDto product)

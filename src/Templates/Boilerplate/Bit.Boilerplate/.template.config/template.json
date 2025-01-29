@@ -432,6 +432,14 @@
                     ]
                 },
                 {
+                    "condition": "(module != Sales)",
+                    "exclude": [
+                        "src/Shared/Controllers/Products/IProductViewController.cs",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductViewController.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*"
+                    ]
+                },
+                {
                     "condition": "(module != Admin && module != Sales)",
                     "exclude": [
                         "src/Shared/Dtos/Categories/**",

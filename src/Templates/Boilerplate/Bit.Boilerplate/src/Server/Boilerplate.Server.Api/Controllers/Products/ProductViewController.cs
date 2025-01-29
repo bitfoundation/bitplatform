@@ -21,14 +21,6 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
                           .ToListAsync(cancellationToken);
     }
 
-    [HttpGet("{skip}/{take}")]
-    public async Task<List<ProductDto>> GetHomeProducts(int skip, int take, CancellationToken cancellationToken)
-    {
-        return await Get().OrderByDescending(p => p.Name)
-                          .Skip(skip).Take(take)
-                          .ToListAsync(cancellationToken);
-    }
-
     [HttpGet("{id}")]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
