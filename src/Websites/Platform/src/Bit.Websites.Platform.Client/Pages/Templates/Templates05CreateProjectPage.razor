@@ -271,19 +271,6 @@
 
         <BitGridItem Class="grid-item md">
             <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
-                <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetWindowsCommand()
-            </CodeBox>
-            If you set the windows parameter to false, the Maui project will still be created,
-            but no separate Windows application will be included.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item md">
-            <div class="row">
                 <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
                 <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
             </div>
@@ -340,6 +327,31 @@
             <br />
             <br />
             Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Cloudflare</BitText>
+                <BitToggle @bind-Value="cloudflare.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetCloudflareCommand()
+            </CodeBox>
+            Integrating Cloudflare and placing your backend behind the Cloudflare CDN will significantly enhance the app's performance while reducing server load.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Windows</BitText>
+                <BitToggle @bind-Value="windows.Value" OnText="true" OffText="false" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetWindowsCommand()
+            </CodeBox>
+            If you set the windows parameter to false, the Maui project will still be created,
+            but no separate Windows application will be included.
         </BitGridItem>
 
     </BitGrid>
