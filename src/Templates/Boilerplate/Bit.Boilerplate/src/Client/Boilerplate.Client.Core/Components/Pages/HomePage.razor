@@ -24,7 +24,7 @@
         @if (carouselProducts is not null)
         {
             <BitCard FullWidth>
-                <BitCarousel Style="height:350px" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
+                <BitCarousel Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
                     @foreach (var product in carouselProducts)
                     {
                         <BitCarouselItem>

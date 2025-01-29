@@ -13,6 +13,14 @@ section {
     }
     //#if(module == "Sales")
 
+    .carousel {
+        height: 350px;
+
+        @include lt-sm {
+            height: 500px;
+        }
+    }
+
     .carousel-stack {
         display: flex !important;
 
