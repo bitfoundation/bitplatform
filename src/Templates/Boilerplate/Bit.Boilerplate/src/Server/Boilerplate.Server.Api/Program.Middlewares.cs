@@ -52,8 +52,6 @@ public static partial class Program
             app.UseXfo(options => options.SameOrigin());
         }
 
-        app.UseResponseCaching();
-
         if (env.IsDevelopment())
         {
             app.UseDirectoryBrowser();

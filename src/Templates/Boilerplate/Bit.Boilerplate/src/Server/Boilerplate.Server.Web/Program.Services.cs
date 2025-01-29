@@ -39,17 +39,12 @@ public static partial class Program
         //#if (api == "Integrated")
         builder.AddServerApiProjectServices();
         //#else
-        services.AddResponseCaching();
         services.AddOutputCache(options =>
         {
             options.AddPolicy("AppResponseCachePolicy", policy =>
             {
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
-                if (CultureInfoManager.MultilingualEnabled)
-                {
-                    builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
-                }
-            });
+            }, excludeDefaultPolicy: true);
         });
         services.AddMemoryCache();
 

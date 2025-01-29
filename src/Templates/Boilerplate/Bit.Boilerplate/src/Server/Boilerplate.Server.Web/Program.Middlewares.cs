@@ -66,8 +66,6 @@ public static partial class Program
             app.UseXfo(options => options.SameOrigin());
         }
 
-        app.UseResponseCaching();
-
         Configure_401_403_404_Pages(app);
 
         if (env.IsDevelopment())

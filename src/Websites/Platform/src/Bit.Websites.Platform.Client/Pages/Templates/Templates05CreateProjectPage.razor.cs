@@ -7,6 +7,7 @@ public partial class Templates05CreateProjectPage
     private string name = "MyFirstProject";
 
     private Parameter<bool> windows = new() { Value = true, Default = true };
+    private Parameter<bool> cloudflare = new() { Value = true, Default = true };
     private Parameter<bool> sample = new() { Value = false, Default = false };
     private Parameter<bool> sentry = new() { Value = false, Default = false };
     private Parameter<bool> offlineDb = new() { Value = false, Default = false };
@@ -131,6 +132,11 @@ public partial class Templates05CreateProjectPage
             finalCommand.Append(GetWindowsCommand());
         }
 
+        if (cloudflare.IsModified)
+        {
+            finalCommand.Append(GetCloudflareCommand());
+        }
+
         if (sentry.IsModified)
         {
             finalCommand.Append(GetSentryCommand());
@@ -202,6 +208,11 @@ public partial class Templates05CreateProjectPage
     private string GetWindowsCommand()
     {
         return $"--windows{(windows.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetCloudflareCommand()
+    {
+        return $"--cloudflare{(cloudflare.Value ? string.Empty : " false")} ";
     }
 
     private string GetSampleCommand()

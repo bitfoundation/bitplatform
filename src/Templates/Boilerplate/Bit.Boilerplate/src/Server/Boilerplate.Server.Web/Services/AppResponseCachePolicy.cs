@@ -1,55 +1,88 @@
-﻿using Microsoft.AspNetCore.OutputCaching;
+﻿//+:cnd:noEmit
+using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Web.Services;
 
-public class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCachePolicy> logger) : IOutputCachePolicy
+public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
 {
     public async ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
     {
         var responseCacheAtt = context.HttpContext.GetResponseCacheAttribute();
 
-        if (responseCacheAtt is null || context.HttpContext.User.IsAuthenticated() is true)
-        {
-            context.EnableOutputCaching = false;
+        if (responseCacheAtt is null)
             return;
+
+        context.AllowLocking = true;
+        context.EnableOutputCaching = true;
+        context.CacheVaryByRules.QueryKeys = "*";
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
         }
 
         var requestUrl = new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).PathAndQuery;
 
+        if (responseCacheAtt.SharedMaxAge == -1)
+        {
+            responseCacheAtt.SharedMaxAge = responseCacheAtt.MaxAge;
+        }
+
+        var browserCacheTtl = responseCacheAtt.MaxAge;
+        var edgeCacheTtl = responseCacheAtt.SharedMaxAge;
+        var outputCacheTtl = responseCacheAtt.SharedMaxAge;
+
         if (env.IsDevelopment())
         {
-            context.EnableOutputCaching = false;
-            logger.LogInformation("In production, the result response of {Url} url would be cached.", requestUrl);
-            return; // To enhance the developer experience, return here to make it easier for developers to debug cacheable pages.
+            // To enhance the developer experience, return from here to make it easier for developers to debug cacheable responses.
+            outputCacheTtl = -1;
+            browserCacheTtl = -1;
         }
 
-        var duration = TimeSpan.FromSeconds(responseCacheAtt.MaxAge > 0 ? responseCacheAtt.MaxAge : responseCacheAtt.SharedMaxAge);
-
-        context.ResponseExpirationTimeSpan = duration;
-        context.Tags.Add(requestUrl);
-
-        //#if (cloudflare == true)
-        if (responseCacheAtt.ResourceKind is Shared.Attributes.ResourceKind.Page &&
-            CultureInfoManager.MultilingualEnabled)
+        if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
-            responseCacheAtt.SharedMaxAge = 0; // Edge caching for page responses is not supported when `CultureInfoManager.MultilingualEnabled` is set to `true`.
+            // See UserAgnostic's comment.
+            edgeCacheTtl = -1;
+            outputCacheTtl = -1;
         }
-        //#endif
 
-        context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
+        if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.MultilingualEnabled)
         {
-            Public = true,
-            MaxAge = TimeSpan.FromSeconds(responseCacheAtt.MaxAge),
-            //#if (cloudflare == true)
-            SharedMaxAge = TimeSpan.FromSeconds(responseCacheAtt.SharedMaxAge)
-            //#endif
-        };
-        context.HttpContext.Response.Headers.Remove("Pragma");
+            // Note: Currently, we are not keeping the current culture in the URL. 
+            // The edge and browser caches do not support such variations, although the output cache does. 
+            // As a temporary solution, browser and edge caching are disabled for pre-rendered pages.
+            edgeCacheTtl = -1;
+            browserCacheTtl = -1;
+        }
 
-        if (CultureInfoManager.MultilingualEnabled)
+        if (context.HttpContext.Request.IsFromCDN() && edgeCacheTtl > 0)
         {
-        context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
-    }
+            // The origin backend is hosted behind a CDN, so there's no need to use both output caching and edge caching simultaneously.
+            outputCacheTtl = -1;
+        }
+
+        // Edge - Browser Cache
+        if (browserCacheTtl != -1 || edgeCacheTtl != -1)
+        {
+            context.HttpContext.Response.GetTypedHeaders().CacheControl = new()
+            {
+                Public = edgeCacheTtl > 0,
+                MaxAge = browserCacheTtl == -1 ? null : TimeSpan.FromSeconds(browserCacheTtl),
+                SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
+            };
+            context.HttpContext.Response.Headers.Remove("Pragma");
+        }
+
+        // ASP.NET Core Output Cache
+        if (outputCacheTtl != -1)
+        {
+            context.Tags.Add(requestUrl);
+            context.AllowCacheLookup = true;
+            context.AllowCacheStorage = true;
+            context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
+        }
+
+        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", $"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}");
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)
@@ -59,6 +92,12 @@ public class AppResponseCachePolicy(IHostEnvironment env, ILogger<AppResponseCac
 
     public async ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation)
     {
+        var response = context.HttpContext.Response;
 
+        if (StringValues.IsNullOrEmpty(response.Headers.SetCookie) is false
+            || response.StatusCode is not StatusCodes.Status200OK)
+        {
+            context.AllowCacheStorage = false;
+        }
     }
 }
