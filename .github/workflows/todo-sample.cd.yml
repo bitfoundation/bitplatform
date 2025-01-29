@@ -50,7 +50,7 @@ jobs:
         files: 'TodoSample/src/Shared/appsettings.json, TodoSample/src/Client/TodoSample.Client.Core/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.json, TodoSample/src/Client/TodoSample.Client.Web/appsettings.Production.json'
       env:
         WebAppRender.PrerenderEnabled: true
-        ServerAddress: ${{ env.SERVER_ADDRESS }}
+        ServerAddress: /
         WebAppRender.BlazorMode: BlazorWebAssembly
         Logging.Sentry.Dsn: ${{ secrets.TODO_SENTRY_DSN }}
         AdsPushVapid.PublicKey: ${{ secrets.TODO_PUBLIC_VAPIDKEY }}
