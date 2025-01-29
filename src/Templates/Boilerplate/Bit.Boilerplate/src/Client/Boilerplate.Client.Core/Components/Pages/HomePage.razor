@@ -12,7 +12,7 @@
             <br />
             @Localizer[nameof(AppStrings.HomePanelSubtitle)]
         </BitText>
-
+        <h1>@DateTimeOffset.UtcNow.LocalDateTime.ToLongTimeString()</h1>
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeMessage)]
         </BitText>
