@@ -425,7 +425,11 @@
                     "exclude": [
                         "src/Shared/Dtos/Dashboard/**",
                         "src/Server/Boilerplate.Server.Api/Controllers/Dashboard/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
+                        "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductController.cs",
                         "src/Shared/Controllers/Dashboard/**",
+                        "src/Shared/Controllers/Categories/**",
+                        "src/Shared/Controllers/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Authorized/Products/**"
@@ -434,8 +438,8 @@
                 {
                     "condition": "(module != Sales)",
                     "exclude": [
-                        "src/Shared/Controllers/Products/IProductViewController.cs",
                         "src/Server/Boilerplate.Server.Api/Controllers/Products/ProductViewController.cs",
+                        "src/Shared/Controllers/Products/IProductViewController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/ProductPage.*"
                     ]
                 },
@@ -444,16 +448,12 @@
                     "exclude": [
                         "src/Shared/Dtos/Categories/**",
                         "src/Shared/Dtos/Products/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Controllers/Products/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Category/**",
                         "src/Server/Boilerplate.Server.Api/Data/Configurations/Product/**",
                         "src/Server/Boilerplate.Server.Api/Mappers/CategoriesMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Mappers/ProductsMapper.cs",
                         "src/Server/Boilerplate.Server.Api/Models/Categories/**",
-                        "src/Server/Boilerplate.Server.Api/Models/Products/**",
-                        "src/Shared/Controllers/Categories/**",
-                        "src/Shared/Controllers/Products/**"
+                        "src/Server/Boilerplate.Server.Api/Models/Products/**"
                     ]
                 },
                 {
