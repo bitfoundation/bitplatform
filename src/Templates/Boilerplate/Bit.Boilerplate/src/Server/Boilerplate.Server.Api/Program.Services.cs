@@ -92,17 +92,12 @@ public static partial class Program
 
         services.AddExceptionHandler<ServerExceptionHandler>();
 
-        services.AddResponseCaching();
         services.AddOutputCache(options =>
         {
             options.AddPolicy("AppResponseCachePolicy", policy =>
             {
                 var builder = policy.AddPolicy<AppResponseCachePolicy>();
-                if (CultureInfoManager.MultilingualEnabled)
-                {
-                    builder.VaryByValue(context => new("Culture", CultureInfo.CurrentUICulture.Name));
-                }
-            });
+            }, excludeDefaultPolicy: true);
         });
         services.AddMemoryCache();
 
@@ -137,7 +132,7 @@ public static partial class Program
                 policy.SetIsOriginAllowed(origin => settings.IsAllowedOrigin(new Uri(origin)))
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .WithExposedHeaders(HeaderNames.RequestId);
+                      .WithExposedHeaders(HeaderNames.RequestId, "Age", "App-Cache-Response");
             });
         });
 

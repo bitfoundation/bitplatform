@@ -53,4 +53,9 @@ public static partial class HttpRequestExtensions
 
         return userAgent.ToLowerInvariant();
     }
+
+    public static bool IsFromCDN(this HttpRequest request)
+    {
+        return request.Headers.ContainsKey("CDN-Loop");
+    }
 }

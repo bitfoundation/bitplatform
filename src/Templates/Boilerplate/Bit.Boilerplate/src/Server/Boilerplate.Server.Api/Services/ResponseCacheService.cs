@@ -7,7 +7,7 @@ namespace Boilerplate.Server.Api.Services;
 /// 
 /// The default Boilerplate project template includes:
 /// 1. `Static` file caching on browsers and CDN edge servers.
-/// 2. Caching JSON and dynamic responses on CDN edge servers and ASP.NET Core's Output Cache by using `AppResponseCache` attribute in controllers like `StatisticsController`, `AttachmentController` and minimal apis.
+/// 2. Caching JSON and dynamic files responses on CDN edge servers and ASP.NET Core's Output Cache by using `AppResponseCache` attribute in controllers like `StatisticsController`, `AttachmentController` and minimal apis.
 /// 3. Caching pre-rendered HTML results of Blazor pages on CDN edge servers and ASP.NET Core's Output by using `AppResponseCache` attribute in pages like HomePage.razor
 /// 
 /// - Note: The request URL must exactly match the URL passed to <see cref="PurgeCache(string[])"/> for successful purging.  
@@ -27,6 +27,14 @@ public partial class ResponseCacheService
         }
         //#if (cloudflare == true)
         await PurgeCloudflareCache(relativePaths);
+        //#else
+        // If you're using CDNs like GCore or others, make sure to purge the Edge Cache of your CDN.
+        // The Cloudflare Cache API is already integrated into the Boilerplate, but for other CDNs, 
+        // you'll need to implement the caching logic yourself.
+        if (httpContextAccessor.HttpContext!.Request.IsFromCDN())
+        {
+            throw new NotImplementedException();
+        }
         //#endif
     }
 
