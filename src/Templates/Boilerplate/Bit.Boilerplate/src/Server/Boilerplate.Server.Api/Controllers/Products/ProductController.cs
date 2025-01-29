@@ -117,6 +117,5 @@ public partial class ProductController : AppControllerBase, IProductController
             && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken: cancellationToken))
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }
-    //#endif
 }
 
