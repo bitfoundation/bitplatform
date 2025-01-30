@@ -35,7 +35,7 @@
                                         <BitText Typography="BitTypography.H1">@product.Name</BitText>
                                     </BitLink>
                                     <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
-                                    <BitText Typography="BitTypography.H4">@($"{product.Price.ToString("N0")} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}")</BitText>
+                                    <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
 
                                 </BitStack>
                             </BitStack>
