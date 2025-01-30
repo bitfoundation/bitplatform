@@ -51,7 +51,6 @@ public partial class ProductPage
         try
         {
             isLoadingSimilarProducts = true;
-            await Task.Delay(2000);
             similarProducts = await productViewController.GetSimilar(product.Id, CurrentCancellationToken);
         }
         finally
@@ -67,7 +66,6 @@ public partial class ProductPage
         try
         {
             isLoadingSiblingProducts = true;
-            await Task.Delay(3000);
             siblingProducts = await productViewController.GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
         }
         finally
