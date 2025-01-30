@@ -208,7 +208,6 @@ public static partial class Program
                 var baseUrl = context.Request.GetBaseUrl();
 
                 siteMap = @$"{siteMapHeader}
-    {$"<url><loc>{new Uri(baseUrl, "products.xml")}</loc></url>"}
     {string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}
 </urlset>";
             }
