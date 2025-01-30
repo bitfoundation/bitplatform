@@ -15,6 +15,9 @@ public partial class ProductPage
     [AutoInject] private IProductViewController productViewController = default!;
 
 
+    [CascadingParameter] private BitDir? currentDir { get; set; }
+
+
     private ProductDto? product;
     private List<ProductDto>? similarProducts;
     private List<ProductDto>? siblingProducts;
