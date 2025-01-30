@@ -189,6 +189,20 @@ public static partial class Program
             {
                 var baseUrl = context.Request.GetBaseUrl();
 
+                siteMap = $"{siteMapHeader}{$"<url><loc>{new Uri(baseUrl, "products.xml")}</loc></url>"}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            }
+
+            context.Response.Headers.ContentType = "application/xml";
+
+            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+        }).CacheOutput("AppResponseCachePolicy");
+
+        app.MapGet("/products.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
+        {
+            if (siteMap is null)
+            {
+                var baseUrl = context.Request.GetBaseUrl();
+
                 siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
             }
 
