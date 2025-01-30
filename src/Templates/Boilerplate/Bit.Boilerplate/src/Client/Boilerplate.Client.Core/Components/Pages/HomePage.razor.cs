@@ -1,5 +1,8 @@
-﻿using Boilerplate.Shared.Controllers.Statistics;
+﻿//+:cnd:noEmit
+using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Dtos.Statistics;
+using Boilerplate.Shared.Controllers.Products;
+using Boilerplate.Shared.Controllers.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 
@@ -8,19 +11,29 @@ public partial class HomePage
     protected override string? Title => Localizer[nameof(AppStrings.Home)];
     protected override string? Subtitle => string.Empty;
 
+
     [CascadingParameter] private BitDir? currentDir { get; set; }
 
-    [AutoInject] private IStatisticsController statisticsController = default!;
 
+    //#if(module != "Sales")
+    [AutoInject] private IStatisticsController statisticsController = default!;
     private bool isLoadingGitHub = true;
     private bool isLoadingNuget = true;
     private GitHubStats? gitHubStats;
     private NugetStatsDto? nugetStats;
+    //#endif
+
+    //#if(module == "Sales")
+    [AutoInject] private IProductViewController productViewController = default!;
+    private IEnumerable<ProductDto>? carouselProducts;
+    //#endif
+
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
+        //#if(module != "Sales")
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
         // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
 
@@ -31,8 +44,16 @@ public partial class HomePage
         // effectively addresses most scenarios.
 
         await Task.WhenAll(LoadNuget(), LoadGitHub());
+        //#endif
+
+        //#if(module == "Sales")
+        carouselProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/ProductView/GetHomeCarouselProducts",
+                                                         JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
+                                                         CurrentCancellationToken)))!;
+        //#endif
     }
 
+    //#if(module != "Sales")
     private async Task LoadNuget()
     {
         try
@@ -68,4 +89,16 @@ public partial class HomePage
             await InvokeAsync(StateHasChanged);
         }
     }
+    //#endif
+
+    //#if(module == "Sales")
+    private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        productViewController.AddQueryString(new ODataQuery { Top = 10, Skip = request.Skip });
+
+        return await productViewController.Get(CurrentCancellationToken);
+    }
+
+    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
+    //#endif
 }

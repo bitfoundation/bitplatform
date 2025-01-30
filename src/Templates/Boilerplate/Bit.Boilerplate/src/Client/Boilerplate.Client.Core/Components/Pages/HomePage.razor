@@ -1,4 +1,5 @@
-﻿@attribute [Route(Urls.HomePage)]
+﻿@*+:cnd:noEmit*@
+@attribute [Route(Urls.HomePage)]
 @attribute [Route("{culture:nonfile?}" + Urls.HomePage)]
 @attribute [AppResponseCache(SharedMaxAge = 3600 * 24)]
 @inherits AppPageBase
@@ -6,7 +7,7 @@
 <PageTitle>@Localizer[nameof(AppStrings.HomePageTitle)]</PageTitle>
 
 <section>
-    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="stack">
+    <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomePanelTitle)]
             <br />
@@ -16,9 +17,56 @@
         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomeMessage)]
         </BitText>
-        
+
         <br />
 
+        @*#if (module == "Sales")*@
+        @if (carouselProducts is not null)
+        {
+            <BitCard FullWidth>
+                <BitCarousel Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
+                    @foreach (var product in carouselProducts)
+                    {
+                        <BitCarouselItem>
+                            <BitStack Horizontal Class="carousel-stack">
+                                <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
+                                <BitStack AutoHeight>
+                                    <BitLink Href="@($"/product/{product.Id}")" NoUnderline>
+                                        <BitText Typography="BitTypography.H1">@product.Name</BitText>
+                                    </BitLink>
+                                    <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
+                                    <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+
+                                </BitStack>
+                            </BitStack>
+                        </BitCarouselItem>
+                    }
+                </BitCarousel>
+            </BitCard>
+        }
+        <br />
+        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px">
+            <ItemTemplate Context="product">
+                <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
+                    <BitCard FullSize>
+                        <BitStack Class="product-stack">
+                            <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
+                            <BitText>@product.Name</BitText>
+                            <BitText Typography="BitTypography.Body2">@product.Description</BitText>
+                            <BitText Typography="BitTypography.H6">@product.Price.ToString("C")</BitText>
+                        </BitStack>
+                    </BitCard>
+                </BitLink>
+            </ItemTemplate>
+            <LoadingTemplate>
+                <BitStack Alignment="BitAlignment.Center">
+                    <BitEllipsisLoading />
+                </BitStack>
+            </LoadingTemplate>
+        </BitInfiniteScrolling>
+        @*#endif*@
+
+        @*#if (module != "Sales")*@
         <CascadingValue Value="BitDir.Ltr">
             <BitCard FullWidth Style="padding:2rem">
                 <BitStack>
@@ -78,11 +126,13 @@
                                     </BitStack>
                                     <BitStack Horizontal>
                                         <BitText>Repo:</BitText>
+                                        @*-:cnd:noEmit*@
                                         <BitLink Target="_blank"
                                                  Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Templates/Boilerplate">
                                             <BitImage Alt="bitplatform GitHub stars"
                                                       Src="https://img.shields.io/github/stars/bitfoundation/bitplatform?style=social&label=Github%20%E2%9C%A8" />
                                         </BitLink>
+                                        @*+:cnd:noEmit*@
                                     </BitStack>
                                 </BitStack>
                             }
@@ -96,6 +146,7 @@
             </BitCard>
         </CascadingValue>
         <br />
+        @*#endif*@
 
         <BitCard FullWidth Style="padding:4rem">
             <BitStack HorizontalAlign="BitAlignment.Center">
@@ -113,7 +164,7 @@
             </BitStack>
         </BitCard>
 
-        <BitStack Horizontal Gap="2rem" Class="products-stack">
+        <BitStack Horizontal Gap="2rem" Class="bit-products-stack">
             <BitCard Style="padding:3rem" FullWidth>
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>
@@ -150,5 +201,6 @@
                 </BitStack>
             </BitCard>
         </BitStack>
+        @*#endif*@
     </BitStack>
 </section>

@@ -1053,6 +1053,9 @@
     <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>محصول پیدا نشد</value>
   </data>
+    <data name="Category" xml:space="preserve">
+    <value>دسته</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1163,9 +1166,6 @@
     <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
   </data>
-    <data name="Category" xml:space="preserve">
-    <value>دسته</value>
-  </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>انتخاب کننده رنگ پیش فرض</value>
   </data>
@@ -1194,6 +1194,14 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>شما باید چالش گوگل ریکپچا را به سرانجام برسانید.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>محصولات مشابه</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>محصولات در همین دسته</value>
   </data>
     <!--#endif -->
 </root>

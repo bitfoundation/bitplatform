@@ -132,4 +132,24 @@ public partial class AttachmentController : AppControllerBase
         await appHubContext.Clients.Clients(userSessionIdsExceptCurrentUserSessionId).SendAsync(SignalREvents.PUBLISH_MESSAGE, SharedPubSubMessages.PROFILE_UPDATED, user, cancellationToken);
     }
     //#endif
+
+    //#if (module == "Sales")
+    [AllowAnonymous]
+    [HttpGet("{productId}")]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    public async Task<IActionResult> GetProductImage(Guid productId, CancellationToken cancellationToken)
+    {
+        var product = await DbContext.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product?.ImageFileName is null)
+            throw new ResourceNotFoundException();
+
+        var filePath = $"{AppSettings.ProductImagesDir}{product.ImageFileName}";
+
+        if (await blobStorage.ExistsAsync(filePath, cancellationToken) is false)
+            return new EmptyResult();
+
+        return File(await blobStorage.OpenReadAsync(filePath, cancellationToken), "image/webp", enableRangeProcessing: true);
+    }
+    //#endif
 }

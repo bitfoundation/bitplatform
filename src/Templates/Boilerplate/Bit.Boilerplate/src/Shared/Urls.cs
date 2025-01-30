@@ -26,6 +26,9 @@ public static partial class Urls
     //#if (sample == true)
     public const string TodoPage = "/todo";
     //#endif
+    //#if (module == "Sales")
+    public const string ProductPage = "/product";
+    //#endif
 
     public static readonly string[] All = typeof(Urls).GetFields()
                                                       .Where(f => f.FieldType == typeof(string))

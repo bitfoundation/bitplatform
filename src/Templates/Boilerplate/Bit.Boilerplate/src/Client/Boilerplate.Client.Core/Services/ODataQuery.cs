@@ -69,4 +69,6 @@ public partial class ODataQuery
 
         return qs.ToString()!;
     }
+
+    public static implicit operator string(ODataQuery query) => query.ToString();
 }

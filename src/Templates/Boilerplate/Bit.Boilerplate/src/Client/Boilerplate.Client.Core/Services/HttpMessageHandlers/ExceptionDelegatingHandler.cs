@@ -1,5 +1,6 @@
 ﻿//+:cnd:noEmit
 using System.Net;
+using System.Net.Sockets;
 
 namespace Boilerplate.Client.Core.Services.HttpMessageHandlers;
 
@@ -51,8 +52,8 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
 
-                Exception exp = exceptionType == typeof(ResourceValidationException) 
-                                    ? new ResourceValidationException(restError.Message!, restError.Payload!) 
+                Exception exp = exceptionType == typeof(ResourceValidationException)
+                                    ? new ResourceValidationException(restError.Message!, restError.Payload!)
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;
@@ -76,6 +77,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         catch (Exception exp) when (
                (exp is HttpRequestException && serverCommunicationSuccess is false)
             || (exp is TaskCanceledException tcExp && tcExp.InnerException is TimeoutException)
+            || (exp.InnerException is SocketException sockExp && sockExp.SocketErrorCode is SocketError.HostNotFound)
             || (exp is HttpRequestException { StatusCode: HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout or HttpStatusCode.ServiceUnavailable }))
         {
             serverCommunicationSuccess = false; // Let's treat the server communication as failed if an exception is caught here.
