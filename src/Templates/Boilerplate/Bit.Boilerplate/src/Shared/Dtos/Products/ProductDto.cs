@@ -29,4 +29,12 @@ public partial class ProductDto
     public byte[] ConcurrencyStamp { get; set; } = [];
 
     public string? ImageFileName { get; set; }
+
+
+    public string? GetProductImageUrl(Uri absoluteServerAddress)
+    {
+        return ImageFileName is null
+            ? null
+            : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp}").ToString();
+    }
 }

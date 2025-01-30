@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Products;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Api.Controllers.Products;
 
@@ -10,18 +10,17 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     [HttpGet, EnableQuery]
     public IQueryable<ProductDto> Get()
     {
-        return DbContext.Products.Project();
+        return DbContext.Products.OrderByDescending(p => p.Name).Project();
     }
 
     [HttpGet]
     public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
     {
-        return await Get().OrderByDescending(p => p.Name)
-                          .Take(10)
-                          .ToListAsync(cancellationToken);
+        return await Get().Take(10).ToListAsync(cancellationToken);
     }
 
     [HttpGet("{id}")]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)

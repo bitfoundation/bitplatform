@@ -136,7 +136,7 @@ public partial class AttachmentController : AppControllerBase
     //#if (module == "Sales")
     [AllowAnonymous]
     [HttpGet("{productId}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
     public async Task<IActionResult> GetProductImage(Guid productId, CancellationToken cancellationToken)
     {
         var product = await DbContext.Products.FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);

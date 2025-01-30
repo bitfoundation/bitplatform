@@ -16,7 +16,7 @@
             <br />
             <BitCard FullWidth Style="padding:3rem 1rem;">
                 <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
-                    <BitImage Src="@GetProductImageUrl(product)" Width="30%" />
+                    <ProductImage Src="@GetProductImageUrl(product)" Width="30%" />
                     <BitStack AutoWidth Grows>
                         <BitText Typography="BitTypography.H2">@product.Name</BitText>
                         <BitText Color="BitColor.Info">@product.CategoryName</BitText>
@@ -39,7 +39,7 @@
                             <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
                                 <BitCard FullSize>
                                     <BitStack>
-                                        <BitImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                        <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
                                         <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
@@ -64,7 +64,7 @@
                             <BitLink Href="@($"/product/{prd.Id}")" NoUnderline Style="width:250px">
                                 <BitCard FullSize>
                                     <BitStack>
-                                        <BitImage Src="@GetProductImageUrl(prd)" Width="100%" />
+                                        <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
                                         <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>

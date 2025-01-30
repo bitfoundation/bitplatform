@@ -29,13 +29,13 @@
                     {
                         <BitCarouselItem>
                             <BitStack Horizontal Class="carousel-stack">
-                                <BitImage Src="@GetProductImageUrl(product)" Width="50%" />
+                                <ProductImage Src="@GetProductImageUrl(product)" Width="50%" />
                                 <BitStack AutoHeight>
                                     <BitLink Href="@($"/product/{product.Id}")" NoUnderline>
                                         <BitText Typography="BitTypography.H1">@product.Name</BitText>
                                     </BitLink>
                                     <BitText Typography="BitTypography.H6" Class="carousel-desc">@product.Description</BitText>
-                                    <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+                                    <BitText Typography="BitTypography.H4">@($"{product.Price.ToString("N0")} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}")</BitText>
 
                                 </BitStack>
                             </BitStack>
@@ -50,7 +50,7 @@
                 <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
                     <BitCard FullSize>
                         <BitStack Class="product-stack">
-                            <BitImage Src="@GetProductImageUrl(product)" Width="100%" />
+                            <ProductImage Src="@GetProductImageUrl(product)" Width="100%" />
                             <BitText>@product.Name</BitText>
                             <BitText Typography="BitTypography.Body2">@product.Description</BitText>
                             <BitText Typography="BitTypography.H6">@product.Price.ToString("C")</BitText>
@@ -66,7 +66,7 @@
         </BitInfiniteScrolling>
         @*#endif*@
 
-        @*#if (module == "Admin")*@
+        @*#if (module != "Sales")*@
         <CascadingValue Value="BitDir.Ltr">
             <BitCard FullWidth Style="padding:2rem">
                 <BitStack>

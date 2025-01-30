@@ -1,5 +1,5 @@
-﻿using Boilerplate.Shared.Controllers.Products;
-using Boilerplate.Shared.Dtos.Products;
+﻿using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages;
 
@@ -24,37 +24,32 @@ public partial class ProductPage
     {
         await base.OnInitAsync();
 
-        await Task.WhenAll(LoadProduct(), LoadSimilarProducts());
+        await LoadProduct();
 
-        await LoadSiblingProducts();
+        await Task.WhenAll(LoadSimilarProducts(), LoadSiblingProducts());
     }
 
     private async Task LoadProduct()
     {
         product = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/Get/{Id}",
-                                                         JsonSerializerOptions.GetTypeInfo<ProductDto>(),
-                                                         CurrentCancellationToken)))!;
+                                                        JsonSerializerOptions.GetTypeInfo<ProductDto>(),
+                                                        CurrentCancellationToken)))!;
     }
 
     private async Task LoadSimilarProducts()
     {
-        similarProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/GetSimilar/{Id}",
-                                                                      JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
-                                                                      CurrentCancellationToken)))!;
+        if (product is null) return;
+
+        similarProducts = await productViewController.GetSimilar(product.Id, CurrentCancellationToken);
     }
 
     private async Task LoadSiblingProducts()
     {
-        siblingProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/GetSiblings/{product?.CategoryId}",
-                                                                      JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
-                                                                      CurrentCancellationToken)))!;
+        if (product is null || product.CategoryId.HasValue is false) return;
+
+        siblingProducts = await productViewController.GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
     }
 
 
-    private string GetProductImageUrl(ProductDto product)
-    {
-        return product.ImageFileName is null
-            ? "_content/Boilerplate.Client.Core/images/product-placeholder.png"
-            : new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProductImage/{product.Id}?v={product.ConcurrencyStamp}").ToString();
-    }
+    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
 }

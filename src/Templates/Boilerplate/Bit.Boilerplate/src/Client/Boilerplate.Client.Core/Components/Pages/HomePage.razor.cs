@@ -15,7 +15,7 @@ public partial class HomePage
     [CascadingParameter] private BitDir? currentDir { get; set; }
 
 
-    //#if(module == "Admin")
+    //#if(module != "Sales")
     [AutoInject] private IStatisticsController statisticsController = default!;
     private bool isLoadingGitHub = true;
     private bool isLoadingNuget = true;
@@ -33,7 +33,7 @@ public partial class HomePage
     {
         await base.OnInitAsync();
 
-        //#if(module == "Admin")
+        //#if(module != "Sales")
         // If required, you should typically manage the authorization header for external APIs in **AuthDelegatingHandler.cs**
         // and handle error extraction from failed responses in **ExceptionDelegatingHandler.cs**.  
 
@@ -53,7 +53,7 @@ public partial class HomePage
         //#endif
     }
 
-    //#if(module == "Admin")
+    //#if(module != "Sales")
     private async Task LoadNuget()
     {
         try
@@ -94,23 +94,11 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        var query = new ODataQuery
-        {
-            Top = 10,
-            Skip = request.Skip,
-            OrderBy = $"{nameof(ProductDto.Name)} desc"
-        };
-
-        productViewController.AddQueryString(query.ToString());
+        productViewController.AddQueryString(new ODataQuery { Top = 10, Skip = request.Skip });
 
         return await productViewController.Get(CurrentCancellationToken);
     }
 
-    private string GetProductImageUrl(ProductDto product)
-    {
-        return product.ImageFileName is null
-            ? "_content/Boilerplate.Client.Core/images/product-placeholder.png"
-            : new Uri(AbsoluteServerAddress, $"/api/Attachment/GetProductImage/{product.Id}?v={product.ConcurrencyStamp}").ToString();
-    }
+    private string? GetProductImageUrl(ProductDto product) => product.GetProductImageUrl(AbsoluteServerAddress);
     //#endif
 }

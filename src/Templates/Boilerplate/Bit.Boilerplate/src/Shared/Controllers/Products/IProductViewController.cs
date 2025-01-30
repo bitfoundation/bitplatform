@@ -15,8 +15,8 @@ public interface IProductViewController : IAppController
     Task<ProductDto> Get(Guid id, CancellationToken cancellationToken) => default!;
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken) => default!;
+    Task<List<ProductDto>> GetSimilar(Guid id, CancellationToken cancellationToken);
 
     [HttpGet("{id}")]
-    Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken) => default!;
+    Task<List<ProductDto>> GetSiblings(Guid id, CancellationToken cancellationToken);
 }
