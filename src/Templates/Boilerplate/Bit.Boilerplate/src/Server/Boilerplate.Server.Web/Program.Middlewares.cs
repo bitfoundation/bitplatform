@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
 using Boilerplate.Shared;
 using Boilerplate.Shared.Attributes;
+using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Server.Web;
 
@@ -175,13 +176,32 @@ public static partial class Program
 
     private static void UseSiteMap(this WebApplication app)
     {
+        const string SITEMAP_INDEX_FORMAT = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<sitemapindex xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
+   <sitemap>
+      <loc>{0}sitemap.xml</loc>
+   </sitemap>
+   <sitemap>
+      <loc>{0}products.xml</loc>
+   </sitemap>
+</sitemapindex>";
+
+        app.MapGet("/sitemap_index.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
+        {
+            var baseUrl = context.Request.GetBaseUrl();
+
+            await context.Response.WriteAsync(string.Format(SITEMAP_INDEX_FORMAT, baseUrl), context.RequestAborted);
+        }).CacheOutput("AppResponseCachePolicy");
+
+
         var urls = Urls.All!;
 
-        urls = CultureInfoManager.MultilingualEnabled ?
-             urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray() :
-             urls;
+        urls = CultureInfoManager.MultilingualEnabled 
+                ? urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
+                : urls;
 
-        const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
+        const string siteMapHeader = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">";
 
         app.MapGet("/sitemap.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
         {
@@ -189,7 +209,10 @@ public static partial class Program
             {
                 var baseUrl = context.Request.GetBaseUrl();
 
-                siteMap = $"{siteMapHeader}{$"<url><loc>{new Uri(baseUrl, "products.xml")}</loc></url>"}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+                siteMap = @$"{siteMapHeader}
+    {$"<url><loc>{new Uri(baseUrl, "products.xml")}</loc></url>"}
+    {string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}
+</urlset>";
             }
 
             context.Response.Headers.ContentType = "application/xml";
@@ -197,22 +220,27 @@ public static partial class Program
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
         }).CacheOutput("AppResponseCachePolicy");
 
-        app.MapGet("/products.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
+
+        app.MapGet("/products.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (IProductViewController productViewController, HttpContext context) =>
         {
-            if (siteMap is null)
+            if (productsMap is null)
             {
                 var baseUrl = context.Request.GetBaseUrl();
+                var products = await productViewController.Get(CancellationToken.None);
 
-                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+                productsMap = @$"{siteMapHeader}
+    {string.Join(Environment.NewLine, products.Select(p => $"<url><loc>{new Uri(baseUrl, $"product/{p.Id}")}</loc></url>"))}
+</urlset>";
             }
 
             context.Response.Headers.ContentType = "application/xml";
 
-            await context.Response.WriteAsync(siteMap, context.RequestAborted);
+            await context.Response.WriteAsync(productsMap, context.RequestAborted);
         }).CacheOutput("AppResponseCachePolicy");
     }
 
     private static string? siteMap;
+    private static string? productsMap;
 
     /// <summary>
     /// Prior to the introduction of .NET 8, the Blazor router effectively managed NotFound and NotAuthorized components during pre-rendering.
