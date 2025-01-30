@@ -188,12 +188,12 @@ public static partial class Program
    </sitemap>
 </sitemapindex>";
 
-        app.MapGet("/sitemap_index.xml", async (context) =>
+        app.MapGet("/sitemap_index.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
         {
             var baseUrl = context.Request.GetBaseUrl();
 
             await context.Response.WriteAsync(string.Format(SITEMAP_INDEX_FORMAT, baseUrl), context.RequestAborted);
-        });
+        }).CacheOutput("AppResponseCachePolicy");
 
 
         var urls = Urls.All!;
@@ -203,12 +203,12 @@ public static partial class Program
                 : urls;
 
         const string siteMapHeader = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<urlset  xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
-         xsi:schemaLocation=""http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd""
-         xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">";
+<urlset xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
+        xsi:schemaLocation=""http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd""
+        xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">";
 
 
-        app.MapGet("/sitemap.xml", async (context) =>
+        app.MapGet("/sitemap.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
         {
             if (siteMap is null)
             {
@@ -223,7 +223,7 @@ public static partial class Program
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
-        });
+        }).CacheOutput("AppResponseCachePolicy");
 
 
         app.MapGet("/products.xml", async (IProductViewController productViewController, HttpContext context) =>
