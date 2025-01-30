@@ -177,9 +177,7 @@ public static partial class Program
     private static void UseSiteMap(this WebApplication app)
     {
         const string SITEMAP_INDEX_FORMAT = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<sitemapindex xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
-              xsi:schemaLocation=""http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/siteindex.xsd""
-              xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
+<sitemapindex xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
    <sitemap>
       <loc>{0}sitemap.xml</loc>
    </sitemap>
@@ -189,16 +187,12 @@ public static partial class Program
 </sitemapindex>";
 
         var urls = Urls.All!;
-
         urls = CultureInfoManager.MultilingualEnabled 
                 ? urls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => urls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
                 : urls;
 
         const string siteMapHeader = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<urlset xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance""
-        xsi:schemaLocation=""http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd""
-        xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">";
-
+<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">";
 
         app.MapGet("/sitemap_index.xml", [AppResponseCache(MaxAge = 3600 * 24 * 7)] async (context) =>
         {
