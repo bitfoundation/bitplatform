@@ -50,12 +50,18 @@ public partial class ServerApiSettings : SharedSettings
     /// </summary>
     public Uri[] AllowedOrigins { get; set; } = [];
 
+    //#if (module == "Admin" || module == "Sales")
+    [Required]
+    public string ProductImagesDir { get; set; } = default!;
+    //#endif
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
 
         if (Identity is null)
             throw new InvalidOperationException("Identity configuration is required.");
+
         if (Email is null)
             throw new InvalidOperationException("Email configuration is required.");
 
