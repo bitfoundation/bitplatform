@@ -31,14 +31,15 @@ public partial class ProductPage
 
         await LoadProduct();
 
-        LoadOtherProducts();
+        if (InPrerenderSession is false)
+        {
+            LoadOtherProducts();
+        }
     }
 
     private async Task LoadProduct()
     {
-        product = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync($"api/ProductView/Get/{Id}",
-                                                        JsonSerializerOptions.GetTypeInfo<ProductDto>(),
-                                                        CurrentCancellationToken)))!;
+        product = await productViewController.Get(Id, CurrentCancellationToken);
     }
 
     private void LoadOtherProducts()
