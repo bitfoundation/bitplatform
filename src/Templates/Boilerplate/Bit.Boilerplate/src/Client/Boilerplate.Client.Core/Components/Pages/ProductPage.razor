@@ -21,7 +21,7 @@
                         <BitText Typography="BitTypography.H2">@product.Name</BitText>
                         <BitText Color="BitColor.Info">@product.CategoryName</BitText>
                         <BitText Typography="BitTypography.H6">@product.Description</BitText>
-                        <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+                        <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
                     </BitStack>
                 </BitStack>
             </BitCard>
@@ -95,7 +95,7 @@
                                         <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
-                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                     </BitStack>
                                 </BitCard>
                             </BitLink>
@@ -141,7 +141,7 @@
                                         <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
-                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                     </BitStack>
                                 </BitCard>
                             </BitLink>

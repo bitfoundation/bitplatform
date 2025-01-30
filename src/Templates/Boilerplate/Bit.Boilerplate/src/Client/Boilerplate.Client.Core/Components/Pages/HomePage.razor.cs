@@ -1,9 +1,10 @@
 ﻿//+:cnd:noEmit
-using Boilerplate.Shared.Dtos.Products;
 using Boilerplate.Shared.Dtos.Statistics;
 using Boilerplate.Shared.Controllers.Products;
 using Boilerplate.Shared.Controllers.Statistics;
-
+//#if(module == "Sales")
+using Boilerplate.Shared.Dtos.Products;
+//#endif
 namespace Boilerplate.Client.Core.Components.Pages;
 
 public partial class HomePage
