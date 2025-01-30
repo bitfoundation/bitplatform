@@ -82,7 +82,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
             context.ResponseExpirationTimeSpan = TimeSpan.FromSeconds(outputCacheTtl);
         }
 
-        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", $"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}");
+        context.HttpContext.Response.Headers.TryAdd("App-Cache-Response", FormattableString.Invariant($"Output:{outputCacheTtl},Edge:{edgeCacheTtl},Browser:{browserCacheTtl}"));
     }
 
     public async ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)

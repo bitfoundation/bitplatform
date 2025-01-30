@@ -1053,6 +1053,9 @@
     <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>Productentiteit kan niet worden gevonden</value>
   </data>
+    <data name="Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1163,9 +1166,6 @@
     <data name="DeleteProduct" xml:space="preserve">
     <value>Product verwijderen</value>
   </data>
-    <data name="Category" xml:space="preserve">
-    <value>Categorie</value>
-  </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>Standaard kleurkiezer</value>
   </data>
@@ -1194,6 +1194,14 @@
   </data>
     <data name="InvalidGoogleRecaptchaChallenge" xml:space="preserve">
     <value>U moet slagen voor de Google reCAPTCHA-uitdaging.</value>
+  </data>
+    <!--#endif -->
+    <!--#if (module == "Sales") -->
+    <data name="SimilarProducts" xml:space="preserve">
+    <value>Vergelijkbare producten</value>
+  </data>
+    <data name="SiblingProducts" xml:space="preserve">
+    <value>Producten in dezelfde categorie</value>
   </data>
     <!--#endif -->
 </root>

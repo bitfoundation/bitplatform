@@ -1,0 +1,6 @@
+<BitImage Src="@(Src ?? "_content/Boilerplate.Client.Core/images/product-placeholder.png")" Width="@Width" />
+
+@code {
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public string? Width { get; set; }
+}

@@ -90,6 +90,14 @@
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },
+    //#if (module == "Sample")
+    {
+        "outputFile": "Components/Pages/ProductPage.razor.css",
+        "inputFile": "Components/Pages/ProductPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    //#endif
     {
         "outputFile": "Components/Pages/TermsPage.razor.css",
         "inputFile": "Components/Pages/TermsPage.razor.scss",

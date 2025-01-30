@@ -23,4 +23,6 @@ public partial class Product
     public Guid CategoryId { get; set; }
 
     public byte[] ConcurrencyStamp { get; set; } = [];
+
+    public string? ImageFileName { get; set; }
 }

@@ -43,7 +43,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureIdentityTableNames(modelBuilder);
 
         //#if (database != "Sqlite")
-        ConcurrencyStamp(modelBuilder);
+        ConfigureConcurrencyStamp(modelBuilder);
         //#endif
     }
 
@@ -169,7 +169,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 
     //#if (database != "Sqlite")
-    private void ConcurrencyStamp(ModelBuilder modelBuilder)
+    private void ConfigureConcurrencyStamp(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
         if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
