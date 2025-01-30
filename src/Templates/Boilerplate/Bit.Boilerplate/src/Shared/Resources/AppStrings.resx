@@ -1053,6 +1053,9 @@
     <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>Product entity could not be found</value>
   </data>
+    <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1162,9 +1165,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>Delete product</value>
-  </data>
-    <data name="Category" xml:space="preserve">
-    <value>Category</value>
   </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>Default color picker</value>

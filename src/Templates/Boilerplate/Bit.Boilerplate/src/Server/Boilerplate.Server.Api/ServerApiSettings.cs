@@ -50,7 +50,7 @@ public partial class ServerApiSettings : SharedSettings
     /// </summary>
     public Uri[] AllowedOrigins { get; set; } = [];
 
-    //#if (module == "Admin") || (module == "Sales")
+    //#if (module == "Admin" || (module == "Sales")
     [Required]
     public string ProductImagesDir { get; set; } = default!;
     //#endif

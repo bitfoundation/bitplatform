@@ -1053,6 +1053,9 @@
     <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>محصول پیدا نشد</value>
   </data>
+    <data name="Category" xml:space="preserve">
+    <value>دسته</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1162,9 +1165,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>حذف محصول</value>
-  </data>
-    <data name="Category" xml:space="preserve">
-    <value>دسته</value>
   </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>انتخاب کننده رنگ پیش فرض</value>

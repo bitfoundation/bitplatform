@@ -1053,6 +1053,9 @@
     <data name="ProductCouldNotBeFound" xml:space="preserve">
     <value>Productentiteit kan niet worden gevonden</value>
   </data>
+    <data name="Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
     <!--#endif -->
     <!--#if (module == "Admin") -->
     <data name="AdminPanel" xml:space="preserve">
@@ -1162,9 +1165,6 @@
   </data>
     <data name="DeleteProduct" xml:space="preserve">
     <value>Product verwijderen</value>
-  </data>
-    <data name="Category" xml:space="preserve">
-    <value>Categorie</value>
   </data>
     <data name="DefaultColorPicker" xml:space="preserve">
     <value>Standaard kleurkiezer</value>

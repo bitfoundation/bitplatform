@@ -389,7 +389,6 @@
             "modifiers": [
                 {
                     "copyOnly": [
-                        "**/HomePage.razor",
                         "**/*.svg",
                         "**/*.png",
                         "**/*.sh"
