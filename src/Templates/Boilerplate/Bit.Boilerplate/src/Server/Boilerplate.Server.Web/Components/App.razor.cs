@@ -9,8 +9,6 @@ namespace Boilerplate.Server.Web.Components;
 public partial class App
 {
     private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
-
-    [AutoInject] private IHostEnvironment env = default!;
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;
