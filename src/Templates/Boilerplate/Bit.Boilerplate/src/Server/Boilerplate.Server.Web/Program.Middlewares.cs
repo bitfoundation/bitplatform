@@ -235,8 +235,7 @@ public static partial class Program
         app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (IProductViewController controller, HttpContext context) =>
         {
             var baseUrl = context.Request.GetBaseUrl();
-            controller.AddQueryString(new ODataQuery() { Select = nameof(ProductDto.Id) });
-            var products = await controller.Get(context.RequestAborted);
+            var products = await controller.WithQueryString(new ODataQuery() { Select = nameof(ProductDto.Id) }).Get(context.RequestAborted);
             var productsUrls = products.Select(p => $"{Urls.ProductPage}/{p.Id}").ToArray();
 
             productsUrls = CultureInfoManager.MultilingualEnabled
