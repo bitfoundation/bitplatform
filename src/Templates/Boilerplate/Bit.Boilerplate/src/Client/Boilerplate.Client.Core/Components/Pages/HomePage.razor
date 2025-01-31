@@ -21,7 +21,21 @@
         <br />
 
         @*#if (module == "Sales")*@
-        @if (carouselProducts is not null)
+        @if (carouselProducts is null)
+        {
+            <BitCard FullWidth Background="BitColorKind.Tertiary">
+                <BitStack Horizontal Class="carousel-stack">
+                    <ProductImage Width="50%" />
+                    <BitStack AutoHeight>
+                        <BitShimmer Height="5rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="3rem" Width="100%" />
+                    </BitStack>
+                </BitStack>
+            </BitCard>
+        }
+        else
         {
             <BitCard FullWidth>
                 <BitCarousel Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
