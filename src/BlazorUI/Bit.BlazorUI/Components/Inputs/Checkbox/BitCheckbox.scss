@@ -5,14 +5,11 @@
     width: fit-content;
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
-    /*--bit-chb-ico-clr: #{$clr-fg-sec};
-    --bit-chb-box-clr-brd: #{$clr-brd-pri};*/
 
     @media (hover: hover) {
         &:hover {
             --bit-chb-ico-opa: 1;
             --bit-chb-box-clr-bg: transparent;
-            /*--bit-chb-box-clr-brd: #{$clr-brd-pri};*/
         }
     }
 
@@ -109,35 +106,23 @@
 
 
 .bit-chb-ckd {
-    /*--bit-chb-box-clr-bg: #{$clr-pri};
-    --bit-chb-box-clr-brd: #{$clr-pri};*/
     --bit-chb-ico-opa: 1;
-    /*--bit-chb-ico-clr: #{$clr-pri-text};*/
 
     @media (hover: hover) {
         &:hover {
-            /*--bit-chb-box-clr-bg: #{$clr-pri-hover};
-            --bit-chb-box-clr-brd: #{$clr-pri-hover};*/
             --bit-chb-ico-opa: 1;
-            /*--bit-chb-ico-clr: #{$clr-pri-text};*/
         }
     }
 }
 
 .bit-chb-ind {
-    --bit-chb-box-clr-bg: transparent;
-    /*--bit-chb-box-clr-brd: #{$clr-pri};*/
     --bit-chb-ico-opa: 1;
-    /*--bit-chb-ico-clr: #{$clr-pri-text};
-    --bit-chb-ico-clr-bg: #{$clr-pri};*/
+    --bit-chb-box-clr-bg: transparent;
 
     @media (hover: hover) {
         &:hover {
-            --bit-chb-box-clr-bg: transparent;
-            /*--bit-chb-box-clr-brd: #{$clr-pri-hover};*/
             --bit-chb-ico-opa: 1;
-            /*--bit-chb-ico-clr: #{$clr-pri-text};
-            --bit-chb-ico-clr-bg: #{$clr-pri-hover};*/
+            --bit-chb-box-clr-bg: transparent;
         }
     }
 
@@ -194,12 +179,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-pri};
-    --bit-btn-clr-txt: #{$clr-pri-text};
-    --bit-btn-clr-hover: #{$clr-pri-hover};
-    --bit-btn-clr-active: #{$clr-pri-active};
-    --bit-btn-clr-spn: #{$clr-pri-dark};
 }
 
 .bit-chb-sec {
@@ -239,12 +218,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-sec};
-    --bit-btn-clr-txt: #{$clr-sec-text};
-    --bit-btn-clr-hover: #{$clr-sec-hover};
-    --bit-btn-clr-active: #{$clr-sec-active};
-    --bit-btn-clr-spn: #{$clr-sec-dark};
 }
 
 .bit-chb-ter {
@@ -284,12 +257,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-ter};
-    --bit-btn-clr-txt: #{$clr-ter-text};
-    --bit-btn-clr-hover: #{$clr-ter-hover};
-    --bit-btn-clr-active: #{$clr-ter-active};
-    --bit-btn-clr-spn: #{$clr-ter-dark};
 }
 
 .bit-chb-inf {
@@ -329,12 +296,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-inf};
-    --bit-btn-clr-txt: #{$clr-inf-text};
-    --bit-btn-clr-hover: #{$clr-inf-hover};
-    --bit-btn-clr-active: #{$clr-inf-active};
-    --bit-btn-clr-spn: #{$clr-inf-dark};
 }
 
 .bit-chb-suc {
@@ -374,12 +335,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-suc};
-    --bit-btn-clr-txt: #{$clr-suc-text};
-    --bit-btn-clr-hover: #{$clr-suc-hover};
-    --bit-btn-clr-active: #{$clr-suc-active};
-    --bit-btn-clr-spn: #{$clr-suc-dark};
 }
 
 .bit-chb-wrn {
@@ -419,12 +374,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-wrn};
-    --bit-btn-clr-txt: #{$clr-wrn-text};
-    --bit-btn-clr-hover: #{$clr-wrn-hover};
-    --bit-btn-clr-active: #{$clr-wrn-active};
-    --bit-btn-clr-spn: #{$clr-wrn-dark};
 }
 
 .bit-chb-swr {
@@ -464,12 +413,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-swr};
-    --bit-btn-clr-txt: #{$clr-swr-text};
-    --bit-btn-clr-hover: #{$clr-swr-hover};
-    --bit-btn-clr-active: #{$clr-swr-active};
-    --bit-btn-clr-spn: #{$clr-swr-dark};
 }
 
 .bit-chb-err {
@@ -509,12 +452,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-err};
-    --bit-btn-clr-txt: #{$clr-err-text};
-    --bit-btn-clr-hover: #{$clr-err-hover};
-    --bit-btn-clr-active: #{$clr-err-active};
-    --bit-btn-clr-spn: #{$clr-err-dark};
 }
 
 .bit-chb-pbg {
@@ -554,12 +491,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-bg-pri};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-bg-pri-hover};
-    --bit-btn-clr-active: #{$clr-bg-pri-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 .bit-chb-sbg {
@@ -599,12 +530,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-bg-sec};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-bg-sec-hover};
-    --bit-btn-clr-active: #{$clr-bg-sec-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 .bit-chb-tbg {
@@ -644,12 +569,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-bg-ter};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-bg-ter-hover};
-    --bit-btn-clr-active: #{$clr-bg-ter-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 .bit-chb-pfg {
@@ -689,12 +608,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-fg-pri};
-    --bit-btn-clr-txt: #{$clr-bg-pri};
-    --bit-btn-clr-hover: #{$clr-fg-pri-hover};
-    --bit-btn-clr-active: #{$clr-fg-pri-active};
-    --bit-btn-clr-spn: #{$clr-bg-pri};
 }
 
 .bit-chb-sfg {
@@ -734,12 +647,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-fg-sec};
-    --bit-btn-clr-txt: #{$clr-bg-pri};
-    --bit-btn-clr-hover: #{$clr-fg-sec-hover};
-    --bit-btn-clr-active: #{$clr-fg-sec-active};
-    --bit-btn-clr-spn: #{$clr-bg-pri};
 }
 
 .bit-chb-tfg {
@@ -779,12 +686,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-fg-ter};
-    --bit-btn-clr-txt: #{$clr-bg-pri};
-    --bit-btn-clr-hover: #{$clr-fg-ter-hover};
-    --bit-btn-clr-active: #{$clr-fg-ter-active};
-    --bit-btn-clr-spn: #{$clr-bg-pri};
 }
 
 .bit-chb-pbr {
@@ -824,12 +725,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-brd-pri};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-brd-pri-hover};
-    --bit-btn-clr-active: #{$clr-brd-pri-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 .bit-chb-sbr {
@@ -869,12 +764,6 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-brd-sec};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-brd-sec-hover};
-    --bit-btn-clr-active: #{$clr-brd-sec-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 .bit-chb-tbr {
@@ -914,45 +803,17 @@
             }
         }
     }
-
-    --bit-btn-clr: #{$clr-brd-ter};
-    --bit-btn-clr-txt: #{$clr-fg-pri};
-    --bit-btn-clr-hover: #{$clr-brd-ter-hover};
-    --bit-btn-clr-active: #{$clr-brd-ter-active};
-    --bit-btn-clr-spn: #{$clr-fg-pri};
 }
 
 
 .bit-chb-sm {
     --bit-chb-box-size: #{spacing(1.75)};
-    --bit-btn-spn-size: #{spacing(1.75)};
-    --bit-btn-lbl-fontsize: #{spacing(1.75)};
-    --bit-btn-prt-fontsize: #{spacing(1.50)};
-    --bit-btn-sct-fontsize: #{spacing(1.25)};
-    --bit-btn-icn-fontsize: #{spacing(1.50)};
-    --bit-btn-icn-margintop: #{spacing(0.2)};
-    --bit-btn-pad-ntx: #{spacing(0.5)};
-    --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
 .bit-chb-md {
     --bit-chb-box-size: #{spacing(2.5)};
-    --bit-btn-lbl-fontsize: #{spacing(1.50)};
-    --bit-btn-prt-fontsize: #{spacing(1.75)};
-    --bit-btn-sct-fontsize: #{spacing(1.50)};
-    --bit-btn-icn-fontsize: #{spacing(2.00)};
-    --bit-btn-icn-margintop: #{spacing(0.25)};
-    --bit-btn-pad-ntx: #{spacing(0.75)};
-    --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
 }
 
 .bit-chb-lg {
     --bit-chb-box-size: #{spacing(3.25)};
-    --bit-btn-lbl-fontsize: #{spacing(1.75)};
-    --bit-btn-prt-fontsize: #{spacing(2.50)};
-    --bit-btn-sct-fontsize: #{spacing(2.00)};
-    --bit-btn-icn-fontsize: #{spacing(2.50)};
-    --bit-btn-icn-margintop: #{spacing(0.5)};
-    --bit-btn-pad-ntx: #{spacing(1.0)};
-    --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
 }
