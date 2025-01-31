@@ -5,6 +5,7 @@ using FluentStorage.Blobs;
 using Microsoft.AspNetCore.SignalR;
 using Boilerplate.Server.Api.SignalR;
 //#endif
+using Boilerplate.Shared.Controllers;
 using Boilerplate.Shared.Dtos.Identity;
 using Boilerplate.Server.Api.Models.Identity;
 
@@ -12,7 +13,7 @@ namespace Boilerplate.Server.Api.Controllers;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
-public partial class AttachmentController : AppControllerBase
+public partial class AttachmentController : AppControllerBase, IAttachmentController
 {
     [AutoInject] private IBlobStorage blobStorage = default!;
     [AutoInject] private UserManager<User> userManager = default!;

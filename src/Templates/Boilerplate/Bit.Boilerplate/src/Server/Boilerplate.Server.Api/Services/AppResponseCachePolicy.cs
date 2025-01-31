@@ -1,5 +1,5 @@
 ﻿//+:cnd:noEmit
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Server.Api.Services;
@@ -96,7 +96,7 @@ public class AppResponseCachePolicy(IHostEnvironment env) : IOutputCachePolicy
     {
         var response = context.HttpContext.Response;
 
-        if (StringValues.IsNullOrEmpty(response.Headers.SetCookie) is false
+        if (response.GetTypedHeaders().SetCookie.Any(sc => sc.Name != CookieRequestCultureProvider.DefaultCookieName /* The culture cookie is allowed since caching varies by culture in CacheRequestAsync. */)
             || response.StatusCode is not StatusCodes.Status200OK)
         {
             context.AllowCacheStorage = false;
