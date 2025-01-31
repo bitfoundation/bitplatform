@@ -57,6 +57,13 @@ public partial class BitLayoutDemo
         },
         new()
         {
+            Name = "ReverseNavPanel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the position of the nav panel inside the main container.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitLayoutClassStyles?",
             DefaultValue = "null",
