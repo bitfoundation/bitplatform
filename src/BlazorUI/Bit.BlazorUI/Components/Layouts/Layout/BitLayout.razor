@@ -18,7 +18,7 @@
             </header>
         }
 
-        <main style="@(ReverseNavPanel ? "flex-direction:row-reverse;" : "")@Styles?.Main" class="bit-lyt-man @Classes?.Main">
+        <main style="@(ReverseNavPanel ? "flex-direction:row-reverse;" : "") @Styles?.Main" class="bit-lyt-man @Classes?.Main">
             @if (showNavPanel)
             {
                 <div style="@Styles?.NavPanel" class="bit-lyt-nmn @Classes?.NavPanel">
@@ -26,16 +26,17 @@
                 </div>
             }
 
-            <div style="@($"{(showNavPanel ? $"width:calc(100% - {NavPanelWidth}px);" : "")};{Styles?.MainContent}".Trim(';'))" class="bit-lyt-mcn @Classes?.MainContent">
+            <div style="@($"{(showNavPanel ? FormattableString.Invariant($"width:calc(100% - {NavPanelWidth}px);") : "")}") @Styles?.MainContent" 
+                 class="bit-lyt-mcn @Classes?.MainContent">
                 @Main
             </div>
         </main>
 
         @if (Footer is not null)
         {
-                <footer style="@Styles?.Footer" class="bit-lyt-ftr @Classes?.Footer">
+            <footer style="@Styles?.Footer" class="bit-lyt-ftr @Classes?.Footer">
                 @Footer
-                </footer>
+            </footer>
         }
     </CascadingValue>
 </div>
