@@ -53,6 +53,7 @@ self.serverHandledUrls = [
     /\/.well-known/,
     /\/sitemap.xml/,
     /\/products.xml/,
+    /\/sitemap_index.xml/
 ];
 
 self.defaultUrl = "/";
