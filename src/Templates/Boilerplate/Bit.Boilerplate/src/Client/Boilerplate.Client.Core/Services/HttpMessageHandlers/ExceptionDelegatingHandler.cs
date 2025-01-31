@@ -50,10 +50,12 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetail.Type!) ?? typeof(UnknownException);
 
-                var key = problemDetail.Extensions["key"]!.ToString();
+                if (problemDetail.Extensions.TryGetValue("key", out var key) is false)
+                    throw new InvalidOperationException("Problem details missing required 'key' extension");
+
                 problemDetail.Extensions.TryGetValue("payload", out var payloadObj);
 
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(key!, problemDetail.Title!) : (object?)problemDetail.Title! };
+                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(key!.ToString()!, problemDetail.Title!) : (object?)problemDetail.Title! };
 
                 Exception exp = exceptionType == typeof(ResourceValidationException)
                                     ? new ResourceValidationException(problemDetail.Title!, ((JsonElement)payloadObj!).Deserialize(jsonSerializerOptions.GetTypeInfo<ErrorResourcePayload>()))
