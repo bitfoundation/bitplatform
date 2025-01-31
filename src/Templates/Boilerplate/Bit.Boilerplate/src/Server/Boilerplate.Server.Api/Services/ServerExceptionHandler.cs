@@ -40,13 +40,13 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             message = Localizer[message];
         }
 
-        var problemDetail = new AppProblemDetail
+        var problemDetail = new ProblemDetails
         {
             Title = message,
             Status = statusCode,
             Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
             Instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}",
-            Extensions = new()
+            Extensions = new Dictionary<string, object?>()
             {
                 { "key", key },
                 { "traceId", httpContext.TraceIdentifier }
@@ -59,6 +59,6 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
         }
 
         httpContext.Response.StatusCode = statusCode;
-        await httpContext.Response.WriteAsJsonAsync(problemDetail, jsonSerializerOptions.GetTypeInfo<AppProblemDetail>(), cancellationToken: httpContext.RequestAborted);
+        await httpContext.Response.WriteAsJsonAsync(problemDetail, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
     }
 }

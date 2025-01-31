@@ -46,19 +46,14 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 response.IsSuccessStatusCode is false &&
                 response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
-                var problemDetail = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetail>(), cancellationToken))!;
+                var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
 
-                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetail.Type!) ?? typeof(UnknownException);
+                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
 
-                if (problemDetail.Extensions.TryGetValue("key", out var key) is false)
-                    throw new InvalidOperationException("Problem details missing required 'key' extension");
-
-                problemDetail.Extensions.TryGetValue("payload", out var payloadObj);
-
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(key!.ToString()!, problemDetail.Title!) : (object?)problemDetail.Title! };
+                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
 
                 Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(problemDetail.Title!, ((JsonElement)payloadObj!).Deserialize(jsonSerializerOptions.GetTypeInfo<ErrorResourcePayload>()))
+                                    ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;

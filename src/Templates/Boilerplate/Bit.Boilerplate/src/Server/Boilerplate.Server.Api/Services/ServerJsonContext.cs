@@ -11,6 +11,7 @@ namespace Boilerplate.Server.Api.Services;
 //#if (captcha == "reCaptcha")
 [JsonSerializable(typeof(GoogleRecaptchaVerificationResponse))]
 //#endif
+[JsonSerializable(typeof(ProblemDetails))]
 public partial class ServerJsonContext : JsonSerializerContext
 {
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// A machine-readable format for specifying errors in HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>.
 /// </summary>
-public partial class AppProblemDetail
+public partial class AppProblemDetails
 {
     /// <summary>
     /// A URI reference [RFC3986] that identifies the problem type. This specification encourages that, when
@@ -63,4 +63,8 @@ public partial class AppProblemDetail
     /// </remarks>
     [JsonExtensionData]
     public Dictionary<string, object?> Extensions { get; set; } = new(StringComparer.Ordinal);
+
+    public string? Key { get; set; }
+
+    public ErrorResourcePayload? Payload { get; set; } = new();
 }
