@@ -64,6 +64,15 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the checkbox.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "DefaultIndeterminate",
             Type = "bool?",
             DefaultValue = "null",
@@ -116,6 +125,15 @@ public partial class BitCheckboxDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Reverses the label and checkbox location."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the checkbox.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -185,6 +203,175 @@ public partial class BitCheckboxDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label of the BitCheckbox."
                }
+            ]
+        }
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name= "Fill",
+                    Description="Fill styled variant.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Outline",
+                    Description="Outline styled variant.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Text styled variant.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Info Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size checkbox.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size checkbox.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size checkbox.",
+                    Value="2",
+                }
             ]
         }
     ];
