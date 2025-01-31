@@ -190,9 +190,11 @@ public static partial class Program
    <sitemap>
       <loc>{0}sitemap.xml</loc>
    </sitemap>
+//#if(module == 'Sales')
    <sitemap>
       <loc>{0}products.xml</loc>
    </sitemap>
+//#endif
 </sitemapindex>";
 
             var baseUrl = context.Request.GetBaseUrl();
@@ -226,6 +228,7 @@ public static partial class Program
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
         }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
+        //#if(module == "Sales")
         app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (AppDbContext dbContext, HttpContext context) =>
         {
             var baseUrl = context.Request.GetBaseUrl();
@@ -239,6 +242,7 @@ public static partial class Program
 
             await context.Response.WriteAsync(productsMap, context.RequestAborted);
         }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
+        //#endif
     }
 
     [GeneratedRegex(@"\{.*?\}")]
