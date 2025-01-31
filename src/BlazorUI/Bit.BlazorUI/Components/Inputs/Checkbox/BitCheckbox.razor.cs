@@ -56,6 +56,12 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     [Parameter] public BitCheckboxClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The general color of the checkbox.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
     /// Default indeterminate visual state for checkbox
     /// </summary>
     [Parameter] public bool? DefaultIndeterminate { get; set; }
@@ -94,6 +100,12 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Reversed { get; set; }
+
+    /// <summary>
+    /// The size of the checkbox.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
@@ -141,6 +153,36 @@ public partial class BitCheckbox : BitInputBase<bool>, IDisposable
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Color switch
+        {
+            BitColor.Primary => "bit-chb-pri",
+            BitColor.Secondary => "bit-chb-sec",
+            BitColor.Tertiary => "bit-chb-ter",
+            BitColor.Info => "bit-chb-inf",
+            BitColor.Success => "bit-chb-suc",
+            BitColor.Warning => "bit-chb-wrn",
+            BitColor.SevereWarning => "bit-chb-swr",
+            BitColor.Error => "bit-chb-err",
+            BitColor.PrimaryBackground => "bit-chb-pbg",
+            BitColor.SecondaryBackground => "bit-chb-sbg",
+            BitColor.TertiaryBackground => "bit-chb-tbg",
+            BitColor.PrimaryForeground => "bit-chb-pfg",
+            BitColor.SecondaryForeground => "bit-chb-sfg",
+            BitColor.TertiaryForeground => "bit-chb-tfg",
+            BitColor.PrimaryBorder => "bit-chb-pbr",
+            BitColor.SecondaryBorder => "bit-chb-sbr",
+            BitColor.TertiaryBorder => "bit-chb-tbr",
+            _ => "bit-chb-pri"
+        });
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-chb-sm",
+            BitSize.Medium => "bit-chb-md",
+            BitSize.Large => "bit-chb-lg",
+            _ => "bit-chb-md"
+        });
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd {Classes?.Checked}" : string.Empty);
 
