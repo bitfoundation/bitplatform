@@ -1,4 +1,4 @@
-﻿name: Todo Sample CD
+﻿name: Sales module demo CD
 
 # Project templates come equipped with CI/CD for both Azure DevOps and GitHub, providing you with a hassle-free way to get started with your new project. It is important to note that you should not depend on the contents of this file. More info at https://bitplatform.dev/templates/dev-ops
 
@@ -24,14 +24,10 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v4
     
-    - name: Remove .NET 9 based global.json
-      run: |
-        rm src/global.json
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        global-json-file: src/Templates/Boilerplate/Bit.Boilerplate/global8.json
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@v4
       with:
@@ -42,12 +38,12 @@ jobs:
         cd src/Templates/Boilerplate && dotnet build -c Release
         dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
         dotnet new install Bit.Boilerplate.0.0.0.nupkg
-        cd ../../../ && dotnet new bit-bp --name SalesSample --database PostgreSQL --sample --appInsights --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --signalR --framework net8.0
+        cd ../../../ && dotnet new bit-bp --name SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage AzureBlobStorage --notification --captcha reCaptcha --framework net9.0
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@v1.2 
       with:
-        files: 'SalesSample/src/Shared/appsettings.json, SalesSample/src/Client/SalesSample.Client.Core/appsettings.json, SalesSample/src/Client/SalesSample.Client.Web/appsettings.json, SalesSample/src/Client/SalesSample.Client.Web/appsettings.Production.json'
+        files: 'SalesModule/src/Shared/appsettings.json, SalesModule/src/Client/SalesModule.Client.Core/appsettings.json, SalesModule/src/Client/SalesModule.Client.Web/appsettings.json, SalesModule/src/Client/SalesModule.Client.Web/appsettings.Production.json'
       env:
         WebAppRender.PrerenderEnabled: true
         ServerAddress: /
@@ -61,13 +57,13 @@ jobs:
 
     - name: Configure bswup
       run: |
-          sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' SalesSample/src/Client/SalesSample.Client.Web/wwwroot/service-worker.published.js
+          sed -i 's/\/\/ self.disablePassiveFirstBoot/self.disablePassiveFirstBoot/g' SalesModule/src/Client/SalesModule.Client.Web/wwwroot/service-worker.published.js
 
     - name: Generate CSS/JS files
-      run: dotnet build SalesSample/src/Client/SalesSample.Client.Core/SalesSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false --no-restore -c Release
+      run: dotnet build SalesModule/src/Client/SalesModule.Client.Core/SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}" -p:MultilingualEnabled=false --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish SalesSample/src/Server/SalesSample.Server.Web/SalesSample.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"  -p:MultilingualEnabled=false
+      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -p:PwaEnabled=true --self-contained -r linux-x64 -o ${{env.DOTNET_ROOT}}/server -p:Version="${{ vars.APPLICATION_DISPLAY_VERSION}}"  -p:MultilingualEnabled=false
 
     - name: Upload server artifact
       uses: actions/upload-artifact@v4

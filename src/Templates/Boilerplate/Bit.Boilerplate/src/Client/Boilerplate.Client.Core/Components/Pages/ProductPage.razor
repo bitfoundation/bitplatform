@@ -14,6 +14,13 @@
     {
         <BitStack Gap="2rem" Class="root-stack">
 
+            <BitLink NoUnderline Href="@Urls.HomePage">
+                <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitIcon IconName="@(currentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)" Size="BitSize.Small" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
+                </BitStack>
+            </BitLink>
+
             <BitCard FullWidth Style="padding:3rem 1rem;">
                 <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
                     <ProductImage Src="@GetProductImageUrl(product)" Width="30%" />
@@ -21,7 +28,7 @@
                         <BitText Typography="BitTypography.H2">@product.Name</BitText>
                         <BitText Color="BitColor.Info">@product.CategoryName</BitText>
                         <BitText Typography="BitTypography.H6">@product.Description</BitText>
-                        <BitText Typography="BitTypography.H4">@product.Price.ToString("C")</BitText>
+                        <BitText Typography="BitTypography.H4">@product.FormattedPrice</BitText>
                     </BitStack>
                 </BitStack>
             </BitCard>
@@ -95,7 +102,7 @@
                                         <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
-                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                     </BitStack>
                                 </BitCard>
                             </BitLink>
@@ -141,7 +148,7 @@
                                         <ProductImage Src="@GetProductImageUrl(prd)" Width="100%" />
                                         <BitText>@prd.Name</BitText>
                                         <BitText Typography="BitTypography.Body2">@prd.Description</BitText>
-                                        <BitText Typography="BitTypography.H6">@prd.Price.ToString("C")</BitText>
+                                        <BitText Typography="BitTypography.H6">@prd.FormattedPrice</BitText>
                                     </BitStack>
                                 </BitCard>
                             </BitLink>

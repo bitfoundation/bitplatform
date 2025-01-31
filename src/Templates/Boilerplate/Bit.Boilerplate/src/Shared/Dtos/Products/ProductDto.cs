@@ -37,4 +37,18 @@ public partial class ProductDto
             ? null
             : new Uri(absoluteServerAddress, $"/api/Attachment/GetProductImage/{Id}?v={ConcurrencyStamp}").ToString();
     }
+
+    public string FormattedPrice => FormatPrice();
+
+    private string FormatPrice()
+    {
+        if (CultureInfoManager.MultilingualEnabled)
+        {
+            return CultureInfo.CurrentCulture.TextInfo.IsRightToLeft
+                    ? $"{Price:N0} {CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol}"
+                    : Price.ToString("C");
+        }
+
+        return Price.ToString("N0");
+    }
 }
