@@ -18,7 +18,7 @@
             </header>
         }
 
-        <main style="@Styles?.Main" class="bit-lyt-man @Classes?.Main">
+        <main style="@(ReverseNavPanel ? "flex-direction:row-reverse" : "") @Styles?.Main" class="bit-lyt-man @Classes?.Main">
             @if (showNavPanel)
             {
                 <div style="@Styles?.NavPanel" class="bit-lyt-nmn @Classes?.NavPanel">
