@@ -39,7 +39,7 @@ public static partial class Program
             app.UseRequestLocalization(options);
         }
 
-        app.UseExceptionHandler("/", createScopeForErrors: true);
+        app.UseExceptionHandler();
 
         if (env.IsDevelopment() is false)
         {

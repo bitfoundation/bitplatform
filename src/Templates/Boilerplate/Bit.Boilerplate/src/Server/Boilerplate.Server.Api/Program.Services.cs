@@ -90,7 +90,8 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         //#endif
 
-        services.AddExceptionHandler<ServerExceptionHandler>();
+        services.AddSingleton<IProblemDetailsWriter, ServerExceptionHandler>();
+        services.AddProblemDetails();
 
         services.AddOutputCache(options =>
         {
@@ -137,6 +138,16 @@ public static partial class Program
         });
 
         services.AddAntiforgery();
+
+        services.AddSingleton(sp =>
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions(AppJsonContext.Default.Options);
+
+            options.TypeInfoResolverChain.Add(IdentityJsonContext.Default);
+            options.TypeInfoResolverChain.Add(ServerJsonContext.Default);
+
+            return options;
+        });
 
         services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.AddRange([AppJsonContext.Default, IdentityJsonContext.Default, ServerJsonContext.Default]));
 

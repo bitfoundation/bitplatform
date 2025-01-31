@@ -46,14 +46,14 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 response.IsSuccessStatusCode is false &&
                 response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
-                RestErrorInfo restError = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
+                var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;
 
-                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
+                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetails.Type!) ?? typeof(UnknownException);
 
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
+                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(problemDetails.Key!.ToString()!, problemDetails.Title!) : (object?)problemDetails.Title! };
 
                 Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(restError.Message!, restError.Payload!)
+                                    ? new ResourceValidationException(problemDetails.Title!, problemDetails.Payload)
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;

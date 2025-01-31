@@ -1,17 +1,21 @@
 ﻿using System.Net;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Services;
 
-public partial class ServerExceptionHandler : SharedExceptionHandler, IExceptionHandler
+public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDetailsWriter
 {
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
 
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception e, CancellationToken cancellationToken)
+    public bool CanWrite(ProblemDetailsContext context) => true;
+
+    public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
+        var e = context.Exception;
+        var httpContext = context.HttpContext;
+
         // Using the Request-Id header, one can find the log for server-related exceptions
         httpContext.Response.Headers.Append(HeaderNames.RequestId, httpContext.TraceIdentifier);
 
@@ -20,8 +24,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IException
         if (exception is AuthenticationFailureException)
         {
             httpContext.Response.Redirect($"{Urls.SignInPage}?error={Uri.EscapeDataString(exception.Message)}");
-
-            return true;
+            return;
         }
 
         var knownException = exception as KnownException;
@@ -37,22 +40,25 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IException
             message = Localizer[message];
         }
 
-        var restExceptionPayload = new RestErrorInfo
+        var problemDetail = new ProblemDetails
         {
-            Key = key,
-            Message = message,
-            ExceptionType = knownException?.GetType().FullName ?? typeof(UnknownException).FullName
+            Title = message,
+            Status = statusCode,
+            Type = knownException?.GetType().FullName ?? typeof(UnknownException).FullName,
+            Instance = $"{httpContext.Request.Method} {httpContext.Request.GetUri().PathAndQuery}",
+            Extensions = new Dictionary<string, object?>()
+            {
+                { "key", key },
+                { "traceId", httpContext.TraceIdentifier }
+            }
         };
 
         if (exception is ResourceValidationException validationException)
         {
-            restExceptionPayload.Payload = validationException.Payload;
+            problemDetail.Extensions.Add("payload", validationException.Payload);
         }
 
         httpContext.Response.StatusCode = statusCode;
-
-        await httpContext.Response.WriteAsJsonAsync(restExceptionPayload, jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken: cancellationToken);
-
-        return true;
+        await httpContext.Response.WriteAsJsonAsync(problemDetail, jsonSerializerOptions.GetTypeInfo<ProblemDetails>(), cancellationToken: httpContext.RequestAborted);
     }
 }
