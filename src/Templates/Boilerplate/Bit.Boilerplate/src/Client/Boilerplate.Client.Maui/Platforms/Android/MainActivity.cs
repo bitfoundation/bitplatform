@@ -23,6 +23,9 @@ namespace Boilerplate.Client.Maui.Platforms.Android;
                             //#if (module == "Admin")
                             Urls.AddOrEditCategoryPage, Urls.CategoriesPage, Urls.DashboardPage, Urls.ProductsPage,
                             //#endif
+                            //#if (module == "Sales")
+                            Urls.ProductPage,
+                            //#endif
                             //#if (sample == true)
                             Urls.TodoPage,
                             //#endif

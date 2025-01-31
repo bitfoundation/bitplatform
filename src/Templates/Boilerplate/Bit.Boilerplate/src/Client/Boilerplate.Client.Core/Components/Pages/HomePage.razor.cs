@@ -48,9 +48,7 @@ public partial class HomePage
         //#endif
 
         //#if(module == "Sales")
-        carouselProducts = (await PrerenderStateService.GetValue(() => HttpClient.GetFromJsonAsync("api/ProductView/GetHomeCarouselProducts",
-                                                         JsonSerializerOptions.GetTypeInfo<List<ProductDto>>(),
-                                                         CurrentCancellationToken)))!;
+        carouselProducts = await productViewController.GetHomeCarouselProducts(CurrentCancellationToken);
         //#endif
     }
 
