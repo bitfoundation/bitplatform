@@ -56,7 +56,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(key!, problemDetail.Title!) : (object?)problemDetail.Title! };
 
                 Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(problemDetail.Title!, ((JsonElement)payloadObj!).Deserialize(jsonSerializerOptions.GetTypeInfo<ModelStateErrors>()))
+                                    ? new ResourceValidationException(problemDetail.Title!, ((JsonElement)payloadObj!).Deserialize(jsonSerializerOptions.GetTypeInfo<ErrorResourcePayload>()))
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;

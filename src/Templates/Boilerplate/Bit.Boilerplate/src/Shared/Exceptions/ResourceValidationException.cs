@@ -23,7 +23,7 @@ public partial class ResourceValidationException : RestException
     }
 
     public ResourceValidationException(string resourceTypeName, params (string propName, LocalizedString[] errorMessages)[] details)
-        : this(new ModelStateErrors()
+        : this(new ErrorResourcePayload()
         {
             ResourceTypeName = resourceTypeName,
             Details = details.Select(propErrors => new PropertyErrorResourceCollection
@@ -40,19 +40,19 @@ public partial class ResourceValidationException : RestException
 
     }
 
-    public ResourceValidationException(ModelStateErrors modelErrors)
-        : this(message: nameof(AppStrings.ResourceValidationException), modelErrors)
+    public ResourceValidationException(ErrorResourcePayload? payload)
+        : this(message: nameof(AppStrings.ResourceValidationException), payload)
     {
 
     }
 
-    public ResourceValidationException(string message, ModelStateErrors? payload)
+    public ResourceValidationException(string message, ErrorResourcePayload? payload)
         : base(message)
     {
         Payload = payload ?? new();
     }
 
-    public ModelStateErrors Payload { get; set; } = new ModelStateErrors();
+    public ErrorResourcePayload Payload { get; set; } = new ErrorResourcePayload();
 
     public override HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
 }

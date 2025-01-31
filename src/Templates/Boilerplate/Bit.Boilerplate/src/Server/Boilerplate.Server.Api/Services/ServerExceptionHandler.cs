@@ -40,7 +40,7 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
             message = Localizer[message];
         }
 
-        var restExceptionPayload = new AppProblemDetail
+        var problemDetail = new AppProblemDetail
         {
             Title = message,
             Status = statusCode,
@@ -55,10 +55,10 @@ public partial class ServerExceptionHandler : SharedExceptionHandler, IProblemDe
 
         if (exception is ResourceValidationException validationException)
         {
-            restExceptionPayload.Extensions.Add("payload", validationException.Payload);
+            problemDetail.Extensions.Add("payload", validationException.Payload);
         }
 
         httpContext.Response.StatusCode = statusCode;
-        await httpContext.Response.WriteAsJsonAsync(restExceptionPayload, jsonSerializerOptions.GetTypeInfo<AppProblemDetail>(), cancellationToken: httpContext.RequestAborted);
+        await httpContext.Response.WriteAsJsonAsync(problemDetail, jsonSerializerOptions.GetTypeInfo<AppProblemDetail>(), cancellationToken: httpContext.RequestAborted);
     }
 }

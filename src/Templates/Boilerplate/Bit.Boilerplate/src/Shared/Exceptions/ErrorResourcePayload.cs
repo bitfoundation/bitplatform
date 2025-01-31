@@ -1,6 +1,6 @@
 ﻿namespace Boilerplate.Shared.Exceptions;
 
-public partial class ModelStateErrors
+public partial class ErrorResourcePayload
 {
     public string? ResourceTypeName { get; set; } = "*";
 
