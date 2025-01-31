@@ -5,27 +5,14 @@ namespace Boilerplate.Shared.Exceptions;
 public partial class ResourceValidationException : RestException
 {
     public ResourceValidationException(params LocalizedString[] errorMessages)
-    : this([("*", errorMessages)])
+        : this([("*", errorMessages)])
     {
 
     }
 
     public ResourceValidationException(params (string propName, LocalizedString[] errorMessages)[] details)
-        : this("*", details)
-    {
-
-    }
-
-    public ResourceValidationException(Type resourceType, params (string propName, LocalizedString[] errorMessages)[] details)
-        : this(resourceType.FullName!, details)
-    {
-
-    }
-
-    public ResourceValidationException(string resourceTypeName, params (string propName, LocalizedString[] errorMessages)[] details)
         : this(new ErrorResourcePayload()
         {
-            ResourceTypeName = resourceTypeName,
             Details = details.Select(propErrors => new PropertyErrorResourceCollection
             {
                 Name = propErrors.propName,
