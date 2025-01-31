@@ -1,19 +1,23 @@
 ﻿//+:cnd:noEmit
 using System.Net;
 using System.Web;
+using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Localization.Routing;
-using Boilerplate.Shared;
-using Boilerplate.Server.Api.Data;
-using Boilerplate.Shared.Attributes;
-using System.Reflection;
-using Microsoft.AspNetCore.Authorization;
 using System.Text.RegularExpressions;
+using Boilerplate.Shared;
+using Boilerplate.Shared.Attributes;
+using Boilerplate.Client.Core.Services;
+//#if(module == "Sales")
+using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Controllers.Products;
+//#endif
 
 namespace Boilerplate.Server.Web;
 
@@ -229,10 +233,11 @@ public static partial class Program
         }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
         //#if(module == "Sales")
-        app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (AppDbContext dbContext, HttpContext context) =>
+        app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (IProductViewController controller, HttpContext context) =>
         {
             var baseUrl = context.Request.GetBaseUrl();
-            var products = await dbContext.Products.Select(p => new { p.Id }).ToArrayAsync(context.RequestAborted);
+            controller.AddQueryString(new ODataQuery() { Select = nameof(ProductDto.Id) });
+            var products = await controller.Get(context.RequestAborted);
             var productsUrls = products.Select(p => $"{Urls.ProductPage}/{p.Id}").ToArray();
 
             productsUrls = CultureInfoManager.MultilingualEnabled
