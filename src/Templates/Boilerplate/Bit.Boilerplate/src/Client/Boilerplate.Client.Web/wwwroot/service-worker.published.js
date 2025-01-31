@@ -52,6 +52,10 @@ self.serverHandledUrls = [
     /\/signin-/,
     /\/.well-known/,
     /\/sitemap.xml/,
+    //#if (module == "Sales")
+    /\/products.xml/,
+    //#endif
+    /\/sitemap_index.xml/
 ];
 
 self.defaultUrl = "/";
