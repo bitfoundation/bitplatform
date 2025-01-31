@@ -90,7 +90,8 @@ public static partial class Program
         services.AddScoped<PushNotificationService>();
         //#endif
 
-        services.AddExceptionHandler<ServerExceptionHandler>();
+        services.AddSingleton<IProblemDetailsWriter, ServerExceptionHandler>();
+        services.AddProblemDetails();
 
         services.AddOutputCache(options =>
         {

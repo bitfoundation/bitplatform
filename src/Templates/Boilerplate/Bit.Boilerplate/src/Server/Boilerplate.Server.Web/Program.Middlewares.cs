@@ -56,7 +56,7 @@ public static partial class Program
         }
 
         //#if (api == "Integrated")
-        app.UseExceptionHandler("/", createScopeForErrors: true);
+        app.UseExceptionHandler();
         //#endif
 
         if (env.IsDevelopment())

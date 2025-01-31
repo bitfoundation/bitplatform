@@ -46,14 +46,17 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 response.IsSuccessStatusCode is false &&
                 response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
             {
-                RestErrorInfo restError = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<RestErrorInfo>(), cancellationToken))!;
+                var problemDetail = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetail>(), cancellationToken))!;
 
-                Type exceptionType = typeof(RestErrorInfo).Assembly.GetType(restError.ExceptionType!) ?? typeof(UnknownException);
+                Type exceptionType = typeof(KnownException).Assembly.GetType(problemDetail.Type!) ?? typeof(UnknownException);
 
-                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(restError.Key!, restError.Message!) : (object?)restError.Message! };
+                var key = problemDetail.Extensions["key"]!.ToString();
+                problemDetail.Extensions.TryGetValue("payload", out var payloadObj);
+
+                var args = new List<object?> { typeof(KnownException).IsAssignableFrom(exceptionType) ? new LocalizedString(key!, problemDetail.Title!) : (object?)problemDetail.Title! };
 
                 Exception exp = exceptionType == typeof(ResourceValidationException)
-                                    ? new ResourceValidationException(restError.Message!, restError.Payload!)
+                                    ? new ResourceValidationException(problemDetail.Title!, ((JsonElement)payloadObj!).Deserialize(jsonSerializerOptions.GetTypeInfo<ModelStateErrors>()))
                                     : (Exception)Activator.CreateInstance(exceptionType, args.ToArray())!;
 
                 throw exp;
