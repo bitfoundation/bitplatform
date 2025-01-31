@@ -11,6 +11,11 @@ public partial class App
     private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
 
     [AutoInject] private IHostEnvironment env = default!;
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+
+    [AutoInject] ServerWebSettings serverWebSettings = default!;
+    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
+    [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     protected override void OnInitialized()
     {
@@ -19,15 +24,9 @@ public partial class App
         if (CultureInfoManager.MultilingualEnabled)
         {
             HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
-            CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
+                                                 CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
         }
     }
-
-    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
-
-    [AutoInject] ServerWebSettings serverWebSettings = default!;
-    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
-    [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
 }
 
 /// <summary>
