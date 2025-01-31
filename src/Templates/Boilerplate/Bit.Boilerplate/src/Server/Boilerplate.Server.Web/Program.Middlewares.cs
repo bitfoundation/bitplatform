@@ -233,9 +233,14 @@ public static partial class Program
         {
             var baseUrl = context.Request.GetBaseUrl();
             var products = await dbContext.Products.Select(p => new { p.Id }).ToArrayAsync(context.RequestAborted);
+            var productsUrls = products.Select(p => $"{Urls.ProductPage}/{p.Id}").ToArray();
+
+            productsUrls = CultureInfoManager.MultilingualEnabled
+                ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
+                : productsUrls;
 
             var productsMap = @$"{siteMapHeader}
-    {string.Join(Environment.NewLine, products.Select(p => $"<url><loc>{new Uri(baseUrl, $"{Urls.ProductPage}/{p.Id}")}</loc></url>"))}
+    {string.Join(Environment.NewLine, productsUrls.Select(productUrl => $"<url><loc>{new Uri(baseUrl, productUrl)}</loc></url>"))}
 </urlset>";
 
             context.Response.Headers.ContentType = "application/xml";
