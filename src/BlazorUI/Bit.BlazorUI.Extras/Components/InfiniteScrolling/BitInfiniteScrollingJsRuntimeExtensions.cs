@@ -9,18 +9,18 @@ internal static class BitInfiniteScrollingJsRuntimeExtensions
                                                               ElementReference lastElement,
                                                               DotNetObjectReference<BitInfiniteScrolling<T>> dotnetObj)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, dotnetObj);
+        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.setup", id, scrollerSelector, rootElement, lastElement, dotnetObj);
     }
 
     public static ValueTask BitInfiniteScrollingReobserve(this IJSRuntime jsRuntime,
                                                                string id,
                                                                ElementReference lastElement)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.InfiniteScrolling.reobserve", id, lastElement);
+        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.reobserve", id, lastElement);
     }
 
     public static ValueTask BitInfiniteScrollingDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.InfiniteScrolling.dispose", id);
+        return jsRuntime.InvokeVoid("BitBlazorUI.InfiniteScrolling.dispose", id);
     }
 }

@@ -34,6 +34,13 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
+            Name = "Preload",
+            Type = "bool",
+            DefaultValue = "null",
+            Description = "Pre-loads the data at the initialization of the component. Useful in prerendering mode.",
+         },
+         new()
+         {
             Name = "ScrollerSelector",
             Type = "string?",
             DefaultValue = "null",
@@ -73,13 +80,8 @@ public partial class BitInfiniteScrollingDemo
     }
 </style>
 
-<BitInfiniteScrolling ItemsProvider=""LoadBasicItems"" Class=""basic"">
-    <ItemTemplate Context=""item"">
-        <div>Item @item</div>
-    </ItemTemplate>
-    <LoadingTemplate>
-        <b>Loading...</b>
-    </LoadingTemplate>
+<BitInfiniteScrolling ItemsProvider=""LoadBasicItems"" Class=""basic"" Context=""item"">
+    <div>Item @item</div>
 </BitInfiniteScrolling>";
     private readonly string example1CsharpCode = @"
 private async Task<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
