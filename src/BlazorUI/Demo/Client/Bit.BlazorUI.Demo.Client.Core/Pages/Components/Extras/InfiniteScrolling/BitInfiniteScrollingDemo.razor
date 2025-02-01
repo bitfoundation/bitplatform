@@ -12,13 +12,8 @@
                    ComponentPublicMembers="componentPublicMembers">
         <ComponentExampleBox Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <ExamplePreview>
-                <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic">
-                    <ItemTemplate Context="item">
-                        <div>Item @item</div>
-                    </ItemTemplate>
-                    <LoadingTemplate>
-                        <b>Loading...</b>
-                    </LoadingTemplate>
+                <BitInfiniteScrolling ItemsProvider="LoadBasicItems" Class="basic" Context="item">
+                    <div>Item @item</div>
                 </BitInfiniteScrolling>
             </ExamplePreview>
         </ComponentExampleBox>

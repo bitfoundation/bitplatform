@@ -4,6 +4,6 @@ public partial class ThemingPage
 {
     protected override async Task OnAfterFirstRenderAsync()
     {
-        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        await JSRuntime.InvokeVoid("highlightSnippet");
     }
 }
