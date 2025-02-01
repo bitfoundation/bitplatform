@@ -20,7 +20,7 @@ public partial class ProductViewController : AppControllerBase, IProductViewCont
     }
 
     [HttpGet("{id}")]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5, UserAgnostic = true)]
     public async Task<ProductDto> Get(Guid id, CancellationToken cancellationToken)
     {
         var product = await Get().FirstOrDefaultAsync(t => t.Id == id, cancellationToken)

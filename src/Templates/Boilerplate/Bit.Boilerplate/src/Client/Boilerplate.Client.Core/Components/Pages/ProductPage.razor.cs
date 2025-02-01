@@ -22,8 +22,8 @@ public partial class ProductPage
     private List<ProductDto>? similarProducts;
     private List<ProductDto>? siblingProducts;
     private bool isLoadingProduct = true;
-    private bool isLoadingSimilarProducts;
-    private bool isLoadingSiblingProducts;
+    private bool isLoadingSimilarProducts = true;
+    private bool isLoadingSiblingProducts = true;
 
 
     protected override async Task OnInitAsync()
@@ -34,7 +34,7 @@ public partial class ProductPage
 
         if (InPrerenderSession is false)
         {
-            LoadOtherProducts();
+            await Task.WhenAll(LoadSimilarProducts(), LoadSiblingProducts());
         }
     }
 
@@ -47,13 +47,8 @@ public partial class ProductPage
         finally
         {
             isLoadingProduct = false;
+            StateHasChanged();
         }
-    }
-
-    private void LoadOtherProducts()
-    {
-        LoadSimilarProducts().ContinueWith(_ => InvokeAsync(StateHasChanged));
-        LoadSiblingProducts().ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     private async Task LoadSimilarProducts()
@@ -62,12 +57,12 @@ public partial class ProductPage
 
         try
         {
-            isLoadingSimilarProducts = true;
             similarProducts = await productViewController.GetSimilar(product.Id, CurrentCancellationToken);
         }
         finally
         {
             isLoadingSimilarProducts = false;
+            StateHasChanged();
         }
     }
 
@@ -77,12 +72,12 @@ public partial class ProductPage
 
         try
         {
-            isLoadingSiblingProducts = true;
             siblingProducts = await productViewController.GetSiblings(product.CategoryId.Value, CurrentCancellationToken);
         }
         finally
         {
             isLoadingSiblingProducts = false;
+            StateHasChanged();
         }
     }
 
