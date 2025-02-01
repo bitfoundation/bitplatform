@@ -62,7 +62,7 @@ public partial class HomePage
         finally
         {
             isLoadingNuget = false;
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
 
@@ -85,7 +85,7 @@ public partial class HomePage
         finally
         {
             isLoadingGitHub = false;
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
     //#endif

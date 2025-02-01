@@ -49,6 +49,6 @@ public partial class ProductDto
                     : Price.ToString("C");
         }
 
-        return Price.ToString("N0");
+        return $"${Price:N2}";
     }
 }
