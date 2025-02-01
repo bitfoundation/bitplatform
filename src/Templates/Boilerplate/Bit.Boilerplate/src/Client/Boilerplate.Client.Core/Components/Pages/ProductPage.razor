@@ -17,7 +17,32 @@
 
         @if (isLoadingProduct)
         {
-            <BitEllipsisLoading Size="BitSize.Large" />
+            <BitCard FullWidth Background="BitColorKind.Tertiary" Style="padding:3rem 1rem;">
+                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem">
+                    <ProductImage Width="30%" />
+                    <BitStack AutoHeight Grows>
+                        <BitShimmer Height="6rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="1rem" Width="100%" />
+                        <BitShimmer Height="3rem" Width="100%" />
+                    </BitStack>
+                </BitStack>
+            </BitCard>
+
+            <br />
+
+            <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.AboutTitle)]</BitText>
+
+            <BitCard FullWidth>
+                <BitStack AutoHeight Grows>
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                    <BitShimmer Height="1rem" Width="100%" />
+                </BitStack>
+            </BitCard>
         }
         else
         {
@@ -69,11 +94,11 @@
                         making it a reliable and convenient mode of transportation for daily activities.
                     </BitText>
                 </BitCard>
-
-                <br />
-                <br />
             }
         }
+
+        <br />
+        <br />
 
         @if (isLoadingSimilarProducts)
         {

@@ -73,8 +73,15 @@
                 </BitLink>
             </ItemTemplate>
             <LoadingTemplate>
-                <BitStack Alignment="BitAlignment.Center">
-                    <BitEllipsisLoading />
+                <BitStack>
+                    <BitCard FullSize Class="product-item">
+                        <BitStack Class="product-stack">
+                            <ProductImage Width="100%" />
+                            <BitShimmer Height="1rem" Width="100%" />
+                            <BitShimmer Height="1rem" Width="100%" />
+                            <BitShimmer Height="2rem" Width="100%" />
+                        </BitStack>
+                    </BitCard>
                 </BitStack>
             </LoadingTemplate>
         </BitInfiniteScrolling>
