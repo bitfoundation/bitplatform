@@ -21,6 +21,7 @@ public partial class ProductPage
     private ProductDto? product;
     private List<ProductDto>? similarProducts;
     private List<ProductDto>? siblingProducts;
+    private bool isLoadingProduct = true;
     private bool isLoadingSimilarProducts;
     private bool isLoadingSiblingProducts;
 
@@ -39,7 +40,14 @@ public partial class ProductPage
 
     private async Task LoadProduct()
     {
-        product = await productViewController.Get(Id, CurrentCancellationToken);
+        try
+        {
+            product = await productViewController.Get(Id, CurrentCancellationToken);
+        }
+        finally
+        {
+            isLoadingProduct = false;
+        }
     }
 
     private void LoadOtherProducts()
