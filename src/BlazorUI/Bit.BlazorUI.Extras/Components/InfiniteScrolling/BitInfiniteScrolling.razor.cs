@@ -20,12 +20,17 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
 
     /// <summary>
+    /// The custom template to render each item.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
+
+    /// <summary>
     /// The item provider function that will be called when scrolling ends.
     /// </summary>
     [Parameter] public BitInfiniteScrollingItemsProvider<TItem>? ItemsProvider { get; set; }
 
     /// <summary>
-    /// The custom template to render each item.
+    /// Alias for ChildContent.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
@@ -38,6 +43,11 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
     /// The custom template to render while loading the new items.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Pre-loads the data at the initialization of the component. Useful in prerendering mode.
+    /// </summary>
+    [Parameter] public bool Preload { get; set; }
 
     /// <summary>
     /// The CSS selector of the scroll container, by default the root element of the component is selected for this purpose.
@@ -69,11 +79,21 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
 
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (Preload && ItemsProvider is not null)
+        {
+            _currentItems.AddRange(await ItemsProvider(new(0, CancellationToken.None)));
+        }
+
+        await base.OnInitializedAsync();
+    }
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        if (ItemsProvider != _itemsProvider)
+        if (ItemsProvider != _itemsProvider && (_itemsProvider is not null || _currentItems.Count == 0))
         {
             _currentItems = [];
         }

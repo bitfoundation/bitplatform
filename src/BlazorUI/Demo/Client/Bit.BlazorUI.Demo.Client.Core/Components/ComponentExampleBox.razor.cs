@@ -12,7 +12,7 @@ public partial class ComponentExampleBox
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("highlightSnippet");
+        await JSRuntime.InvokeVoid("highlightSnippet");
     }
 
     private bool isCodeCopied = false;
