@@ -7,13 +7,13 @@ namespace Boilerplate.Server.Api.Controllers.Products;
 [AllowAnonymous]
 public partial class ProductViewController : AppControllerBase, IProductViewController
 {
-    [HttpGet, EnableQuery, AppResponseCache(MaxAge = 60 * 5)]
+    [HttpGet, EnableQuery, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public IQueryable<ProductDto> Get()
     {
         return DbContext.Products.OrderByDescending(p => p.Name).Project();
     }
 
-    [HttpGet, AppResponseCache(MaxAge = 60 * 5)]
+    [HttpGet, AppResponseCache(MaxAge = 60 * 5, SharedMaxAge = 0, UserAgnostic = true)]
     public async Task<List<ProductDto>> GetHomeCarouselProducts(CancellationToken cancellationToken)
     {
         return await Get().Take(10).ToListAsync(cancellationToken);
