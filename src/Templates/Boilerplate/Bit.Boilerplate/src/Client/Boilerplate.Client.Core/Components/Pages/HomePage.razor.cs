@@ -93,7 +93,6 @@ public partial class HomePage
     //#if(module == "Sales")
     private async ValueTask<IEnumerable<ProductDto>> LoadProducts(BitInfiniteScrollingItemsProviderRequest request)
     {
-        await Task.Delay(2000);
         return await productViewController
             .WithQueryString(new ODataQuery { Top = 10, Skip = request.Skip })
             .Get(CurrentCancellationToken);
