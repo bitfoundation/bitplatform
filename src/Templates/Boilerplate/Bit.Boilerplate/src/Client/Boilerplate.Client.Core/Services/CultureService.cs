@@ -22,7 +22,7 @@ public partial class CultureService
             {
                 Name = ".AspNetCore.Culture",
                 Value = Uri.EscapeDataString($"c={cultureName}|uic={cultureName}"),
-                MaxAge = 30 * 24 * 3600,
+                MaxAge = 3600 * 24 * 30,
                 Path = "/",
                 SameSite = SameSite.Strict,
                 Secure = AppEnvironment.IsDev() is false
