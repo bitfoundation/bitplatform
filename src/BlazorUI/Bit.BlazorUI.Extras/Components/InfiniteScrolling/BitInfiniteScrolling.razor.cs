@@ -79,13 +79,14 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase, IAsyncDispo
 
 
 
-
     protected override async Task OnInitializedAsync()
     {
         if (Preload && ItemsProvider is not null)
         {
             _currentItems.AddRange(await ItemsProvider(new(0, CancellationToken.None)));
         }
+
+        await base.OnInitializedAsync();
     }
 
     protected override void OnParametersSet()
