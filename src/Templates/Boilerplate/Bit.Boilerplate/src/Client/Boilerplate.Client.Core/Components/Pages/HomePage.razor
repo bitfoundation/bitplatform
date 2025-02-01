@@ -59,7 +59,7 @@
             </BitCard>
         }
         <br />
-        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px">
+        <BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px" Preload>
             <ItemTemplate Context="product">
                 <BitLink Href="@($"/product/{product.Id}")" NoUnderline Class="product-item">
                     <BitCard FullSize>

@@ -1,2 +1,2 @@
 var BitButil = BitButil || {};
-BitButil.version = window['bit-butil version'] = '9.3.1-pre-05';
+BitButil.version = window['bit-butil version'] = '9.4.0-pre-01';
