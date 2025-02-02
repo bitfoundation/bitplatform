@@ -202,6 +202,8 @@ public static partial class Program
 
             var baseUrl = context.Request.GetBaseUrl();
 
+            context.Response.Headers.ContentType = "application/xml";
+
             await context.Response.WriteAsync(string.Format(SITEMAP_INDEX_FORMAT, baseUrl), context.RequestAborted);
         }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
